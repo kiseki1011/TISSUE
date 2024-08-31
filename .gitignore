@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### h2 docker-compose ###
+docker-compose-h2.yml
