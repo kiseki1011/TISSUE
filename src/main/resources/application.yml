@@ -2,9 +2,10 @@
 # active: dev
 spring:
   profiles:
-    active: dev
+    active: test
+
   datasource:
-    url: jdbc:h2:tcp://localhost:1521/taskmanager-local-db
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -19,34 +20,33 @@ spring:
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace
+---
+# Test
+spring:
+  config:
+    activate:
+      on-profile: test
+
 ---
 # Development
 spring:
   config:
     activate:
       on-profile: dev
+
   datasource:
     url: jdbc:h2:tcp://localhost:1521/taskmanager-dev-db
     username: sa
     password:
     driver-class-name: org.h2.Driver
 
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.orm.jdbc.bind: trace
 ---
 # Production
 spring:
   config:
     activate:
       on-profile: prod
+
   datasource:
     url:
     username:
