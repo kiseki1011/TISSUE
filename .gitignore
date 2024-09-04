@@ -38,3 +38,6 @@ out/
 
 ### h2 docker-compose ###
 docker-compose-h2.yml
+
+### h2 db ###
+/h2/
