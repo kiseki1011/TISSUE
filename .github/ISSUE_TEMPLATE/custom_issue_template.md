@@ -1,3 +1,12 @@
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: 
+assignees: seungki1011
+
+---
+
 ## 🚀 설명
 -
 
