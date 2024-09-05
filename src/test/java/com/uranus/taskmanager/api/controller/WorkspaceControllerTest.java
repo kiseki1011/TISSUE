@@ -37,14 +37,13 @@ class WorkspaceControllerTest {
     private WorkspaceService workspaceService;
 
     @Test
-    @DisplayName("워크스페이스 생성을 성공하면 200 OK를 기대한다")
-    public void 테스트2() throws Exception {
+    @DisplayName("POST /workspaces: 검증을 통과하면 CREATED를 기대한다")
+    public void 테스트1() throws Exception {
 
         WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
                 .name("Test Workspace")
                 .description("Test Description")
                 .build();
-
         String requestBody = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/v1/workspaces")
@@ -66,13 +65,12 @@ class WorkspaceControllerTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidInputs")
-    @DisplayName("@NotBlank 검증: name, description에 null, 빈 문자열, 공백을 입력하면 검증에 의해 실패한다")
-    public void 테스트4(String name, String description, String nameValidMsg, String descriptionValidMsg) throws Exception {
+    @DisplayName("POST /workspaces: (@NotBlank 검증) name과 description은 null, 빈 문자열, 공백이면 안된다.")
+    public void 테스트2(String name, String description, String nameValidMsg, String descriptionValidMsg) throws Exception {
         WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
                 .name(name)
                 .description(description)
                 .build();
-
         String requestBody = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/v1/workspaces")
@@ -85,8 +83,8 @@ class WorkspaceControllerTest {
     }
 
     @Test
-    @DisplayName("@Size 검증: workspace name의 범위는 2~50자, description은 1~255자를 지켜야한다")
-    public void 테스트5() throws Exception {
+    @DisplayName("POST /workspaces: (@Size 검증) name의 범위는 2~50자, description은 1~255자를 지켜야한다.")
+    public void 테스트3() throws Exception {
         String longName = createLongString(51);
         String longDescription = createLongString(256);
         String nameValidMsg = "Workspace name must be 2 ~ 50 characters long";
@@ -96,7 +94,6 @@ class WorkspaceControllerTest {
                 .name(longName)
                 .description(longDescription)
                 .build();
-
         String requestBody = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/v1/workspaces")
@@ -110,7 +107,7 @@ class WorkspaceControllerTest {
     }
 
     @Test
-    public void 테스트6() throws Exception {
+    public void 테스트4() throws Exception {
 
     }
 
