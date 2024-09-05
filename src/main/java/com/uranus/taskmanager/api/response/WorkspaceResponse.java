@@ -9,6 +9,7 @@ import lombok.ToString;
 @ToString
 public class WorkspaceResponse {
 
+    private final Long id;
     private final String name;
     private final String description;
     private final String workspaceCode;
@@ -17,7 +18,8 @@ public class WorkspaceResponse {
 //    private final LocalDateTime viewedAt;
 
     @Builder
-    public WorkspaceResponse(String name, String description, String workspaceCode) {
+    public WorkspaceResponse(Long id, String name, String description, String workspaceCode) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.workspaceCode = workspaceCode;
@@ -25,6 +27,7 @@ public class WorkspaceResponse {
 
     public static WorkspaceResponse fromEntity(Workspace workspace) {
         return WorkspaceResponse.builder()
+                .id(workspace.getId())
                 .name(workspace.getName())
                 .description(workspace.getDescription())
                 .workspaceCode(workspace.getWorkspaceCode())
