@@ -47,4 +47,4 @@ jobs:
           token: ${{ github.token }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
-          pass-emoji: ✅
+          pass-emoji: ':white_check_mark:'
