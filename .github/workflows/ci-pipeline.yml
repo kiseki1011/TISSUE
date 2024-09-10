@@ -38,7 +38,7 @@ jobs:
         run: ./gradlew build --no-daemon
 
       # PR comment에 JaCoCo 리포트 남기기
-      - name: Leave a comment for test coverage
+      - name: Comment for test coverage report
         id: jacoco
         uses: madrapps/jacoco-report@v1.2
         with:
@@ -59,3 +59,10 @@ jobs:
           if_mention: failure,cancelled
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # Checkstyle에 대한 리포트 확인 가능
+      - name: Run Checkstyle
+        uses: jwgmeligmeyling/checkstyle-github-action@master
+        with:
+          title: 🔍 Checkstyle Report
+          path: 'build/reports/checkstyle'
