@@ -1,42 +1,93 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.3.3'
-	id 'io.spring.dependency-management' version '1.1.6'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
 }
 
 group = 'com.uranus'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testCompileOnly 'org.projectlombok:lombok:1.18.34'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+jacoco {
+    toolVersion = "0.8.10"
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(
+                files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: [
+                            "seungki/cicdpractice/api/domain/**",
+                            "**/*Application*",
+                            "**/*Request*",
+                            "**/*Response*",
+                            "**/*Exception*"
+                    ])
+                })
+        )
+        finalizedBy(jacocoTestCoverageVerification)
+    }
+
+    jacocoTestCoverageVerification {
+        violationRules {
+            rule {
+                enabled = true
+                element = 'CLASS'
+
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.80
+                }
+
+                excludes = [
+                        "uranus.taskmanager.api.domain.**",
+                        "**.*Application*",
+                        "**.*Request*",
+                        "**.*Response*",
+                        "**.*Exception*"
+                ]
+            }
+        }
+    }
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        compileOnly 'org.projectlombok:lombok'
+        runtimeOnly 'com.h2database:h2'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testCompileOnly 'org.projectlombok:lombok:1.18.34'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
 }
