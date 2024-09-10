@@ -1,8 +1,8 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: 
+title: '[feature] '
+labels: feature
 assignees: seungki1011
 
 ---
@@ -11,7 +11,9 @@ assignees: seungki1011
 -
 
 ---
+
 ## ✅ 작업 항목
+
 - [ ] 작업 항목 1
 - [ ] 작업 항목 2
 
