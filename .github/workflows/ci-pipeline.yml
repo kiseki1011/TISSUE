@@ -48,3 +48,14 @@ jobs:
           min-coverage-overall: 80
           min-coverage-changed-files: 80
           pass-emoji: ':white_check_mark:'
+
+      # 빌드 결과에 대한 Slack 알림
+      - name: Slack message with build result
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          if_mention: failure,cancelled
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
