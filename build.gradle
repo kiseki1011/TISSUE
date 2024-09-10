@@ -38,7 +38,7 @@ jacocoTestReport {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
-                            "seungki/cicdpractice/api/domain/**",
+                            "uranus/taskmanager/api/domain/**",
                             "**/*Application*",
                             "**/*Request*",
                             "**/*Response*",
