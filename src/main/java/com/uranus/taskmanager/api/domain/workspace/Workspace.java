@@ -32,4 +32,9 @@ public class Workspace {
 		this.name = name;
 		this.description = description;
 	}
+
+	public void setWorkspaceId(String workspaceId) {
+		this.workspaceId = workspaceId;
+	}
+
 }
