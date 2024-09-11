@@ -109,4 +109,9 @@ jacocoTestReport {
         useJUnitPlatform()
         finalizedBy jacocoTestReport
     }
+
+    tasks.named('jacocoTestReport') {
+        dependsOn 'test'
+        dependsOn 'compileJava'
+    }
 }
