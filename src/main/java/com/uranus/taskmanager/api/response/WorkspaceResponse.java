@@ -11,19 +11,20 @@ import lombok.ToString;
 public class WorkspaceResponse {
 
 	private final Long id;
+	private final String workspaceId;
 	private final String name;
 	private final String description;
-	private final String workspaceCode;
+
 	//    private final LocalDateTime createdAt;
 	//    private final LocalDateTime updatedAt;
 	//    private final LocalDateTime viewedAt;
 
 	@Builder
-	public WorkspaceResponse(Long id, String name, String description, String workspaceCode) {
+	public WorkspaceResponse(Long id, String workspaceId, String name, String description) {
 		this.id = id;
+		this.workspaceId = workspaceId;
 		this.name = name;
 		this.description = description;
-		this.workspaceCode = workspaceCode;
 	}
 
 	public static WorkspaceResponse fromEntity(Workspace workspace) {
@@ -31,7 +32,7 @@ public class WorkspaceResponse {
 			.id(workspace.getId())
 			.name(workspace.getName())
 			.description(workspace.getDescription())
-			.workspaceCode(workspace.getWorkspaceCode())
+			.workspaceId(workspace.getWorkspaceId())
 			.build();
 	}
 

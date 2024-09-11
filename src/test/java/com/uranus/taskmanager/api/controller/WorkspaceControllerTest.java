@@ -2,10 +2,12 @@ package com.uranus.taskmanager.api.controller;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.service.WorkspaceService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +42,7 @@ class WorkspaceControllerTest {
 	private WorkspaceService workspaceService;
 
 	@Test
-	@DisplayName("POST /workspaces: 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("POST: 검증을 통과하면 CREATED를 기대한다")
 	public void test1() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -67,7 +70,7 @@ class WorkspaceControllerTest {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /workspaces: (@NotBlank 검증) name과 description은 null, 빈 문자열, 공백이면 안된다.")
+	@DisplayName("POST: (@NotBlank 검증) name과 description은 null, 빈 문자열, 공백이면 안된다.")
 	public void test2(String name, String description, String nameValidMsg, String descriptionValidMsg) throws
 		Exception {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -85,8 +88,16 @@ class WorkspaceControllerTest {
 			.andDo(print());
 	}
 
+	private String createLongString(int length) {
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			sb.append('a');
+		}
+		return sb.toString();
+	}
+
 	@Test
-	@DisplayName("POST /workspaces: (@Size 검증) name의 범위는 2~50자, description은 1~255자를 지켜야한다.")
+	@DisplayName("POST: (@Size 검증) name의 범위는 2~50자, description은 1~255자를 지켜야한다.")
 	public void test3() throws Exception {
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
@@ -106,19 +117,42 @@ class WorkspaceControllerTest {
 			.andExpect(jsonPath("$.validation.name").value(hasItem(nameValidMsg)))
 			.andExpect(jsonPath("$.validation.description").value(hasItem(descriptionValidMsg)))
 			.andDo(print());
-
 	}
 
 	@Test
+	@DisplayName("GET: workspaceId로 workspace 조회를 성공하면 OK를 기대한다.")
 	public void test4() throws Exception {
+		String workspaceId = UUID.randomUUID().toString();
+		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+			.id(1L)
+			.name("Test workspace")
+			.description("Test description")
+			.workspaceId(workspaceId)
+			.build();
+		when(workspaceService.get(workspaceId)).thenReturn(workspaceResponse);
 
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceId}", workspaceId))
+			.andExpect(status().isOk());
 	}
 
-	private String createLongString(int length) {
-		StringBuilder sb = new StringBuilder(length);
-		for (int i = 0; i < length; i++) {
-			sb.append('a');
-		}
-		return sb.toString();
+	@Test
+	@DisplayName("GET: workspaceId로 workspace를 조회할 수 있다")
+	public void test5() throws Exception {
+		String workspaceId = UUID.randomUUID().toString();
+		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+			.id(1L)
+			.name("Test workspace")
+			.description("Test description")
+			.workspaceId(workspaceId)
+			.build();
+		when(workspaceService.get(workspaceId)).thenReturn(workspaceResponse);
+
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceId}", workspaceId))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(1L))
+			.andExpect(jsonPath("$.workspaceId").value(workspaceId))
+			.andExpect(jsonPath("$.name").value("Test workspace"))
+			.andExpect(jsonPath("$.description").value("Test description"));
 	}
+
 }
