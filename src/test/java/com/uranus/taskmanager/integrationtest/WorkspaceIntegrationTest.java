@@ -38,7 +38,7 @@ class WorkspaceIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces: 응답의 필드가 제공한 값과 일치하고, workspaceCode는 존재해야한다.")
+	@DisplayName("POST: 응답의 필드가 제공한 값과 일치하고, workspaceCode는 존재해야한다.")
 	public void test1() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -54,12 +54,12 @@ class WorkspaceIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.name").value("Test Workspace"))
 			.andExpect(jsonPath("$.description").value("Test Description"))
-			.andExpect(jsonPath("$.workspaceCode").exists())
+			.andExpect(jsonPath("$.workspaceId").exists())
 			.andDo(print());
 	}
 
 	@Test
-	@DisplayName("POST /workspaces: DB에 하나의 값만 저장된다.")
+	@DisplayName("POST: DB에 하나의 값만 저장된다.")
 	public void test2() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
