@@ -20,19 +20,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/workspaces")
 public class WorkspaceController {
 
 	private final WorkspaceService workspaceService;
 
-	@PostMapping("/workspaces")
+	@PostMapping
 	public ResponseEntity<WorkspaceResponse> createWorkspace(@RequestBody @Valid WorkspaceCreateRequest request) {
 		WorkspaceResponse response = workspaceService.create(request);
 		log.info("[WorkspaceController.createWorkspace] response = {}", response);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 
-	@GetMapping("/workspaces/{workspaceId}")
+	@GetMapping("/{workspaceId}")
 	public ResponseEntity<WorkspaceResponse> getWorkspace(@PathVariable String workspaceId) {
 		WorkspaceResponse response = workspaceService.get(workspaceId);
 		log.info("[WorkspaceController.getWorkspace] response = {}", response);
