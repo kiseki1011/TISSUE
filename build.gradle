@@ -57,7 +57,7 @@ jacocoTestReport {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
-                            "uranus/taskmanager/api/domain/**",
+                            "com.uranus/taskmanager/api/domain/**",
                             "**/*Application*",
                             "**/*Request*",
                             "**/*Response*",
@@ -81,7 +81,7 @@ jacocoTestReport {
                 }
 
                 excludes = [
-                        "uranus.taskmanager.api.domain.**",
+                        "com.uranus.taskmanager.api.domain.**",
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
