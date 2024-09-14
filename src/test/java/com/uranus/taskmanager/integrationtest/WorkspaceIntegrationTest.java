@@ -54,7 +54,7 @@ class WorkspaceIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.name").value("Test Workspace"))
 			.andExpect(jsonPath("$.description").value("Test Description"))
-			.andExpect(jsonPath("$.workspaceId").exists())
+			.andExpect(jsonPath("$.workspaceCode").exists())
 			.andDo(print());
 	}
 

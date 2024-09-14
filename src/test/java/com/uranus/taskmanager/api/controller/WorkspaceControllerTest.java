@@ -122,35 +122,35 @@ class WorkspaceControllerTest {
 	@Test
 	@DisplayName("GET: workspaceId로 workspace 조회를 성공하면 OK를 기대한다.")
 	public void test4() throws Exception {
-		String workspaceId = UUID.randomUUID().toString();
+		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
 			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
-			.workspaceId(workspaceId)
+			.workspaceCode(workspaceCode)
 			.build();
-		when(workspaceService.get(workspaceId)).thenReturn(workspaceResponse);
+		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
 
-		mockMvc.perform(get("/api/v1/workspaces/{workspaceId}", workspaceId))
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
 			.andExpect(status().isOk());
 	}
 
 	@Test
 	@DisplayName("GET: workspaceId로 workspace를 조회할 수 있다")
 	public void test5() throws Exception {
-		String workspaceId = UUID.randomUUID().toString();
+		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
 			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
-			.workspaceId(workspaceId)
+			.workspaceCode(workspaceCode)
 			.build();
-		when(workspaceService.get(workspaceId)).thenReturn(workspaceResponse);
+		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
 
-		mockMvc.perform(get("/api/v1/workspaces/{workspaceId}", workspaceId))
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(1L))
-			.andExpect(jsonPath("$.workspaceId").value(workspaceId))
+			.andExpect(jsonPath("$.workspaceCode").value(workspaceCode))
 			.andExpect(jsonPath("$.name").value("Test workspace"))
 			.andExpect(jsonPath("$.description").value("Test description"));
 	}
