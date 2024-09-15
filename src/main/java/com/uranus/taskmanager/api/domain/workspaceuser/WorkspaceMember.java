@@ -1,6 +1,6 @@
 package com.uranus.taskmanager.api.domain.workspaceuser;
 
-import com.uranus.taskmanager.api.domain.user.Member;
+import com.uranus.taskmanager.api.domain.member.Member;
 import com.uranus.taskmanager.api.domain.workspace.Workspace;
 
 import jakarta.persistence.Column;
