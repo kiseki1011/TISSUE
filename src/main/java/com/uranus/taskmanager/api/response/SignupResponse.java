@@ -7,13 +7,13 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class SignUpResponse {
+public class SignupResponse {
 
 	private final String userId;
 	private final String email;
 
-	public static SignUpResponse fromEntity(Member member) {
-		return SignUpResponse.builder()
+	public static SignupResponse fromEntity(Member member) {
+		return SignupResponse.builder()
 			.userId(member.getUserId())
 			.email(member.getEmail())
 			.build();

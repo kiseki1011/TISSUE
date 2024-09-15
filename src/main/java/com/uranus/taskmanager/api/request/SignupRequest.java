@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class SignUpRequest {
+public class SignupRequest {
 
 	@NotBlank(message = "Username must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
@@ -28,7 +28,7 @@ public class SignUpRequest {
 	private final String password;
 
 	@Builder
-	public SignUpRequest(String userId, String email, String password) {
+	public SignupRequest(String userId, String email, String password) {
 		this.userId = userId;
 		this.email = email;
 		this.password = password;
