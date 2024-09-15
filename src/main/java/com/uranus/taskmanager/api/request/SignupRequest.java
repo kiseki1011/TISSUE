@@ -13,8 +13,8 @@ public class SignupRequest {
 
 	@NotBlank(message = "User ID must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
-		message = "User ID must be between 2 and 20 characters long"
-			+ " and contain only letters and numbers")
+		message = "User ID must be alphanumeric"
+			+ " and must be between 2 and 20 characters")
 	private final String userId;
 
 	@NotBlank(message = "Email must not be blank")
@@ -22,10 +22,9 @@ public class SignupRequest {
 	private final String email;
 
 	@NotBlank(message = "Password must not be blank")
-	@Pattern(regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
-		message = "The password must contain at least one uppercase letter,"
-			+ " one lowercase letter, one digit, and one special character,"
-			+ " and should be between 8 and 30 characters long")
+	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
+		message = "The password must be alphanumeric"
+			+ " including at least one special character and must be between 8 and 30 characters")
 	private final String password;
 
 	@Builder
