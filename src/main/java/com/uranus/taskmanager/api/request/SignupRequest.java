@@ -11,9 +11,9 @@ import lombok.Getter;
 @Getter
 public class SignupRequest {
 
-	@NotBlank(message = "Username must not be blank")
+	@NotBlank(message = "User ID must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
-		message = "Username must be between 2 and 20 characters long"
+		message = "User ID must be between 2 and 20 characters long"
 			+ " and contain only letters and numbers")
 	private final String userId;
 
@@ -21,6 +21,7 @@ public class SignupRequest {
 	@Email(message = "Email should be valid")
 	private final String email;
 
+	@NotBlank(message = "Password must not be blank")
 	@Pattern(regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
 		message = "The password must contain at least one uppercase letter,"
 			+ " one lowercase letter, one digit, and one special character,"
