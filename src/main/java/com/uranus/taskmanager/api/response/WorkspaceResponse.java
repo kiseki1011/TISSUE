@@ -15,10 +15,6 @@ public class WorkspaceResponse {
 	private final String name;
 	private final String description;
 
-	//    private final LocalDateTime createdAt;
-	//    private final LocalDateTime updatedAt;
-	//    private final LocalDateTime viewedAt;
-
 	@Builder
 	public WorkspaceResponse(Long id, String workspaceCode, String name, String description) {
 		this.id = id;
