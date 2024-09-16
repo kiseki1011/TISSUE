@@ -42,7 +42,7 @@ class WorkspaceControllerTest {
 	private WorkspaceService workspaceService;
 
 	@Test
-	@DisplayName("워크스페이스 생성 요청 시 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("워크스페이스 생성: 검증을 통과하면 CREATED를 기대한다")
 	public void test1() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -70,7 +70,7 @@ class WorkspaceControllerTest {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("워크스페이스 생성 요청 시 name과 description은 null, 빈 문자열, 공백이면 안된다")
+	@DisplayName("워크스페이스 생성: name과 description은 null, 빈 문자열, 공백이면 안된다")
 	public void test2(String name, String description, String nameValidMsg, String descriptionValidMsg) throws
 		Exception {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -97,7 +97,7 @@ class WorkspaceControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 요청 시 name의 범위는 2~50자, description은 1~255자를 지켜야한다")
+	@DisplayName("워크스페이스 생성: name의 범위는 2~50자, description은 1~255자를 지켜야한다")
 	public void test3() throws Exception {
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
@@ -120,7 +120,7 @@ class WorkspaceControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 조회에 성공하면 OK를 기대한다")
+	@DisplayName("워크스페이스 조회: 성공하면 OK를 기대한다")
 	public void test4() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
@@ -136,7 +136,7 @@ class WorkspaceControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 조회는 workspaceCode로 할 수 있다")
+	@DisplayName("워크스페이스 조회: workspaceCode로 할 수 있다")
 	public void test5() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
