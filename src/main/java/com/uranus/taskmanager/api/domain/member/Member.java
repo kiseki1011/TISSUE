@@ -26,7 +26,7 @@ public class Member {
 	Long id;
 
 	@Column(unique = true, nullable = false)
-	private String userId;
+	private String loginId;
 
 	@Column(unique = true, nullable = false)
 	private String email;
@@ -42,9 +42,9 @@ public class Member {
 	 * @param id - 빌더에 id 필드 제외를 고려하자(테스트를 위해 리플렉션을 사용)
 	 */
 	@Builder
-	public Member(Long id, String userId, String email, String password) {
+	public Member(Long id, String loginId, String email, String password) {
 		this.id = id;
-		this.userId = userId;
+		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
 	}

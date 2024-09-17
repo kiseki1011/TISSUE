@@ -9,12 +9,12 @@ import lombok.Getter;
 @Builder
 public class SignupResponse {
 
-	private final String userId;
+	private final String loginId;
 	private final String email;
 
 	public static SignupResponse fromEntity(Member member) {
 		return SignupResponse.builder()
-			.userId(member.getUserId())
+			.loginId(member.getLoginId())
 			.email(member.getEmail())
 			.build();
 	}

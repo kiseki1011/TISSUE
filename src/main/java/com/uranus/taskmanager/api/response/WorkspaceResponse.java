@@ -8,20 +8,13 @@ import lombok.ToString;
 
 @Getter
 @ToString
+@Builder
 public class WorkspaceResponse {
 
 	private final Long id;
 	private final String workspaceCode;
 	private final String name;
 	private final String description;
-
-	@Builder
-	public WorkspaceResponse(Long id, String workspaceCode, String name, String description) {
-		this.id = id;
-		this.workspaceCode = workspaceCode;
-		this.name = name;
-		this.description = description;
-	}
 
 	public static WorkspaceResponse fromEntity(Workspace workspace) {
 		return WorkspaceResponse.builder()

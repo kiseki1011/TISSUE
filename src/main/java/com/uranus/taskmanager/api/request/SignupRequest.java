@@ -9,13 +9,14 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class SignupRequest {
 
 	@NotBlank(message = "User ID must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
 		message = "User ID must be alphanumeric"
 			+ " and must be between 2 and 20 characters")
-	private final String userId;
+	private final String loginId;
 
 	@NotBlank(message = "Email must not be blank")
 	@Email(message = "Email should be valid")
@@ -27,16 +28,9 @@ public class SignupRequest {
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private final String password;
 
-	@Builder
-	public SignupRequest(String userId, String email, String password) {
-		this.userId = userId;
-		this.email = email;
-		this.password = password;
-	}
-
 	public Member toEntity() {
 		return Member.builder()
-			.userId(userId)
+			.loginId(loginId)
 			.email(email)
 			.password(password)
 			.build();

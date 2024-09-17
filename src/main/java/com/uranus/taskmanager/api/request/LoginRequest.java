@@ -8,20 +8,17 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class LoginRequest {
 
 	@NotBlank(message = "Email must not be blank")
 	@Email(message = "Email should be valid")
 	private String email;
 
+	private String loginId;
+
 	@NotBlank(message = "Password must not be blank")
 	private String password;
-
-	@Builder
-	public LoginRequest(String email, String password) {
-		this.email = email;
-		this.password = password;
-	}
 
 	public Member toEntity() {
 		return Member.builder()
