@@ -38,7 +38,7 @@ class WorkspaceIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("POST: 응답의 필드가 제공한 값과 일치하고, workspaceCode는 존재해야한다.")
+	@DisplayName("POST: 응답의 필드가 제공한 값과 일치하고, workspaceCode는 존재해야한다")
 	public void test1() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -54,7 +54,7 @@ class WorkspaceIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.name").value("Test Workspace"))
 			.andExpect(jsonPath("$.description").value("Test Description"))
-			.andExpect(jsonPath("$.workspaceId").exists())
+			.andExpect(jsonPath("$.workspaceCode").exists())
 			.andDo(print());
 	}
 
@@ -77,20 +77,4 @@ class WorkspaceIntegrationTest {
 
 		assertThat(workspaceRepository.count()).isEqualTo(1L);
 	}
-
-	@Test
-	public void test3() {
-
-	}
-
-	@Test
-	public void test4() {
-
-	}
-
-	@Test
-	public void test5() {
-
-	}
-
 }

@@ -23,14 +23,14 @@ public class WorkspaceService {
 	@Transactional
 	public WorkspaceResponse create(WorkspaceCreateRequest request) {
 		Workspace workspace = workspaceRepository.save(request.toEntity());
-		workspace.setWorkspaceId(UUID.randomUUID().toString());
+		workspace.setWorkspaceCode(UUID.randomUUID().toString());
 		log.info("[WorkspaceService.create] workspace = {}", workspace);
 		return WorkspaceResponse.fromEntity(workspace);
 	}
 
 	@Transactional(readOnly = true)
-	public WorkspaceResponse get(String workspaceId) {
-		Workspace workspace = workspaceRepository.findByWorkspaceId(workspaceId)
+	public WorkspaceResponse get(String workspaceCode) {
+		Workspace workspace = workspaceRepository.findByWorkspaceCode(workspaceCode)
 			// RuntimeException -> WorkspaceNotFoundException 정의 예정
 			.orElseThrow(() -> new RuntimeException("Workspace was not found!"));
 		return WorkspaceResponse.fromEntity(workspace);

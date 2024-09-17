@@ -29,7 +29,7 @@ class WorkspaceServiceTest {
 	private WorkspaceRepository workspaceRepository;
 
 	@Test
-	@DisplayName("워크스페이스 생성 요청 시 새로운 워크스페이스가 생성되고 workspaceId가 설정된 후, WorkspaceResponse를 반환한다")
+	@DisplayName("워크스페이스 생성 요청 시 새로운 워크스페이스가 생성되고 workspaceCode가 설정된 후, WorkspaceResponse를 반환한다")
 	void test1() {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -51,39 +51,39 @@ class WorkspaceServiceTest {
 	}
 
 	@Test
-	@DisplayName("유효한 workspaceId로 워크스페이스를 조회하면, 워크스페이스를 반환한다.")
+	@DisplayName("유효한 workspaceCode로 워크스페이스를 조회하면, 워크스페이스를 반환한다.")
 	void test2() {
-		String workspaceId = UUID.randomUUID().toString();
+		String workspaceCode = UUID.randomUUID().toString();
 		Workspace mockWorkspace = Workspace.builder()
 			.id(1L)
-			.workspaceId(workspaceId)
+			.workspaceCode(workspaceCode)
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
 
-		when(workspaceRepository.findByWorkspaceId(workspaceId))
+		when(workspaceRepository.findByWorkspaceCode(workspaceCode))
 			.thenReturn(Optional.of(mockWorkspace));
 
-		WorkspaceResponse response = workspaceService.get(workspaceId);
+		WorkspaceResponse response = workspaceService.get(workspaceCode);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getId()).isEqualTo(1L);
-		assertThat(response.getWorkspaceId()).isEqualTo(workspaceId);
-		verify(workspaceRepository, times(1)).findByWorkspaceId(workspaceId);
+		assertThat(response.getWorkspaceCode()).isEqualTo(workspaceCode);
+		verify(workspaceRepository, times(1)).findByWorkspaceCode(workspaceCode);
 	}
 
 	@Test
-	@DisplayName("유효하지 workspaceId로 워크스페이스를 조회하면, WorkspaceNotFoundException 발생")
+	@DisplayName("유효하지 workspaceCode로 워크스페이스를 조회하면, WorkspaceNotFoundException 발생")
 	void test3() {
 		String invalidWorkspaceId = UUID.randomUUID().toString();
 
-		when(workspaceRepository.findByWorkspaceId(invalidWorkspaceId))
+		when(workspaceRepository.findByWorkspaceCode(invalidWorkspaceId))
 			.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> workspaceService.get(invalidWorkspaceId))
 			.isInstanceOf(RuntimeException.class); // RuntimeException -> WorkspaceNotFoundException 변경 예정
 
-		verify(workspaceRepository, times(1)).findByWorkspaceId(invalidWorkspaceId);
+		verify(workspaceRepository, times(1)).findByWorkspaceCode(invalidWorkspaceId);
 	}
 
 }
