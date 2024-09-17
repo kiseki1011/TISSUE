@@ -22,26 +22,26 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.request.SignupRequest;
-import com.uranus.taskmanager.api.service.AuthenticationService;
+import com.uranus.taskmanager.api.service.AuthService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@WebMvcTest(AuthenticationController.class)
-class AuthenticationControllerTest {
+@WebMvcTest(AuthController.class)
+class AuthControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
 	private ObjectMapper objectMapper;
 	@MockBean
-	private AuthenticationService authenticationService;
+	private AuthService authService;
 
 	@Test
 	@DisplayName("회원 가입에 검증을 통과하면 OK를 기대한다")
 	void test1() throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
-			.userId("testuser1234")
+			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
 			.build();
@@ -62,10 +62,10 @@ class AuthenticationControllerTest {
 		"'한글아이디', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
 		"'test1한글', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
 	})
-	@DisplayName("회원 가입에 userId는 영문과 숫자 조합에 2~20자를 지켜야한다")
-	void test2(String userId, String userIdValidMsg) throws Exception {
+	@DisplayName("회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
+	void test2(String loginId, String loginIdValidMsg) throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
-			.userId(userId)
+			.loginId(loginId)
 			.email("testemail@gmail.com")
 			.password("Testpassword!")
 			.build();
@@ -75,7 +75,7 @@ class AuthenticationControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.userId").value(userIdValidMsg))
+			.andExpect(jsonPath("$.validation.loginId").value(loginIdValidMsg))
 			.andDo(print());
 	}
 
@@ -93,7 +93,7 @@ class AuthenticationControllerTest {
 	@DisplayName("회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
-			.userId("testuser1234")
+			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password(password)
 			.build();
@@ -109,24 +109,24 @@ class AuthenticationControllerTest {
 	}
 
 	static Stream<Arguments> provideInvalidInputs() {
-		String userIdValidMsg = "User ID must not be blank";
+		String loginIdValidMsg = "User ID must not be blank";
 		String emailValidMsg = "Email must not be blank";
 		String passwordValidMsg = "Password must not be blank";
 		return Stream.of(
-			arguments(null, null, null, userIdValidMsg, emailValidMsg, passwordValidMsg), // null
-			arguments("", "", "", userIdValidMsg, emailValidMsg, passwordValidMsg),   // 빈 문자열
-			arguments(" ", " ", " ", userIdValidMsg, emailValidMsg, passwordValidMsg)  // 공백
+			arguments(null, null, null, loginIdValidMsg, emailValidMsg, passwordValidMsg), // null
+			arguments("", "", "", loginIdValidMsg, emailValidMsg, passwordValidMsg),   // 빈 문자열
+			arguments(" ", " ", " ", loginIdValidMsg, emailValidMsg, passwordValidMsg)  // 공백
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("회원 가입에 userId, email, password는 null, 공백, 빈 문자이면 안된다")
-	void test4(String userId, String email, String password,
-		String userIdValidMsg, String emailValidMsg, String passwordValidMsg) throws Exception {
+	@DisplayName("회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
+	void test4(String loginId, String email, String password,
+		String loginIdValidMsg, String emailValidMsg, String passwordValidMsg) throws Exception {
 		// given
 		SignupRequest signupRequest = SignupRequest.builder()
-			.userId(userId)
+			.loginId(loginId)
 			.email(email)
 			.password(password)
 			.build();
@@ -137,7 +137,7 @@ class AuthenticationControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.userId").value(hasItem(userIdValidMsg)))
+			.andExpect(jsonPath("$.validation.loginId").value(hasItem(loginIdValidMsg)))
 			.andExpect(jsonPath("$.validation.email").value(hasItem(emailValidMsg)))
 			.andExpect(jsonPath("$.validation.password").value(hasItem(passwordValidMsg)))
 			.andDo(print());

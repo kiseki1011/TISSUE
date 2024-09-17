@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class AuthService {
 
 	private final MemberRepository memberRepository;
 
@@ -22,5 +22,4 @@ public class AuthenticationService {
 		// Todo: password 암호화
 		return SignupResponse.fromEntity(memberRepository.save(member));
 	}
-
 }

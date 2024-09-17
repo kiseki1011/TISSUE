@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.request.SignupRequest;
 import com.uranus.taskmanager.api.response.SignupResponse;
-import com.uranus.taskmanager.api.service.AuthenticationService;
+import com.uranus.taskmanager.api.service.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-public class AuthenticationController {
+public class AuthController {
 	/**
 	 * Todo
 	 * (세션 or Token 불필요)
@@ -26,12 +26,11 @@ public class AuthenticationController {
 	 * 회원 가입 - 새로운 멤버 등록
 	 */
 
-	private final AuthenticationService authenticationService;
+	private final AuthService authService;
 
 	@PostMapping("/signup")
 	public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
-		SignupResponse signupResponse = authenticationService.signup(signupRequest);
+		SignupResponse signupResponse = authService.signup(signupRequest);
 		return ResponseEntity.status(HttpStatus.OK).body(signupResponse);
 	}
-
 }
