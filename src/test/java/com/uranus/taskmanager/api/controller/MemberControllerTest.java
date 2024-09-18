@@ -22,20 +22,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.request.SignupRequest;
-import com.uranus.taskmanager.api.service.AuthService;
+import com.uranus.taskmanager.api.service.MemberService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@WebMvcTest(AuthController.class)
-class AuthControllerTest {
+@WebMvcTest(MemberController.class)
+class MemberControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
 	private ObjectMapper objectMapper;
 	@MockBean
-	private AuthService authService;
+	private MemberService memberService;
 
 	@Test
 	@DisplayName("회원 가입에 검증을 통과하면 OK를 기대한다")
@@ -47,7 +47,7 @@ class AuthControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupRequest);
 
-		mockMvc.perform(post("/api/v1/auth/signup")
+		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isOk())
@@ -71,7 +71,7 @@ class AuthControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupRequest);
 
-		mockMvc.perform(post("/api/v1/auth/signup")
+		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -99,7 +99,7 @@ class AuthControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupRequest);
 
-		mockMvc.perform(post("/api/v1/auth/signup")
+		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -133,7 +133,7 @@ class AuthControllerTest {
 		String requestBody = objectMapper.writeValueAsString(signupRequest);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/auth/signup")
+		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())

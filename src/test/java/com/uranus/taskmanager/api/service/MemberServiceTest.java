@@ -12,10 +12,10 @@ import com.uranus.taskmanager.api.request.SignupRequest;
 import com.uranus.taskmanager.api.response.SignupResponse;
 
 @SpringBootTest
-class AuthServiceTest {
+class MemberServiceTest {
 
 	@Autowired
-	private AuthService authService;
+	private MemberService memberService;
 	@Autowired
 	private MemberRepository memberRepository;
 
@@ -30,7 +30,7 @@ class AuthServiceTest {
 			.build();
 
 		// when
-		SignupResponse signupResponse = authService.signup(signupRequest);
+		SignupResponse signupResponse = memberService.signup(signupRequest);
 
 		// then
 		assertThat(signupResponse.getLoginId()).isEqualTo("testuser");

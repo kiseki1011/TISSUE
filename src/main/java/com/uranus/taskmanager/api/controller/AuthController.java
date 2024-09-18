@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.uranus.taskmanager.api.auth.LoginRequired;
 import com.uranus.taskmanager.api.auth.SessionKey;
 import com.uranus.taskmanager.api.request.LoginRequest;
-import com.uranus.taskmanager.api.request.SignupRequest;
 import com.uranus.taskmanager.api.response.LoginResponse;
-import com.uranus.taskmanager.api.response.SignupResponse;
 import com.uranus.taskmanager.api.service.AuthService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,24 +24,12 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 	/**
 	 * Todo
-	 * (세션 or Token 불필요)
 	 * 로그인 - 로그인하면 세션을 생성. 해당 세션ID를 클라에게 전달.
 	 *          서버는 이후 클라가 보낸 쿠키를 사용해 세션ID 식별
-	 * 회원 가입 - 새로운 멤버 등록
-	 */
-	/**
-	 * Todo 2
 	 * 로그아웃 - 세션 끝내기
-	 * 회원 가입을 MemberController로 이동
 	 */
 	private final AuthService authService;
-
-	@PostMapping("/signup")
-	public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
-		SignupResponse signupResponse = authService.signup(signupRequest);
-		return ResponseEntity.status(HttpStatus.OK).body(signupResponse);
-	}
-
+	
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
 		HttpServletRequest request) {

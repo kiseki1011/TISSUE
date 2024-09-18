@@ -6,9 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.domain.member.Member;
 import com.uranus.taskmanager.api.repository.MemberRepository;
 import com.uranus.taskmanager.api.request.LoginRequest;
-import com.uranus.taskmanager.api.request.SignupRequest;
 import com.uranus.taskmanager.api.response.LoginResponse;
-import com.uranus.taskmanager.api.response.SignupResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,14 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
 	private final MemberRepository memberRepository;
-
-	@Transactional
-	public SignupResponse signup(SignupRequest signupRequest) {
-		Member member = signupRequest.toEntity();
-		// Todo: password 암호화
-		return SignupResponse.fromEntity(memberRepository.save(member));
-	}
-
+	
 	@Transactional
 	public LoginResponse login(LoginRequest loginRequest) {
 		/**
