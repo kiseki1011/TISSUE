@@ -29,7 +29,7 @@ public class AuthController {
 	 * 로그아웃 - 세션 끝내기
 	 */
 	private final AuthService authService;
-	
+
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
 		HttpServletRequest request) {
@@ -53,12 +53,12 @@ public class AuthController {
 
 	@LoginRequired
 	@PostMapping("/logout")
-	public ResponseEntity<String> logout(HttpServletRequest request) {
+	public ResponseEntity<Void> logout(HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();
 		}
-		return ResponseEntity.ok("Logout Successful"); // Todo: 추후에 ApiResponse 클래스 만들고 리팩토링
+		return ResponseEntity.noContent().build(); // Todo: 추후에 ApiResponse 클래스 만들고 리팩토링
 	}
 
 }

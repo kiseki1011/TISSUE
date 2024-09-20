@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.uranus.taskmanager.api.exception.AuthenticationExcpetion;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,10 +23,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ProblemDetail> unexpectedException(Exception exception) {
 
-		log.error("Unexpected Exception occurred: {}", exception.getMessage());
+		log.error("Unexpected Exception: {}", exception.getMessage(), exception);
 
 		ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 		problemDetail.setTitle("Unexpected Exception");
+		problemDetail.setDetail("An unexpected problem has occurred");
 
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
@@ -34,10 +37,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<ProblemDetail> unexpectedRuntimeException(RuntimeException exception) {
 
-		log.error("Unexpected RuntimeException occurred: {}", exception.getMessage());
+		log.error("Unexpected RuntimeException {}", exception.getMessage(), exception);
 
 		ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 		problemDetail.setTitle("Unexpected RuntimeException");
+		problemDetail.setDetail("An unexpected problem has occurred");
 
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
@@ -47,7 +51,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ProblemDetail> handleValidationException(MethodArgumentNotValidException exception) {
 
-		log.error("Request Validation Failed: {}", exception.getMessage());
+		log.error("Field Validation Failed: {}", exception.getMessage(), exception);
 
 		BindingResult bindingResult = exception.getBindingResult();
 		Map<String, String> fieldErrors = new HashMap<>();
@@ -66,4 +70,17 @@ public class GlobalExceptionHandler {
 			.body(problemDetail);
 	}
 
+	@ExceptionHandler(AuthenticationExcpetion.class)
+	public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationExcpetion exception) {
+
+		log.error("Authentication Related Exception: {}", exception.getMessage(), exception);
+
+		ProblemDetail problemDetail = ProblemDetail.forStatus(exception.getHttpStatus());
+		problemDetail.setTitle(exception.getTitle());
+		problemDetail.setDetail(exception.getMessage());
+
+		return ResponseEntity
+			.status(HttpStatus.BAD_REQUEST)
+			.body(problemDetail);
+	}
 }
