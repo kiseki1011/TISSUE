@@ -42,11 +42,8 @@ public class AuthController {
 		 * loginId가 null은 아니지만 DB에 없고 email을 통해 조회한 경우, 또는 그 반대의 케이스.
 		 */
 		HttpSession session = request.getSession();
-		if (loginRequest.getLoginId() != null) {
-			session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getLoginId());
-		} else {
-			session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getEmail());
-		}
+
+		session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getLoginId());
 
 		return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
 	}
