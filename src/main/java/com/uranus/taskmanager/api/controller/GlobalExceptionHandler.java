@@ -12,7 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.uranus.taskmanager.api.exception.AuthenticationExcpetion;
+import com.uranus.taskmanager.api.exception.AuthenticationException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,8 +70,8 @@ public class GlobalExceptionHandler {
 			.body(problemDetail);
 	}
 
-	@ExceptionHandler(AuthenticationExcpetion.class)
-	public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationExcpetion exception) {
+	@ExceptionHandler(AuthenticationException.class)
+	public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationException exception) {
 
 		log.error("Authentication Related Exception: ", exception);
 

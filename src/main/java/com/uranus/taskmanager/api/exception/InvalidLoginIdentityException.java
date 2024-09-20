@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class InvalidLoginIdentityException extends AuthenticationExcpetion {
+public class InvalidLoginIdentityException extends AuthenticationException {
 
 	private static final String TITLE = "Invalid Login ID or Email";
 	private static final String MESSAGE = "Please provide a valid login ID or Email.";
