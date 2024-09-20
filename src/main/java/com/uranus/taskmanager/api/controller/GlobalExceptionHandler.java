@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ProblemDetail> unexpectedException(Exception exception) {
 
-		log.error("Unexpected Exception: {}", exception.getMessage(), exception);
+		log.error("Unexpected Exception: ", exception);
 
 		ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 		problemDetail.setTitle("Unexpected Exception");
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<ProblemDetail> unexpectedRuntimeException(RuntimeException exception) {
 
-		log.error("Unexpected RuntimeException {}", exception.getMessage(), exception);
+		log.error("Unexpected RuntimeException :", exception);
 
 		ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 		problemDetail.setTitle("Unexpected RuntimeException");
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ProblemDetail> handleValidationException(MethodArgumentNotValidException exception) {
 
-		log.error("Field Validation Failed: {}", exception.getMessage(), exception);
+		log.error("Field Validation Failed: ", exception);
 
 		BindingResult bindingResult = exception.getBindingResult();
 		Map<String, String> fieldErrors = new HashMap<>();
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(AuthenticationExcpetion.class)
 	public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationExcpetion exception) {
 
-		log.error("Authentication Related Exception: {}", exception.getMessage(), exception);
+		log.error("Authentication Related Exception: ", exception);
 
 		ProblemDetail problemDetail = ProblemDetail.forStatus(exception.getHttpStatus());
 		problemDetail.setTitle(exception.getTitle());
