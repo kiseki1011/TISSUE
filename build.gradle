@@ -85,7 +85,8 @@ jacocoTestReport {
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
-                        "**.*Exception*"
+                        "**.*Exception*",
+                        "**.*Key*"
                 ]
             }
         }

@@ -5,6 +5,7 @@ import com.uranus.taskmanager.api.domain.member.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,7 +20,8 @@ public class SignupRequest {
 	private final String loginId;
 
 	@NotBlank(message = "Email must not be blank")
-	@Email(message = "Email should be valid")
+	@Size(min = 5, max = 254, message = "Email must be between 5 and 254 characters")
+	@Email(message = "Email should be in a valid format")
 	private final String email;
 
 	@NotBlank(message = "Password must not be blank")

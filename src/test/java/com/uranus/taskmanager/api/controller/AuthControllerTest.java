@@ -1,34 +1,30 @@
 package com.uranus.taskmanager.api.controller;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.params.provider.Arguments.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.request.SignupRequest;
+import com.uranus.taskmanager.api.auth.SessionKey;
+import com.uranus.taskmanager.api.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.request.LoginRequest;
+import com.uranus.taskmanager.api.response.LoginResponse;
 import com.uranus.taskmanager.api.service.AuthService;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -38,109 +34,81 @@ class AuthControllerTest {
 	private AuthService authService;
 
 	@Test
-	@DisplayName("회원 가입에 검증을 통과하면 OK를 기대한다")
+	@DisplayName("로그인에 성공하면 200 OK를 기대하고, 세션에 로그인ID가 저장된다")
 	void test1() throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
-			.loginId("testuser1234")
-			.email("testemail@gmail.com")
-			.password("Testpassword1234!")
-			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
-
-		mockMvc.perform(post("/api/v1/auth/signup")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isOk())
-			.andDo(print());
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-		"'testtesttesttesttest1', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'1', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test!!', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'한글아이디', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test1한글', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-	})
-	@DisplayName("회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
-	void test2(String loginId, String loginIdValidMsg) throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
-			.loginId(loginId)
-			.email("testemail@gmail.com")
-			.password("Testpassword!")
-			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
-
-		mockMvc.perform(post("/api/v1/auth/signup")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.loginId").value(loginIdValidMsg))
-			.andDo(print());
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-		"'test', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'Test1234', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'한글패스워드', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'Test1234!한글', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-	})
-	@DisplayName("회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
-	void test3(String password, String passwordValidMsg) throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
-			.loginId("testuser1234")
-			.email("testemail@gmail.com")
-			.password(password)
-			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
-
-		mockMvc.perform(post("/api/v1/auth/signup")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.password")
-				.value(passwordValidMsg))
-			.andDo(print());
-	}
-
-	static Stream<Arguments> provideInvalidInputs() {
-		String loginIdValidMsg = "User ID must not be blank";
-		String emailValidMsg = "Email must not be blank";
-		String passwordValidMsg = "Password must not be blank";
-		return Stream.of(
-			arguments(null, null, null, loginIdValidMsg, emailValidMsg, passwordValidMsg), // null
-			arguments("", "", "", loginIdValidMsg, emailValidMsg, passwordValidMsg),   // 빈 문자열
-			arguments(" ", " ", " ", loginIdValidMsg, emailValidMsg, passwordValidMsg)  // 공백
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("provideInvalidInputs")
-	@DisplayName("회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
-	void test4(String loginId, String email, String password,
-		String loginIdValidMsg, String emailValidMsg, String passwordValidMsg) throws Exception {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
-			.loginId(loginId)
-			.email(email)
-			.password(password)
+		MockHttpSession session = new MockHttpSession();
+		LoginRequest loginRequest = LoginRequest.builder()
+			.loginId("user123")
+			.email("test@gmail.com")
+			.password("password123!")
 			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
+		LoginResponse loginResponse = LoginResponse.builder()
+			.loginId("user123")
+			.email("test@gmail.com")
+			.build();
+		when(authService.login(any(LoginRequest.class))).thenReturn(loginResponse);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/auth/signup")
+		mockMvc.perform((post("/api/v1/auth/login")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.loginId").value(hasItem(loginIdValidMsg)))
-			.andExpect(jsonPath("$.validation.email").value(hasItem(emailValidMsg)))
-			.andExpect(jsonPath("$.validation.password").value(hasItem(passwordValidMsg)))
+				.content(objectMapper.writeValueAsString(loginRequest))))
+			.andExpect(jsonPath("$.loginId").value("user123"))
+			.andExpect(jsonPath("$.email").value("test@gmail.com"))
+			.andExpect(status().isOk())
 			.andDo(print());
+
+		assertThat(session.getAttribute(SessionKey.LOGIN_MEMBER)).isEqualTo("user123");
+	}
+
+	@Test
+	@DisplayName("로그인 시 비밀번호 필드의 빈 검증이 실패하면 400 BAD_REQUEST를 기대한다")
+	void test2() throws Exception {
+		// given
+		LoginRequest loginRequest = LoginRequest.builder()
+			.loginId("user123")
+			.password("")
+			.build();
+
+		// when & then
+		mockMvc.perform(post("/api/v1/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.fieldErrors.password").value("Password must not be blank"))
+			.andDo(print());
+
+	}
+
+	@Test
+	@DisplayName("로그아웃 시 세션이 무효화된다")
+	void test3() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
+
+		// when & then
+		mockMvc.perform(post("/api/v1/auth/logout")
+				.session(session))
+			.andExpect(status().isNoContent())
+			.andDo(print());
+
+		assertThat(session.isInvalid()).isTrue();
+
+	}
+
+	@Test
+	@DisplayName("로그인 하지 않은 상태에서 로그아웃 시도 시 UserNotLoggedInException 발생")
+	void test4() throws Exception {
+		// given
+
+		// when & then
+		mockMvc.perform(post("/api/v1/auth/logout"))
+			.andExpect(status().isUnauthorized())
+			.andExpect(result -> assertThat(result.getResolvedException()).isInstanceOf(UserNotLoggedInException.class))
+			.andDo(print());
+
 	}
 
 }
