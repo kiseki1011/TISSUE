@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
 		problemDetail.setDetail(exception.getMessage());
 
 		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
+			.status(exception.getHttpStatus())
 			.body(problemDetail);
 	}
 }
