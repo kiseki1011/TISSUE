@@ -65,19 +65,17 @@ class WorkspaceControllerTest {
 	 * Q2: 검증 메세지 자체를 검증하는 것은 과연 효율적인가? 애노테이션 종류를 검증하는 것이 더 좋을지도?
 	 */
 	static Stream<Arguments> provideInvalidInputs() {
-		String nameValidMsg = "Workspace name must not be blank";
-		String descriptionValidMsg = "Workspace description must not be blank";
 		return Stream.of(
-			arguments(null, null, nameValidMsg, descriptionValidMsg), // null
-			arguments("", "", nameValidMsg, descriptionValidMsg),   // 빈 문자열
-			arguments(" ", " ", nameValidMsg, descriptionValidMsg)  // 공백
+			arguments(null, null), // null
+			arguments("", ""),   // 빈 문자열
+			arguments(" ", " ")  // 공백
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
 	@DisplayName("워크스페이스 생성: name과 description은 null, 빈 문자열, 공백이면 안된다")
-	public void test2(String name, String description, String nameValidMsg, String descriptionValidMsg) throws
+	public void test2(String name, String description) throws
 		Exception {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
@@ -89,8 +87,8 @@ class WorkspaceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.title").value("Invalid input"))
-			.andExpect(jsonPath("$.detail").value("One or more fields have fieldErrors errors."))
+			.andExpect(jsonPath("$.title").value("Field Validation Error"))
+			.andExpect(jsonPath("$.detail").value("One or more fields have validation errors"))
 			.andExpect(jsonPath("$.fieldErrors.name").exists())
 			.andExpect(jsonPath("$.fieldErrors.description").exists())
 			.andDo(print());

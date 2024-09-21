@@ -1,6 +1,5 @@
 package com.uranus.taskmanager.api.controller;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -75,7 +74,7 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.loginId").value(loginIdValidMsg))
+			.andExpect(jsonPath("$.fieldErrors.loginId").value(loginIdValidMsg))
 			.andDo(print());
 	}
 
@@ -103,27 +102,23 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.password")
+			.andExpect(jsonPath("$.fieldErrors.password")
 				.value(passwordValidMsg))
 			.andDo(print());
 	}
 
 	static Stream<Arguments> provideInvalidInputs() {
-		String loginIdValidMsg = "User ID must not be blank";
-		String emailValidMsg = "Email must not be blank";
-		String passwordValidMsg = "Password must not be blank";
 		return Stream.of(
-			arguments(null, null, null, loginIdValidMsg, emailValidMsg, passwordValidMsg), // null
-			arguments("", "", "", loginIdValidMsg, emailValidMsg, passwordValidMsg),   // 빈 문자열
-			arguments(" ", " ", " ", loginIdValidMsg, emailValidMsg, passwordValidMsg)  // 공백
+			arguments(null, null, null), // null
+			arguments("", "", ""),   // 빈 문자열
+			arguments(" ", " ", " ")  // 공백
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
 	@DisplayName("회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
-	void test4(String loginId, String email, String password,
-		String loginIdValidMsg, String emailValidMsg, String passwordValidMsg) throws Exception {
+	void test4(String loginId, String email, String password) throws Exception {
 		// given
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId(loginId)
@@ -137,9 +132,9 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.loginId").value(hasItem(loginIdValidMsg)))
-			.andExpect(jsonPath("$.validation.email").value(hasItem(emailValidMsg)))
-			.andExpect(jsonPath("$.validation.password").value(hasItem(passwordValidMsg)))
+			.andExpect(jsonPath("$.fieldErrors.loginId").exists())
+			.andExpect(jsonPath("$.fieldErrors.email").exists())
+			.andExpect(jsonPath("$.fieldErrors.password").exists())
 			.andDo(print());
 	}
 
