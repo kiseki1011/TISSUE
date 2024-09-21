@@ -10,6 +10,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
+@Builder
 public class WorkspaceCreateRequest {
 
 	@Size(min = 2, max = 50, message = "Workspace name must be 2 ~ 50 characters long")
@@ -19,12 +20,6 @@ public class WorkspaceCreateRequest {
 	@Size(min = 1, max = 255, message = "Workspace name must be 1 ~ 255 characters long")
 	@NotBlank(message = "Workspace description must not be blank")
 	private final String description;
-
-	@Builder
-	public WorkspaceCreateRequest(String name, String description) {
-		this.name = name;
-		this.description = description;
-	}
 
 	public Workspace toEntity() {
 		return Workspace.builder()

@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class WorkspaceService {
 
 	private final WorkspaceRepository workspaceRepository;
@@ -21,7 +23,16 @@ public class WorkspaceService {
 	@Transactional
 	public WorkspaceResponse create(WorkspaceCreateRequest request) {
 		Workspace workspace = workspaceRepository.save(request.toEntity());
+		workspace.setWorkspaceCode(UUID.randomUUID().toString());
 		log.info("[WorkspaceService.create] workspace = {}", workspace);
+		return WorkspaceResponse.fromEntity(workspace);
+	}
+
+	@Transactional(readOnly = true)
+	public WorkspaceResponse get(String workspaceCode) {
+		Workspace workspace = workspaceRepository.findByWorkspaceCode(workspaceCode)
+			// RuntimeException -> WorkspaceNotFoundException 정의 예정
+			.orElseThrow(() -> new RuntimeException("Workspace was not found!"));
 		return WorkspaceResponse.fromEntity(workspace);
 	}
 

@@ -1,11 +1,12 @@
 package com.uranus.taskmanager.api.controller;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.service.WorkspaceService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +41,7 @@ class WorkspaceControllerTest {
 	private WorkspaceService workspaceService;
 
 	@Test
-	@DisplayName("POST /workspaces: 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("워크스페이스 생성: 검증을 통과하면 CREATED를 기대한다")
 	public void test1() throws Exception {
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
@@ -55,20 +57,25 @@ class WorkspaceControllerTest {
 			.andDo(print());
 	}
 
+	/**
+	 * Todo
+	 * 필드 검증에 대한 단위 테스트 작성법 찾아보기
+	 * Q1: 같은 필드에 대해서 동일한 항목에 대해 검증 애노테이션이 겹치는 경우 어떻게 검증?
+	 * - 예시: @NotBlank와 @Size(min = 2, max = 50)을 적용한 필드에 " "(공백)가 들어가는 경우
+	 * Q2: 검증 메세지 자체를 검증하는 것은 과연 효율적인가? 애노테이션 종류를 검증하는 것이 더 좋을지도?
+	 */
 	static Stream<Arguments> provideInvalidInputs() {
-		String nameValidMsg = "Workspace name must not be blank";
-		String descriptionValidMsg = "Workspace description must not be blank";
 		return Stream.of(
-			arguments(null, null, nameValidMsg, descriptionValidMsg), // null
-			arguments("", "", nameValidMsg, descriptionValidMsg),   // 빈 문자열
-			arguments(" ", " ", nameValidMsg, descriptionValidMsg)  // 공백
+			arguments(null, null), // null
+			arguments("", ""),   // 빈 문자열
+			arguments(" ", " ")  // 공백
 		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /workspaces: (@NotBlank 검증) name과 description은 null, 빈 문자열, 공백이면 안된다.")
-	public void test2(String name, String description, String nameValidMsg, String descriptionValidMsg) throws
+	@DisplayName("워크스페이스 생성: name과 description은 null, 빈 문자열, 공백이면 안된다")
+	public void test2(String name, String description) throws
 		Exception {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
@@ -80,13 +87,23 @@ class WorkspaceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.name").value(hasItem(nameValidMsg)))
-			.andExpect(jsonPath("$.validation.description").value(hasItem(descriptionValidMsg)))
+			.andExpect(jsonPath("$.title").value("Field Validation Error"))
+			.andExpect(jsonPath("$.detail").value("One or more fields have validation errors"))
+			.andExpect(jsonPath("$.fieldErrors.name").exists())
+			.andExpect(jsonPath("$.fieldErrors.description").exists())
 			.andDo(print());
 	}
 
+	private String createLongString(int length) {
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			sb.append('a');
+		}
+		return sb.toString();
+	}
+
 	@Test
-	@DisplayName("POST /workspaces: (@Size 검증) name의 범위는 2~50자, description은 1~255자를 지켜야한다.")
+	@DisplayName("워크스페이스 생성: name의 범위는 2~50자, description은 1~255자를 지켜야한다")
 	public void test3() throws Exception {
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
@@ -103,22 +120,45 @@ class WorkspaceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.validation.name").value(hasItem(nameValidMsg)))
-			.andExpect(jsonPath("$.validation.description").value(hasItem(descriptionValidMsg)))
+			.andExpect(jsonPath("$.fieldErrors.name").value(nameValidMsg))
+			.andExpect(jsonPath("$.fieldErrors.description").value(descriptionValidMsg))
 			.andDo(print());
-
 	}
 
 	@Test
+	@DisplayName("워크스페이스 조회: 성공하면 OK를 기대한다")
 	public void test4() throws Exception {
+		String workspaceCode = UUID.randomUUID().toString();
+		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+			.id(1L)
+			.name("Test workspace")
+			.description("Test description")
+			.workspaceCode(workspaceCode)
+			.build();
+		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
 
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
+			.andExpect(status().isOk());
 	}
 
-	private String createLongString(int length) {
-		StringBuilder sb = new StringBuilder(length);
-		for (int i = 0; i < length; i++) {
-			sb.append('a');
-		}
-		return sb.toString();
+	@Test
+	@DisplayName("워크스페이스 조회: workspaceCode로 할 수 있다")
+	public void test5() throws Exception {
+		String workspaceCode = UUID.randomUUID().toString();
+		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+			.id(1L)
+			.name("Test workspace")
+			.description("Test description")
+			.workspaceCode(workspaceCode)
+			.build();
+		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
+
+		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(1L))
+			.andExpect(jsonPath("$.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.name").value("Test workspace"))
+			.andExpect(jsonPath("$.description").value("Test description"));
 	}
+
 }

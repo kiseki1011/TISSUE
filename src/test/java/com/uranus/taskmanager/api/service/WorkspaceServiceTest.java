@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +29,8 @@ class WorkspaceServiceTest {
 	private WorkspaceRepository workspaceRepository;
 
 	@Test
-	@DisplayName("Workspace를 생성하면 응답의 id는 1이어야 하고, 레포지토리는 한번 호출되어야 한다")
-	public void test1() {
+	@DisplayName("워크스페이스 생성 요청 시 새로운 워크스페이스가 생성되고 workspaceCode가 설정된 후, WorkspaceResponse를 반환한다")
+	void test1() {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
@@ -45,6 +48,42 @@ class WorkspaceServiceTest {
 		assertThat(response.getId()).isEqualTo(1L);
 		verify(workspaceRepository, times(1)).save(any(Workspace.class));
 
+	}
+
+	@Test
+	@DisplayName("유효한 workspaceCode로 워크스페이스를 조회하면, 워크스페이스를 반환한다.")
+	void test2() {
+		String workspaceCode = UUID.randomUUID().toString();
+		Workspace mockWorkspace = Workspace.builder()
+			.id(1L)
+			.workspaceCode(workspaceCode)
+			.name("Test Workspace")
+			.description("Test Description")
+			.build();
+
+		when(workspaceRepository.findByWorkspaceCode(workspaceCode))
+			.thenReturn(Optional.of(mockWorkspace));
+
+		WorkspaceResponse response = workspaceService.get(workspaceCode);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getId()).isEqualTo(1L);
+		assertThat(response.getWorkspaceCode()).isEqualTo(workspaceCode);
+		verify(workspaceRepository, times(1)).findByWorkspaceCode(workspaceCode);
+	}
+
+	@Test
+	@DisplayName("유효하지 workspaceCode로 워크스페이스를 조회하면, WorkspaceNotFoundException 발생")
+	void test3() {
+		String invalidWorkspaceId = UUID.randomUUID().toString();
+
+		when(workspaceRepository.findByWorkspaceCode(invalidWorkspaceId))
+			.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> workspaceService.get(invalidWorkspaceId))
+			.isInstanceOf(RuntimeException.class); // RuntimeException -> WorkspaceNotFoundException 변경 예정
+
+		verify(workspaceRepository, times(1)).findByWorkspaceCode(invalidWorkspaceId);
 	}
 
 }
