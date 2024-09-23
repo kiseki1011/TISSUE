@@ -1,7 +1,5 @@
 package com.uranus.taskmanager.api.request;
 
-import com.uranus.taskmanager.api.domain.member.Member;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -29,12 +27,4 @@ public class SignupRequest {
 		message = "The password must be alphanumeric"
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private final String password;
-
-	public Member toEntity() {
-		return Member.builder()
-			.loginId(loginId)
-			.email(email)
-			.password(password)
-			.build();
-	}
 }
