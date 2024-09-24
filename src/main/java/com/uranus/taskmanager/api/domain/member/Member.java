@@ -36,14 +36,9 @@ public class Member {
 
 	@OneToMany(mappedBy = "member")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-
-	/**
-	 * Todo
-	 * @param id - 빌더에 id 필드 제외를 고려하자(테스트를 위해 리플렉션을 사용)
-	 */
+	
 	@Builder
-	public Member(Long id, String loginId, String email, String password) {
-		this.id = id;
+	public Member(String loginId, String email, String password) {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
