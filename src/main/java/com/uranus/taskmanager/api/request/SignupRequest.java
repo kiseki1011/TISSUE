@@ -11,9 +11,9 @@ import lombok.Getter;
 @Builder
 public class SignupRequest {
 
-	@NotBlank(message = "User ID must not be blank")
+	@NotBlank(message = "Login ID must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
-		message = "User ID must be alphanumeric"
+		message = "Login ID must be alphanumeric"
 			+ " and must be between 2 and 20 characters")
 	private final String loginId;
 
