@@ -52,9 +52,9 @@ class WorkspaceIntegrationTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isCreated())
-			.andExpect(jsonPath("$.name").value("Test Workspace"))
-			.andExpect(jsonPath("$.description").value("Test Description"))
-			.andExpect(jsonPath("$.workspaceCode").exists())
+			.andExpect(jsonPath("$.data.name").value("Test Workspace"))
+			.andExpect(jsonPath("$.data.description").value("Test Description"))
+			.andExpect(jsonPath("$.data.workspaceCode").exists())
 			.andDo(print());
 	}
 

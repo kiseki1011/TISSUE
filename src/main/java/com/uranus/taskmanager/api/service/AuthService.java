@@ -22,11 +22,7 @@ public class AuthService {
 
 	@Transactional
 	public LoginResponse login(LoginRequest loginRequest) {
-		/**
-		 * Todo
-		 * loginId, email 조회와 password 검증 분리
-		 * password 암호화 로직 후에 검증 로직 수정
-		 */
+
 		Member member = memberRepository.findByLoginIdOrEmail(loginRequest.getLoginId(), loginRequest.getEmail())
 			.orElseThrow(InvalidLoginIdentityException::new);
 

@@ -1,5 +1,6 @@
 package com.uranus.taskmanager.api.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -55,18 +56,18 @@ class MemberControllerTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"'testtesttesttesttest1', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'1', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test!!', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'한글아이디', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test1한글', 'User ID must be alphanumeric and must be between 2 and 20 characters'",
+		"'testtesttesttesttest1', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
+		"'1', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
+		"'test!!', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
+		"'한글아이디', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
+		"'test1한글', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 	})
 	@DisplayName("회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId(loginId)
 			.email("testemail@gmail.com")
-			.password("Testpassword!")
+			.password("Testpassword1234!")
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupRequest);
 
@@ -74,7 +75,7 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.fieldErrors.loginId").value(loginIdValidMsg))
+			.andExpect(jsonPath("$.data..message").value(loginIdValidMsg))
 			.andDo(print());
 	}
 
@@ -102,16 +103,15 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.fieldErrors.password")
-				.value(passwordValidMsg))
+			.andExpect(jsonPath("$.data..message").value(passwordValidMsg))
 			.andDo(print());
 	}
 
 	static Stream<Arguments> provideInvalidInputs() {
 		return Stream.of(
 			arguments(null, null, null), // null
-			arguments("", "", ""),   // 빈 문자열
-			arguments(" ", " ", " ")  // 공백
+			arguments("", "", ""), // 빈 문자열
+			arguments(" ", " ", " ") // 공백
 		);
 	}
 
@@ -132,9 +132,9 @@ class MemberControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.fieldErrors.loginId").exists())
-			.andExpect(jsonPath("$.fieldErrors.email").exists())
-			.andExpect(jsonPath("$.fieldErrors.password").exists())
+			.andExpect(jsonPath("$.data[*].field").value(hasItem("loginId")))
+			.andExpect(jsonPath("$.data[*].field").value(hasItem("email")))
+			.andExpect(jsonPath("$.data[*].field").value(hasItem("password")))
 			.andDo(print());
 	}
 

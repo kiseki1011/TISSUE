@@ -54,8 +54,8 @@ class AuthControllerTest {
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest))))
-			.andExpect(jsonPath("$.loginId").value("user123"))
-			.andExpect(jsonPath("$.email").value("test@gmail.com"))
+			.andExpect(jsonPath("$.data.loginId").value("user123"))
+			.andExpect(jsonPath("$.data.email").value("test@gmail.com"))
 			.andExpect(status().isOk())
 			.andDo(print());
 
@@ -76,7 +76,7 @@ class AuthControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.fieldErrors.password").value("Password must not be blank"))
+			.andExpect(jsonPath("$.data..message").value("Password must not be blank"))
 			.andDo(print());
 
 	}
