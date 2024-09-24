@@ -10,15 +10,13 @@ import lombok.ToString;
 @ToString
 @Builder
 public class WorkspaceResponse {
-
-	private final Long id;
+	
 	private final String workspaceCode;
 	private final String name;
 	private final String description;
 
 	public static WorkspaceResponse fromEntity(Workspace workspace) {
 		return WorkspaceResponse.builder()
-			.id(workspace.getId())
 			.name(workspace.getName())
 			.description(workspace.getDescription())
 			.workspaceCode(workspace.getWorkspaceCode())

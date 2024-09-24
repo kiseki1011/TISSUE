@@ -36,14 +36,9 @@ public class Workspace {
 
 	@OneToMany(mappedBy = "workspace")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-
-	/**
-	 * Todo
-	 * @param id - 빌더에 id 필드 제외를 고려하자(테스트를 위해 리플렉션을 사용)
-	 */
+	
 	@Builder
-	public Workspace(Long id, String workspaceCode, String name, String description) {
-		this.id = id;
+	public Workspace(String workspaceCode, String name, String description) {
 		this.workspaceCode = workspaceCode;
 		this.name = name;
 		this.description = description;

@@ -1,5 +1,6 @@
 package com.uranus.taskmanager.api.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -75,8 +76,7 @@ class WorkspaceControllerTest {
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
 	@DisplayName("워크스페이스 생성: name과 description은 null, 빈 문자열, 공백이면 안된다")
-	public void test2(String name, String description) throws
-		Exception {
+	public void test2(String name, String description) throws Exception {
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
 			.description(description)
@@ -87,10 +87,7 @@ class WorkspaceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.title").value("Field Validation Error"))
-			.andExpect(jsonPath("$.detail").value("One or more fields have validation errors"))
-			.andExpect(jsonPath("$.fieldErrors.name").exists())
-			.andExpect(jsonPath("$.fieldErrors.description").exists())
+			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
 			.andDo(print());
 	}
 
@@ -120,8 +117,8 @@ class WorkspaceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.fieldErrors.name").value(nameValidMsg))
-			.andExpect(jsonPath("$.fieldErrors.description").value(descriptionValidMsg))
+			.andExpect(jsonPath("$.data[*].message").value(hasItem(nameValidMsg)))
+			.andExpect(jsonPath("$.data[*].message").value(hasItem(descriptionValidMsg)))
 			.andDo(print());
 	}
 
@@ -130,7 +127,6 @@ class WorkspaceControllerTest {
 	public void test4() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
 			.workspaceCode(workspaceCode)
@@ -146,7 +142,6 @@ class WorkspaceControllerTest {
 	public void test5() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
 			.workspaceCode(workspaceCode)
@@ -155,10 +150,9 @@ class WorkspaceControllerTest {
 
 		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").value(1L))
-			.andExpect(jsonPath("$.workspaceCode").value(workspaceCode))
-			.andExpect(jsonPath("$.name").value("Test workspace"))
-			.andExpect(jsonPath("$.description").value("Test description"));
+			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.name").value("Test workspace"))
+			.andExpect(jsonPath("$.data.description").value("Test description"));
 	}
 
 }

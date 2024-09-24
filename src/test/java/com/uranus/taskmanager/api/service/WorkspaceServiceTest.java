@@ -36,7 +36,6 @@ class WorkspaceServiceTest {
 			.description("Test Description")
 			.build();
 		Workspace mockWorkspace = Workspace.builder()
-			.id(1L)
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
@@ -45,7 +44,7 @@ class WorkspaceServiceTest {
 		WorkspaceResponse response = workspaceService.create(request);
 
 		assertThat(response).isNotNull();
-		assertThat(response.getId()).isEqualTo(1L);
+		assertThat(response.getName()).isEqualTo("Test Workspace");
 		verify(workspaceRepository, times(1)).save(any(Workspace.class));
 
 	}
@@ -55,7 +54,6 @@ class WorkspaceServiceTest {
 	void test2() {
 		String workspaceCode = UUID.randomUUID().toString();
 		Workspace mockWorkspace = Workspace.builder()
-			.id(1L)
 			.workspaceCode(workspaceCode)
 			.name("Test Workspace")
 			.description("Test Description")
@@ -67,7 +65,6 @@ class WorkspaceServiceTest {
 		WorkspaceResponse response = workspaceService.get(workspaceCode);
 
 		assertThat(response).isNotNull();
-		assertThat(response.getId()).isEqualTo(1L);
 		assertThat(response.getWorkspaceCode()).isEqualTo(workspaceCode);
 		verify(workspaceRepository, times(1)).findByWorkspaceCode(workspaceCode);
 	}

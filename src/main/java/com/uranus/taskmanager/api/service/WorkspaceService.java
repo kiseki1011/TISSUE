@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.domain.workspace.Workspace;
+import com.uranus.taskmanager.api.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.response.WorkspaceResponse;
@@ -18,21 +19,24 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkspaceService {
 
+	/**
+	 * Todo
+	 * UserWorkspaceService, AdminWorkspaceService, ReaderWorkspaceService 분리 고려
+	 */
+
 	private final WorkspaceRepository workspaceRepository;
 
 	@Transactional
 	public WorkspaceResponse create(WorkspaceCreateRequest request) {
 		Workspace workspace = workspaceRepository.save(request.toEntity());
 		workspace.setWorkspaceCode(UUID.randomUUID().toString());
-		log.info("[WorkspaceService.create] workspace = {}", workspace);
 		return WorkspaceResponse.fromEntity(workspace);
 	}
 
 	@Transactional(readOnly = true)
 	public WorkspaceResponse get(String workspaceCode) {
 		Workspace workspace = workspaceRepository.findByWorkspaceCode(workspaceCode)
-			// RuntimeException -> WorkspaceNotFoundException 정의 예정
-			.orElseThrow(() -> new RuntimeException("Workspace was not found!"));
+			.orElseThrow(WorkspaceNotFoundException::new);
 		return WorkspaceResponse.fromEntity(workspace);
 	}
 
