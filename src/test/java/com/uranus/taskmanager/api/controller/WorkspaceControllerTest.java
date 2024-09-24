@@ -127,7 +127,6 @@ class WorkspaceControllerTest {
 	public void test4() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
 			.workspaceCode(workspaceCode)
@@ -143,7 +142,6 @@ class WorkspaceControllerTest {
 	public void test5() throws Exception {
 		String workspaceCode = UUID.randomUUID().toString();
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.id(1L)
 			.name("Test workspace")
 			.description("Test description")
 			.workspaceCode(workspaceCode)
@@ -152,7 +150,6 @@ class WorkspaceControllerTest {
 
 		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.id").value(1L))
 			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
 			.andExpect(jsonPath("$.data.name").value("Test workspace"))
 			.andExpect(jsonPath("$.data.description").value("Test description"));
