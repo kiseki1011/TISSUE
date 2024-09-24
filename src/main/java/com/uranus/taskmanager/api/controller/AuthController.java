@@ -1,14 +1,15 @@
 package com.uranus.taskmanager.api.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.auth.LoginRequired;
 import com.uranus.taskmanager.api.auth.SessionKey;
+import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.request.LoginRequest;
 import com.uranus.taskmanager.api.response.LoginResponse;
 import com.uranus.taskmanager.api.service.AuthService;
@@ -31,7 +32,7 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping("/login")
-	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
 		HttpServletRequest request) {
 		LoginResponse loginResponse = authService.login(loginRequest);
 
@@ -42,20 +43,20 @@ public class AuthController {
 		 * loginId가 null은 아니지만 DB에 없고 email을 통해 조회한 경우, 또는 그 반대의 케이스.
 		 */
 		HttpSession session = request.getSession();
-
 		session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getLoginId());
 
-		return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+		return ApiResponse.ok("Login Success", loginResponse);
 	}
 
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@LoginRequired
 	@PostMapping("/logout")
-	public ResponseEntity<Void> logout(HttpServletRequest request) {
+	public ApiResponse<Void> logout(HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();
 		}
-		return ResponseEntity.noContent().build(); // Todo: 추후에 ApiResponse 클래스 만들고 리팩토링
+		return ApiResponse.okWithNoContent("Logout Success");
 	}
 
 }

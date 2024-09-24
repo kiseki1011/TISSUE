@@ -1,12 +1,11 @@
 package com.uranus.taskmanager.api.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.request.SignupRequest;
 import com.uranus.taskmanager.api.response.SignupResponse;
 import com.uranus.taskmanager.api.service.MemberService;
@@ -30,9 +29,9 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/signup")
-	public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
+	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
 		SignupResponse signupResponse = memberService.signup(signupRequest);
-		return ResponseEntity.status(HttpStatus.OK).body(signupResponse);
+		return ApiResponse.created("Signup Success", signupResponse);
 	}
 
 }
