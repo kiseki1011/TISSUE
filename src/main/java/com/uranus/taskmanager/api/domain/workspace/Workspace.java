@@ -32,20 +32,26 @@ public class Workspace {
 	@Column(nullable = false)
 	private String name;
 
+	private String password;
 	private String description;
 
 	@OneToMany(mappedBy = "workspace")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-	
+
 	@Builder
-	public Workspace(String workspaceCode, String name, String description) {
+	public Workspace(String workspaceCode, String name, String description, String password) {
 		this.workspaceCode = workspaceCode;
 		this.name = name;
 		this.description = description;
+		this.password = password;
 	}
 
 	public void setWorkspaceCode(String workspaceCode) {
 		this.workspaceCode = workspaceCode;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
