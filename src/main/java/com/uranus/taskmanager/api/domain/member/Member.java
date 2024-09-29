@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MEMBER_ID")
@@ -27,16 +28,14 @@ public class Member {
 
 	@Column(unique = true, nullable = false)
 	private String loginId;
-
 	@Column(unique = true, nullable = false)
 	private String email;
-
 	@Column(nullable = false)
 	private String password;
 
 	@OneToMany(mappedBy = "member")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-	
+
 	@Builder
 	public Member(String loginId, String email, String password) {
 		this.loginId = loginId;

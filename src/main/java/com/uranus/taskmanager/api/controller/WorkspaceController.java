@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uranus.taskmanager.api.auth.LoginRequired;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.service.WorkspaceService;
 
 import jakarta.validation.Valid;
@@ -39,12 +41,14 @@ public class WorkspaceController {
 	 * 워크스페이스 멤버 초대(ADMIN만 가능)
 	 * 워크스페이스 참여(워크스페이스 코드, 비밀번호를 통해)
 	 */
+	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceService workspaceService;
 
+	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<WorkspaceResponse> createWorkspace(@RequestBody @Valid WorkspaceCreateRequest request) {
-		WorkspaceResponse response = workspaceService.create(request);
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request);
 		return ApiResponse.created("Workspace Created", response);
 	}
 
@@ -53,5 +57,4 @@ public class WorkspaceController {
 		WorkspaceResponse response = workspaceService.get(workspaceId);
 		return ApiResponse.ok("Workspace Found", response);
 	}
-
 }

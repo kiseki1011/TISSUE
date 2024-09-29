@@ -38,7 +38,7 @@ class MemberControllerTest {
 	private MemberService memberService;
 
 	@Test
-	@DisplayName("회원 가입에 검증을 통과하면 OK를 기대한다")
+	@DisplayName("회원 가입에 검증을 통과하면 CREATED를 기대한다")
 	void test1() throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId("testuser1234")
@@ -50,7 +50,7 @@ class MemberControllerTest {
 		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-			.andExpect(status().isOk())
+			.andExpect(status().isCreated())
 			.andDo(print());
 	}
 
