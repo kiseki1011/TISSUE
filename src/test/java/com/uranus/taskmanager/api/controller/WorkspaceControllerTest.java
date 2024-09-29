@@ -19,11 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uranus.taskmanager.api.auth.SessionKey;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.service.WorkspaceService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,16 +37,20 @@ class WorkspaceControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
-
 	@Autowired
 	private ObjectMapper objectMapper;
 
 	@MockBean
 	private WorkspaceService workspaceService;
+	@MockBean
+	private CheckCodeDuplicationService workspaceCreateService;
 
 	@Test
 	@DisplayName("워크스페이스 생성: 검증을 통과하면 CREATED를 기대한다")
 	public void test1() throws Exception {
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -53,7 +60,8 @@ class WorkspaceControllerTest {
 
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(requestBody)
+				.session(session))
 			.andExpect(status().isCreated())
 			.andDo(print());
 	}
@@ -83,9 +91,13 @@ class WorkspaceControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(request);
 
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
+
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(requestBody)
+				.session(session))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
 			.andDo(print());
@@ -113,9 +125,13 @@ class WorkspaceControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(request);
 
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
+
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(requestBody)
+				.session(session))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(nameValidMsg)))
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(descriptionValidMsg)))

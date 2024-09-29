@@ -18,6 +18,7 @@ import com.uranus.taskmanager.api.domain.workspace.Workspace;
 import com.uranus.taskmanager.api.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
 
 @ExtendWith(MockitoExtension.class)
 class WorkspaceServiceTest {
@@ -25,6 +26,11 @@ class WorkspaceServiceTest {
 	@InjectMocks
 	private WorkspaceService workspaceService;
 
+	@InjectMocks
+	private CheckCodeDuplicationService workspaceCreateService;
+
+	@Mock
+	private WorkspaceCodeGenerator workspaceCodeGenerator;
 	@Mock
 	private WorkspaceRepository workspaceRepository;
 
@@ -41,7 +47,7 @@ class WorkspaceServiceTest {
 			.build();
 
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
-		WorkspaceResponse response = workspaceService.create(request);
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getName()).isEqualTo("Test Workspace");
