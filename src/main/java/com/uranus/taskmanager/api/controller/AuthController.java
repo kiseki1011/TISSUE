@@ -44,7 +44,6 @@ public class AuthController {
 		 */
 		HttpSession session = request.getSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getLoginId());
-
 		return ApiResponse.ok("Login Success", loginResponse);
 	}
 

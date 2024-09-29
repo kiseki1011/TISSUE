@@ -10,7 +10,7 @@ import lombok.ToString;
 @ToString
 @Builder
 public class WorkspaceResponse {
-	
+
 	private final String workspaceCode;
 	private final String name;
 	private final String description;
@@ -22,5 +22,4 @@ public class WorkspaceResponse {
 			.workspaceCode(workspace.getWorkspaceCode())
 			.build();
 	}
-
 }
