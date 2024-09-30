@@ -3,8 +3,8 @@ package com.uranus.taskmanager.fixture;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.uranus.taskmanager.api.request.LoginRequest;
-import com.uranus.taskmanager.api.request.SignupRequest;
+import com.uranus.taskmanager.api.auth.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
