@@ -83,7 +83,7 @@ jacocoTestReport {
                 }
 
                 excludes = [
-                        "com.uranus.taskmanager.api.domain.**",
+                        "com.uranus.taskmanager.api.**.domain.**",
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
