@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.basetest.BaseIntegrationTest;
 
 import io.restassured.RestAssured;
