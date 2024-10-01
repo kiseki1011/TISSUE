@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.auth.SessionKey;
+import com.uranus.taskmanager.api.global.config.WebMvcConfig;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
@@ -44,6 +46,10 @@ class WorkspaceControllerTest {
 	private WorkspaceService workspaceService;
 	@MockBean
 	private CheckCodeDuplicationService workspaceCreateService;
+	@MockBean
+	private MemberRepository memberRepository;
+	@MockBean
+	private WebMvcConfig webMvcConfig;
 
 	@Test
 	@DisplayName("워크스페이스 생성: 검증을 통과하면 CREATED를 기대한다")

@@ -21,6 +21,7 @@ import com.uranus.taskmanager.api.auth.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.auth.dto.response.LoginResponse;
 import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.auth.service.AuthenticationService;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 
 @WebMvcTest(AuthenticationController.class)
 class AuthenticationControllerTest {
@@ -32,6 +33,8 @@ class AuthenticationControllerTest {
 	private ObjectMapper objectMapper;
 	@MockBean
 	private AuthenticationService authenticationService;
+	@MockBean
+	private MemberRepository memberRepository;
 
 	@Test
 	@DisplayName("로그인에 성공하면 200 OK를 기대하고, 세션에 로그인ID가 저장된다")
