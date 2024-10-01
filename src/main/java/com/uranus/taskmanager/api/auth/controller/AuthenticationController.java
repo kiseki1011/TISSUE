@@ -20,15 +20,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/auth") // Resource를 members가 아닌 auth로 표현하는 것이 좋을까?
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-	/**
-	 * Todo
-	 * 로그인 - 로그인하면 세션을 생성. 해당 세션ID를 클라에게 전달.
-	 *          서버는 이후 클라가 보낸 쿠키를 사용해 세션ID 식별
-	 * 로그아웃 - 세션 끝내기
-	 */
+
 	private final AuthenticationService authenticationService;
 
 	@PostMapping("/login")
