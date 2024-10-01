@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uranus.taskmanager.api.auth.LoginMember;
 import com.uranus.taskmanager.api.auth.LoginRequired;
+import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
@@ -47,8 +49,10 @@ public class WorkspaceController {
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<WorkspaceResponse> createWorkspace(@RequestBody @Valid WorkspaceCreateRequest request) {
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request);
+	public ApiResponse<WorkspaceResponse> createWorkspace(
+		@LoginMember LoginMemberDto loginMember,
+		@RequestBody @Valid WorkspaceCreateRequest request) {
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 		return ApiResponse.created("Workspace Created", response);
 	}
 
