@@ -43,16 +43,22 @@ public class WorkspaceMember {
 	private String nickname;
 
 	@Builder
-	public WorkspaceMember(Member member, Workspace workspace) {
+	public WorkspaceMember(Member member, Workspace workspace, WorkspaceRole role, String nickname) {
 		this.member = member;
 		this.workspace = workspace;
+		this.role = role;
+		this.nickname = nickname;
 	}
 
-	public static WorkspaceMember createWorkspaceMember(Member member, Workspace workspace) {
+	public static WorkspaceMember addWorkspaceMember(Member member, Workspace workspace, WorkspaceRole role,
+		String nickname) {
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
 			.member(member)
 			.workspace(workspace)
+			.role(role)
+			.nickname(nickname)
 			.build();
+
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
 		return workspaceMember;
