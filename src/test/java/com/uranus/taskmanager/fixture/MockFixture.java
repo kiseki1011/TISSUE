@@ -3,8 +3,8 @@ package com.uranus.taskmanager.fixture;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.workspacemember.WorkspaceRole;
-import com.uranus.taskmanager.api.workspace.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 public class MockFixture {
 

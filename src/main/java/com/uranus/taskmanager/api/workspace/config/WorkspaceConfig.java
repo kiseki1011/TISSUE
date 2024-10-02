@@ -8,7 +8,7 @@ import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
-import com.uranus.taskmanager.api.workspace.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

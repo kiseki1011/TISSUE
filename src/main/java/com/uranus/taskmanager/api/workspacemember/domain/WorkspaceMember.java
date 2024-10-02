@@ -1,8 +1,8 @@
-package com.uranus.taskmanager.api.workspace.workspacemember.domain;
+package com.uranus.taskmanager.api.workspacemember.domain;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

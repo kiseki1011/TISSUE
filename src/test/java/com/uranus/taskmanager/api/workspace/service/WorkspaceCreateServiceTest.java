@@ -22,9 +22,9 @@ import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
-import com.uranus.taskmanager.api.workspace.workspacemember.WorkspaceRole;
-import com.uranus.taskmanager.api.workspace.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspace.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.MockFixture;
 
 @ExtendWith(MockitoExtension.class)
