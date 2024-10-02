@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.uranus.taskmanager.api.auth.exception.AuthenticationException;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.common.FieldErrorDto;
-import com.uranus.taskmanager.api.auth.exception.AuthenticationException;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceException;
+import com.uranus.taskmanager.api.workspacemember.authorization.exception.AuthorizationException;
+import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceMemberException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +36,7 @@ public class GlobalExceptionHandler {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(RuntimeException.class)
 	public ApiResponse<Void> unexpectedRuntimeException(RuntimeException exception) {
-		log.error("Unexpected RuntimeException :", exception);
+		log.error("Unexpected RuntimeException:", exception);
 
 		return ApiResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR,
 			"A unexpected problem has occured",
@@ -60,13 +63,13 @@ public class GlobalExceptionHandler {
 		List<FieldErrorDto> errors = bindingResult.getFieldErrors().stream()
 			.map(error -> new FieldErrorDto(
 				error.getField(),
-				Objects.toString(error.getRejectedValue(), ""), // null이면 빈 문자열 처리
+				Objects.toString(error.getRejectedValue(), ""),
 				error.getDefaultMessage()
 			))
 			.toList();
 
 		/*
-		 * Todo: 아래 방법을 다시 고려
+		 * Todo: 아래 방법을 고려
 		 */
 		// Map<String, String> fieldErrors = new HashMap<>();
 		//
@@ -88,4 +91,35 @@ public class GlobalExceptionHandler {
 			exception.getMessage(),
 			null); // Todo: AuthenticationException을 상속받은 예외 클래스에 잘못된 필드를 넘기는 것을 고려(이후 data에 넘기기)
 	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(WorkspaceException.class)
+	public ApiResponse<?> handleWorkspaceException(WorkspaceException exception) {
+		log.error("Workspace Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(WorkspaceMemberException.class)
+	public ApiResponse<?> handleWorkspaceMemberException(WorkspaceMemberException exception) {
+		log.error("WorkspaceMember Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
+	}
+
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	@ExceptionHandler(AuthorizationException.class)
+	public ApiResponse<?> handleAuthorizationException(AuthorizationException exception) {
+		log.error("Authorization Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
+	}
+
 }
