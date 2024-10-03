@@ -17,6 +17,8 @@ import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.authorization.RoleRequired;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +58,20 @@ public class WorkspaceController {
 		return ApiResponse.created("Workspace Created", response);
 	}
 
-	@GetMapping("/{workspaceId}")
-	public ApiResponse<WorkspaceResponse> getWorkspace(@PathVariable String workspaceId) {
-		WorkspaceResponse response = workspaceService.get(workspaceId);
+	@GetMapping("/{workspaceCode}")
+	public ApiResponse<WorkspaceResponse> getWorkspace(@PathVariable String workspaceCode) {
+		WorkspaceResponse response = workspaceService.get(workspaceCode);
 		return ApiResponse.ok("Workspace Found", response);
+	}
+
+	/**
+	 * RoleRequired 적용 예시
+	 */
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@PostMapping("/{workspaceCode}/admin-only")
+	public ApiResponse<LoginMemberDto> adminOnlyApi(@LoginMember LoginMemberDto loginMember,
+		@PathVariable String workspaceCode) {
+		return ApiResponse.ok("This is an admin-only API", loginMember);
 	}
 }
