@@ -28,8 +28,10 @@ import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +50,10 @@ class WorkspaceControllerTest {
 	private CheckCodeDuplicationService workspaceCreateService;
 	@MockBean
 	private MemberRepository memberRepository;
+	@MockBean
+	private WorkspaceRepository workspaceRepository;
+	@MockBean
+	private WorkspaceMemberRepository workspaceMemberRepository;
 	@MockBean
 	private WebMvcConfig webMvcConfig;
 
