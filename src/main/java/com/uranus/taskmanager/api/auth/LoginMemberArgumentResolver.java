@@ -10,6 +10,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,7 +54,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 		String loginId = (String)session.getAttribute(SessionKey.LOGIN_MEMBER);
 
 		Member member = memberRepository.findByLoginId(loginId)
-			.orElseThrow(RuntimeException::new); // Todo MemberNotFoundException 구현
+			.orElseThrow(MemberNotFoundException::new);
 
 		/*
 		 * member를 LoginMemberDto로 변환해서 반환한다
