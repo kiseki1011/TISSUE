@@ -58,7 +58,7 @@ class WorkspaceControllerIntegrationTest extends BaseIntegrationTest {
 			.statusCode(HttpStatus.CREATED.value())
 			.body("data.name", equalTo("Test Workspace"))
 			.body("data.description", equalTo("Test Description"))
-			.body("data.workspaceCode", notNullValue())
+			.body("data.code", notNullValue())
 			.extract().response();
 	}
 

@@ -62,10 +62,10 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			.orElseThrow(MemberNotFoundException::new);
 
 		for (int count = 0; count < MAX_RETRIES; count++) {
-			String workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
-			if (workspaceCodeIsNotDuplicate(workspaceCode)) {
-				log.info("[workspaceCodeIsNotDuplicate] workspaceCode = {}", workspaceCode);
-				request.setWorkspaceCode(workspaceCode);
+			String code = workspaceCodeGenerator.generateWorkspaceCode();
+			if (workspaceCodeIsNotDuplicate(code)) {
+				log.info("[workspaceCodeIsNotDuplicate] code = {}", code);
+				request.setCode(code);
 				Workspace workspace = workspaceRepository.save(request.toEntity());
 
 				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
@@ -82,7 +82,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			"Failed to solve workspace code collision"); // Todo: WorkspaceCodeCollisionHandleException 구현
 	}
 
-	public boolean workspaceCodeIsNotDuplicate(String workspaceCode) {
-		return !workspaceRepository.existsByWorkspaceCode(workspaceCode);
+	public boolean workspaceCodeIsNotDuplicate(String code) {
+		return !workspaceRepository.existsByCode(code);
 	}
 }

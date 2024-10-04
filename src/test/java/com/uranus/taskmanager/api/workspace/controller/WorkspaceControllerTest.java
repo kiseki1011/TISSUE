@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -153,32 +152,32 @@ class WorkspaceControllerTest {
 	@Test
 	@DisplayName("워크스페이스 조회: 성공하면 OK를 기대한다")
 	public void test4() throws Exception {
-		String workspaceCode = UUID.randomUUID().toString();
+		String code = "ABCD1234";
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
 			.name("Test workspace")
 			.description("Test description")
-			.workspaceCode(workspaceCode)
+			.code(code)
 			.build();
-		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
+		when(workspaceService.get(code)).thenReturn(workspaceResponse);
 
-		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
+		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk());
 	}
 
 	@Test
 	@DisplayName("워크스페이스 조회: workspaceCode로 할 수 있다")
 	public void test5() throws Exception {
-		String workspaceCode = UUID.randomUUID().toString();
+		String code = "ABCD1234";
 		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
 			.name("Test workspace")
 			.description("Test description")
-			.workspaceCode(workspaceCode)
+			.code(code)
 			.build();
-		when(workspaceService.get(workspaceCode)).thenReturn(workspaceResponse);
+		when(workspaceService.get(code)).thenReturn(workspaceResponse);
 
-		mockMvc.perform(get("/api/v1/workspaces/{workspaceCode}", workspaceCode))
+		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.code").value(code))
 			.andExpect(jsonPath("$.data.name").value("Test workspace"))
 			.andExpect(jsonPath("$.data.description").value("Test description"));
 	}

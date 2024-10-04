@@ -96,7 +96,7 @@ class WorkspaceCreateServiceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.getName()).isEqualTo("test name");
 		assertThat(response.getDescription()).isEqualTo("test description");
-		assertThat(response.getWorkspaceCode()).isEqualTo("testcode");
+		assertThat(response.getCode()).isEqualTo("testcode");
 		verify(workspaceRepository, times(1)).save(any(Workspace.class));
 	}
 
@@ -115,7 +115,7 @@ class WorkspaceCreateServiceTest {
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
 			.thenReturn("WORK123", "WORK124", "WORK125", "WORK126", "WORK127");
-		when(workspaceRepository.existsByWorkspaceCode(anyString())).thenReturn(true);
+		when(workspaceRepository.existsByCode(anyString())).thenReturn(true);
 
 		// when & then
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, mockLoginMember))

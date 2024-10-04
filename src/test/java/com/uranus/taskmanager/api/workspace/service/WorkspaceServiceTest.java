@@ -27,23 +27,23 @@ class WorkspaceServiceTest {
 	private WorkspaceRepository workspaceRepository;
 
 	@Test
-	@DisplayName("유효한 workspaceCode로 워크스페이스를 조회하면, 워크스페이스를 반환한다.")
+	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 조회하면, 워크스페이스를 반환한다.")
 	void test2() {
-		String workspaceCode = "testcode";
+		String code = "testcode";
 		Workspace mockWorkspace = Workspace.builder()
-			.workspaceCode(workspaceCode)
+			.code(code)
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
 
-		when(workspaceRepository.findByWorkspaceCode(workspaceCode))
+		when(workspaceRepository.findByCode(code))
 			.thenReturn(Optional.of(mockWorkspace));
 
-		WorkspaceResponse response = workspaceService.get(workspaceCode);
+		WorkspaceResponse response = workspaceService.get(code);
 
 		assertThat(response).isNotNull();
-		assertThat(response.getWorkspaceCode()).isEqualTo(workspaceCode);
-		verify(workspaceRepository, times(1)).findByWorkspaceCode(workspaceCode);
+		assertThat(response.getCode()).isEqualTo(code);
+		verify(workspaceRepository, times(1)).findByCode(code);
 	}
 
 	@Test
@@ -51,13 +51,13 @@ class WorkspaceServiceTest {
 	void test3() {
 		String invalidWorkspaceId = UUID.randomUUID().toString();
 
-		when(workspaceRepository.findByWorkspaceCode(invalidWorkspaceId))
+		when(workspaceRepository.findByCode(invalidWorkspaceId))
 			.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> workspaceService.get(invalidWorkspaceId))
 			.isInstanceOf(RuntimeException.class); // RuntimeException -> WorkspaceNotFoundException 변경 예정
 
-		verify(workspaceRepository, times(1)).findByWorkspaceCode(invalidWorkspaceId);
+		verify(workspaceRepository, times(1)).findByCode(invalidWorkspaceId);
 	}
 
 }

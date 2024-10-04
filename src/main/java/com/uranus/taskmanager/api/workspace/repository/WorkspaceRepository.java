@@ -8,7 +8,7 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 public interface WorkspaceRepository extends JpaRepository<Workspace, Long>, CustomWorkspaceRepository {
 
-	Optional<Workspace> findByWorkspaceCode(String workspaceCode);
+	Optional<Workspace> findByCode(String code);
 
-	boolean existsByWorkspaceCode(String workspaceCode);
+	boolean existsByCode(String code);
 }

@@ -47,12 +47,12 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 		for (int count = 0; count < MAX_RETRIES; count++) {
 			try {
-				String workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
+				String code = workspaceCodeGenerator.generateWorkspaceCode();
 				if (count != 0) {
-					workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
-					log.info("[Recreate Workspace Code] workspaceCode = {}", workspaceCode);
+					code = workspaceCodeGenerator.generateWorkspaceCode();
+					log.info("[Recreate Workspace Code] code = {}", code);
 				}
-				request.setWorkspaceCode(workspaceCode);
+				request.setCode(code);
 
 				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.toEntity());
 

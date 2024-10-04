@@ -8,9 +8,9 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 public class MockFixture {
 
-	public Workspace mockWorkspace(String workspaceCode) {
+	public Workspace mockWorkspace(String code) {
 		return Workspace.builder()
-			.workspaceCode(workspaceCode)
+			.code(code)
 			.name("test name")
 			.description("test description")
 			.build();

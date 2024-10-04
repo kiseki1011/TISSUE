@@ -60,7 +60,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 				log.info("extracted workspaceCode = {}", workspaceCode);
 
 				// workspaceCode를 통해 워크스페이스 찾기
-				Workspace workspace = workspaceRepository.findByWorkspaceCode(workspaceCode)
+				Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 					.orElseThrow(WorkspaceNotFoundException::new);
 
 				// 해당 워크스페이스에 대한 사용자의 역할 가져오기

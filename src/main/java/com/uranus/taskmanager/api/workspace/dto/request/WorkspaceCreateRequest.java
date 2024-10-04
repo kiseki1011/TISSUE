@@ -27,10 +27,10 @@ public class WorkspaceCreateRequest {
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private final String password;
 
-	private String workspaceCode;
+	private String code;
 
-	public void setWorkspaceCode(String workspaceCode) {
-		this.workspaceCode = workspaceCode;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public Workspace toEntity() {
@@ -38,7 +38,7 @@ public class WorkspaceCreateRequest {
 			.name(name)
 			.description(description)
 			.password(password)
-			.workspaceCode(workspaceCode)
+			.code(code)
 			.build();
 	}
 
