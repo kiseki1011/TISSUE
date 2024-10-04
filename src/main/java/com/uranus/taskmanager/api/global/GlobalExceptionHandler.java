@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.uranus.taskmanager.api.auth.exception.AuthenticationException;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.common.FieldErrorDto;
+import com.uranus.taskmanager.api.member.exception.MemberException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.AuthorizationException;
 import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceMemberException;
@@ -90,6 +91,16 @@ public class GlobalExceptionHandler {
 		return ApiResponse.fail(exception.getHttpStatus(),
 			exception.getMessage(),
 			null); // Todo: AuthenticationException을 상속받은 예외 클래스에 잘못된 필드를 넘기는 것을 고려(이후 data에 넘기기)
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MemberException.class)
+	public ApiResponse<?> handleMemberException(MemberException exception) {
+		log.error("Member Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
