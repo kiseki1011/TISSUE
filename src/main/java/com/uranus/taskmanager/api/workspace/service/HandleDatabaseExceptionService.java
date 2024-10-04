@@ -5,11 +5,17 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +30,8 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
 	private final WorkspaceRepository workspaceRepository;
+	private final MemberRepository memberRepository;
+	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 
 	/**
@@ -31,7 +39,10 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request) {
+	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
+
+		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
+			.orElseThrow(() -> new RuntimeException("Member not found")); // Todo: MemberNotFoundException 구현
 
 		for (int count = 0; count < MAX_RETRIES; count++) {
 			try {
@@ -43,6 +54,13 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 				request.setWorkspaceCode(workspaceCode);
 
 				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.toEntity());
+
+				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
+					WorkspaceRole.ADMIN,
+					member.getEmail());
+
+				workspaceMemberRepository.save(workspaceMember);
+
 				return WorkspaceResponse.fromEntity(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
 				/*
@@ -53,6 +71,6 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 			}
 		}
 		throw new RuntimeException(
-			"Failed to solve workspace code collision"); // Todo: WorkspaceCode 재생성 반복 후에도 실패하는 경우 예외 처리
+			"Failed to solve workspace code collision"); // Todo: WorkspaceCodeCollisionHandleException 구현
 	}
 }

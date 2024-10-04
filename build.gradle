@@ -64,7 +64,8 @@ jacocoTestReport {
                             "**/*Exception*",
                             "**/*Key*",
                             "**/*Base62Encoder*",
-                            "**/*WorkspaceCodeGenerator*"
+                            "**/*WorkspaceCodeGenerator*",
+                            "**/*Interceptor*"
                     ])
                 })
         )
@@ -91,7 +92,8 @@ jacocoTestReport {
                         "**.*Exception*",
                         "**.*Key*",
                         "**.*Base62Encoder*",
-                        "**.*WorkspaceCodeGenerator*"
+                        "**.*WorkspaceCodeGenerator*",
+                        "**.*Interceptor*"
                 ]
             }
         }

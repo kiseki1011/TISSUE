@@ -3,10 +3,12 @@ package com.uranus.taskmanager.api.workspace.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceConfig {
 
 	private final WorkspaceRepository workspaceRepository;
+	private final MemberRepository memberRepository;
+	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 
 	/**
@@ -26,6 +30,9 @@ public class WorkspaceConfig {
 	 */
 	@Bean
 	public WorkspaceCreateService workspaceCreateService() {
-		return new CheckCodeDuplicationService(workspaceRepository, workspaceCodeGenerator);
+		return new CheckCodeDuplicationService(workspaceRepository,
+			memberRepository,
+			workspaceMemberRepository,
+			workspaceCodeGenerator);
 	}
 }

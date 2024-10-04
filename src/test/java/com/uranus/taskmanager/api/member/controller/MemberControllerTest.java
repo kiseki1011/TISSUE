@@ -22,7 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,11 +34,17 @@ import lombok.extern.slf4j.Slf4j;
 class MemberControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
-
 	@Autowired
 	private ObjectMapper objectMapper;
+
 	@MockBean
 	private MemberService memberService;
+	@MockBean
+	private MemberRepository memberRepository;
+	@MockBean
+	private WorkspaceRepository workspaceRepository;
+	@MockBean
+	private WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Test
 	@DisplayName("회원 가입에 검증을 통과하면 CREATED를 기대한다")

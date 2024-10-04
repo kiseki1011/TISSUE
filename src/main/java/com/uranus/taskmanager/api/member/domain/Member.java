@@ -3,7 +3,7 @@ package com.uranus.taskmanager.api.member.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.uranus.taskmanager.api.workspace.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -15,11 +15,23 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
-class WorkspaceCreateIntegrationTest extends BaseIntegrationTest {
+class WorkspaceControllerIntegrationTest extends BaseIntegrationTest {
 
+	/**
+	 * Todo: Workspace와 WorkspaceMember 엔티티 간의 외래 키 제약 조건으로 인한 문제 발생
+	 * Workspace 엔티티를 삭제하려고 할 때, 해당 Workspace와 연결된 WorkspaceMember 엔티티 레코드가 존재하기 때문에
+	 * 참조 무결성 위반 문제가 발생한다
+	 * 쉽게 말해서, WorkspaceMember 테이블에서 Workspace에 대한 외래 키 제약 조건이 설정되어 있어서,
+	 * 해당 Workspace를 먼저 삭제하려면 해당 외래 키로 참조하는 모든 WorkspaceMember 레코드를 먼저 삭제해야 한다
+	 * <p>
+	 * 해결 1: workspaceMemberRepository.deleteAll()을 제일 먼저 수행한다
+	 * 해결 2: CascadeType.REMOVE을 사용한다
+	 * - 예시: Workspace 엔티티에서 연관관계 매핑과 관련해서 cascade = CascadeType.ALL, orphanRemoval = true을 사용한다
+	 */
 	@BeforeEach
 	public void setup() {
 		RestAssured.port = port;
+		workspaceMemberRepository.deleteAll();
 		workspaceRepository.deleteAll();
 		memberRepository.deleteAll();
 	}
@@ -48,7 +60,6 @@ class WorkspaceCreateIntegrationTest extends BaseIntegrationTest {
 			.body("data.description", equalTo("Test Description"))
 			.body("data.workspaceCode", notNullValue())
 			.extract().response();
-
 	}
 
 	@Test
