@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
+import com.uranus.taskmanager.api.member.exception.DuplicateLoginIdException;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
@@ -36,13 +38,13 @@ public class MemberService {
 
 	public void checkLoginIdDuplicate(String loginId) {
 		if (memberRepository.existsByLoginId(loginId)) {
-			throw new IllegalArgumentException("Login ID already exists."); // Todo: DuplicateLoginIdException 만들기
+			throw new DuplicateLoginIdException();
 		}
 	}
 
 	public void checkEmailDuplicate(String email) {
 		if (memberRepository.existsByEmail(email)) {
-			throw new IllegalArgumentException("Email already exists."); // Todo: DuplicateEmailException 만들기
+			throw new DuplicateEmailException();
 		}
 	}
 }
