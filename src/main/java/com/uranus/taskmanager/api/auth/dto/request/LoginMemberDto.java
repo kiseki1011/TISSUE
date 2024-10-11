@@ -5,9 +5,6 @@ import com.uranus.taskmanager.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Todo: 추후에 nickname 추가가 필요하면 추가
- */
 @Getter
 public class LoginMemberDto {
 
