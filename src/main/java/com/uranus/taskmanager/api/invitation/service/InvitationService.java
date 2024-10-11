@@ -6,6 +6,8 @@ import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
+import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -27,12 +29,11 @@ public class InvitationService {
 		// 해당 워크스페이스와 로그인된 멤버에 대한 초대 조회
 		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode,
 				loginMember.getLoginId())
-			.orElseThrow(() -> new RuntimeException("Invitation Not Found")); // Todo: InvitationNotFoundException 추가
+			.orElseThrow(InvitationNotFoundException::new);
 
 		// PENDING 상태가 아니라면 예외 발생
 		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new RuntimeException(
-				"Invitation has already been processed"); // Todo: InvalidInvitationStatusException 추가
+			throw new InvalidInvitationStatusException();
 		}
 
 		// 초대 수락

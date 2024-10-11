@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.exception.InvitationAlreadyExistsException;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
@@ -18,6 +19,7 @@ import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyParticipatingException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -70,8 +72,7 @@ public class WorkspaceService {
 			workspaceCode).isPresent();
 
 		if (isAlreadyMember) {
-			throw new RuntimeException(
-				"Member is already participating in this Workspace"); // Todo: MemberAlreadyParticipatingException 구현
+			throw new MemberAlreadyParticipatingException();
 		}
 
 		// 초대가 이미 존재하는지 확인
@@ -82,8 +83,7 @@ public class WorkspaceService {
 			invitedMember);
 
 		if (existingInvitation.isPresent() && existingInvitation.get().getStatus() == InvitationStatus.PENDING) {
-			throw new RuntimeException(
-				"An invitation for this member is already pending."); // Todo: InvitationAlreadyExistsException 추가
+			throw new InvitationAlreadyExistsException();
 		}
 
 		// 초대 생성
