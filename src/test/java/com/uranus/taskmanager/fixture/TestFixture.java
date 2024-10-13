@@ -56,8 +56,20 @@ public class TestFixture {
 			.build();
 	}
 
+	public LoginMemberDto createLoginMemberDto(String loginId, String email) {
+		return LoginMemberDto.builder()
+			.loginId(loginId)
+			.email(email)
+			.build();
+	}
+
 	public WorkspaceMember createAdminWorkspaceMember(Member member, Workspace workspace) {
 		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.ADMIN,
+			member.getEmail());
+	}
+
+	public WorkspaceMember createUserWorkspaceMember(Member member, Workspace workspace) {
+		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 			member.getEmail());
 	}
 
@@ -71,6 +83,14 @@ public class TestFixture {
 	public Invitation createPendingInvitation(Workspace workspace, Member member) {
 		return Invitation.builder()
 			.status(InvitationStatus.PENDING)
+			.workspace(workspace)
+			.member(member)
+			.build();
+	}
+
+	public Invitation createAcceptedInvitation(Workspace workspace, Member member) {
+		return Invitation.builder()
+			.status(InvitationStatus.ACCEPTED)
 			.workspace(workspace)
 			.member(member)
 			.build();
