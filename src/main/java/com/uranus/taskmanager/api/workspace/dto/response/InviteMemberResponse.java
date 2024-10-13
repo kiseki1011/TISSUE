@@ -5,14 +5,18 @@ import com.uranus.taskmanager.api.invitation.domain.Invitation;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class InviteMemberResponse {
 
 	private final String code;
 	private final String loginId;
 	private final String email;
 	private final InvitationStatus status;
+
+	// Todo: 초대한 사람 추가(Inviter)
 
 	@Builder
 	public InviteMemberResponse(String code, String loginId, String email, InvitationStatus status) {
