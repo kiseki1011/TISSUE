@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class InvitationController {
 
 	private final InvitationService invitationService;
-
+	
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/accept")
 	public ApiResponse<InvitationAcceptResponse> acceptInvitation(@PathVariable String workspaceCode,
@@ -32,8 +32,10 @@ public class InvitationController {
 
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/reject")
-	public ApiResponse<Void> rejectInvitation() {
+	public ApiResponse<Void> rejectInvitation(@PathVariable String workspaceCode,
+		@LoginMember LoginMemberDto loginMember) {
 
+		invitationService.rejectInvitation(loginMember, workspaceCode);
 		return ApiResponse.ok("Invitation Rejected", null);
 	}
 }
