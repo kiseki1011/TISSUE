@@ -79,7 +79,7 @@ class InvitationServiceTest {
 	}
 
 	@Test
-	@DisplayName("초대가 성공하면 초대의 상태가 수락으로 변경된다")
+	@DisplayName("초대가 성공하면 초대의 상태가 ACCEPTED로 변경된다")
 	void test2() {
 		// given
 		String workspaceCode = "testcode";
@@ -142,8 +142,6 @@ class InvitationServiceTest {
 		String loginId = "user123";
 		String email = "user123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
 		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
@@ -175,6 +173,33 @@ class InvitationServiceTest {
 		assertThatThrownBy(() -> invitationService.acceptInvitation(loginMember, workspaceCode)).isInstanceOf(
 			InvalidInvitationStatusException.class);
 
+	}
+
+	@Test
+	@DisplayName("초대의 거절이 성공하면 초대 상태가 REJECTED로 변경된다")
+	void test6() {
+		// given
+		String workspaceCode = "testcode";
+		String loginId = "user123";
+		String email = "user123@test.com";
+
+		Workspace workspace = testFixture.createWorkspace(workspaceCode);
+		Member member = testFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+
+		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
+			Optional.of(invitation));
+		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
+
+		// when
+		invitationService.rejectInvitation(loginMember, workspaceCode);
+		Optional<Invitation> rejectedInvitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(
+			workspaceCode, loginId);
+
+		// then
+		assertThat(rejectedInvitation).isPresent();
+		assertThat(rejectedInvitation.get().getStatus()).isEqualTo(InvitationStatus.REJECTED);
 	}
 
 }
