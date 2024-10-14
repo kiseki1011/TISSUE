@@ -57,11 +57,15 @@ jacocoTestReport {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
-                            "com.uranus/taskmanager/api/domain/**",
+                            "com.uranus/taskmanager/api/**/domain/**",
                             "**/*Application*",
                             "**/*Request*",
                             "**/*Response*",
-                            "**/*Exception*"
+                            "**/*Exception*",
+                            "**/*Key*",
+                            "**/*Base62Encoder*",
+                            "**/*WorkspaceCodeGenerator*",
+                            "**/*Interceptor*"
                     ])
                 })
         )
@@ -81,12 +85,15 @@ jacocoTestReport {
                 }
 
                 excludes = [
-                        "com.uranus.taskmanager.api.domain.**",
+                        "com.uranus.taskmanager.api.**.domain.**",
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
                         "**.*Exception*",
-                        "**.*Key*"
+                        "**.*Key*",
+                        "**.*Base62Encoder*",
+                        "**.*WorkspaceCodeGenerator*",
+                        "**.*Interceptor*"
                 ]
             }
         }
@@ -98,10 +105,14 @@ jacocoTestReport {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.security:spring-security-crypto'
+
         compileOnly 'org.projectlombok:lombok'
         runtimeOnly 'com.h2database:h2'
         annotationProcessor 'org.projectlombok:lombok'
+
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'io.rest-assured:rest-assured:5.1.1'
+
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testCompileOnly 'org.projectlombok:lombok:1.18.34'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
