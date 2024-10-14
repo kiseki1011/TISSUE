@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -32,12 +33,17 @@ import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
@@ -248,6 +254,87 @@ class WorkspaceControllerTest {
 				.session(session))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.code").value(workspaceCode))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공")
+	void test9() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+		String member1 = "member1";
+		String member2 = "member2";
+		List<String> memberIdentifiers = List.of(member1, member2);
+		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
+
+		List<InvitedMember> successfulResponses = List.of(
+			InvitedMember.builder().loginId(member1).email("member1@test.com").build(),
+			InvitedMember.builder().loginId(member2).email("member2@test.com").build()
+		);
+
+		List<FailedInvitedMember> failedResponses = List.of();
+
+		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
+
+		// when
+		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
+			ArgumentMatchers.any(LoginMemberDto.class)))
+			.thenReturn(inviteMembersResponse);
+
+		// then
+		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.invitedMembers[0].loginId").value(member1))
+			.andExpect(jsonPath("$.data.invitedMembers[1].loginId").value(member2))
+			.andExpect(jsonPath("$.data.failedInvitedMembers").isEmpty())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대 실패")
+	void test10() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+		String member1 = "member1";
+		String member3 = "member3";
+		String invalidMember = "invalidMember";
+
+		List<String> memberIdentifiers = List.of(member1, invalidMember, member3);
+		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
+
+		List<InvitedMember> successfulResponses = List.of(
+			InvitedMember.builder().loginId(member1).email("member1@test.com").build(),
+			InvitedMember.builder().loginId(member3).email("member3@test.com").build()
+		);
+
+		List<FailedInvitedMember> failedResponses = List.of(
+			FailedInvitedMember.builder()
+				.identifier(invalidMember)
+				.error(new MemberNotFoundException().getMessage())
+				.build()
+		);
+
+		InviteMembersResponse inviteMembersResponse = InviteMembersResponse.builder()
+			.invitedMembers(successfulResponses)
+			.failedInvitedMembers(failedResponses)
+			.build();
+
+		// when
+		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
+			ArgumentMatchers.any(LoginMemberDto.class)))
+			.thenReturn(inviteMembersResponse);
+
+		// then
+		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.invitedMembers[0].loginId").value(member1))
+			.andExpect(jsonPath("$.data.invitedMembers[1].loginId").value(member3))
+			.andExpect(jsonPath("$.data.failedInvitedMembers[0].identifier").value(invalidMember))
+			.andExpect(jsonPath("$.data.failedInvitedMembers[0].error").value("Member was not found"))
 			.andDo(print());
 	}
 

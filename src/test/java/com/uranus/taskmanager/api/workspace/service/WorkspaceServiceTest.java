@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.workspace.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,9 @@ import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -32,6 +35,9 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyPartici
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.TestFixture;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class WorkspaceServiceTest {
 
@@ -242,6 +248,51 @@ class WorkspaceServiceTest {
 		assertThatThrownBy(
 			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember)).isInstanceOf(
 			MemberAlreadyParticipatingException.class);
+	}
+
+	@Test
+	@DisplayName("다수의 멤버를 초대 시 모든 멤버의 초대를 성공하면 실패한 멤버의 리스트는 비어있다")
+	void test9() {
+		// given
+		String workspaceCode = "TESTCODE";
+		String member1Id = "member1";
+		String member2Id = "member2";
+		String member1Email = "member1@test.com";
+		String member2Email = "member2@test.com";
+
+		List<String> memberIdentifiers = List.of(member1Id, member2Id);
+		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
+
+		// Mock LoginMemberDto
+		LoginMemberDto loginMember = testFixture.createLoginMemberDto("inviter", "inviter@test.com");
+
+		// Mock Workspace
+		Workspace workspace = testFixture.createWorkspace(workspaceCode);
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+
+		// Mock Member
+		Member member1 = testFixture.createMember(member1Id, member1Email);
+		Member member2 = testFixture.createMember(member2Id, member2Email);
+		when(memberRepository.findByLoginIdOrEmail(member1Id, member1Id))
+			.thenReturn(Optional.of(member1));
+		when(memberRepository.findByLoginIdOrEmail(member2Id, member2Id))
+			.thenReturn(Optional.of(member2));
+
+		// Mock Invitation
+		Invitation invitation1 = testFixture.createPendingInvitation(workspace, member1);
+		Invitation invitation2 = testFixture.createPendingInvitation(workspace, member2);
+		when(invitationRepository.save(any(Invitation.class)))
+			.thenReturn(invitation1).thenReturn(invitation2);
+
+		// then
+		InviteMembersResponse response = workspaceService.inviteMembers(workspaceCode, inviteMembersRequest,
+			loginMember);
+
+		log.info("response = {}", response);
+
+		assertThat(response.getInvitedMembers().size()).isEqualTo(2);
+		assertThat(response.getFailedInvitedMembers()).isEmpty();
+
 	}
 
 }
