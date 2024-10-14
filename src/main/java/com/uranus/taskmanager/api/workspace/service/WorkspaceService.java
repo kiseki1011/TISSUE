@@ -1,11 +1,14 @@
 package com.uranus.taskmanager.api.workspace.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.common.CommonException;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.exception.InvitationAlreadyExistsException;
@@ -15,7 +18,11 @@ import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -95,5 +102,66 @@ public class WorkspaceService {
 		invitationRepository.save(invitation);
 
 		return InviteMemberResponse.fromEntity(invitation);
+	}
+
+	@Transactional
+	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request,
+		LoginMemberDto loginMember) {
+		// Todo: 일급 컬렉션으로 리팩토링하는 것을 고려. 관련 처리 로직을 해당 일급 컬렉션 클래스에서 정의.
+		List<InvitedMember> invitedMembers = new ArrayList<>();
+		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
+
+		// 워크스페이스가 존재하는지 조회
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
+		// identifier들의 목록을 순회하면서 초대 처리 로직 수행
+		for (String identifier : request.getMemberIdentifiers()) {
+			try {
+				// 초대할 멤버 조회
+				Member invitedMember = memberRepository.findByLoginIdOrEmail(identifier, identifier)
+					.orElseThrow(MemberNotFoundException::new);
+
+				// 만약 워크스페이스에 이미 참여하고 있는 멤버면 예외 발생
+				boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
+					invitedMember.getLoginId(),
+					workspaceCode).isPresent();
+
+				if (isAlreadyMember) {
+					throw new MemberAlreadyParticipatingException();
+				}
+
+				// 초대의 존재 확인, 만약 초대가 이미 PENDING 상태로 있으면 예외 발생
+				Optional<Invitation> existingInvitation = invitationRepository.findByWorkspaceAndMember(workspace,
+					invitedMember);
+
+				if (existingInvitation.isPresent()
+					&& existingInvitation.get().getStatus() == InvitationStatus.PENDING) {
+					throw new InvitationAlreadyExistsException();
+				}
+
+				// 초대 생성 로직
+				Invitation invitation = Invitation.builder()
+					.workspace(workspace)
+					.member(invitedMember)
+					.status(InvitationStatus.PENDING)
+					.build();
+				invitationRepository.save(invitation);
+
+				// 성공한 초대 추가
+				invitedMembers.add(new InvitedMember(invitedMember.getLoginId(),
+					invitedMember.getEmail())); // Todo: InvitedMember에서 identifier만 사용하는 것 고려
+
+				// Todo: 현재 위에서 발생한 예외를 바로 catch로 잡는 형태이다.
+				//  예외는 굉장히 비싸다는 것을 알아두자! 예외를 발생시키지 않고 처리하는 방법을 찾아보자.
+			} catch (Exception e) {
+				// 실패한 경우 오류 메시지에 따라 추가
+				// Todo: 리팩토링 고민
+				String errorMessage = e instanceof CommonException ? e.getMessage() : "Invitation failed";
+				failedInvitedMembers.add(new FailedInvitedMember(identifier, errorMessage));
+			}
+		}
+
+		return new InviteMembersResponse(invitedMembers, failedInvitedMembers);
 	}
 }

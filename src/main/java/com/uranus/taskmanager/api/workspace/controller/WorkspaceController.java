@@ -14,8 +14,10 @@ import com.uranus.taskmanager.api.auth.LoginRequired;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
@@ -84,4 +86,17 @@ public class WorkspaceController {
 		InviteMemberResponse response = workspaceService.inviteMember(code, request, loginMember);
 		return ApiResponse.ok("Member Invited", response);
 	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@PostMapping("/{code}/invites")
+	public ApiResponse<InviteMembersResponse> inviteMembers(
+		@PathVariable String code,
+		@LoginMember LoginMemberDto loginMember,
+		@RequestBody @Valid InviteMembersRequest request) {
+
+		InviteMembersResponse response = workspaceService.inviteMembers(code, request, loginMember);
+		return ApiResponse.ok("Members Invited", response);
+	}
+
 }
