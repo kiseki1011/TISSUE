@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.member.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
@@ -35,6 +36,9 @@ public class Member {
 
 	@OneToMany(mappedBy = "member")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+
+	@OneToMany(mappedBy = "member")
+	private List<Invitation> invitations = new ArrayList<>();
 
 	@Builder
 	public Member(String loginId, String email, String password) {

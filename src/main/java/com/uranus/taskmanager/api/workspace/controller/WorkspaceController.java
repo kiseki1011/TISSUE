@@ -13,7 +13,11 @@ import com.uranus.taskmanager.api.auth.LoginMember;
 import com.uranus.taskmanager.api.auth.LoginRequired;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
@@ -54,24 +58,45 @@ public class WorkspaceController {
 	public ApiResponse<WorkspaceResponse> createWorkspace(
 		@LoginMember LoginMemberDto loginMember,
 		@RequestBody @Valid WorkspaceCreateRequest request) {
+
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 		return ApiResponse.created("Workspace Created", response);
 	}
 
-	@GetMapping("/{workspaceCode}")
-	public ApiResponse<WorkspaceResponse> getWorkspace(@PathVariable String workspaceCode) {
-		WorkspaceResponse response = workspaceService.get(workspaceCode);
+	/**
+	 * Todo: 서비스의 get -> getWorkspaceDetail로 변경
+	 * getWorkspaceDetail은 특정 워크스페이스의 상세 정보 가져오는 API(내가 참여하는 상태여야 접근 가능)
+	 * Todo: getWorkspaces를 만들기: 현재 내가 참여하고 있는 모든 워크스페이스를 나타낸 목록 가져오기
+	 */
+	@GetMapping("/{code}")
+	public ApiResponse<WorkspaceResponse> getWorkspace(@PathVariable String code) {
+
+		WorkspaceResponse response = workspaceService.get(code);
 		return ApiResponse.ok("Workspace Found", response);
 	}
 
-	/**
-	 * RoleRequired 적용 예시
-	 */
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.ADMIN})
-	@PostMapping("/{workspaceCode}/admin-only")
-	public ApiResponse<LoginMemberDto> adminOnlyApi(@LoginMember LoginMemberDto loginMember,
-		@PathVariable String workspaceCode) {
-		return ApiResponse.ok("This is an admin-only API", loginMember);
+	@PostMapping("/{code}/invite")
+	public ApiResponse<InviteMemberResponse> inviteMember(
+		@PathVariable String code,
+		@LoginMember LoginMemberDto loginMember,
+		@RequestBody @Valid InviteMemberRequest request) {
+
+		InviteMemberResponse response = workspaceService.inviteMember(code, request, loginMember);
+		return ApiResponse.ok("Member Invited", response);
 	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@PostMapping("/{code}/invites")
+	public ApiResponse<InviteMembersResponse> inviteMembers(
+		@PathVariable String code,
+		@LoginMember LoginMemberDto loginMember,
+		@RequestBody @Valid InviteMembersRequest request) {
+
+		InviteMembersResponse response = workspaceService.inviteMembers(code, request, loginMember);
+		return ApiResponse.ok("Members Invited", response);
+	}
+
 }

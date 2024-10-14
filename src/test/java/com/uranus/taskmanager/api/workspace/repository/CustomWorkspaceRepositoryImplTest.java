@@ -28,7 +28,7 @@ class CustomWorkspaceRepositoryImplTest {
 	void test() {
 		// given
 		Workspace workspace = Workspace.builder()
-			.workspaceCode("abcd1234")
+			.code("abcd1234")
 			.name("test name")
 			.description("test description")
 			.build();
@@ -46,7 +46,7 @@ class CustomWorkspaceRepositoryImplTest {
 	void test2() {
 		// given
 		Workspace workspace = Workspace.builder()
-			.workspaceCode("abcd1234")
+			.code("abcd1234")
 			.name("test name")
 			.description("test description")
 			.build();
@@ -58,7 +58,7 @@ class CustomWorkspaceRepositoryImplTest {
 		// then
 		assertThat(savedWorkspace.getName()).isEqualTo("test name");
 		assertThat(savedWorkspace.getDescription()).isEqualTo("test description");
-		assertThat(savedWorkspace.getWorkspaceCode()).isEqualTo("abcd1234");
+		assertThat(savedWorkspace.getCode()).isEqualTo("abcd1234");
 
 	}
 }

@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.workspace.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
@@ -27,7 +28,7 @@ public class Workspace {
 	private Long id;
 
 	@Column(unique = true) //  nullable = false 사용 고려
-	private String workspaceCode;
+	private String code;
 
 	@Column(nullable = false)
 	private String name;
@@ -38,16 +39,19 @@ public class Workspace {
 	@OneToMany(mappedBy = "workspace")
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
+	@OneToMany(mappedBy = "workspace")
+	private List<Invitation> invitations = new ArrayList<>();
+
 	@Builder
-	public Workspace(String workspaceCode, String name, String description, String password) {
-		this.workspaceCode = workspaceCode;
+	public Workspace(String code, String name, String description, String password) {
+		this.code = code;
 		this.name = name;
 		this.description = description;
 		this.password = password;
 	}
 
-	public void setWorkspaceCode(String workspaceCode) {
-		this.workspaceCode = workspaceCode;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public void setPassword(String password) {

@@ -25,7 +25,7 @@ import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.MockFixture;
+import com.uranus.taskmanager.fixture.TestFixture;
 
 @ExtendWith(MockitoExtension.class)
 class WorkspaceCreateServiceTest {
@@ -42,11 +42,11 @@ class WorkspaceCreateServiceTest {
 	@Mock
 	private WorkspaceMemberRepository workspaceMemberRepository;
 
-	MockFixture mockFixture;
+	TestFixture testFixture;
 
 	@BeforeEach
 	public void setup() {
-		mockFixture = new MockFixture();
+		testFixture = new TestFixture();
 	}
 
 	@Test
@@ -58,15 +58,15 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace mockWorkspace = mockFixture.mockWorkspace("testcode");
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
+		Workspace workspace = testFixture.createWorkspace("testcode");
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
 
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, mockLoginMember);
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();
@@ -82,21 +82,21 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace mockWorkspace = mockFixture.mockWorkspace("testcode");
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
+		Workspace workspace = testFixture.createWorkspace("testcode");
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
 
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, mockLoginMember);
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();
 		assertThat(response.getName()).isEqualTo("test name");
 		assertThat(response.getDescription()).isEqualTo("test description");
-		assertThat(response.getWorkspaceCode()).isEqualTo("testcode");
+		assertThat(response.getCode()).isEqualTo("testcode");
 		verify(workspaceRepository, times(1)).save(any(Workspace.class));
 	}
 
@@ -109,16 +109,16 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
 			.thenReturn("WORK123", "WORK124", "WORK125", "WORK126", "WORK127");
-		when(workspaceRepository.existsByWorkspaceCode(anyString())).thenReturn(true);
+		when(workspaceRepository.existsByCode(anyString())).thenReturn(true);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, mockLoginMember))
+		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember))
 			.isInstanceOf(RuntimeException.class)  // Todo: WorkspaceCodeCollisionHandleException 구현 후 수정
 			.hasMessageContaining("Failed to solve workspace code collision");
 	}
@@ -132,16 +132,16 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace mockWorkspace = mockFixture.mockWorkspace("testcode");
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
-		WorkspaceMember mockWorkspaceMember = mockFixture.mockAdminWorkspaceMember(mockMember, mockWorkspace);
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(mockWorkspaceMember);
+		Workspace workspace = testFixture.createWorkspace("testcode");
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		WorkspaceMember workspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
+		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, mockLoginMember);
+		workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(any(WorkspaceMember.class));
@@ -156,17 +156,17 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace mockWorkspace = mockFixture.mockWorkspace("testcode");
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
-		WorkspaceMember mockWorkspaceMember = mockFixture.mockAdminWorkspaceMember(mockMember, mockWorkspace);
+		Workspace workspace = testFixture.createWorkspace("testcode");
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
 
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(mockWorkspaceMember);
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
+		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, mockLoginMember);
+		workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->
@@ -183,17 +183,17 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace mockWorkspace = mockFixture.mockWorkspace("testcode");
-		Member mockMember = mockFixture.mockMember("user123", "test@test.com");
-		LoginMemberDto mockLoginMember = mockFixture.mockLoginMember("user123", "test@test.com");
-		WorkspaceMember mockWorkspaceMember = mockFixture.mockAdminWorkspaceMember(mockMember, mockWorkspace);
+		Workspace workspace = testFixture.createWorkspace("testcode");
+		Member member = testFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
 
-		when(memberRepository.findByLoginId(mockLoginMember.getLoginId())).thenReturn(Optional.of(mockMember));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(mockWorkspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(mockWorkspaceMember);
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
+		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, mockLoginMember);
+		workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->

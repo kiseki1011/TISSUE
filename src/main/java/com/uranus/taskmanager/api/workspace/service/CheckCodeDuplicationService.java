@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
@@ -54,14 +55,17 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	@Transactional
 	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
 
+		/*
+		 * Todo: loginMember 검증 로직이 필요할까?
+		 */
 		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
-			.orElseThrow(() -> new RuntimeException("Member not found")); // Todo: MemberNotFoundException 구현
+			.orElseThrow(MemberNotFoundException::new);
 
 		for (int count = 0; count < MAX_RETRIES; count++) {
-			String workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
-			if (workspaceCodeIsNotDuplicate(workspaceCode)) {
-				log.info("[workspaceCodeIsNotDuplicate] workspaceCode = {}", workspaceCode);
-				request.setWorkspaceCode(workspaceCode);
+			String code = workspaceCodeGenerator.generateWorkspaceCode();
+			if (workspaceCodeIsNotDuplicate(code)) {
+				log.info("[workspaceCodeIsNotDuplicate] code = {}", code);
+				request.setCode(code);
 				Workspace workspace = workspaceRepository.save(request.toEntity());
 
 				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
@@ -78,7 +82,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			"Failed to solve workspace code collision"); // Todo: WorkspaceCodeCollisionHandleException 구현
 	}
 
-	public boolean workspaceCodeIsNotDuplicate(String workspaceCode) {
-		return !workspaceRepository.existsByWorkspaceCode(workspaceCode);
+	public boolean workspaceCodeIsNotDuplicate(String code) {
+		return !workspaceRepository.existsByCode(code);
 	}
 }

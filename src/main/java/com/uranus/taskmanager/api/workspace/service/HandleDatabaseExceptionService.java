@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
@@ -42,16 +43,16 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
 
 		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
-			.orElseThrow(() -> new RuntimeException("Member not found")); // Todo: MemberNotFoundException 구현
+			.orElseThrow(MemberNotFoundException::new);
 
 		for (int count = 0; count < MAX_RETRIES; count++) {
 			try {
-				String workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
+				String code = workspaceCodeGenerator.generateWorkspaceCode();
 				if (count != 0) {
-					workspaceCode = workspaceCodeGenerator.generateWorkspaceCode();
-					log.info("[Recreate Workspace Code] workspaceCode = {}", workspaceCode);
+					code = workspaceCodeGenerator.generateWorkspaceCode();
+					log.info("[Recreate Workspace Code] code = {}", code);
 				}
-				request.setWorkspaceCode(workspaceCode);
+				request.setCode(code);
 
 				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.toEntity());
 

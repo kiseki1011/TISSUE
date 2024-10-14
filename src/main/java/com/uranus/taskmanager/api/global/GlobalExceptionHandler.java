@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.uranus.taskmanager.api.auth.exception.AuthenticationException;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.common.FieldErrorDto;
+import com.uranus.taskmanager.api.invitation.exception.InvitationException;
+import com.uranus.taskmanager.api.member.exception.MemberException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.AuthorizationException;
 import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceMemberException;
@@ -93,6 +95,16 @@ public class GlobalExceptionHandler {
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MemberException.class)
+	public ApiResponse<?> handleMemberException(MemberException exception) {
+		log.error("Member Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(WorkspaceException.class)
 	public ApiResponse<?> handleWorkspaceException(WorkspaceException exception) {
 		log.error("Workspace Related Exception: ", exception);
@@ -112,6 +124,16 @@ public class GlobalExceptionHandler {
 			null);
 	}
 
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(InvitationException.class)
+	public ApiResponse<?> handleInvitationException(InvitationException exception) {
+		log.error("Invitation Related Exception: ", exception);
+
+		return ApiResponse.fail(exception.getHttpStatus(),
+			exception.getMessage(),
+			null);
+	}
+
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	@ExceptionHandler(AuthorizationException.class)
 	public ApiResponse<?> handleAuthorizationException(AuthorizationException exception) {
@@ -122,4 +144,11 @@ public class GlobalExceptionHandler {
 			null);
 	}
 
+	/*
+	 * Todo: NotFound와 관련된 예외는 ResourceNotFoundException을 상속받아서 처리하도록 한다?
+	 *  - 기존에는 도메인 별 상위 예외를 만들어서 처리했는데, 응답 상태 헤더의 섬세한 조작이 어렵다
+	 *  - 해결 1: 도메인 별 상위 예외 말고, 응답 상태에 따른 상위 예외를 만들어서 처리
+	 *  - 해결 2: @ResponseStatus 대신 ResponseEntity 사용
+	 *  일단 도메인 상위 예외를 상속 받아서 사용하고, 이후 ResponseEntity를 사용하도록 리팩토링 해보자
+	 */
 }
