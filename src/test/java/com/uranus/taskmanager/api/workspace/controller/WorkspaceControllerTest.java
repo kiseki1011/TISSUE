@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -338,14 +337,12 @@ class WorkspaceControllerTest {
 			.andDo(print());
 	}
 
-	@Disabled
 	@Test
 	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 있는 멤버는 초대 API 호출이 가능하다")
 	void test7() throws Exception {
 		// Todo
 	}
 
-	@Disabled
 	@Test
 	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 없는 멤버가 초대를 시도하면 예외가 발생한다")
 	void test8() throws Exception {

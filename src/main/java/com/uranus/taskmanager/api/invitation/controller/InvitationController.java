@@ -18,9 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("api/v1/invitations")
 public class InvitationController {
-
 	private final InvitationService invitationService;
-	
+
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/accept")
 	public ApiResponse<InvitationAcceptResponse> acceptInvitation(@PathVariable String workspaceCode,

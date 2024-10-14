@@ -129,7 +129,7 @@ class InvitationControllerTest {
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
-		
+
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/reject", workspaceCode)
 				.session(session)
