@@ -16,16 +16,22 @@ import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyParticipatingException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
@@ -43,6 +49,7 @@ public class WorkspaceService {
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationRepository invitationRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	/**
 	 * Todo
@@ -163,5 +170,48 @@ public class WorkspaceService {
 		}
 
 		return new InviteMembersResponse(invitedMembers, failedInvitedMembers);
+	}
+
+	@Transactional
+	public WorkspaceParticipateResponse participateWorkspace(String workspaceCode, WorkspaceParticipateRequest request,
+		LoginMemberDto loginMember) {
+
+		// 워크스페이스가 존재하는지 조회
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
+		// 로그인 정보에서 가져온 정보를 통해 멤버 조회
+		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
+			.orElseThrow(MemberNotFoundException::new);
+
+		// 워크스페이스 참여 인원 계산
+		// Todo: WorkspaceParticipateResponse 참고, Workspace 엔티티에 캐싱 필드를 추가하는 것을 고려
+		int headcount = workspaceMemberRepository.countByWorkspaceId(workspace.getId());
+
+		// 만약 워크스페이스에 이미 참여하고 있는 멤버면 예외 발생
+		// 예외 방식 -> Early return 방식으로 변경
+		Optional<WorkspaceMember> findWorkspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
+			loginMember.getLoginId(),
+			workspaceCode);
+
+		boolean isAlreadyMember = findWorkspaceMember.isPresent();
+
+		if (isAlreadyMember) {
+			return WorkspaceParticipateResponse.from(workspace, findWorkspaceMember.get(), headcount, isAlreadyMember);
+		}
+
+		// 만약 워크스페이스가 비밀번호를 가지고 있고, 비밀번호 대조를 실패하면 예외 발생
+		// Todo: null을 사용하지 않고 Optional 사용
+		if (workspace.getPassword() != null) {
+			if (!passwordEncoder.matches(request.getPassword(), workspace.getPassword())) {
+				throw new InvalidWorkspacePasswordException();
+			}
+		}
+
+		// 워크스페이스 참여
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
+			member.getEmail());
+
+		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, isAlreadyMember);
 	}
 }
