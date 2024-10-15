@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.auth.controller;
+package com.uranus.taskmanager.api.authentication.controller;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -16,11 +16,11 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.auth.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
-import com.uranus.taskmanager.api.auth.service.AuthenticationService;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;

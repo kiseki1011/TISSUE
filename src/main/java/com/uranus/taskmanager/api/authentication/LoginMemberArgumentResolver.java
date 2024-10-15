@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.auth;
+package com.uranus.taskmanager.api.authentication;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -7,8 +7,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
-import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;

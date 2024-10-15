@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;

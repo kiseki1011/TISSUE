@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.uranus.taskmanager.api.auth.service.AuthenticationService;
+import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;

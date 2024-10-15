@@ -17,8 +17,8 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;

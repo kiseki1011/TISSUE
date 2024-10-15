@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;

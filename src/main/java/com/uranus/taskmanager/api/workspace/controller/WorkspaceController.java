@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.auth.LoginMember;
-import com.uranus.taskmanager.api.auth.LoginRequired;
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.LoginMember;
+import com.uranus.taskmanager.api.authentication.LoginRequired;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;

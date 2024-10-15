@@ -24,7 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
