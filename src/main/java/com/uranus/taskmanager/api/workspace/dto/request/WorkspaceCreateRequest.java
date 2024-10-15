@@ -25,12 +25,16 @@ public class WorkspaceCreateRequest {
 	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
 		message = "The password must be alphanumeric"
 			+ " including at least one special character and must be between 8 and 30 characters")
-	private final String password;
+	private String password;
 
 	private String code;
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public Workspace toEntity() {
