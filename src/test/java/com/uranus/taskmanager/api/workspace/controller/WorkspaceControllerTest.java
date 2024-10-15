@@ -21,13 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.auth.SessionKey;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
-import com.uranus.taskmanager.api.auth.service.AuthenticationService;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
@@ -39,14 +36,18 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.TestFixture;
 
@@ -65,8 +66,6 @@ class WorkspaceControllerTest {
 	private WorkspaceService workspaceService;
 	@MockBean
 	private MemberService memberService;
-	@MockBean
-	private AuthenticationService authenticationService;
 	@MockBean
 	private CheckCodeDuplicationService workspaceCreateService;
 	@MockBean
@@ -91,9 +90,6 @@ class WorkspaceControllerTest {
 	@DisplayName("워크스페이스 생성을 성공하면 CREATED를 응답한다")
 	public void test1() throws Exception {
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
-
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
@@ -102,8 +98,7 @@ class WorkspaceControllerTest {
 
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(requestBody))
 			.andExpect(status().isCreated())
 			.andDo(print());
 	}
@@ -133,13 +128,9 @@ class WorkspaceControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(request);
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
-
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(requestBody))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
 			.andDo(print());
@@ -167,13 +158,9 @@ class WorkspaceControllerTest {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(request);
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
-
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(requestBody))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(nameValidMsg)))
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(descriptionValidMsg)))
@@ -231,14 +218,9 @@ class WorkspaceControllerTest {
 		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
-		log.info("inviteMemberRequest = {}", inviteMemberRequest);
 		String requestBody = objectMapper.writeValueAsString(inviteMemberRequest);
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
-
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.fromEntity(invitation);
-		log.info("inviteMemberResponse = {}", inviteMemberResponse);
 
 		// Todo: any()를 사용하지 않고 eq() 또는 객체 그대로 사용하는 경우 inviteMemberResponse가 null로 찍히는 문제 발생.
 		//  정확한 객체에 대한 검증을 수행할 해결방법 찾아보기.
@@ -249,8 +231,7 @@ class WorkspaceControllerTest {
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}/invite", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(requestBody))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.code").value(workspaceCode))
 			.andDo(print());
@@ -275,7 +256,6 @@ class WorkspaceControllerTest {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		// when
 		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
 			ArgumentMatchers.any(LoginMemberDto.class)))
 			.thenReturn(inviteMembersResponse);
@@ -340,7 +320,7 @@ class WorkspaceControllerTest {
 	@Test
 	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 있는 멤버는 초대 API 호출이 가능하다")
 	void test7() throws Exception {
-		// Todo
+		// Todo: 인터셉터를 적용하기 위해서
 	}
 
 	@Test
@@ -348,4 +328,62 @@ class WorkspaceControllerTest {
 	void test8() throws Exception {
 		// Todo
 	}
+
+	@Test
+	@DisplayName("워크스페이스 참여 요청을 성공하는 경우 OK를 응답 받는다")
+	void test11() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+		String loginId = "user123";
+		String email = "user123@test.com";
+		String workspacePassword = "workspace1234!";
+
+		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = testFixture.createMember(loginId, email);
+		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
+		String requestBody = objectMapper.writeValueAsString(request);
+
+		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, 1, false);
+
+		when(workspaceService.participateWorkspace(eq(workspaceCode),
+			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
+			ArgumentMatchers.any(LoginMemberDto.class))).thenReturn(response);
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Joined Workspace"))
+			.andExpect(jsonPath("$.data.headcount").value(1))
+			.andExpect(jsonPath("$.data.alreadyMember").value(false))
+			.andDo(print());
+
+	}
+
+	@Test
+	@DisplayName("워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 UNAUTHORIZED를 응답 받는다")
+	void test12() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+		String invalidPassword = "invalid1234!";
+
+		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
+		String requestBody = objectMapper.writeValueAsString(request);
+
+		when(workspaceService.participateWorkspace(eq(workspaceCode),
+			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
+			ArgumentMatchers.any(LoginMemberDto.class)))
+			.thenThrow(new InvalidWorkspacePasswordException());
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+			.andExpect(status().isUnauthorized())
+			.andExpect(jsonPath("$.message").value("The given workspace password is invalid"))
+			.andDo(print());
+	}
+
 }

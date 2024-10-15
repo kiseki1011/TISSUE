@@ -16,8 +16,10 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
@@ -35,11 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceController {
 
 	/**
-	 * Todo 1
-	 * 워크스페이스 관련 모든 작업은 기본적으로 @LoginRequired 필요
-	 * 워크스페이스 내의 권한 자격을 나타내는 @Role 구현
-	 * 특정 워크스페이스의 이름, 설명 수정은 @Role({"ADMIN"})
-	 * 특정 워크스페이스의 삭제는 @Role({"ADMIN"})
 	 * Todo 2
 	 * 워크스페이스 생성(비밀번호 설정 추가)
 	 * 워크스페이스 이름, 설명 수정
@@ -97,6 +94,18 @@ public class WorkspaceController {
 
 		InviteMembersResponse response = workspaceService.inviteMembers(code, request, loginMember);
 		return ApiResponse.ok("Members Invited", response);
+	}
+
+	@LoginRequired
+	@PostMapping("/{code}")
+	public ApiResponse<WorkspaceParticipateResponse> participateWorkspace(
+		@PathVariable String code,
+		@LoginMember LoginMemberDto loginMember,
+		@RequestBody @Valid WorkspaceParticipateRequest request
+	) {
+
+		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(code, request, loginMember);
+		return ApiResponse.ok("Joined Workspace", response);
 	}
 
 }
