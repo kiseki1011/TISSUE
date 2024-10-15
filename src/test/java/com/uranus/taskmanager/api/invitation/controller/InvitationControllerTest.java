@@ -114,8 +114,7 @@ class InvitationControllerTest {
 		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/accept", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
-			// Todo: 추후 ResponseEntity를 적용하면 응답 상태 헤더는 해당 예외에서 상태를 꺼내서 사용한다 (400 -> 404로 변경)
-			.andExpect(status().isBadRequest())
+			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.message").value("Invitation was not found for the given code"))
 			.andDo(print());
 	}

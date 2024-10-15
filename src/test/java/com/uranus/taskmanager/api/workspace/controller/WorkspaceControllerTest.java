@@ -320,13 +320,13 @@ class WorkspaceControllerTest {
 	@Test
 	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 있는 멤버는 초대 API 호출이 가능하다")
 	void test7() throws Exception {
-		// Todo: 인터셉터를 적용하기 위해서
+		// Todo: AuthorizationInterceptor를 적용하고 테스트, 다른 테스트로 분리
 	}
 
 	@Test
 	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 없는 멤버가 초대를 시도하면 예외가 발생한다")
 	void test8() throws Exception {
-		// Todo
+		// Todo: AuthorizationInterceptor를 적용하고 테스트, 다른 테스트로 분리
 	}
 
 	@Test
