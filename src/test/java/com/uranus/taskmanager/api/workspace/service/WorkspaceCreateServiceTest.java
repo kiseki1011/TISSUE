@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
@@ -41,6 +42,8 @@ class WorkspaceCreateServiceTest {
 	private MemberRepository memberRepository;
 	@Mock
 	private WorkspaceMemberRepository workspaceMemberRepository;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
 	TestFixture testFixture;
 

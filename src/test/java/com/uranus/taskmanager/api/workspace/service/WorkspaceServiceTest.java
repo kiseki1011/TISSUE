@@ -22,12 +22,16 @@ import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -52,6 +56,8 @@ class WorkspaceServiceTest {
 	private WorkspaceMemberRepository workspaceMemberRepository;
 	@Mock
 	private InvitationRepository invitationRepository;
+	@Mock
+	private PasswordEncoder passwordEncoder;
 
 	TestFixture testFixture;
 
@@ -70,8 +76,7 @@ class WorkspaceServiceTest {
 			.description("Test Description")
 			.build();
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.of(workspace));
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
 		WorkspaceResponse response = workspaceService.get(workspaceCode);
 
@@ -85,11 +90,9 @@ class WorkspaceServiceTest {
 	void test3() {
 		String workspaceCode = "INVALIDCODE";
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.empty());
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> workspaceService.get(workspaceCode))
-			.isInstanceOf(WorkspaceNotFoundException.class);
+		assertThatThrownBy(() -> workspaceService.get(workspaceCode)).isInstanceOf(WorkspaceNotFoundException.class);
 
 		verify(workspaceRepository, times(1)).findByCode(workspaceCode);
 	}
@@ -113,11 +116,9 @@ class WorkspaceServiceTest {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.of(workspace));
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		when(memberRepository.findByLoginIdOrEmail(identifier, identifier))
-			.thenReturn(Optional.of(invitedMember));
+		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
 		// when
 		InviteMemberResponse inviteMemberResponse = workspaceService.inviteMember(workspaceCode, inviteMemberRequest,
@@ -142,13 +143,12 @@ class WorkspaceServiceTest {
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.empty());
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.empty());
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember)).isInstanceOf(
-			WorkspaceNotFoundException.class);
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
 
@@ -168,16 +168,14 @@ class WorkspaceServiceTest {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.of(workspace));
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		when(memberRepository.findByLoginIdOrEmail(identifier, identifier))
-			.thenReturn(Optional.empty());
+		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.empty());
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember)).isInstanceOf(
-			MemberNotFoundException.class);
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			.isInstanceOf(MemberNotFoundException.class);
 	}
 
 	@Test
@@ -200,11 +198,9 @@ class WorkspaceServiceTest {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.of(workspace));
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		when(memberRepository.findByLoginIdOrEmail(identifier, identifier))
-			.thenReturn(Optional.of(invitedMember));
+		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
 		when(invitationRepository.findByWorkspaceAndMember(workspace, invitedMember)).thenReturn(
 			Optional.of(invitation));
@@ -235,19 +231,17 @@ class WorkspaceServiceTest {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
 
-		when(workspaceRepository.findByCode(workspaceCode))
-			.thenReturn(Optional.of(workspace));
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		when(memberRepository.findByLoginIdOrEmail(identifier, identifier))
-			.thenReturn(Optional.of(invitedMember));
+		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
-		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(invitedLoginId, workspaceCode))
-			.thenReturn(Optional.of(workspaceMember));
+		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(invitedLoginId, workspaceCode)).thenReturn(
+			Optional.of(workspaceMember));
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember)).isInstanceOf(
-			MemberAlreadyParticipatingException.class);
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			.isInstanceOf(MemberAlreadyParticipatingException.class);
 	}
 
 	@Test
@@ -273,26 +267,111 @@ class WorkspaceServiceTest {
 		// Mock Member
 		Member member1 = testFixture.createMember(member1Id, member1Email);
 		Member member2 = testFixture.createMember(member2Id, member2Email);
-		when(memberRepository.findByLoginIdOrEmail(member1Id, member1Id))
-			.thenReturn(Optional.of(member1));
-		when(memberRepository.findByLoginIdOrEmail(member2Id, member2Id))
-			.thenReturn(Optional.of(member2));
+		when(memberRepository.findByLoginIdOrEmail(member1Id, member1Id)).thenReturn(Optional.of(member1));
+		when(memberRepository.findByLoginIdOrEmail(member2Id, member2Id)).thenReturn(Optional.of(member2));
 
 		// Mock Invitation
 		Invitation invitation1 = testFixture.createPendingInvitation(workspace, member1);
 		Invitation invitation2 = testFixture.createPendingInvitation(workspace, member2);
-		when(invitationRepository.save(any(Invitation.class)))
-			.thenReturn(invitation1).thenReturn(invitation2);
+		when(invitationRepository.save(any(Invitation.class))).thenReturn(invitation1).thenReturn(invitation2);
 
-		// then
+		// when
 		InviteMembersResponse response = workspaceService.inviteMembers(workspaceCode, inviteMembersRequest,
 			loginMember);
 
 		log.info("response = {}", response);
 
+		// then
 		assertThat(response.getInvitedMembers().size()).isEqualTo(2);
 		assertThat(response.getFailedInvitedMembers()).isEmpty();
 
 	}
 
+	@Test
+	@DisplayName("워크스페이스 참여가 성공하는 경우 참여 응답 DTO를 데이터로 제공하고, 참여 플래그는 False이다")
+	void test10() {
+		// given
+		String workspaceCode = "TESTCODE";
+		String loginId = "user123";
+		String email = "user123@test.com";
+		String workspacePassword = "workspace1234!";
+
+		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = testFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
+
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceMemberRepository.countByWorkspaceId(workspace.getId())).thenReturn(3);
+		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(loginMember.getLoginId(), workspaceCode))
+			.thenReturn(Optional.empty());
+		when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
+		// when
+		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(workspaceCode, request,
+			loginMember);
+
+		// then
+		assertThat(response.isAlreadyMember()).isFalse();
+		assertThat(response.getCode()).isEqualTo(workspaceCode);
+		assertThat(response.getHeadcount()).isEqualTo(3);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 참여 시 이미 참여하고 있는 경우 정상 응답을 하되, 참여 플래그는 True이다")
+	void test11() {
+		// given
+		String workspaceCode = "TESTCODE";
+		String loginId = "user123";
+		String email = "user123@test.com";
+		String workspacePassword = "workspace1234!";
+
+		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = testFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
+
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceMemberRepository.countByWorkspaceId(workspace.getId())).thenReturn(3);
+		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(loginMember.getLoginId(), workspaceCode))
+			.thenReturn(Optional.of(workspaceMember));
+
+		// when
+		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(workspaceCode, request,
+			loginMember);
+
+		// then
+		assertThat(response).isNotNull();
+		assertThat(response.isAlreadyMember()).isTrue();
+		assertThat(response.getCode()).isEqualTo(workspaceCode);
+		assertThat(response.getHeadcount()).isEqualTo(3);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 참여 시 비밀번호가 일치하지 않는 경우 예외가 발생한다")
+	void test12() {
+		// given
+		String workspaceCode = "TESTCODE";
+		String loginId = "user123";
+		String email = "user123@test.com";
+		String workspacePassword = "workspace1234!";
+		String invalidPassword = "invalid1234!";
+
+		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = testFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
+
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(loginMember.getLoginId(), workspaceCode))
+			.thenReturn(Optional.empty());
+
+		// when & then
+		assertThatThrownBy(() -> workspaceService.participateWorkspace(workspaceCode, request,
+			loginMember)).isInstanceOf(InvalidWorkspacePasswordException.class);
+	}
 }
