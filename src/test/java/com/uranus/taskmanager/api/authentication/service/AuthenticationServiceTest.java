@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.auth.service;
+package com.uranus.taskmanager.api.authentication.service;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.auth.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.auth.exception.InvalidLoginIdentityException;
-import com.uranus.taskmanager.api.auth.exception.InvalidLoginPasswordException;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.authentication.exception.InvalidLoginIdentityException;
+import com.uranus.taskmanager.api.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;

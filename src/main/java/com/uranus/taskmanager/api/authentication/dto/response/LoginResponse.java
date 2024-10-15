@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.auth.dto.response;
+package com.uranus.taskmanager.api.authentication.dto.response;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 

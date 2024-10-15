@@ -1,8 +1,6 @@
-package com.uranus.taskmanager.api.auth.exception;
+package com.uranus.taskmanager.api.authentication.exception;
 
 import org.springframework.http.HttpStatus;
-
-import com.uranus.taskmanager.api.auth.exception.AuthenticationException;
 
 public class InvalidLoginIdentityException extends AuthenticationException {
 

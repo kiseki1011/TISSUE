@@ -7,8 +7,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.uranus.taskmanager.api.auth.AuthenticationInterceptor;
-import com.uranus.taskmanager.api.auth.LoginMemberArgumentResolver;
+import com.uranus.taskmanager.api.authentication.AuthenticationInterceptor;
+import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.workspacemember.authorization.AuthorizationInterceptor;
 
 import lombok.RequiredArgsConstructor;

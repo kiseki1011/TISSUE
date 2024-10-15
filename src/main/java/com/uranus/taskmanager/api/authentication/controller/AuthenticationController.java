@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.auth.controller;
+package com.uranus.taskmanager.api.authentication.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.auth.LoginRequired;
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.auth.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.auth.service.AuthenticationService;
+import com.uranus.taskmanager.api.authentication.LoginRequired;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.common.ApiResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
