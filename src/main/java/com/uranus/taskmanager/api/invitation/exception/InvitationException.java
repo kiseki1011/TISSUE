@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.invitation.exception;
 
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.common.CommonException;
+import com.uranus.taskmanager.api.common.exception.CommonException;
 
 public class InvitationException extends CommonException {
 

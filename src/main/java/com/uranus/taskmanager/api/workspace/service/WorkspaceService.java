@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
-import com.uranus.taskmanager.api.common.CommonException;
+import com.uranus.taskmanager.api.common.exception.CommonException;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.exception.InvitationAlreadyExistsException;
