@@ -2,20 +2,22 @@ package com.uranus.taskmanager.basetest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
+import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.RestAssuredAuthenticationFixture;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class BaseIntegrationTest {
-	@LocalServerPort
-	protected int port;
+@SpringBootTest
+public class BaseServiceIntegrationTest {
+
+	@Autowired
+	protected WorkspaceService workspaceService;
 	@Autowired
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@Autowired
@@ -23,11 +25,14 @@ public abstract class BaseIntegrationTest {
 	@Autowired
 	protected MemberService memberService;
 	@Autowired
+	protected InvitationService invitationService;
+
+	@Autowired
 	protected WorkspaceRepository workspaceRepository;
 	@Autowired
 	protected MemberRepository memberRepository;
 	@Autowired
 	protected WorkspaceMemberRepository workspaceMemberRepository;
 	@Autowired
-	protected RestAssuredAuthenticationFixture restAssuredAuthenticationFixture;
+	protected InvitationRepository invitationRepository;
 }

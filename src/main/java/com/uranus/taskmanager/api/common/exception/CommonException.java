@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.common;
+package com.uranus.taskmanager.api.common.exception;
 
 import org.springframework.http.HttpStatus;
 
