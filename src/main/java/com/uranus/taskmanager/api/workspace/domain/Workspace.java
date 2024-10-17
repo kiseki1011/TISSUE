@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.workspace.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Workspace {
+public class Workspace extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
