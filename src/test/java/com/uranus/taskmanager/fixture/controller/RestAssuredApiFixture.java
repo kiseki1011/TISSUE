@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.fixture;
+package com.uranus.taskmanager.fixture.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 @Component
-public class RestAssuredAuthenticationFixture {
+public class RestAssuredApiFixture {
 
 	public void signup(String loginId, String email, String password) {
 		SignupRequest signupRequest = SignupRequest.builder()
@@ -33,6 +33,24 @@ public class RestAssuredAuthenticationFixture {
 	public String loginWithId(String loginId, String password) {
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId(loginId)
+			.password(password)
+			.build();
+
+		Response response = RestAssured.given()
+			.contentType(ContentType.JSON)
+			.body(loginRequest)
+			.when()
+			.post("/api/v1/auth/login")
+			.then()
+			.statusCode(HttpStatus.OK.value())
+			.extract().response();
+
+		return response.cookie("JSESSIONID");
+	}
+
+	public String loginWithEmail(String email, String password) {
+		LoginRequest loginRequest = LoginRequest.builder()
+			.email(email)
 			.password(password)
 			.build();
 
