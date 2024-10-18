@@ -32,7 +32,7 @@ public class InvitationAcceptResponse {
 		this.headcount = headcount;
 	}
 
-	public static InvitationAcceptResponse fromEntity(Invitation invitation, WorkspaceMember workspaceMember) {
+	public static InvitationAcceptResponse from(Invitation invitation, WorkspaceMember workspaceMember) {
 		return InvitationAcceptResponse.builder()
 			.workspaceCode(invitation.getWorkspace().getCode())
 			.workspaceName(invitation.getWorkspace().getName())

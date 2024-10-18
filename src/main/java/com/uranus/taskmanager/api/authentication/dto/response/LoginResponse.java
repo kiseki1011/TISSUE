@@ -12,7 +12,7 @@ public class LoginResponse {
 	private final String loginId;
 	private final String email;
 
-	public static LoginResponse fromEntity(Member member) {
+	public static LoginResponse from(Member member) {
 		return LoginResponse.builder()
 			.loginId(member.getLoginId())
 			.email(member.getEmail())

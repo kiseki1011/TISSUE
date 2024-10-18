@@ -15,7 +15,7 @@ public class WorkspaceResponse {
 	private final String name;
 	private final String description;
 
-	public static WorkspaceResponse fromEntity(Workspace workspace) {
+	public static WorkspaceResponse from(Workspace workspace) {
 		return WorkspaceResponse.builder()
 			.name(workspace.getName())
 			.description(workspace.getDescription())

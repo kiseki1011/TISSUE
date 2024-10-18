@@ -220,7 +220,7 @@ class WorkspaceControllerTest {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String requestBody = objectMapper.writeValueAsString(inviteMemberRequest);
 
-		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.fromEntity(invitation);
+		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
 		// Todo: any()를 사용하지 않고 eq() 또는 객체 그대로 사용하는 경우 inviteMemberResponse가 null로 찍히는 문제 발생.
 		//  정확한 객체에 대한 검증을 수행할 해결방법 찾아보기.

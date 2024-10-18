@@ -36,12 +36,12 @@ public class InviteMemberResponse {
 		this.invitedMember = invitedMember;
 	}
 
-	public static InviteMemberResponse fromEntity(Invitation invitation) {
+	public static InviteMemberResponse from(Invitation invitation) {
 		return InviteMemberResponse.builder()
 			.code(invitation.getWorkspace().getCode())
 			// .loginId(invitation.getMember().getLoginId())
 			// .email(invitation.getMember().getEmail())
-			.invitedMember(InvitedMember.fromEntity(invitation))
+			.invitedMember(InvitedMember.from(invitation))
 			.status(invitation.getStatus())
 			.build();
 	}

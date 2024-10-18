@@ -29,6 +29,6 @@ public class AuthenticationService {
 		if (!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
 			throw new InvalidLoginPasswordException();
 		}
-		return LoginResponse.fromEntity(member);
+		return LoginResponse.from(member);
 	}
 }

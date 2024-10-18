@@ -79,7 +79,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 				}
 
 				// 요청 DTO를 사용해서 워크스페이스 엔티티로 만들고 저장
-				Workspace workspace = workspaceRepository.save(request.toEntity());
+				Workspace workspace = workspaceRepository.save(request.to());
 
 				// 워크스페이스 멤버 생성 및 저장
 				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
@@ -88,7 +88,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 
 				workspaceMemberRepository.save(workspaceMember);
 
-				return WorkspaceResponse.fromEntity(workspace);
+				return WorkspaceResponse.from(workspace);
 			}
 			log.info("[Workspace Code Collision] Retrying... attempt {}", count + 1);
 		}

@@ -17,7 +17,7 @@ public class LoginMemberDto {
 		this.email = email;
 	}
 
-	public static LoginMemberDto fromEntity(Member member) {
+	public static LoginMemberDto from(Member member) {
 		return LoginMemberDto.builder()
 			.loginId(member.getLoginId())
 			.email(member.getEmail())

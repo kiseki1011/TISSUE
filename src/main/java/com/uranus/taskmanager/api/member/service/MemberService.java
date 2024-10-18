@@ -33,7 +33,7 @@ public class MemberService {
 			.email(signupRequest.getEmail())
 			.password(encodedPassword)
 			.build();
-		return SignupResponse.fromEntity(memberRepository.save(member));
+		return SignupResponse.from(memberRepository.save(member));
 	}
 
 	public void checkLoginIdDuplicate(String loginId) {

@@ -16,7 +16,7 @@ public class InvitedMember {
 		this.email = email;
 	}
 
-	public static InvitedMember fromEntity(Invitation invitation) {
+	public static InvitedMember from(Invitation invitation) {
 		return InvitedMember.builder()
 			.email(invitation.getMember().getEmail())
 			.loginId(invitation.getMember().getLoginId())

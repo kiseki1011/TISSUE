@@ -59,6 +59,6 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 		/*
 		 * member를 LoginMemberDto로 변환해서 반환한다
 		 */
-		return LoginMemberDto.fromEntity(member);
+		return LoginMemberDto.from(member);
 	}
 }
