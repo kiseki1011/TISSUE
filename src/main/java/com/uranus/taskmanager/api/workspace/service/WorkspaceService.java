@@ -61,7 +61,7 @@ public class WorkspaceService {
 
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);
-		return WorkspaceResponse.fromEntity(workspace);
+		return WorkspaceResponse.from(workspace);
 	}
 
 	// Todo: 로직, 가독성 리팩토링
@@ -108,7 +108,7 @@ public class WorkspaceService {
 			.build();
 		invitationRepository.save(invitation);
 
-		return InviteMemberResponse.fromEntity(invitation);
+		return InviteMemberResponse.from(invitation);
 	}
 
 	@Transactional

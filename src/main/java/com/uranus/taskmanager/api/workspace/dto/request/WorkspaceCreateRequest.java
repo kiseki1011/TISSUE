@@ -37,7 +37,7 @@ public class WorkspaceCreateRequest {
 		this.password = password;
 	}
 
-	public Workspace toEntity() {
+	public Workspace to() {
 		return Workspace.builder()
 			.name(name)
 			.description(description)

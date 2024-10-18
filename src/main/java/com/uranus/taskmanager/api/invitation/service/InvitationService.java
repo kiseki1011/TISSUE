@@ -47,7 +47,7 @@ public class InvitationService {
 			invitation.getWorkspace(), WorkspaceRole.USER, invitation.getMember().getEmail());
 		workspaceMemberRepository.save(workspaceMember);
 
-		return InvitationAcceptResponse.fromEntity(invitation, workspaceMember);
+		return InvitationAcceptResponse.from(invitation, workspaceMember);
 	}
 
 	@Transactional

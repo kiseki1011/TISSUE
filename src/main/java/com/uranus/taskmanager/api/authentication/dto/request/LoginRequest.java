@@ -17,7 +17,7 @@ public class LoginRequest {
 	@NotBlank(message = "Password must not be blank")
 	private String password;
 
-	public Member toEntity() {
+	public Member to() {
 		return Member.builder()
 			.email(email)
 			.password(password)

@@ -80,7 +80,7 @@ class InvitationControllerTest {
 		Member member = testFixture.createMember(loginId, email);
 		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
 
-		InvitationAcceptResponse acceptResponse = InvitationAcceptResponse.fromEntity(invitation,
+		InvitationAcceptResponse acceptResponse = InvitationAcceptResponse.from(invitation,
 			WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 				member.getEmail()));
 

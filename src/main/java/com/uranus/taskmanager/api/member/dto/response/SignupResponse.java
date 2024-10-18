@@ -12,7 +12,7 @@ public class SignupResponse {
 	private final String loginId;
 	private final String email;
 
-	public static SignupResponse fromEntity(Member member) {
+	public static SignupResponse from(Member member) {
 		return SignupResponse.builder()
 			.loginId(member.getLoginId())
 			.email(member.getEmail())
