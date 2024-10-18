@@ -20,7 +20,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -69,7 +69,7 @@ class WorkspaceCreateServiceTest {
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();
@@ -93,7 +93,7 @@ class WorkspaceCreateServiceTest {
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();

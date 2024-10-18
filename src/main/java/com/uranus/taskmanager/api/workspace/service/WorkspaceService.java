@@ -25,8 +25,8 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -57,11 +57,11 @@ public class WorkspaceService {
 	 * get -> getWorkspaceDetail
 	 */
 	@Transactional(readOnly = true)
-	public WorkspaceResponse get(String workspaceCode) {
+	public WorkspaceCreateResponse get(String workspaceCode) {
 
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);
-		return WorkspaceResponse.from(workspace);
+		return WorkspaceCreateResponse.from(workspace);
 	}
 
 	// Todo: 로직, 가독성 리팩토링

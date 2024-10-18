@@ -29,8 +29,8 @@ import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -78,7 +78,7 @@ class WorkspaceServiceTest {
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		WorkspaceResponse response = workspaceService.get(workspaceCode);
+		WorkspaceCreateResponse response = workspaceService.get(workspaceCode);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getCode()).isEqualTo(workspaceCode);

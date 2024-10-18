@@ -10,7 +10,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -55,7 +55,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
 
 		/*
 		 * Todo: loginMember 검증 로직이 필요할까?
@@ -88,7 +88,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 
 				workspaceMemberRepository.save(workspaceMember);
 
-				return WorkspaceResponse.from(workspace);
+				return WorkspaceCreateResponse.from(workspace);
 			}
 			log.info("[Workspace Code Collision] Retrying... attempt {}", count + 1);
 		}

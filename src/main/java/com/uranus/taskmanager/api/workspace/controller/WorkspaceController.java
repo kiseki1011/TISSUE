@@ -19,8 +19,8 @@ import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -52,11 +52,11 @@ public class WorkspaceController {
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<WorkspaceResponse> createWorkspace(
+	public ApiResponse<WorkspaceCreateResponse> createWorkspace(
 		@LoginMember LoginMemberDto loginMember,
 		@RequestBody @Valid WorkspaceCreateRequest request) {
 
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 		return ApiResponse.created("Workspace Created", response);
 	}
 
@@ -66,9 +66,9 @@ public class WorkspaceController {
 	 * Todo: getWorkspaces를 만들기: 현재 내가 참여하고 있는 모든 워크스페이스를 나타낸 목록 가져오기
 	 */
 	@GetMapping("/{code}")
-	public ApiResponse<WorkspaceResponse> getWorkspace(@PathVariable String code) {
+	public ApiResponse<WorkspaceCreateResponse> getWorkspace(@PathVariable String code) {
 
-		WorkspaceResponse response = workspaceService.get(code);
+		WorkspaceCreateResponse response = workspaceService.get(code);
 		return ApiResponse.ok("Workspace Found", response);
 	}
 

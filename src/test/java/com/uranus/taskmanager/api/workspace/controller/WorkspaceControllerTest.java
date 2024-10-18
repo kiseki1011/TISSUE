@@ -41,8 +41,8 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
@@ -171,12 +171,12 @@ class WorkspaceControllerTest {
 	@DisplayName("워크스페이스 조회를 성공하면 OK를 응답한다")
 	public void test4() throws Exception {
 		String code = "ABCD1234";
-		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+		WorkspaceCreateResponse workspaceCreateResponse = WorkspaceCreateResponse.builder()
 			.name("Test workspace")
 			.description("Test description")
 			.code(code)
 			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceResponse);
+		when(workspaceService.get(code)).thenReturn(workspaceCreateResponse);
 
 		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())
@@ -187,12 +187,12 @@ class WorkspaceControllerTest {
 	@DisplayName("워크스페이스 코드로 조회가 가능하다")
 	public void test5() throws Exception {
 		String code = "ABCD1234";
-		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
+		WorkspaceCreateResponse workspaceCreateResponse = WorkspaceCreateResponse.builder()
 			.name("Test workspace")
 			.description("Test description")
 			.code(code)
 			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceResponse);
+		when(workspaceService.get(code)).thenReturn(workspaceCreateResponse);
 
 		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())

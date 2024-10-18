@@ -12,7 +12,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -42,7 +42,7 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
 
 		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
 			.orElseThrow(MemberNotFoundException::new);
@@ -75,7 +75,7 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 				workspaceMemberRepository.save(workspaceMember);
 
-				return WorkspaceResponse.from(workspace);
+				return WorkspaceCreateResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
 				/*
 				 * Todo: 로그 정리
