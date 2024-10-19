@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.authentication;
 
+import java.util.Optional;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -16,49 +18,74 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
 	private final MemberRepository memberRepository;
 
+	/**
+	 * 컨트롤러 메서드의 파라미터가 LoginMemberDto 타입이 아니거나
+	 * @LoginMember가 붙지 않았으면 false를 리턴한다.
+	 *
+	 * @param parameter 타입을 확인할 메서드 파라미터
+	 * @return boolean
+	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		/*
 		 * 컨트롤러 메서드의 파라미터가 LoginMemberDto 타입인지 확인
 		 * 파라미터에 @LoginMember 애노테이션이 붙었는지 확인
 		 */
-		return parameter.getParameterType().equals(LoginMemberDto.class)
-			&& parameter.hasParameterAnnotation(LoginMember.class);
+		log.info("[LoginMemberArgumentResolver] supportsParameter() called");
+
+		return isLoginMemberDto(parameter)
+			&& hasLoginMemberAnnotation(parameter);
 	}
 
+	/**
+	 * 세션의 존재 여부와 로그인 정보의 유효성을 검증한다.
+	 * 유효한 세션과 로그인 정보인 경우 LoginMemberDto로 변환해서 리턴한다.
+	 *
+	 * @param parameter LoginMemberDto를 받을 파라미터.
+	 * 이 파라미터는 {@link #supportsParameter}으로 넘겨져서 {@code true}를 반환해야 한다.
+	 * @return LoginMemberDto
+	 */
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-		NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+		NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
-		/*
-		 * 세션을 가져와서 확인한다
-		 * 세션이 없거나 세션에 LOGIN_MEMBER라는 키로 로그인된 사용자 정보가 없다면 UserNotLoggedInException
-		 */
+		log.info("[LoginMemberArgumentResolver] resolveArgument() called");
+
+		HttpSession session = getSession(webRequest);
+		Member member = getLoggedInMember(session);
+
+		return LoginMemberDto.from(member);
+	}
+
+	private HttpSession getSession(NativeWebRequest webRequest) {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute(SessionKey.LOGIN_MEMBER) == null) {
-			throw new UserNotLoggedInException();
-		}
 
-		/*
-		 * 세션에서 로그인된 사용자의 정보를 가져온다
-		 * loginId를 통해서 Member를 조회한다
-		 */
-		String loginId = (String)session.getAttribute(SessionKey.LOGIN_MEMBER);
+		return Optional.ofNullable(session)
+			.orElseThrow(UserNotLoggedInException::new);
+	}
 
-		Member member = memberRepository.findByLoginId(loginId)
-			.orElseThrow(MemberNotFoundException::new);
+	private Member getLoggedInMember(HttpSession session) {
+		return Optional.ofNullable((String)session.getAttribute(SessionKey.LOGIN_MEMBER))
+			.map(loginId -> memberRepository.findByLoginId(loginId)
+				.orElseThrow(MemberNotFoundException::new))
+			.orElseThrow(UserNotLoggedInException::new);
+	}
 
-		/*
-		 * member를 LoginMemberDto로 변환해서 반환한다
-		 */
-		return LoginMemberDto.from(member);
+	private boolean hasLoginMemberAnnotation(MethodParameter parameter) {
+		return parameter.hasParameterAnnotation(LoginMember.class);
+	}
+
+	private boolean isLoginMemberDto(MethodParameter parameter) {
+		return parameter.getParameterType().equals(LoginMemberDto.class);
 	}
 }
