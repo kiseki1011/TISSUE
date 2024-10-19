@@ -1,8 +1,6 @@
-package com.uranus.taskmanager.api.member.exception;
+package com.uranus.taskmanager.api.common.exception;
 
 import org.springframework.http.HttpStatus;
-
-import com.uranus.taskmanager.api.common.exception.CommonException;
 
 public abstract class MemberException extends CommonException {
 

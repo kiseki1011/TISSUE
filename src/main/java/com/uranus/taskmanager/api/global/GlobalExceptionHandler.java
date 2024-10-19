@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.uranus.taskmanager.api.authentication.exception.AuthenticationException;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.common.FieldErrorDto;
-import com.uranus.taskmanager.api.invitation.exception.InvitationException;
-import com.uranus.taskmanager.api.member.exception.MemberException;
-import com.uranus.taskmanager.api.workspace.exception.WorkspaceException;
+import com.uranus.taskmanager.api.common.exception.AuthenticationException;
+import com.uranus.taskmanager.api.common.exception.InvitationException;
+import com.uranus.taskmanager.api.common.exception.MemberException;
+import com.uranus.taskmanager.api.common.exception.WorkspaceException;
+import com.uranus.taskmanager.api.common.exception.WorkspaceMemberException;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.AuthorizationException;
-import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceMemberException;
 
 import lombok.extern.slf4j.Slf4j;
 

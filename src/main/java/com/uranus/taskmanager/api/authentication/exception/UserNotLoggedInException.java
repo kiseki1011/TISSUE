@@ -2,6 +2,8 @@ package com.uranus.taskmanager.api.authentication.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.uranus.taskmanager.api.common.exception.AuthenticationException;
+
 public class UserNotLoggedInException extends AuthenticationException {
 
 	private static final String MESSAGE = "Login is required to access.";
