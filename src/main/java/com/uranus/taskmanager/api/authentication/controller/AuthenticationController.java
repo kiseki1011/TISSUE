@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.authentication.controller;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,9 +46,8 @@ public class AuthenticationController {
 	public ApiResponse<Void> logout(HttpServletRequest request) {
 
 		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
+		Optional.ofNullable(session)
+			.ifPresent(HttpSession::invalidate);
 
 		return ApiResponse.okWithNoContent("Logout Success");
 	}
