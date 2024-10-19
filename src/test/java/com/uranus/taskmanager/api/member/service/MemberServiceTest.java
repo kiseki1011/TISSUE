@@ -15,6 +15,7 @@ import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 @SpringBootTest
 class MemberServiceTest {
@@ -24,10 +25,13 @@ class MemberServiceTest {
 	@Autowired
 	private MemberRepository memberRepository;
 	@Autowired
+	private WorkspaceMemberRepository workspaceMemberRepository;
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	public void init() {
+		workspaceMemberRepository.deleteAll();
 		memberRepository.deleteAll();
 	}
 
