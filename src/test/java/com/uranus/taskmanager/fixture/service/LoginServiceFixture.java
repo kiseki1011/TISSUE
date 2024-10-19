@@ -7,7 +7,7 @@ import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
 
 @Component
-public class LoginFixture {
+public class LoginServiceFixture {
 
 	@Autowired
 	private AuthenticationService authenticationService;

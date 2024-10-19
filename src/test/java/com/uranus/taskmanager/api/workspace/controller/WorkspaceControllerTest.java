@@ -49,7 +49,10 @@ import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,11 +82,17 @@ class WorkspaceControllerTest {
 	@MockBean
 	private WebMvcConfig webMvcConfig;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	InvitationEntityFixture invitationEntityFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
 	@Test
@@ -212,10 +221,10 @@ class WorkspaceControllerTest {
 
 		String invitedLoginId = "inviteduser123";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
 
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String requestBody = objectMapper.writeValueAsString(inviteMemberRequest);
@@ -338,9 +347,9 @@ class WorkspaceControllerTest {
 		String email = "user123@test.com";
 		String workspacePassword = "workspace1234!";
 
-		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
-		Member member = testFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
 		String requestBody = objectMapper.writeValueAsString(request);
 

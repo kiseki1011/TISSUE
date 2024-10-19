@@ -33,7 +33,9 @@ import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 
 @WebMvcTest(controllers = InvitationController.class)
 class InvitationControllerTest {
@@ -58,11 +60,15 @@ class InvitationControllerTest {
 	@MockBean
 	private WebMvcConfig webMvcConfig;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	InvitationEntityFixture invitationEntityFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
 	@Test
@@ -76,9 +82,9 @@ class InvitationControllerTest {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		InvitationAcceptResponse acceptResponse = InvitationAcceptResponse.from(invitation,
 			WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,

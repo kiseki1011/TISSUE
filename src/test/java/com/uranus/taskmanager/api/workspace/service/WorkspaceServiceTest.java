@@ -37,7 +37,11 @@ import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyParticipatingException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.dto.LoginMemberDtoFixture;
+import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,11 +63,19 @@ class WorkspaceServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	InvitationEntityFixture invitationEntityFixture;
+	LoginMemberDtoFixture loginMemberDtoFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+		invitationEntityFixture = new InvitationEntityFixture();
+		loginMemberDtoFixture = new LoginMemberDtoFixture();
 	}
 
 	@Test
@@ -108,10 +120,10 @@ class WorkspaceServiceTest {
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
-		Member invitedMember = testFixture.createMember(invitedLoginId, invitedEmail);
+		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
@@ -139,7 +151,7 @@ class WorkspaceServiceTest {
 
 		String invitedLoginId = "inviteduser123";
 
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 
@@ -162,8 +174,8 @@ class WorkspaceServiceTest {
 
 		String invitedLoginId = "inviteduser123";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
@@ -189,11 +201,11 @@ class WorkspaceServiceTest {
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
-		Member invitedMember = testFixture.createMember(invitedLoginId, invitedEmail);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, invitedMember);
+		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, invitedMember);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
@@ -222,11 +234,12 @@ class WorkspaceServiceTest {
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
-		Member invitedMember = testFixture.createMember(invitedLoginId, invitedEmail);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(invitedMember, workspace);
+		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(invitedMember,
+			workspace);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
@@ -258,21 +271,21 @@ class WorkspaceServiceTest {
 		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
 
 		// Mock LoginMemberDto
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto("inviter", "inviter@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("inviter", "inviter@test.com");
 
 		// Mock Workspace
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
 		// Mock Member
-		Member member1 = testFixture.createMember(member1Id, member1Email);
-		Member member2 = testFixture.createMember(member2Id, member2Email);
+		Member member1 = memberEntityFixture.createMember(member1Id, member1Email);
+		Member member2 = memberEntityFixture.createMember(member2Id, member2Email);
 		when(memberRepository.findByLoginIdOrEmail(member1Id, member1Id)).thenReturn(Optional.of(member1));
 		when(memberRepository.findByLoginIdOrEmail(member2Id, member2Id)).thenReturn(Optional.of(member2));
 
 		// Mock Invitation
-		Invitation invitation1 = testFixture.createPendingInvitation(workspace, member1);
-		Invitation invitation2 = testFixture.createPendingInvitation(workspace, member2);
+		Invitation invitation1 = invitationEntityFixture.createPendingInvitation(workspace, member1);
+		Invitation invitation2 = invitationEntityFixture.createPendingInvitation(workspace, member2);
 		when(invitationRepository.save(any(Invitation.class))).thenReturn(invitation1).thenReturn(invitation2);
 
 		// when
@@ -296,9 +309,9 @@ class WorkspaceServiceTest {
 		String email = "user123@test.com";
 		String workspacePassword = "workspace1234!";
 
-		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
-		Member member = testFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
@@ -327,10 +340,10 @@ class WorkspaceServiceTest {
 		String email = "user123@test.com";
 		String workspacePassword = "workspace1234!";
 
-		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
-		Member member = testFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
@@ -360,9 +373,9 @@ class WorkspaceServiceTest {
 		String workspacePassword = "workspace1234!";
 		String invalidPassword = "invalid1234!";
 
-		Workspace workspace = testFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
-		Member member = testFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
+		Workspace workspace = workspaceEntityFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));

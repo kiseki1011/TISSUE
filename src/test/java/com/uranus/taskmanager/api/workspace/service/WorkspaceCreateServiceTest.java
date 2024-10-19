@@ -26,7 +26,10 @@ import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.dto.LoginMemberDtoFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 
 @ExtendWith(MockitoExtension.class)
 class WorkspaceCreateServiceTest {
@@ -45,11 +48,17 @@ class WorkspaceCreateServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	LoginMemberDtoFixture loginMemberDtoFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		loginMemberDtoFixture = new LoginMemberDtoFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
 	}
 
 	@Test
@@ -61,9 +70,9 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
@@ -85,9 +94,9 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
@@ -112,8 +121,8 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
@@ -135,10 +144,10 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember workspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member, workspace);
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
@@ -159,10 +168,11 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
+			workspace);
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
@@ -186,10 +196,11 @@ class WorkspaceCreateServiceTest {
 			.description("test description")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
+			workspace);
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);

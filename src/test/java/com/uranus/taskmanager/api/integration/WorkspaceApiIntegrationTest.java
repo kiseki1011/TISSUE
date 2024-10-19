@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.integrationtest;
+package com.uranus.taskmanager.api.integration;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.*;
@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.basetest.BaseApiIntegrationTest;
-import com.uranus.taskmanager.fixture.controller.RestAssuredApiFixture;
+import com.uranus.taskmanager.fixture.api.LoginApiFixture;
+import com.uranus.taskmanager.fixture.api.MemberApiFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import io.restassured.RestAssured;
@@ -20,7 +21,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 @Transactional
-class WorkspaceControllerApiIntegrationTest extends BaseApiIntegrationTest {
+class WorkspaceApiIntegrationTest extends BaseApiIntegrationTest {
 
 	/**
 	 * Todo: Workspace와 WorkspaceMember 엔티티 간의 외래 키 제약 조건으로 인한 문제 발생
@@ -34,7 +35,9 @@ class WorkspaceControllerApiIntegrationTest extends BaseApiIntegrationTest {
 	 * - 예시: Workspace 엔티티에서 연관관계 매핑과 관련해서 cascade = CascadeType.ALL, orphanRemoval = true을 사용한다
 	 */
 	@Autowired
-	private RestAssuredApiFixture restAssuredApiFixture;
+	private LoginApiFixture loginApiFixture;
+	@Autowired
+	private MemberApiFixture memberApiFixture;
 	@Autowired
 	private DatabaseCleaner databaseCleaner;
 
@@ -48,8 +51,8 @@ class WorkspaceControllerApiIntegrationTest extends BaseApiIntegrationTest {
 	@DisplayName("워크스페이스를 생성하면 응답의 데이터에 워크스페이스의 이름, 설명, 코드가 존재해야 한다")
 	public void test1() throws Exception {
 
-		restAssuredApiFixture.signup("user123", "user123@gmail.com", "test1234!");
-		String sessionCookie = restAssuredApiFixture.loginWithId("user123", "test1234!");
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -74,8 +77,8 @@ class WorkspaceControllerApiIntegrationTest extends BaseApiIntegrationTest {
 	@DisplayName("하나의 워크스페이스를 생성하면 DB에 하나의 워크스페이스만 존재해야 한다")
 	public void test2() throws Exception {
 
-		restAssuredApiFixture.signup("user123", "user123@gmail.com", "test1234!");
-		String sessionCookie = restAssuredApiFixture.loginWithId("user123", "test1234!");
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
