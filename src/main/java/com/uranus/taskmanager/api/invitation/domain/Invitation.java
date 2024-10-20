@@ -41,10 +41,6 @@ public class Invitation extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private InvitationStatus status;
 
-	/**
-	 * Todo: InvitedBy, InvitedAt 등의 추가 필요(Auditing 적용)
-	 */
-
 	@Builder
 	public Invitation(Member member, Workspace workspace, InvitationStatus status) {
 		this.member = member;
