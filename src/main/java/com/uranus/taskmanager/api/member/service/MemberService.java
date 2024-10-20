@@ -23,7 +23,7 @@ public class MemberService {
 	@Transactional
 	public SignupResponse signup(SignupRequest signupRequest) {
 
-		validateLoginIdAndEmail(signupRequest);
+		checkLoginIdAndEmailDuplication(signupRequest);
 		Member member = createMember(signupRequest);
 
 		return SignupResponse.from(memberRepository.save(member));
@@ -40,7 +40,7 @@ public class MemberService {
 			.build();
 	}
 
-	private void validateLoginIdAndEmail(SignupRequest signupRequest) {
+	private void checkLoginIdAndEmailDuplication(SignupRequest signupRequest) {
 		checkLoginIdDuplicate(signupRequest.getLoginId());
 		checkEmailDuplicate(signupRequest.getEmail());
 	}
