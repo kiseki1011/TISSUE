@@ -78,7 +78,6 @@ class InvitationServiceTest {
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
@@ -86,7 +85,6 @@ class InvitationServiceTest {
 
 		// then
 		assertThat(acceptResponse.getWorkspaceCode()).isEqualTo(workspaceCode);
-		verify(invitationRepository, times(1)).save(eq(invitation));
 
 	}
 
@@ -106,7 +104,6 @@ class InvitationServiceTest {
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
@@ -135,7 +132,6 @@ class InvitationServiceTest {
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
@@ -202,7 +198,6 @@ class InvitationServiceTest {
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 
 		// when
 		invitationService.rejectInvitation(loginMember, workspaceCode);
