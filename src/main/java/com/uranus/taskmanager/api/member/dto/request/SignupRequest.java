@@ -10,7 +10,11 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SignupRequest {
-
+	/**
+	 * Todo
+	 *  - 패턴 검증은 Validation 클래스로 분리해서 적용하는 것이 좋을까?
+	 *  - 매직 넘버는 상수로 만들기
+	 */
 	@NotBlank(message = "Login ID must not be blank")
 	@Pattern(regexp = "^[a-zA-Z0-9]{2,20}$",
 		message = "Login ID must be alphanumeric"
