@@ -37,14 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceController {
 
 	/**
-	 * Todo 2
-	 * 워크스페이스 생성(비밀번호 설정 추가)
-	 * 워크스페이스 이름, 설명 수정
-	 * 워크스페이스 삭제
-	 * 워크스페이스 비밀번호 설정(만약 없으면 설정, 있으면 수정)
-	 * 멤버가 속한 워크스페이스 목록 조회(Member에서 할지 고민)
-	 * 워크스페이스 멤버 초대(ADMIN만 가능)
-	 * 워크스페이스 참여(워크스페이스 코드, 비밀번호를 통해)
+	 * Todo
+	 *  - 워크스페이스 이름, 설명 수정 PATCH
+	 *  - 워크스페이스 삭제 DELETE
+	 *  - 워크스페이스 비밀번호 설정(만약 없으면 설정, 있으면 수정)
+	 *  - 워크스페이스 상세 정보 조회(워크스페이스 코드를 통해, 해당 워크스페이스의 멤버여야 함) GET
 	 */
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceService workspaceService;
@@ -61,9 +58,10 @@ public class WorkspaceController {
 	}
 
 	/**
-	 * Todo: 서비스의 get -> getWorkspaceDetail로 변경
-	 * getWorkspaceDetail은 특정 워크스페이스의 상세 정보 가져오는 API(내가 참여하는 상태여야 접근 가능)
-	 * Todo: getWorkspaces를 만들기: 현재 내가 참여하고 있는 모든 워크스페이스를 나타낸 목록 가져오기
+	 * Todo
+	 *  - 서비스의 get -> getWorkspaceDetail로 변경
+	 *  - getWorkspaceDetail은 특정 워크스페이스의 상세 정보 가져오는 API(내가 참여하는 상태여야 접근 가능)
+	 *  - 워크스페이스 코드를 통해 조회
 	 */
 	@GetMapping("/{code}")
 	public ApiResponse<WorkspaceCreateResponse> getWorkspace(@PathVariable String code) {
