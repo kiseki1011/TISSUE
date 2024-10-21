@@ -21,6 +21,7 @@ import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -127,7 +128,7 @@ class WorkspaceCreateServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember))
-			.isInstanceOf(RuntimeException.class)  // Todo: WorkspaceCodeCollisionHandleException 구현 후 수정
+			.isInstanceOf(WorkspaceCodeCollisionHandleException.class)
 			.hasMessageContaining("Failed to solve workspace code collision");
 	}
 
