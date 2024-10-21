@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.workspace.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +13,7 @@ import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -21,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * HandleDatabaseExceptionService와 다르게 WorkspaceCode의 중복 검사를 진행한다
+ * WorkspaceCode의 중복 검사를 진행해서, 중복인 경우 재생성한다
  */
 @Slf4j
 @Service
@@ -37,66 +40,81 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	private final PasswordEncoder passwordEncoder;
 
 	/**
-	 * Todo: createWorkspace() 가독성 좋은 코드로 리팩토링
-	 * <p>
-	 * 코드 과정
-	 * <p>
-	 * 1. ArgumentResolver를 통해 세션의 Member 정보를 컨트롤러로 넘긴다(LoginMemberDto라는 형태로)
-	 * 	- Todo: 과연 Member 엔티티를 반환하지 않고 DTO 형태로 컨트롤러로 넘기는게 과연 잘한걸까?
-	 * 	- Todo: OSIV 관련 문제 찾아보기
-	 * 2. 컨트롤러에서 넘어온 생성 request, 세션에 저장된 로그인 정보 loginMember을 사용한다
-	 * 3. loginMember의 loginId를 사용해 Member 엔티티를 찾는다
-	 * 	- Todo: 컨트롤러에서 loginId만 받아와도 되는거 아닌가?
-	 * 4. 기존 워크스페이스 코드 생성과 워크스페이스 저장 과정
-	 * 5. WorkspaceMember도 같이 생성한다(addWorkspaceMember라는 편의 메서드를 통해서)
-	 * 	- 워크스페이스를 생성한 멤버는 해당 워크스페이스에서 기본적으로 ADMIN 권한을 가진다
-	 * 	- 별칭(nickname)은 기본적으로 email로 설정된다
-	 * 6. WorkspaceMember를 저장한다
+	 * Todo: 서비스용 DTO를 만들면, 다시 리팩토링
+	 * 로그인 정보를 사용해서 멤버의 존재 유무를 검증한다
+	 * 워크스페이스 생성 요청에 유일한 코드를 생성하고 설정한다
+	 * 만약 코드가 중복되면 최대 5회 재성성 시도를 한다
+	 * 워크세프이스 생성 요청의 평문 비밀번호를 암호화하고 설정한다
+	 * 워크스페이스 생성 요청을 사용해서 워크스페이스를 생성하고 저장한다
+	 * 로그인 정보를 통해 찾은 멤버를 해당 워크스페이스에 참여시킨다
+	 *
+	 * @param workspaceCreateRequest - 컨트롤러의 워크스페이스 생성 요청 DTO
+	 * @param loginMember - 컨트롤러에서의 로그인 정보를 사용한 DTO
+	 * @return WorkspaceCreateResponse
 	 */
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest workspaceCreateRequest,
+		LoginMemberDto loginMember) {
 
-		/*
-		 * Todo: loginMember 검증 로직이 필요할까?
-		 */
-		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
+		Member member = findMemberByLoginId(loginMember);
+
+		setUniqueWorkspaceCode(workspaceCreateRequest);
+		setEncodedPasswordIfPresent(workspaceCreateRequest);
+
+		Workspace workspace = saveWorkspace(workspaceCreateRequest);
+		addAdminMemberToWorkspace(member, workspace);
+
+		return WorkspaceCreateResponse.from(workspace);
+	}
+
+	private Member findMemberByLoginId(LoginMemberDto loginMember) {
+		return memberRepository.findByLoginId(loginMember.getLoginId())
 			.orElseThrow(MemberNotFoundException::new);
+	}
 
-		for (int count = 0; count < MAX_RETRIES; count++) {
+	private void setUniqueWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
+		String code = generateUniqueWorkspaceCode()
+			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
+		workspaceCreateRequest.setCode(code);
+	}
+
+	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest workspaceCreateRequest) {
+		String encodedPassword = encodePasswordIfPresent(workspaceCreateRequest.getPassword());
+		workspaceCreateRequest.setPassword(encodedPassword);
+	}
+
+	private Optional<String> generateUniqueWorkspaceCode() {
+		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			String code = workspaceCodeGenerator.generateWorkspaceCode();
+
 			if (workspaceCodeIsNotDuplicate(code)) {
-				log.info("[workspaceCodeIsNotDuplicate] code = {}", code);
-
-				// 요청 DTO 객체에 생성된 code 설정
-				request.setCode(code);
-
-				// 요청 DTO 객체에 비밀번호를 꺼내고 암호화하고 설정
-				// Todo: null 대신 Optional을 사용, Optional은 바로 해소하도록 로직 작성
-				if (request.getPassword() != null) {
-					String encodedPassword = passwordEncoder.encode(request.getPassword());
-					request.setPassword(encodedPassword);
-				}
-
-				// 요청 DTO를 사용해서 워크스페이스 엔티티로 만들고 저장
-				Workspace workspace = workspaceRepository.save(request.to());
-
-				// 워크스페이스 멤버 생성 및 저장
-				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-					WorkspaceRole.ADMIN,
-					member.getEmail());
-
-				workspaceMemberRepository.save(workspaceMember);
-
-				return WorkspaceCreateResponse.from(workspace);
+				return Optional.of(code);
 			}
-			log.info("[Workspace Code Collision] Retrying... attempt {}", count + 1);
+			log.info("[Workspace Code Collision] Retrying... attempt {}", attempt);
 		}
-		throw new RuntimeException(
-			"Failed to solve workspace code collision"); // Todo: WorkspaceCodeCollisionHandleException 구현
+		return Optional.empty();
 	}
 
 	public boolean workspaceCodeIsNotDuplicate(String code) {
 		return !workspaceRepository.existsByCode(code);
+	}
+
+	private String encodePasswordIfPresent(String password) {
+		return Optional.ofNullable(password)
+			.map(passwordEncoder::encode)
+			.orElse(null);
+	}
+
+	private Workspace saveWorkspace(WorkspaceCreateRequest workspaceCreateRequest) {
+		return workspaceRepository.save(workspaceCreateRequest.to());
+	}
+
+	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
+			WorkspaceRole.ADMIN,
+			member.getEmail());
+
+		workspaceMemberRepository.save(workspaceMember);
 	}
 }
