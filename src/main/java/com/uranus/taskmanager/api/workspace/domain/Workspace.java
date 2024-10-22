@@ -22,13 +22,17 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
-
+	/**
+	 * Todo
+	 *  - 인원(headcount) 필드 추가 고려(현재 서비스에서 headcount 계산해서 DTO로 넘기는 중)
+	 *  - headcount에 캐시 적용 고려
+	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "WORKSPACE_ID")
 	private Long id;
 
-	@Column(unique = true) //  nullable = false 사용 고려
+	@Column(unique = true) // Todo: nullable = false 사용 고려
 	private String code;
 
 	@Column(nullable = false)

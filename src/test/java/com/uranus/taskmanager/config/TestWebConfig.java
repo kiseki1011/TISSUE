@@ -2,7 +2,7 @@ package com.uranus.taskmanager.config;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -15,7 +15,7 @@ import com.uranus.taskmanager.api.workspacemember.authorization.AuthorizationInt
 import lombok.RequiredArgsConstructor;
 
 @Profile("TestWebConfig")
-@Configuration
+@TestConfiguration
 @RequiredArgsConstructor
 public class TestWebConfig implements WebMvcConfigurer {
 	private final AuthorizationInterceptor authorizationInterceptor;

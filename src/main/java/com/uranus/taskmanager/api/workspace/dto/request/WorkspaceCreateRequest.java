@@ -7,20 +7,21 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString
 @Getter
-@Builder
+@NoArgsConstructor
 public class WorkspaceCreateRequest {
 
 	@Size(min = 2, max = 50, message = "Workspace name must be 2 ~ 50 characters long")
 	@NotBlank(message = "Workspace name must not be blank")
-	private final String name;
+	private String name;
 
 	@Size(min = 1, max = 255, message = "Workspace name must be 1 ~ 255 characters long")
 	@NotBlank(message = "Workspace description must not be blank")
-	private final String description;
+	private String description;
 
 	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
 		message = "The password must be alphanumeric"
@@ -28,6 +29,14 @@ public class WorkspaceCreateRequest {
 	private String password;
 
 	private String code;
+
+	@Builder
+	public WorkspaceCreateRequest(String name, String description, String password, String code) {
+		this.name = name;
+		this.description = description;
+		this.password = password;
+		this.code = code;
+	}
 
 	public void setCode(String code) {
 		this.code = code;

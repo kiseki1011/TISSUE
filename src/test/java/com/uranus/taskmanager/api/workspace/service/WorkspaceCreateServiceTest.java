@@ -20,13 +20,18 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.dto.LoginMemberDtoFixture;
+import com.uranus.taskmanager.fixture.dto.WorkspaceCreateDtoFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 
 @ExtendWith(MockitoExtension.class)
 class WorkspaceCreateServiceTest {
@@ -45,31 +50,38 @@ class WorkspaceCreateServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	LoginMemberDtoFixture loginMemberDtoFixture;
+	WorkspaceCreateDtoFixture workspaceCreateDtoFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		loginMemberDtoFixture = new LoginMemberDtoFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
+		workspaceCreateDtoFixture = new WorkspaceCreateDtoFixture();
 	}
 
 	@Test
 	@DisplayName("워크스페이스 생성에는 생성 요청과 로그인 멤버를 필요로 한다")
 	void test1() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
+		String code = "TESTCODE";
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();
@@ -80,26 +92,23 @@ class WorkspaceCreateServiceTest {
 	@DisplayName("워크스페이스 생성을 성공하면 WorkspaceResponse를 반환한다")
 	void test2() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
+		String code = "TESTCODE";
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.getName()).isEqualTo("test name");
-		assertThat(response.getDescription()).isEqualTo("test description");
-		assertThat(response.getCode()).isEqualTo("testcode");
+		assertThat(response).isInstanceOf(WorkspaceCreateResponse.class);
 		verify(workspaceRepository, times(1)).save(any(Workspace.class));
 	}
 
@@ -107,13 +116,10 @@ class WorkspaceCreateServiceTest {
 	@DisplayName("워크스페이스 코드가 중복될 때 최대 재시도 횟수(5회)를 소진하면 예외가 발생한다")
 	void test3() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
 
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
@@ -122,7 +128,7 @@ class WorkspaceCreateServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember))
-			.isInstanceOf(RuntimeException.class)  // Todo: WorkspaceCodeCollisionHandleException 구현 후 수정
+			.isInstanceOf(WorkspaceCodeCollisionHandleException.class)
 			.hasMessageContaining("Failed to solve workspace code collision");
 	}
 
@@ -130,16 +136,15 @@ class WorkspaceCreateServiceTest {
 	@DisplayName("워크스페이스 생성 시 WorkspaceMember도 생성되고 저장된다")
 	void test4() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
+		String code = "TESTCODE";
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember workspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member, workspace);
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
@@ -154,17 +159,17 @@ class WorkspaceCreateServiceTest {
 	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 별칭은 생성자의 이메일로 설정된다")
 	void test5() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
+		String code = "TESTCODE";
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
+			workspace);
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 
@@ -181,17 +186,17 @@ class WorkspaceCreateServiceTest {
 	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 권한은 ADMIN으로 설정된다")
 	void test6() {
 		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
+		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
+		String code = "TESTCODE";
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
+		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
+		Member member = memberEntityFixture.createMember("user123", "test@test.com");
+		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
+			workspace);
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 

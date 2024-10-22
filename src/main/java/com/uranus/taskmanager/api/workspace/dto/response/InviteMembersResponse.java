@@ -9,6 +9,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public class InviteMembersResponse {
+
 	private final List<InvitedMember> invitedMembers;
 	private final List<FailedInvitedMember> failedInvitedMembers;
 

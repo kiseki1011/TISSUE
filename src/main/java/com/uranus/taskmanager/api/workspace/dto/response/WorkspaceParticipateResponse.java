@@ -10,18 +10,6 @@ import lombok.Getter;
 @Getter
 public class WorkspaceParticipateResponse {
 
-	/*
-	 * Todo:
-	 *  - 참여한 워크스페이스의 상세 정보
-	 *  - 이름
-	 *  - 설명
-	 *  - 코드
-	 *  - 인원(Box 사용) - 인원 계산을 서비스 vs 엔티티에서?
-	 *  - 인원 계산에 캐시 적용 찾아보기(변동 시점에만 갱신하기)
-	 *  - 현재 내 별칭
-	 *  - 현재 내 권한
-	 *  - fromEntity(): Workspace, WorkspaceMember -> WorkspaceParticipateResponse
-	 */
 	private final String name;
 	private final String description;
 	private final String code;

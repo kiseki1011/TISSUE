@@ -7,7 +7,7 @@ import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.service.MemberService;
 
 @Component
-public class SignupFixture {
+public class MemberServiceFixture {
 
 	@Autowired
 	private MemberService memberService;
@@ -22,5 +22,9 @@ public class SignupFixture {
 		memberService.signup(signupRequest);
 	}
 
-	// Todo: 탈퇴 관련 픽스쳐
+	/*
+	 * Todo
+	 *  - 탈퇴 픽스처
+	 *  - 이메일 수정 픽스처
+	 */
 }

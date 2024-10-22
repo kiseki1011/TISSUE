@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.authentication.controller;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,16 +31,12 @@ public class AuthenticationController {
 	@PostMapping("/login")
 	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
 		HttpServletRequest request) {
+
 		LoginResponse loginResponse = authenticationService.login(loginRequest);
 
-		/**
-		 * 세션에 loginId 또는 email을 세션에 저장한다
-		 * Todo:
-		 * 아래의 케이스에 대한 처리가 필요하다.
-		 * loginId가 null은 아니지만 DB에 없고 email을 통해 조회한 경우, 또는 그 반대의 케이스.
-		 */
 		HttpSession session = request.getSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER, loginResponse.getLoginId());
+
 		return ApiResponse.ok("Login Success", loginResponse);
 	}
 
@@ -46,10 +44,11 @@ public class AuthenticationController {
 	@LoginRequired
 	@PostMapping("/logout")
 	public ApiResponse<Void> logout(HttpServletRequest request) {
+
 		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
+		Optional.ofNullable(session)
+			.ifPresent(HttpSession::invalidate);
+
 		return ApiResponse.okWithNoContent("Logout Success");
 	}
 

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
+
 	private final AuthorizationInterceptor authorizationInterceptor;
 	private final AuthenticationInterceptor authenticationInterceptor;
 	private final LoginMemberArgumentResolver loginMemberArgumentResolver;

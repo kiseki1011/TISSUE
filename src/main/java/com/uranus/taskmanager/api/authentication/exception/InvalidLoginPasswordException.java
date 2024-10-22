@@ -2,6 +2,8 @@ package com.uranus.taskmanager.api.authentication.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.uranus.taskmanager.api.common.exception.AuthenticationException;
+
 public class InvalidLoginPasswordException extends AuthenticationException {
 
 	private static final String MESSAGE = "The given login password is invalid";

@@ -25,8 +25,8 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -39,7 +39,8 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Todo
- * UserWorkspaceService, AdminWorkspaceService, ReaderWorkspaceService 분리 고려
+ *  - UserWorkspaceService, AdminWorkspaceService 분리 고려
+ *  - Command용 서비스, Query용 서비스 분리 고려
  */
 @Service
 @RequiredArgsConstructor
@@ -53,60 +54,27 @@ public class WorkspaceService {
 
 	/**
 	 * Todo
-	 * 조회 로직 수정 필요
-	 * get -> getWorkspaceDetail
+	 *  - 조회 로직 수정 필요
+	 *  - get -> getWorkspaceDetail
 	 */
 	@Transactional(readOnly = true)
-	public WorkspaceResponse get(String workspaceCode) {
+	public WorkspaceCreateResponse get(String workspaceCode) {
 
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
-		return WorkspaceResponse.from(workspace);
+		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		return WorkspaceCreateResponse.from(workspace);
 	}
 
-	// Todo: 로직, 가독성 리팩토링
 	@Transactional
 	public InviteMemberResponse inviteMember(String workspaceCode, InviteMemberRequest request,
 		LoginMemberDto loginMember) {
 
-		String identifier = request.getMemberIdentifier();
+		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
 
-		// 워크스페이스가 존재하는지 조회
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+		checkIfMemberAlreadyParticipates(workspaceCode, invitedMember);
+		checkIfPendingInvitationExists(workspace, invitedMember);
 
-		// 초대할 멤버 조회
-		Member invitedMember = memberRepository.findByLoginIdOrEmail(identifier, identifier)
-			.orElseThrow(MemberNotFoundException::new);
-
-		// 만약 워크스페이스에 이미 참여하고 있는 멤버면 예외 발생
-		// Todo: isPresent() 대신 더 좋은 API가 있는지 찾아보기. (orElseThrow() 적용)
-		boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			invitedMember.getLoginId(),
-			workspaceCode).isPresent();
-
-		if (isAlreadyMember) {
-			throw new MemberAlreadyParticipatingException();
-		}
-
-		// 초대가 이미 존재하는지 확인
-		// 만약 초대가 이미 PENDING 상태로 있으면 예외 발생
-		// Todo: Optional은 굉장히 비싸다! 최대한 빠르게 해소하는 것을 권장한다.
-		//  isPresent() 말고 orElse(), orElseGet(), orElseThrow()의 사용을 고려하자.
-		Optional<Invitation> existingInvitation = invitationRepository.findByWorkspaceAndMember(workspace,
-			invitedMember);
-
-		if (existingInvitation.isPresent() && existingInvitation.get().getStatus() == InvitationStatus.PENDING) {
-			throw new InvitationAlreadyExistsException();
-		}
-
-		// 초대 생성
-		Invitation invitation = Invitation.builder()
-			.workspace(workspace)
-			.member(invitedMember)
-			.status(InvitationStatus.PENDING)
-			.build();
-		invitationRepository.save(invitation);
+		Invitation invitation = savePendingInvitation(workspace, invitedMember);
 
 		return InviteMemberResponse.from(invitation);
 	}
@@ -118,54 +86,20 @@ public class WorkspaceService {
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
-		// 워크스페이스가 존재하는지 조회
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+		Workspace workspace = findWorkspaceByCode(workspaceCode);
 
-		// identifier들의 목록을 순회하면서 초대 처리 로직 수행
 		for (String identifier : request.getMemberIdentifiers()) {
 			try {
-				// 초대할 멤버 조회
-				Member invitedMember = memberRepository.findByLoginIdOrEmail(identifier, identifier)
-					.orElseThrow(MemberNotFoundException::new);
+				Member invitedMember = findMemberByIdentifier(identifier);
 
-				// 만약 워크스페이스에 이미 참여하고 있는 멤버면 예외 발생
-				boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-					invitedMember.getLoginId(),
-					workspaceCode).isPresent();
+				checkIfMemberAlreadyParticipates(workspaceCode, invitedMember);
+				checkIfPendingInvitationExists(workspace, invitedMember);
 
-				if (isAlreadyMember) {
-					throw new MemberAlreadyParticipatingException();
-				}
-
-				// 초대의 존재 확인, 만약 초대가 이미 PENDING 상태로 있으면 예외 발생
-				Optional<Invitation> existingInvitation = invitationRepository.findByWorkspaceAndMember(workspace,
-					invitedMember);
-
-				if (existingInvitation.isPresent()
-					&& existingInvitation.get().getStatus() == InvitationStatus.PENDING) {
-					throw new InvitationAlreadyExistsException();
-				}
-
-				// 초대 생성 로직
-				Invitation invitation = Invitation.builder()
-					.workspace(workspace)
-					.member(invitedMember)
-					.status(InvitationStatus.PENDING)
-					.build();
-				invitationRepository.save(invitation);
-
-				// 성공한 초대 추가
-				invitedMembers.add(new InvitedMember(invitedMember.getLoginId(),
-					invitedMember.getEmail())); // Todo: InvitedMember에서 identifier만 사용하는 것 고려
-
-				// Todo: 현재 위에서 발생한 예외를 바로 catch로 잡는 형태이다.
-				//  예외는 굉장히 비싸다는 것을 알아두자! 예외를 발생시키지 않고 처리하는 방법을 찾아보자.
+				savePendingInvitation(workspace, invitedMember);
+				addInvitedMember(invitedMembers, invitedMember);
 			} catch (Exception e) {
-				// 실패한 경우 오류 메시지에 따라 추가
-				// Todo: 리팩토링 고민
-				String errorMessage = e instanceof CommonException ? e.getMessage() : "Invitation failed";
-				failedInvitedMembers.add(new FailedInvitedMember(identifier, errorMessage));
+				String errorMessage = getErrorMessageFromException(e);
+				addFailedInvitedMember(identifier, failedInvitedMembers, errorMessage);
 			}
 		}
 
@@ -176,42 +110,97 @@ public class WorkspaceService {
 	public WorkspaceParticipateResponse participateWorkspace(String workspaceCode, WorkspaceParticipateRequest request,
 		LoginMemberDto loginMember) {
 
-		// 워크스페이스가 존재하는지 조회
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		Member member = findMemberByLoginId(loginMember);
 
-		// 로그인 정보에서 가져온 정보를 통해 멤버 조회
-		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
-			.orElseThrow(MemberNotFoundException::new);
+		// Todo: WorkspaceParticipateResponse 참고, Workspace 엔티티에 인원에 대한 캐싱 필드를 추가하는 것을 고려
+		int headcount = getHeadcount(workspace);
 
-		// 워크스페이스 참여 인원 계산
-		// Todo: WorkspaceParticipateResponse 참고, Workspace 엔티티에 캐싱 필드를 추가하는 것을 고려
-		int headcount = workspaceMemberRepository.countByWorkspaceId(workspace.getId());
-
-		// 만약 워크스페이스에 이미 참여하고 있는 멤버면 예외 발생
-		// 예외 방식 -> Early return 방식으로 변경
-		Optional<WorkspaceMember> findWorkspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			loginMember.getLoginId(),
-			workspaceCode);
-
-		boolean isAlreadyMember = findWorkspaceMember.isPresent();
-
-		if (isAlreadyMember) {
-			return WorkspaceParticipateResponse.from(workspace, findWorkspaceMember.get(), headcount, isAlreadyMember);
+		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(
+			workspaceCode, loginMember);
+		if (optionalWorkspaceMember.isPresent()) {
+			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), headcount,
+				true);
 		}
 
-		// 만약 워크스페이스가 비밀번호를 가지고 있고, 비밀번호 대조를 실패하면 예외 발생
-		// Todo: null을 사용하지 않고 Optional 사용
-		if (workspace.getPassword() != null) {
-			if (!passwordEncoder.matches(request.getPassword(), workspace.getPassword())) {
-				throw new InvalidWorkspacePasswordException();
-			}
-		}
+		validatePasswordIfExists(workspace, request.getPassword());
 
-		// 워크스페이스 참여
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 			member.getEmail());
 
-		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, isAlreadyMember);
+		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, false);
+	}
+
+	private Workspace findWorkspaceByCode(String workspaceCode) {
+		return workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(WorkspaceNotFoundException::new);
+	}
+
+	private Member findMemberByIdentifier(String identifier) {
+		return memberRepository.findByLoginIdOrEmail(identifier, identifier)
+			.orElseThrow(MemberNotFoundException::new);
+	}
+
+	private Member findMemberByLoginId(LoginMemberDto loginMember) {
+		return memberRepository.findByLoginId(loginMember.getLoginId())
+			.orElseThrow(MemberNotFoundException::new);
+	}
+
+	private void checkIfMemberAlreadyParticipates(String workspaceCode, Member invitedMember) {
+		boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
+			invitedMember.getLoginId(),
+			workspaceCode).isPresent();
+
+		if (isAlreadyMember) {
+			throw new MemberAlreadyParticipatingException();
+		}
+	}
+
+	private void checkIfPendingInvitationExists(Workspace workspace, Member invitedMember) {
+		invitationRepository.findByWorkspaceAndMember(workspace, invitedMember)
+			.filter(invitation -> invitation.getStatus() == InvitationStatus.PENDING)
+			.ifPresent(invitation -> {
+				throw new InvitationAlreadyExistsException();
+			});
+	}
+
+	private Invitation savePendingInvitation(Workspace workspace, Member invitedMember) {
+		Invitation invitation = Invitation.builder()
+			.workspace(workspace)
+			.member(invitedMember)
+			.status(InvitationStatus.PENDING)
+			.build();
+		invitationRepository.save(invitation);
+		return invitation;
+	}
+
+	private static void addInvitedMember(List<InvitedMember> invitedMembers, Member invitedMember) {
+		invitedMembers.add(new InvitedMember(invitedMember.getLoginId(),
+			invitedMember.getEmail()));
+	}
+
+	private static void addFailedInvitedMember(String identifier, List<FailedInvitedMember> failedInvitedMembers,
+		String errorMessage) {
+		failedInvitedMembers.add(new FailedInvitedMember(identifier, errorMessage));
+	}
+
+	private static String getErrorMessageFromException(Exception e) {
+		return e instanceof CommonException ? e.getMessage() : "Invitation failed";
+	}
+
+	private void validatePasswordIfExists(Workspace workspace, String inputPassword) {
+		Optional.ofNullable(workspace.getPassword())
+			.filter(password -> passwordEncoder.matches(inputPassword, password))
+			.orElseThrow(InvalidWorkspacePasswordException::new);
+	}
+
+	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMemberDto loginMember) {
+		return workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
+			loginMember.getLoginId(),
+			workspaceCode);
+	}
+
+	private int getHeadcount(Workspace workspace) {
+		return workspaceMemberRepository.countByWorkspaceId(workspace.getId());
 	}
 }

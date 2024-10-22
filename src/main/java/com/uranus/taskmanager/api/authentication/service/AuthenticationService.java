@@ -23,12 +23,21 @@ public class AuthenticationService {
 	@Transactional
 	public LoginResponse login(LoginRequest loginRequest) {
 
-		Member member = memberRepository.findByLoginIdOrEmail(loginRequest.getLoginId(), loginRequest.getEmail())
-			.orElseThrow(InvalidLoginIdentityException::new);
+		Member member = findMemberByLoginIdOrEmail(loginRequest);
 
+		validatePassword(loginRequest, member);
+
+		return LoginResponse.from(member);
+	}
+
+	private Member findMemberByLoginIdOrEmail(LoginRequest loginRequest) {
+		return memberRepository.findByLoginIdOrEmail(loginRequest.getLoginId(), loginRequest.getEmail())
+			.orElseThrow(InvalidLoginIdentityException::new);
+	}
+
+	private void validatePassword(LoginRequest loginRequest, Member member) {
 		if (!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
 			throw new InvalidLoginPasswordException();
 		}
-		return LoginResponse.from(member);
 	}
 }

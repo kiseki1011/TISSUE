@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.integrationtest;
+package com.uranus.taskmanager.api.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -15,7 +15,8 @@ import org.springframework.http.HttpStatus;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.basetest.BaseApiIntegrationTest;
-import com.uranus.taskmanager.fixture.controller.RestAssuredApiFixture;
+import com.uranus.taskmanager.fixture.api.LoginApiFixture;
+import com.uranus.taskmanager.fixture.api.MemberApiFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import io.restassured.RestAssured;
@@ -25,7 +26,9 @@ public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
 	@Autowired
 	private AuditorAware<String> auditorAware;
 	@Autowired
-	private RestAssuredApiFixture restAssuredApiFixture;
+	private LoginApiFixture loginApiFixture;
+	@Autowired
+	private MemberApiFixture memberApiFixture;
 	@Autowired
 	private DatabaseCleaner databaseCleaner;
 
@@ -43,8 +46,8 @@ public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
 		String email = "user123@test.com";
 		String password = "password123!";
 
-		restAssuredApiFixture.signup(loginId, email, password);
-		String sessionCookie = restAssuredApiFixture.loginWithId(loginId, password);
+		memberApiFixture.signupApi(loginId, email, password);
+		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -77,8 +80,8 @@ public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
 		String email = "user123@test.com";
 		String password = "password123!";
 
-		restAssuredApiFixture.signup(loginId, email, password);
-		String sessionCookie = restAssuredApiFixture.loginWithId(loginId, password);
+		memberApiFixture.signupApi(loginId, email, password);
+		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")

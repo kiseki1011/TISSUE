@@ -22,29 +22,43 @@ public class MemberService {
 
 	@Transactional
 	public SignupResponse signup(SignupRequest signupRequest) {
-		// 로그인 ID, 이메일 중복 체크
-		checkLoginIdDuplicate(signupRequest.getLoginId());
-		checkEmailDuplicate(signupRequest.getEmail());
 
-		String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
+		checkLoginIdAndEmailDuplication(signupRequest);
+		Member member = createMember(signupRequest);
 
-		Member member = Member.builder()
+		return SignupResponse.from(memberRepository.save(member));
+	}
+
+	private Member createMember(SignupRequest signupRequest) {
+		String encodedPassword = encodePassword(signupRequest.getPassword());
+
+		// Todo: SignupRequest에 to()를 만들어서 사용하기
+		return Member.builder()
 			.loginId(signupRequest.getLoginId())
 			.email(signupRequest.getEmail())
 			.password(encodedPassword)
 			.build();
-		return SignupResponse.from(memberRepository.save(member));
 	}
 
-	public void checkLoginIdDuplicate(String loginId) {
+	private void checkLoginIdAndEmailDuplication(SignupRequest signupRequest) {
+		checkLoginIdDuplicate(signupRequest.getLoginId());
+		checkEmailDuplicate(signupRequest.getEmail());
+	}
+
+	private void checkLoginIdDuplicate(String loginId) {
 		if (memberRepository.existsByLoginId(loginId)) {
 			throw new DuplicateLoginIdException();
 		}
 	}
 
-	public void checkEmailDuplicate(String email) {
+	private void checkEmailDuplicate(String email) {
 		if (memberRepository.existsByEmail(email)) {
 			throw new DuplicateEmailException();
 		}
 	}
+
+	private String encodePassword(String password) {
+		return passwordEncoder.encode(password);
+	}
+
 }
