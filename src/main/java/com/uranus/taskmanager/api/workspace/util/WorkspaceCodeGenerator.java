@@ -11,8 +11,8 @@ public class WorkspaceCodeGenerator {
 
 	/**
 	 * Todo
-	 * 상수 정리하기
-	 * 해시 알고리즘 변경(보안 필요 없음), 더 빠른 알고리즘 고려
+	 *  - 상수 정리하기
+	 *  - 해시 알고리즘 변경(보안은 낮은 우선순위), 더 빠른 알고리즘 고려
 	 */
 	private static final int WORKSPACE_CODE_LENGTH = 8;
 	private static final String HASH_ALGORITHM = "SHA-256";
@@ -35,7 +35,7 @@ public class WorkspaceCodeGenerator {
 			MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
 			return md.digest(inputString.getBytes());
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e); // Todo: 커스텀 예외 만들기, HashAlgorithmNotFoundException
+			throw new RuntimeException(e);
 		}
 	}
 }
