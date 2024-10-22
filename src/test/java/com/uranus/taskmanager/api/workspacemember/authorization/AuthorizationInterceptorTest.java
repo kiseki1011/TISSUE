@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +24,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.InsufficientWorkspaceRoleException;
+import com.uranus.taskmanager.api.workspacemember.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -116,47 +119,30 @@ class AuthorizationInterceptorTest {
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 
-	@Test
-	@DisplayName("워크스페이스 코드가 8자리 미만인 경우 예외가 발생한다")
-	void test8() {
-		// given
-		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
-		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn("user123");
-		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/BELOW8");
+	@ParameterizedTest
+	@CsvSource({
+		"/api/v1/workspaces/WORKSPC123, WORKSPC123",    // URI 끝에 코드가 있는 경우
+		"/api/v1/workspaces/WORKSPC123/some/path, WORKSPC123",  // URI 중간에 코드가 있는 경우
+		"/api/v1/workspaces/ANOTHERCODE123/, ANOTHERCODE123"   // URI 끝에 슬래시가 있는 경우
+	})
+	@DisplayName("워크스페이스 코드 추출 로직은 '/api/v1/workspaces/' 부터, 다음 '/'전 또는 URI 끝까지의 문자열을 추출한다")
+	void test8(String uri, String expectedCode) {
+		// when
+		String extractedCode = authorizationInterceptor.extractWorkspaceCodeFromUri(uri);
 
-		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(IllegalArgumentException.class);
+		// then
+		assertThat(extractedCode).isEqualTo(expectedCode);
 	}
 
-	@Test
-	@DisplayName("워크스페이스 코드가 8자리 초과인 경우 예외가 발생한다")
+	@DisplayName("다음 URI '/api/v1/workspaces/'에서 코드 없이 바로 '/'가 붙어있는 경우 예외가 발생한다")
 	void test9() {
 		// given
-		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
-		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn("user123");
-		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/LONGERTHAN8");
+		String uri = "/api/v1/workspaces//";
 
 		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> authorizationInterceptor.extractWorkspaceCodeFromUri(uri))
+			.isInstanceOf(InvalidWorkspaceCodeInUriException.class);
 	}
-
-	// @Test
-	// @DisplayName("워크스페이스 코드 추출 로직은 '/api/v1/workspaces/' 부터, 다음 '/'전 또는 URI 끝까지의 문자열을 추출한다")
-	// void test10() {
-	// 	// given
-	// 	when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
-	// 	when(request.getSession(false)).thenReturn(session);
-	// 	when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn("user123");
-	// 	when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE/");
-	//
-	// 	// when & then
-	// 	assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-	// 		.isInstanceOf(IllegalArgumentException.class);
-	// }
 
 	@Test
 	@DisplayName("멤버가 워크스페이스에 속해있지 않을 경우 예외가 발생한다")

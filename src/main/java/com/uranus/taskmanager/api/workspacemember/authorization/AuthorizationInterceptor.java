@@ -14,6 +14,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.InsufficientWorkspaceRoleException;
+import com.uranus.taskmanager.api.workspacemember.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -35,6 +36,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
+	// Todo: 로깅 정리
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
@@ -49,20 +51,16 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		// 로그인된 사용자 정보 가져오기
 		String loginId = getLoginIdFromSession(request.getSession(false))
 			.orElseThrow(UserNotLoggedInException::new);
 		log.info("loginId from session = {}", loginId);
 
-		// 요청 URL에서 workspaceCode 추출
 		String workspaceCode = extractWorkspaceCodeFromUri(request.getRequestURI());
 		log.info("extracted workspaceCode = {}", workspaceCode);
 
-		// workspaceCode를 통해 워크스페이스 찾기
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);
 
-		// 해당 워크스페이스에 대한 사용자의 역할 가져오기
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId(loginId,
 				workspace.getId())
 			.orElseThrow(MemberNotInWorkspaceException::new);
@@ -70,12 +68,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		checkIsRoleSufficient(workspaceMember, roleRequired);
 
 		return true;
-	}
-
-	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
-		if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
-			throw new InsufficientWorkspaceRoleException();
-		}
 	}
 
 	private static boolean isNotHandlerMethod(Object handler) {
@@ -92,53 +84,58 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 			.map(s -> (String)s.getAttribute(SessionKey.LOGIN_MEMBER));
 	}
 
+	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
+		if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
+			throw new InsufficientWorkspaceRoleException();
+		}
+	}
+
 	/**
 	 * 권한 수준: ADMIN > USER > READER
-	 * 권한에 정수 value를 부여해서 부등호 형식으로 비교
+	 * 권한에 정수 level을 부여해서 부등호 형식으로 비교한다
+	 * ADMIN - 3
+	 * USER - 2
+	 * READER - 1
+	 *
+	 * @param userRole - 사용자의 권한
+	 * @param requiredRoles - 권한 리스트
+	 * @return boolean - 접근 거부 여부(예시: 권한이 부족한 true 반환)
 	 */
 	private boolean isAccessDenied(WorkspaceRole userRole, WorkspaceRole[] requiredRoles) {
-		int userRoleLevel = userRole.getLevel(); // 예시: ADMIN=3, USER=2, READER=1
+		int userRoleLevel = userRole.getLevel();
 		return Arrays.stream(requiredRoles)
 			.map(WorkspaceRole::getLevel)
-			.noneMatch(requiredRoleLevel -> userRoleLevel >= requiredRoleLevel); // userRole이 충분한 권한을 갖고 있으면 false 반환
+			.noneMatch(requiredRoleLevel -> userRoleLevel >= requiredRoleLevel);
 	}
 
 	/**
 	 * Todo
-	 * 	- 사실상 정책이 코드에 하드코딩 되어 있다
-	 * 	- 만약 코드가 8자리가 아닌 9자리를 사용하기로 하면 코드를 다시 수정해야 하는 일이 발생한다
-	 * 	- 동적으로 코드 부분을 읽어서 추출하도록 로직을 구현하는 것이 좋을 것 같다
-	 * 	- 다음의 문제도 있다
-	 * 	  - 코드가 7자리면 ArrayIndexOutOfBoundException
-	 * 	  - 코드가 9자리면 앞 8자리만 자른다
-	 * 	- 코드가 8자리가 아니면 예외가 발생하도록 로직을 추가
+	 * 	- 테스트를 위해 public으로 열어두었다
+	 * 	- private으로 닫고 레플리케이션을 사용해서 테스트하는 것을 고려하였으나
+	 * 	- 데이터 수정 보다는 유틸성 메서드에 가깝기 때문에 그냥 public으로 열기로 했다
+	 * 	- 해당 메서드와 유사한 로직을 다른 곳에 사용하게 된다면 따로 유틸 클래스로 분리 요망
+	 * <p>
 	 * URI에서 WORKSPACE_PREFIX_LENGTH을 시작 인덱스로 시작해서 8자리 문자열을 추출한다
 	 * 만약 URI의 길이를 계산해서 코드가 8자리가 아니라면 예외 발생
 	 *
 	 * @param uri - 현재 HTTP 요청의 URI
-	 * @return String - URI에서 추출된 8자리의 워크스페이스 코드
+	 * @return String - URI에서 추출된 워크스페이스 코드
 	 */
 	public String extractWorkspaceCodeFromUri(String uri) {
 		return Optional.of(uri.indexOf(WORKSPACE_PREFIX))
 			.filter(startIndex -> startIndex != -1)
 			.map(startIndex -> {
 				int codeStartIndex = startIndex + WORKSPACE_PREFIX_LENGTH;
-				int codeEndIndex = codeStartIndex + 8;
+				int slashIndex = uri.indexOf("/", codeStartIndex);
 
-				// URI의 길이가 워크스페이스 코드의 끝까지 충분한지 확인
-				if (uri.length() != codeEndIndex) {
-					throw new IllegalArgumentException("Workspace code must be 8 characters long");
-				}
-				return uri.substring(codeStartIndex, codeEndIndex); // 워크스페이스 코드 추출
+				return (slashIndex == -1)
+					? uri.substring(codeStartIndex) : uri.substring(codeStartIndex, slashIndex);
 			})
-			.orElseThrow(() -> new IllegalArgumentException("Invalid workspace code in URI")); // Todo: 예외 만들기
+			.filter(this::isNotEmpty)
+			.orElseThrow(InvalidWorkspaceCodeInUriException::new);
 	}
 
-	private String extractWorkspaceCodeFromUri2(String uri) {
-		return Optional.of(uri.indexOf(WORKSPACE_PREFIX))
-			.filter(startIndex -> startIndex != -1)
-			.map(startIndex -> uri.substring(startIndex + WORKSPACE_PREFIX_LENGTH,
-				startIndex + WORKSPACE_PREFIX_LENGTH + 8))
-			.orElseThrow(() -> new IllegalArgumentException("Invalid workspace code in URI")); // Todo: 예외 만들기
+	private boolean isNotEmpty(String code) {
+		return !code.isEmpty();
 	}
 }
