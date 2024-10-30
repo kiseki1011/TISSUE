@@ -21,28 +21,28 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public SignupResponse signup(SignupRequest signupRequest) {
+	public SignupResponse signup(SignupRequest request) {
 
-		checkLoginIdAndEmailDuplication(signupRequest);
-		Member member = createMember(signupRequest);
+		checkLoginIdAndEmailDuplication(request);
+		Member member = createMember(request);
 
 		return SignupResponse.from(memberRepository.save(member));
 	}
 
-	private Member createMember(SignupRequest signupRequest) {
-		String encodedPassword = encodePassword(signupRequest.getPassword());
+	private Member createMember(SignupRequest request) {
+		String encodedPassword = encodePassword(request.getPassword());
 
 		// Todo: SignupRequest에 to()를 만들어서 사용하기
 		return Member.builder()
-			.loginId(signupRequest.getLoginId())
-			.email(signupRequest.getEmail())
+			.loginId(request.getLoginId())
+			.email(request.getEmail())
 			.password(encodedPassword)
 			.build();
 	}
 
-	private void checkLoginIdAndEmailDuplication(SignupRequest signupRequest) {
-		checkLoginIdDuplicate(signupRequest.getLoginId());
-		checkEmailDuplicate(signupRequest.getEmail());
+	private void checkLoginIdAndEmailDuplication(SignupRequest request) {
+		checkLoginIdDuplicate(request.getLoginId());
+		checkEmailDuplicate(request.getEmail());
 	}
 
 	private void checkLoginIdDuplicate(String loginId) {
