@@ -19,9 +19,11 @@ import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.RoleRequired;
@@ -42,9 +44,11 @@ public class WorkspaceController {
 	 *  - 워크스페이스 삭제 DELETE
 	 *  - 워크스페이스 비밀번호 설정(만약 없으면 설정, 있으면 수정)
 	 *  - 워크스페이스 상세 정보 조회(워크스페이스 코드를 통해, 해당 워크스페이스의 멤버여야 함) GET
+	 *  - 내가 참여 중인 모든 워크스페이스 조회하기
 	 */
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceService workspaceService;
+	private final WorkspaceQueryService workspaceQueryService;
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -64,10 +68,18 @@ public class WorkspaceController {
 	 *  - 워크스페이스 코드를 통해 조회
 	 */
 	@GetMapping("/{code}")
-	public ApiResponse<WorkspaceCreateResponse> getWorkspace(@PathVariable String code) {
+	public ApiResponse<WorkspaceCreateResponse> getWorkspaceDetail(@PathVariable String code) {
 
-		WorkspaceCreateResponse response = workspaceService.get(code);
+		WorkspaceCreateResponse response = workspaceService.getWorkspaceDetail(code);
 		return ApiResponse.ok("Workspace Found", response);
+	}
+
+	@LoginRequired
+	@GetMapping
+	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(@LoginMember LoginMemberDto loginMember) {
+
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember);
+		return ApiResponse.ok("Found currently joined Workspaces", response);
 	}
 
 	@LoginRequired
@@ -94,6 +106,11 @@ public class WorkspaceController {
 		return ApiResponse.ok("Members Invited", response);
 	}
 
+	/*
+	 * Todo
+	 *  - participate -> join으로 명칭 변경
+	 *  - MemberAlreadyParticipationException -> AlreadyJoinedWorkspaceException 명칭 변경
+	 */
 	@LoginRequired
 	@PostMapping("/{code}")
 	public ApiResponse<WorkspaceParticipateResponse> participateWorkspace(
