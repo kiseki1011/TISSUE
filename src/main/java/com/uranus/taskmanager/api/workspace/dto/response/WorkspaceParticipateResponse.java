@@ -1,44 +1,39 @@
 package com.uranus.taskmanager.api.workspace.dto.response;
 
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 @Getter
 public class WorkspaceParticipateResponse {
 
-	private final String name;
-	private final String description;
-	private final String code;
-	private final int headcount;
-	private final String nickname;
-	private final WorkspaceRole myRole;
-	private final boolean isAlreadyMember;
+	private WorkspaceDetail workspaceDetail;
+	// Todo: Workspace에 headcount 필드 추가 -> WorkspaceDetail에 headcount 추가
+	//  -> WorkspaceParticipateResponse의 headcount 제거
+	private int headcount;
+	private String nickname;
+	private boolean isAlreadyMember;
 
 	@Builder
-	public WorkspaceParticipateResponse(String name, String description, String code, int headcount, String nickname,
-		WorkspaceRole myRole, boolean isAlreadyMember) {
-		this.name = name;
-		this.description = description;
-		this.code = code;
+	public WorkspaceParticipateResponse(WorkspaceDetail workspaceDetail, int headcount, String nickname,
+		boolean isAlreadyMember) {
+		this.workspaceDetail = workspaceDetail;
 		this.headcount = headcount;
 		this.nickname = nickname;
-		this.myRole = myRole;
 		this.isAlreadyMember = isAlreadyMember;
 	}
 
 	public static WorkspaceParticipateResponse from(Workspace workspace, WorkspaceMember workspaceMember,
 		int headcount, boolean isAlreadyMember) {
 		return WorkspaceParticipateResponse.builder()
-			.name(workspace.getName())
-			.description(workspace.getDescription())
-			.code(workspace.getCode())
+			.workspaceDetail(WorkspaceDetail.from(workspace, workspaceMember.getRole()))
 			.headcount(headcount)
 			.nickname(workspaceMember.getNickname())
-			.myRole(workspaceMember.getRole())
 			.isAlreadyMember(isAlreadyMember)
 			.build();
 	}
