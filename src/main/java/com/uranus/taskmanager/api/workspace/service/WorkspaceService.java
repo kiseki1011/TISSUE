@@ -52,13 +52,8 @@ public class WorkspaceService {
 	private final InvitationRepository invitationRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	/**
-	 * Todo
-	 *  - 조회 로직 수정 필요
-	 *  - get -> getWorkspaceDetail
-	 */
 	@Transactional(readOnly = true)
-	public WorkspaceCreateResponse get(String workspaceCode) {
+	public WorkspaceCreateResponse getWorkspaceDetail(String workspaceCode) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		return WorkspaceCreateResponse.from(workspace);
@@ -123,10 +118,11 @@ public class WorkspaceService {
 				true);
 		}
 
-		validatePasswordIfExists(workspace, request.getPassword());
+		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 			member.getEmail());
+		workspaceMemberRepository.save(workspaceMember);
 
 		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, false);
 	}
@@ -188,10 +184,23 @@ public class WorkspaceService {
 		return e instanceof CommonException ? e.getMessage() : "Invitation failed";
 	}
 
-	private void validatePasswordIfExists(Workspace workspace, String inputPassword) {
-		Optional.ofNullable(workspace.getPassword())
+	private void validatePasswordIfExists2(String workspacePassword, String inputPassword) {
+		Optional.ofNullable(workspacePassword)
 			.filter(password -> passwordEncoder.matches(inputPassword, password))
 			.orElseThrow(InvalidWorkspacePasswordException::new);
+	}
+
+	private void validatePasswordIfExists(String workspacePassword, String inputPassword) {
+		if (workspacePassword == null) {
+			return;
+		}
+		if (passwordDoesNotMatch(workspacePassword, inputPassword)) {
+			throw new InvalidWorkspacePasswordException();
+		}
+	}
+
+	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
+		return !passwordEncoder.matches(inputPassword, workspacePassword);
 	}
 
 	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMemberDto loginMember) {
