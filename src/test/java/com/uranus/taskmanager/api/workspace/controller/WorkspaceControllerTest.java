@@ -46,6 +46,7 @@ import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateRes
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -71,6 +72,8 @@ class WorkspaceControllerTest {
 	private MemberService memberService;
 	@MockBean
 	private CheckCodeDuplicationService workspaceCreateService;
+	@MockBean
+	private WorkspaceQueryService workspaceQueryService;
 	@MockBean
 	private MemberRepository memberRepository;
 	@MockBean
@@ -185,7 +188,7 @@ class WorkspaceControllerTest {
 			.description("Test description")
 			.code(code)
 			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceCreateResponse);
+		when(workspaceService.getWorkspaceDetail(code)).thenReturn(workspaceCreateResponse);
 
 		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())
@@ -201,7 +204,7 @@ class WorkspaceControllerTest {
 			.description("Test description")
 			.code(code)
 			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceCreateResponse);
+		when(workspaceService.getWorkspaceDetail(code)).thenReturn(workspaceCreateResponse);
 
 		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())

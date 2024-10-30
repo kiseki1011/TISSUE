@@ -90,7 +90,7 @@ class WorkspaceServiceTest {
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 
-		WorkspaceCreateResponse response = workspaceService.get(workspaceCode);
+		WorkspaceCreateResponse response = workspaceService.getWorkspaceDetail(workspaceCode);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getCode()).isEqualTo(workspaceCode);
@@ -104,7 +104,8 @@ class WorkspaceServiceTest {
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> workspaceService.get(workspaceCode)).isInstanceOf(WorkspaceNotFoundException.class);
+		assertThatThrownBy(() -> workspaceService.getWorkspaceDetail(workspaceCode)).isInstanceOf(
+			WorkspaceNotFoundException.class);
 
 		verify(workspaceRepository, times(1)).findByCode(workspaceCode);
 	}
@@ -327,7 +328,7 @@ class WorkspaceServiceTest {
 
 		// then
 		assertThat(response.isAlreadyMember()).isFalse();
-		assertThat(response.getCode()).isEqualTo(workspaceCode);
+		assertThat(response.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
 		assertThat(response.getHeadcount()).isEqualTo(3);
 	}
 
@@ -359,7 +360,7 @@ class WorkspaceServiceTest {
 		// then
 		assertThat(response).isNotNull();
 		assertThat(response.isAlreadyMember()).isTrue();
-		assertThat(response.getCode()).isEqualTo(workspaceCode);
+		assertThat(response.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
 		assertThat(response.getHeadcount()).isEqualTo(3);
 	}
 
