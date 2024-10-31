@@ -40,16 +40,7 @@ public class WorkspaceQueryService {
 	public MyWorkspacesResponse getMyWorkspaces(LoginMemberDto loginMember, Pageable pageable) {
 
 		String loginId = loginMember.getLoginId();
-
-		// List<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId).stream()
-		// 	.map(workspaceMember -> WorkspaceDetail.from(
-		// 		workspaceMember.getWorkspace(),
-		// 		workspaceMember.getRole()
-		// 	))
-		// 	.toList();
-
-		// return MyWorkspacesResponse.from(workspaceDetails);
-
+		
 		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace(),
