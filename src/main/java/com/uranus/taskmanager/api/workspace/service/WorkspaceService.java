@@ -25,7 +25,6 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -52,16 +51,9 @@ public class WorkspaceService {
 	private final InvitationRepository invitationRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	@Transactional(readOnly = true)
-	public WorkspaceCreateResponse getWorkspaceDetail(String workspaceCode) {
-
-		Workspace workspace = findWorkspaceByCode(workspaceCode);
-		return WorkspaceCreateResponse.from(workspace);
-	}
-
 	@Transactional
 	public InviteMemberResponse inviteMember(String workspaceCode, InviteMemberRequest request,
-		LoginMemberDto loginMember) {
+		LoginMemberDto loginMember) { // Todo: loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
@@ -78,6 +70,7 @@ public class WorkspaceService {
 	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request,
 		LoginMemberDto loginMember) {
 		// Todo: 일급 컬렉션으로 리팩토링하는 것을 고려. 관련 처리 로직을 해당 일급 컬렉션 클래스에서 정의.
+		//  - loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
@@ -180,14 +173,8 @@ public class WorkspaceService {
 		failedInvitedMembers.add(new FailedInvitedMember(identifier, errorMessage));
 	}
 
-	private static String getErrorMessageFromException(Exception e) {
-		return e instanceof CommonException ? e.getMessage() : "Invitation failed";
-	}
-
-	private void validatePasswordIfExists2(String workspacePassword, String inputPassword) {
-		Optional.ofNullable(workspacePassword)
-			.filter(password -> passwordEncoder.matches(inputPassword, password))
-			.orElseThrow(InvalidWorkspacePasswordException::new);
+	private static String getErrorMessageFromException(Exception exception) {
+		return exception instanceof CommonException ? exception.getMessage() : "Invitation failed";
 	}
 
 	private void validatePasswordIfExists(String workspacePassword, String inputPassword) {

@@ -13,6 +13,7 @@ import com.uranus.taskmanager.api.authentication.LoginMember;
 import com.uranus.taskmanager.api.authentication.LoginRequired;
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
@@ -61,16 +62,12 @@ public class WorkspaceController {
 		return ApiResponse.created("Workspace Created", response);
 	}
 
-	/**
-	 * Todo
-	 *  - 서비스의 get -> getWorkspaceDetail로 변경
-	 *  - getWorkspaceDetail은 특정 워크스페이스의 상세 정보 가져오는 API(내가 참여하는 상태여야 접근 가능)
-	 *  - 워크스페이스 코드를 통해 조회
-	 */
+	@LoginRequired
 	@GetMapping("/{code}")
-	public ApiResponse<WorkspaceCreateResponse> getWorkspaceDetail(@PathVariable String code) {
+	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(@PathVariable String code,
+		@LoginMember LoginMemberDto loginMember) {
 
-		WorkspaceCreateResponse response = workspaceService.getWorkspaceDetail(code);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code, loginMember);
 		return ApiResponse.ok("Workspace Found", response);
 	}
 
@@ -79,7 +76,7 @@ public class WorkspaceController {
 	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(@LoginMember LoginMemberDto loginMember) {
 
 		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember);
-		return ApiResponse.ok("Found currently joined Workspaces", response);
+		return ApiResponse.ok("Currently joined Workspaces Found", response);
 	}
 
 	@LoginRequired
