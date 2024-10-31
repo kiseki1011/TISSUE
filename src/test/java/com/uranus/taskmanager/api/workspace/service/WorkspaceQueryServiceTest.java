@@ -2,11 +2,17 @@ package com.uranus.taskmanager.api.workspace.service;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
@@ -61,12 +67,13 @@ public class WorkspaceQueryServiceTest {
 			.loginId("member1")
 			.email("member1@test.com")
 			.build();
+		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember1);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember1, pageable);
 
 		// then
-		assertThat(response.getWorkspaceCount()).isEqualTo(2);
+		assertThat(response.getTotalElements()).isEqualTo(2);
 	}
 
 	@Transactional
@@ -81,12 +88,13 @@ public class WorkspaceQueryServiceTest {
 			.build();
 
 		workspaceService.participateWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2, pageable);
 
 		// then
-		assertThat(response.getWorkspaceCount()).isEqualTo(1);
+		assertThat(response.getTotalElements()).isEqualTo(1);
 	}
 
 	@Transactional
@@ -140,5 +148,44 @@ public class WorkspaceQueryServiceTest {
 		// when & then
 		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1", loginMember2))
 			.isInstanceOf(WorkspaceNotFoundException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
+	void test6() {
+		// given
+		Member member2 = memberRespositoryFixture.createMember("member2", "member2@test.com", "member1password!");
+		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.build();
+
+		/*
+		 * workspace3 ~ 7 이름으로 워크스페이스 5개 생성
+		 */
+		for (int i = 3; i <= 7; i++) {
+			Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace" + i, "description" + i,
+				"TEST" + i, null);
+			workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.ADMIN);
+		}
+
+		// 워크스페이스 name 기준 역정렬을 하기 위한 PageRequest
+		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "workspace.name"));
+
+		// when
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2, pageable);
+
+		// then
+		assertThat(response.getTotalElements()).isEqualTo(5);
+
+		// 역정렬 되었는지 검증
+		List<WorkspaceDetail> workspaces = response.getWorkspaces();
+		List<String> expectedOrder = Arrays.asList("workspace7", "workspace6",
+			"workspace5", "workspace4", "workspace3");
+
+		for (int i = 0; i < workspaces.size(); i++) {
+			assertThat(workspaces.get(i).getName()).isEqualTo(expectedOrder.get(i));
+		}
 	}
 }
