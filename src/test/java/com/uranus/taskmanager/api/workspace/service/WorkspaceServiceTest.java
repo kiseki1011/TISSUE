@@ -24,12 +24,12 @@ import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -51,6 +51,8 @@ class WorkspaceServiceTest {
 
 	@InjectMocks
 	private WorkspaceService workspaceService;
+	@InjectMocks
+	private WorkspaceQueryService workspaceQueryService;
 
 	@Mock
 	private WorkspaceRepository workspaceRepository;
@@ -81,16 +83,31 @@ class WorkspaceServiceTest {
 	@Test
 	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 조회하면, 워크스페이스를 반환한다")
 	void test2() {
-		String workspaceCode = "testcode";
+		String workspaceCode = "TESTCODE";
 		Workspace workspace = Workspace.builder()
 			.code(workspaceCode)
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
 
-		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+		Member member = Member.builder()
+			.loginId("member1")
+			.build();
 
-		WorkspaceCreateResponse response = workspaceService.getWorkspaceDetail(workspaceCode);
+		LoginMemberDto loginMember = LoginMemberDto.builder()
+			.loginId("member1")
+			.build();
+
+		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.workspace(workspace)
+			.member(member)
+			.build();
+
+		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
+		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode("member1", workspaceCode))
+			.thenReturn(Optional.of(workspaceMember));
+
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember);
 
 		assertThat(response).isNotNull();
 		assertThat(response.getCode()).isEqualTo(workspaceCode);
@@ -102,9 +119,13 @@ class WorkspaceServiceTest {
 	void test3() {
 		String workspaceCode = "INVALIDCODE";
 
+		LoginMemberDto loginMember = LoginMemberDto.builder()
+			.loginId("member1")
+			.build();
+
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> workspaceService.getWorkspaceDetail(workspaceCode)).isInstanceOf(
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember)).isInstanceOf(
 			WorkspaceNotFoundException.class);
 
 		verify(workspaceRepository, times(1)).findByCode(workspaceCode);

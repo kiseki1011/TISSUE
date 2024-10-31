@@ -21,9 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uranus.taskmanager.api.authentication.SessionKey;
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
@@ -33,6 +35,7 @@ import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
@@ -41,13 +44,13 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
@@ -183,12 +186,18 @@ class WorkspaceControllerTest {
 	@DisplayName("워크스페이스 조회를 성공하면 OK를 응답한다")
 	public void test4() throws Exception {
 		String code = "ABCD1234";
-		WorkspaceCreateResponse workspaceCreateResponse = WorkspaceCreateResponse.builder()
-			.name("Test workspace")
-			.description("Test description")
+
+		WorkspaceDetail workspaceDetail = WorkspaceDetail.builder()
+			.name("Test Workspace")
+			.description("Test Description")
 			.code(code)
 			.build();
-		when(workspaceService.getWorkspaceDetail(code)).thenReturn(workspaceCreateResponse);
+
+		LoginMemberDto loginMember = LoginMemberDto.builder()
+			.loginId("member1")
+			.build();
+
+		when(workspaceQueryService.getWorkspaceDetail(code, loginMember)).thenReturn(workspaceDetail);
 
 		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())
@@ -199,18 +208,26 @@ class WorkspaceControllerTest {
 	@DisplayName("워크스페이스 코드로 조회가 가능하다")
 	public void test5() throws Exception {
 		String code = "ABCD1234";
-		WorkspaceCreateResponse workspaceCreateResponse = WorkspaceCreateResponse.builder()
-			.name("Test workspace")
-			.description("Test description")
+
+		WorkspaceDetail workspaceDetail = WorkspaceDetail.builder()
+			.name("Test Workspace")
+			.description("Test Description")
+			.role(WorkspaceRole.ADMIN)
 			.code(code)
 			.build();
-		when(workspaceService.getWorkspaceDetail(code)).thenReturn(workspaceCreateResponse);
 
-		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER, "member1");
+
+		when(workspaceQueryService.getWorkspaceDetail(eq(code), ArgumentMatchers.any(LoginMemberDto.class)))
+			.thenReturn(workspaceDetail);
+
+		mockMvc.perform(get("/api/v1/workspaces/{code}", code)
+				.session(session))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.code").value(code))
-			.andExpect(jsonPath("$.data.name").value("Test workspace"))
-			.andExpect(jsonPath("$.data.description").value("Test description"))
+			.andExpect(jsonPath("$.data.name").value("Test Workspace"))
+			.andExpect(jsonPath("$.data.description").value("Test Description"))
 			.andDo(print());
 	}
 

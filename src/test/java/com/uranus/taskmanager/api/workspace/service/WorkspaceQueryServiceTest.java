@@ -1,6 +1,7 @@
 package com.uranus.taskmanager.api.workspace.service;
 
-import org.assertj.core.api.Assertions;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,10 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRespositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
@@ -62,7 +66,7 @@ public class WorkspaceQueryServiceTest {
 		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember1);
 
 		// then
-		Assertions.assertThat(response.getWorkspaceCount()).isEqualTo(2);
+		assertThat(response.getWorkspaceCount()).isEqualTo(2);
 	}
 
 	@Transactional
@@ -70,7 +74,7 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
 	void test2() {
 		// given
-		Member member2 = memberRespositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		memberRespositoryFixture.createMember("member2", "member2@test.com", "member2password!");
 		LoginMemberDto loginMember2 = LoginMemberDto.builder()
 			.loginId("member2")
 			.email("member2@test.com")
@@ -82,6 +86,59 @@ public class WorkspaceQueryServiceTest {
 		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2);
 
 		// then
-		Assertions.assertThat(response.getWorkspaceCount()).isEqualTo(1);
+		assertThat(response.getWorkspaceCount()).isEqualTo(1);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("해당 워크스페이스에 참여하고 있으면, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
+	void test3() {
+		// given
+		memberRespositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.build();
+
+		workspaceService.participateWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+
+		// when
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2);
+
+		// then
+		assertThat(response.getCode()).isEqualTo("TEST1111");
+		assertThat(response.getName()).isEqualTo("workspace1");
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("해당 워크스페이스에 참여하지 않으면, 유효한 코드로 상세 정보를 조회해도 예외가 발생한다")
+	void test4() {
+		// given
+		memberRespositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.build();
+
+		// when & then
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2))
+			.isInstanceOf(MemberNotInWorkspaceException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("유효하지 않은 코드로 워크스페이스를 조회하면 예외가 발생한다")
+	void test5() {
+		// given
+		memberRespositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.build();
+
+		// when & then
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1", loginMember2))
+			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 }
