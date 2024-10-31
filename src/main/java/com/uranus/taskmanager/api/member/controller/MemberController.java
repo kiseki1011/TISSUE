@@ -35,9 +35,9 @@ public class MemberController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping("/signup")
-	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
-		SignupResponse signupResponse = memberService.signup(signupRequest);
-		return ApiResponse.created("Signup Success", signupResponse);
-	}
+	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
 
+		SignupResponse response = memberService.signup(request);
+		return ApiResponse.created("Signup Success", response);
+	}
 }

@@ -25,7 +25,6 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -52,21 +51,9 @@ public class WorkspaceService {
 	private final InvitationRepository invitationRepository;
 	private final PasswordEncoder passwordEncoder;
 
-	/**
-	 * Todo
-	 *  - 조회 로직 수정 필요
-	 *  - get -> getWorkspaceDetail
-	 */
-	@Transactional(readOnly = true)
-	public WorkspaceCreateResponse get(String workspaceCode) {
-
-		Workspace workspace = findWorkspaceByCode(workspaceCode);
-		return WorkspaceCreateResponse.from(workspace);
-	}
-
 	@Transactional
 	public InviteMemberResponse inviteMember(String workspaceCode, InviteMemberRequest request,
-		LoginMemberDto loginMember) {
+		LoginMemberDto loginMember) { // Todo: loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
@@ -83,6 +70,7 @@ public class WorkspaceService {
 	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request,
 		LoginMemberDto loginMember) {
 		// Todo: 일급 컬렉션으로 리팩토링하는 것을 고려. 관련 처리 로직을 해당 일급 컬렉션 클래스에서 정의.
+		//  - loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
@@ -123,10 +111,11 @@ public class WorkspaceService {
 				true);
 		}
 
-		validatePasswordIfExists(workspace, request.getPassword());
+		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 			member.getEmail());
+		workspaceMemberRepository.save(workspaceMember);
 
 		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, false);
 	}
@@ -184,14 +173,21 @@ public class WorkspaceService {
 		failedInvitedMembers.add(new FailedInvitedMember(identifier, errorMessage));
 	}
 
-	private static String getErrorMessageFromException(Exception e) {
-		return e instanceof CommonException ? e.getMessage() : "Invitation failed";
+	private static String getErrorMessageFromException(Exception exception) {
+		return exception instanceof CommonException ? exception.getMessage() : "Invitation failed";
 	}
 
-	private void validatePasswordIfExists(Workspace workspace, String inputPassword) {
-		Optional.ofNullable(workspace.getPassword())
-			.filter(password -> passwordEncoder.matches(inputPassword, password))
-			.orElseThrow(InvalidWorkspacePasswordException::new);
+	private void validatePasswordIfExists(String workspacePassword, String inputPassword) {
+		if (workspacePassword == null) {
+			return;
+		}
+		if (passwordDoesNotMatch(workspacePassword, inputPassword)) {
+			throw new InvalidWorkspacePasswordException();
+		}
+	}
+
+	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
+		return !passwordEncoder.matches(inputPassword, workspacePassword);
 	}
 
 	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMemberDto loginMember) {
