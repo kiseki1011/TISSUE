@@ -1,7 +1,7 @@
 package com.uranus.taskmanager.api.workspace.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,18 +37,26 @@ public class WorkspaceQueryService {
 		return WorkspaceDetail.from(workspace, workspaceMember.getRole());
 	}
 
-	public MyWorkspacesResponse getMyWorkspaces(LoginMemberDto loginMember) {
+	public MyWorkspacesResponse getMyWorkspaces(LoginMemberDto loginMember, Pageable pageable) {
 
 		String loginId = loginMember.getLoginId();
 
-		List<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId).stream()
+		// List<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId).stream()
+		// 	.map(workspaceMember -> WorkspaceDetail.from(
+		// 		workspaceMember.getWorkspace(),
+		// 		workspaceMember.getRole()
+		// 	))
+		// 	.toList();
+
+		// return MyWorkspacesResponse.from(workspaceDetails);
+
+		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace(),
 				workspaceMember.getRole()
-			))
-			.toList();
+			));
 
-		return MyWorkspacesResponse.from(workspaceDetails);
+		return MyWorkspacesResponse.from(workspaceDetails.getContent(), workspaceDetails.getTotalElements());
 	}
 
 	private Workspace findWorkspaceByCode(String workspaceCode) {

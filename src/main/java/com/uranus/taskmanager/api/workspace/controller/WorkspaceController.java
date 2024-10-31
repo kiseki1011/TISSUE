@@ -1,5 +1,6 @@
 package com.uranus.taskmanager.api.workspace.controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,9 +74,10 @@ public class WorkspaceController {
 
 	@LoginRequired
 	@GetMapping
-	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(@LoginMember LoginMemberDto loginMember) {
+	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(@LoginMember LoginMemberDto loginMember,
+		Pageable pageable) {
 
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember, pageable);
 		return ApiResponse.ok("Currently joined Workspaces Found", response);
 	}
 

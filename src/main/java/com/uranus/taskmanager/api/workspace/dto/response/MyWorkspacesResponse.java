@@ -14,23 +14,20 @@ import lombok.ToString;
 public class MyWorkspacesResponse {
 
 	private List<WorkspaceDetail> workspaces = new ArrayList<>();
-	private int workspaceCount;
+	private long totalElements; // 전체 개수
 
 	@Builder
-	public MyWorkspacesResponse(List<WorkspaceDetail> workspaces) {
+	public MyWorkspacesResponse(List<WorkspaceDetail> workspaces, long totalElements) {
 		if (workspaces != null) {
 			this.workspaces = workspaces;
 		}
-		this.workspaceCount = getWorkspaceCount();
+		this.totalElements = totalElements;
 	}
 
-	public int getWorkspaceCount() {
-		return workspaces.size();
-	}
-
-	public static MyWorkspacesResponse from(List<WorkspaceDetail> workspaces) {
+	public static MyWorkspacesResponse from(List<WorkspaceDetail> workspaces, long totalElements) {
 		return MyWorkspacesResponse.builder()
 			.workspaces(workspaces)
+			.totalElements(totalElements)
 			.build();
 	}
 }
