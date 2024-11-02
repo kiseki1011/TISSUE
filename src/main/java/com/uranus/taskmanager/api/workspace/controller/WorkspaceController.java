@@ -48,15 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces")
 public class WorkspaceController {
 
-	/**
-	 * Todo
-	 *  - 워크스페이스 이름, 설명 수정 PATCH
-	 *  - 워크스페이스 삭제 DELETE
-	 *  - 워크스페이스 비밀번호 설정(만약 없으면 설정, 있으면 수정)
-	 *  - 워크스페이스 상세 정보 조회(워크스페이스 코드를 통해, 해당 워크스페이스의 멤버여야 함) GET
-	 *  - 내가 참여 중인 모든 워크스페이스 조회하기
-	 */
-
 	private final WorkspaceService workspaceService;
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceCommandService workspaceCommandService;
