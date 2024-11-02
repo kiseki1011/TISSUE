@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
@@ -40,6 +42,8 @@ public class WorkspaceQueryServiceTest {
 	private WorkspaceRepository workspaceRepository;
 	@Autowired
 	private WorkspaceMemberRepository workspaceMemberRepository;
+	@Autowired
+	private MemberRepository memberRepository;
 
 	@Autowired
 	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
@@ -56,6 +60,13 @@ public class WorkspaceQueryServiceTest {
 			null);
 		workspaceRepositoryFixture.addMemberToWorkspace(member1, workspace1, WorkspaceRole.ADMIN);
 		workspaceRepositoryFixture.addMemberToWorkspace(member1, workspace2, WorkspaceRole.ADMIN);
+	}
+
+	@AfterEach
+	void tearDown() {
+		workspaceMemberRepository.deleteAll();
+		workspaceRepository.deleteAll();
+		memberRepository.deleteAll();
 	}
 
 	@Transactional
