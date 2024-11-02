@@ -136,14 +136,11 @@ class WorkspaceServiceTest {
 	void test8() {
 		// given
 		String workspaceCode = "TESTCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
 
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
 
@@ -155,8 +152,7 @@ class WorkspaceServiceTest {
 		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
 		// when
-		InviteMemberResponse inviteMemberResponse = workspaceService.inviteMember(workspaceCode, inviteMemberRequest,
-			loginMember);
+		InviteMemberResponse inviteMemberResponse = workspaceService.inviteMember(workspaceCode, inviteMemberRequest);
 
 		// then
 		assertThat(inviteMemberResponse.getStatus()).isEqualTo(InvitationStatus.PENDING);
@@ -168,12 +164,8 @@ class WorkspaceServiceTest {
 	void test4() {
 		// given
 		String workspaceCode = "INVALIDCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
 
 		String invitedLoginId = "inviteduser123";
-
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 
@@ -181,7 +173,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
@@ -191,13 +183,10 @@ class WorkspaceServiceTest {
 	void test5() {
 		// given
 		String workspaceCode = "TESTCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
 
 		String invitedLoginId = "inviteduser123";
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
 		String identifier = inviteMemberRequest.getMemberIdentifier();
@@ -208,7 +197,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -217,14 +206,11 @@ class WorkspaceServiceTest {
 	void test6() {
 		// given
 		String workspaceCode = "TESTCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
 
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, invitedMember);
@@ -236,13 +222,13 @@ class WorkspaceServiceTest {
 
 		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
-		when(invitationRepository.findByWorkspaceAndMember(workspace, invitedMember)).thenReturn(
-			Optional.of(invitation));
+		when(invitationRepository.findByWorkspaceAndMember(workspace, invitedMember))
+			.thenReturn(Optional.of(invitation));
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember)).isInstanceOf(
-			InvitationAlreadyExistsException.class);
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
+			.isInstanceOf(InvitationAlreadyExistsException.class);
 	}
 
 	@Test
@@ -250,14 +236,11 @@ class WorkspaceServiceTest {
 	void test7() {
 		// given
 		String workspaceCode = "TESTCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
 
 		String invitedLoginId = "inviteduser123";
 		String invitedEmail = "inviteduser123@test.com";
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		Member invitedMember = memberEntityFixture.createMember(invitedLoginId, invitedEmail);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(invitedMember,
@@ -275,7 +258,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest, loginMember))
+			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(MemberAlreadyParticipatingException.class);
 	}
 
@@ -291,9 +274,6 @@ class WorkspaceServiceTest {
 
 		List<String> memberIdentifiers = List.of(member1Id, member2Id);
 		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
-
-		// Mock LoginMemberDto
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("inviter", "inviter@test.com");
 
 		// Mock Workspace
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
@@ -311,8 +291,7 @@ class WorkspaceServiceTest {
 		when(invitationRepository.save(any(Invitation.class))).thenReturn(invitation1).thenReturn(invitation2);
 
 		// when
-		InviteMembersResponse response = workspaceService.inviteMembers(workspaceCode, inviteMembersRequest,
-			loginMember);
+		InviteMembersResponse response = workspaceService.inviteMembers(workspaceCode, inviteMembersRequest);
 
 		log.info("response = {}", response);
 
@@ -338,7 +317,6 @@ class WorkspaceServiceTest {
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceMemberRepository.countByWorkspaceId(workspace.getId())).thenReturn(3);
 		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(loginMember.getLoginId(), workspaceCode))
 			.thenReturn(Optional.empty());
 		when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
@@ -350,7 +328,6 @@ class WorkspaceServiceTest {
 		// then
 		assertThat(response.isAlreadyMember()).isFalse();
 		assertThat(response.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
-		assertThat(response.getHeadcount()).isEqualTo(3);
 	}
 
 	@Test
@@ -370,7 +347,6 @@ class WorkspaceServiceTest {
 
 		when(workspaceRepository.findByCode(workspaceCode)).thenReturn(Optional.of(workspace));
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceMemberRepository.countByWorkspaceId(workspace.getId())).thenReturn(3);
 		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(loginMember.getLoginId(), workspaceCode))
 			.thenReturn(Optional.of(workspaceMember));
 
@@ -382,7 +358,6 @@ class WorkspaceServiceTest {
 		assertThat(response).isNotNull();
 		assertThat(response.isAlreadyMember()).isTrue();
 		assertThat(response.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
-		assertThat(response.getHeadcount()).isEqualTo(3);
 	}
 
 	@Test

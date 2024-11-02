@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class WorkspaceQueryService {
@@ -27,6 +26,7 @@ public class WorkspaceQueryService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceRepository workspaceRepository;
 
+	@Transactional(readOnly = true)
 	public WorkspaceDetail getWorkspaceDetail(String workspaceCode, LoginMemberDto loginMember) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
@@ -37,10 +37,11 @@ public class WorkspaceQueryService {
 		return WorkspaceDetail.from(workspace, workspaceMember.getRole());
 	}
 
+	@Transactional(readOnly = true)
 	public MyWorkspacesResponse getMyWorkspaces(LoginMemberDto loginMember, Pageable pageable) {
 
 		String loginId = loginMember.getLoginId();
-		
+
 		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace(),

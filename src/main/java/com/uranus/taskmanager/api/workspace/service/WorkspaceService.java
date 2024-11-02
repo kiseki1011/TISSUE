@@ -52,8 +52,7 @@ public class WorkspaceService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public InviteMemberResponse inviteMember(String workspaceCode, InviteMemberRequest request,
-		LoginMemberDto loginMember) { // Todo: loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
+	public InviteMemberResponse inviteMember(String workspaceCode, InviteMemberRequest request) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
@@ -67,10 +66,8 @@ public class WorkspaceService {
 	}
 
 	@Transactional
-	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request,
-		LoginMemberDto loginMember) {
-		// Todo: 일급 컬렉션으로 리팩토링하는 것을 고려. 관련 처리 로직을 해당 일급 컬렉션 클래스에서 정의.
-		//  - loginMemberDto를 굳이 사용하지 않는다. 리팩토링 고려.
+	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request) {
+		// Todo: 일급 컬렉션으로 리팩토링하는 것을 고려. 관련 처리 로직을 해당 일급 컬렉션 클래스에서 정의
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
@@ -94,6 +91,15 @@ public class WorkspaceService {
 		return new InviteMembersResponse(invitedMembers, failedInvitedMembers);
 	}
 
+	/**
+	 * 참여할 워크스페이스의 코드와 참여 요청의 패스워드(null 허용)를 사용해서
+	 * 참여를 요청한 로그인 멤버를 해당 워크스페이스에 참여시킨다.
+	 *
+	 * @param workspaceCode
+	 * @param request
+	 * @param loginMember
+	 * @return - 워크스페이스 참여 응답을 위한 DTO
+	 */
 	@Transactional
 	public WorkspaceParticipateResponse participateWorkspace(String workspaceCode, WorkspaceParticipateRequest request,
 		LoginMemberDto loginMember) {
@@ -101,23 +107,24 @@ public class WorkspaceService {
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member member = findMemberByLoginId(loginMember);
 
-		// Todo: WorkspaceParticipateResponse 참고, Workspace 엔티티에 인원에 대한 캐싱 필드를 추가하는 것을 고려
-		int headcount = getHeadcount(workspace);
-
 		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(
 			workspaceCode, loginMember);
 		if (optionalWorkspaceMember.isPresent()) {
-			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), headcount,
-				true);
+			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 			member.getEmail());
+		/*
+		 * Todo
+		 *  - 워크스페이스에 낙관적락 적용 시 워크스페이스 참여에 대해 예외 잡고-재시도 로직을 추가해야 한다
+		 */
+		workspace.increaseMemberCount();
 		workspaceMemberRepository.save(workspaceMember);
 
-		return WorkspaceParticipateResponse.from(workspace, workspaceMember, headcount, false);
+		return WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
 	}
 
 	private Workspace findWorkspaceByCode(String workspaceCode) {
@@ -194,9 +201,5 @@ public class WorkspaceService {
 		return workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
 			loginMember.getLoginId(),
 			workspaceCode);
-	}
-
-	private int getHeadcount(Workspace workspace) {
-		return workspaceMemberRepository.countByWorkspaceId(workspace.getId());
 	}
 }

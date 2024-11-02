@@ -18,7 +18,6 @@ import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Transactional
 @RequiredArgsConstructor
 @Service
 public class WorkspaceCommandService {
@@ -26,6 +25,7 @@ public class WorkspaceCommandService {
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
 
+	@Transactional
 	public WorkspaceContentUpdateResponse updateWorkspaceContent(WorkspaceContentUpdateRequest request, String code) {
 		Workspace workspace = findWorkspaceByCode(code);
 		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(workspace);
@@ -41,6 +41,7 @@ public class WorkspaceCommandService {
 		return WorkspaceContentUpdateResponse.from(original, updatedTo);
 	}
 
+	@Transactional
 	public void updateWorkspacePassword(WorkspacePasswordUpdateRequest request, String code) {
 		Workspace workspace = findWorkspaceByCode(code);
 
@@ -50,6 +51,7 @@ public class WorkspaceCommandService {
 		workspace.updatePassword(encodedUpdatePassword);
 	}
 
+	@Transactional
 	public void deleteWorkspace(WorkspaceDeleteRequest request, String code) {
 		Workspace workspace = findWorkspaceByCode(code);
 
