@@ -54,9 +54,9 @@ import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateRes
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -68,7 +68,7 @@ import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@WebMvcTest(WorkspaceController.class)
+@WebMvcTest({WorkspaceController.class, WorkspaceAccessController.class})
 class WorkspaceControllerTest {
 
 	@Autowired
@@ -77,7 +77,7 @@ class WorkspaceControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@MockBean
 	private MemberService memberService;
 	@MockBean
@@ -381,7 +381,7 @@ class WorkspaceControllerTest {
 
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
-		when(workspaceService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class)))
+		when(workspaceAccessService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class)))
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
@@ -412,7 +412,7 @@ class WorkspaceControllerTest {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
+		when(workspaceAccessService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -456,7 +456,7 @@ class WorkspaceControllerTest {
 			.build();
 
 		// when
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
+		when(workspaceAccessService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -488,7 +488,7 @@ class WorkspaceControllerTest {
 
 		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
 
-		when(workspaceService.participateWorkspace(eq(workspaceCode),
+		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
 			ArgumentMatchers.any(LoginMemberDto.class))).thenReturn(response);
 
@@ -513,7 +513,7 @@ class WorkspaceControllerTest {
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
 		String requestBody = objectMapper.writeValueAsString(request);
 
-		when(workspaceService.participateWorkspace(eq(workspaceCode),
+		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
 			ArgumentMatchers.any(LoginMemberDto.class)))
 			.thenThrow(new InvalidWorkspacePasswordException());

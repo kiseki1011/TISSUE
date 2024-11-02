@@ -29,7 +29,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -46,7 +46,7 @@ class InvitationControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@MockBean
 	private CheckCodeDuplicationService workspaceCreateService;
 	@MockBean

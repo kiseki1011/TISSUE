@@ -35,7 +35,7 @@ import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 public class WorkspaceQueryServiceTest {
 
 	@Autowired
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@Autowired
 	private WorkspaceQueryService workspaceQueryService;
 	@Autowired
@@ -98,7 +98,7 @@ public class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceService.participateWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
@@ -119,7 +119,7 @@ public class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceService.participateWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2);

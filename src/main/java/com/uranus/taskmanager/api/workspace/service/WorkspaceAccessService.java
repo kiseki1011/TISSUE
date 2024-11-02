@@ -31,7 +31,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyParticipatingException;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -39,11 +39,10 @@ import lombok.RequiredArgsConstructor;
 /**
  * Todo
  *  - UserWorkspaceService, AdminWorkspaceService 분리 고려
- *  - Command용 서비스, Query용 서비스 분리 고려
  */
 @Service
 @RequiredArgsConstructor
-public class WorkspaceService {
+public class WorkspaceAccessService {
 
 	private final WorkspaceRepository workspaceRepository;
 	private final MemberRepository memberRepository;
@@ -57,7 +56,7 @@ public class WorkspaceService {
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
 
-		checkIfMemberAlreadyParticipates(workspaceCode, invitedMember);
+		checkIfMemberAlreadyJoined(workspaceCode, invitedMember);
 		checkIfPendingInvitationExists(workspace, invitedMember);
 
 		Invitation invitation = savePendingInvitation(workspace, invitedMember);
@@ -77,7 +76,7 @@ public class WorkspaceService {
 			try {
 				Member invitedMember = findMemberByIdentifier(identifier);
 
-				checkIfMemberAlreadyParticipates(workspaceCode, invitedMember);
+				checkIfMemberAlreadyJoined(workspaceCode, invitedMember);
 				checkIfPendingInvitationExists(workspace, invitedMember);
 
 				savePendingInvitation(workspace, invitedMember);
@@ -101,14 +100,13 @@ public class WorkspaceService {
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public WorkspaceParticipateResponse participateWorkspace(String workspaceCode, WorkspaceParticipateRequest request,
+	public WorkspaceParticipateResponse joinWorkspace(String workspaceCode, WorkspaceParticipateRequest request,
 		LoginMemberDto loginMember) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 		Member member = findMemberByLoginId(loginMember);
 
-		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(
-			workspaceCode, loginMember);
+		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(workspaceCode, loginMember);
 		if (optionalWorkspaceMember.isPresent()) {
 			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
@@ -142,13 +140,13 @@ public class WorkspaceService {
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
-	private void checkIfMemberAlreadyParticipates(String workspaceCode, Member invitedMember) {
+	private void checkIfMemberAlreadyJoined(String workspaceCode, Member invitedMember) {
 		boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
 			invitedMember.getLoginId(),
 			workspaceCode).isPresent();
 
 		if (isAlreadyMember) {
-			throw new MemberAlreadyParticipatingException();
+			throw new AlreadyJoinedWorkspaceException();
 		}
 	}
 

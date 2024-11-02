@@ -11,7 +11,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -20,7 +20,7 @@ public abstract class BaseApiIntegrationTest {
 	protected int port;
 
 	@Autowired
-	protected WorkspaceService workspaceService;
+	protected WorkspaceAccessService workspaceAccessService;
 	@Autowired
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@Autowired

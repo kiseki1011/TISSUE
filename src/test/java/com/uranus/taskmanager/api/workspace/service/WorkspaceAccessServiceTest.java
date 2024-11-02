@@ -35,7 +35,7 @@ import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordEx
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.exception.MemberAlreadyParticipatingException;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.dto.LoginMemberDtoFixture;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
@@ -47,10 +47,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class WorkspaceServiceTest {
+class WorkspaceAccessServiceTest {
 
 	@InjectMocks
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@InjectMocks
 	private WorkspaceQueryService workspaceQueryService;
 
@@ -152,7 +152,8 @@ class WorkspaceServiceTest {
 		when(memberRepository.findByLoginIdOrEmail(identifier, identifier)).thenReturn(Optional.of(invitedMember));
 
 		// when
-		InviteMemberResponse inviteMemberResponse = workspaceService.inviteMember(workspaceCode, inviteMemberRequest);
+		InviteMemberResponse inviteMemberResponse = workspaceAccessService.inviteMember(workspaceCode,
+			inviteMemberRequest);
 
 		// then
 		assertThat(inviteMemberResponse.getStatus()).isEqualTo(InvitationStatus.PENDING);
@@ -173,7 +174,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
+			() -> workspaceAccessService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
@@ -197,7 +198,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
+			() -> workspaceAccessService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -227,7 +228,7 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
+			() -> workspaceAccessService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(InvitationAlreadyExistsException.class);
 	}
 
@@ -258,8 +259,8 @@ class WorkspaceServiceTest {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceService.inviteMember(workspaceCode, inviteMemberRequest))
-			.isInstanceOf(MemberAlreadyParticipatingException.class);
+			() -> workspaceAccessService.inviteMember(workspaceCode, inviteMemberRequest))
+			.isInstanceOf(AlreadyJoinedWorkspaceException.class);
 	}
 
 	@Test
@@ -291,7 +292,7 @@ class WorkspaceServiceTest {
 		when(invitationRepository.save(any(Invitation.class))).thenReturn(invitation1).thenReturn(invitation2);
 
 		// when
-		InviteMembersResponse response = workspaceService.inviteMembers(workspaceCode, inviteMembersRequest);
+		InviteMembersResponse response = workspaceAccessService.inviteMembers(workspaceCode, inviteMembersRequest);
 
 		log.info("response = {}", response);
 
@@ -322,7 +323,7 @@ class WorkspaceServiceTest {
 		when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
 		// when
-		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(workspaceCode, request,
+		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
 			loginMember);
 
 		// then
@@ -351,7 +352,7 @@ class WorkspaceServiceTest {
 			.thenReturn(Optional.of(workspaceMember));
 
 		// when
-		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(workspaceCode, request,
+		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
 			loginMember);
 
 		// then
@@ -381,7 +382,7 @@ class WorkspaceServiceTest {
 			.thenReturn(Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceService.participateWorkspace(workspaceCode, request,
+		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request,
 			loginMember)).isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 }

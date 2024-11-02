@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceCommandServiceTest {
 
 	@Autowired
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@Autowired
 	private WorkspaceCommandService workspaceCommandService;
 	@Autowired
