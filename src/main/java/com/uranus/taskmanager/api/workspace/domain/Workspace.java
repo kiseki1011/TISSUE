@@ -7,6 +7,7 @@ import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,7 +42,7 @@ public class Workspace extends BaseEntity {
 	private String password;
 	private String description;
 
-	@OneToMany(mappedBy = "workspace")
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace")
@@ -59,8 +60,15 @@ public class Workspace extends BaseEntity {
 		this.code = code;
 	}
 
-	public void setPassword(String password) {
+	public void updatePassword(String password) {
 		this.password = password;
 	}
 
+	public void updateName(String name) {
+		this.name = name;
+	}
+
+	public void updateDescription(String description) {
+		this.description = description;
+	}
 }
