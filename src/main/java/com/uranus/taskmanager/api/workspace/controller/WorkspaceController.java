@@ -2,9 +2,12 @@ package com.uranus.taskmanager.api.workspace.controller;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,13 +20,18 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspacePasswordUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
@@ -40,16 +48,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces")
 public class WorkspaceController {
 
-	/**
-	 * Todo
-	 *  - 워크스페이스 이름, 설명 수정 PATCH
-	 *  - 워크스페이스 삭제 DELETE
-	 *  - 워크스페이스 비밀번호 설정(만약 없으면 설정, 있으면 수정)
-	 *  - 워크스페이스 상세 정보 조회(워크스페이스 코드를 통해, 해당 워크스페이스의 멤버여야 함) GET
-	 *  - 내가 참여 중인 모든 워크스페이스 조회하기
-	 */
-	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceService workspaceService;
+	private final WorkspaceCreateService workspaceCreateService;
+	private final WorkspaceCommandService workspaceCommandService;
 	private final WorkspaceQueryService workspaceQueryService;
 
 	@LoginRequired
@@ -61,6 +62,36 @@ public class WorkspaceController {
 
 		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
 		return ApiResponse.created("Workspace Created", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@DeleteMapping("/{code}")
+	public ApiResponse<String> deleteWorkspace(@PathVariable String code,
+		@RequestBody WorkspaceDeleteRequest request) {
+
+		workspaceCommandService.deleteWorkspace(request, code);
+		return ApiResponse.ok("Workspace Deleted", code);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@PatchMapping("/{code}")
+	public ApiResponse<WorkspaceContentUpdateResponse> updateWorkspaceContent(@PathVariable String code,
+		@RequestBody @Valid WorkspaceContentUpdateRequest request) {
+
+		WorkspaceContentUpdateResponse response = workspaceCommandService.updateWorkspaceContent(request, code);
+		return ApiResponse.ok("Workspace Title and Description Updated", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@PutMapping("/{code}/password")
+	public ApiResponse<String> updateWorkspacePassword(@PathVariable String code,
+		@RequestBody @Valid WorkspacePasswordUpdateRequest request) {
+
+		workspaceCommandService.updateWorkspacePassword(request, code);
+		return ApiResponse.okWithNoContent("Workspace Password Updated");
 	}
 
 	@LoginRequired

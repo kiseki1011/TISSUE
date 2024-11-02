@@ -19,7 +19,7 @@ public class WorkspaceCreateRequest {
 	@NotBlank(message = "Workspace name must not be blank")
 	private String name;
 
-	@Size(min = 1, max = 255, message = "Workspace name must be 1 ~ 255 characters long")
+	@Size(min = 1, max = 255, message = "Workspace description must be 1 ~ 255 characters long")
 	@NotBlank(message = "Workspace description must not be blank")
 	private String description;
 

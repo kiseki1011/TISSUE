@@ -19,6 +19,8 @@ public class WorkspaceDetail {
 	private String description;
 	private String createdBy;
 	private LocalDateTime createdAt;
+	private String updatedBy;
+	private LocalDateTime updatedAt;
 	private WorkspaceRole role;
 
 	/*
@@ -33,13 +35,15 @@ public class WorkspaceDetail {
 
 	@Builder
 	public WorkspaceDetail(Long id, String code, String name, String description, String createdBy,
-		LocalDateTime createdAt, WorkspaceRole role) {
+		LocalDateTime createdAt, String updatedBy, LocalDateTime updatedAt, WorkspaceRole role) {
 		this.id = id;
 		this.code = code;
 		this.name = name;
 		this.description = description;
 		this.createdBy = createdBy;
 		this.createdAt = createdAt;
+		this.updatedBy = updatedBy;
+		this.updatedAt = updatedAt;
 		this.role = role;
 	}
 
@@ -51,6 +55,8 @@ public class WorkspaceDetail {
 			.description(workspace.getDescription())
 			.createdBy(workspace.getCreatedBy())
 			.createdAt(workspace.getCreatedDate())
+			.updatedBy(workspace.getLastModifiedBy())
+			.updatedAt(workspace.getLastModifiedDate())
 			.role(role)
 			.build();
 	}
