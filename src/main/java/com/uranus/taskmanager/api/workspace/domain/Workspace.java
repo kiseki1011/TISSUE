@@ -49,7 +49,7 @@ public class Workspace extends BaseEntity {
 	private String password;
 
 	@Column(nullable = false)
-	private int memberCount;
+	private int memberCount = 1;
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
