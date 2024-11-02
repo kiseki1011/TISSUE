@@ -381,8 +381,7 @@ class WorkspaceControllerTest {
 
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
-		when(workspaceService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
+		when(workspaceService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class)))
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
@@ -413,8 +412,7 @@ class WorkspaceControllerTest {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
+		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -458,8 +456,7 @@ class WorkspaceControllerTest {
 			.build();
 
 		// when
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
+		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -489,7 +486,7 @@ class WorkspaceControllerTest {
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
 		String requestBody = objectMapper.writeValueAsString(request);
 
-		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, 1, false);
+		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
 
 		when(workspaceService.participateWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
@@ -501,7 +498,6 @@ class WorkspaceControllerTest {
 				.content(requestBody))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Joined Workspace"))
-			.andExpect(jsonPath("$.data.headcount").value(1))
 			.andExpect(jsonPath("$.data.alreadyMember").value(false))
 			.andDo(print());
 
