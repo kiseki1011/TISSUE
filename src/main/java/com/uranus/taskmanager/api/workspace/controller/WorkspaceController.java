@@ -117,10 +117,9 @@ public class WorkspaceController {
 	@PostMapping("/{code}/invite")
 	public ApiResponse<InviteMemberResponse> inviteMember(
 		@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember,
 		@RequestBody @Valid InviteMemberRequest request) {
 
-		InviteMemberResponse response = workspaceService.inviteMember(code, request, loginMember);
+		InviteMemberResponse response = workspaceService.inviteMember(code, request);
 		return ApiResponse.ok("Member Invited", response);
 	}
 
@@ -129,10 +128,9 @@ public class WorkspaceController {
 	@PostMapping("/{code}/invites")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember,
 		@RequestBody @Valid InviteMembersRequest request) {
 
-		InviteMembersResponse response = workspaceService.inviteMembers(code, request, loginMember);
+		InviteMembersResponse response = workspaceService.inviteMembers(code, request);
 		return ApiResponse.ok("Members Invited", response);
 	}
 

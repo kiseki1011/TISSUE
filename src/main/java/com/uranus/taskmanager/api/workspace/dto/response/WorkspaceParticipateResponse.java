@@ -12,27 +12,27 @@ import lombok.ToString;
 @Getter
 public class WorkspaceParticipateResponse {
 
+	/**
+	 * Todo
+	 *  - WorkspaceDetail에 role 정보가 빠짐
+	 *  - role 필드를 추가 -> 서비스 코드 수정
+	 */
 	private WorkspaceDetail workspaceDetail;
-	// Todo: Workspace에 headcount 필드 추가 -> WorkspaceDetail에 headcount 추가
-	//  -> WorkspaceParticipateResponse의 headcount 제거
-	private int headcount;
 	private String nickname;
 	private boolean isAlreadyMember;
 
 	@Builder
-	public WorkspaceParticipateResponse(WorkspaceDetail workspaceDetail, int headcount, String nickname,
+	public WorkspaceParticipateResponse(WorkspaceDetail workspaceDetail, String nickname,
 		boolean isAlreadyMember) {
 		this.workspaceDetail = workspaceDetail;
-		this.headcount = headcount;
 		this.nickname = nickname;
 		this.isAlreadyMember = isAlreadyMember;
 	}
 
 	public static WorkspaceParticipateResponse from(Workspace workspace, WorkspaceMember workspaceMember,
-		int headcount, boolean isAlreadyMember) {
+		boolean isAlreadyMember) {
 		return WorkspaceParticipateResponse.builder()
 			.workspaceDetail(WorkspaceDetail.from(workspace, workspaceMember.getRole()))
-			.headcount(headcount)
 			.nickname(workspaceMember.getNickname())
 			.isAlreadyMember(isAlreadyMember)
 			.build();

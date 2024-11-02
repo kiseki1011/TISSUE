@@ -10,6 +10,8 @@ import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptRespon
 import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
+import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -51,10 +53,21 @@ public class InvitationService {
 		return invitation;
 	}
 
+	/*
+	 * Todo
+	 *  - 워크스페이스에 낙관적락 적용 시 예외 잡고 재시도 로직 추가 필요
+	 *  - 이 메서드에 try-catch vs acceptInvitation에서 try-catch를 할지 고민
+	 */
 	private WorkspaceMember addMemberToWorkspace(Invitation invitation) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(invitation.getMember(),
-			invitation.getWorkspace(), WorkspaceRole.USER, invitation.getMember().getEmail());
+		Workspace workspace = invitation.getWorkspace();
+		Member member = invitation.getMember();
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member,
+			workspace, WorkspaceRole.USER, member.getEmail());
+
+		workspace.increaseMemberCount();
+
 		workspaceMemberRepository.save(workspaceMember);
+
 		return workspaceMember;
 	}
 
