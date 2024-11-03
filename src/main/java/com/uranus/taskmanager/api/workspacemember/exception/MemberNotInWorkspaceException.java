@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import com.uranus.taskmanager.api.common.exception.WorkspaceMemberException;
 
 public class MemberNotInWorkspaceException extends WorkspaceMemberException {
-	private static final String MESSAGE = "Member was not found in the given workspace";
+	private static final String MESSAGE = "Member was not found in this workspace";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.NOT_FOUND;
 
 	public MemberNotInWorkspaceException() {

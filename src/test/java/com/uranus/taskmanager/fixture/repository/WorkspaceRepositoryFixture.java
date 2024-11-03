@@ -1,10 +1,13 @@
 package com.uranus.taskmanager.fixture.repository;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -18,6 +21,8 @@ public class WorkspaceRepositoryFixture {
 	private WorkspaceRepository workspaceRepository;
 	@Autowired
 	private WorkspaceMemberRepository workspaceMemberRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	/**
 	 * 워크스페이스를 생성하고 저장합니다.
@@ -25,7 +30,7 @@ public class WorkspaceRepositoryFixture {
 	 * @param name - 워크스페이스 이름
 	 * @param description - 워크스페이스 설명
 	 * @param code - 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
-	 * @param password - 워크스페이스의 비밀번호 (null 값 허용, 비밀번호가 없는 경우 null 전달)
+	 * @param password - 워크스페이스의 비밀번호 (null 값 허용, 비밀번호가 없는 경우 null 전달, 있으면 암호화)
 	 * @return 저장된 Workspace 객체
 	 */
 	public Workspace createWorkspace(String name, String description, String code, String password) {
@@ -33,7 +38,7 @@ public class WorkspaceRepositoryFixture {
 			.name(name)
 			.description(description)
 			.code(code)
-			.password(password) // 요청에 비밀번호를 명시하지 않으면 null
+			.password(encodePasswordIfPresent(password))
 			.build();
 		return workspaceRepository.save(workspace);
 	}
@@ -51,5 +56,12 @@ public class WorkspaceRepositoryFixture {
 			member, workspace, role, member.getEmail()
 		);
 		return workspaceMemberRepository.save(workspaceMember);
+	}
+
+	private String encodePasswordIfPresent(String password) {
+		return Optional.ofNullable(password)
+			.filter(pw -> !pw.isEmpty())
+			.map(passwordEncoder::encode)
+			.orElse(null);
 	}
 }

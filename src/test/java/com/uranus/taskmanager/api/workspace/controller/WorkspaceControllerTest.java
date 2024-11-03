@@ -40,6 +40,7 @@ import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceUpdateDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
@@ -48,15 +49,16 @@ import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -68,7 +70,7 @@ import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@WebMvcTest(WorkspaceController.class)
+@WebMvcTest({WorkspaceController.class, WorkspaceAccessController.class})
 class WorkspaceControllerTest {
 
 	@Autowired
@@ -77,7 +79,7 @@ class WorkspaceControllerTest {
 	private ObjectMapper objectMapper;
 
 	@MockBean
-	private WorkspaceService workspaceService;
+	private WorkspaceAccessService workspaceAccessService;
 	@MockBean
 	private MemberService memberService;
 	@MockBean
@@ -381,7 +383,7 @@ class WorkspaceControllerTest {
 
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
-		when(workspaceService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class)))
+		when(workspaceAccessService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class)))
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
@@ -412,7 +414,7 @@ class WorkspaceControllerTest {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
+		when(workspaceAccessService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -456,7 +458,7 @@ class WorkspaceControllerTest {
 			.build();
 
 		// when
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
+		when(workspaceAccessService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// then
@@ -488,7 +490,7 @@ class WorkspaceControllerTest {
 
 		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
 
-		when(workspaceService.participateWorkspace(eq(workspaceCode),
+		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
 			ArgumentMatchers.any(LoginMemberDto.class))).thenReturn(response);
 
@@ -504,16 +506,15 @@ class WorkspaceControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 UNAUTHORIZED를 응답 받는다")
+	@DisplayName("워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
 	void test12() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
 		String invalidPassword = "invalid1234!";
 
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
-		String requestBody = objectMapper.writeValueAsString(request);
 
-		when(workspaceService.participateWorkspace(eq(workspaceCode),
+		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
 			ArgumentMatchers.any(LoginMemberDto.class)))
 			.thenThrow(new InvalidWorkspacePasswordException());
@@ -521,10 +522,35 @@ class WorkspaceControllerTest {
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.message").value("The given workspace password is invalid"))
 			.andDo(print());
 	}
 
+	@Test
+	@DisplayName("워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
+	void test13() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+
+		Member member = memberEntityFixture.createMember("member1", "member1@test.com");
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+
+		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("member1");
+
+		KickWorkspaceMemberResponse response = KickWorkspaceMemberResponse.from("member1", workspaceMember);
+
+		when(workspaceAccessService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/workspaces/{code}/kick", workspaceCode)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Member was kicked from this Workspace"))
+			.andDo(print());
+
+	}
 }

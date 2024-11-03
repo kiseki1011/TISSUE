@@ -18,23 +18,16 @@ import com.uranus.taskmanager.api.authentication.LoginRequired;
 import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspacePasswordUpdateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.RoleRequired;
 
@@ -48,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces")
 public class WorkspaceController {
 
-	private final WorkspaceService workspaceService;
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceCommandService workspaceCommandService;
 	private final WorkspaceQueryService workspaceQueryService;
@@ -111,44 +103,4 @@ public class WorkspaceController {
 		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember, pageable);
 		return ApiResponse.ok("Currently joined Workspaces Found", response);
 	}
-
-	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.ADMIN})
-	@PostMapping("/{code}/invite")
-	public ApiResponse<InviteMemberResponse> inviteMember(
-		@PathVariable String code,
-		@RequestBody @Valid InviteMemberRequest request) {
-
-		InviteMemberResponse response = workspaceService.inviteMember(code, request);
-		return ApiResponse.ok("Member Invited", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.ADMIN})
-	@PostMapping("/{code}/invites")
-	public ApiResponse<InviteMembersResponse> inviteMembers(
-		@PathVariable String code,
-		@RequestBody @Valid InviteMembersRequest request) {
-
-		InviteMembersResponse response = workspaceService.inviteMembers(code, request);
-		return ApiResponse.ok("Members Invited", response);
-	}
-
-	/*
-	 * Todo
-	 *  - participate -> join으로 명칭 변경
-	 *  - MemberAlreadyParticipationException -> AlreadyJoinedWorkspaceException 명칭 변경
-	 */
-	@LoginRequired
-	@PostMapping("/{code}")
-	public ApiResponse<WorkspaceParticipateResponse> participateWorkspace(
-		@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember,
-		@RequestBody @Valid WorkspaceParticipateRequest request
-	) {
-
-		WorkspaceParticipateResponse response = workspaceService.participateWorkspace(code, request, loginMember);
-		return ApiResponse.ok("Joined Workspace", response);
-	}
-
 }
