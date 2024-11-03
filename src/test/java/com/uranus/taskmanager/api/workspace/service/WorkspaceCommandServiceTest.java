@@ -22,7 +22,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.repository.MemberRespositoryFixture;
+import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 
 import jakarta.persistence.EntityManager;
@@ -50,7 +50,7 @@ public class WorkspaceCommandServiceTest {
 	@Autowired
 	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
-	private MemberRespositoryFixture memberRespositoryFixture;
+	private MemberRepositoryFixture memberRepositoryFixture;
 
 	@AfterEach
 	void tearDown() {
@@ -63,9 +63,9 @@ public class WorkspaceCommandServiceTest {
 	@DisplayName("유효한 워크스페이스 코드와 비밀번호로 워크스페이스를 삭제할 수 있다")
 	void test1() {
 		// given
-		Member member = memberRespositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
 
 		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222", null);
@@ -82,9 +82,9 @@ public class WorkspaceCommandServiceTest {
 	@DisplayName("워크스페이스 삭제 시도 시 비밀번호가 맞지 않으면 예외가 발생한다")
 	void test2() {
 		// given
-		Member member = memberRespositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
 
 		// when & then
@@ -99,9 +99,9 @@ public class WorkspaceCommandServiceTest {
 	@DisplayName("워크스페이스 삭제 시도 시 코드가 유효하지 않으면 예외가 발생한다")
 	void test3() {
 		// given
-		Member member = memberRespositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
 
 		// when & then
@@ -178,7 +178,7 @@ public class WorkspaceCommandServiceTest {
 	void test7() {
 		// given
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")
@@ -220,7 +220,7 @@ public class WorkspaceCommandServiceTest {
 	void test9() {
 		// given
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("invalid1234!")
@@ -238,7 +238,7 @@ public class WorkspaceCommandServiceTest {
 	void test10() {
 		// given
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")
@@ -260,7 +260,7 @@ public class WorkspaceCommandServiceTest {
 	void test11() {
 		// given
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			passwordEncoder.encode("password1234!"));
+			"password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")
