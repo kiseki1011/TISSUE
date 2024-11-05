@@ -87,7 +87,7 @@ public class WorkspaceAccessServiceTest {
 	void testGetWorkspaceDetail_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		LoginMember loginMember = new LoginMember(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember);
@@ -102,7 +102,7 @@ public class WorkspaceAccessServiceTest {
 	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
 		// given
 		String invalidCode = "INVALIDCODE";
-		LoginMember loginMember = new LoginMember(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
 		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember))
@@ -185,10 +185,10 @@ public class WorkspaceAccessServiceTest {
 	void testJoinWorkspace_InvalidPasswordException() {
 		// given
 		String workspaceCode = "CODE1234";
-		Workspace workspaceWithPassword = workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
+		workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
 			"CODE1234", "password1234!");
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest("WrongPassword1234!");
-		LoginMember loginMember = new LoginMember(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
 		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request, loginMember))
@@ -201,7 +201,7 @@ public class WorkspaceAccessServiceTest {
 		// given
 		String workspaceCode = "TESTCODE";
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
-		LoginMember loginMember = new LoginMember(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
 		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
@@ -217,7 +217,7 @@ public class WorkspaceAccessServiceTest {
 		// given
 		String workspaceCode = "TESTCODE";
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
-		LoginMember loginMember = new LoginMember(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
 		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
@@ -236,7 +236,8 @@ public class WorkspaceAccessServiceTest {
 		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
 		Member joiningMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
 			"password1234!");
-		LoginMember loginMember = new LoginMember(joiningMember.getLoginId(), joiningMember.getEmail());
+		LoginMember loginMember = new LoginMember(joiningMember.getId(), joiningMember.getLoginId(),
+			joiningMember.getEmail());
 
 		// when
 		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
