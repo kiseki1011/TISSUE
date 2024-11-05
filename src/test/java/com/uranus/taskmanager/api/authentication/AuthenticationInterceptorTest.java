@@ -75,7 +75,7 @@ class AuthenticationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(LoginRequired.class)).thenReturn(mock(LoginRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn(null);  // 로그인 멤버가 없음
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(null);  // 로그인 멤버가 없음
 
 		// when & then
 		assertThatThrownBy(() -> authenticationInterceptor.preHandle(request, response, handlerMethod))
@@ -88,7 +88,7 @@ class AuthenticationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(LoginRequired.class)).thenReturn(mock(LoginRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn(anyString());
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(anyString());
 
 		// when
 		boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);

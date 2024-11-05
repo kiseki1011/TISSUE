@@ -88,7 +88,6 @@ class AuthenticationControllerTest {
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data..message").value("Password must not be blank"))
 			.andDo(print());
-
 	}
 
 	@Test
@@ -96,7 +95,7 @@ class AuthenticationControllerTest {
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, "user123");
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/auth/logout")
@@ -105,7 +104,6 @@ class AuthenticationControllerTest {
 			.andDo(print());
 
 		assertThat(session.isInvalid()).isTrue();
-
 	}
 
 	@Test
