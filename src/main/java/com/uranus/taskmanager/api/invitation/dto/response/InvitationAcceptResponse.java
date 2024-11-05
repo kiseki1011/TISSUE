@@ -1,46 +1,28 @@
 package com.uranus.taskmanager.api.invitation.dto.response;
 
-import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
-/**
- * Todo: Audit 적용 후 수정, fromEnity() 수정
- */
+@ToString
 @Getter
 public class InvitationAcceptResponse {
-	private final String workspaceCode;
-	private final String workspaceName;
-	private final String workspaceDescription;
-	private final String loginId;
-	private final String email;
-	private final String nickname;
-	private final int headcount;
+	private WorkspaceDetail workspaceDetail;
+	private String nickname;
 
 	@Builder
-	public InvitationAcceptResponse(String workspaceCode, String workspaceName, String workspaceDescription,
-		String loginId,
-		String email, String nickname, int headcount) {
-		this.workspaceCode = workspaceCode;
-		this.workspaceName = workspaceName;
-		this.workspaceDescription = workspaceDescription;
-		this.loginId = loginId;
-		this.email = email;
+	public InvitationAcceptResponse(WorkspaceDetail workspaceDetail, String nickname) {
+		this.workspaceDetail = workspaceDetail;
 		this.nickname = nickname;
-		this.headcount = headcount;
 	}
 
-	public static InvitationAcceptResponse from(Invitation invitation, WorkspaceMember workspaceMember) {
+	public static InvitationAcceptResponse from(Workspace workspace, WorkspaceRole role) {
 		return InvitationAcceptResponse.builder()
-			.workspaceCode(invitation.getWorkspace().getCode())
-			.workspaceName(invitation.getWorkspace().getName())
-			.workspaceDescription(invitation.getWorkspace().getDescription())
-			.loginId(invitation.getMember().getLoginId())
-			.email(invitation.getMember().getEmail())
-			.nickname(workspaceMember.getNickname())
-			.headcount(invitation.getWorkspace().getWorkspaceMembers().size())
+			.workspaceDetail(WorkspaceDetail.from(workspace, role))
 			.build();
 	}
 }
