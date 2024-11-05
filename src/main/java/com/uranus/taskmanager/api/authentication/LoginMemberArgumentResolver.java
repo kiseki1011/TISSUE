@@ -82,7 +82,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	}
 
 	private boolean hasLoginMemberAnnotation(MethodParameter parameter) {
-		return parameter.hasParameterAnnotation(com.uranus.taskmanager.api.authentication.LoginMember.class);
+		return parameter.hasParameterAnnotation(ResolveLoginMember.class);
 	}
 
 	private boolean isLoginMemberDto(MethodParameter parameter) {

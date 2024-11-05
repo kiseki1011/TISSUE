@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
-class LoginMemberArgumentResolverTest {
+class ResolveLoginMemberArgumentResolverTest {
 	@Mock
 	private MemberRepository memberRepository;
 	@Mock
@@ -47,11 +47,11 @@ class LoginMemberArgumentResolverTest {
 	}
 
 	// LoginMemberDto 타입을 사용하는 더미 메서드
-	public void dummyMethod(@com.uranus.taskmanager.api.authentication.LoginMember LoginMember loginMember) {
+	public void dummyMethod(@ResolveLoginMember LoginMember loginMember) {
 	}
 
 	// String 타입을 사용하는 더미 메서드
-	public void dummyMethod(@com.uranus.taskmanager.api.authentication.LoginMember String loginMemberDto) {
+	public void dummyMethod(@ResolveLoginMember String loginMemberDto) {
 	}
 
 	// @LoginMember 애노테이션을 사용하지 않는 더미 메서드
