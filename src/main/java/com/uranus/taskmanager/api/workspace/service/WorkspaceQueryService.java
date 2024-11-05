@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
@@ -27,7 +27,7 @@ public class WorkspaceQueryService {
 	private final WorkspaceRepository workspaceRepository;
 
 	@Transactional(readOnly = true)
-	public WorkspaceDetail getWorkspaceDetail(String workspaceCode, LoginMemberDto loginMember) {
+	public WorkspaceDetail getWorkspaceDetail(String workspaceCode, LoginMember loginMember) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 
@@ -38,7 +38,7 @@ public class WorkspaceQueryService {
 	}
 
 	@Transactional(readOnly = true)
-	public MyWorkspacesResponse getMyWorkspaces(LoginMemberDto loginMember, Pageable pageable) {
+	public MyWorkspacesResponse getMyWorkspaces(LoginMember loginMember, Pageable pageable) {
 
 		String loginId = loginMember.getLoginId();
 

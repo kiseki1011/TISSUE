@@ -1,10 +1,10 @@
 package com.uranus.taskmanager.fixture.dto;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 
 public class LoginMemberDtoFixture {
-	public LoginMemberDto createLoginMemberDto(String loginId, String email) {
-		return LoginMemberDto.builder()
+	public LoginMember createLoginMemberDto(String loginId, String email) {
+		return LoginMember.builder()
 			.loginId(loginId)
 			.email(email)
 			.build();

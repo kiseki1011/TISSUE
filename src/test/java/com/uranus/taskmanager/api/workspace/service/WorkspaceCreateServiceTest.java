@@ -14,7 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
@@ -74,7 +74,7 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
@@ -97,7 +97,7 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
@@ -119,7 +119,7 @@ class WorkspaceCreateServiceTest {
 		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
 
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
@@ -141,7 +141,7 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member, workspace);
 		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
@@ -164,7 +164,7 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
 			workspace);
 
@@ -191,7 +191,7 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
 		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
 			workspace);
 

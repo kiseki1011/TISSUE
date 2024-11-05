@@ -26,7 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
@@ -205,7 +205,7 @@ class WorkspaceControllerTest {
 			.code(code)
 			.build();
 
-		when(workspaceQueryService.getWorkspaceDetail(eq(code), ArgumentMatchers.any(LoginMemberDto.class)))
+		when(workspaceQueryService.getWorkspaceDetail(eq(code), ArgumentMatchers.any(LoginMember.class)))
 			.thenReturn(workspaceDetail);
 
 		// when & then
@@ -250,7 +250,7 @@ class WorkspaceControllerTest {
 			.totalElements(2L)
 			.build();
 
-		when(workspaceQueryService.getMyWorkspaces(ArgumentMatchers.any(LoginMemberDto.class),
+		when(workspaceQueryService.getMyWorkspaces(ArgumentMatchers.any(LoginMember.class),
 			ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
@@ -268,7 +268,7 @@ class WorkspaceControllerTest {
 			.andExpect(content().json(expectedJson));
 
 		verify(workspaceQueryService, times(1))
-			.getMyWorkspaces(ArgumentMatchers.any(LoginMemberDto.class), ArgumentMatchers.any(Pageable.class));
+			.getMyWorkspaces(ArgumentMatchers.any(LoginMember.class), ArgumentMatchers.any(Pageable.class));
 	}
 
 	@Test
@@ -304,7 +304,7 @@ class WorkspaceControllerTest {
 			.totalElements(2L)
 			.build();
 
-		when(workspaceQueryService.getMyWorkspaces(ArgumentMatchers.any(LoginMemberDto.class),
+		when(workspaceQueryService.getMyWorkspaces(ArgumentMatchers.any(LoginMember.class),
 			ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
@@ -316,7 +316,7 @@ class WorkspaceControllerTest {
 			.andExpect(status().isOk());
 
 		verify(workspaceQueryService, times(1))
-			.getMyWorkspaces(ArgumentMatchers.any(LoginMemberDto.class), ArgumentMatchers.any(Pageable.class));
+			.getMyWorkspaces(ArgumentMatchers.any(LoginMember.class), ArgumentMatchers.any(Pageable.class));
 
 	}
 
@@ -492,7 +492,7 @@ class WorkspaceControllerTest {
 
 		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class))).thenReturn(response);
+			ArgumentMatchers.any(LoginMember.class))).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
@@ -516,7 +516,7 @@ class WorkspaceControllerTest {
 
 		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
 			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
+			ArgumentMatchers.any(LoginMember.class)))
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then

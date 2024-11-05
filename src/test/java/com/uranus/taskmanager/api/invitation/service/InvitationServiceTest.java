@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
@@ -73,7 +73,7 @@ class InvitationServiceTest {
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
@@ -99,7 +99,7 @@ class InvitationServiceTest {
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
@@ -127,7 +127,7 @@ class InvitationServiceTest {
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
@@ -150,7 +150,7 @@ class InvitationServiceTest {
 		String loginId = "user123";
 		String email = "user123@test.com";
 
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
 			Optional.empty());
@@ -171,7 +171,7 @@ class InvitationServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		Invitation invitation = invitationEntityFixture.createAcceptedInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId))
@@ -193,7 +193,7 @@ class InvitationServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(loginId, email);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(

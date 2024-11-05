@@ -16,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -77,7 +77,7 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성한 워크스페이스)")
 	void test1() {
 		// given
-		LoginMemberDto loginMember1 = LoginMemberDto.builder()
+		LoginMember loginMember1 = LoginMember.builder()
 			.loginId("member1")
 			.email("member1@test.com")
 			.build();
@@ -96,7 +96,7 @@ public class WorkspaceQueryServiceTest {
 	void test2() {
 		// given
 		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
-		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+		LoginMember loginMember2 = LoginMember.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -117,7 +117,7 @@ public class WorkspaceQueryServiceTest {
 	void test3() {
 		// given
 		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
-		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+		LoginMember loginMember2 = LoginMember.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -138,7 +138,7 @@ public class WorkspaceQueryServiceTest {
 	void test4() {
 		// given
 		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
-		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+		LoginMember loginMember2 = LoginMember.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -154,7 +154,7 @@ public class WorkspaceQueryServiceTest {
 	void test5() {
 		// given
 		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
-		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+		LoginMember loginMember2 = LoginMember.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -170,7 +170,7 @@ public class WorkspaceQueryServiceTest {
 	void test6() {
 		// given
 		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "member1password!");
-		LoginMemberDto loginMember2 = LoginMemberDto.builder()
+		LoginMember loginMember2 = LoginMember.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();

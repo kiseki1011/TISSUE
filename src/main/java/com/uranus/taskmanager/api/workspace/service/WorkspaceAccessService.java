@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.exception.CommonException;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
@@ -110,7 +110,7 @@ public class WorkspaceAccessService {
 	 */
 	@Transactional
 	public WorkspaceParticipateResponse joinWorkspace(String code, WorkspaceParticipateRequest request,
-		LoginMemberDto loginMember) {
+		LoginMember loginMember) {
 
 		Workspace workspace = findWorkspaceByCode(code);
 		Member member = findMemberByLoginId(loginMember);
@@ -162,7 +162,7 @@ public class WorkspaceAccessService {
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
-	private Member findMemberByLoginId(LoginMemberDto loginMember) {
+	private Member findMemberByLoginId(LoginMember loginMember) {
 		return memberRepository.findByLoginId(loginMember.getLoginId())
 			.orElseThrow(MemberNotFoundException::new);
 	}
@@ -222,7 +222,7 @@ public class WorkspaceAccessService {
 		return !passwordEncoder.matches(inputPassword, workspacePassword);
 	}
 
-	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMemberDto loginMember) {
+	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMember loginMember) {
 		return workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
 			loginMember.getLoginId(),
 			workspaceCode);

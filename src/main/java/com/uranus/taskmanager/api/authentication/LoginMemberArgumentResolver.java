@@ -9,7 +9,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
@@ -63,7 +63,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 		HttpSession session = getSession(webRequest);
 		Member member = getLoggedInMember(session);
 
-		return LoginMemberDto.from(member);
+		return LoginMember.from(member);
 	}
 
 	private HttpSession getSession(NativeWebRequest webRequest) {
@@ -82,10 +82,10 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	}
 
 	private boolean hasLoginMemberAnnotation(MethodParameter parameter) {
-		return parameter.hasParameterAnnotation(LoginMember.class);
+		return parameter.hasParameterAnnotation(com.uranus.taskmanager.api.authentication.LoginMember.class);
 	}
 
 	private boolean isLoginMemberDto(MethodParameter parameter) {
-		return parameter.getParameterType().equals(LoginMemberDto.class);
+		return parameter.getParameterType().equals(LoginMember.class);
 	}
 }

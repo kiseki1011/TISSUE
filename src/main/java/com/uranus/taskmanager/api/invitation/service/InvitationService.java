@@ -3,7 +3,7 @@ package com.uranus.taskmanager.api.invitation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
@@ -26,7 +26,7 @@ public class InvitationService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
-	public InvitationAcceptResponse acceptInvitation(LoginMemberDto loginMember, String workspaceCode) {
+	public InvitationAcceptResponse acceptInvitation(LoginMember loginMember, String workspaceCode) {
 
 		Invitation invitation = getPendingInvitationBy(loginMember, workspaceCode);
 		changeStatusToAccepted(invitation);
@@ -36,14 +36,14 @@ public class InvitationService {
 	}
 
 	@Transactional
-	public void rejectInvitation(LoginMemberDto loginMember, String workspaceCode) {
+	public void rejectInvitation(LoginMember loginMember, String workspaceCode) {
 
 		Invitation invitation = getPendingInvitationBy(loginMember, workspaceCode);
 		changeStatusToRejected(invitation);
 		// Todo: InvitationRejectResponse 사용을 고려
 	}
 
-	private Invitation getPendingInvitationBy(LoginMemberDto loginMember, String workspaceCode) {
+	private Invitation getPendingInvitationBy(LoginMember loginMember, String workspaceCode) {
 		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode,
 				loginMember.getLoginId())
 			.orElseThrow(InvitationNotFoundException::new);

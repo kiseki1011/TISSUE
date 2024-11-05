@@ -7,9 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.authentication.LoginMember;
 import com.uranus.taskmanager.api.authentication.LoginRequired;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
@@ -61,7 +60,7 @@ public class WorkspaceAccessController {
 	@PostMapping("/{code}")
 	public ApiResponse<WorkspaceParticipateResponse> joinWorkspace(
 		@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember,
+		@com.uranus.taskmanager.api.authentication.LoginMember LoginMember loginMember,
 		@RequestBody @Valid WorkspaceParticipateRequest request
 	) {
 

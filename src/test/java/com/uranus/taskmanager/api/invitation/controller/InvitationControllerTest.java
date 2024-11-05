@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.SessionKey;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
@@ -90,7 +90,7 @@ class InvitationControllerTest {
 			WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
 				member.getEmail()));
 
-		when(invitationService.acceptInvitation(any(LoginMemberDto.class), eq(workspaceCode)))
+		when(invitationService.acceptInvitation(any(LoginMember.class), eq(workspaceCode)))
 			.thenReturn(acceptResponse);
 
 		// when & then
@@ -113,7 +113,7 @@ class InvitationControllerTest {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, loginId);
 
-		when(invitationService.acceptInvitation(any(LoginMemberDto.class), eq(workspaceCode)))
+		when(invitationService.acceptInvitation(any(LoginMember.class), eq(workspaceCode)))
 			.thenThrow(new InvitationNotFoundException());
 
 		// when & then
