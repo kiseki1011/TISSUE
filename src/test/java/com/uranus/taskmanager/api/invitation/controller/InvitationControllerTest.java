@@ -80,7 +80,7 @@ class InvitationControllerTest {
 		String email = "user123@test.com";
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
+		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, loginId);
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
@@ -111,7 +111,7 @@ class InvitationControllerTest {
 		String loginId = "user123";
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
+		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, loginId);
 
 		when(invitationService.acceptInvitation(any(LoginMemberDto.class), eq(workspaceCode)))
 			.thenThrow(new InvitationNotFoundException());
@@ -133,7 +133,7 @@ class InvitationControllerTest {
 		String loginId = "user123";
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
+		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, loginId);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/reject", workspaceCode)

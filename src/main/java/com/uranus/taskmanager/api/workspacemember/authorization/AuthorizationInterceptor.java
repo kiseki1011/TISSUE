@@ -81,7 +81,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
 	private Optional<String> getLoginIdFromSession(HttpSession session) {
 		return Optional.ofNullable(session)
-			.map(s -> (String)s.getAttribute(SessionKey.LOGIN_MEMBER));
+			.map(s -> (String)s.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID));
 	}
 
 	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {

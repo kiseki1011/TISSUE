@@ -53,6 +53,7 @@ class AuthenticationControllerTest {
 			.password("password123!")
 			.build();
 		LoginResponse loginResponse = LoginResponse.builder()
+			.id(1L)
 			.loginId("user123")
 			.email("test@gmail.com")
 			.build();
@@ -68,7 +69,7 @@ class AuthenticationControllerTest {
 			.andExpect(status().isOk())
 			.andDo(print());
 
-		assertThat(session.getAttribute(SessionKey.LOGIN_MEMBER)).isEqualTo("user123");
+		assertThat(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).isEqualTo(loginResponse.getLoginId());
 	}
 
 	@Test
@@ -95,7 +96,7 @@ class AuthenticationControllerTest {
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
+		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, "user123");
 
 		// when & then
 		mockMvc.perform(post("/api/v1/auth/logout")

@@ -17,7 +17,7 @@ public class SessionAuditorAware implements AuditorAware<String> {
 
 	@Override
 	public Optional<String> getCurrentAuditor() {
-		String loginId = (String)session.getAttribute(SessionKey.LOGIN_MEMBER);
+		String loginId = (String)session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID);
 		return Optional.ofNullable(loginId);
 	}
 }

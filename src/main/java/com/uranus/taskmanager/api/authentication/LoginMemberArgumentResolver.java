@@ -75,7 +75,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	}
 
 	private Member getLoggedInMember(HttpSession session) {
-		return Optional.ofNullable((String)session.getAttribute(SessionKey.LOGIN_MEMBER))
+		return Optional.ofNullable((String)session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID))
 			.map(loginId -> memberRepository.findByLoginId(loginId)
 				.orElseThrow(MemberNotFoundException::new))
 			.orElseThrow(UserNotLoggedInException::new);

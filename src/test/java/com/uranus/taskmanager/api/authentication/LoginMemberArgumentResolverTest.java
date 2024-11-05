@@ -123,7 +123,7 @@ class LoginMemberArgumentResolverTest {
 		when(request.getSession(false)).thenReturn(session);
 
 		// 세션에서 로그인된 사용자의 ID를 가져오는 부분 모킹
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(loginId);
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn(loginId);
 
 		// MemberRepository에서 해당 로그인 ID로 사용자를 조회하는 부분 모킹
 		when(memberRepository.findByLoginId(loginId)).thenReturn(Optional.of(member));
@@ -157,7 +157,7 @@ class LoginMemberArgumentResolverTest {
 		// given
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(null);
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn(null);
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
@@ -172,7 +172,7 @@ class LoginMemberArgumentResolverTest {
 
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(loginId);
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn(loginId);
 		when(memberRepository.findByLoginId(loginId)).thenReturn(Optional.empty());
 
 		// when & then
