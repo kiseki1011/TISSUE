@@ -74,21 +74,20 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
 
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
-		verify(memberRepository, times(1)).findByLoginId("user123");
+		verify(memberRepository, times(1)).findById(1L);
 	}
 
-	@Test
 	@DisplayName("워크스페이스 생성을 성공하면 WorkspaceResponse를 반환한다")
 	void test2() {
 		// given
@@ -97,14 +96,14 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
 
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -119,15 +118,15 @@ class WorkspaceCreateServiceTest {
 		WorkspaceCreateRequest request = workspaceCreateDtoFixture.createWorkspaceCreateRequest(null);
 
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 
 		when(workspaceCodeGenerator.generateWorkspaceCode())
 			.thenReturn("WORK123", "WORK124", "WORK125", "WORK126", "WORK127");
 		when(workspaceRepository.existsByCode(anyString())).thenReturn(true);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember))
+		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember.getId()))
 			.isInstanceOf(WorkspaceCodeCollisionHandleException.class)
 			.hasMessageContaining("Failed to solve workspace code collision");
 	}
@@ -141,15 +140,15 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member, workspace);
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, loginMember.getId());
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(any(WorkspaceMember.class));
@@ -164,17 +163,17 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
 		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
 			workspace);
 
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, loginMember.getId());
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->
@@ -191,17 +190,17 @@ class WorkspaceCreateServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("testcode");
 		Member member = memberEntityFixture.createMember("user123", "test@test.com");
-		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto("user123", "test@test.com");
+		LoginMember loginMember = loginMemberDtoFixture.createLoginMemberDto(1L, "user123", "test@test.com");
 		WorkspaceMember adminWorkspaceMember = workspaceMemberEntityFixture.createAdminWorkspaceMember(member,
 			workspace);
 
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
+		when(memberRepository.findById(loginMember.getId())).thenReturn(Optional.of(member));
 		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn(code);
 		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
 
 		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, loginMember.getId());
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->

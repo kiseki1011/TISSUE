@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
@@ -30,17 +32,20 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspace
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
+import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
-public class WorkspaceQueryServiceTest {
+class WorkspaceQueryServiceTest {
 
 	@Autowired
 	private WorkspaceAccessService workspaceAccessService;
 	@Autowired
 	private WorkspaceQueryService workspaceQueryService;
+	@Autowired
+	private MemberService memberService;
 	@Autowired
 	private WorkspaceRepository workspaceRepository;
 	@Autowired
@@ -52,39 +57,49 @@ public class WorkspaceQueryServiceTest {
 	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
 	private MemberRepositoryFixture memberRepositoryFixture;
+	@Autowired
+	DatabaseCleaner databaseCleaner;
 
 	@BeforeEach
 	void setup() {
-		// member1이 workspace1,2를 생성
-		Member member1 = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
-		Workspace workspace1 = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
+		// member1 회원가입
+		memberService.signup(SignupRequest.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password("member1password!")
+			.build());
+
+		LoginMember loginMember1 = LoginMember.builder()
+			.id(1L)
+			.loginId("member1")
+			.email("member1@test.com")
+			.build();
+
+		// workspace1, workspace2 생성
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
 			null);
-		Workspace workspace2 = workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222",
+		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222",
 			null);
-		workspaceRepositoryFixture.addMemberToWorkspace(member1, workspace1, WorkspaceRole.ADMIN);
-		workspaceRepositoryFixture.addMemberToWorkspace(member1, workspace2, WorkspaceRole.ADMIN);
+
+		// member1은 workspace1,2에 참여
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember1);
+		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceParticipateRequest(), loginMember1);
 	}
 
 	@AfterEach
 	void tearDown() {
-		workspaceMemberRepository.deleteAll();
-		workspaceRepository.deleteAll();
-		memberRepository.deleteAll();
+		databaseCleaner.execute();
 	}
 
 	@Transactional
 	@Test
-	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성한 워크스페이스)")
+	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다")
 	void test1() {
 		// given
-		LoginMember loginMember1 = LoginMember.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember1, pageable);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(1L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -95,8 +110,14 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
 	void test2() {
 		// given
-		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		memberService.signup(SignupRequest.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.password("member2password!")
+			.build());
+
 		LoginMember loginMember2 = LoginMember.builder()
+			.id(2L)
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -105,7 +126,7 @@ public class WorkspaceQueryServiceTest {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2, pageable);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(2L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -116,8 +137,14 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("해당 워크스페이스에 참여하고 있으면, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
 	void test3() {
 		// given
-		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		memberService.signup(SignupRequest.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.password("member2password!")
+			.build());
+
 		LoginMember loginMember2 = LoginMember.builder()
+			.id(2L)
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
@@ -125,7 +152,7 @@ public class WorkspaceQueryServiceTest {
 		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", 2L);
 
 		// then
 		assertThat(response.getCode()).isEqualTo("TEST1111");
@@ -137,14 +164,20 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("해당 워크스페이스에 참여하지 않으면, 유효한 코드로 상세 정보를 조회해도 예외가 발생한다")
 	void test4() {
 		// given
-		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		memberService.signup(SignupRequest.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.password("member2password!")
+			.build());
+
 		LoginMember loginMember2 = LoginMember.builder()
+			.id(2L)
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("TEST1111", loginMember2.getId()))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 
@@ -153,14 +186,20 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("유효하지 않은 코드로 워크스페이스를 조회하면 예외가 발생한다")
 	void test5() {
 		// given
-		memberRepositoryFixture.createMember("member2", "member2@test.com", "member2password!");
+		memberService.signup(SignupRequest.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.password("member2password!")
+			.build());
+
 		LoginMember loginMember2 = LoginMember.builder()
+			.id(2L)
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1", loginMember2))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1", loginMember2.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 
@@ -169,11 +208,19 @@ public class WorkspaceQueryServiceTest {
 	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
 	void test6() {
 		// given
-		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "member1password!");
+		memberService.signup(SignupRequest.builder()
+			.loginId("member2")
+			.email("member2@test.com")
+			.password("member2password!")
+			.build());
+
 		LoginMember loginMember2 = LoginMember.builder()
+			.id(2L)
 			.loginId("member2")
 			.email("member2@test.com")
 			.build();
+
+		Member member2 = memberRepository.findByLoginId("member2").get();
 
 		// workspace3 ~ 7 이라는 이름으로 워크스페이스 5개 생성
 		for (int i = 3; i <= 7; i++) {
@@ -186,7 +233,7 @@ public class WorkspaceQueryServiceTest {
 		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "workspace.name"));
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2, pageable);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

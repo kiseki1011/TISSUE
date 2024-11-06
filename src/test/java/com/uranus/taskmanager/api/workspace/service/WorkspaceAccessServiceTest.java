@@ -90,7 +90,7 @@ public class WorkspaceAccessServiceTest {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -105,7 +105,7 @@ public class WorkspaceAccessServiceTest {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 
