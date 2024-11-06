@@ -28,29 +28,26 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	private final MemberRepository memberRepository;
 
 	/**
-	 * 컨트롤러 메서드의 파라미터가 LoginMemberDto 타입이 아니거나
-	 * @LoginMember가 붙지 않았으면 false를 리턴한다.
+	 * 컨트롤러 메서드의 파라미터가 LoginMember 타입이 아니거나
+	 * 애노테이션 @ResolveLoginMember가 붙지 않았으면 false를 리턴한다.
 	 *
-	 * @param parameter 타입을 확인할 메서드 파라미터
+	 * @param parameter - 타입을 확인할 메서드 파라미터
 	 * @return boolean
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		/*
-		 * 컨트롤러 메서드의 파라미터가 LoginMemberDto 타입인지 확인
-		 * 파라미터에 @LoginMember 애노테이션이 붙었는지 확인
-		 */
+
 		log.info("[LoginMemberArgumentResolver] supportsParameter() called");
 
-		return isLoginMemberDto(parameter)
-			&& hasLoginMemberAnnotation(parameter);
+		return isLoginMember(parameter)
+			&& hasResolveLoginMemberAnnotation(parameter);
 	}
 
 	/**
 	 * 세션의 존재 여부와 로그인 정보의 유효성을 검증한다.
-	 * 유효한 세션과 로그인 정보인 경우 LoginMemberDto로 변환해서 리턴한다.
+	 * 유효한 세션과 로그인 정보인 경우 LoginMember로 변환해서 리턴한다.
 	 *
-	 * @param parameter LoginMemberDto를 받을 파라미터.
+	 * @param parameter - LoginMember를 받을 파라미터.
 	 * 이 파라미터는 {@link #supportsParameter}으로 넘겨져서 {@code true}를 반환해야 한다.
 	 * @return LoginMemberDto
 	 */
@@ -81,11 +78,11 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 			.orElseThrow(UserNotLoggedInException::new);
 	}
 
-	private boolean hasLoginMemberAnnotation(MethodParameter parameter) {
+	private boolean hasResolveLoginMemberAnnotation(MethodParameter parameter) {
 		return parameter.hasParameterAnnotation(ResolveLoginMember.class);
 	}
 
-	private boolean isLoginMemberDto(MethodParameter parameter) {
+	private boolean isLoginMember(MethodParameter parameter) {
 		return parameter.getParameterType().equals(LoginMember.class);
 	}
 }
