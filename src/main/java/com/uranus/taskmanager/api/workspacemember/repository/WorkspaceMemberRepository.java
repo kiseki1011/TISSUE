@@ -16,6 +16,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	Page<WorkspaceMember> findByMemberLoginId(String loginId, Pageable pageable);
 
+	Page<WorkspaceMember> findByMemberId(Long id, Pageable pageable);
+
 	Optional<WorkspaceMember> findByMemberLoginIdAndWorkspaceId(String loginId, Long workspaceId);
 
 	Optional<WorkspaceMember> findByMemberLoginIdAndWorkspaceCode(String loginId, String workspaceCode);

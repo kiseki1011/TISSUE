@@ -52,7 +52,7 @@ public class WorkspaceController {
 		@ResolveLoginMember LoginMember loginMember,
 		@RequestBody @Valid WorkspaceCreateRequest request) {
 
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember.getId());
 		return ApiResponse.created("Workspace Created", response);
 	}
 
@@ -91,7 +91,7 @@ public class WorkspaceController {
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(@PathVariable String code,
 		@ResolveLoginMember LoginMember loginMember) {
 
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code, loginMember);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code, loginMember.getId());
 		return ApiResponse.ok("Workspace Found", response);
 	}
 
@@ -101,7 +101,7 @@ public class WorkspaceController {
 		@ResolveLoginMember LoginMember loginMember,
 		Pageable pageable) {
 
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember, pageable);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
 		return ApiResponse.ok("Currently joined Workspaces Found", response);
 	}
 }

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
@@ -27,22 +26,19 @@ public class WorkspaceQueryService {
 	private final WorkspaceRepository workspaceRepository;
 
 	@Transactional(readOnly = true)
-	public WorkspaceDetail getWorkspaceDetail(String workspaceCode, LoginMember loginMember) {
+	public WorkspaceDetail getWorkspaceDetail(String workspaceCode, Long memberId) {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			loginMember.getLoginId(), workspaceCode).orElseThrow(MemberNotInWorkspaceException::new);
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
+			memberId, workspaceCode).orElseThrow(MemberNotInWorkspaceException::new);
 
 		return WorkspaceDetail.from(workspace, workspaceMember.getRole());
 	}
 
 	@Transactional(readOnly = true)
-	public MyWorkspacesResponse getMyWorkspaces(LoginMember loginMember, Pageable pageable) {
-
-		String loginId = loginMember.getLoginId();
-
-		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberLoginId(loginId, pageable)
+	public MyWorkspacesResponse getMyWorkspaces(Long memberId, Pageable pageable) {
+		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberId(memberId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace(),
 				workspaceMember.getRole()

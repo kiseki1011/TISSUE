@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
@@ -42,17 +41,17 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest workspaceCreateRequest,
-		LoginMember loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request,
+		Long memberId) {
 
-		Member member = findMemberByLoginId(loginMember);
+		Member member = findMemberById(memberId);
 
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
-				setWorkspaceCode(workspaceCreateRequest);
-				setEncodedPasswordIfPresent(workspaceCreateRequest);
+				setWorkspaceCode(request);
+				setEncodedPasswordIfPresent(request);
 
-				Workspace workspace = workspaceRepository.saveWithNewTransaction(workspaceCreateRequest.to());
+				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.to());
 				addAdminMemberToWorkspace(member, workspace);
 
 				return WorkspaceCreateResponse.from(workspace);
@@ -83,8 +82,8 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 		workspaceCreateRequest.setPassword(encodedPassword);
 	}
 
-	private Member findMemberByLoginId(LoginMember loginMember) {
-		return memberRepository.findByLoginId(loginMember.getLoginId())
+	private Member findMemberById(Long memberId) {
+		return memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
