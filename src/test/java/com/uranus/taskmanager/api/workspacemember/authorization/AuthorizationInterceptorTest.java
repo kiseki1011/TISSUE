@@ -110,7 +110,7 @@ class AuthorizationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn("user123");
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.empty());
 
@@ -152,10 +152,10 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn("user123");
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId("user123", null))
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.empty());
 
 		// when & then
@@ -175,10 +175,10 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn("user123");
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId("user123", null))
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
 		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.ADMIN});
 
@@ -199,10 +199,10 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).thenReturn("user123");
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId("user123", null))
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
 		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.USER});
 
