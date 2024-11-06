@@ -51,9 +51,9 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		String loginId = getLoginIdFromSession(request.getSession(false))
+		Long memberId = getLoginIdFromSession(request.getSession(false))
 			.orElseThrow(UserNotLoggedInException::new);
-		log.info("loginId from session = {}", loginId);
+		log.info("memberId from session = {}", memberId);
 
 		String workspaceCode = extractWorkspaceCodeFromUri(request.getRequestURI());
 		log.info("extracted workspaceCode = {}", workspaceCode);
@@ -61,7 +61,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);
 
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId(loginId,
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceId(memberId,
 				workspace.getId())
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
@@ -79,9 +79,9 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
 	}
 
-	private Optional<String> getLoginIdFromSession(HttpSession session) {
+	private Optional<Long> getLoginIdFromSession(HttpSession session) {
 		return Optional.ofNullable(session)
-			.map(s -> (String)s.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID));
+			.map(s -> (Long)s.getAttribute(SessionKey.LOGIN_MEMBER_ID));
 	}
 
 	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
