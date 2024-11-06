@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.exception.CommonException;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
@@ -103,19 +102,20 @@ public class WorkspaceAccessService {
 	 * 참여할 워크스페이스의 코드와 참여 요청의 패스워드(null 허용)를 사용해서
 	 * 참여를 요청한 로그인 멤버를 해당 워크스페이스에 참여시킨다.
 	 *
-	 * @param code
-	 * @param request
-	 * @param loginMember
+	 * @param code - 워크스페이스의 고유 코드
+	 * @param request - 워크스페이스 참여 요청 객체
+	 * @param memberId - 세션에서 꺼낸 멤버 id(PK)
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
 	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request,
-		LoginMember loginMember) {
+		Long memberId) {
 
 		Workspace workspace = findWorkspaceByCode(code);
-		Member member = findMemberByLoginId(loginMember);
+		Member member = findMemberById(memberId);
 
-		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(code, loginMember);
+		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
+			memberId, code);
 		if (optionalWorkspaceMember.isPresent()) {
 			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
@@ -162,8 +162,8 @@ public class WorkspaceAccessService {
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
-	private Member findMemberByLoginId(LoginMember loginMember) {
-		return memberRepository.findByLoginId(loginMember.getLoginId())
+	private Member findMemberById(Long id) {
+		return memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
@@ -220,11 +220,5 @@ public class WorkspaceAccessService {
 
 	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
 		return !passwordEncoder.matches(inputPassword, workspacePassword);
-	}
-
-	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMember loginMember) {
-		return workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			loginMember.getLoginId(),
-			workspaceCode);
 	}
 }

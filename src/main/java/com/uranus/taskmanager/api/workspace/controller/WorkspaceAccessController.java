@@ -65,7 +65,7 @@ public class WorkspaceAccessController {
 		@RequestBody @Valid WorkspaceJoinRequest request
 	) {
 
-		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(code, request, loginMember);
+		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(code, request, loginMember.getId());
 		return ApiResponse.ok("Joined Workspace", response);
 	}
 
