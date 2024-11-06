@@ -7,7 +7,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @NoArgsConstructor
-public class WorkspaceParticipateRequest {
+public class WorkspaceJoinRequest {
 
 	/**
 	 * Todo
@@ -15,7 +15,7 @@ public class WorkspaceParticipateRequest {
 	 */
 	private String password;
 
-	public WorkspaceParticipateRequest(String password) {
+	public WorkspaceJoinRequest(String password) {
 		this.password = password;
 	}
 }

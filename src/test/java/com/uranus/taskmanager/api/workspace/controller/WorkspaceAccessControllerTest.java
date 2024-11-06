@@ -32,13 +32,13 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
@@ -221,13 +221,13 @@ class WorkspaceAccessControllerTest {
 		Workspace workspace = workspaceEntityFixture.createWorkspaceWithPassword(workspaceCode, workspacePassword);
 		Member member = memberEntityFixture.createMember(loginId, email);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(workspace.getPassword());
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest(workspace.getPassword());
 		String requestBody = objectMapper.writeValueAsString(request);
 
-		WorkspaceParticipateResponse response = WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
+		WorkspaceJoinResponse response = WorkspaceJoinResponse.from(workspace, workspaceMember, false);
 
 		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
-			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
+			ArgumentMatchers.any(WorkspaceJoinRequest.class),
 			ArgumentMatchers.any(LoginMember.class))).thenReturn(response);
 
 		// when & then
@@ -248,10 +248,10 @@ class WorkspaceAccessControllerTest {
 		String workspaceCode = "TESTCODE";
 		String invalidPassword = "invalid1234!";
 
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(invalidPassword);
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest(invalidPassword);
 
 		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
-			ArgumentMatchers.any(WorkspaceParticipateRequest.class),
+			ArgumentMatchers.any(WorkspaceJoinRequest.class),
 			ArgumentMatchers.any(LoginMember.class)))
 			.thenThrow(new InvalidWorkspacePasswordException());
 

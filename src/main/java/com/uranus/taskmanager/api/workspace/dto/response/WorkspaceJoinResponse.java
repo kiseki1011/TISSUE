@@ -10,7 +10,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class WorkspaceParticipateResponse {
+public class WorkspaceJoinResponse {
 
 	/**
 	 * Todo
@@ -22,16 +22,16 @@ public class WorkspaceParticipateResponse {
 	private boolean isAlreadyMember;
 
 	@Builder
-	public WorkspaceParticipateResponse(WorkspaceDetail workspaceDetail, String nickname,
+	public WorkspaceJoinResponse(WorkspaceDetail workspaceDetail, String nickname,
 		boolean isAlreadyMember) {
 		this.workspaceDetail = workspaceDetail;
 		this.nickname = nickname;
 		this.isAlreadyMember = isAlreadyMember;
 	}
 
-	public static WorkspaceParticipateResponse from(Workspace workspace, WorkspaceMember workspaceMember,
+	public static WorkspaceJoinResponse from(Workspace workspace, WorkspaceMember workspaceMember,
 		boolean isAlreadyMember) {
-		return WorkspaceParticipateResponse.builder()
+		return WorkspaceJoinResponse.builder()
 			.workspaceDetail(WorkspaceDetail.from(workspace, workspaceMember.getRole()))
 			.nickname(workspaceMember.getNickname())
 			.isAlreadyMember(isAlreadyMember)

@@ -23,7 +23,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -82,8 +82,8 @@ class WorkspaceQueryServiceTest {
 			null);
 
 		// member1은 workspace1,2에 참여
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember1);
-		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceParticipateRequest(), loginMember1);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1);
+		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1);
 	}
 
 	@AfterEach
@@ -122,7 +122,7 @@ class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2);
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
@@ -149,7 +149,7 @@ class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceParticipateRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", 2L);

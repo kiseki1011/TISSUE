@@ -21,13 +21,13 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -109,7 +109,7 @@ public class WorkspaceAccessService {
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public WorkspaceParticipateResponse joinWorkspace(String code, WorkspaceParticipateRequest request,
+	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request,
 		LoginMember loginMember) {
 
 		Workspace workspace = findWorkspaceByCode(code);
@@ -117,7 +117,7 @@ public class WorkspaceAccessService {
 
 		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(code, loginMember);
 		if (optionalWorkspaceMember.isPresent()) {
-			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), true);
+			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
@@ -131,7 +131,7 @@ public class WorkspaceAccessService {
 		workspace.increaseMemberCount();
 		workspaceMemberRepository.save(workspaceMember);
 
-		return WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
+		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
 	}
 
 	@Transactional
