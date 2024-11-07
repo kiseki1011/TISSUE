@@ -11,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.basetest.BaseApiIntegrationTest;
 import com.uranus.taskmanager.fixture.api.LoginApiFixture;
 import com.uranus.taskmanager.fixture.api.MemberApiFixture;
+import com.uranus.taskmanager.helper.RestAssuredTestHelper;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import io.restassured.RestAssured;
@@ -21,7 +21,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 @Transactional
-class WorkspaceApiIntegrationTest extends BaseApiIntegrationTest {
+class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 
 	/**
 	 * Todo: Workspace와 WorkspaceMember 엔티티 간의 외래 키 제약 조건으로 인한 문제 발생

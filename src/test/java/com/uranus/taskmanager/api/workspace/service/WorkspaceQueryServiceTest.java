@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,13 +31,9 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspace
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
-import com.uranus.taskmanager.util.DatabaseCleaner;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SpringBootTest
-class WorkspaceQueryServiceTest {
+class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 
 	@Autowired
 	private WorkspaceAccessService workspaceAccessService;
@@ -57,8 +52,6 @@ class WorkspaceQueryServiceTest {
 	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
 	private MemberRepositoryFixture memberRepositoryFixture;
-	@Autowired
-	DatabaseCleaner databaseCleaner;
 
 	@BeforeEach
 	void setup() {

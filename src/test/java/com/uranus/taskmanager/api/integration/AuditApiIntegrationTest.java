@@ -14,15 +14,15 @@ import org.springframework.http.HttpStatus;
 
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.basetest.BaseApiIntegrationTest;
 import com.uranus.taskmanager.fixture.api.LoginApiFixture;
 import com.uranus.taskmanager.fixture.api.MemberApiFixture;
+import com.uranus.taskmanager.helper.RestAssuredTestHelper;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
+public class AuditApiIntegrationTest extends RestAssuredTestHelper {
 	@Autowired
 	private AuditorAware<String> auditorAware;
 	@Autowired

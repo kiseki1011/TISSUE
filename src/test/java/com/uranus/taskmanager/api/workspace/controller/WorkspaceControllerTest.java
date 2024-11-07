@@ -19,24 +19,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.authentication.ResolveLoginMember;
 import com.uranus.taskmanager.api.authentication.SessionKey;
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceUpdateDetail;
@@ -45,44 +38,12 @@ import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
+class WorkspaceControllerTest extends ControllerTestHelper {
 
-@Slf4j
-@WebMvcTest(WorkspaceController.class)
-class WorkspaceControllerTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@MockBean
-	private WorkspaceAccessService workspaceAccessService;
-	@MockBean
-	private MemberService memberService;
-	@MockBean
-	private CheckCodeDuplicationService workspaceCreateService;
-	@MockBean
-	private WorkspaceQueryService workspaceQueryService;
-	@MockBean
-	private WorkspaceCommandService workspaceCommandService;
-	@MockBean
-	private MemberRepository memberRepository;
-	@MockBean
-	private WorkspaceRepository workspaceRepository;
-	@MockBean
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@MockBean
-	private InvitationRepository invitationRepository;
 	@MockBean
 	private LoginMemberArgumentResolver loginMemberArgumentResolver;
 

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
@@ -16,9 +15,9 @@ import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-@SpringBootTest
-class MemberServiceTest {
+class MemberServiceTest extends ServiceIntegrationTestHelper {
 
 	@Autowired
 	private MemberService memberService;
@@ -31,8 +30,7 @@ class MemberServiceTest {
 
 	@BeforeEach
 	public void init() {
-		workspaceMemberRepository.deleteAll();
-		memberRepository.deleteAll();
+		databaseCleaner.execute();
 	}
 
 	@Test

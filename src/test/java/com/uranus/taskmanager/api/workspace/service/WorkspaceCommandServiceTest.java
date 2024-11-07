@@ -6,12 +6,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
@@ -24,14 +22,9 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
-import com.uranus.taskmanager.util.DatabaseCleaner;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-import jakarta.persistence.EntityManager;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SpringBootTest
-class WorkspaceCommandServiceTest {
+class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 
 	@Autowired
 	private WorkspaceAccessService workspaceAccessService;
@@ -44,17 +37,9 @@ class WorkspaceCommandServiceTest {
 	@Autowired
 	private WorkspaceMemberRepository workspaceMemberRepository;
 	@Autowired
-	private PasswordEncoder passwordEncoder;
-	@Autowired
-	private EntityManager entityManager;
-
-	@Autowired
 	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
 	private MemberRepositoryFixture memberRepositoryFixture;
-
-	@Autowired
-	private DatabaseCleaner databaseCleaner;
 
 	@AfterEach
 	void tearDown() {

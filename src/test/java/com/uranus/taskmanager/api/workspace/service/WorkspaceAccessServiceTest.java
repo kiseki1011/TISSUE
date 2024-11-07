@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
@@ -39,12 +38,9 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspace
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SpringBootTest
-public class WorkspaceAccessServiceTest {
+class WorkspaceAccessServiceTest extends ServiceIntegrationTestHelper {
 
 	@Autowired
 	private WorkspaceAccessService workspaceAccessService;
@@ -76,10 +72,7 @@ public class WorkspaceAccessServiceTest {
 
 	@AfterEach
 	void tearDown() {
-		invitationRepository.deleteAll();
-		workspaceMemberRepository.deleteAll();
-		workspaceRepository.deleteAll();
-		memberRepository.deleteAll();
+		databaseCleaner.execute();
 	}
 
 	@Test
