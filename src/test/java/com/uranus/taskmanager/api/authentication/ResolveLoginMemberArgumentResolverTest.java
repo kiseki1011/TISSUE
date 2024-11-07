@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
-class LoginMemberArgumentResolverTest {
+class ResolveLoginMemberArgumentResolverTest {
 	@Mock
 	private MemberRepository memberRepository;
 	@Mock
@@ -47,15 +47,15 @@ class LoginMemberArgumentResolverTest {
 	}
 
 	// LoginMemberDto 타입을 사용하는 더미 메서드
-	public void dummyMethod(@LoginMember LoginMemberDto loginMemberDto) {
+	public void dummyMethod(@ResolveLoginMember LoginMember loginMember) {
 	}
 
 	// String 타입을 사용하는 더미 메서드
-	public void dummyMethod(@LoginMember String loginMemberDto) {
+	public void dummyMethod(@ResolveLoginMember String loginMemberDto) {
 	}
 
 	// @LoginMember 애노테이션을 사용하지 않는 더미 메서드
-	public void dummyMethodWithoutAnnotation(LoginMemberDto loginMemberDto) {
+	public void dummyMethodWithoutAnnotation(LoginMember loginMember) {
 	}
 
 	@Test
@@ -65,7 +65,7 @@ class LoginMemberArgumentResolverTest {
 		// given
 		// LoginMemberDto 파라미터를 가진 dummyMethod의 MethodParameter 생성
 		MethodParameter parameter = new MethodParameter(
-			getClass().getDeclaredMethod("dummyMethod", LoginMemberDto.class), 0);
+			getClass().getDeclaredMethod("dummyMethod", LoginMember.class), 0);
 
 		// when
 		// supportsParameter 호출하여 LoginMemberDto 타입과 @LoginMember 애노테이션 확인
@@ -97,7 +97,7 @@ class LoginMemberArgumentResolverTest {
 
 		// given
 		MethodParameter parameter = new MethodParameter(
-			getClass().getDeclaredMethod("dummyMethodWithoutAnnotation", LoginMemberDto.class), 0);
+			getClass().getDeclaredMethod("dummyMethodWithoutAnnotation", LoginMember.class), 0);
 
 		// when
 		boolean result = resolver.supportsParameter(parameter);
@@ -112,6 +112,7 @@ class LoginMemberArgumentResolverTest {
 
 		// given
 		// 가상의 로그인 ID 설정
+		Long id = 1L;
 		String loginId = "user123";
 		String email = "user123@test.com";
 		Member member = memberEntityFixture.createMember(loginId, email);
@@ -123,19 +124,19 @@ class LoginMemberArgumentResolverTest {
 		when(request.getSession(false)).thenReturn(session);
 
 		// 세션에서 로그인된 사용자의 ID를 가져오는 부분 모킹
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(loginId);
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(id);
 
 		// MemberRepository에서 해당 로그인 ID로 사용자를 조회하는 부분 모킹
-		when(memberRepository.findByLoginId(loginId)).thenReturn(Optional.of(member));
+		when(memberRepository.findById(id)).thenReturn(Optional.of(member));
 
 		// when
 		// resolveArgument 호출
-		LoginMemberDto result = (LoginMemberDto)resolver.resolveArgument(null, null, webRequest, null);
+		LoginMember result = (LoginMember)resolver.resolveArgument(null, null, webRequest, null);
 
 		// then
 		// 반환된 LoginMemberDto가 null이 아니며, 로그인 ID가 일치하는지 확인
 		assertThat(result).isNotNull();
-		assertThat(result).isInstanceOf(LoginMemberDto.class);
+		assertThat(result).isInstanceOf(LoginMember.class);
 		assertThat(result.getLoginId()).isEqualTo(loginId);
 	}
 
@@ -157,7 +158,7 @@ class LoginMemberArgumentResolverTest {
 		// given
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(null);
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(null);
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
@@ -168,12 +169,12 @@ class LoginMemberArgumentResolverTest {
 	@DisplayName("resolveArgument는 세션의 정보를 사용해 회원을 못 찾으면 MemberNotFoundException을 던진다")
 	void test7() {
 		// given
-		String loginId = "invalidUser";
+		Long id = 1L;
 
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER)).thenReturn(loginId);
-		when(memberRepository.findByLoginId(loginId)).thenReturn(Optional.empty());
+		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(id);
+		when(memberRepository.findById(id)).thenReturn(Optional.empty());
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))

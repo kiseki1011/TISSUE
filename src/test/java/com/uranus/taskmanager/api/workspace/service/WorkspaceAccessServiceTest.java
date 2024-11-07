@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
@@ -23,13 +23,13 @@ import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -87,10 +87,10 @@ public class WorkspaceAccessServiceTest {
 	void testGetWorkspaceDetail_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		LoginMemberDto loginMember = new LoginMemberDto(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -102,10 +102,10 @@ public class WorkspaceAccessServiceTest {
 	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
 		// given
 		String invalidCode = "INVALIDCODE";
-		LoginMemberDto loginMember = new LoginMemberDto(member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 
@@ -185,13 +185,13 @@ public class WorkspaceAccessServiceTest {
 	void testJoinWorkspace_InvalidPasswordException() {
 		// given
 		String workspaceCode = "CODE1234";
-		Workspace workspaceWithPassword = workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
+		workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
 			"CODE1234", "password1234!");
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest("WrongPassword1234!");
-		LoginMemberDto loginMember = new LoginMemberDto(member.getLoginId(), member.getEmail());
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest("WrongPassword1234!");
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request, loginMember))
+		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request, loginMember.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -200,12 +200,12 @@ public class WorkspaceAccessServiceTest {
 	void testJoinWorkspace_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
-		LoginMemberDto loginMember = new LoginMemberDto(member.getLoginId(), member.getEmail());
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -216,12 +216,12 @@ public class WorkspaceAccessServiceTest {
 	void testJoinWorkspace_isAlreadyMemberTrue() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
-		LoginMemberDto loginMember = new LoginMemberDto(member.getLoginId(), member.getEmail());
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
+		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -233,14 +233,15 @@ public class WorkspaceAccessServiceTest {
 	void testJoinWorkspace_isAlreadyMemberFalse() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceParticipateRequest request = new WorkspaceParticipateRequest(null);
+		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
 		Member joiningMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
 			"password1234!");
-		LoginMemberDto loginMember = new LoginMemberDto(joiningMember.getLoginId(), joiningMember.getEmail());
+		LoginMember loginMember = new LoginMember(joiningMember.getId(), joiningMember.getLoginId(),
+			joiningMember.getEmail());
 
 		// when
-		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();

@@ -35,7 +35,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 	private static void validateUserSession(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
 
-		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionKey.LOGIN_MEMBER)).isEmpty()) {
+		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionKey.LOGIN_MEMBER_ID)).isEmpty()) {
 			throw new UserNotLoggedInException();
 		}
 	}

@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.common.exception.CommonException;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
@@ -21,13 +20,13 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -103,21 +102,21 @@ public class WorkspaceAccessService {
 	 * 참여할 워크스페이스의 코드와 참여 요청의 패스워드(null 허용)를 사용해서
 	 * 참여를 요청한 로그인 멤버를 해당 워크스페이스에 참여시킨다.
 	 *
-	 * @param code
-	 * @param request
-	 * @param loginMember
+	 * @param code - 워크스페이스의 고유 코드
+	 * @param request - 워크스페이스 참여 요청 객체
+	 * @param memberId - 세션에서 꺼낸 멤버 id(PK)
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public WorkspaceParticipateResponse joinWorkspace(String code, WorkspaceParticipateRequest request,
-		LoginMemberDto loginMember) {
+	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
 
 		Workspace workspace = findWorkspaceByCode(code);
-		Member member = findMemberByLoginId(loginMember);
+		Member member = findMemberById(memberId);
 
-		Optional<WorkspaceMember> optionalWorkspaceMember = findExistingWorkspaceMember(code, loginMember);
+		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
+			memberId, code);
 		if (optionalWorkspaceMember.isPresent()) {
-			return WorkspaceParticipateResponse.from(workspace, optionalWorkspaceMember.get(), true);
+			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
@@ -131,7 +130,7 @@ public class WorkspaceAccessService {
 		workspace.increaseMemberCount();
 		workspaceMemberRepository.save(workspaceMember);
 
-		return WorkspaceParticipateResponse.from(workspace, workspaceMember, false);
+		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
 	}
 
 	@Transactional
@@ -162,8 +161,8 @@ public class WorkspaceAccessService {
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
-	private Member findMemberByLoginId(LoginMemberDto loginMember) {
-		return memberRepository.findByLoginId(loginMember.getLoginId())
+	private Member findMemberById(Long id) {
+		return memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
 	}
 
@@ -220,11 +219,5 @@ public class WorkspaceAccessService {
 
 	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
 		return !passwordEncoder.matches(inputPassword, workspacePassword);
-	}
-
-	private Optional<WorkspaceMember> findExistingWorkspaceMember(String workspaceCode, LoginMemberDto loginMember) {
-		return workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			loginMember.getLoginId(),
-			workspaceCode);
 	}
 }

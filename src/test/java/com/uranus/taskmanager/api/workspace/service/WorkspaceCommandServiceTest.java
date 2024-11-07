@@ -24,13 +24,14 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
+import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
-public class WorkspaceCommandServiceTest {
+class WorkspaceCommandServiceTest {
 
 	@Autowired
 	private WorkspaceAccessService workspaceAccessService;
@@ -52,11 +53,12 @@ public class WorkspaceCommandServiceTest {
 	@Autowired
 	private MemberRepositoryFixture memberRepositoryFixture;
 
+	@Autowired
+	private DatabaseCleaner databaseCleaner;
+
 	@AfterEach
 	void tearDown() {
-		workspaceMemberRepository.deleteAll();
-		workspaceRepository.deleteAll();
-		memberRepository.deleteAll();
+		databaseCleaner.execute();
 	}
 
 	@Test

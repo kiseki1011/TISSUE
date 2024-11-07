@@ -3,7 +3,6 @@ package com.uranus.taskmanager.api.invitation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
@@ -26,26 +25,26 @@ public class InvitationService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
-	public InvitationAcceptResponse acceptInvitation(LoginMemberDto loginMember, String workspaceCode) {
+	public InvitationAcceptResponse acceptInvitation(Long loginMemberId, String workspaceCode) {
 
-		Invitation invitation = getPendingInvitationBy(loginMember, workspaceCode);
+		Invitation invitation = getPendingInvitationBy(loginMemberId, workspaceCode);
 		changeStatusToAccepted(invitation);
-		WorkspaceMember workspaceMember = addMemberToWorkspace(invitation);
+		addMemberToWorkspace(invitation);
 
-		return InvitationAcceptResponse.from(invitation, workspaceMember);
+		return InvitationAcceptResponse.from(invitation.getWorkspace(), WorkspaceRole.USER);
 	}
 
 	@Transactional
-	public void rejectInvitation(LoginMemberDto loginMember, String workspaceCode) {
+	public void rejectInvitation(Long loginMemberId, String workspaceCode) {
 
-		Invitation invitation = getPendingInvitationBy(loginMember, workspaceCode);
+		Invitation invitation = getPendingInvitationBy(loginMemberId, workspaceCode);
 		changeStatusToRejected(invitation);
 		// Todo: InvitationRejectResponse 사용을 고려
 	}
 
-	private Invitation getPendingInvitationBy(LoginMemberDto loginMember, String workspaceCode) {
-		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode,
-				loginMember.getLoginId())
+	private Invitation getPendingInvitationBy(Long loginMemberId, String workspaceCode) {
+		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode,
+				loginMemberId)
 			.orElseThrow(InvitationNotFoundException::new);
 
 		validatePendingStatus(invitation);

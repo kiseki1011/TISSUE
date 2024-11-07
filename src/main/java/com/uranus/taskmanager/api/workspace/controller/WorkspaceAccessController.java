@@ -7,18 +7,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.authentication.LoginMember;
 import com.uranus.taskmanager.api.authentication.LoginRequired;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.ResolveLoginMember;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceParticipateRequest;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceParticipateResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.RoleRequired;
@@ -59,13 +59,13 @@ public class WorkspaceAccessController {
 
 	@LoginRequired
 	@PostMapping("/{code}")
-	public ApiResponse<WorkspaceParticipateResponse> joinWorkspace(
+	public ApiResponse<WorkspaceJoinResponse> joinWorkspace(
 		@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember,
-		@RequestBody @Valid WorkspaceParticipateRequest request
+		@ResolveLoginMember LoginMember loginMember,
+		@RequestBody @Valid WorkspaceJoinRequest request
 	) {
 
-		WorkspaceParticipateResponse response = workspaceAccessService.joinWorkspace(code, request, loginMember);
+		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(code, request, loginMember.getId());
 		return ApiResponse.ok("Joined Workspace", response);
 	}
 

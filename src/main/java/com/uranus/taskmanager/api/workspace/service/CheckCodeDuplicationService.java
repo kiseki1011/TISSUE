@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
@@ -48,28 +47,28 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	 * 워크스페이스 생성 요청을 사용해서 워크스페이스를 생성하고 저장한다
 	 * 로그인 정보를 통해 찾은 멤버를 해당 워크스페이스에 참여시킨다
 	 *
-	 * @param workspaceCreateRequest - 컨트롤러의 워크스페이스 생성 요청 DTO
-	 * @param loginMember - 컨트롤러에서의 로그인 정보를 사용한 DTO
+	 * @param request - 컨트롤러의 워크스페이스 생성 요청 객체
+	 * @param memberId - 컨트롤러에서의 로그인 정보에서 꺼내온 멤버 id(PK)
 	 * @return WorkspaceCreateResponse
 	 */
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest workspaceCreateRequest,
-		LoginMemberDto loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request,
+		Long memberId) {
 
-		Member member = findMemberByLoginId(loginMember);
+		Member member = findMemberById(memberId);
 
-		setUniqueWorkspaceCode(workspaceCreateRequest);
-		setEncodedPasswordIfPresent(workspaceCreateRequest);
+		setUniqueWorkspaceCode(request);
+		setEncodedPasswordIfPresent(request);
 
-		Workspace workspace = saveWorkspace(workspaceCreateRequest);
+		Workspace workspace = saveWorkspace(request);
 		addAdminMemberToWorkspace(member, workspace);
 
 		return WorkspaceCreateResponse.from(workspace);
 	}
 
-	private Member findMemberByLoginId(LoginMemberDto loginMember) {
-		return memberRepository.findByLoginId(loginMember.getLoginId())
+	private Member findMemberById(Long memberId) {
+		return memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 	}
 

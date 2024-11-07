@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.authentication.LoginMember;
 import com.uranus.taskmanager.api.authentication.LoginRequired;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginMemberDto;
+import com.uranus.taskmanager.api.authentication.ResolveLoginMember;
+import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
@@ -49,10 +49,10 @@ public class WorkspaceController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<WorkspaceCreateResponse> createWorkspace(
-		@LoginMember LoginMemberDto loginMember,
+		@ResolveLoginMember LoginMember loginMember,
 		@RequestBody @Valid WorkspaceCreateRequest request) {
 
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, loginMember.getId());
 		return ApiResponse.created("Workspace Created", response);
 	}
 
@@ -89,18 +89,19 @@ public class WorkspaceController {
 	@LoginRequired
 	@GetMapping("/{code}")
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(@PathVariable String code,
-		@LoginMember LoginMemberDto loginMember) {
+		@ResolveLoginMember LoginMember loginMember) {
 
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code, loginMember);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code, loginMember.getId());
 		return ApiResponse.ok("Workspace Found", response);
 	}
 
 	@LoginRequired
 	@GetMapping
-	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(@LoginMember LoginMemberDto loginMember,
+	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
+		@ResolveLoginMember LoginMember loginMember,
 		Pageable pageable) {
 
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember, pageable);
+		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
 		return ApiResponse.ok("Currently joined Workspaces Found", response);
 	}
 }
