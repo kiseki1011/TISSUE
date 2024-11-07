@@ -108,8 +108,7 @@ public class WorkspaceAccessService {
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request,
-		Long memberId) {
+	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
 
 		Workspace workspace = findWorkspaceByCode(code);
 		Member member = findMemberById(memberId);

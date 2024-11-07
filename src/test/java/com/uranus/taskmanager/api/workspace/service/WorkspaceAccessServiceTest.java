@@ -191,7 +191,7 @@ public class WorkspaceAccessServiceTest {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request, loginMember))
+		assertThatThrownBy(() -> workspaceAccessService.joinWorkspace(workspaceCode, request, loginMember.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -205,7 +205,7 @@ public class WorkspaceAccessServiceTest {
 
 		// when
 		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -221,7 +221,7 @@ public class WorkspaceAccessServiceTest {
 
 		// when
 		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();
@@ -241,7 +241,7 @@ public class WorkspaceAccessServiceTest {
 
 		// when
 		WorkspaceJoinResponse response = workspaceAccessService.joinWorkspace(workspaceCode, request,
-			loginMember);
+			loginMember.getId());
 
 		// then
 		assertThat(response).isNotNull();

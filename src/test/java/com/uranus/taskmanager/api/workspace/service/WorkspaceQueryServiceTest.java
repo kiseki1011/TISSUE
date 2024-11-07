@@ -82,8 +82,8 @@ class WorkspaceQueryServiceTest {
 			null);
 
 		// member1은 workspace1,2에 참여
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1);
-		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1.getId());
+		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1.getId());
 	}
 
 	@AfterEach
@@ -122,7 +122,7 @@ class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
@@ -149,7 +149,7 @@ class WorkspaceQueryServiceTest {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2);
+		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", 2L);
