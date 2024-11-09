@@ -11,24 +11,14 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.authentication.SessionKey;
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
@@ -41,52 +31,14 @@ import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspacemember.authorization.AuthorizationInterceptor;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
+import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@WebMvcTest(WorkspaceAccessController.class)
-class WorkspaceAccessControllerTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@MockBean
-	private WorkspaceAccessService workspaceAccessService;
-	@MockBean
-	private MemberService memberService;
-	@MockBean
-	private CheckCodeDuplicationService workspaceCreateService;
-	@MockBean
-	private WorkspaceQueryService workspaceQueryService;
-	@MockBean
-	private WorkspaceCommandService workspaceCommandService;
-	@MockBean
-	private MemberRepository memberRepository;
-	@MockBean
-	private WorkspaceRepository workspaceRepository;
-	@MockBean
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@MockBean
-	private InvitationRepository invitationRepository;
-	@MockBean
-	private LoginMemberArgumentResolver loginMemberArgumentResolver;
-	@MockBean
-	private AuthorizationInterceptor authorizationInterceptor;
+class WorkspaceAccessControllerTest extends ControllerTestHelper {
 
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
@@ -101,32 +53,12 @@ class WorkspaceAccessControllerTest {
 		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
-	/**
-	 * Todo
-	 *  - @WebMvcTest를 @MockBean과 사용
-	 *  - Session, LoginMemberArgumentResolver, AuthorizationInterceptor를 모킹해야 함
-	 *  -> 이걸 컨트롤러 단위 테스트를 진행할때 마다 하는건 귀찮음!
-	 *  -> @WebMvcTest의 동작 과정을 찾아보자!
-	 *  -> 물론 @BeforeEach를 사용해서 처리할 수 있겠지만, 테스트 간 결합도가 생김
-	 */
 	@Test
-	@DisplayName("워크스페이스 초대를 성공하면 초대 응답 객체를 데이터로 받는다")
+	@DisplayName("POST /workspaces/{code}/invite - 워크스페이스 초대를 성공하면 초대 응답 객체를 데이터로 받는다")
 	void test6() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -159,23 +91,11 @@ class WorkspaceAccessControllerTest {
 	}
 
 	@Test
-	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공하는 경우 200을 응답받는다")
+	@DisplayName("POST /workspaces/{code}/invites - 다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공하는 경우 200을 응답받는다")
 	void test9() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -209,23 +129,11 @@ class WorkspaceAccessControllerTest {
 	}
 
 	@Test
-	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대를 실패해도 200을 응답받는다")
+	@DisplayName("POST /workspaces/{code}/invites - 다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대를 실패해도 200을 응답받는다")
 	void test10() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -270,23 +178,11 @@ class WorkspaceAccessControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
+	@DisplayName("POST /workspaces/{code} - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
 	void test11() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -317,23 +213,11 @@ class WorkspaceAccessControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
+	@DisplayName("POST /workspaces/{code} - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
 	void test12() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -355,23 +239,11 @@ class WorkspaceAccessControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
+	@DisplayName("DELETE /workspaces/{code}/kick - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// LoginMemberArgumentResolver 모킹
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class))).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(LoginMember.builder()
-				.id(1L)
-				.loginId("member1")
-				.email("member1@test.com")
-				.build());
-
-		// AuthorizationInterceptor 모킹
-		when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
 		// given
 		String workspaceCode = "TESTCODE";

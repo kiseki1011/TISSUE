@@ -9,8 +9,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,46 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
-import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
-import com.uranus.taskmanager.util.DatabaseCleaner;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SpringBootTest
-class WorkspaceQueryServiceTest {
-
-	@Autowired
-	private WorkspaceAccessService workspaceAccessService;
-	@Autowired
-	private WorkspaceQueryService workspaceQueryService;
-	@Autowired
-	private MemberService memberService;
-	@Autowired
-	private WorkspaceRepository workspaceRepository;
-	@Autowired
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@Autowired
-	private MemberRepository memberRepository;
-
-	@Autowired
-	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
-	@Autowired
-	private MemberRepositoryFixture memberRepositoryFixture;
-	@Autowired
-	DatabaseCleaner databaseCleaner;
+class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	void setup() {

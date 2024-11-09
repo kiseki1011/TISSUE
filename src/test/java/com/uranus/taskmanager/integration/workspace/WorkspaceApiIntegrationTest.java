@@ -1,46 +1,92 @@
-package com.uranus.taskmanager.api.integration;
+package com.uranus.taskmanager.integration.workspace;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.AuditorAware;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.basetest.BaseApiIntegrationTest;
-import com.uranus.taskmanager.fixture.api.LoginApiFixture;
-import com.uranus.taskmanager.fixture.api.MemberApiFixture;
-import com.uranus.taskmanager.util.DatabaseCleaner;
+import com.uranus.taskmanager.helper.RestAssuredTestHelper;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
-public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
-	@Autowired
-	private AuditorAware<String> auditorAware;
-	@Autowired
-	private LoginApiFixture loginApiFixture;
-	@Autowired
-	private MemberApiFixture memberApiFixture;
-	@Autowired
-	private DatabaseCleaner databaseCleaner;
+@Transactional
+class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 
 	@BeforeEach
 	public void setUp() {
 		RestAssured.port = port;
+	}
+
+	@AfterEach
+	public void tearDown() {
 		databaseCleaner.execute();
 	}
 
 	@Test
-	@DisplayName("워크스페이스가 생성될 시 생성자(로그인 정보의 로그인ID)가 기록된다")
-	public void test1() {
+	@DisplayName("워크스페이스를 생성하면 응답의 데이터에 워크스페이스의 이름, 설명, 코드가 존재해야 한다")
+	void test1() {
+
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("Test Workspace")
+			.description("Test Description")
+			.build();
+
+		RestAssured.given()
+			.contentType(ContentType.JSON)
+			.cookie("JSESSIONID", sessionCookie)
+			.body(request)
+			.when()
+			.post("/api/v1/workspaces")
+			.then()
+			.statusCode(HttpStatus.CREATED.value())
+			.body("data.name", equalTo("Test Workspace"))
+			.body("data.description", equalTo("Test Description"))
+			.body("data.code", notNullValue())
+			.extract().response();
+	}
+
+	@Test
+	@DisplayName("하나의 워크스페이스를 생성하면 DB에 하나의 워크스페이스만 존재해야 한다")
+	void test2() {
+
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("Test Workspace")
+			.description("Test Description")
+			.build();
+
+		RestAssured.given()
+			.contentType(ContentType.JSON)
+			.cookie("JSESSIONID", sessionCookie)
+			.body(request)
+			.when()
+			.post("/api/v1/workspaces")
+			.then()
+			.statusCode(HttpStatus.CREATED.value())
+			.extract().response();
+
+		assertThat(workspaceRepository.count()).isEqualTo(1L);
+	}
+
+	@Test
+	@DisplayName("워크스페이스가 생성될 시 생성자(로그인ID)가 기록된다")
+	void test3() {
 		// given
 		String loginId = "user123";
 		String email = "user123@test.com";
@@ -66,6 +112,7 @@ public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
 			.extract().response();
 
 		Optional<Workspace> optionalWorkspace = workspaceRepository.findById(1L);
+
 		// then
 		assertThat(optionalWorkspace).isPresent();
 		Workspace workspace = optionalWorkspace.get();
@@ -74,7 +121,7 @@ public class AuditApiIntegrationTest extends BaseApiIntegrationTest {
 
 	@Test
 	@DisplayName("워크스페이스가 생성될 시 생성일이 기록된다")
-	public void test2() {
+	void test4() {
 		// given
 		String loginId = "user123";
 		String email = "user123@test.com";

@@ -14,40 +14,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@WebMvcTest(MemberController.class)
-class MemberControllerTest {
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@MockBean
-	private MemberService memberService;
-	@MockBean
-	private MemberRepository memberRepository;
-	@MockBean
-	private WorkspaceRepository workspaceRepository;
-	@MockBean
-	private WorkspaceMemberRepository workspaceMemberRepository;
+class MemberControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("회원 가입에 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("POST /members/signup - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
 	void test1() throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId("testuser1234")
@@ -71,7 +46,7 @@ class MemberControllerTest {
 		"'한글아이디', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 		"'test1한글', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 	})
-	@DisplayName("회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
+	@DisplayName("POST /members/signup - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId(loginId)
@@ -99,7 +74,7 @@ class MemberControllerTest {
 		"'Test1234!한글', 'The password must be alphanumeric "
 			+ "including at least one special character and must be between 8 and 30 characters'",
 	})
-	@DisplayName("회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
+	@DisplayName("POST /members/signup - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
 		SignupRequest signupRequest = SignupRequest.builder()
 			.loginId("testuser1234")
@@ -126,7 +101,7 @@ class MemberControllerTest {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
+	@DisplayName("POST /members/signup - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
 	void test4(String loginId, String email, String password) throws Exception {
 		// given
 		SignupRequest signupRequest = SignupRequest.builder()

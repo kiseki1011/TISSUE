@@ -8,16 +8,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
@@ -32,37 +28,12 @@ import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResp
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
-import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SpringBootTest
-public class WorkspaceAccessServiceTest {
-
-	@Autowired
-	private WorkspaceAccessService workspaceAccessService;
-	@Autowired
-	private WorkspaceQueryService workspaceQueryService;
-	@Autowired
-	private WorkspaceRepository workspaceRepository;
-	@Autowired
-	private MemberRepository memberRepository;
-	@Autowired
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@Autowired
-	private InvitationRepository invitationRepository;
-
-	@Autowired
-	private WorkspaceRepositoryFixture workspaceRepositoryFixture;
-	@Autowired
-	private MemberRepositoryFixture memberRepositoryFixture;
+class WorkspaceAccessServiceTest extends ServiceIntegrationTestHelper {
 
 	private Member member;
 
@@ -76,10 +47,7 @@ public class WorkspaceAccessServiceTest {
 
 	@AfterEach
 	void tearDown() {
-		invitationRepository.deleteAll();
-		workspaceMemberRepository.deleteAll();
-		workspaceRepository.deleteAll();
-		memberRepository.deleteAll();
+		databaseCleaner.execute();
 	}
 
 	@Test
@@ -252,9 +220,9 @@ public class WorkspaceAccessServiceTest {
 	 * 트랜잭션 애노테이션 제거 시 LazyInitializationException 발생
 	 * <p>
 	 * 원인:
-	 *  - Hibernate 세션이 닫힌 상태에서 지연 로딩된 속성에 접근하려 할 때 발생합니다.
-	 *  - 현재 테스트의 경우, Workspace 엔티티의 workspaceMembers 컬렉션을 액세스하려고 할 때
-	 * 	세션이 종료되어 이 오류가 발생합니다.
+	 * - Hibernate 세션이 닫힌 상태에서 지연 로딩된 속성에 접근하려 할 때 발생합니다.
+	 * - 현재 테스트의 경우, Workspace 엔티티의 workspaceMembers 컬렉션을 액세스하려고 할 때
+	 * 세션이 종료되어 이 오류가 발생합니다.
 	 */
 	@Transactional
 	@Test
