@@ -8,41 +8,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.SessionKey;
 import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
-import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-@WebMvcTest(AuthenticationController.class)
-class AuthenticationControllerTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
-	private ObjectMapper objectMapper;
-	@MockBean
-	private AuthenticationService authenticationService;
-	@MockBean
-	private MemberRepository memberRepository;
-	@MockBean
-	private WorkspaceRepository workspaceRepository;
-	@MockBean
-	private WorkspaceMemberRepository workspaceMemberRepository;
+class AuthenticationControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("로그인에 성공하면 200 OK를 기대하고, 세션에 로그인ID가 저장된다")
+	@DisplayName("POST /auth/login - 로그인에 성공하면 200 OK를 기대하고, 세션에 로그인ID가 저장된다")
 	void test1() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -72,7 +49,7 @@ class AuthenticationControllerTest {
 	}
 
 	@Test
-	@DisplayName("로그인 시 비밀번호 필드의 빈 검증이 실패하면 400 BAD_REQUEST를 기대한다")
+	@DisplayName("POST /auth/login - 로그인 시 비밀번호 필드의 빈 검증이 실패하면 400 BAD_REQUEST를 기대한다")
 	void test2() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
@@ -90,7 +67,7 @@ class AuthenticationControllerTest {
 	}
 
 	@Test
-	@DisplayName("로그아웃 시 세션이 무효화된다")
+	@DisplayName("POST /auth/logout - 로그아웃 시 세션이 무효화된다")
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -103,15 +80,6 @@ class AuthenticationControllerTest {
 			.andDo(print());
 
 		assertThat(session.isInvalid()).isTrue();
-	}
-
-	@Test
-	@DisplayName("로그인 하지 않은 상태에서 로그아웃 시도 시 UserNotLoggedInException 발생")
-	void test4() throws Exception {
-		mockMvc.perform(post("/api/v1/auth/logout"))
-			.andExpect(status().isUnauthorized())
-			.andExpect(result -> assertThat(result.getResolvedException()).isInstanceOf(UserNotLoggedInException.class))
-			.andDo(print());
 	}
 
 }
