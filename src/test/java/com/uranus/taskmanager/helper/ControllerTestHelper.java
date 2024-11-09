@@ -7,6 +7,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.controller.AuthenticationController;
@@ -40,7 +42,11 @@ import lombok.extern.slf4j.Slf4j;
 		MemberController.class
 	},
 	excludeFilters = {
-		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebMvcConfig.class)
+		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+			WebMvcConfig.class,
+			HandlerMethodArgumentResolver.class,
+			HandlerInterceptor.class
+		})
 	}
 )
 @Import(value = WebMvcTestConfig.class)

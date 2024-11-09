@@ -9,6 +9,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
+import com.uranus.taskmanager.mock.MockAuthenticationInterceptor;
 import com.uranus.taskmanager.mock.MockAuthorizationInterceptor;
 import com.uranus.taskmanager.mock.MockLoginMemberArgumentResolver;
 
@@ -20,10 +21,12 @@ public class WebMvcTestConfig implements WebMvcConfigurer {
 	@Value("${test.member.loginId:member1}")
 	private String loginId;
 
-	@Value("${test.member.email.member1@test.com")
+	@Value("${test.member.email.member1@test.com}")
 	private String email;
-	@Value("${test.allow.access:true}")
-	private boolean allowAccess;
+	@Value("${test.allow.hasSufficientRole:true}")
+	private boolean hasSufficientRole;
+	@Value("${test.allow.isLogin:true}")
+	private boolean isLogin;
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -37,6 +40,7 @@ public class WebMvcTestConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new MockAuthorizationInterceptor(allowAccess));
+		registry.addInterceptor(new MockAuthorizationInterceptor(hasSufficientRole));
+		registry.addInterceptor(new MockAuthenticationInterceptor(isLogin));
 	}
 }
