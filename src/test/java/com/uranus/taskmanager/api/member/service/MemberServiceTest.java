@@ -7,26 +7,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.security.PasswordEncoder;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberServiceTest extends ServiceIntegrationTestHelper {
-
-	@Autowired
-	private MemberService memberService;
-	@Autowired
-	private MemberRepository memberRepository;
-	@Autowired
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@Autowired
-	private PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	public void init() {
