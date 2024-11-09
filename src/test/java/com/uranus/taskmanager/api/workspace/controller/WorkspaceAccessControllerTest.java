@@ -11,10 +11,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
@@ -35,16 +38,23 @@ import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspacemember.authorization.AuthorizationInterceptor;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
-import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-class WorkspaceAccessControllerTest extends ControllerTestHelper {
+@WebMvcTest(WorkspaceAccessController.class)
+class WorkspaceAccessControllerTest {
 
+	@Autowired
+	private MockMvc mockMvc;
+	@Autowired
+	private ObjectMapper objectMapper;
+	@MockBean
+	private WorkspaceAccessService workspaceAccessService;
 	@MockBean
 	private LoginMemberArgumentResolver loginMemberArgumentResolver;
 	@MockBean

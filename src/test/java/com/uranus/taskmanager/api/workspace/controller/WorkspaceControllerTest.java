@@ -2,7 +2,6 @@ package com.uranus.taskmanager.api.workspace.controller;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -19,16 +18,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.MethodParameter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
-import com.uranus.taskmanager.api.authentication.ResolveLoginMember;
 import com.uranus.taskmanager.api.authentication.SessionKey;
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
@@ -43,9 +37,6 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class WorkspaceControllerTest extends ControllerTestHelper {
-
-	@MockBean
-	private LoginMemberArgumentResolver loginMemberArgumentResolver;
 
 	@Test
 	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 201을 응답한다")
@@ -229,15 +220,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
 
-		LoginMember loginMember = LoginMember.builder()
-			.id(1L)
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
-
-		when(loginMemberArgumentResolver.supportsParameter(any())).thenReturn(true);
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any())).thenReturn(loginMember);
-
 		when(workspaceQueryService.getWorkspaceDetail(eq(code), anyLong()))
 			.thenReturn(workspaceDetail);
 
@@ -287,33 +269,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
-
-		// 아래 부터 인가 모킹
-		LoginMember loginMember = LoginMember.builder()
-			.id(1L)
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
-		/*
-		 * Todo
-		 *  - 다음 행위를 모킹: MethodParameter 객체가 LoginMember인지 확인 & @ResolveLoginMember가 붙어있는지 확인
-		 *  - 기존에는 supportsParameter()에 any(MethodParameter.class)를 사용하는 모든 경우에 true를 반환했음
-		 *  - -> 이 문제는 다른 파라미터 타입(이 경우에는 Pageable 파라미터)에도 적용되는 문제가 발생한다
-		 *  - -> 쉽게 말해서 행위를 어설프게 모킹해서 Pageable pageable에도 LoginMember가 들어가는 문제가 발생했다!
-		 *  <br>
-		 *  - 내가 궁금한건, 이렇게 자세하게 행위를 모킹하는 것은 너무 귀찮음.
-		 *  - 특히 인증/인가를 위해서 계속 모킹을 추가하면, 실제 검증하고 싶은 행위의 코드 보다 양이 많아지는 문제가 발생함.
-		 *  - 컨트롤러에서의 단위 테스트(WebMvcTest 기준)에서 ArgumentResolver, Interceptor를 적용하지 않는 방법을 찾아봐야 할듯.
-		 */
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class)))
-			.thenAnswer(invocation -> {
-				MethodParameter parameter = invocation.getArgument(0);
-				return parameter.getParameterType().equals(LoginMember.class) &&
-					parameter.hasParameterAnnotation(ResolveLoginMember.class);
-			});
-
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(loginMember);
 
 		when(workspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
@@ -372,23 +327,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
 			.totalElements(2L)
 			.build();
-
-		// 인가 모킹
-		LoginMember loginMember = LoginMember.builder()
-			.id(1L)
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
-
-		when(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class)))
-			.thenAnswer(invocation -> {
-				MethodParameter parameter = invocation.getArgument(0);
-				return parameter.getParameterType().equals(LoginMember.class) &&
-					parameter.hasParameterAnnotation(ResolveLoginMember.class);
-			});
-
-		when(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
-			.thenReturn(loginMember);
 
 		when(workspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
