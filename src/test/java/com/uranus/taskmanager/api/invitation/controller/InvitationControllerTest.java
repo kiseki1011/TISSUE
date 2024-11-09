@@ -9,22 +9,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.authentication.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.authentication.SessionKey;
 import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
+import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
-import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 /**
  * Todo: MockLoginArgumentResolver를 만들어서 테스트 코드 개선하기
@@ -47,8 +55,23 @@ import com.uranus.taskmanager.helper.ControllerTestHelper;
  *  - https://dadadamarine.github.io/java/spring/2019/04/26/spring-controller-test3.html
  *  - <br>
  */
-class InvitationControllerTest extends ControllerTestHelper {
+@WebMvcTest(InvitationController.class)
+class InvitationControllerTest {
 
+	@Autowired
+	private MockMvc mockMvc;
+	@Autowired
+	private ObjectMapper objectMapper;
+	@MockBean
+	private InvitationService invitationService;
+	@MockBean
+	private WorkspaceAccessService workspaceAccessService;
+	@MockBean
+	private CheckCodeDuplicationService workspaceCreateService;
+	@MockBean
+	private WorkspaceRepository workspaceRepository;
+	@MockBean
+	private WorkspaceMemberRepository workspaceMemberRepository;
 	@MockBean
 	private LoginMemberArgumentResolver loginMemberArgumentResolver;
 
