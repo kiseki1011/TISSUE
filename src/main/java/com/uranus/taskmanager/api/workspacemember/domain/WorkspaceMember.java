@@ -40,6 +40,7 @@ public class WorkspaceMember {
 	@Column(nullable = false)
 	private WorkspaceRole role;
 
+	@Column(nullable = false)
 	private String nickname;
 
 	@Builder
