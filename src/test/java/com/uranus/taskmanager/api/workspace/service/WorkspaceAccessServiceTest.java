@@ -42,7 +42,7 @@ class WorkspaceAccessServiceTest extends ServiceIntegrationTestHelper {
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("Test Workspace", "Test Description",
 			"TESTCODE", null);
 		member = memberRepositoryFixture.createMember("member1", "member1@test.com", "password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.USER);
+		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 	}
 
 	@AfterEach
@@ -232,7 +232,7 @@ class WorkspaceAccessServiceTest extends ServiceIntegrationTestHelper {
 		String workspaceCode = "TESTCODE";
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode).get();
 		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.USER);
+		workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.COLLABORATOR);
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member2.getLoginId());
 

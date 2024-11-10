@@ -36,7 +36,7 @@ public class WorkspaceAccessController {
 	private final WorkspaceAccessService workspaceAccessService;
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PostMapping("/{code}/invite")
 	public ApiResponse<InviteMemberResponse> inviteMember(
 		@PathVariable String code,
@@ -47,7 +47,7 @@ public class WorkspaceAccessController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PostMapping("/{code}/invites")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,
@@ -69,8 +69,13 @@ public class WorkspaceAccessController {
 		return ApiResponse.ok("Joined Workspace", response);
 	}
 
+	/**
+	 * Todo
+	 *  - 자기 자신 강퇴 불가능하게 로직 수정
+	 *  - 자기보다 낮은 권한만 강퇴할 수 있도록 로직 추가
+	 */
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.ADMIN})
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@DeleteMapping("/{code}/kick")
 	public ApiResponse<KickWorkspaceMemberResponse> kickWorkspaceMember(
 		@PathVariable String code,

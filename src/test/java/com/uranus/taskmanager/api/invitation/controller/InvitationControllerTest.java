@@ -48,7 +48,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 			.build();
 
 		InvitationAcceptResponse response = InvitationAcceptResponse.builder()
-			.workspaceDetail(WorkspaceDetail.from(workspace, WorkspaceRole.USER))
+			.workspaceDetail(WorkspaceDetail.from(workspace, WorkspaceRole.COLLABORATOR))
 			.nickname("member1@test.com")
 			.build();
 

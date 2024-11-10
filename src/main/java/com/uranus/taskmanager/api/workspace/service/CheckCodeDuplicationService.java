@@ -110,7 +110,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 
 	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.ADMIN,
+			WorkspaceRole.MANAGER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);

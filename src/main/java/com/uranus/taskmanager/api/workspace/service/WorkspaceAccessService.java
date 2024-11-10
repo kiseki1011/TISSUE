@@ -102,8 +102,8 @@ public class WorkspaceAccessService {
 	 * 참여할 워크스페이스의 코드와 참여 요청의 패스워드(null 허용)를 사용해서
 	 * 참여를 요청한 로그인 멤버를 해당 워크스페이스에 참여시킨다.
 	 *
-	 * @param code - 워크스페이스의 고유 코드
-	 * @param request - 워크스페이스 참여 요청 객체
+	 * @param code     - 워크스페이스의 고유 코드
+	 * @param request  - 워크스페이스 참여 요청 객체
 	 * @param memberId - 세션에서 꺼낸 멤버 id(PK)
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
@@ -121,7 +121,8 @@ public class WorkspaceAccessService {
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.USER,
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
+			WorkspaceRole.COLLABORATOR,
 			member.getEmail());
 		/*
 		 * Todo

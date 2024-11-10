@@ -10,5 +10,5 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RoleRequired {
-	WorkspaceRole[] roles(); // 요구되는 권한을 배열로 받는다
+	WorkspaceRole[] roles();
 }

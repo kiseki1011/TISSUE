@@ -31,7 +31,7 @@ public class InvitationService {
 		changeStatusToAccepted(invitation);
 		addMemberToWorkspace(invitation);
 
-		return InvitationAcceptResponse.from(invitation.getWorkspace(), WorkspaceRole.USER);
+		return InvitationAcceptResponse.from(invitation.getWorkspace(), WorkspaceRole.COLLABORATOR);
 	}
 
 	@Transactional
@@ -61,7 +61,7 @@ public class InvitationService {
 		Workspace workspace = invitation.getWorkspace();
 		Member member = invitation.getMember();
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member,
-			workspace, WorkspaceRole.USER, member.getEmail());
+			workspace, WorkspaceRole.COLLABORATOR, member.getEmail());
 
 		workspace.increaseMemberCount();
 

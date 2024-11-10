@@ -56,20 +56,12 @@ public class WorkspaceCommandService {
 	}
 
 	@Transactional
-	public void deleteWorkspace(WorkspaceDeleteRequest request, String code) {
+	public void deleteWorkspace(WorkspaceDeleteRequest request, String code, Long id) {
 		Workspace workspace = findWorkspaceByCode(code);
-		/*
-		 * Todo
-		 *  - 워크스페이스의 주인(생성자)의 로그인 Id를 통해서 주인 멤버 찾기
-		 *  - 해당 멤버의 workspaceCount 감소
-		 *  - 추후에 로직 개선 필요(DD를 적용하면 전체적으로 변할 듯)
-		 *  - 주인(Owner) Role 추가 -> 그냥 워크스페이스 삭제를 주인만 가능하도록 제한하면 더 쉬울 듯
-		 *  - -> 컨트롤러에서 LoginMember(id)를 읽어와서 사용하면 됨
-		 */
-		Member workspaceOwner = memberRepository.findByLoginId(workspace.getCreatedBy())
-			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		workspaceOwner.decreaseWorkspaceCount();
+		Member member = memberRepository.findById(id)
+			.orElseThrow(MemberNotInWorkspaceException::new);
+		member.decreaseWorkspaceCount();
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
