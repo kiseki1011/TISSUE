@@ -8,6 +8,7 @@ import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
@@ -43,6 +44,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceCommandService workspaceCommandService;
 	@Autowired
 	protected MemberService memberService;
+	@Autowired
+	protected CheckCodeDuplicationService workspaceCreateService;
 
 	/**
 	 * Repository
