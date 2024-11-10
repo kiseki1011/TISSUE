@@ -65,7 +65,7 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	}
 
 	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.ADMIN,
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MANAGER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);

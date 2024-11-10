@@ -204,8 +204,8 @@ class WorkspaceCreateServiceTestDeprecated {
 
 		// then
 		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->
-			workspaceMember.getRole().equals(WorkspaceRole.ADMIN)
+			workspaceMember.getRole().equals(WorkspaceRole.MANAGER)
 		));
 	}
-	
+
 }

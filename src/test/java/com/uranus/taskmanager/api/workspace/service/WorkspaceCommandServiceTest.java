@@ -3,7 +3,6 @@ package com.uranus.taskmanager.api.workspace.service;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +25,6 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		databaseCleaner.execute();
 	}
 
-	/**
-	 * Todo
-	 *  - deleteWorkspace의 주석 참고
-	 *  - 로직 수정 후 테스트 적용
-	 */
-	@Disabled
 	@Test
 	@DisplayName("유효한 워크스페이스 코드와 비밀번호로 워크스페이스를 삭제할 수 있다")
 	void test1() {
@@ -39,23 +32,18 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
 			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
+		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222", null);
 
 		// when
-		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "TEST1111");
+		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "TEST1111",
+			member.getId());
 
 		// then
 		assertThat(workspaceRepository.findByCode("TEST1111")).isEmpty();
 	}
 
-	/**
-	 * Todo
-	 *  - deleteWorkspace의 주석 참고
-	 *  - 로직 수정 후 테스트 적용
-	 */
-	@Disabled
 	@Transactional
 	@Test
 	@DisplayName("워크스페이스 삭제 시도 시 비밀번호가 맞지 않으면 예외가 발생한다")
@@ -64,11 +52,12 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
 			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
+		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("InvalidPassword"), "TEST1111"))
+			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("InvalidPassword"), "TEST1111",
+				member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 
 	}
@@ -81,11 +70,12 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
 			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.ADMIN);
+		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "INVALIDCODE"))
+			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "INVALIDCODE",
+				member.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
@@ -95,8 +85,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("유효한 워크스페이스 코드로 워크스페이스의 이름과 설명을 수정할 수 있다")
 	void test4() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
 		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
 			.name("Updated Name")
@@ -116,8 +105,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 이름만 수정하면 해당 필드만 업데이트된다")
 	void test5() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
 		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
 			.name("Updated Name")
@@ -136,8 +124,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 설명만 수정하면 해당 필드만 업데이트된다")
 	void test6() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
 		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
 			.description("Updated Description")
@@ -156,8 +143,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하면 요청의 수정 비밀번호로 업데이트된다")
 	void test7() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")
@@ -178,8 +164,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 비밀번호가 null이면 비밀번호 수정 요청의 수정 비밀번호로 업데이트된다")
 	void test8() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.updatePassword("updated1234!")
@@ -198,8 +183,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하지 않으면 예외가 발생한다")
 	void test9() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("invalid1234!")
@@ -216,8 +200,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 제공하지 않으면 비밀번호는 null로 업데이트 된다")
 	void test10() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")
@@ -238,8 +221,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 null로 제공하면 비밀번호는 null로 업데이트 된다")
 	void test11() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
+		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
 			.originalPassword("password1234!")

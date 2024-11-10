@@ -144,7 +144,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-			.role(WorkspaceRole.ADMIN)
+			.role(WorkspaceRole.MANAGER)
 			.build();
 
 		// AuthorizationInterceptor 행위 모킹
@@ -183,7 +183,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-			.role(WorkspaceRole.ADMIN)
+			.role(WorkspaceRole.MANAGER)
 			.build();
 
 		// AuthorizationInterceptor 행위 모킹
@@ -201,7 +201,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data").value("TEST1111"));
 
 		verify(workspaceCommandService, times(1))
-			.deleteWorkspace(ArgumentMatchers.any(WorkspaceDeleteRequest.class), eq("TEST1111"));
+			.deleteWorkspace(ArgumentMatchers.any(WorkspaceDeleteRequest.class), eq("TEST1111"), anyLong());
 	}
 
 	@Test
@@ -213,7 +213,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		WorkspaceDetail workspaceDetail = WorkspaceDetail.builder()
 			.name("Test Workspace")
 			.description("Test Description")
-			.role(WorkspaceRole.ADMIN)
+			.role(WorkspaceRole.MANAGER)
 			.code(code)
 			.build();
 
@@ -247,7 +247,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(5))
 			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.USER)
+			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
@@ -259,7 +259,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(10))
 			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.USER)
+			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
@@ -308,7 +308,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(5))
 			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.USER)
+			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
@@ -320,7 +320,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(10))
 			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.ADMIN)
+			.role(WorkspaceRole.MANAGER)
 			.build();
 
 		MyWorkspacesResponse response = MyWorkspacesResponse.builder()

@@ -3,7 +3,6 @@ package com.uranus.taskmanager.api.workspace.service;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -107,18 +106,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request51, member.getId()))
 			.isInstanceOf(WorkspaceCreationLimitExceededException.class);
 	}
-
-	/*
-	 * Todo
-	 *  - 워크스페이스의 주인(생성자)의 로그인 Id를 통해서 주인 멤버 찾기
-	 *  - 해당 멤버의 workspaceCount 감소
-	 *  - 추후에 로직 개선 필요(DD를 적용하면 전체적으로 변할 듯)
-	 *  - 주인(Owner) Role 추가 -> 그냥 워크스페이스 삭제를 주인만 가능하도록 제한하면 더 쉬울 듯
-	 *  - -> 컨트롤러에서 LoginMember(id)를 읽어와서 사용하면 됨
-	 *  <br>
-	 *  - 해당 workspaceDelete의 로직을 변경하고 나서 테스트 실행
-	 */
-	@Disabled
+	
 	@Test
 	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
 	void deleteWorkspace_decreasesWorkspaceCount() {
@@ -139,7 +127,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode());
+		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode(), member.getId());
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
