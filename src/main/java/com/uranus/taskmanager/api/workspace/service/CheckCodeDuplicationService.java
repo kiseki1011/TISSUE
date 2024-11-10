@@ -39,17 +39,15 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	private final PasswordEncoder passwordEncoder;
 
 	/**
-	 * Todo: 서비스용 DTO를 만들면, 다시 리팩토링
 	 * 로그인 정보를 사용해서 멤버의 존재 유무를 검증한다
 	 * 워크스페이스 생성 요청에 유일한 코드를 생성하고 설정한다
 	 * 만약 코드가 중복되면 최대 5회 재성성 시도를 한다
-	 * 워크세프이스 생성 요청의 평문 비밀번호를 암호화하고 설정한다
 	 * 워크스페이스 생성 요청을 사용해서 워크스페이스를 생성하고 저장한다
 	 * 로그인 정보를 통해 찾은 멤버를 해당 워크스페이스에 참여시킨다
 	 *
-	 * @param request - 컨트롤러의 워크스페이스 생성 요청 객체
+	 * @param request  - 컨트롤러의 워크스페이스 생성 요청 객체
 	 * @param memberId - 컨트롤러에서의 로그인 정보에서 꺼내온 멤버 id(PK)
-	 * @return WorkspaceCreateResponse
+	 * @return WorkspaceCreateResponse - 워크스페이스 생성 응답 DTO
 	 */
 	@Override
 	@Transactional
@@ -57,6 +55,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		Long memberId) {
 
 		Member member = findMemberById(memberId);
+		member.increaseWorkspaceCount();
 
 		setUniqueWorkspaceCode(request);
 		setEncodedPasswordIfPresent(request);
@@ -111,7 +110,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 
 	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.ADMIN,
+			WorkspaceRole.MANAGER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);

@@ -41,10 +41,10 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request,
-		Long memberId) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, Long memberId) {
 
 		Member member = findMemberById(memberId);
+		member.increaseWorkspaceCount();
 
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
@@ -65,8 +65,7 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	}
 
 	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.ADMIN,
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MANAGER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);

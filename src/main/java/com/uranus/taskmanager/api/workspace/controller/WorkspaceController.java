@@ -57,17 +57,18 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(roles = WorkspaceRole.OWNER)
 	@DeleteMapping("/{code}")
 	public ApiResponse<String> deleteWorkspace(@PathVariable String code,
+		@ResolveLoginMember LoginMember loginMember,
 		@RequestBody WorkspaceDeleteRequest request) {
 
-		workspaceCommandService.deleteWorkspace(request, code);
+		workspaceCommandService.deleteWorkspace(request, code, loginMember.getId());
 		return ApiResponse.ok("Workspace Deleted", code);
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(roles = WorkspaceRole.MANAGER)
 	@PatchMapping("/{code}")
 	public ApiResponse<WorkspaceContentUpdateResponse> updateWorkspaceContent(@PathVariable String code,
 		@RequestBody @Valid WorkspaceContentUpdateRequest request) {
@@ -77,7 +78,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(roles = WorkspaceRole.MANAGER)
 	@PutMapping("/{code}/password")
 	public ApiResponse<String> updateWorkspacePassword(@PathVariable String code,
 		@RequestBody @Valid WorkspacePasswordUpdateRequest request) {

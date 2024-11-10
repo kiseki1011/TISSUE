@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.WorkspaceUpdateDetail;
@@ -15,6 +17,7 @@ import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateR
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceCommandService {
 
 	private final WorkspaceRepository workspaceRepository;
+	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
@@ -52,8 +56,12 @@ public class WorkspaceCommandService {
 	}
 
 	@Transactional
-	public void deleteWorkspace(WorkspaceDeleteRequest request, String code) {
+	public void deleteWorkspace(WorkspaceDeleteRequest request, String code, Long id) {
 		Workspace workspace = findWorkspaceByCode(code);
+
+		Member member = memberRepository.findById(id)
+			.orElseThrow(MemberNotInWorkspaceException::new);
+		member.decreaseWorkspaceCount();
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 

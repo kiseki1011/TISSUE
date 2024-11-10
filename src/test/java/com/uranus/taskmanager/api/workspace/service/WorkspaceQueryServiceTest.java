@@ -194,7 +194,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 		for (int i = 3; i <= 7; i++) {
 			Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace" + i, "description" + i,
 				"TEST" + i, null);
-			workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.ADMIN);
+			workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
 		}
 
 		// 워크스페이스 name 기준 역정렬을 하기 위한 PageRequest

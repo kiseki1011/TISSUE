@@ -180,7 +180,7 @@ class AuthorizationInterceptorTest {
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
-		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.ADMIN});
+		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.MANAGER});
 
 		// when & then
 		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
@@ -204,7 +204,7 @@ class AuthorizationInterceptorTest {
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
-		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.USER});
+		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.COLLABORATOR});
 
 		// when
 		boolean result = authorizationInterceptor.preHandle(request, response, handlerMethod);
