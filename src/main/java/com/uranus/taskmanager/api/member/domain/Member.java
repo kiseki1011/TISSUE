@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseDateEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -36,11 +37,34 @@ public class Member extends BaseDateEntity {
 	@Column(nullable = false)
 	private String password;
 
+	/**
+	 * Todo
+	 * 	- 이슈 #82 참고
+	 * 	- 워크스페이스 생성/유지 한도를 관리하기 위해 사용(최대 50개)
+	 * 	- 정보 제공 목적으로 사용
+	 * 	- 추후에 50을 상수로 따로 분리, 외부 설정으로 설정을 주입할 수 있도록 구현해야 함
+	 */
+	@Column(nullable = false)
+	private int workspaceCount = 0;
+
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "member")
 	private List<Invitation> invitations = new ArrayList<>();
+
+	public void increaseWorkspaceCount() {
+		if (this.workspaceCount >= 50) {
+			throw new WorkspaceCreationLimitExceededException();
+		}
+		this.workspaceCount++;
+	}
+
+	public void decreaseWorkspaceCount() {
+		if (this.workspaceCount > 0) {
+			this.workspaceCount--;
+		}
+	}
 
 	@Builder
 	public Member(String loginId, String email, String password) {
