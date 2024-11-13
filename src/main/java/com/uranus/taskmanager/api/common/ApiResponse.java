@@ -24,7 +24,7 @@ public class ApiResponse<T> {
 	}
 
 	public static <T> ApiResponse<T> okWithNoContent(String message) {
-		return new ApiResponse<>(HttpStatus.NO_CONTENT, message, null);
+		return new ApiResponse<>(HttpStatus.OK, message, null);
 	}
 
 	public static <T> ApiResponse<T> created(String message, T data) {
