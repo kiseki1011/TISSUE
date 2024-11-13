@@ -72,7 +72,8 @@ class InvitationServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(
@@ -98,7 +99,8 @@ class InvitationServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId))
@@ -126,7 +128,8 @@ class InvitationServiceTest {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
 		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(

@@ -11,6 +11,8 @@ import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceede
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
 import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
@@ -18,6 +20,75 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 	@AfterEach
 	public void tearDown() {
 		databaseCleaner.execute();
+	}
+
+	@Test
+	@DisplayName("워크스페이스 생성을 성공하면 워크스페이스 생성 응답을 반환한다")
+	void createWorkspace_returnsWorkspaceCreateResponse() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		// when
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+
+		// then
+		assertThat(response.getName()).isEqualTo("workspace1");
+		assertThat(response.getDescription()).isEqualTo("description1");
+	}
+
+	@Test
+	@DisplayName("워크스페이스 생성 시 OWNER 권한의 WorkspaceMember도 생성되고 저장된다")
+	void workspaceCreate_ownerWorkspaceMemberIsSaved() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		// when
+		workspaceCreateService.createWorkspace(request, member.getId());
+
+		// then
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
+		assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.OWNER);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 별칭은 생성자의 이메일로 설정된다")
+	void workspaceCreate_workspaceMemberNicknameMustBeEmail() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		// when
+		workspaceCreateService.createWorkspace(request, member.getId());
+
+		// then
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
+		assertThat(workspaceMember.getNickname()).isEqualTo(member.getEmail());
 	}
 
 	@Test
@@ -106,7 +177,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request51, member.getId()))
 			.isInstanceOf(WorkspaceCreationLimitExceededException.class);
 	}
-	
+
 	@Test
 	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
 	void deleteWorkspace_decreasesWorkspaceCount() {
