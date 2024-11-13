@@ -2,11 +2,12 @@ package com.uranus.taskmanager.api.member.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberPasswordUpdateRequest {
 
 	@NotBlank(message = "Password must not be blank")
@@ -14,4 +15,8 @@ public class MemberPasswordUpdateRequest {
 		message = "The password must be alphanumeric"
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private String updatePassword;
+
+	public MemberPasswordUpdateRequest(String updatePassword) {
+		this.updatePassword = updatePassword;
+	}
 }

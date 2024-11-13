@@ -5,6 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
@@ -44,6 +45,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceCommandService workspaceCommandService;
 	@Autowired
 	protected MemberService memberService;
+	@Autowired
+	protected MemberQueryService memberQueryService;
 	@Autowired
 	protected CheckCodeDuplicationService workspaceCreateService;
 

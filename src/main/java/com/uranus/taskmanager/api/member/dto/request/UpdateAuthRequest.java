@@ -1,10 +1,15 @@
 package com.uranus.taskmanager.api.member.dto.request;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UpdateAuthRequest {
 	private String password;
+
+	public UpdateAuthRequest(String password) {
+		this.password = password;
+	}
 }
