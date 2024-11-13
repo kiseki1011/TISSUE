@@ -52,7 +52,7 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 				setEncodedPasswordIfPresent(request);
 
 				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.to());
-				addAdminMemberToWorkspace(member, workspace);
+				addOwnerMemberToWorkspace(member, workspace);
 
 				return WorkspaceCreateResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
@@ -64,8 +64,8 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 		throw new WorkspaceCodeCollisionHandleException();
 	}
 
-	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MANAGER,
+	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);

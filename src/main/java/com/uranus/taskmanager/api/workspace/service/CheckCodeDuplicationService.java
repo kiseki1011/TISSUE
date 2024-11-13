@@ -61,7 +61,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		setEncodedPasswordIfPresent(request);
 
 		Workspace workspace = saveWorkspace(request);
-		addAdminMemberToWorkspace(member, workspace);
+		addOwnerMemberToWorkspace(member, workspace);
 
 		return WorkspaceCreateResponse.from(workspace);
 	}
@@ -108,9 +108,9 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return workspaceRepository.save(workspaceCreateRequest.to());
 	}
 
-	private void addAdminMemberToWorkspace(Member member, Workspace workspace) {
+	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.MANAGER,
+			WorkspaceRole.OWNER,
 			member.getEmail());
 
 		workspaceMemberRepository.save(workspaceMember);
