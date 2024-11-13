@@ -4,10 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.dto.request.MemberEmailUpdateRequest;
+import com.uranus.taskmanager.api.member.dto.request.MemberPasswordUpdateRequest;
 import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.dto.response.MemberEmailUpdateResponse;
 import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
 import com.uranus.taskmanager.api.member.exception.DuplicateLoginIdException;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 
@@ -22,11 +26,34 @@ public class MemberService {
 
 	@Transactional
 	public SignupResponse signup(SignupRequest request) {
-
 		checkLoginIdAndEmailDuplication(request);
 		Member member = createMember(request);
 
 		return SignupResponse.from(memberRepository.save(member));
+	}
+
+	@Transactional
+	public MemberEmailUpdateResponse updateEmail(MemberEmailUpdateRequest request, Long id) {
+		Member member = memberRepository.findById(id)
+			.orElseThrow(MemberNotFoundException::new);
+
+		String toBeEmail = request.getUpdateEmail();
+
+		checkEmailDuplicate(toBeEmail);
+
+		member.updateEmail(toBeEmail);
+
+		return MemberEmailUpdateResponse.from(member);
+	}
+
+	@Transactional
+	public void updatePassword(MemberPasswordUpdateRequest request, Long id) {
+		Member member = memberRepository.findById(id)
+			.orElseThrow(MemberNotFoundException::new);
+
+		String toBePassword = encodePassword(request.getUpdatePassword());
+
+		member.updatePassword(toBePassword);
 	}
 
 	private Member createMember(SignupRequest request) {

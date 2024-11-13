@@ -53,6 +53,13 @@ public class Member extends BaseDateEntity {
 	@OneToMany(mappedBy = "member")
 	private List<Invitation> invitations = new ArrayList<>();
 
+	@Builder
+	public Member(String loginId, String email, String password) {
+		this.loginId = loginId;
+		this.email = email;
+		this.password = password;
+	}
+
 	public void increaseWorkspaceCount() {
 		if (this.workspaceCount >= 50) {
 			throw new WorkspaceCreationLimitExceededException();
@@ -66,10 +73,11 @@ public class Member extends BaseDateEntity {
 		}
 	}
 
-	@Builder
-	public Member(String loginId, String email, String password) {
-		this.loginId = loginId;
-		this.email = email;
+	public void updatePassword(String password) {
 		this.password = password;
+	}
+
+	public void updateEmail(String email) {
+		this.email = email;
 	}
 }
