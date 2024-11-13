@@ -191,7 +191,8 @@ class WorkspaceAccessControllerTest extends ControllerTestHelper {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 		WorkspaceJoinRequest request = new WorkspaceJoinRequest();
 
 		WorkspaceJoinResponse response = WorkspaceJoinResponse.from(workspace, workspaceMember, false);
@@ -250,7 +251,8 @@ class WorkspaceAccessControllerTest extends ControllerTestHelper {
 
 		Member member = memberEntityFixture.createMember("member1", "member1@test.com");
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("member1");
 

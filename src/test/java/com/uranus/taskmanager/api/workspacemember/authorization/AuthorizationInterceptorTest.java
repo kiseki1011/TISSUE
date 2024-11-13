@@ -169,7 +169,8 @@ class AuthorizationInterceptorTest {
 		// given
 		Workspace workspace = workspaceEntityFixture.createWorkspace("TESTCODE");
 		Member member = memberEntityFixture.createMember("user123", "user123@test.com");
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 
 		RoleRequired roleRequired = mock(RoleRequired.class);
 
@@ -193,7 +194,8 @@ class AuthorizationInterceptorTest {
 		// given
 		Workspace workspace = workspaceEntityFixture.createWorkspace("TESTCODE");
 		Member member = memberEntityFixture.createMember("user123", "user123@test.com");
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createUserWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
 
 		RoleRequired roleRequired = mock(RoleRequired.class);
 

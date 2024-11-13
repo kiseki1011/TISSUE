@@ -19,6 +19,7 @@ import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.member.controller.MemberController;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.workspace.controller.WorkspaceAccessController;
 import com.uranus.taskmanager.api.workspace.controller.WorkspaceController;
@@ -58,6 +59,8 @@ public abstract class ControllerTestHelper {
 
 	@MockBean
 	protected MemberService memberService;
+	@MockBean
+	protected MemberQueryService memberQueryService;
 	@MockBean
 	protected WorkspaceAccessService workspaceAccessService;
 	@MockBean
