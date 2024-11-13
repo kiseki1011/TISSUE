@@ -1,203 +1,207 @@
 package com.uranus.taskmanager.api.workspace.service;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-@ExtendWith(MockitoExtension.class)
-class WorkspaceCreateServiceTest {
+class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
-	@InjectMocks
-	private CheckCodeDuplicationService workspaceCreateService;
-
-	@Mock
-	private WorkspaceCodeGenerator workspaceCodeGenerator;
-	@Mock
-	private WorkspaceRepository workspaceRepository;
-	@Mock
-	private MemberRepository memberRepository;
-	@Mock
-	private WorkspaceMemberRepository workspaceMemberRepository;
-
-	TestFixture testFixture;
-
-	@BeforeEach
-	public void setup() {
-		testFixture = new TestFixture();
+	@AfterEach
+	public void tearDown() {
+		databaseCleaner.execute();
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성에는 생성 요청과 로그인 멤버를 필요로 한다")
-	void test1() {
+	@DisplayName("워크스페이스 생성을 성공하면 워크스페이스 생성 응답을 반환한다")
+	void createWorkspace_returnsWorkspaceCreateResponse() {
 		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
+			.name("workspace1")
+			.description("description1")
 			.build();
-
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		assertThat(response).isNotNull();
-		verify(memberRepository, times(1)).findByLoginId("user123");
+		assertThat(response.getName()).isEqualTo("workspace1");
+		assertThat(response.getDescription()).isEqualTo("description1");
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성을 성공하면 WorkspaceResponse를 반환한다")
-	void test2() {
+	@DisplayName("워크스페이스 생성 시 OWNER 권한의 WorkspaceMember도 생성되고 저장된다")
+	void workspaceCreate_ownerWorkspaceMemberIsSaved() {
 		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
+			.name("workspace1")
+			.description("description1")
 			.build();
-
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
 
 		// when
-		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		assertThat(response).isNotNull();
-		assertThat(response.getName()).isEqualTo("test name");
-		assertThat(response.getDescription()).isEqualTo("test description");
-		assertThat(response.getCode()).isEqualTo("testcode");
-		verify(workspaceRepository, times(1)).save(any(Workspace.class));
-	}
-
-	@Test
-	@DisplayName("워크스페이스 코드가 중복될 때 최대 재시도 횟수(5회)를 소진하면 예외가 발생한다")
-	void test3() {
-		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
-
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-
-		when(workspaceCodeGenerator.generateWorkspaceCode())
-			.thenReturn("WORK123", "WORK124", "WORK125", "WORK126", "WORK127");
-		when(workspaceRepository.existsByCode(anyString())).thenReturn(true);
-
-		// when & then
-		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, loginMember))
-			.isInstanceOf(RuntimeException.class)  // Todo: WorkspaceCodeCollisionHandleException 구현 후 수정
-			.hasMessageContaining("Failed to solve workspace code collision");
-	}
-
-	@Test
-	@DisplayName("워크스페이스 생성 시 WorkspaceMember도 생성되고 저장된다")
-	void test4() {
-		// given
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
-			.build();
-
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember workspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
-
-		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
-
-		// then
-		verify(workspaceMemberRepository, times(1)).save(any(WorkspaceMember.class));
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
+		assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.OWNER);
 	}
 
 	@Test
 	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 별칭은 생성자의 이메일로 설정된다")
-	void test5() {
+	void workspaceCreate_workspaceMemberNicknameMustBeEmail() {
 		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
+			.name("workspace1")
+			.description("description1")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
-
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
-
 		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->
-			workspaceMember.getNickname().equals("test@test.com")
-		));
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
+		assertThat(workspaceMember.getNickname()).isEqualTo(member.getEmail());
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 권한은 ADMIN으로 설정된다")
-	void test6() {
+	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다")
+	void createWorkspace_increasesWorkspaceCount() {
 		// given
+		Member member = memberRepository.save(
+			Member.builder()
+				.loginId("member1")
+				.email("member1@test.com")
+				.password("password1234!")
+				.build()
+		);
+
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
-			.name("test name")
-			.description("test description")
+			.name("workspace1")
+			.description("description1")
 			.build();
 
-		Workspace workspace = testFixture.createWorkspace("testcode");
-		Member member = testFixture.createMember("user123", "test@test.com");
-		LoginMemberDto loginMember = testFixture.createLoginMember("user123", "test@test.com");
-		WorkspaceMember adminWorkspaceMember = testFixture.createAdminWorkspaceMember(member, workspace);
-
-		when(memberRepository.findByLoginId(loginMember.getLoginId())).thenReturn(Optional.of(member));
-		when(workspaceRepository.save(any(Workspace.class))).thenReturn(workspace);
-		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(adminWorkspaceMember);
-
 		// when
-		workspaceCreateService.createWorkspace(request, loginMember);
+		workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		verify(workspaceMemberRepository, times(1)).save(argThat(workspaceMember ->
-			workspaceMember.getRole().equals(WorkspaceRole.ADMIN)
-		));
+		Member updatedMember = memberRepository.findById(member.getId()).get();
+		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(1);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다(워크스페이스 2개 생성)")
+	void createTwoWorkspaces_increasesWorkspaceCount() {
+		// given
+		Member member = memberRepository.save(
+			Member.builder()
+				.loginId("member1")
+				.email("member1@test.com")
+				.password("password1234!")
+				.build()
+		);
+
+		WorkspaceCreateRequest request1 = WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		WorkspaceCreateRequest request2 = WorkspaceCreateRequest.builder()
+			.name("workspace2")
+			.description("description2")
+			.build();
+
+		// when
+		workspaceCreateService.createWorkspace(request1, member.getId());
+		workspaceCreateService.createWorkspace(request2, member.getId());
+
+		// then
+		Member updatedMember = memberRepository.findById(member.getId()).get();
+		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(2);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 50개 생성 후 추가 생성 시 예외가 발생한다")
+	void createWorkspace_throwsException_whenLimitReached() {
+		// given
+		Member member = memberRepository.save(
+			Member.builder()
+				.loginId("member1")
+				.email("member1@test.com")
+				.password("password1")
+				.build()
+		);
+
+		// Create 50 workspaces
+		for (int i = 0; i < 50; i++) {
+			WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+				.name("workspace" + i)
+				.description("description" + i)
+				.build();
+			workspaceCreateService.createWorkspace(request, member.getId());
+		}
+
+		// when & then
+		WorkspaceCreateRequest request51 = WorkspaceCreateRequest.builder()
+			.name("workspace51")
+			.description("description51")
+			.build();
+
+		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request51, member.getId()))
+			.isInstanceOf(WorkspaceCreationLimitExceededException.class);
+	}
+
+	@Test
+	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
+	void deleteWorkspace_decreasesWorkspaceCount() {
+		// given
+		Member member = memberRepository.save(
+			Member.builder()
+				.loginId("member1")
+				.email("member1@test.com")
+				.password("password1234!")
+				.build()
+		);
+
+		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+
+		// when
+		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode(), member.getId());
+
+		// then
+		Member updatedMember = memberRepository.findById(member.getId()).get();
+		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(0);
 	}
 }

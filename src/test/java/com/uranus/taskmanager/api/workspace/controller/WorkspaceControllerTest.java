@@ -7,103 +7,53 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
-import com.uranus.taskmanager.api.auth.service.AuthenticationService;
-import com.uranus.taskmanager.api.global.config.WebMvcConfig;
-import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
-import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspace.dto.WorkspaceUpdateDetail;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceService;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
+import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@WebMvcTest(WorkspaceController.class)
-class WorkspaceControllerTest {
-
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@MockBean
-	private WorkspaceService workspaceService;
-	@MockBean
-	private MemberService memberService;
-	@MockBean
-	private AuthenticationService authenticationService;
-	@MockBean
-	private CheckCodeDuplicationService workspaceCreateService;
-	@MockBean
-	private MemberRepository memberRepository;
-	@MockBean
-	private WorkspaceRepository workspaceRepository;
-	@MockBean
-	private WorkspaceMemberRepository workspaceMemberRepository;
-	@MockBean
-	private InvitationRepository invitationRepository;
-	@MockBean
-	private WebMvcConfig webMvcConfig;
-
-	TestFixture testFixture;
-
-	@BeforeEach
-	public void setup() {
-		testFixture = new TestFixture();
-	}
+class WorkspaceControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("워크스페이스 생성을 성공하면 CREATED를 응답한다")
-	public void test1() throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 201을 응답한다")
+	void test1() throws Exception {
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
-		String requestBody = objectMapper.writeValueAsString(request);
 
 		mockMvc.perform(post("/api/v1/workspaces")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isCreated())
 			.andDo(print());
 	}
@@ -125,55 +75,52 @@ class WorkspaceControllerTest {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("워크스페이스 생성 시 이름과 설명은 null, 빈 문자열 또는 공백이면 안된다")
-	public void test2(String name, String description) throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름과 설명은 null, 빈 문자열 또는 공백이면 검증 오류가 발생한다")
+	void test2(String name, String description) throws Exception {
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
 			.description(description)
 			.build();
-		String requestBody = objectMapper.writeValueAsString(request);
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
 
 		mockMvc.perform(post("/api/v1/workspaces")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
 			.andDo(print());
 	}
 
 	private String createLongString(int length) {
-		StringBuilder sb = new StringBuilder(length);
-		for (int i = 0; i < length; i++) {
-			sb.append('a');
-		}
-		return sb.toString();
+		return "a".repeat(Math.max(0, length));
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시 이름의 범위는 2~50자, 설명은 1~255자를 지켜야한다")
-	public void test3() throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지키지 않으면 400을 응답한다")
+	void test3() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
 		String nameValidMsg = "Workspace name must be 2 ~ 50 characters long";
-		String descriptionValidMsg = "Workspace name must be 1 ~ 255 characters long";
+		String descriptionValidMsg = "Workspace description must be 1 ~ 255 characters long";
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(longName)
 			.description(longDescription)
 			.build();
-		String requestBody = objectMapper.writeValueAsString(request);
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, "user123");
-
+		// when & then
 		mockMvc.perform(post("/api/v1/workspaces")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(nameValidMsg)))
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(descriptionValidMsg)))
@@ -181,171 +128,220 @@ class WorkspaceControllerTest {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 조회를 성공하면 OK를 응답한다")
-	public void test4() throws Exception {
-		String code = "ABCD1234";
-		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.name("Test workspace")
-			.description("Test description")
-			.code(code)
-			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceResponse);
-
-		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
-			.andExpect(status().isOk())
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("워크스페이스 코드로 조회가 가능하다")
-	public void test5() throws Exception {
-		String code = "ABCD1234";
-		WorkspaceResponse workspaceResponse = WorkspaceResponse.builder()
-			.name("Test workspace")
-			.description("Test description")
-			.code(code)
-			.build();
-		when(workspaceService.get(code)).thenReturn(workspaceResponse);
-
-		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.code").value(code))
-			.andExpect(jsonPath("$.data.name").value("Test workspace"))
-			.andExpect(jsonPath("$.data.description").value("Test description"))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("워크스페이스 초대를 성공하면 초대 응답 객체를 데이터로 받는다")
-	void test6() throws Exception {
+	@DisplayName("PATCH /workspaces/{code} - 워크스페이스 정보 수정 요청에 성공하면 200을 응답받는다")
+	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
-		String workspaceCode = "TESTCODE";
-		String loginId = "user123";
-		String email = "user123@test.com";
-
-		String invitedLoginId = "inviteduser123";
-
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
-
-		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedLoginId);
-		log.info("inviteMemberRequest = {}", inviteMemberRequest);
-		String requestBody = objectMapper.writeValueAsString(inviteMemberRequest);
-
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER, loginId);
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
 
-		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.fromEntity(invitation);
-		log.info("inviteMemberResponse = {}", inviteMemberResponse);
+		WorkspaceContentUpdateRequest request = new WorkspaceContentUpdateRequest("New Title", "New Description");
+		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(Workspace.builder().build());
+		WorkspaceUpdateDetail updateTo = WorkspaceUpdateDetail.from(Workspace.builder().build());
+		WorkspaceContentUpdateResponse response = new WorkspaceContentUpdateResponse(original, updateTo);
 
-		// Todo: any()를 사용하지 않고 eq() 또는 객체 그대로 사용하는 경우 inviteMemberResponse가 null로 찍히는 문제 발생.
-		//  정확한 객체에 대한 검증을 수행할 해결방법 찾아보기.
-		when(workspaceService.inviteMember(eq(workspaceCode), ArgumentMatchers.any(InviteMemberRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
-			.thenReturn(inviteMemberResponse);
+		// Workspace, WorkspaceMember 모의 객체 만들기
+		Workspace workspace = Workspace.builder()
+			.code("TEST1111")
+			.build();
+		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.role(WorkspaceRole.MANAGER)
+			.build();
+
+		// AuthorizationInterceptor 행위 모킹
+		when(workspaceRepository.findByCode("TEST1111")).thenReturn(Optional.of(workspace));
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
+			.thenReturn(Optional.of(workspaceMember));
+
+		when(workspaceCommandService.updateWorkspaceContent(ArgumentMatchers.any(WorkspaceContentUpdateRequest.class),
+			eq("TEST1111")))
+			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invite", workspaceCode)
+		mockMvc.perform(patch("/api/v1/workspaces/{code}", "TEST1111")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)
-				.session(session))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.code").value(workspaceCode))
+			.andExpect(jsonPath("$.message").value("Workspace Title and Description Updated"))
 			.andDo(print());
+
+		verify(workspaceCommandService, times(1))
+			.updateWorkspaceContent(ArgumentMatchers.any(WorkspaceContentUpdateRequest.class), eq("TEST1111"));
 	}
 
 	@Test
-	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공")
-	void test9() throws Exception {
+	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 200을 응답받는다")
+	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
-		String workspaceCode = "TESTCODE";
-		String member1 = "member1";
-		String member2 = "member2";
-		List<String> memberIdentifiers = List.of(member1, member2);
-		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
 
-		List<InvitedMember> successfulResponses = List.of(
-			InvitedMember.builder().loginId(member1).email("member1@test.com").build(),
-			InvitedMember.builder().loginId(member2).email("member2@test.com").build()
-		);
+		WorkspaceDeleteRequest request = new WorkspaceDeleteRequest("password1234!");
 
-		List<FailedInvitedMember> failedResponses = List.of();
-
-		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
-
-		// when
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
-			.thenReturn(inviteMembersResponse);
-
-		// then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.invitedMembers[0].loginId").value(member1))
-			.andExpect(jsonPath("$.data.invitedMembers[1].loginId").value(member2))
-			.andExpect(jsonPath("$.data.failedInvitedMembers").isEmpty())
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대 실패")
-	void test10() throws Exception {
-		// given
-		String workspaceCode = "TESTCODE";
-		String member1 = "member1";
-		String member3 = "member3";
-		String invalidMember = "invalidMember";
-
-		List<String> memberIdentifiers = List.of(member1, invalidMember, member3);
-		InviteMembersRequest inviteMembersRequest = new InviteMembersRequest(memberIdentifiers);
-
-		List<InvitedMember> successfulResponses = List.of(
-			InvitedMember.builder().loginId(member1).email("member1@test.com").build(),
-			InvitedMember.builder().loginId(member3).email("member3@test.com").build()
-		);
-
-		List<FailedInvitedMember> failedResponses = List.of(
-			FailedInvitedMember.builder()
-				.identifier(invalidMember)
-				.error(new MemberNotFoundException().getMessage())
-				.build()
-		);
-
-		InviteMembersResponse inviteMembersResponse = InviteMembersResponse.builder()
-			.invitedMembers(successfulResponses)
-			.failedInvitedMembers(failedResponses)
+		// Workspace, WorkspaceMember 모의 객체 만들기
+		Workspace workspace = Workspace.builder()
+			.code("TEST1111")
+			.build();
+		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.role(WorkspaceRole.MANAGER)
 			.build();
 
-		// when
-		when(workspaceService.inviteMembers(eq(workspaceCode), ArgumentMatchers.any(InviteMembersRequest.class),
-			ArgumentMatchers.any(LoginMemberDto.class)))
-			.thenReturn(inviteMembersResponse);
+		// AuthorizationInterceptor 행위 모킹
+		when(workspaceRepository.findByCode("TEST1111")).thenReturn(Optional.of(workspace));
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
+			.thenReturn(Optional.of(workspaceMember));
 
-		// then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
+		// when & then
+		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TEST1111")
+				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.invitedMembers[0].loginId").value(member1))
-			.andExpect(jsonPath("$.data.invitedMembers[1].loginId").value(member3))
-			.andExpect(jsonPath("$.data.failedInvitedMembers[0].identifier").value(invalidMember))
-			.andExpect(jsonPath("$.data.failedInvitedMembers[0].error").value("Member was not found"))
+			.andExpect(jsonPath("$.message").value("Workspace Deleted"))
+			.andExpect(jsonPath("$.data").value("TEST1111"));
+
+		verify(workspaceCommandService, times(1))
+			.deleteWorkspace(ArgumentMatchers.any(WorkspaceDeleteRequest.class), eq("TEST1111"), anyLong());
+	}
+
+	@Test
+	@DisplayName("GET /workspaces/{code} - 워크스페이스 상세 정보 조회를 성공하면 200을 응답한다")
+	void test5() throws Exception {
+		// given
+		String code = "ABCD1234";
+
+		WorkspaceDetail workspaceDetail = WorkspaceDetail.builder()
+			.name("Test Workspace")
+			.description("Test Description")
+			.role(WorkspaceRole.MANAGER)
+			.code(code)
+			.build();
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		when(workspaceQueryService.getWorkspaceDetail(eq(code), anyLong()))
+			.thenReturn(workspaceDetail);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/workspaces/{code}", code)
+				.session(session))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.code").value(code))
+			.andExpect(jsonPath("$.data.name").value("Test Workspace"))
+			.andExpect(jsonPath("$.data.description").value("Test Description"))
 			.andDo(print());
+
 	}
 
 	@Test
-	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 있는 멤버는 초대 API 호출이 가능하다")
-	void test7() throws Exception {
-		// Todo
+	@DisplayName("GET /workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 기대하는 응답을 받는다")
+	void getMyWorkspaces_shouldReturnCompleteJsonResponse() throws Exception {
+		// given
+		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+			.id(1L)
+			.code("WS001")
+			.name("Workspace 1")
+			.description("Description 1")
+			.createdBy("member1")
+			.createdAt(LocalDateTime.now().minusDays(5))
+			.updatedBy("updater1")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+			.id(2L)
+			.code("WS002")
+			.name("Workspace 2")
+			.description("Description 2")
+			.createdBy("member1")
+			.createdAt(LocalDateTime.now().minusDays(10))
+			.updatedBy("updater2")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+			.totalElements(2L)
+			.build();
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		when(workspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(response);
+
+		// 기대하는 JSON 응답 생성
+		String expectedJson = objectMapper.writeValueAsString(
+			ApiResponse.ok("Currently joined Workspaces Found", response)
+		);
+
+		// when & then - 요청 및 전체 JSON 비교 검증
+		mockMvc.perform(get("/api/v1/workspaces")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("page", "0")
+				.param("size", "10"))
+			.andExpect(status().isOk())
+			.andExpect(content().json(expectedJson))
+			.andDo(print());
+
+		verify(workspaceQueryService, times(1))
+			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 	}
 
 	@Test
-	@DisplayName("해당 워크스페이스에서 ADMIN 권한이 없는 멤버가 초대를 시도하면 예외가 발생한다")
-	void test8() throws Exception {
-		// Todo
+	@DisplayName("GET /workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 200을 응답받는다")
+	void getCurrentlyJoinedWorkspaces_shouldReturn200IfSuccess() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+			.id(1L)
+			.code("WS001")
+			.name("Workspace 1")
+			.description("Description 1")
+			.createdBy("creator1")
+			.createdAt(LocalDateTime.now().minusDays(5))
+			.updatedBy("updater1")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+			.id(2L)
+			.code("WS002")
+			.name("Workspace 2")
+			.description("Description 2")
+			.createdBy("creator2")
+			.createdAt(LocalDateTime.now().minusDays(10))
+			.updatedBy("updater2")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.MANAGER)
+			.build();
+
+		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+			.totalElements(2L)
+			.build();
+
+		when(workspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/workspaces")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("page", "0")
+				.param("size", "10"))
+			.andExpect(status().isOk());
+
+		verify(workspaceQueryService, times(1))
+			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+
 	}
+
 }

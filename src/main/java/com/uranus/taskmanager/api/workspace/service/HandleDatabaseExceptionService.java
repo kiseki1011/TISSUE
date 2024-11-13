@@ -1,17 +1,20 @@
 package com.uranus.taskmanager.api.workspace.service;
 
+import java.util.Optional;
+
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -34,44 +37,58 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
+	private final PasswordEncoder passwordEncoder;
 
-	/**
-	 * Todo: createWorkspace() 가독성 좋은 코드로 리팩토링 필요
-	 */
 	@Override
 	@Transactional
-	public WorkspaceResponse createWorkspace(WorkspaceCreateRequest request, LoginMemberDto loginMember) {
+	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, Long memberId) {
 
-		Member member = memberRepository.findByLoginId(loginMember.getLoginId())
-			.orElseThrow(MemberNotFoundException::new);
+		Member member = findMemberById(memberId);
+		member.increaseWorkspaceCount();
 
-		for (int count = 0; count < MAX_RETRIES; count++) {
+		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
-				String code = workspaceCodeGenerator.generateWorkspaceCode();
-				if (count != 0) {
-					code = workspaceCodeGenerator.generateWorkspaceCode();
-					log.info("[Recreate Workspace Code] code = {}", code);
-				}
-				request.setCode(code);
+				setWorkspaceCode(request);
+				setEncodedPasswordIfPresent(request);
 
-				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.toEntity());
+				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.to());
+				addOwnerMemberToWorkspace(member, workspace);
 
-				WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-					WorkspaceRole.ADMIN,
-					member.getEmail());
-
-				workspaceMemberRepository.save(workspaceMember);
-
-				return WorkspaceResponse.fromEntity(workspace);
+				return WorkspaceCreateResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-				/*
-				 * Todo: 로그 정리
-				 */
+				// Todo: 로그 정리
 				log.error("[Catched Exception for Workspace Code Collision]", e);
-				log.info("[Workspace Code Collision] Retrying... attempt {}", count + 1);
+				log.info("[Workspace Code Collision] Retrying... attempt {}", attempt);
 			}
 		}
-		throw new RuntimeException(
-			"Failed to solve workspace code collision"); // Todo: WorkspaceCodeCollisionHandleException 구현
+		throw new WorkspaceCodeCollisionHandleException();
+	}
+
+	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
+			member.getEmail());
+
+		workspaceMemberRepository.save(workspaceMember);
+	}
+
+	private void setWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
+		String code = workspaceCodeGenerator.generateWorkspaceCode();
+		workspaceCreateRequest.setCode(code);
+	}
+
+	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest workspaceCreateRequest) {
+		String encodedPassword = encodePasswordIfPresent(workspaceCreateRequest.getPassword());
+		workspaceCreateRequest.setPassword(encodedPassword);
+	}
+
+	private Member findMemberById(Long memberId) {
+		return memberRepository.findById(memberId)
+			.orElseThrow(MemberNotFoundException::new);
+	}
+
+	private String encodePasswordIfPresent(String password) {
+		return Optional.ofNullable(password)
+			.map(passwordEncoder::encode)
+			.orElse(null);
 	}
 }

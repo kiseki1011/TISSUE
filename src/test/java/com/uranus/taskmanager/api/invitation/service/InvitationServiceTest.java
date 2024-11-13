@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.uranus.taskmanager.api.auth.dto.request.LoginMemberDto;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
@@ -26,7 +25,11 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.fixture.TestFixture;
+import com.uranus.taskmanager.fixture.dto.LoginMemberDtoFixture;
+import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
+import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
+import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 
 @ExtendWith(MockitoExtension.class)
 class InvitationServiceTest {
@@ -43,11 +46,19 @@ class InvitationServiceTest {
 	@Mock
 	private InvitationRepository invitationRepository;
 
-	TestFixture testFixture;
+	WorkspaceEntityFixture workspaceEntityFixture;
+	MemberEntityFixture memberEntityFixture;
+	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	InvitationEntityFixture invitationEntityFixture;
+	LoginMemberDtoFixture loginMemberDtoFixture;
 
 	@BeforeEach
 	public void setup() {
-		testFixture = new TestFixture();
+		workspaceEntityFixture = new WorkspaceEntityFixture();
+		memberEntityFixture = new MemberEntityFixture();
+		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+		invitationEntityFixture = new InvitationEntityFixture();
+		loginMemberDtoFixture = new LoginMemberDtoFixture();
 	}
 
 	@Test
@@ -57,24 +68,23 @@ class InvitationServiceTest {
 		String workspaceCode = "testcode";
 		String loginId = "user123";
 		String email = "user123@test.com";
+		Long memberId = 1L;
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
-		InvitationAcceptResponse acceptResponse = invitationService.acceptInvitation(loginMember, workspaceCode);
+		InvitationAcceptResponse acceptResponse = invitationService.acceptInvitation(memberId, workspaceCode);
 
 		// then
-		assertThat(acceptResponse.getWorkspaceCode()).isEqualTo(workspaceCode);
-		verify(invitationRepository, times(1)).save(eq(invitation));
+		assertThat(acceptResponse.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
 
 	}
 
@@ -83,24 +93,24 @@ class InvitationServiceTest {
 	void test2() {
 		// given
 		String workspaceCode = "testcode";
+		Long memberId = 1L;
 		String loginId = "user123";
 		String email = "user123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
-			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId))
+			.thenReturn(Optional.of(invitation));
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
-		invitationService.acceptInvitation(loginMember, workspaceCode);
-		Optional<Invitation> acceptedInvitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(
-			workspaceCode, loginId);
+		invitationService.acceptInvitation(memberId, workspaceCode);
+		Optional<Invitation> acceptedInvitation = invitationRepository.findByWorkspaceCodeAndMemberId(
+			workspaceCode, memberId);
 
 		// then
 		assertThat(acceptedInvitation).isPresent();
@@ -114,23 +124,23 @@ class InvitationServiceTest {
 		String workspaceCode = "testcode";
 		String loginId = "user123";
 		String email = "user123@test.com";
+		Long memberId = 1L;
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = testFixture.createUserWorkspaceMember(member, workspace);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+			workspace);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 		when(workspaceMemberRepository.save(any(WorkspaceMember.class))).thenReturn(workspaceMember);
 
 		// when
-		InvitationAcceptResponse acceptResponse = invitationService.acceptInvitation(loginMember, workspaceCode);
+		InvitationAcceptResponse acceptResponse = invitationService.acceptInvitation(memberId, workspaceCode);
 
 		// then
-		assertThat(acceptResponse.getWorkspaceCode()).isEqualTo(workspaceCode);
+		assertThat(acceptResponse.getWorkspaceDetail().getCode()).isEqualTo(workspaceCode);
 		verify(workspaceMemberRepository, times(1)).save(any(WorkspaceMember.class));
 	}
 
@@ -139,16 +149,13 @@ class InvitationServiceTest {
 	void test4() {
 		// given
 		String workspaceCode = "invalidcode";
-		String loginId = "user123";
-		String email = "user123@test.com";
+		Long memberId = 1L;
 
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(
 			Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(loginMember, workspaceCode)).isInstanceOf(
+		assertThatThrownBy(() -> invitationService.acceptInvitation(memberId, workspaceCode)).isInstanceOf(
 			InvitationNotFoundException.class);
 
 	}
@@ -160,17 +167,17 @@ class InvitationServiceTest {
 		String workspaceCode = "invalidcode";
 		String loginId = "user123";
 		String email = "user123@test.com";
+		Long memberId = 1L;
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		Invitation invitation = testFixture.createAcceptedInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		Invitation invitation = invitationEntityFixture.createAcceptedInvitation(workspace, member);
 
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId))
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId))
 			.thenReturn(Optional.of(invitation));
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(loginMember, workspaceCode)).isInstanceOf(
+		assertThatThrownBy(() -> invitationService.acceptInvitation(memberId, workspaceCode)).isInstanceOf(
 			InvalidInvitationStatusException.class);
 
 	}
@@ -180,22 +187,21 @@ class InvitationServiceTest {
 	void test6() {
 		// given
 		String workspaceCode = "testcode";
+		Long memberId = 1L;
 		String loginId = "user123";
 		String email = "user123@test.com";
 
-		Workspace workspace = testFixture.createWorkspace(workspaceCode);
-		Member member = testFixture.createMember(loginId, email);
-		LoginMemberDto loginMember = testFixture.createLoginMemberDto(loginId, email);
-		Invitation invitation = testFixture.createPendingInvitation(workspace, member);
+		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+		Member member = memberEntityFixture.createMember(loginId, email);
+		Invitation invitation = invitationEntityFixture.createPendingInvitation(workspace, member);
 
-		when(invitationRepository.findByWorkspaceCodeAndMemberLoginId(workspaceCode, loginId)).thenReturn(
+		when(invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode, memberId)).thenReturn(
 			Optional.of(invitation));
-		when(invitationRepository.save(eq(invitation))).thenReturn(invitation);
 
 		// when
-		invitationService.rejectInvitation(loginMember, workspaceCode);
-		Optional<Invitation> rejectedInvitation = invitationRepository.findByWorkspaceCodeAndMemberLoginId(
-			workspaceCode, loginId);
+		invitationService.rejectInvitation(memberId, workspaceCode);
+		Optional<Invitation> rejectedInvitation = invitationRepository.findByWorkspaceCodeAndMemberId(
+			workspaceCode, memberId);
 
 		// then
 		assertThat(rejectedInvitation).isPresent();

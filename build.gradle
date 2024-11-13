@@ -58,14 +58,14 @@ jacocoTestReport {
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
                             "com.uranus/taskmanager/api/**/domain/**",
+                            "com.uranus/taskmanager/api/**/dto/**",
                             "**/*Application*",
                             "**/*Request*",
                             "**/*Response*",
                             "**/*Exception*",
                             "**/*Key*",
                             "**/*Base62Encoder*",
-                            "**/*WorkspaceCodeGenerator*",
-                            "**/*Interceptor*"
+                            "**/*WorkspaceCodeGenerator*"
                     ])
                 })
         )
@@ -86,14 +86,14 @@ jacocoTestReport {
 
                 excludes = [
                         "com.uranus.taskmanager.api.**.domain.**",
+                        "com.uranus.taskmanager.api.**.dto.**",
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
                         "**.*Exception*",
                         "**.*Key*",
                         "**.*Base62Encoder*",
-                        "**.*WorkspaceCodeGenerator*",
-                        "**.*Interceptor*"
+                        "**.*WorkspaceCodeGenerator*"
                 ]
             }
         }

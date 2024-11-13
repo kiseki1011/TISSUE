@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class FieldErrorDto {
+
 	private final String field;
 	private final String rejectedValue;
 	private final String message;

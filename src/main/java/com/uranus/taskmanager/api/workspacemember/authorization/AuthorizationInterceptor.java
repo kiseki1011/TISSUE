@@ -1,16 +1,20 @@
 package com.uranus.taskmanager.api.workspacemember.authorization;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.auth.SessionKey;
-import com.uranus.taskmanager.api.auth.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.authorization.exception.InsufficientWorkspaceRoleException;
+import com.uranus.taskmanager.api.workspacemember.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
@@ -26,90 +30,112 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthorizationInterceptor implements HandlerInterceptor {
 
-	/**
-	 * Todo: 상수 정리
-	 */
 	private static final String WORKSPACE_PREFIX = "/api/v1/workspaces/";
-	private static final int WORKSPACE_PREFIX_LENGTH = WORKSPACE_PREFIX.length();
+	private static final int WORKSPACE_PREFIX_LENGTH = 19;
 
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
-	/**
-	 * Todo: preHandle() 가독성 좋은 코드로 리팩토링
-	 */
+	// Todo: 로깅 정리
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-		if (handler instanceof HandlerMethod handlerMethod) {
-			RoleRequired roleRequired = handlerMethod.getMethodAnnotation(RoleRequired.class);
 
-			if (roleRequired != null) {
-				// 로그인된 사용자 정보 가져오기 (ArgumentResolver 사용 가능)
-				HttpSession session = request.getSession(false);
-				if (session == null || session.getAttribute(SessionKey.LOGIN_MEMBER) == null) {
-					throw new UserNotLoggedInException();
-				}
-
-				// 로그인된 멤버의 ID 가져오기
-				String loginId = (String)session.getAttribute(SessionKey.LOGIN_MEMBER);
-				log.info("loginId from session = {}", loginId);
-
-				// 요청 URL에서 workspaceCode 추출
-				String uri = request.getRequestURI();
-				String workspaceCode = extractWorkspaceCodeFromUri(uri);
-				log.info("extracted workspaceCode = {}", workspaceCode);
-
-				// workspaceCode를 통해 워크스페이스 찾기
-				Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-					.orElseThrow(WorkspaceNotFoundException::new);
-
-				// 해당 워크스페이스에 대한 사용자의 역할 가져오기
-				WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceId(loginId,
-						workspace.getId())
-					.orElseThrow(MemberNotInWorkspaceException::new);
-
-				if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
-					throw new InsufficientWorkspaceRoleException();
-				}
-			}
+		if (isNotHandlerMethod(handler)) {
+			return true;
 		}
-		return true; // 권한 검사 통과 시 요청 진행
+
+		RoleRequired roleRequired = getRoleRequired(handler)
+			.orElse(null);
+
+		if (roleRequired == null) {
+			return true;
+		}
+
+		Long memberId = getLoginIdFromSession(request.getSession(false))
+			.orElseThrow(UserNotLoggedInException::new);
+		log.info("memberId from session = {}", memberId);
+
+		String workspaceCode = extractWorkspaceCodeFromUri(request.getRequestURI());
+		log.info("extracted workspaceCode = {}", workspaceCode);
+
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceId(memberId,
+				workspace.getId())
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		checkIsRoleSufficient(workspaceMember, roleRequired);
+
+		return true;
+	}
+
+	private static boolean isNotHandlerMethod(Object handler) {
+		return !(handler instanceof HandlerMethod);
+	}
+
+	private Optional<RoleRequired> getRoleRequired(Object handler) {
+		HandlerMethod handlerMethod = (HandlerMethod)handler;
+		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
+	}
+
+	private Optional<Long> getLoginIdFromSession(HttpSession session) {
+		return Optional.ofNullable(session)
+			.map(s -> (Long)s.getAttribute(SessionKey.LOGIN_MEMBER_ID));
+	}
+
+	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
+		if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
+			throw new InsufficientWorkspaceRoleException();
+		}
 	}
 
 	/**
-	 * Todo: 리팩터링 필요
 	 * 권한 수준: ADMIN > USER > READER
-	 * 권한에 정수 value를 부여해서 부등호 형식으로 비교하도록 수정해보자
+	 * 권한에 정수 level을 부여해서 부등호 형식으로 비교한다
+	 * ADMIN - 3
+	 * USER - 2
+	 * READER - 1
+	 *
+	 * @param userRole - 사용자의 권한
+	 * @param requiredRoles - 권한 리스트
+	 * @return boolean - 접근 거부 여부(예시: 권한이 부족한 true 반환)
 	 */
 	private boolean isAccessDenied(WorkspaceRole userRole, WorkspaceRole[] requiredRoles) {
-		// 접근 권한이 없을 경우 true 반환
-		for (WorkspaceRole requiredRole : requiredRoles) {
-			if (userRole == WorkspaceRole.ADMIN) {
-				return false; // ADMIN은 모든 권한 허용
-			}
-			if (userRole == WorkspaceRole.USER && (requiredRole == WorkspaceRole.USER
-				|| requiredRole == WorkspaceRole.READER)) {
-				return false; // USER는 USER와 READER API 접근 허용
-			}
-			if (userRole == WorkspaceRole.READER && requiredRole == WorkspaceRole.READER) {
-				return false; // READER는 READER API만 접근 허용
-			}
-		}
-		return true; // 권한이 일치하지 않으면 접근 불가
+		int userRoleLevel = userRole.getLevel();
+		return Arrays.stream(requiredRoles)
+			.map(WorkspaceRole::getLevel)
+			.noneMatch(requiredRoleLevel -> userRoleLevel >= requiredRoleLevel);
 	}
 
 	/**
-	 * Todo: 더 좋은 방식이 있는지 찾아보기
-	 * API 설계에 따라 로직이 변할 수 있을 것 같음
+	 * Todo
+	 * 	- 테스트를 위해 public으로 열어두었다
+	 * 	- private으로 닫고 레플리케이션을 사용해서 테스트하는 것을 고려하였으나
+	 * 	- 데이터 수정 보다는 유틸성 메서드에 가깝기 때문에 그냥 public으로 열기로 했다
+	 * 	- 해당 메서드와 유사한 로직을 다른 곳에 사용하게 된다면 따로 유틸 클래스로 분리 요망
+	 * <p>
+	 * URI에서 WORKSPACE_PREFIX_LENGTH을 시작 인덱스로 시작해서 8자리 문자열을 추출한다
+	 * 만약 URI의 길이를 계산해서 코드가 8자리가 아니라면 예외 발생
+	 *
+	 * @param uri - 현재 HTTP 요청의 URI
+	 * @return String - URI에서 추출된 워크스페이스 코드
 	 */
-	private String extractWorkspaceCodeFromUri(String uri) {
-		// prefix가 URI에 있는지 확인
-		int startIndex = uri.indexOf(WORKSPACE_PREFIX);
-		if (startIndex != -1) {
-			// startIndex + WORKSPACE_PREFIX_LENGTH부터 시작하여 8자리를 잘라내기
-			return uri.substring(startIndex + WORKSPACE_PREFIX_LENGTH, startIndex + WORKSPACE_PREFIX_LENGTH + 8);
-		}
+	public String extractWorkspaceCodeFromUri(String uri) {
+		return Optional.of(uri.indexOf(WORKSPACE_PREFIX))
+			.filter(startIndex -> startIndex != -1)
+			.map(startIndex -> {
+				int codeStartIndex = startIndex + WORKSPACE_PREFIX_LENGTH;
+				int slashIndex = uri.indexOf("/", codeStartIndex);
 
-		return ""; // 유효하지 않은 경우 빈 문자열 반환
+				return (slashIndex == -1)
+					? uri.substring(codeStartIndex) : uri.substring(codeStartIndex, slashIndex);
+			})
+			.filter(this::isNotEmpty)
+			.orElseThrow(InvalidWorkspaceCodeInUriException::new);
+	}
+
+	private boolean isNotEmpty(String code) {
+		return !code.isEmpty();
 	}
 }

@@ -1,5 +1,6 @@
 package com.uranus.taskmanager.api.invitation.domain;
 
+import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Invitation {
+public class Invitation extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,10 +40,6 @@ public class Invitation {
 
 	@Enumerated(EnumType.STRING)
 	private InvitationStatus status;
-
-	/**
-	 * Todo: InvitedBy, InvitedAt 등의 추가 필요(Auditing 적용)
-	 */
 
 	@Builder
 	public Invitation(Member member, Workspace workspace, InvitationStatus status) {
