@@ -38,7 +38,7 @@ import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-class WorkspaceAccessControllerTest extends ControllerTestHelper {
+class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
