@@ -2,7 +2,7 @@ package com.uranus.taskmanager.mock;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.workspacemember.authorization.exception.InsufficientWorkspaceRoleException;
+import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

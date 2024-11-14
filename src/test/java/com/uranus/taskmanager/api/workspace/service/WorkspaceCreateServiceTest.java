@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;

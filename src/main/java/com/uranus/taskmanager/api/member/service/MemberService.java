@@ -4,15 +4,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.dto.request.MemberPasswordUpdateRequest;
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.dto.response.MemberEmailUpdateResponse;
-import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
 import com.uranus.taskmanager.api.member.exception.DuplicateLoginIdException;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;

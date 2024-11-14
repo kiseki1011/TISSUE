@@ -2,7 +2,7 @@ package com.uranus.taskmanager.mock;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

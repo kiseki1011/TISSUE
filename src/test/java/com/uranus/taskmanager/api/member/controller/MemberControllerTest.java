@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -17,16 +18,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentMatchers;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.dto.request.UpdateAuthRequest;
-import com.uranus.taskmanager.api.member.dto.response.MemberEmailUpdateResponse;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class MemberControllerTest extends ControllerTestHelper {
@@ -228,5 +235,115 @@ class MemberControllerTest extends ControllerTestHelper {
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.message").value("You do not have authorization for update or has expired"))
 			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 기대하는 응답을 받는다")
+	void getMyWorkspaces_shouldReturnCompleteJsonResponse() throws Exception {
+		// given
+		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+			.id(1L)
+			.code("WS001")
+			.name("Workspace 1")
+			.description("Description 1")
+			.createdBy("member1")
+			.createdAt(LocalDateTime.now().minusDays(5))
+			.updatedBy("updater1")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+			.id(2L)
+			.code("WS002")
+			.name("Workspace 2")
+			.description("Description 2")
+			.createdBy("member1")
+			.createdAt(LocalDateTime.now().minusDays(10))
+			.updatedBy("updater2")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+			.totalElements(2L)
+			.build();
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(response);
+
+		// 기대하는 JSON 응답 생성
+		String expectedJson = objectMapper.writeValueAsString(
+			ApiResponse.ok("Currently joined Workspaces Found", response)
+		);
+
+		// when & then - 요청 및 전체 JSON 비교 검증
+		mockMvc.perform(get("/api/v1/members/workspaces")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("page", "0")
+				.param("size", "10"))
+			.andExpect(status().isOk())
+			.andExpect(content().json(expectedJson))
+			.andDo(print());
+
+		verify(memberQueryService, times(1))
+			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+	}
+
+	@Test
+	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 200을 응답받는다")
+	void getCurrentlyJoinedWorkspaces_shouldReturn200IfSuccess() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+			.id(1L)
+			.code("WS001")
+			.name("Workspace 1")
+			.description("Description 1")
+			.createdBy("creator1")
+			.createdAt(LocalDateTime.now().minusDays(5))
+			.updatedBy("updater1")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.COLLABORATOR)
+			.build();
+
+		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+			.id(2L)
+			.code("WS002")
+			.name("Workspace 2")
+			.description("Description 2")
+			.createdBy("creator2")
+			.createdAt(LocalDateTime.now().minusDays(10))
+			.updatedBy("updater2")
+			.updatedAt(LocalDateTime.now())
+			.role(WorkspaceRole.MANAGER)
+			.build();
+
+		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+			.totalElements(2L)
+			.build();
+
+		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/members/workspaces")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("page", "0")
+				.param("size", "10"))
+			.andExpect(status().isOk());
+
+		verify(memberQueryService, times(1))
+			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+
 	}
 }

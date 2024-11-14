@@ -15,22 +15,22 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.FailedInvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspace.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
@@ -77,7 +77,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
-		when(workspaceAccessService.inviteMember(eq(workspaceCode), any(InviteMemberRequest.class)))
+		when(workspaceMemberService.inviteMember(eq(workspaceCode), any(InviteMemberRequest.class)))
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
@@ -113,7 +113,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		when(workspaceAccessService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
+		when(workspaceMemberService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
@@ -161,7 +161,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			.failedInvitedMembers(failedResponses)
 			.build();
 
-		when(workspaceAccessService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
+		when(workspaceMemberService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
@@ -197,7 +197,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 		WorkspaceJoinResponse response = WorkspaceJoinResponse.from(workspace, workspaceMember, false);
 
-		when(workspaceAccessService.joinWorkspace(eq(workspaceCode),
+		when(workspaceMemberService.joinWorkspace(eq(workspaceCode),
 			any(WorkspaceJoinRequest.class),
 			anyLong())).thenReturn(response);
 
@@ -226,7 +226,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 		WorkspaceJoinRequest request = new WorkspaceJoinRequest(invalidPassword);
 
-		when(workspaceAccessService.joinWorkspace(eq("TESTCODE"), any(WorkspaceJoinRequest.class), anyLong()))
+		when(workspaceMemberService.joinWorkspace(eq("TESTCODE"), any(WorkspaceJoinRequest.class), anyLong()))
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then
@@ -258,7 +258,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 
 		KickWorkspaceMemberResponse response = KickWorkspaceMemberResponse.from("member1", workspaceMember);
 
-		when(workspaceAccessService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
+		when(workspaceMemberService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}/kick", workspaceCode)

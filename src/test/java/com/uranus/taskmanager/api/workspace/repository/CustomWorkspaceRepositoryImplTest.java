@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.domain.repository.impl.CustomWorkspaceRepositoryImpl;
 
 import jakarta.persistence.EntityManager;
 

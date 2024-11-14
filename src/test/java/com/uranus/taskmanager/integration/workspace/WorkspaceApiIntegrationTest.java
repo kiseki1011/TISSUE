@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.helper.RestAssuredTestHelper;
 
 import io.restassured.RestAssured;

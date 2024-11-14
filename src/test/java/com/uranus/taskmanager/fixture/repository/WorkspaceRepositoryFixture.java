@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 @Component
 @Transactional
@@ -27,10 +27,10 @@ public class WorkspaceRepositoryFixture {
 	/**
 	 * 워크스페이스를 생성하고 저장합니다.
 	 *
-	 * @param name - 워크스페이스 이름
+	 * @param name        - 워크스페이스 이름
 	 * @param description - 워크스페이스 설명
-	 * @param code - 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
-	 * @param password - 워크스페이스의 비밀번호 (null 값 허용, 비밀번호가 없는 경우 null 전달, 있으면 암호화)
+	 * @param code        - 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
+	 * @param password    - 워크스페이스의 비밀번호 (null 값 허용, 비밀번호가 없는 경우 null 전달, 있으면 암호화)
 	 * @return 저장된 Workspace 객체
 	 */
 	public Workspace createWorkspace(String name, String description, String code, String password) {
@@ -46,9 +46,9 @@ public class WorkspaceRepositoryFixture {
 	/**
 	 * 워크스페이스 멤버를 생성하고 저장합니다.
 	 *
-	 * @param member - Member 객체
+	 * @param member    - Member 객체
 	 * @param workspace - Workspace 객체
-	 * @param role - 워크스페이스 내 역할
+	 * @param role      - 워크스페이스 내 역할
 	 * @return 저장된 WorkspaceMember 객체
 	 */
 	public WorkspaceMember addMemberToWorkspace(Member member, Workspace workspace, WorkspaceRole role) {
