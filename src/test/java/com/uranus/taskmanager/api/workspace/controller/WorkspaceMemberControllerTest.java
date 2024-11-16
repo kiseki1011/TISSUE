@@ -15,23 +15,26 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
@@ -207,7 +210,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Joined Workspace"))
+			.andExpect(jsonPath("$.message").value("Joined workspace"))
 			.andExpect(jsonPath("$.data.alreadyMember").value(false))
 			.andDo(print());
 
@@ -266,8 +269,85 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member was kicked from this Workspace"))
+			.andExpect(jsonPath("$.message").value("Member was kicked from this workspace"))
 			.andDo(print());
 
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/members/role - 워크스페이스 멤버의 권한을 변경하는데 성공하면 200을 응답받는다")
+	void test14() throws Exception {
+		// Session 모킹
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		// given
+		String workspaceCode = "TESTCODE";
+
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.MANAGER);
+
+		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
+			Member.builder()
+				.loginId("member1")
+				.build(),
+			Workspace.builder()
+				.code("TESTCODE")
+				.build());
+
+		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+
+		when(workspaceMemberService.updateWorkspaceMemberRole(eq(workspaceCode),
+			any(UpdateWorkspaceMemberRoleRequest.class),
+			anyLong())).thenReturn(response);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/members/role - 권한을 변경하는데 성공하면 해당 워크스페이스 멤버의 상세 정보를 응답 데이터로 받는다")
+	void test15() throws Exception {
+		// Session 모킹
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+
+		// given
+		String workspaceCode = "TESTCODE";
+
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.MANAGER);
+
+		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
+			Member.builder()
+				.loginId("member1")
+				.email("member1@test.com")
+				.build(),
+			Workspace.builder()
+				.code("TESTCODE")
+				.build());
+
+		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+
+		when(workspaceMemberService.updateWorkspaceMemberRole(eq(workspaceCode),
+			any(UpdateWorkspaceMemberRoleRequest.class),
+			anyLong())).thenReturn(response);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
+			.andExpect(jsonPath("$.data.workspaceMemberDetail.email").value("member1@test.com"))
+			.andExpect(jsonPath("$.data.workspaceMemberDetail.workspaceRole").value("MANAGER"))
+			.andDo(print());
 	}
 }

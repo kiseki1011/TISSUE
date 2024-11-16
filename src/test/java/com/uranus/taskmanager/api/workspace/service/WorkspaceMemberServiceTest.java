@@ -10,27 +10,31 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
+import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
+import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
-import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
@@ -270,5 +274,174 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberService.kickWorkspaceMember(workspaceCode, request))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("특정 워크스페이스의 멤버의 권한을 변경에 성공하면 변경된 멤버의 정보를 응답으로 반환한다")
+	void updateWorkspaceMember_success_returnsUpdateWorkspaceMemberRoleResponse() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
+			WorkspaceRole.MANAGER, requester.getEmail());
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		Member targetMember = memberRepository.save(Member.builder()
+			.loginId("target")
+			.email("target123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
+			WorkspaceRole.VIEWER, targetMember.getEmail());
+		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.MANAGER);
+
+		// when
+		UpdateWorkspaceMemberRoleResponse response = workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+			request, requester.getId());
+
+		// then
+		assertThat(response.getWorkspaceMemberDetail().getNickname()).isEqualTo("target123@test.com");
+		assertThat(response.getWorkspaceMemberDetail().getWorkspaceRole()).isEqualTo(WorkspaceRole.MANAGER);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("자기 자신의 워크스페이스 멤버 권한을 변경하려고 하면 예외가 발생한다")
+	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateItself() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
+			WorkspaceRole.MANAGER, requester.getEmail());
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		// when & then
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("requester",
+			WorkspaceRole.MANAGER);
+
+		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("워크스페이스 멤버의 권한을 OWNER로 변경하려고 하면 예외가 발생한다")
+	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateToOwner() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
+			WorkspaceRole.MANAGER, requester.getEmail());
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		Member targetMember = memberRepository.save(Member.builder()
+			.loginId("target")
+			.email("target123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
+			WorkspaceRole.VIEWER, targetMember.getEmail());
+		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		// when & then
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.OWNER);
+
+		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("자기 자신보다 높은 권한을 가진 멤버를 업데이트하려고 하면 예외가 발생한다")
+	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateHigherRoleWorkspaceMember() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
+			WorkspaceRole.MANAGER, requester.getEmail());
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		Member targetMember = memberRepository.save(Member.builder()
+			.loginId("target")
+			.email("target123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
+			WorkspaceRole.OWNER, targetMember.getEmail());
+		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		// when & then
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.MANAGER);
+
+		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버를 OWNER 권한으로 업데이트하려고 하면 예외가 발생한다")
+	void updateWorkspaceMember_fail_ifOwnerTrysToUpdateWorkspaceMemberToOwner() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
+			WorkspaceRole.OWNER, requester.getEmail());
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		Member targetMember = memberRepository.save(Member.builder()
+			.loginId("target")
+			.email("target123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
+			WorkspaceRole.MANAGER, targetMember.getEmail());
+		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		// when & then
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+			WorkspaceRole.OWNER);
+
+		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
 	}
 }
