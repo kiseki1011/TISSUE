@@ -20,21 +20,24 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
+import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
+import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -150,6 +153,58 @@ public class WorkspaceMemberService {
 		workspace.decreaseMemberCount();
 
 		return KickWorkspaceMemberResponse.from(identifier, workspaceMember);
+	}
+
+	@Transactional
+	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(String code,
+		UpdateWorkspaceMemberRoleRequest request, Long memberId) {
+
+		Workspace workspace = findWorkspaceByCode(code);
+
+		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
+				request.getMemberIdentifier(), code)
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		WorkspaceMember requesterWorkspaceMember = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		validateRoleUpdate(requesterWorkspaceMember, targetWorkspaceMember, request.getUpdateWorkspaceRole());
+
+		targetWorkspaceMember.updateRole(request.getUpdateWorkspaceRole());
+
+		return UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+	}
+
+	private void validateRoleUpdate(
+		WorkspaceMember requester,
+		WorkspaceMember target,
+		WorkspaceRole newRole
+	) {
+		// 자기 자신의 권한은 변경 불가
+		if (requester.getId().equals(target.getId())) {
+			throw new InvalidRoleUpdateException("You cannot change your own role.");
+		}
+
+		// OWNER의 권한은 변경 불가
+		if (target.getRole() == WorkspaceRole.OWNER) {
+			throw new InvalidRoleUpdateException("You cannot change the role of the OWNER.");
+		}
+
+		// OWNER로 권한 변경 불가
+		if (newRole == WorkspaceRole.OWNER) {
+			throw new InvalidRoleUpdateException("You cannot change to OWNER role. Use ownership transfer instead.");
+		}
+
+		// 자신보다 높은 권한을 가진 멤버의 권한은 변경 불가
+		if (target.getRole().getLevel() >= requester.getRole().getLevel()) {
+			throw new InvalidRoleUpdateException("You cannot change the role of a greater or equal role level.");
+		}
+
+		// 자신의 권한보다 높은 권한으로 변경 불가
+		if (newRole.getLevel() > requester.getRole().getLevel()) {
+			throw new InvalidRoleUpdateException("You cannot change the role to a greater role level than yourself.");
+		}
 	}
 
 	private Workspace findWorkspaceByCode(String workspaceCode) {

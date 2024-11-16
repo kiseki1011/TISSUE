@@ -1,6 +1,7 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.controller;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,16 +13,18 @@ import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.global.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +46,7 @@ public class WorkspaceMemberController {
 		@RequestBody @Valid InviteMemberRequest request) {
 
 		InviteMemberResponse response = workspaceMemberService.inviteMember(code, request);
-		return ApiResponse.ok("Member Invited", response);
+		return ApiResponse.ok("Member invited", response);
 	}
 
 	@LoginRequired
@@ -54,7 +57,7 @@ public class WorkspaceMemberController {
 		@RequestBody @Valid InviteMembersRequest request) {
 
 		InviteMembersResponse response = workspaceMemberService.inviteMembers(code, request);
-		return ApiResponse.ok("Members Invited", response);
+		return ApiResponse.ok("Members invited", response);
 	}
 
 	@LoginRequired
@@ -66,7 +69,7 @@ public class WorkspaceMemberController {
 	) {
 
 		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(code, request, loginMember.getId());
-		return ApiResponse.ok("Joined Workspace", response);
+		return ApiResponse.ok("Joined workspace", response);
 	}
 
 	/**
@@ -83,6 +86,20 @@ public class WorkspaceMemberController {
 	) {
 
 		KickWorkspaceMemberResponse response = workspaceMemberService.kickWorkspaceMember(code, request);
-		return ApiResponse.ok("Member was kicked from this Workspace", response);
+		return ApiResponse.ok("Member was kicked from this workspace", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{code}/members/role")
+	public ApiResponse<UpdateWorkspaceMemberRoleResponse> updateWorkspaceMemberRole(
+		@PathVariable String code,
+		@RequestBody @Valid UpdateWorkspaceMemberRoleRequest request,
+		@ResolveLoginMember LoginMember loginMember
+	) {
+
+		UpdateWorkspaceMemberRoleResponse response = workspaceMemberService.updateWorkspaceMemberRole(code, request,
+			loginMember.getId());
+		return ApiResponse.ok("Member's role for this workspace was updated", response);
 	}
 }

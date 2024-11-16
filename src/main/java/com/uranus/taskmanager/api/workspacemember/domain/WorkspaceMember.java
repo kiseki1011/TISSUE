@@ -1,5 +1,6 @@
 package com.uranus.taskmanager.api.workspacemember.domain;
 
+import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkspaceMember {
+public class WorkspaceMember extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,5 +64,9 @@ public class WorkspaceMember {
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
 		return workspaceMember;
+	}
+
+	public void updateRole(WorkspaceRole role) {
+		this.role = role;
 	}
 }
