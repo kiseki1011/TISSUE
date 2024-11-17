@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
@@ -19,6 +20,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
 
 	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
+
+	boolean existsByMemberIdAndRole(Long memberId, WorkspaceRole role);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

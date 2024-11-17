@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,16 +18,17 @@ import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdateAuthorizationException;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -101,19 +103,24 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Password update success");
 	}
 
-	// @LoginRequired
-	// @DeleteMapping
-	// public ApiResponse<Void> withdrawMember(
-	// 	@RequestBody MemberWithdrawRequest request,
-	// 	@ResolveLoginMember LoginMember loginMember,
-	// 	HttpSession session) {
-	//
-	// 	validateUpdateAuth(session);
-	// 	memberService.withdrawMember(request, loginMember.getId());
-	//
-	// 	return ApiResponse.okWithNoContent("Member withdrawal success");
-	// }
+	@LoginRequired
+	@DeleteMapping
+	public ApiResponse<Void> withdrawMember(
+		@RequestBody MemberWithdrawRequest request,
+		@ResolveLoginMember LoginMember loginMember,
+		HttpSession session) {
 
+		validateUpdateAuth(session);
+		memberService.withdrawMember(request, loginMember.getId());
+
+		session.invalidate();
+		return ApiResponse.okWithNoContent("Member withdrawal success");
+	}
+
+	/**
+	 * Todo
+	 *  - memberworkspace 패키지를 만들어서 해당 패키지로 이동
+	 */
 	@LoginRequired
 	@GetMapping("/workspaces")
 	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
