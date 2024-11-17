@@ -39,7 +39,6 @@ public class InvitationService {
 
 		Invitation invitation = getPendingInvitationBy(loginMemberId, workspaceCode);
 		changeStatusToRejected(invitation);
-		// Todo: InvitationRejectResponse 사용을 고려
 	}
 
 	private Invitation getPendingInvitationBy(Long loginMemberId, String workspaceCode) {

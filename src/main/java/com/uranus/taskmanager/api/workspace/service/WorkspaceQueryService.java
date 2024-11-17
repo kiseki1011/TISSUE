@@ -33,17 +33,6 @@ public class WorkspaceQueryService {
 		return WorkspaceDetail.from(workspace, workspaceMember.getRole());
 	}
 
-	// @Transactional(readOnly = true)
-	// public MyWorkspacesResponse getMyWorkspaces(Long memberId, Pageable pageable) {
-	// 	Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberId(memberId, pageable)
-	// 		.map(workspaceMember -> WorkspaceDetail.from(
-	// 			workspaceMember.getWorkspace(),
-	// 			workspaceMember.getRole()
-	// 		));
-	//
-	// 	return MyWorkspacesResponse.from(workspaceDetails.getContent(), workspaceDetails.getTotalElements());
-	// }
-
 	private Workspace findWorkspaceByCode(String workspaceCode) {
 		return workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);

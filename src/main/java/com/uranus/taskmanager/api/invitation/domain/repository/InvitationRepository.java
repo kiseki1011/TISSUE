@@ -11,7 +11,5 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 	Optional<Invitation> findByWorkspaceAndMember(Workspace workspace, Member member);
 
-	Optional<Invitation> findByWorkspaceCodeAndMemberLoginId(String workspaceCode, String memberLoginId);
-
 	Optional<Invitation> findByWorkspaceCodeAndMemberId(String workspaceCode, Long memberId);
 }

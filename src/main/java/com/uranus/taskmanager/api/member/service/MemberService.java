@@ -86,12 +86,8 @@ public class MemberService {
 	private Member createMember(SignupRequest request) {
 		String encodedPassword = encodePassword(request.getPassword());
 
-		// Todo: SignupRequest에 to()를 만들어서 사용하기
-		return Member.builder()
-			.loginId(request.getLoginId())
-			.email(request.getEmail())
-			.password(encodedPassword)
-			.build();
+		// Todo: 그냥 빌더 사용 고려, SignupRequest의 toMember 제거
+		return SignupRequest.toMember(request, encodedPassword);
 	}
 
 	private void checkLoginIdAndEmailDuplication(SignupRequest request) {

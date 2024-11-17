@@ -25,8 +25,8 @@ import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspacePa
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.create.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
+import com.uranus.taskmanager.api.workspace.service.create.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -94,13 +94,4 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace Found", response);
 	}
 
-	// @LoginRequired
-	// @GetMapping
-	// public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
-	// 	@ResolveLoginMember LoginMember loginMember,
-	// 	Pageable pageable) {
-	//
-	// 	MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
-	// 	return ApiResponse.ok("Currently joined Workspaces Found", response);
-	// }
 }

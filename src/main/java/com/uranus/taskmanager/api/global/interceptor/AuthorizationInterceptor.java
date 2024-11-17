@@ -30,13 +30,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthorizationInterceptor implements HandlerInterceptor {
 
+	/**
+	 * Todo
+	 *  - 상수를 따로 클래스로 추출, 또는 설정 파일로 받을 수 있도록 구현
+	 */
 	private static final String WORKSPACE_PREFIX = "/api/v1/workspaces/";
 	private static final int WORKSPACE_PREFIX_LENGTH = 19;
 
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
-	// Todo: 로깅 정리
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
@@ -91,11 +94,8 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	}
 
 	/**
-	 * 권한 수준: ADMIN > USER > READER
-	 * 권한에 정수 level을 부여해서 부등호 형식으로 비교한다
-	 * ADMIN - 3
-	 * USER - 2
-	 * READER - 1
+	 * 권한 수준: OWNER(4) > MANAGER(3) > COLLABORATOR(2) > VIEWER(1)
+	 * 권한에 integer level을 부여해서 부등호 형식으로 비교한다
 	 *
 	 * @param userRole      - 사용자의 권한
 	 * @param requiredRoles - 권한 리스트
@@ -109,12 +109,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	}
 
 	/**
-	 * Todo
-	 * 	- 테스트를 위해 public으로 열어두었다
-	 * 	- private으로 닫고 레플리케이션을 사용해서 테스트하는 것을 고려하였으나
-	 * 	- 데이터 수정 보다는 유틸성 메서드에 가깝기 때문에 그냥 public으로 열기로 했다
-	 * 	- 해당 메서드와 유사한 로직을 다른 곳에 사용하게 된다면 따로 유틸 클래스로 분리 요망
-	 * <p>
 	 * URI에서 WORKSPACE_PREFIX_LENGTH을 시작 인덱스로 시작해서 8자리 문자열을 추출한다
 	 * 만약 URI의 길이를 계산해서 코드가 8자리가 아니라면 예외 발생
 	 *
