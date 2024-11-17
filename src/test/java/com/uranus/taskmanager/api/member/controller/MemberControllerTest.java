@@ -27,12 +27,13 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
@@ -233,13 +234,14 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isForbidden())
-			.andExpect(jsonPath("$.message").value("You do not have authorization for update or has expired"))
+			.andExpect(jsonPath("$.message").value(
+				"You do not have authorization for update or the authorization has expired"))
 			.andDo(print());
 	}
 
 	@Test
 	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 기대하는 응답을 받는다")
-	void getMyWorkspaces_shouldReturnCompleteJsonResponse() throws Exception {
+	void getMyWorkspaces_shouldReturn_completeJsonResponse() throws Exception {
 		// given
 		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
 			.id(1L)
@@ -296,8 +298,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 200을 응답받는다")
-	void getCurrentlyJoinedWorkspaces_shouldReturn200IfSuccess() throws Exception {
+	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 OK를 응답받는다")
+	void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
@@ -345,5 +347,26 @@ class MemberControllerTest extends ControllerTestHelper {
 		verify(memberQueryService, times(1))
 			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 
+	}
+
+	@Test
+	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK를 응답받는다")
+	void withdrawMember_shouldReturn200_ifSuccess() throws Exception {
+		// Mock Session
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionKey.UPDATE_AUTH, true);
+		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+
+		// given
+		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/members")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Member withdrawal success"))
+			.andDo(print());
 	}
 }
