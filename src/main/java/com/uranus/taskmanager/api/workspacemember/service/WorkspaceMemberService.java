@@ -29,6 +29,7 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspace
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
@@ -36,6 +37,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Invi
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 
@@ -174,6 +176,29 @@ public class WorkspaceMemberService {
 		targetWorkspaceMember.updateRole(request.getUpdateWorkspaceRole());
 
 		return UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+	}
+
+	@Transactional
+	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(String code,
+		TransferWorkspaceOwnershipRequest request, Long memberId) {
+
+		Workspace workspace = findWorkspaceByCode(code);
+
+		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
+				request.getMemberIdentifier(), code)
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		WorkspaceMember requesterWorkspaceMember = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		requesterWorkspaceMember.updateRole(WorkspaceRole.MANAGER);
+		requesterWorkspaceMember.getMember().decreaseWorkspaceCount();
+
+		targetWorkspaceMember.updateRole(WorkspaceRole.OWNER);
+		targetWorkspaceMember.getMember().increaseWorkspaceCount();
+
+		return TransferWorkspaceOwnershipResponse.from(targetWorkspaceMember);
 	}
 
 	private void validateRoleUpdate(

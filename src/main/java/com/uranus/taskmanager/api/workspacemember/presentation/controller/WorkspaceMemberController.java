@@ -17,11 +17,13 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
@@ -101,5 +103,19 @@ public class WorkspaceMemberController {
 		UpdateWorkspaceMemberRoleResponse response = workspaceMemberService.updateWorkspaceMemberRole(code, request,
 			loginMember.getId());
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.OWNER})
+	@PatchMapping("/{code}/members/workspaces/ownership")
+	public ApiResponse<TransferWorkspaceOwnershipResponse> transferWorkspaceOwnership(
+		@PathVariable String code,
+		@RequestBody @Valid TransferWorkspaceOwnershipRequest request,
+		@ResolveLoginMember LoginMember loginMember
+	) {
+
+		TransferWorkspaceOwnershipResponse response = workspaceMemberService.transferWorkspaceOwnership(code, request,
+			loginMember.getId());
+		return ApiResponse.ok("The ownership was successfully transfered", response);
 	}
 }
