@@ -6,8 +6,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.uranus.taskmanager.api.authentication.ResolveLoginMember;
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
+import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 
 public class MockLoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
 	private final LoginMember loginMember;

@@ -11,24 +11,24 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uranus.taskmanager.api.authentication.controller.AuthenticationController;
-import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
-import com.uranus.taskmanager.api.invitation.controller.InvitationController;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.presentation.controller.InvitationController;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
-import com.uranus.taskmanager.api.member.controller.MemberController;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.presentation.controller.MemberController;
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
-import com.uranus.taskmanager.api.workspace.controller.WorkspaceAccessController;
-import com.uranus.taskmanager.api.workspace.controller.WorkspaceController;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
+import com.uranus.taskmanager.api.security.authentication.presentation.controller.AuthenticationController;
+import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
+import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.presentation.controller.WorkspaceController;
+import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
+import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMemberController;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 		AuthenticationController.class,
 		InvitationController.class,
 		WorkspaceController.class,
-		WorkspaceAccessController.class,
+		WorkspaceMemberController.class,
 		MemberController.class
 	},
 	excludeFilters = {
@@ -62,7 +62,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean
-	protected WorkspaceAccessService workspaceAccessService;
+	protected WorkspaceMemberService workspaceMemberService;
 	@MockBean
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@MockBean

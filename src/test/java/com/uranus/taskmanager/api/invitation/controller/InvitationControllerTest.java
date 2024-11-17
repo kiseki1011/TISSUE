@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.authentication.SessionKey;
-import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;

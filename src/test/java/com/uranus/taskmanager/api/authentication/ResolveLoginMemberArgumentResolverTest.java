@@ -15,11 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
-import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.global.resolver.LoginMemberArgumentResolver;
+import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 
 import jakarta.servlet.http.HttpServletRequest;

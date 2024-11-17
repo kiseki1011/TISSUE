@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
-import com.uranus.taskmanager.api.authentication.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

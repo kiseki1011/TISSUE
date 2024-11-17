@@ -14,14 +14,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceJoinRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
+import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
@@ -50,8 +50,8 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			null);
 
 		// member1은 workspace1,2에 참여
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1.getId());
-		workspaceAccessService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1.getId());
+		workspaceMemberService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1.getId());
+		workspaceMemberService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1.getId());
 	}
 
 	@AfterEach
@@ -67,7 +67,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(1L, pageable);
+		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(1L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -90,11 +90,11 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
+		workspaceMemberService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(2L, pageable);
+		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(2L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -117,7 +117,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			.email("member2@test.com")
 			.build();
 
-		workspaceAccessService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
+		workspaceMemberService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111", 2L);
@@ -201,7 +201,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "workspace.name"));
 
 		// when
-		MyWorkspacesResponse response = workspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
+		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

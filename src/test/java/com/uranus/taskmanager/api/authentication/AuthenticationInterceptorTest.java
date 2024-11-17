@@ -11,7 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
-import com.uranus.taskmanager.api.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.global.interceptor.AuthenticationInterceptor;
+import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

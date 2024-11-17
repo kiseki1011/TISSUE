@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
+
 class WorkspaceCodeGeneratorTest {
 
 	private WorkspaceCodeGenerator workspaceCodeGenerator;

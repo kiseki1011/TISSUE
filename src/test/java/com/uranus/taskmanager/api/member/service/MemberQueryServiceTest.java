@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.dto.request.UpdateAuthRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;

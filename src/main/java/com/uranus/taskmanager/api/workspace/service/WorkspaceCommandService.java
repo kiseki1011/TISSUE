@@ -6,17 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.WorkspaceUpdateDetail;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceContentUpdateRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspacePasswordUpdateRequest;
-import com.uranus.taskmanager.api.workspace.dto.response.WorkspaceContentUpdateResponse;
+import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceContentUpdateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspacePasswordUpdateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 
 import lombok.RequiredArgsConstructor;

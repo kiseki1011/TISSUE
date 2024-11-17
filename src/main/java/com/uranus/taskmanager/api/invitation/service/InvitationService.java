@@ -5,15 +5,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.invitation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

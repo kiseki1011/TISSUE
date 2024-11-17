@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.authentication.SessionKey;
-import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class AuthenticationControllerTest extends ControllerTestHelper {

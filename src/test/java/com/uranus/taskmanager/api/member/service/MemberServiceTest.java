@@ -9,12 +9,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.dto.request.MemberPasswordUpdateRequest;
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.dto.response.MemberEmailUpdateResponse;
-import com.uranus.taskmanager.api.member.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
+import com.uranus.taskmanager.api.member.exception.OwnedWorkspaceExistsException;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
+import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberServiceTest extends ServiceIntegrationTestHelper {
@@ -158,5 +164,67 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
 		assertThat(passwordEncoder.matches(newPassword, updatedMember.getPassword())).isTrue();
+	}
+
+	@Test
+	@DisplayName("멤버 탈퇴에 성공하면 해당 멤버는 삭제된다")
+	void withdrawMember_success_memberIsDeleted() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+
+		// when
+		memberService.withdrawMember(request, member.getId());
+
+		// then
+		assertThat(memberRepository.findById(member.getId())).isEmpty();
+	}
+
+	@Test
+	@DisplayName("멤버 탈퇴에 요청의 패스워드가 멤버 패스워드와 일치하지 않으면 예외가 발생한다")
+	void withdrawMember_throwsException_ifRequestPasswordsIsNotValid() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		MemberWithdrawRequest request = new MemberWithdrawRequest("invalidPassword");
+
+		// when & then
+		assertThatThrownBy(() -> memberService.withdrawMember(request, member.getId())).isInstanceOf(
+			InvalidLoginPasswordException.class);
+	}
+
+	@Test
+	@DisplayName("멤버 탈퇴에 요청 시 워크스페이스 소유자(OWNER)로 등록되어 있으면 예외가 발생한다")
+	void withdrawMember_throwsException_ifRequesterIsOwnerOfWorkspace() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("member1")
+			.email("member1@test.com")
+			.password(passwordEncoder.encode("password1234!"))
+			.build());
+
+		Workspace workspace = workspaceRepository.save(Workspace.builder()
+			.code("TESTCODE")
+			.name("workspace1")
+			.description("description1")
+			.build());
+
+		workspaceMemberRepository.save(WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
+			member.getEmail()));
+
+		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+
+		// when & then
+		assertThatThrownBy(() -> memberService.withdrawMember(request, member.getId())).isInstanceOf(
+			OwnedWorkspaceExistsException.class);
 	}
 }

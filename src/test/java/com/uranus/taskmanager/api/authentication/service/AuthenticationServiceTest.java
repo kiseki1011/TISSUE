@@ -7,13 +7,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.uranus.taskmanager.api.authentication.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.authentication.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.authentication.exception.InvalidLoginIdentityException;
-import com.uranus.taskmanager.api.authentication.exception.InvalidLoginPasswordException;
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginIdentityException;
+import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
