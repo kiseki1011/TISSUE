@@ -63,10 +63,38 @@ public class WorkspaceMember extends BaseEntity {
 
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
+
 		return workspaceMember;
+	}
+
+	public static WorkspaceMember addOwnerWorkspaceMember(Member member, Workspace workspace) {
+		member.increaseMyWorkspaceCount();
+		workspace.increaseMemberCount();
+		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, member.getEmail());
+	}
+
+	public static WorkspaceMember addCollaboratorWorkspaceMember(Member member, Workspace workspace) {
+		workspace.increaseMemberCount();
+		return addWorkspaceMember(member, workspace, WorkspaceRole.COLLABORATOR, member.getEmail());
+	}
+
+	public void remove() {
+		this.workspace.decreaseMemberCount();
+		this.member.getWorkspaceMembers().remove(this);
+		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
 	public void updateRole(WorkspaceRole role) {
 		this.role = role;
+	}
+
+	public void updateRoleFromOwnerToManager() {
+		updateRole(WorkspaceRole.MANAGER);
+		this.member.decreaseMyWorkspaceCount();
+	}
+
+	public void updateRoleToOwner() {
+		updateRole(WorkspaceRole.OWNER);
+		this.member.increaseMyWorkspaceCount();
 	}
 }

@@ -43,10 +43,6 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Work
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Todo
- *  - UserWorkspaceService, AdminWorkspaceService 분리 고려
- */
 @Service
 @RequiredArgsConstructor
 public class WorkspaceMemberService {
@@ -60,7 +56,9 @@ public class WorkspaceMemberService {
 	@Transactional
 	public InviteMemberResponse inviteMember(String code, InviteMemberRequest request) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
 		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
 
 		checkIfMemberAlreadyJoined(code, invitedMember);
@@ -83,7 +81,8 @@ public class WorkspaceMemberService {
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		for (String identifier : request.getMemberIdentifiers()) {
 			try {
@@ -115,8 +114,11 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
-		Member member = findMemberById(memberId);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(MemberNotFoundException::new);
 
 		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
 			memberId, code);
@@ -126,14 +128,8 @@ public class WorkspaceMemberService {
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.COLLABORATOR,
-			member.getEmail());
-		/*
-		 * Todo
-		 *  - 워크스페이스에 낙관적락 적용 시 워크스페이스 참여에 대해 예외 잡고-재시도 로직을 추가해야 한다
-		 */
-		workspace.increaseMemberCount();
+		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+
 		workspaceMemberRepository.save(workspaceMember);
 
 		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
@@ -142,7 +138,8 @@ public class WorkspaceMemberService {
 	@Transactional
 	public KickWorkspaceMemberResponse kickWorkspaceMember(String code, KickWorkspaceMemberRequest request) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		String identifier = request.getMemberIdentifier();
 		Member member = memberRepository.findByLoginIdOrEmail(identifier, identifier)
@@ -161,7 +158,8 @@ public class WorkspaceMemberService {
 	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(String code,
 		UpdateWorkspaceMemberRoleRequest request, Long memberId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
 				request.getMemberIdentifier(), code)
@@ -182,7 +180,8 @@ public class WorkspaceMemberService {
 	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(String code,
 		TransferWorkspaceOwnershipRequest request, Long memberId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
 				request.getMemberIdentifier(), code)
@@ -192,11 +191,8 @@ public class WorkspaceMemberService {
 			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		requesterWorkspaceMember.updateRole(WorkspaceRole.MANAGER);
-		requesterWorkspaceMember.getMember().decreaseWorkspaceCount();
-
-		targetWorkspaceMember.updateRole(WorkspaceRole.OWNER);
-		targetWorkspaceMember.getMember().increaseWorkspaceCount();
+		requesterWorkspaceMember.updateRoleFromOwnerToManager();
+		targetWorkspaceMember.updateRoleToOwner();
 
 		return TransferWorkspaceOwnershipResponse.from(targetWorkspaceMember);
 	}
@@ -232,18 +228,8 @@ public class WorkspaceMemberService {
 		}
 	}
 
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
-	}
-
 	private Member findMemberByIdentifier(String identifier) {
 		return memberRepository.findByLoginIdOrEmail(identifier, identifier)
-			.orElseThrow(MemberNotFoundException::new);
-	}
-
-	private Member findMemberById(Long id) {
-		return memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
 	}
 

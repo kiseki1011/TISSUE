@@ -31,7 +31,8 @@ public class WorkspaceCommandService {
 
 	@Transactional
 	public WorkspaceContentUpdateResponse updateWorkspaceContent(WorkspaceContentUpdateRequest request, String code) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(workspace);
 
 		if (request.hasName()) {
@@ -47,7 +48,8 @@ public class WorkspaceCommandService {
 
 	@Transactional
 	public void updateWorkspacePassword(WorkspacePasswordUpdateRequest request, String code) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		validatePasswordIfExists(workspace.getPassword(), request.getOriginalPassword());
 
@@ -57,20 +59,17 @@ public class WorkspaceCommandService {
 
 	@Transactional
 	public void deleteWorkspace(WorkspaceDeleteRequest request, String code, Long id) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		Member member = memberRepository.findById(id)
 			.orElseThrow(MemberNotInWorkspaceException::new);
-		member.decreaseWorkspaceCount();
+		
+		member.decreaseMyWorkspaceCount();
 
 		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
 		workspaceRepository.delete(workspace);
-	}
-
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
 	}
 
 	private String encodePasswordIfPresent(String password) {

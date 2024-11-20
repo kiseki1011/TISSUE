@@ -20,9 +20,9 @@ public class InvitationAcceptResponse {
 		this.nickname = nickname;
 	}
 
-	public static InvitationAcceptResponse from(Workspace workspace, WorkspaceRole role) {
+	public static InvitationAcceptResponse from(Workspace workspace) {
 		return InvitationAcceptResponse.builder()
-			.workspaceDetail(WorkspaceDetail.from(workspace, role))
+			.workspaceDetail(WorkspaceDetail.from(workspace, WorkspaceRole.COLLABORATOR))
 			.build();
 	}
 }

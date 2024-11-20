@@ -113,7 +113,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(1);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(1);
 	}
 
 	@Test
@@ -144,7 +144,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(2);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(2);
 	}
 
 	@Test
@@ -202,6 +202,6 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(0);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(0);
 	}
 }

@@ -49,7 +49,7 @@ public class Workspace extends BaseEntity {
 	private String password;
 
 	@Column(nullable = false)
-	private int memberCount = 1;
+	private int memberCount = 0;
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
@@ -82,6 +82,7 @@ public class Workspace extends BaseEntity {
 	}
 
 	public void increaseMemberCount() {
+		// Todo: 최대 인원 초과 시 예외 발생: WorkspaceMemberLimitExceededException
 		this.memberCount++;
 	}
 

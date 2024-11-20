@@ -45,7 +45,7 @@ public class Member extends BaseDateEntity {
 	 * 	- 추후에 50을 상수로 따로 분리, 외부 설정으로 설정을 주입할 수 있도록 구현해야 함
 	 */
 	@Column(nullable = false)
-	private int workspaceCount = 0;
+	private int myWorkspaceCount = 0;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
@@ -60,16 +60,16 @@ public class Member extends BaseDateEntity {
 		this.password = password;
 	}
 
-	public void increaseWorkspaceCount() {
-		if (this.workspaceCount >= 50) {
+	public void increaseMyWorkspaceCount() {
+		if (this.myWorkspaceCount >= 50) {
 			throw new WorkspaceCreationLimitExceededException();
 		}
-		this.workspaceCount++;
+		this.myWorkspaceCount++;
 	}
 
-	public void decreaseWorkspaceCount() {
-		if (this.workspaceCount > 0) {
-			this.workspaceCount--;
+	public void decreaseMyWorkspaceCount() {
+		if (this.myWorkspaceCount > 0) {
+			this.myWorkspaceCount--;
 		}
 	}
 

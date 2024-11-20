@@ -44,7 +44,6 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, Long memberId) {
 
 		Member member = findMemberById(memberId);
-		member.increaseWorkspaceCount();
 
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
@@ -56,7 +55,6 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 				return WorkspaceCreateResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-				// Todo: 로그 정리
 				log.error("[Catched Exception for Workspace Code Collision]", e);
 				log.info("[Workspace Code Collision] Retrying... attempt {}", attempt);
 			}
@@ -64,9 +62,15 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 		throw new WorkspaceCodeCollisionHandleException();
 	}
 
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+	private void addOwnerMemberToWorkspace2(Member member, Workspace workspace) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
 			member.getEmail());
+
+		workspaceMemberRepository.save(workspaceMember);
+	}
+
+	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
 
 		workspaceMemberRepository.save(workspaceMember);
 	}

@@ -55,7 +55,6 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		Long memberId) {
 
 		Member member = findMemberById(memberId);
-		member.increaseWorkspaceCount();
 
 		setUniqueWorkspaceCode(request);
 		setEncodedPasswordIfPresent(request);
@@ -108,10 +107,16 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return workspaceRepository.save(workspaceCreateRequest.to());
 	}
 
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+	private void addOwnerMemberToWorkspace2(Member member, Workspace workspace) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
 			WorkspaceRole.OWNER,
 			member.getEmail());
+
+		workspaceMemberRepository.save(workspaceMember);
+	}
+
+	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
+		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
 
 		workspaceMemberRepository.save(workspaceMember);
 	}
