@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.workspace.exception.InvalidMemberCountException;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceMemberLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -38,7 +40,7 @@ public class Workspace extends BaseEntity {
 	@Column(name = "WORKSPACE_ID")
 	private Long id;
 
-	@Column(unique = true) // Todo: nullable = false 사용 고려
+	@Column(unique = true, nullable = false)
 	private String code;
 
 	@Column(nullable = false)
@@ -82,13 +84,25 @@ public class Workspace extends BaseEntity {
 	}
 
 	public void increaseMemberCount() {
-		// Todo: 최대 인원 초과 시 예외 발생: WorkspaceMemberLimitExceededException
+		validateMemberLimit();
 		this.memberCount++;
 	}
 
 	public void decreaseMemberCount() {
-		if (this.memberCount > 0) {
-			this.memberCount--;
+		validatePositiveMemberCount();
+		this.memberCount--;
+	}
+
+	private void validateMemberLimit() {
+		// Todo: 최대 멤버 참여 인원수 상수로 분리
+		if (this.memberCount >= 500) {
+			throw new WorkspaceMemberLimitExceededException();
+		}
+	}
+
+	private void validatePositiveMemberCount() {
+		if (this.memberCount <= 0) {
+			throw new InvalidMemberCountException();
 		}
 	}
 

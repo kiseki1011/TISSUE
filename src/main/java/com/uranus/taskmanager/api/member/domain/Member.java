@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseDateEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.exception.InvalidWorkspaceCountException;
+import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,13 +38,6 @@ public class Member extends BaseDateEntity {
 	@Column(nullable = false)
 	private String password;
 
-	/**
-	 * Todo
-	 * 	- 이슈 #82 참고
-	 * 	- 워크스페이스 생성/유지 한도를 관리하기 위해 사용(최대 50개)
-	 * 	- 정보 제공 목적으로 사용
-	 * 	- 추후에 50을 상수로 따로 분리, 외부 설정으로 설정을 주입할 수 있도록 구현해야 함
-	 */
 	@Column(nullable = false)
 	private int myWorkspaceCount = 0;
 
@@ -61,16 +55,13 @@ public class Member extends BaseDateEntity {
 	}
 
 	public void increaseMyWorkspaceCount() {
-		if (this.myWorkspaceCount >= 50) {
-			throw new WorkspaceCreationLimitExceededException();
-		}
+		validateWorkpspaceLimit();
 		this.myWorkspaceCount++;
 	}
 
 	public void decreaseMyWorkspaceCount() {
-		if (this.myWorkspaceCount > 0) {
-			this.myWorkspaceCount--;
-		}
+		validatePositiveMyWorkspaceCount();
+		this.myWorkspaceCount--;
 	}
 
 	public void updatePassword(String password) {
@@ -79,5 +70,18 @@ public class Member extends BaseDateEntity {
 
 	public void updateEmail(String email) {
 		this.email = email;
+	}
+
+	private void validateWorkpspaceLimit() {
+		// Todo: 최대 워크스페이스 소유수를 상수로 분리(현재는 50)
+		if (this.myWorkspaceCount >= 50) {
+			throw new WorkspaceCreationLimitExceededException();
+		}
+	}
+
+	private void validatePositiveMyWorkspaceCount() {
+		if (this.myWorkspaceCount <= 0) {
+			throw new InvalidWorkspaceCountException();
+		}
 	}
 }

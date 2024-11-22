@@ -15,7 +15,7 @@ import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepositor
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -35,8 +35,10 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	private final WorkspaceRepository workspaceRepository;
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	/**
 	 * 로그인 정보를 사용해서 멤버의 존재 유무를 검증한다
@@ -54,20 +56,16 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request,
 		Long memberId) {
 
-		Member member = findMemberById(memberId);
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(MemberNotFoundException::new);
 
 		setUniqueWorkspaceCode(request);
 		setEncodedPasswordIfPresent(request);
 
-		Workspace workspace = saveWorkspace(request);
+		Workspace workspace = workspaceRepository.save(request.to());
 		addOwnerMemberToWorkspace(member, workspace);
 
 		return WorkspaceCreateResponse.from(workspace);
-	}
-
-	private Member findMemberById(Long memberId) {
-		return memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
 	}
 
 	private void setUniqueWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
@@ -76,43 +74,23 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		workspaceCreateRequest.setCode(code);
 	}
 
-	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest workspaceCreateRequest) {
-		String encodedPassword = encodePasswordIfPresent(workspaceCreateRequest.getPassword());
-		workspaceCreateRequest.setPassword(encodedPassword);
-	}
-
 	private Optional<String> generateUniqueWorkspaceCode() {
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			String code = workspaceCodeGenerator.generateWorkspaceCode();
 
-			if (workspaceCodeIsNotDuplicate(code)) {
+			if (workspaceValidator.validateWorkspaceCodeIsUnique(code)) {
 				return Optional.of(code);
 			}
-			log.info("[Workspace Code Collision] Retrying... attempt {}", attempt);
+			log.info("[Workspace Code Collision] Retry Attempt #{}", attempt);
 		}
 		return Optional.empty();
 	}
 
-	public boolean workspaceCodeIsNotDuplicate(String code) {
-		return !workspaceRepository.existsByCode(code);
-	}
-
-	private String encodePasswordIfPresent(String password) {
-		return Optional.ofNullable(password)
+	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest request) {
+		String encodedPassword = Optional.ofNullable(request.getPassword())
 			.map(passwordEncoder::encode)
 			.orElse(null);
-	}
-
-	private Workspace saveWorkspace(WorkspaceCreateRequest workspaceCreateRequest) {
-		return workspaceRepository.save(workspaceCreateRequest.to());
-	}
-
-	private void addOwnerMemberToWorkspace2(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.OWNER,
-			member.getEmail());
-
-		workspaceMemberRepository.save(workspaceMember);
+		request.setPassword(encodedPassword);
 	}
 
 	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {

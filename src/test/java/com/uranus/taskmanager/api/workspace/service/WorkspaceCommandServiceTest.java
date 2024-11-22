@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceContentUpdateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspacePasswordUpdateRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
-import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
-import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -30,18 +32,18 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	void test1() {
 		// given
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
-		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222", null);
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build(), member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "TEST1111",
+		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode(),
 			member.getId());
 
 		// then
-		assertThat(workspaceRepository.findByCode("TEST1111")).isEmpty();
+		assertThat(workspaceRepository.findByCode(response.getCode())).isEmpty();
 	}
 
 	@Transactional
@@ -50,13 +52,17 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 	void test2() {
 		// given
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
+
+		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(WorkspaceCreateRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.password("password1234!")
+			.build(), member.getId());
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("InvalidPassword"), "TEST1111",
+			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("InvalidPassword"),
+				response.getCode(),
 				member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 

@@ -27,8 +27,9 @@ public class WorkspaceQueryService {
 
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
-			memberId, workspaceCode).orElseThrow(MemberNotInWorkspaceException::new);
+		WorkspaceMember workspaceMember = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
+			.orElseThrow(MemberNotInWorkspaceException::new);
 
 		return WorkspaceDetail.from(workspace, workspaceMember.getRole());
 	}

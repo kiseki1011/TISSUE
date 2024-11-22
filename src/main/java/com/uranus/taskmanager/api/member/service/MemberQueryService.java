@@ -7,11 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.security.PasswordEncoder;
+import com.uranus.taskmanager.api.member.validator.MemberValidator;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -22,17 +21,16 @@ import lombok.RequiredArgsConstructor;
 public class MemberQueryService {
 
 	private final MemberRepository memberRepository;
-	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+
+	private final MemberValidator memberValidator;
 
 	@Transactional(readOnly = true)
 	public void validatePasswordForUpdate(UpdateAuthRequest request, Long id) {
 		Member member = memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
 
-		if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-			throw new InvalidMemberPasswordException();
-		}
+		memberValidator.validatePassword(request.getPassword(), member.getPassword());
 	}
 
 	@Transactional(readOnly = true)

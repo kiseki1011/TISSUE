@@ -234,9 +234,9 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 	void kickWorkspaceMember_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode).get();
+
 		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceMemberService.joinWorkspace(workspaceCode, new WorkspaceJoinRequest(), member2.getId());
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member2.getLoginId());
 

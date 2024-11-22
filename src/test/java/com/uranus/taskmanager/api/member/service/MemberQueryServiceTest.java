@@ -7,9 +7,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
-import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
+import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberQueryServiceTest extends ServiceIntegrationTestHelper {
@@ -51,7 +51,7 @@ class MemberQueryServiceTest extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> memberQueryService.validatePasswordForUpdate(request, member.getId()))
-			.isInstanceOf(InvalidMemberPasswordException.class);
+			.isInstanceOf(InvalidLoginPasswordException.class);
 
 	}
 
