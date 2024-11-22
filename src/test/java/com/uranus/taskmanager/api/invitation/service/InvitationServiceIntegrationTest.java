@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
@@ -112,12 +111,6 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			InvitationNotFoundException.class);
 	}
 
-	/**
-	 * Todo
-	 *  - 생각해보면 InvitationService의 로직을 다음처럼 변경해야 함
-	 *  - 기존 Workspace code, Member id + PENDING 상태의 Invitation을 조건으로 찾기 -> PENDING 상태를 검증하는 로직은 제거
-	 *  - 그리고 거기서 못 찾으면 InvitationNotFoundException을 던지는 방식으로 수정
-	 */
 	@Test
 	@DisplayName("초대 수락 시, 초대의 상태가 PENDING이 아니면 예외가 발생한다")
 	void test5() {
@@ -137,7 +130,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE")).isInstanceOf(
-			InvalidInvitationStatusException.class);
+			InvitationNotFoundException.class);
 	}
 
 	@Test

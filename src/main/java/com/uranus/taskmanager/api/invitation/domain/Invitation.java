@@ -71,14 +71,14 @@ public class Invitation extends BaseEntity {
 	}
 
 	public WorkspaceMember accept() {
-		validatePendingStatus();
+		// validatePendingStatus();
 		changeStatus(InvitationStatus.ACCEPTED);
 
 		return addWorkspaceMember();
 	}
 
 	public void reject() {
-		validatePendingStatus();
+		// validatePendingStatus();
 		changeStatus(InvitationStatus.REJECTED);
 	}
 
