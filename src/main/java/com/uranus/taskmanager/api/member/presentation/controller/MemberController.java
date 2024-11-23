@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
@@ -27,7 +25,9 @@ import com.uranus.taskmanager.api.member.presentation.dto.response.SignupRespons
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdateAuthorizationException;
 
 import jakarta.servlet.http.HttpSession;

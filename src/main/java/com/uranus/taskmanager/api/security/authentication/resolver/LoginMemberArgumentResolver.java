@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.global.resolver;
+package com.uranus.taskmanager.api.security.authentication.resolver;
 
 import java.util.Optional;
 
@@ -9,12 +9,12 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
-import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
+import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

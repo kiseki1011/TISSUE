@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.global.resolver;
+package com.uranus.taskmanager.api.security.authentication.resolver;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

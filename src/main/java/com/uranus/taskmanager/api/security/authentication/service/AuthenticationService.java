@@ -5,9 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
-import com.uranus.taskmanager.api.security.PasswordEncoder;
+import com.uranus.taskmanager.api.member.validator.MemberValidator;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginIdentityException;
-import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
 
@@ -18,14 +17,15 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationService {
 
 	private final MemberRepository memberRepository;
-	private final PasswordEncoder passwordEncoder;
+
+	private final MemberValidator memberValidator;
 
 	@Transactional
 	public LoginResponse login(LoginRequest loginRequest) {
 
 		Member member = findMemberByLoginIdOrEmail(loginRequest);
 
-		validatePassword(loginRequest.getPassword(), member.getPassword());
+		memberValidator.validatePassword(loginRequest.getPassword(), member.getPassword());
 
 		return LoginResponse.from(member);
 	}
@@ -33,11 +33,5 @@ public class AuthenticationService {
 	private Member findMemberByLoginIdOrEmail(LoginRequest loginRequest) {
 		return memberRepository.findByLoginIdOrEmail(loginRequest.getLoginId(), loginRequest.getEmail())
 			.orElseThrow(InvalidLoginIdentityException::new);
-	}
-
-	private void validatePassword(String rawPassword, String encodedPassword) {
-		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new InvalidLoginPasswordException();
-		}
 	}
 }

@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
+import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

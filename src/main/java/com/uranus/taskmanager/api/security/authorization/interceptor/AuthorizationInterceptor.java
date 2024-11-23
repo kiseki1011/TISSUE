@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.global.interceptor;
+package com.uranus.taskmanager.api.security.authorization.interceptor;
 
 import java.util.Arrays;
 import java.util.Optional;
