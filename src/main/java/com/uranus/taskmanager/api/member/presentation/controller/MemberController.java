@@ -24,10 +24,10 @@ import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesR
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdateAuthorizationException;
 
 import jakarta.servlet.http.HttpSession;
@@ -69,8 +69,8 @@ public class MemberController {
 
 		// 5분간 유효한 업데이트 권한 부여
 		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5);
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, expiresAt);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, expiresAt);
 
 		return ApiResponse.okWithNoContent("Update authorization granted");
 	}

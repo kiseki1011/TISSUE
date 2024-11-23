@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class AuthenticationControllerTest extends ControllerTestHelper {
@@ -45,7 +45,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 			.andExpect(status().isOk())
 			.andDo(print());
 
-		assertThat(session.getAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID)).isEqualTo(loginResponse.getLoginId());
+		assertThat(session.getAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID)).isEqualTo(loginResponse.getLoginId());
 	}
 
 	@Test
@@ -71,7 +71,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/auth/logout")

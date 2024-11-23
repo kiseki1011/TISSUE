@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,7 +36,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 	private static void validateUserSession(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
 
-		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionKey.LOGIN_MEMBER_ID)).isEmpty()) {
+		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
 			throw new UserNotLoggedInException();
 		}
 	}

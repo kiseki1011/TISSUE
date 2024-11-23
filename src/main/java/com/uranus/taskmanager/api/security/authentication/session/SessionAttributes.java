@@ -1,6 +1,6 @@
-package com.uranus.taskmanager.api.security.authentication.constant;
+package com.uranus.taskmanager.api.security.authentication.session;
 
-public abstract class SessionKey {
+public abstract class SessionAttributes {
 	public static final String LOGIN_MEMBER_ID = "id";
 	public static final String LOGIN_MEMBER_LOGIN_ID = "loginId";
 	public static final String LOGIN_MEMBER_EMAIL = "email";

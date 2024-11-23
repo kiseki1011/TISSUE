@@ -17,8 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.uranus.taskmanager.api.security.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.security.authorization.interceptor.AuthorizationInterceptor;
@@ -112,7 +112,7 @@ class AuthorizationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.empty());
 
@@ -154,7 +154,7 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
@@ -178,7 +178,7 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
@@ -203,7 +203,7 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(1L);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(1L);
 		when(request.getRequestURI()).thenReturn("/api/v1/workspaces/TESTCODE");
 		when(workspaceRepository.findByCode("TESTCODE")).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))

@@ -32,7 +32,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
@@ -184,8 +184,8 @@ class MemberControllerTest extends ControllerTestHelper {
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -204,8 +204,8 @@ class MemberControllerTest extends ControllerTestHelper {
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		MemberEmailUpdateResponse response = MemberEmailUpdateResponse.from(
 			Member.builder().email("newemail@test.com").build());
@@ -273,7 +273,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
@@ -302,7 +302,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
 			.id(1L)
@@ -354,8 +354,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	void withdrawMember_shouldReturn200_ifSuccess() throws Exception {
 		// Mock Session
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		// given
 		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");

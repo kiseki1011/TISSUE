@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -36,9 +36,9 @@ public class AuthenticationController {
 
 		HttpSession session = request.getSession();
 
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, loginResponse.getId());
-		session.setAttribute(SessionKey.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
-		session.setAttribute(SessionKey.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getId());
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
 
 		return ApiResponse.ok("Login Success", loginResponse);
 	}

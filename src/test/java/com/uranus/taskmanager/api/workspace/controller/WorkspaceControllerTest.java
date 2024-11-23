@@ -19,7 +19,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;
@@ -38,7 +38,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test1() throws Exception {
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -74,7 +74,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test2(String name, String description) throws Exception {
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
@@ -99,7 +99,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
@@ -127,7 +127,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceContentUpdateRequest request = new WorkspaceContentUpdateRequest("New Title", "New Description");
 		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(Workspace.builder().build());
@@ -169,7 +169,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceDeleteRequest request = new WorkspaceDeleteRequest("password1234!");
 
@@ -213,7 +213,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(workspaceQueryService.getWorkspaceDetail(eq(code), anyLong()))
 			.thenReturn(workspaceDetail);

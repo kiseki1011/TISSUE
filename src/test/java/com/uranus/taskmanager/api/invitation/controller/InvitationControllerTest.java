@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
-import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -53,7 +53,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, "1L");
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
 		when(invitationService.acceptInvitation(anyLong(), eq(code))).thenReturn(response);
 
@@ -74,7 +74,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		String workspaceCode = "INVALIDCODE";
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(invitationService.acceptInvitation(1L, workspaceCode))
 			.thenThrow(new InvitationNotFoundException());
@@ -95,7 +95,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, "1L");
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/reject", workspaceCode)

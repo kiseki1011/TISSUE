@@ -11,10 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.authentication.interceptor.AuthenticationInterceptor;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -78,7 +78,7 @@ class AuthenticationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(LoginRequired.class)).thenReturn(mock(LoginRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(null);  // 로그인 멤버가 없음
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(null);  // 로그인 멤버가 없음
 
 		// when & then
 		assertThatThrownBy(() -> authenticationInterceptor.preHandle(request, response, handlerMethod))
@@ -91,7 +91,7 @@ class AuthenticationInterceptorTest {
 		// given
 		when(handlerMethod.getMethodAnnotation(LoginRequired.class)).thenReturn(mock(LoginRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(anyString());
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(anyString());
 
 		// when
 		boolean result = authenticationInterceptor.preHandle(request, response, handlerMethod);

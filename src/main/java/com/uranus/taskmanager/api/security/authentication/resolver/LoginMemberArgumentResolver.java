@@ -12,9 +12,9 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -73,7 +73,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	}
 
 	private Member getLoggedInMember(HttpSession session) {
-		return Optional.ofNullable((Long)session.getAttribute(SessionKey.LOGIN_MEMBER_ID))
+		return Optional.ofNullable((Long)session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID))
 			.map(id -> memberRepository.findById(id)
 				.orElseThrow(MemberNotFoundException::new))
 			.orElseThrow(UserNotLoggedInException::new);

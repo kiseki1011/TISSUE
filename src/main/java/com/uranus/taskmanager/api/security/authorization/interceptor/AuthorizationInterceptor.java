@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.uranus.taskmanager.api.security.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -84,7 +84,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
 	private Optional<Long> getLoginIdFromSession(HttpSession session) {
 		return Optional.ofNullable(session)
-			.map(s -> (Long)s.getAttribute(SessionKey.LOGIN_MEMBER_ID));
+			.map(s -> (Long)s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID));
 	}
 
 	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {

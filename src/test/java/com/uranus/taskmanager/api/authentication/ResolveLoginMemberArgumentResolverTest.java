@@ -18,11 +18,11 @@ import org.springframework.web.context.request.NativeWebRequest;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,7 +127,7 @@ class ResolveLoginMemberArgumentResolverTest {
 		when(request.getSession(false)).thenReturn(session);
 
 		// 세션에서 로그인된 사용자의 ID를 가져오는 부분 모킹
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(id);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(id);
 
 		// MemberRepository에서 해당 로그인 ID로 사용자를 조회하는 부분 모킹
 		when(memberRepository.findById(id)).thenReturn(Optional.of(member));
@@ -161,7 +161,7 @@ class ResolveLoginMemberArgumentResolverTest {
 		// given
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(null);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(null);
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
@@ -176,7 +176,7 @@ class ResolveLoginMemberArgumentResolverTest {
 
 		when((HttpServletRequest)webRequest.getNativeRequest()).thenReturn(request);
 		when(request.getSession(false)).thenReturn(session);
-		when(session.getAttribute(SessionKey.LOGIN_MEMBER_ID)).thenReturn(id);
+		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(id);
 		when(memberRepository.findById(id)).thenReturn(Optional.empty());
 
 		// when & then
