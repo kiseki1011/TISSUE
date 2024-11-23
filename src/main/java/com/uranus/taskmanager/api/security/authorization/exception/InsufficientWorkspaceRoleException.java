@@ -2,6 +2,7 @@ package com.uranus.taskmanager.api.security.authorization.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.uranus.taskmanager.api.common.exception.AuthorizationException;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 
 /**
