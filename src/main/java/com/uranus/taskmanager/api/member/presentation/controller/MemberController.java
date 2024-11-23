@@ -28,7 +28,7 @@ import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequi
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
-import com.uranus.taskmanager.api.security.authorization.exception.UpdateAuthorizationException;
+import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -140,7 +140,7 @@ public class MemberController {
 
 		if (hasAuth == null || !hasAuth || expiresAt == null || LocalDateTime.now().isAfter(expiresAt)) {
 			clearUpdateAuth(session);
-			throw new UpdateAuthorizationException();
+			throw new UpdatePermissionException();
 		}
 	}
 
