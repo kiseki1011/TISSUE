@@ -16,13 +16,14 @@ import com.uranus.taskmanager.api.security.authentication.presentation.dto.respo
 import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 class AuthenticationControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("POST /auth/login - 로그인에 성공하면 200 OK를 기대하고, 세션에 로그인ID가 저장된다")
+	@DisplayName("POST /auth/login - 로그인에 성공하면 OK를 기대하고, 세션에 로그인ID가 저장된다")
 	void test1() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("user123")
 			.email("test@gmail.com")
@@ -34,6 +35,9 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 			.email("test@gmail.com")
 			.build();
 		when(authenticationService.login(any(LoginRequest.class))).thenReturn(loginResponse);
+
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, "user123");
 
 		// when & then
 		mockMvc.perform((post("/api/v1/auth/login")
@@ -49,7 +53,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /auth/login - 로그인 시 비밀번호 필드의 빈 검증이 실패하면 400 BAD_REQUEST를 기대한다")
+	@DisplayName("POST /auth/login - 로그인 시 비밀번호 필드의 빈 검증이 실패하면 BAD_REQUEST를 기대한다")
 	void test2() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
@@ -67,19 +71,21 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /auth/logout - 로그아웃 시 세션이 무효화된다")
+	@DisplayName("POST /auth/logout - 로그아웃 시 세션 무효화가 호출된다")
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
+		doNothing().when(sessionValidator).validateLoginStatus(any());
+
 		// when & then
 		mockMvc.perform(post("/api/v1/auth/logout")
 				.session(session))
-			.andExpect(status().isNoContent())
+			.andExpect(status().isOk())
 			.andDo(print());
 
-		assertThat(session.isInvalid()).isTrue();
+		verify(sessionManager).invalidateSession(any(HttpServletRequest.class));
 	}
 
 }

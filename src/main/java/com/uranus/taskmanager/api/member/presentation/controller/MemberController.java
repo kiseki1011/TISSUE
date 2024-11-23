@@ -1,7 +1,5 @@
 package com.uranus.taskmanager.api.member.presentation.controller;
 
-import java.time.LocalDateTime;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,8 +25,8 @@ import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
-import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
-import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
+import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
+import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -50,12 +48,15 @@ public class MemberController {
 	private final MemberService memberService;
 	private final MemberQueryService memberQueryService;
 
+	private final SessionManager sessionManager;
+	private final SessionValidator sessionValidator;
+
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping("/signup")
 	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
 
 		SignupResponse response = memberService.signup(request);
-		return ApiResponse.created("Signup success", response);
+		return ApiResponse.created("Signup successful.", response);
 	}
 
 	@LoginRequired
@@ -66,13 +67,9 @@ public class MemberController {
 		HttpSession session) {
 
 		memberQueryService.validatePasswordForUpdate(request, loginMember.getId());
+		sessionManager.createUpdatePermission(session);
 
-		// 5분간 유효한 업데이트 권한 부여
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, expiresAt);
-
-		return ApiResponse.okWithNoContent("Update authorization granted");
+		return ApiResponse.okWithNoContent("Update authorization granted.");
 	}
 
 	@LoginRequired
@@ -82,11 +79,11 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		MemberEmailUpdateResponse response = memberService.updateEmail(request, loginMember.getId());
-		session.setAttribute("LOGIN_MEMBER_EMAIL", request.getUpdateEmail());
+		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
 
-		return ApiResponse.ok("Email update success", response);
+		return ApiResponse.ok("Email update successful.", response);
 	}
 
 	@LoginRequired
@@ -96,10 +93,10 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		memberService.updatePassword(request, loginMember.getId());
 
-		return ApiResponse.okWithNoContent("Password update success");
+		return ApiResponse.okWithNoContent("Password update successful.");
 	}
 
 	@LoginRequired
@@ -109,11 +106,11 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		memberService.withdrawMember(request, loginMember.getId());
-
 		session.invalidate();
-		return ApiResponse.okWithNoContent("Member withdrawal success");
+
+		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
 	/**
@@ -127,26 +124,7 @@ public class MemberController {
 		Pageable pageable) {
 
 		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember.getId(), pageable);
-		return ApiResponse.ok("Currently joined Workspaces Found", response);
+
+		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
-
-	/**
-	 * Todo
-	 *  - 추후에 validator로 이동
-	 */
-	private void validateUpdateAuth(HttpSession session) {
-		Boolean hasAuth = (Boolean)session.getAttribute("UPDATE_AUTH");
-		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute("UPDATE_AUTH_EXPIRES_AT");
-
-		if (hasAuth == null || !hasAuth || expiresAt == null || LocalDateTime.now().isAfter(expiresAt)) {
-			clearUpdateAuth(session);
-			throw new UpdatePermissionException();
-		}
-	}
-
-	private void clearUpdateAuth(HttpSession session) {
-		session.removeAttribute("UPDATE_AUTH");
-		session.removeAttribute("UPDATE_AUTH_EXPIRES_AT");
-	}
-
 }

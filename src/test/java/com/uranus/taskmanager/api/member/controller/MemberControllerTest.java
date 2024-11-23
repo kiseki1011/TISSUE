@@ -33,9 +33,12 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequ
 import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
+import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
+
+import jakarta.servlet.http.HttpSession;
 
 class MemberControllerTest extends ControllerTestHelper {
 
@@ -154,7 +157,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Update authorization granted"))
+			.andExpect(jsonPath("$.message").value("Update authorization granted."))
 			.andDo(print());
 	}
 
@@ -193,7 +196,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update success"))
+			.andExpect(jsonPath("$.message").value("Email update successful."))
 			.andDo(print());
 	}
 
@@ -218,7 +221,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update success"))
+			.andExpect(jsonPath("$.message").value("Email update successful."))
 			.andExpect(jsonPath("$.data.memberDetail.email").value("newemail@test.com"))
 			.andDo(print());
 	}
@@ -228,6 +231,9 @@ class MemberControllerTest extends ControllerTestHelper {
 	void updateEmail_forbidden_ifUpdateAuthIsInvalid() throws Exception {
 		// given
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
+
+		doThrow(new UpdatePermissionException())
+			.when(sessionValidator).validateUpdatePermission(any(HttpSession.class));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -280,7 +286,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		// 기대하는 JSON 응답 생성
 		String expectedJson = objectMapper.writeValueAsString(
-			ApiResponse.ok("Currently joined Workspaces Found", response)
+			ApiResponse.ok("Currently joined workspaces found.", response)
 		);
 
 		// when & then - 요청 및 전체 JSON 비교 검증
@@ -366,7 +372,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member withdrawal success"))
+			.andExpect(jsonPath("$.message").value("Member withdrawal successful."))
 			.andDo(print());
 	}
 }

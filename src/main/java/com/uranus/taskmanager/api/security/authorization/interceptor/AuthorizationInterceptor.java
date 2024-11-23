@@ -8,7 +8,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
-import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
+import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
+import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
 import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.uranus.taskmanager.api.security.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -21,7 +22,6 @@ import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspace
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,14 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class AuthorizationInterceptor implements HandlerInterceptor {
-
-	/**
-	 * Todo
-	 *  - 상수를 따로 클래스로 추출, 또는 설정 파일로 받을 수 있도록 구현
-	 */
 	private static final String WORKSPACE_PREFIX = "/api/v1/workspaces/";
 	private static final int WORKSPACE_PREFIX_LENGTH = 19;
 
+	private final SessionManager sessionManager;
+	private final SessionValidator sessionValidator;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
@@ -54,21 +51,20 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		Long memberId = getLoginIdFromSession(request.getSession(false))
+		Long memberId = sessionManager.getLoginMemberId(request.getSession(false))
 			.orElseThrow(UserNotLoggedInException::new);
-		log.info("memberId from session = {}", memberId);
 
 		String workspaceCode = extractWorkspaceCodeFromUri(request.getRequestURI());
-		log.info("extracted workspaceCode = {}", workspaceCode);
+		log.debug("Extracted workspace code from URI: {}", workspaceCode);
 
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(WorkspaceNotFoundException::new);
 
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceId(memberId,
-				workspace.getId())
+		WorkspaceMember workspaceMember = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		checkIsRoleSufficient(workspaceMember, roleRequired);
+		validateRole(workspaceMember, roleRequired);
 
 		return true;
 	}
@@ -82,20 +78,15 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
 	}
 
-	private Optional<Long> getLoginIdFromSession(HttpSession session) {
-		return Optional.ofNullable(session)
-			.map(s -> (Long)s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID));
-	}
-
-	private void checkIsRoleSufficient(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
+	private void validateRole(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
 		if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
 			throw new InsufficientWorkspaceRoleException();
 		}
 	}
 
 	/**
-	 * 권한 수준: OWNER(4) > MANAGER(3) > COLLABORATOR(2) > VIEWER(1)
 	 * 권한에 integer level을 부여해서 부등호 형식으로 비교한다
+	 * 권한 수준: OWNER(4) > MANAGER(3) > COLLABORATOR(2) > VIEWER(1)
 	 *
 	 * @param userRole      - 사용자의 권한
 	 * @param requiredRoles - 권한 리스트

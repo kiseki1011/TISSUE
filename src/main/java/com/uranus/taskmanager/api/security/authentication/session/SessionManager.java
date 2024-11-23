@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.security.authentication.session;
 
+import static com.uranus.taskmanager.api.security.authentication.session.SessionAttributes.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -26,15 +28,10 @@ public class SessionManager {
 
 	// 로그인 세션 설정, 관리
 	public void createLoginSession(HttpSession session, LoginResponse loginResponse) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
+		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.getId());
+		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
+		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
 		log.info("Login session created for member ID: {}", loginResponse.getId());
-	}
-
-	public Optional<Long> getLoginMemberId(HttpSession session) {
-		return Optional.ofNullable(session)
-			.map(s -> (Long)s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID));
 	}
 
 	public Member getLoginMember(HttpSession session) {
@@ -44,17 +41,22 @@ public class SessionManager {
 			.orElseThrow(UserNotLoggedInException::new);
 	}
 
+	public Optional<Long> getLoginMemberId(HttpSession session) {
+		return Optional.ofNullable(session)
+			.map(s -> (Long)s.getAttribute(LOGIN_MEMBER_ID));
+	}
+
 	// 업데이트 권한 설정, 관리
 	public void createUpdatePermission(HttpSession session) {
 		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(UPDATE_PERMISSION_MINUTES);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, expiresAt);
+		session.setAttribute(UPDATE_AUTH, true);
+		session.setAttribute(UPDATE_AUTH_EXPIRES_AT, expiresAt);
 		log.info("Update permission created, expires at: {}", expiresAt);
 	}
 
 	// 세션 정보 업데이트
 	public void updateSessionEmail(HttpSession session, String newEmail) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, newEmail);
+		session.setAttribute(LOGIN_MEMBER_EMAIL, newEmail);
 		log.info("Session email updated to: {}", newEmail);
 	}
 
@@ -68,13 +70,10 @@ public class SessionManager {
 	}
 
 	// HttpSession 조회
-	public HttpSession getSession(HttpServletRequest request) {
-		return Optional.ofNullable(request.getSession(false))
-			.orElseThrow(UserNotLoggedInException::new);
-	}
-
 	public HttpSession getSession(NativeWebRequest webRequest) {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
-		return getSession(request);
+
+		return Optional.ofNullable(request.getSession(false))
+			.orElseThrow(UserNotLoggedInException::new);
 	}
 }

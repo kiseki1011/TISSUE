@@ -6,17 +6,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
-import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
+import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class AuthenticationInterceptor implements HandlerInterceptor {
+	private final SessionValidator sessionValidator;
+
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 		if (isNotHandlerMethod(handler)) {
@@ -27,18 +29,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
 		HandlerMethod method = (HandlerMethod)handler;
 		if (isLoginRequired(method)) {
-			validateUserSession(request);
+			sessionValidator.validateLoginStatus(request);
 		}
 
 		return true;
-	}
-
-	private static void validateUserSession(HttpServletRequest request) {
-		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
-
-		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
-			throw new UserNotLoggedInException();
-		}
 	}
 
 	private boolean isNotHandlerMethod(Object handler) {

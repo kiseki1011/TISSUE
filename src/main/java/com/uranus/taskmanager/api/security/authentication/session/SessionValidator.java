@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.security.authentication.session;
 
+import static com.uranus.taskmanager.api.security.authentication.session.SessionAttributes.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -20,24 +22,40 @@ public class SessionValidator {
 
 	public void validateLoginStatus(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
-		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
+		if (session.isEmpty() || session.map(s -> s.getAttribute(LOGIN_MEMBER_ID)).isEmpty()) {
 			throw new UserNotLoggedInException();
 		}
 	}
 
 	public void validateUpdatePermission(HttpSession session) {
-		Boolean hasAuth = (Boolean)session.getAttribute(SessionAttributes.UPDATE_AUTH);
-		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
+		Boolean updatePermission = (Boolean)session.getAttribute(UPDATE_AUTH);
+		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(UPDATE_AUTH_EXPIRES_AT);
 
-		if (hasAuth == null || !hasAuth || expiresAt == null || LocalDateTime.now().isAfter(expiresAt)) {
+		if (updatePermissionIsNull(updatePermission)
+			|| updatePermissionIsFalse(updatePermission)
+			|| expirationPeriodIsNull(expiresAt)
+			|| LocalDateTime.now().isAfter(expiresAt)
+		) {
 			clearUpdatePermission(session);
 			throw new UpdatePermissionException();
 		}
 	}
 
 	private void clearUpdatePermission(HttpSession session) {
-		session.removeAttribute(SessionAttributes.UPDATE_AUTH);
-		session.removeAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
+		session.removeAttribute(UPDATE_AUTH);
+		session.removeAttribute(UPDATE_AUTH_EXPIRES_AT);
 		log.info("Update permission cleared due to validation failure.");
+	}
+
+	private boolean expirationPeriodIsNull(LocalDateTime expiresAt) {
+		return expiresAt == null;
+	}
+
+	private boolean updatePermissionIsNull(Boolean updatePermission) {
+		return updatePermission == null;
+	}
+
+	private boolean updatePermissionIsFalse(Boolean updatePermission) {
+		return !updatePermission;
 	}
 }

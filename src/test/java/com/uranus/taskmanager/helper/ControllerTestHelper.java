@@ -21,14 +21,16 @@ import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.presentation.controller.AuthenticationController;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
+import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
+import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.presentation.controller.WorkspaceController;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
+import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMemberController;
+import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +59,17 @@ public abstract class ControllerTestHelper {
 	@Autowired
 	protected ObjectMapper objectMapper;
 
+	/**
+	 * Session
+	 */
+	@MockBean
+	protected SessionManager sessionManager;
+	@MockBean
+	protected SessionValidator sessionValidator;
+
+	/**
+	 * Service
+	 */
 	@MockBean
 	protected MemberService memberService;
 	@MockBean
@@ -74,6 +87,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected InvitationService invitationService;
 
+	/**
+	 * Repository
+	 */
 	@MockBean
 	protected MemberRepository memberRepository;
 	@MockBean
