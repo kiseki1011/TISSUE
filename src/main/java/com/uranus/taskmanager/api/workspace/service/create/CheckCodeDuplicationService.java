@@ -68,12 +68,6 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return WorkspaceCreateResponse.from(workspace);
 	}
 
-	private void setUniqueWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
-		String code = generateUniqueWorkspaceCode()
-			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
-		workspaceCreateRequest.setCode(code);
-	}
-
 	private Optional<String> generateUniqueWorkspaceCode() {
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			String code = workspaceCodeGenerator.generateWorkspaceCode();
@@ -81,9 +75,15 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			if (workspaceValidator.validateWorkspaceCodeIsUnique(code)) {
 				return Optional.of(code);
 			}
-			log.info("[Workspace Code Collision] Retry Attempt #{}", attempt);
+			log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
 		}
 		return Optional.empty();
+	}
+
+	private void setUniqueWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
+		String code = generateUniqueWorkspaceCode()
+			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
+		workspaceCreateRequest.setCode(code);
 	}
 
 	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest request) {

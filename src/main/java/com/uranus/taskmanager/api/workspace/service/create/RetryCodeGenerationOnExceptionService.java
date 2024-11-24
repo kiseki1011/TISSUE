@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HandleDatabaseExceptionService implements WorkspaceCreateService {
+public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
 	private final WorkspaceRepository workspaceRepository;
@@ -55,8 +55,9 @@ public class HandleDatabaseExceptionService implements WorkspaceCreateService {
 
 				return WorkspaceCreateResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-				log.error("Catched Exception for Workspace Code Collision: ", e);
-				log.info("[Workspace Code Collision] Retry Attempt #{}", attempt);
+				log.error("Catched exception for workspace code collision.");
+				log.error("Exception: ", e);
+				log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
 			}
 		}
 		throw new WorkspaceCodeCollisionHandleException();
