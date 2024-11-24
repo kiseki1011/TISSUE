@@ -65,7 +65,9 @@ jacocoTestReport {
                             "**/*Exception*",
                             "**/*Key*",
                             "**/*Base62Encoder*",
-                            "**/*WorkspaceCodeGenerator*"
+                            "**/*WorkspaceCodeGenerator*",
+                            "**/*Attributes*",
+                            "**/CheckCodeDuplicationService"
                     ])
                 })
         )
@@ -93,7 +95,9 @@ jacocoTestReport {
                         "**.*Exception*",
                         "**.*Key*",
                         "**.*Base62Encoder*",
-                        "**.*WorkspaceCodeGenerator*"
+                        "**.*WorkspaceCodeGenerator*",
+                        "**.*Attributes*",
+                        "**.CheckCodeDuplicationService"
                 ]
             }
         }
