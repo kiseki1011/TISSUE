@@ -2,6 +2,9 @@ package com.uranus.taskmanager.api.security.authorization.exception;
 
 import org.springframework.http.HttpStatus;
 
+import com.uranus.taskmanager.api.common.exception.AuthorizationException;
+import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+
 /**
  * Todo: 예외를 던질때 필요한 권한을 같이 넘겨서 권한 별로 매세지를 다르게 설정한다
  * 예시: ADMIN privileges are needed to access this resource
@@ -12,6 +15,10 @@ public class InsufficientWorkspaceRoleException extends AuthorizationException {
 
 	public InsufficientWorkspaceRoleException() {
 		super(MESSAGE, HTTP_STATUS);
+	}
+
+	public InsufficientWorkspaceRoleException(WorkspaceRole role) {
+		super(MESSAGE + " You must be at least " + role + ".", HTTP_STATUS);
 	}
 
 	public InsufficientWorkspaceRoleException(Throwable cause) {

@@ -13,8 +13,6 @@ public class InviteMembersResponse {
 	private final List<InvitedMember> invitedMembers;
 	private final List<FailedInvitedMember> failedInvitedMembers;
 
-	// Todo: 초대한 사람 추가(Inviter)
-
 	@Builder
 	public InviteMembersResponse(List<InvitedMember> invitedMembers, List<FailedInvitedMember> failedInvitedMembers) {
 		this.invitedMembers = invitedMembers;

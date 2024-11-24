@@ -1,7 +1,5 @@
 package com.uranus.taskmanager.api.member.presentation.controller;
 
-import java.time.LocalDateTime;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +12,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.global.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.global.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
@@ -26,9 +22,11 @@ import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesR
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
-import com.uranus.taskmanager.api.security.authorization.exception.UpdateAuthorizationException;
+import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.security.session.SessionManager;
+import com.uranus.taskmanager.api.security.session.SessionValidator;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -42,7 +40,6 @@ public class MemberController {
 	 * Todo
 	 *  - 회원 정보 조회
 	 *    - 나의 이메일, 비밀번호, 가입 날짜
-	 *  - 회원 탈퇴
 	 *  - 비밀번호 찾기 (세션 불필요)
 	 * 	  - 가입한 이메일, 로그인 ID를 통한 비밀번호 찾기
 	 * 	  - 기입한 로그인 ID, 이메일이 일치하면 이메일로 임시 비밀번호 보내기
@@ -51,12 +48,15 @@ public class MemberController {
 	private final MemberService memberService;
 	private final MemberQueryService memberQueryService;
 
+	private final SessionManager sessionManager;
+	private final SessionValidator sessionValidator;
+
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping("/signup")
 	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
 
 		SignupResponse response = memberService.signup(request);
-		return ApiResponse.created("Signup success", response);
+		return ApiResponse.created("Signup successful.", response);
 	}
 
 	@LoginRequired
@@ -67,13 +67,9 @@ public class MemberController {
 		HttpSession session) {
 
 		memberQueryService.validatePasswordForUpdate(request, loginMember.getId());
+		sessionManager.createUpdatePermission(session);
 
-		// 5분간 유효한 업데이트 권한 부여
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5);
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, expiresAt);
-
-		return ApiResponse.okWithNoContent("Update authorization granted");
+		return ApiResponse.okWithNoContent("Update authorization granted.");
 	}
 
 	@LoginRequired
@@ -83,11 +79,11 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		MemberEmailUpdateResponse response = memberService.updateEmail(request, loginMember.getId());
-		session.setAttribute("LOGIN_MEMBER_EMAIL", request.getUpdateEmail());
+		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
 
-		return ApiResponse.ok("Email update success", response);
+		return ApiResponse.ok("Email update successful.", response);
 	}
 
 	@LoginRequired
@@ -97,10 +93,10 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		memberService.updatePassword(request, loginMember.getId());
 
-		return ApiResponse.okWithNoContent("Password update success");
+		return ApiResponse.okWithNoContent("Password update successful.");
 	}
 
 	@LoginRequired
@@ -110,16 +106,16 @@ public class MemberController {
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
-		validateUpdateAuth(session);
+		sessionValidator.validateUpdatePermission(session);
 		memberService.withdrawMember(request, loginMember.getId());
-
 		session.invalidate();
-		return ApiResponse.okWithNoContent("Member withdrawal success");
+
+		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
 	/**
 	 * Todo
-	 *  - memberworkspace 패키지를 만들어서 해당 패키지로 이동
+	 *  - MemberWorkspaceController로 이동
 	 */
 	@LoginRequired
 	@GetMapping("/workspaces")
@@ -128,26 +124,7 @@ public class MemberController {
 		Pageable pageable) {
 
 		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember.getId(), pageable);
-		return ApiResponse.ok("Currently joined Workspaces Found", response);
+
+		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
-
-	/**
-	 * Todo
-	 *  - 추후에 validator로 이동
-	 */
-	private void validateUpdateAuth(HttpSession session) {
-		Boolean hasAuth = (Boolean)session.getAttribute("UPDATE_AUTH");
-		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute("UPDATE_AUTH_EXPIRES_AT");
-
-		if (hasAuth == null || !hasAuth || expiresAt == null || LocalDateTime.now().isAfter(expiresAt)) {
-			clearUpdateAuth(session);
-			throw new UpdateAuthorizationException();
-		}
-	}
-
-	private void clearUpdateAuth(HttpSession session) {
-		session.removeAttribute("UPDATE_AUTH");
-		session.removeAttribute("UPDATE_AUTH_EXPIRES_AT");
-	}
-
 }

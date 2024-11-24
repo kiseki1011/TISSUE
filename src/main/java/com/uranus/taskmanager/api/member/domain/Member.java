@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseDateEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.exception.InvalidWorkspaceCountException;
+import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,6 +26,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
+	/**
+	 * Todo
+	 *  - 상수는 원래 @ConfigurationProperties를 통해 관리하려고 했음
+	 *  - 그러나 엔티티의 상수를 위해 스프링 의존성을 사용하고 싶지는 않음
+	 *  - 그래서 결국 엔티티에 정의해서 사용
+	 *  - 더 좋은 설계가 있는지 한번 고민 필요
+	 */
+	private static final int MAX_MY_WORKSPACE_COUNT = 50;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MEMBER_ID")
@@ -37,15 +47,8 @@ public class Member extends BaseDateEntity {
 	@Column(nullable = false)
 	private String password;
 
-	/**
-	 * Todo
-	 * 	- 이슈 #82 참고
-	 * 	- 워크스페이스 생성/유지 한도를 관리하기 위해 사용(최대 50개)
-	 * 	- 정보 제공 목적으로 사용
-	 * 	- 추후에 50을 상수로 따로 분리, 외부 설정으로 설정을 주입할 수 있도록 구현해야 함
-	 */
 	@Column(nullable = false)
-	private int workspaceCount = 0;
+	private int myWorkspaceCount = 0;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
@@ -60,17 +63,14 @@ public class Member extends BaseDateEntity {
 		this.password = password;
 	}
 
-	public void increaseWorkspaceCount() {
-		if (this.workspaceCount >= 50) {
-			throw new WorkspaceCreationLimitExceededException();
-		}
-		this.workspaceCount++;
+	public void increaseMyWorkspaceCount() {
+		validateWorkspaceLimit();
+		this.myWorkspaceCount++;
 	}
 
-	public void decreaseWorkspaceCount() {
-		if (this.workspaceCount > 0) {
-			this.workspaceCount--;
-		}
+	public void decreaseMyWorkspaceCount() {
+		validatePositiveMyWorkspaceCount();
+		this.myWorkspaceCount--;
 	}
 
 	public void updatePassword(String password) {
@@ -79,5 +79,17 @@ public class Member extends BaseDateEntity {
 
 	public void updateEmail(String email) {
 		this.email = email;
+	}
+
+	private void validateWorkspaceLimit() {
+		if (this.myWorkspaceCount >= MAX_MY_WORKSPACE_COUNT) {
+			throw new WorkspaceCreationLimitExceededException();
+		}
+	}
+
+	private void validatePositiveMyWorkspaceCount() {
+		if (this.myWorkspaceCount <= 0) {
+			throw new InvalidWorkspaceCountException();
+		}
 	}
 }

@@ -4,6 +4,7 @@ import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,10 +64,60 @@ public class WorkspaceMember extends BaseEntity {
 
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
+
 		return workspaceMember;
 	}
 
+	public static WorkspaceMember addOwnerWorkspaceMember(Member member, Workspace workspace) {
+		member.increaseMyWorkspaceCount();
+		workspace.increaseMemberCount();
+		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, member.getEmail());
+	}
+
+	public static WorkspaceMember addCollaboratorWorkspaceMember(Member member, Workspace workspace) {
+		workspace.increaseMemberCount();
+		return addWorkspaceMember(member, workspace, WorkspaceRole.COLLABORATOR, member.getEmail());
+	}
+
+	public void remove() {
+		this.workspace.decreaseMemberCount();
+		this.member.getWorkspaceMembers().remove(this);
+		this.workspace.getWorkspaceMembers().remove(this);
+	}
+
 	public void updateRole(WorkspaceRole role) {
+		validateCannotUpdateToOwnerRole(role);
 		this.role = role;
+	}
+
+	public void updateRoleFromOwnerToManager() {
+		validateCurrentRoleIsOwner();
+		updateRole(WorkspaceRole.MANAGER);
+		this.member.decreaseMyWorkspaceCount();
+	}
+
+	public void updateRoleToOwner() {
+		validateCurrentRoleIsNotOwner();
+		this.role = WorkspaceRole.OWNER;
+		this.member.increaseMyWorkspaceCount();
+	}
+
+	private void validateCannotUpdateToOwnerRole(WorkspaceRole newRole) {
+		if (newRole == WorkspaceRole.OWNER) {
+			throw new InvalidRoleUpdateException(
+				"You cannot directly change to OWNER role. Use ownership transfer instead.");
+		}
+	}
+
+	private void validateCurrentRoleIsOwner() {
+		if (this.role != WorkspaceRole.OWNER) {
+			throw new InvalidRoleUpdateException("Current role must be OWNER.");
+		}
+	}
+
+	private void validateCurrentRoleIsNotOwner() {
+		if (this.role == WorkspaceRole.OWNER) {
+			throw new InvalidRoleUpdateException("Current role cannot be OWNER.");
+		}
 	}
 }

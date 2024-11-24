@@ -7,12 +7,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
@@ -113,7 +113,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(1);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(1);
 	}
 
 	@Test
@@ -144,7 +144,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(2);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(2);
 	}
 
 	@Test
@@ -202,6 +202,6 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(0);
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(0);
 	}
 }

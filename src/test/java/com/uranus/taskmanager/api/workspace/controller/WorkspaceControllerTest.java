@@ -19,7 +19,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;
@@ -38,7 +38,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test1() throws Exception {
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name("Test Workspace")
@@ -55,10 +55,10 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 	/**
 	 * Todo
-	 * 필드 검증에 대한 단위 테스트 작성법 찾아보기
-	 * Q1: 같은 필드에 대해서 동일한 항목에 대해 검증 애노테이션이 겹치는 경우 어떻게 검증?
-	 * - 예시: @NotBlank와 @Size(min = 2, max = 50)을 적용한 필드에 " "(공백)가 들어가는 경우
-	 * Q2: 검증 메세지 자체를 검증하는 것은 과연 효율적인가? 애노테이션 종류를 검증하는 것이 더 좋을지도?
+	 *  - 필드 검증에 대한 단위 테스트 작성법 찾아보기
+	 *  - Q1: 같은 필드에 대해서 동일한 항목에 대해 검증 애노테이션이 겹치는 경우 어떻게 검증?
+	 *    - 예시: @NotBlank와 @Size(min = 2, max = 50)을 적용한 필드에 " "(공백)가 들어가는 경우
+	 *  - Q2: 검증 메세지 자체를 검증하는 것은 과연 효율적인가? 애노테이션 종류를 검증하는 것이 더 좋을지도?
 	 */
 	static Stream<Arguments> provideInvalidInputs() {
 		return Stream.of(
@@ -74,7 +74,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test2(String name, String description) throws Exception {
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
 			.name(name)
@@ -99,7 +99,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void test3() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
@@ -127,7 +127,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceContentUpdateRequest request = new WorkspaceContentUpdateRequest("New Title", "New Description");
 		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(Workspace.builder().build());
@@ -169,7 +169,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceDeleteRequest request = new WorkspaceDeleteRequest("password1234!");
 
@@ -213,7 +213,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(workspaceQueryService.getWorkspaceDetail(eq(code), anyLong()))
 			.thenReturn(workspaceDetail);

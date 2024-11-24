@@ -34,7 +34,7 @@ public class MemberDetail {
 			.email(member.getEmail())
 			.joinedAt(member.getCreatedDate())
 			.updatedAt(member.getLastModifiedDate())
-			.createdWorkspaceCount(member.getWorkspaceCount())
+			.createdWorkspaceCount(member.getMyWorkspaceCount())
 			.build();
 	}
 }

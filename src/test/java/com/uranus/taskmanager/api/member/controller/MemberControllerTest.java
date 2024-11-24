@@ -32,10 +32,13 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
+import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
+
+import jakarta.servlet.http.HttpSession;
 
 class MemberControllerTest extends ControllerTestHelper {
 
@@ -154,7 +157,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Update authorization granted"))
+			.andExpect(jsonPath("$.message").value("Update authorization granted."))
 			.andDo(print());
 	}
 
@@ -184,8 +187,8 @@ class MemberControllerTest extends ControllerTestHelper {
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -193,7 +196,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update success"))
+			.andExpect(jsonPath("$.message").value("Email update successful."))
 			.andDo(print());
 	}
 
@@ -204,8 +207,8 @@ class MemberControllerTest extends ControllerTestHelper {
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		MemberEmailUpdateResponse response = MemberEmailUpdateResponse.from(
 			Member.builder().email("newemail@test.com").build());
@@ -218,7 +221,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update success"))
+			.andExpect(jsonPath("$.message").value("Email update successful."))
 			.andExpect(jsonPath("$.data.memberDetail.email").value("newemail@test.com"))
 			.andDo(print());
 	}
@@ -228,6 +231,9 @@ class MemberControllerTest extends ControllerTestHelper {
 	void updateEmail_forbidden_ifUpdateAuthIsInvalid() throws Exception {
 		// given
 		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
+
+		doThrow(new UpdatePermissionException())
+			.when(sessionValidator).validateUpdatePermission(any(HttpSession.class));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -273,14 +279,14 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// 기대하는 JSON 응답 생성
 		String expectedJson = objectMapper.writeValueAsString(
-			ApiResponse.ok("Currently joined Workspaces Found", response)
+			ApiResponse.ok("Currently joined workspaces found.", response)
 		);
 
 		// when & then - 요청 및 전체 JSON 비교 검증
@@ -302,7 +308,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
 			.id(1L)
@@ -354,8 +360,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	void withdrawMember_shouldReturn200_ifSuccess() throws Exception {
 		// Mock Session
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.UPDATE_AUTH, true);
-		session.setAttribute(SessionKey.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
+		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		// given
 		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
@@ -366,7 +372,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member withdrawal success"))
+			.andExpect(jsonPath("$.message").value("Member withdrawal successful."))
 			.andDo(print());
 	}
 }

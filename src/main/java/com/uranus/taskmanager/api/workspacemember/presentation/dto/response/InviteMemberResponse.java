@@ -13,8 +13,6 @@ public class InviteMemberResponse {
 	private final InvitationStatus status;
 	private final InvitedMember invitedMember;
 
-	// Todo: 초대한 사람 추가(Inviter)
-
 	@Builder
 	public InviteMemberResponse(String code, InvitationStatus status, InvitedMember invitedMember) {
 		this.code = code;

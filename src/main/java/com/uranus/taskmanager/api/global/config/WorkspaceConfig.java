@@ -9,6 +9,7 @@ import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.create.WorkspaceCreateService;
+import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class WorkspaceConfig {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	/**
 	 * HandleDatabaseExceptionService: DB에서 올라오는 ConstraintViolation을 잡아서 핸들링(워크스페이스 코드 재생성)
@@ -36,6 +38,7 @@ public class WorkspaceConfig {
 			memberRepository,
 			workspaceMemberRepository,
 			workspaceCodeGenerator,
-			passwordEncoder);
+			passwordEncoder,
+			workspaceValidator);
 	}
 }

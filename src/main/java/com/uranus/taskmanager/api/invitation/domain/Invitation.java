@@ -2,8 +2,10 @@ package com.uranus.taskmanager.api.invitation.domain;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
+import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,10 +50,6 @@ public class Invitation extends BaseEntity {
 		this.status = status;
 	}
 
-	public void changeStatus(InvitationStatus status) {
-		this.status = status;
-	}
-
 	public static Invitation addInvitation(Member member, Workspace workspace, InvitationStatus status) {
 		Invitation invitation = Invitation.builder()
 			.member(member)
@@ -63,5 +61,34 @@ public class Invitation extends BaseEntity {
 		workspace.getInvitations().add(invitation);
 
 		return invitation;
+	}
+
+	public WorkspaceMember addWorkspaceMember() {
+		return WorkspaceMember.addCollaboratorWorkspaceMember(
+			this.member,
+			this.workspace
+		);
+	}
+
+	public WorkspaceMember accept() {
+		// validatePendingStatus();
+		changeStatus(InvitationStatus.ACCEPTED);
+
+		return addWorkspaceMember();
+	}
+
+	public void reject() {
+		// validatePendingStatus();
+		changeStatus(InvitationStatus.REJECTED);
+	}
+
+	private void changeStatus(InvitationStatus status) {
+		this.status = status;
+	}
+
+	private void validatePendingStatus() {
+		if (this.status != InvitationStatus.PENDING) {
+			throw new InvalidInvitationStatusException();
+		}
 	}
 }

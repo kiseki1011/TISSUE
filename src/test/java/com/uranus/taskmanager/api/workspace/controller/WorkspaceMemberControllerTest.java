@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.authentication.constant.SessionKey;
+import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -61,7 +61,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test6() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -98,7 +98,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test9() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -136,7 +136,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test10() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -185,7 +185,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test11() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -221,7 +221,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test12() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -247,7 +247,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test13() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -279,7 +279,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test14() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";
@@ -316,7 +316,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	void test15() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionKey.LOGIN_MEMBER_ID, 1L);
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// given
 		String workspaceCode = "TESTCODE";

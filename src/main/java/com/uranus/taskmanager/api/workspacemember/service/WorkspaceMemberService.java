@@ -15,16 +15,13 @@ import com.uranus.taskmanager.api.invitation.exception.InvitationAlreadyExistsEx
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
@@ -40,13 +37,10 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Kick
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
+import com.uranus.taskmanager.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Todo
- *  - UserWorkspaceService, AdminWorkspaceService 분리 고려
- */
 @Service
 @RequiredArgsConstructor
 public class WorkspaceMemberService {
@@ -55,15 +49,20 @@ public class WorkspaceMemberService {
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationRepository invitationRepository;
-	private final PasswordEncoder passwordEncoder;
+
+	private final WorkspaceMemberValidator workspaceMemberValidator;
+	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public InviteMemberResponse inviteMember(String code, InviteMemberRequest request) {
 
-		Workspace workspace = findWorkspaceByCode(code);
-		Member invitedMember = findMemberByIdentifier(request.getMemberIdentifier());
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
-		checkIfMemberAlreadyJoined(code, invitedMember);
+		Member invitedMember = memberRepository.findByMemberIdentifier(request.getMemberIdentifier())
+			.orElseThrow(MemberNotFoundException::new);
+
+		workspaceMemberValidator.validateIfAlreadyJoined(invitedMember.getId(), code);
 		checkIfPendingInvitationExists(workspace, invitedMember);
 
 		Invitation invitation = savePendingInvitation(workspace, invitedMember);
@@ -83,13 +82,15 @@ public class WorkspaceMemberService {
 		List<InvitedMember> invitedMembers = new ArrayList<>();
 		List<FailedInvitedMember> failedInvitedMembers = new ArrayList<>();
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		for (String identifier : request.getMemberIdentifiers()) {
 			try {
-				Member invitedMember = findMemberByIdentifier(identifier);
+				Member invitedMember = memberRepository.findByMemberIdentifier(identifier)
+					.orElseThrow(MemberNotFoundException::new);
 
-				checkIfMemberAlreadyJoined(code, invitedMember);
+				workspaceMemberValidator.validateIfAlreadyJoined(invitedMember.getId(), code);
 				checkIfPendingInvitationExists(workspace, invitedMember);
 
 				savePendingInvitation(workspace, invitedMember);
@@ -115,8 +116,11 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
-		Member member = findMemberById(memberId);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
+
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(MemberNotFoundException::new);
 
 		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
 			memberId, code);
@@ -124,16 +128,10 @@ public class WorkspaceMemberService {
 			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
 
-		validatePasswordIfExists(workspace.getPassword(), request.getPassword());
+		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member, workspace,
-			WorkspaceRole.COLLABORATOR,
-			member.getEmail());
-		/*
-		 * Todo
-		 *  - 워크스페이스에 낙관적락 적용 시 워크스페이스 참여에 대해 예외 잡고-재시도 로직을 추가해야 한다
-		 */
-		workspace.increaseMemberCount();
+		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+
 		workspaceMemberRepository.save(workspaceMember);
 
 		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
@@ -142,10 +140,11 @@ public class WorkspaceMemberService {
 	@Transactional
 	public KickWorkspaceMemberResponse kickWorkspaceMember(String code, KickWorkspaceMemberRequest request) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
 		String identifier = request.getMemberIdentifier();
-		Member member = memberRepository.findByLoginIdOrEmail(identifier, identifier)
+		Member member = memberRepository.findByMemberIdentifier(identifier)
 			.orElseThrow(MemberNotFoundException::new);
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), code)
@@ -159,102 +158,42 @@ public class WorkspaceMemberService {
 
 	@Transactional
 	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(String code,
-		UpdateWorkspaceMemberRoleRequest request, Long memberId) {
+		UpdateWorkspaceMemberRoleRequest request, Long requesterId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
-
-		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
-				request.getMemberIdentifier(), code)
+		WorkspaceMember requester = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceCode(requesterId, code)
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		WorkspaceMember requesterWorkspaceMember = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
+		WorkspaceMember target = workspaceMemberRepository
+			.findByMemberIdentifierAndWorkspaceCode(request.getMemberIdentifier(), code)
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		validateRoleUpdate(requesterWorkspaceMember, targetWorkspaceMember, request.getUpdateWorkspaceRole());
+		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
-		targetWorkspaceMember.updateRole(request.getUpdateWorkspaceRole());
+		target.updateRole(request.getUpdateWorkspaceRole());
 
-		return UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+		return UpdateWorkspaceMemberRoleResponse.from(target);
 	}
 
 	@Transactional
 	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(String code,
-		TransferWorkspaceOwnershipRequest request, Long memberId) {
+		TransferWorkspaceOwnershipRequest request, Long requesterId) {
 
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
-		WorkspaceMember targetWorkspaceMember = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
+		WorkspaceMember requester = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceId(requesterId, workspace.getId())
+			.orElseThrow(MemberNotInWorkspaceException::new);
+
+		WorkspaceMember target = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
 				request.getMemberIdentifier(), code)
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		WorkspaceMember requesterWorkspaceMember = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceId(memberId, workspace.getId())
-			.orElseThrow(MemberNotInWorkspaceException::new);
+		requester.updateRoleFromOwnerToManager();
+		target.updateRoleToOwner();
 
-		requesterWorkspaceMember.updateRole(WorkspaceRole.MANAGER);
-		requesterWorkspaceMember.getMember().decreaseWorkspaceCount();
-
-		targetWorkspaceMember.updateRole(WorkspaceRole.OWNER);
-		targetWorkspaceMember.getMember().increaseWorkspaceCount();
-
-		return TransferWorkspaceOwnershipResponse.from(targetWorkspaceMember);
-	}
-
-	private void validateRoleUpdate(
-		WorkspaceMember requester,
-		WorkspaceMember target,
-		WorkspaceRole newRole
-	) {
-		// 자기 자신의 권한은 변경 불가
-		if (requester.getId().equals(target.getId())) {
-			throw new InvalidRoleUpdateException("You cannot change your own role.");
-		}
-
-		// OWNER의 권한은 변경 불가
-		if (target.getRole() == WorkspaceRole.OWNER) {
-			throw new InvalidRoleUpdateException("You cannot change the role of the OWNER.");
-		}
-
-		// OWNER로 권한 변경 불가
-		if (newRole == WorkspaceRole.OWNER) {
-			throw new InvalidRoleUpdateException("You cannot change to OWNER role. Use ownership transfer instead.");
-		}
-
-		// 자신보다 높은 권한을 가진 멤버의 권한은 변경 불가
-		if (target.getRole().getLevel() >= requester.getRole().getLevel()) {
-			throw new InvalidRoleUpdateException("You cannot change the role of a greater or equal role level.");
-		}
-
-		// 자신의 권한보다 높은 권한으로 변경 불가
-		if (newRole.getLevel() > requester.getRole().getLevel()) {
-			throw new InvalidRoleUpdateException("You cannot change the role to a greater role level than yourself.");
-		}
-	}
-
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
-	}
-
-	private Member findMemberByIdentifier(String identifier) {
-		return memberRepository.findByLoginIdOrEmail(identifier, identifier)
-			.orElseThrow(MemberNotFoundException::new);
-	}
-
-	private Member findMemberById(Long id) {
-		return memberRepository.findById(id)
-			.orElseThrow(MemberNotFoundException::new);
-	}
-
-	private void checkIfMemberAlreadyJoined(String workspaceCode, Member invitedMember) {
-		boolean isAlreadyMember = workspaceMemberRepository.findByMemberLoginIdAndWorkspaceCode(
-			invitedMember.getLoginId(),
-			workspaceCode).isPresent();
-
-		if (isAlreadyMember) {
-			throw new AlreadyJoinedWorkspaceException();
-		}
+		return TransferWorkspaceOwnershipResponse.from(target);
 	}
 
 	private void checkIfPendingInvitationExists(Workspace workspace, Member invitedMember) {
@@ -287,18 +226,5 @@ public class WorkspaceMemberService {
 
 	private static String getErrorMessageFromException(Exception exception) {
 		return exception instanceof CommonException ? exception.getMessage() : "Invitation failed";
-	}
-
-	private void validatePasswordIfExists(String workspacePassword, String inputPassword) {
-		if (workspacePassword == null) {
-			return;
-		}
-		if (passwordDoesNotMatch(workspacePassword, inputPassword)) {
-			throw new InvalidWorkspacePasswordException();
-		}
-	}
-
-	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
-		return !passwordEncoder.matches(inputPassword, workspacePassword);
 	}
 }

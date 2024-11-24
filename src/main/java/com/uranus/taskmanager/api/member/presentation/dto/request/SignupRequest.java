@@ -1,5 +1,7 @@
 package com.uranus.taskmanager.api.member.presentation.dto.request;
 
+import com.uranus.taskmanager.api.member.domain.Member;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,7 +13,9 @@ import lombok.Getter;
 public class SignupRequest {
 	/**
 	 * Todo
-	 *  - 패턴 검증은 Validation 클래스로 분리해서 적용하는 것이 좋을까?
+	 *  - 방법1: 재사용 될 수 있는 패턴 검증은 Validator 클래스로 분리, 서비스에서 검증
+	 *  - 방법2: 커스텀 검증 애노테이션을 구현해서 적용(재사용성 증가)
+	 *  - 방법3: 지금 처럼 그냥 제공 애노테이션으로 필드에 대한 기본 검증 진행
 	 *  - 매직 넘버는 상수로 만들기
 	 */
 	@NotBlank(message = "Login ID must not be blank")
@@ -36,5 +40,13 @@ public class SignupRequest {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
+	}
+
+	public static Member toMember(SignupRequest request, String encodedPassword) {
+		return Member.builder()
+			.loginId(request.loginId)
+			.email(request.getEmail())
+			.password(encodedPassword)
+			.build();
 	}
 }

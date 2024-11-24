@@ -6,12 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
-import com.uranus.taskmanager.api.invitation.exception.InvalidInvitationStatusException;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
-import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.invitation.validator.InvitationValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -23,65 +20,35 @@ public class InvitationService {
 
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final InvitationValidator invitationValidator;
 
 	@Transactional
-	public InvitationAcceptResponse acceptInvitation(Long loginMemberId, String workspaceCode) {
+	public InvitationAcceptResponse acceptInvitation(Long memberId, String workspaceCode) {
 
-		Invitation invitation = getPendingInvitationBy(loginMemberId, workspaceCode);
-		changeStatusToAccepted(invitation);
-		addMemberToWorkspace(invitation);
+		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
 
-		return InvitationAcceptResponse.from(invitation.getWorkspace(), WorkspaceRole.COLLABORATOR);
-	}
-
-	@Transactional
-	public void rejectInvitation(Long loginMemberId, String workspaceCode) {
-
-		Invitation invitation = getPendingInvitationBy(loginMemberId, workspaceCode);
-		changeStatusToRejected(invitation);
-		// Todo: InvitationRejectResponse 사용을 고려
-	}
-
-	private Invitation getPendingInvitationBy(Long loginMemberId, String workspaceCode) {
-		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberId(workspaceCode,
-				loginMemberId)
-			.orElseThrow(InvitationNotFoundException::new);
-
-		validatePendingStatus(invitation);
-
-		return invitation;
-	}
-
-	/*
-	 * Todo
-	 *  - 워크스페이스에 낙관적락 적용 시 예외 잡고 재시도 로직 추가 필요
-	 *  - 이 메서드에 try-catch vs acceptInvitation에서 try-catch를 할지 고민
-	 */
-	private WorkspaceMember addMemberToWorkspace(Invitation invitation) {
-		Workspace workspace = invitation.getWorkspace();
-		Member member = invitation.getMember();
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(member,
-			workspace, WorkspaceRole.COLLABORATOR, member.getEmail());
-
-		workspace.increaseMemberCount();
+		WorkspaceMember workspaceMember = invitation.accept();
 
 		workspaceMemberRepository.save(workspaceMember);
 
-		return workspaceMember;
+		return InvitationAcceptResponse.from(invitation.getWorkspace());
 	}
 
-	private void changeStatusToAccepted(Invitation invitation) {
-		invitation.changeStatus(InvitationStatus.ACCEPTED);
+	@Transactional
+	public void rejectInvitation(Long memberId, String workspaceCode) {
+
+		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
+
+		invitation.reject();
 	}
 
-	private void changeStatusToRejected(Invitation invitation) {
-		invitation.changeStatus(InvitationStatus.REJECTED);
-	}
+	private Invitation getValidPendingInvitation(Long memberId, String workspaceCode) {
+		Invitation invitation = invitationRepository
+			.findByStatusAndWorkspaceCodeAndMemberId(InvitationStatus.PENDING, workspaceCode, memberId)
+			.orElseThrow(InvitationNotFoundException::new);
 
-	private void validatePendingStatus(Invitation invitation) {
-		if (invitation.getStatus() != InvitationStatus.PENDING) {
-			throw new InvalidInvitationStatusException();
-		}
+		invitationValidator.validateInvitation(memberId, workspaceCode);
+		return invitation;
 	}
 
 }
