@@ -19,7 +19,7 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
+import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;

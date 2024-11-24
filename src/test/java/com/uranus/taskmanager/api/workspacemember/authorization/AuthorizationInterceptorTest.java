@@ -18,11 +18,11 @@ import org.springframework.web.method.HandlerMethod;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
-import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
 import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.uranus.taskmanager.api.security.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.security.authorization.interceptor.AuthorizationInterceptor;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
+import com.uranus.taskmanager.api.security.session.SessionManager;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;

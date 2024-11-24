@@ -13,7 +13,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.security.authentication.session.SessionAttributes;
+import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 import jakarta.servlet.http.HttpServletRequest;

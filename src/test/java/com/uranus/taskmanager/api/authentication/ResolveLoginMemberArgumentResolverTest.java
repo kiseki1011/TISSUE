@@ -18,7 +18,7 @@ import com.uranus.taskmanager.api.security.authentication.exception.UserNotLogge
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMemberArgumentResolver;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
-import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
+import com.uranus.taskmanager.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
 

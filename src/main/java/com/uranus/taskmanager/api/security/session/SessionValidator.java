@@ -1,6 +1,4 @@
-package com.uranus.taskmanager.api.security.authentication.session;
-
-import static com.uranus.taskmanager.api.security.authentication.session.SessionAttributes.*;
+package com.uranus.taskmanager.api.security.session;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -22,14 +20,14 @@ public class SessionValidator {
 
 	public void validateLoginStatus(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
-		if (session.isEmpty() || session.map(s -> s.getAttribute(LOGIN_MEMBER_ID)).isEmpty()) {
+		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
 			throw new UserNotLoggedInException();
 		}
 	}
 
 	public void validateUpdatePermission(HttpSession session) {
-		Boolean updatePermission = (Boolean)session.getAttribute(UPDATE_AUTH);
-		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(UPDATE_AUTH_EXPIRES_AT);
+		Boolean updatePermission = (Boolean)session.getAttribute(SessionAttributes.UPDATE_AUTH);
+		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
 
 		if (updatePermissionIsNull(updatePermission)
 			|| updatePermissionIsFalse(updatePermission)
@@ -42,8 +40,8 @@ public class SessionValidator {
 	}
 
 	private void clearUpdatePermission(HttpSession session) {
-		session.removeAttribute(UPDATE_AUTH);
-		session.removeAttribute(UPDATE_AUTH_EXPIRES_AT);
+		session.removeAttribute(SessionAttributes.UPDATE_AUTH);
+		session.removeAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
 		log.info("Update permission cleared due to validation failure.");
 	}
 

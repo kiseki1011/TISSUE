@@ -10,7 +10,7 @@ import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequi
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
-import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
+import com.uranus.taskmanager.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -33,7 +33,7 @@ public class AuthenticationController {
 
 		return ApiResponse.ok("Login successful.", loginResponse);
 	}
-	
+
 	@LoginRequired
 	@PostMapping("/logout")
 	public ApiResponse<Void> logout(HttpServletRequest request) {

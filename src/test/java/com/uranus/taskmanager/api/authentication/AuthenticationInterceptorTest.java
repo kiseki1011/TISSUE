@@ -14,7 +14,7 @@ import org.springframework.web.method.HandlerMethod;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.authentication.interceptor.AuthenticationInterceptor;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
+import com.uranus.taskmanager.api.security.session.SessionValidator;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.security.authentication.session;
+package com.uranus.taskmanager.api.security.session;
 
 public final class SessionAttributes {
 	/**

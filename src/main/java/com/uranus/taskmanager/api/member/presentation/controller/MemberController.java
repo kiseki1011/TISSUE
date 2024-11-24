@@ -25,8 +25,8 @@ import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
-import com.uranus.taskmanager.api.security.authentication.session.SessionManager;
-import com.uranus.taskmanager.api.security.authentication.session.SessionValidator;
+import com.uranus.taskmanager.api.security.session.SessionManager;
+import com.uranus.taskmanager.api.security.session.SessionValidator;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
