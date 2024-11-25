@@ -73,7 +73,7 @@ public class MemberService {
 		String encodedPassword = encodePassword(request.getPassword());
 
 		// Todo: 그냥 빌더 사용 고려, SignupRequest의 toMember 제거
-		return SignupRequest.toMember(request, encodedPassword);
+		return SignupRequest.to(request, encodedPassword);
 	}
 
 	private String encodePassword(String password) {

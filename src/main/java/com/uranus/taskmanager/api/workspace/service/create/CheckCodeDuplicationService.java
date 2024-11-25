@@ -62,7 +62,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		setUniqueWorkspaceCode(request);
 		setEncodedPasswordIfPresent(request);
 
-		Workspace workspace = workspaceRepository.save(request.to());
+		Workspace workspace = workspaceRepository.save(WorkspaceCreateRequest.to(request));
 		addOwnerMemberToWorkspace(member, workspace);
 
 		return WorkspaceCreateResponse.from(workspace);

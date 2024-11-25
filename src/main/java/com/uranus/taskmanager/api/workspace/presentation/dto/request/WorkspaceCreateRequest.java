@@ -8,9 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@ToString
 @Getter
 @NoArgsConstructor
 public class WorkspaceCreateRequest {
@@ -46,12 +44,12 @@ public class WorkspaceCreateRequest {
 		this.password = password;
 	}
 
-	public Workspace to() {
+	public static Workspace to(WorkspaceCreateRequest request) {
 		return Workspace.builder()
-			.name(name)
-			.description(description)
-			.password(password)
-			.code(code)
+			.name(request.name)
+			.description(request.description)
+			.password(request.password)
+			.code(request.code)
 			.build();
 	}
 

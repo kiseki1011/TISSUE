@@ -50,7 +50,7 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 				setWorkspaceCode(request);
 				setEncodedPasswordIfPresent(request);
 
-				Workspace workspace = workspaceRepository.saveWithNewTransaction(request.to());
+				Workspace workspace = workspaceRepository.saveWithNewTransaction(WorkspaceCreateRequest.to(request));
 				addOwnerMemberToWorkspace(member, workspace);
 
 				return WorkspaceCreateResponse.from(workspace);

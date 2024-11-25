@@ -42,7 +42,7 @@ public class SignupRequest {
 		this.password = password;
 	}
 
-	public static Member toMember(SignupRequest request, String encodedPassword) {
+	public static Member to(SignupRequest request, String encodedPassword) {
 		return Member.builder()
 			.loginId(request.loginId)
 			.email(request.getEmail())
