@@ -7,13 +7,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
+import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginIdentityException;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -34,12 +34,12 @@ class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("가입된 멤버의 로그인ID로 로그인할 수 있다")
 	void test1() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("user123")
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("user123")
@@ -57,12 +57,12 @@ class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("가입된 멤버의 이메일로 로그인할 수 있다")
 	void test2() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("user123")
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.email("user123@test.com")
@@ -80,12 +80,12 @@ class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("로그인 시 로그인ID 또는 이메일을 조회할 수 없으면 InvalidLoginIdentityException 발생")
 	void test3() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("user123")
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("baduser123")
@@ -101,12 +101,12 @@ class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("로그인 시 패스워드가 일치하지 않으면 InvalidLoginPasswordException 발생")
 	void test4() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("user123")
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("user123")

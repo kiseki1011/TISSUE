@@ -6,10 +6,11 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberWithdrawRequest {
+public class WithdrawMemberRequest {
+
 	private String password;
 
-	public MemberWithdrawRequest(String password) {
+	public WithdrawMemberRequest(String password) {
 		this.password = password;
 	}
 }

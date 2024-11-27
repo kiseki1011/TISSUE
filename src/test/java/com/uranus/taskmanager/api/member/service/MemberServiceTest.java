@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
 import com.uranus.taskmanager.api.member.exception.OwnedWorkspaceExistsException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -34,32 +34,32 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("회원 가입에 성공하면 멤버가 저장된다")
 	void signup_sucess_memberIsSaved() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser")
 			.password("testpassword1234!")
 			.email("testemail@test.com")
 			.build();
 
 		// when
-		SignupResponse signupResponse = memberService.signup(signupRequest);
+		SignupMemberResponse signupMemberResponse = memberService.signup(signupMemberRequest);
 
 		// then
-		assertThat(signupResponse.getLoginId()).isEqualTo("testuser");
-		assertThat(signupResponse.getEmail()).isEqualTo("testemail@test.com");
+		assertThat(signupMemberResponse.getLoginId()).isEqualTo("testuser");
+		assertThat(signupMemberResponse.getEmail()).isEqualTo("testemail@test.com");
 	}
 
 	@Test
 	@DisplayName("회원 가입에 성공하여 저장된 멤버의 패스워드는 암호화 되어 있다")
 	void signup_sucess_memberPasswordIsEncrypted() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser")
 			.password("testpassword1234!")
 			.email("testemail@test.com")
 			.build();
 
 		// when
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		// then
 		Optional<Member> member = memberRepository.findByLoginId("testuser");
@@ -71,14 +71,14 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("회원 가입 시 입력한 패스워드와 암호화한 패스워드는 서로 다르다")
 	void signup_sucess_requestPaswordMustBeDifferentWithEncryptedPassword() {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser")
 			.password("testpassword1234!")
 			.email("testemail@test.com")
 			.build();
 
 		// when
-		memberService.signup(signupRequest);
+		memberService.signup(signupMemberRequest);
 
 		// then
 		Optional<Member> member = memberRepository.findByLoginId("testuser");
@@ -97,13 +97,13 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 			.build());
 
 		String newEmail = "newemail@test.com";
-		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest(newEmail);
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(newEmail);
 
 		// when
-		MemberEmailUpdateResponse response = memberService.updateEmail(request, member.getId());
+		UpdateMemberEmailResponse response = memberService.updateEmail(request, member.getId());
 
 		// then
-		assertThat(response.getMemberDetail().getEmail()).isEqualTo(newEmail);
+		assertThat(response.getEmailUpdate().getUpdatedEmail()).isEqualTo(newEmail);
 
 		Member updatedMember = memberRepository.findById(member.getId()).get();
 		assertThat(updatedMember.getEmail()).isEqualTo(newEmail);
@@ -121,7 +121,7 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 				.build()
 		);
 
-		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest(existingMember.getEmail());
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(existingMember.getEmail());
 
 		// when & then
 		assertThatThrownBy(() -> memberService.updateEmail(request, existingMember.getId()))
@@ -139,7 +139,7 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 			.build());
 
 		String newPassword = "newpassword1234!";
-		MemberPasswordUpdateRequest request = new MemberPasswordUpdateRequest(newPassword);
+		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
 
 		// when & then
 		assertThatNoException().isThrownBy(() -> memberService.updatePassword(request, member.getId()));
@@ -156,7 +156,7 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 			.build());
 
 		String newPassword = "newpassword1234!";
-		MemberPasswordUpdateRequest request = new MemberPasswordUpdateRequest(newPassword);
+		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
 
 		// when
 		memberService.updatePassword(request, member.getId());
@@ -176,10 +176,10 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 			.password(passwordEncoder.encode("password1234!"))
 			.build());
 
-		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
 		// when
-		memberService.withdrawMember(request, member.getId());
+		memberService.withdraw(request, member.getId());
 
 		// then
 		assertThat(memberRepository.findById(member.getId())).isEmpty();
@@ -195,10 +195,10 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 			.password(passwordEncoder.encode("password1234!"))
 			.build());
 
-		MemberWithdrawRequest request = new MemberWithdrawRequest("invalidPassword");
+		WithdrawMemberRequest request = new WithdrawMemberRequest("invalidPassword");
 
 		// when & then
-		assertThatThrownBy(() -> memberService.withdrawMember(request, member.getId())).isInstanceOf(
+		assertThatThrownBy(() -> memberService.withdraw(request, member.getId())).isInstanceOf(
 			InvalidLoginPasswordException.class);
 	}
 
@@ -221,10 +221,10 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
 			member.getEmail()));
 
-		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
 		// when & then
-		assertThatThrownBy(() -> memberService.withdrawMember(request, member.getId())).isInstanceOf(
+		assertThatThrownBy(() -> memberService.withdraw(request, member.getId())).isInstanceOf(
 			OwnedWorkspaceExistsException.class);
 	}
 }

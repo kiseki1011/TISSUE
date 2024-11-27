@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.invitation;
+package com.uranus.taskmanager.api.invitation.domain;
 
 public enum InvitationStatus {
 	PENDING,

@@ -41,7 +41,7 @@ import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
-class WorkspaceMemberControllerTest extends ControllerTestHelper {
+class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
@@ -57,7 +57,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces/{code}/invite - 워크스페이스 초대를 성공하면 초대 응답 객체를 데이터로 받는다")
+	@DisplayName("POST /workspaces/{code}/members/invite - 워크스페이스 초대를 성공하면 초대 응답 객체를 데이터로 받는다")
 	void test6() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -84,7 +84,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invite", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
@@ -94,7 +94,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces/{code}/invites - 다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공하는 경우 200을 응답받는다")
+	@DisplayName("POST /workspaces/{code}/members/invites - 다수 멤버의 초대를 요청하는 경우 - 모든 멤버 초대 성공하는 경우 200을 응답받는다")
 	void test9() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -120,7 +120,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
@@ -132,7 +132,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces/{code}/invites - 다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대를 실패해도 200을 응답받는다")
+	@DisplayName("POST /workspaces/{code}/members/invites - 다수 멤버의 초대를 요청하는 경우 - 일부 멤버 초대를 실패해도 200을 응답받는다")
 	void test10() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -168,7 +168,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/invites", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(new ObjectMapper().writeValueAsString(inviteMembersRequest)))
@@ -181,7 +181,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces/{code} - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
+	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
 	void test11() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -205,7 +205,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			anyLong())).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+		mockMvc.perform(post("/api/v1/members/workspaces/{code}", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -217,7 +217,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces/{code} - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
+	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
 	void test12() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -233,7 +233,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+		mockMvc.perform(post("/api/v1/members/workspaces/{code}", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -243,7 +243,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{code}/kick - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
+	@DisplayName("DELETE /workspaces/{code}/members/kick - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -264,7 +264,7 @@ class WorkspaceMemberControllerTest extends ControllerTestHelper {
 		when(workspaceMemberService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{code}/kick", workspaceCode)
+		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/kick", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))

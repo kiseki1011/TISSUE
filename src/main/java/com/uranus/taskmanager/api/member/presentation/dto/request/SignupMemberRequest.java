@@ -6,11 +6,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-public class SignupRequest {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class SignupMemberRequest {
 	/**
 	 * Todo
 	 *  - 방법1: 재사용 될 수 있는 패턴 검증은 Validator 클래스로 분리, 서비스에서 검증
@@ -36,13 +39,13 @@ public class SignupRequest {
 	private String password;
 
 	@Builder
-	public SignupRequest(String loginId, String email, String password) {
+	public SignupMemberRequest(String loginId, String email, String password) {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
 	}
 
-	public static Member to(SignupRequest request, String encodedPassword) {
+	public static Member to(SignupMemberRequest request, String encodedPassword) {
 		return Member.builder()
 			.loginId(request.loginId)
 			.email(request.getEmail())

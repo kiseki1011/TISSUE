@@ -1,0 +1,63 @@
+package com.uranus.taskmanager.api.workspacemember.presentation.controller;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.member.service.MemberQueryService;
+import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
+import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
+import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/v1/members/workspaces")
+public class MemberWorkspaceController {
+
+	private final MemberQueryService memberQueryService;
+	private final WorkspaceMemberService workspaceMemberService;
+
+	/**
+	 * Todo
+	 *  - leaveWorkspace: 특정 참여한 워크스페이스 떠나기
+	 *    - 해당 워크스페이스의 OWNER이면 안됨
+	 *  - getMyWorkspaceRole: 특정 참여한 워크스페이스에서 내가 가지고 있는 권한 조회하기
+	 */
+
+	@LoginRequired
+	@GetMapping
+	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
+		@ResolveLoginMember LoginMember loginMember,
+		Pageable pageable) {
+
+		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember.getId(), pageable);
+
+		return ApiResponse.ok("Currently joined workspaces found.", response);
+	}
+
+	@LoginRequired
+	@PostMapping("/{code}")
+	public ApiResponse<WorkspaceJoinResponse> joinWorkspace(
+		@PathVariable String code,
+		@ResolveLoginMember LoginMember loginMember,
+		@RequestBody @Valid WorkspaceJoinRequest request
+	) {
+
+		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(code, request, loginMember.getId());
+		return ApiResponse.ok("Joined workspace", response);
+	}
+}

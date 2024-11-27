@@ -29,7 +29,8 @@ import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMemberController;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.MemberWorkspaceController;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMembershipController;
 import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
@@ -41,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 		AuthenticationController.class,
 		InvitationController.class,
 		WorkspaceController.class,
-		WorkspaceMemberController.class,
+		WorkspaceMembershipController.class,
+		MemberWorkspaceController.class,
 		MemberController.class
 	},
 	excludeFilters = {

@@ -15,15 +15,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
@@ -31,7 +31,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@BeforeEach
 	void setup() {
 		// member1 회원가입
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member1")
 			.email("member1@test.com")
 			.password("member1password!")
@@ -78,7 +78,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
 	void test2() {
 		// given
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
@@ -105,7 +105,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("해당 워크스페이스에 참여하고 있으면, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
 	void test3() {
 		// given
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
@@ -132,7 +132,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("해당 워크스페이스에 참여하지 않으면, 유효한 코드로 상세 정보를 조회해도 예외가 발생한다")
 	void test4() {
 		// given
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
@@ -154,7 +154,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 코드로 워크스페이스를 조회하면 예외가 발생한다")
 	void test5() {
 		// given
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
@@ -176,7 +176,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
 	void test6() {
 		// given
-		memberService.signup(SignupRequest.builder()
+		memberService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")

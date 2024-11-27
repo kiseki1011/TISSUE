@@ -6,10 +6,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
-import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -38,11 +38,12 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when
-		InvitationAcceptResponse response = invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
+		AcceptInvitationResponse response = invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.getWorkspaceDetail().getCode()).isEqualTo("TESTCODE");
+		assertThat(response.getCode()).isEqualTo("TESTCODE");
+		assertThat(response.getInvitationId()).isEqualTo(1L);
 	}
 
 	@Test

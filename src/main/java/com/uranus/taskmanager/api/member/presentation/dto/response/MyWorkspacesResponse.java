@@ -14,7 +14,7 @@ import lombok.ToString;
 public class MyWorkspacesResponse {
 
 	private List<WorkspaceDetail> workspaces = new ArrayList<>();
-	private long totalElements; // 전체 개수
+	private long totalElements;
 
 	@Builder
 	public MyWorkspacesResponse(List<WorkspaceDetail> workspaces, long totalElements) {

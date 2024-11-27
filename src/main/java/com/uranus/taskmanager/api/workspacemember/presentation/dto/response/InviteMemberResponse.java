@@ -1,7 +1,7 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 
-import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 
 import lombok.Builder;
 import lombok.Getter;

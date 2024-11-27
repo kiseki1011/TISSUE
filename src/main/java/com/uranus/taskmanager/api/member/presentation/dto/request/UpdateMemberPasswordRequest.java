@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberPasswordUpdateRequest {
+public class UpdateMemberPasswordRequest {
 
 	@NotBlank(message = "Password must not be blank")
 	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
@@ -16,7 +16,7 @@ public class MemberPasswordUpdateRequest {
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private String updatePassword;
 
-	public MemberPasswordUpdateRequest(String updatePassword) {
+	public UpdateMemberPasswordRequest(String updatePassword) {
 		this.updatePassword = updatePassword;
 	}
 }

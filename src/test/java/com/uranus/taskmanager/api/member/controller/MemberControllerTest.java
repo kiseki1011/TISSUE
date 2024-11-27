@@ -26,12 +26,12 @@ import org.springframework.mock.web.MockHttpSession;
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
@@ -45,12 +45,12 @@ class MemberControllerTest extends ControllerTestHelper {
 	@Test
 	@DisplayName("POST /members/signup - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
 	void test1() throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
 			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
+		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
 		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -69,12 +69,12 @@ class MemberControllerTest extends ControllerTestHelper {
 	})
 	@DisplayName("POST /members/signup - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
 			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
+		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
 		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -97,12 +97,12 @@ class MemberControllerTest extends ControllerTestHelper {
 	})
 	@DisplayName("POST /members/signup - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password(password)
 			.build();
-		String requestBody = objectMapper.writeValueAsString(signupRequest);
+		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
 		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("POST /members/signup - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
 	void test4(String loginId, String email, String password) throws Exception {
 		// given
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email(email)
 			.password(password)
@@ -134,7 +134,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		// when & then
 		mockMvc.perform(post("/api/v1/members/signup")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(signupRequest)))
+				.content(objectMapper.writeValueAsString(signupMemberRequest)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data[*].field").value(Matchers.hasItem("loginId")))
 			.andExpect(jsonPath("$.data[*].field").value(Matchers.hasItem("email")))
@@ -184,7 +184,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK를 응답한다")
 	void updateEmail_success_OK() throws Exception {
 		// given
-		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
@@ -204,16 +204,18 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 이메일 업데이트 응답을 데이터로 받는다")
 	void updateEmail_success_returnsMemberEmailUpdateResponse() throws Exception {
 		// given
-		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
 		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
-		MemberEmailUpdateResponse response = MemberEmailUpdateResponse.from(
-			Member.builder().email("newemail@test.com").build());
+		UpdateMemberEmailResponse response = UpdateMemberEmailResponse.from(
+			Member.builder()
+				.email("newemail@test.com")
+				.build(), "previousmail@test.com");
 
-		when(memberService.updateEmail(any(MemberEmailUpdateRequest.class), anyLong())).thenReturn(response);
+		when(memberService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong())).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -222,7 +224,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Email update successful."))
-			.andExpect(jsonPath("$.data.memberDetail.email").value("newemail@test.com"))
+			.andExpect(jsonPath("$.data.emailUpdate.updatedEmail").value("newemail@test.com"))
 			.andDo(print());
 	}
 
@@ -230,7 +232,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 업데이트 권한이 없으면 FORBIDDEN을 응답한다")
 	void updateEmail_forbidden_ifUpdateAuthIsInvalid() throws Exception {
 		// given
-		MemberEmailUpdateRequest request = new MemberEmailUpdateRequest("newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		doThrow(new UpdatePermissionException())
 			.when(sessionValidator).validateUpdatePermission(any(HttpSession.class));
@@ -364,7 +366,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
 
 		// given
-		MemberWithdrawRequest request = new MemberWithdrawRequest("password1234!");
+		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/members")
