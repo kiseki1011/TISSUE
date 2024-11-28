@@ -14,7 +14,7 @@ import lombok.ToString;
 public class MyWorkspacesResponse {
 	/**
 	 * Todo
-	 *  - PageInfo 클래스를 만들어서 응답에 포함
+	 *  - PageInfo 클래스를 만들어서 응답에 포함(totalElements 대신, 어차피 안에 포함 됨)
 	 */
 	private List<WorkspaceDetail> workspaces = new ArrayList<>();
 	private long totalElements;

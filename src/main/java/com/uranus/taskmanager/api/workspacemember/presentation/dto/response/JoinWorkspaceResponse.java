@@ -12,7 +12,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class WorkspaceJoinResponse {
+public class JoinWorkspaceResponse {
 
 	private Long workspaceId;
 	private String workspaceCode;
@@ -22,7 +22,7 @@ public class WorkspaceJoinResponse {
 	private boolean isAlreadyMember;
 
 	@Builder
-	public WorkspaceJoinResponse(
+	public JoinWorkspaceResponse(
 		Long workspaceId,
 		String workspaceCode,
 		LocalDateTime joinedAt,
@@ -38,12 +38,12 @@ public class WorkspaceJoinResponse {
 		this.isAlreadyMember = isAlreadyMember;
 	}
 
-	public static WorkspaceJoinResponse from(
+	public static JoinWorkspaceResponse from(
 		Workspace workspace,
 		WorkspaceMember workspaceMember,
 		boolean isAlreadyMember
 	) {
-		return WorkspaceJoinResponse.builder()
+		return JoinWorkspaceResponse.builder()
 			.workspaceId(workspace.getId())
 			.workspaceCode(workspace.getCode())
 			.joinedAt(workspaceMember.getCreatedDate())

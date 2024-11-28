@@ -12,9 +12,9 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 
@@ -51,13 +51,13 @@ public class MemberWorkspaceController {
 
 	@LoginRequired
 	@PostMapping("/{code}")
-	public ApiResponse<WorkspaceJoinResponse> joinWorkspace(
+	public ApiResponse<JoinWorkspaceResponse> joinWorkspace(
 		@PathVariable String code,
 		@ResolveLoginMember LoginMember loginMember,
-		@RequestBody @Valid WorkspaceJoinRequest request
+		@RequestBody @Valid JoinWorkspaceRequest request
 	) {
 
-		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(code, request,
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(code, request,
 			loginMember.getId());
 		return ApiResponse.ok("Joined workspace", response);
 	}

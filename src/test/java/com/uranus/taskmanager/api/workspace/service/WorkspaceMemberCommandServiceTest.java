@@ -25,16 +25,16 @@ import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateExc
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
@@ -157,7 +157,7 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 		String workspaceCode = "CODE1234";
 		workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
 			"CODE1234", "password1234!");
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest("WrongPassword1234!");
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest("WrongPassword1234!");
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
@@ -171,11 +171,11 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 	void testJoinWorkspace_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -187,11 +187,11 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 	void testJoinWorkspace_isAlreadyMemberTrue() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -204,14 +204,14 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 	void testJoinWorkspace_isAlreadyMemberFalse() {
 		// given
 		String workspaceCode = "TESTCODE";
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest(null);
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 		Member joiningMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
 			"password1234!");
 		LoginMember loginMember = new LoginMember(joiningMember.getId(), joiningMember.getLoginId(),
 			joiningMember.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -235,7 +235,7 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		memberWorkspaceCommandService.joinWorkspace(workspaceCode, new WorkspaceJoinRequest(), member2.getId());
+		memberWorkspaceCommandService.joinWorkspace(workspaceCode, new JoinWorkspaceRequest(), member2.getId());
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member2.getLoginId());
 

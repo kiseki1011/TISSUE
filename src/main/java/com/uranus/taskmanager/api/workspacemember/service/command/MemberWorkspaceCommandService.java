@@ -14,8 +14,8 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +41,7 @@ public class MemberWorkspaceCommandService {
 	 * @return - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
+	public JoinWorkspaceResponse joinWorkspace(String code, JoinWorkspaceRequest request, Long memberId) {
 
 		Workspace workspace = workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);
@@ -52,7 +52,7 @@ public class MemberWorkspaceCommandService {
 		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
 			memberId, code);
 		if (optionalWorkspaceMember.isPresent()) {
-			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
+			return JoinWorkspaceResponse.from(workspace, optionalWorkspaceMember.get(), true);
 		}
 
 		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
@@ -61,6 +61,6 @@ public class MemberWorkspaceCommandService {
 
 		workspaceMemberRepository.save(workspaceMember);
 
-		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
+		return JoinWorkspaceResponse.from(workspace, workspaceMember, false);
 	}
 }

@@ -11,14 +11,6 @@ import lombok.ToString;
 @Getter
 public class KickWorkspaceMemberResponse {
 
-	/*
-	 * Todo
-	 *  - WorkspaceMemberDetail을 만들어서 사용하기
-	 *  - 해당 DTO에 다음 필드 넣기
-	 *  - id
-	 *  - nickname
-	 *  - role
-	 */
 	private String memberIdentifier;
 	private String nickname;
 	private WorkspaceRole role;

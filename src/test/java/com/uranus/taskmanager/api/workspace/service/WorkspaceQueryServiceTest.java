@@ -23,7 +23,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -51,8 +51,8 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			null);
 
 		// member1은 workspace1,2에 참여
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember1.getId());
-		memberWorkspaceCommandService.joinWorkspace("TEST2222", new WorkspaceJoinRequest(), loginMember1.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember1.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), loginMember1.getId());
 	}
 
 	@AfterEach
@@ -91,7 +91,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			.email("member2@test.com")
 			.build();
 
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember2.getId());
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
@@ -118,7 +118,7 @@ class WorkspaceQueryServiceTest extends ServiceIntegrationTestHelper {
 			.email("member2@test.com")
 			.build();
 
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new WorkspaceJoinRequest(), loginMember2.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember2.getId());
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111");

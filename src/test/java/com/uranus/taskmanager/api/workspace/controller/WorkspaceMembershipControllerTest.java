@@ -25,16 +25,16 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
@@ -196,12 +196,12 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		Member member = memberEntityFixture.createMember(loginId, email);
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
 			workspace);
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest();
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest();
 
-		WorkspaceJoinResponse response = WorkspaceJoinResponse.from(workspace, workspaceMember, false);
+		JoinWorkspaceResponse response = JoinWorkspaceResponse.from(workspace, workspaceMember, false);
 
 		when(memberWorkspaceCommandService.joinWorkspace(eq(workspaceCode),
-			any(WorkspaceJoinRequest.class),
+			any(JoinWorkspaceRequest.class),
 			anyLong())).thenReturn(response);
 
 		// when & then
@@ -227,9 +227,9 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 		String invalidPassword = "invalid1234!";
 
-		WorkspaceJoinRequest request = new WorkspaceJoinRequest(invalidPassword);
+		JoinWorkspaceRequest request = new JoinWorkspaceRequest(invalidPassword);
 
-		when(memberWorkspaceCommandService.joinWorkspace(eq("TESTCODE"), any(WorkspaceJoinRequest.class), anyLong()))
+		when(memberWorkspaceCommandService.joinWorkspace(eq("TESTCODE"), any(JoinWorkspaceRequest.class), anyLong()))
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then
