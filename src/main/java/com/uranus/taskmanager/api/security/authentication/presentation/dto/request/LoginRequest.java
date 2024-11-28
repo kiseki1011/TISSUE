@@ -10,8 +10,11 @@ import lombok.Getter;
 @Builder
 public class LoginRequest {
 
+	/**
+	 * Todo
+	 *  - NotBlank, Size 검증 필요
+	 */
 	private String email;
-
 	private String loginId;
 
 	@NotBlank(message = "Password must not be blank")

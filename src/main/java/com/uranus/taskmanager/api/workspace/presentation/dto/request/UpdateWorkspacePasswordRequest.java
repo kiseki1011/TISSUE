@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WorkspacePasswordUpdateRequest {
+public class UpdateWorkspacePasswordRequest {
 
 	private String originalPassword;
 
@@ -18,7 +18,7 @@ public class WorkspacePasswordUpdateRequest {
 	private String updatePassword;
 
 	@Builder
-	public WorkspacePasswordUpdateRequest(String originalPassword, String updatePassword) {
+	public UpdateWorkspacePasswordRequest(String originalPassword, String updatePassword) {
 		this.originalPassword = originalPassword;
 		this.updatePassword = updatePassword;
 	}

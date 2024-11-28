@@ -12,31 +12,17 @@ public class UpdateMemberEmailResponse {
 
 	private Long memberId;
 	private LocalDateTime updatedAt;
-	private EmailUpdate emailUpdate;
 
 	@Builder
-	public UpdateMemberEmailResponse(Long memberId, LocalDateTime updatedAt, EmailUpdate emailUpdate) {
+	public UpdateMemberEmailResponse(Long memberId, LocalDateTime updatedAt) {
 		this.memberId = memberId;
 		this.updatedAt = updatedAt;
-		this.emailUpdate = emailUpdate;
 	}
 
-	@Getter
-	public static class EmailUpdate {
-		private final String previousEmail;
-		private final String updatedEmail;
-
-		private EmailUpdate(String previousEmail, String updatedEmail) {
-			this.previousEmail = previousEmail;
-			this.updatedEmail = updatedEmail;
-		}
-	}
-
-	public static UpdateMemberEmailResponse from(Member member, String previousEmail) {
+	public static UpdateMemberEmailResponse from(Member member) {
 		return UpdateMemberEmailResponse.builder()
 			.memberId(member.getId())
 			.updatedAt(member.getLastModifiedDate())
-			.emailUpdate(new EmailUpdate(previousEmail, member.getEmail()))
 			.build();
 	}
 }

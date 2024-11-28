@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WorkspaceContentUpdateRequest {
+public class UpdateWorkspaceRequest {
 
 	@Size(min = 2, max = 50, message = "Workspace name must be 2 ~ 50 characters long")
 	private String name;
@@ -15,7 +15,7 @@ public class WorkspaceContentUpdateRequest {
 	private String description;
 
 	@Builder
-	public WorkspaceContentUpdateRequest(String name, String description) {
+	public UpdateWorkspaceRequest(String name, String description) {
 		this.name = name;
 		this.description = description;
 	}

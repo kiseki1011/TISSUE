@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -24,7 +24,8 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Invi
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces")
 public class WorkspaceMembershipController {
 
-	private final WorkspaceMemberService workspaceMemberService;
+	private final WorkspaceMemberCommandService workspaceMemberCommandService;
+	private final WorkspaceMemberInviteService workspaceMemberInviteService;
 
 	/**
 	 * Todo
@@ -53,7 +55,7 @@ public class WorkspaceMembershipController {
 		@PathVariable String code,
 		@RequestBody @Valid InviteMemberRequest request) {
 
-		InviteMemberResponse response = workspaceMemberService.inviteMember(code, request);
+		InviteMemberResponse response = workspaceMemberInviteService.inviteMember(code, request);
 		return ApiResponse.ok("Member invited", response);
 	}
 
@@ -64,7 +66,7 @@ public class WorkspaceMembershipController {
 		@PathVariable String code,
 		@RequestBody @Valid InviteMembersRequest request) {
 
-		InviteMembersResponse response = workspaceMemberService.inviteMembers(code, request);
+		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(code, request);
 		return ApiResponse.ok("Members invited", response);
 	}
 
@@ -77,7 +79,8 @@ public class WorkspaceMembershipController {
 		@ResolveLoginMember LoginMember loginMember
 	) {
 
-		UpdateWorkspaceMemberRoleResponse response = workspaceMemberService.updateWorkspaceMemberRole(code, request,
+		UpdateWorkspaceMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(code,
+			request,
 			loginMember.getId());
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
 	}
@@ -91,7 +94,8 @@ public class WorkspaceMembershipController {
 		@ResolveLoginMember LoginMember loginMember
 	) {
 
-		TransferWorkspaceOwnershipResponse response = workspaceMemberService.transferWorkspaceOwnership(code, request,
+		TransferWorkspaceOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(code,
+			request,
 			loginMember.getId());
 		return ApiResponse.ok("The ownership was successfully transfered", response);
 	}
@@ -109,7 +113,7 @@ public class WorkspaceMembershipController {
 		@RequestBody @Valid KickWorkspaceMemberRequest request
 	) {
 
-		KickWorkspaceMemberResponse response = workspaceMemberService.kickWorkspaceMember(code, request);
+		KickWorkspaceMemberResponse response = workspaceMemberCommandService.kickWorkspaceMember(code, request);
 		return ApiResponse.ok("Member was kicked from this workspace", response);
 	}
 }

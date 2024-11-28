@@ -12,7 +12,7 @@ import com.uranus.taskmanager.api.security.authentication.service.Authentication
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.fixture.api.LoginApiFixture;
 import com.uranus.taskmanager.fixture.api.MemberApiFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
@@ -37,7 +37,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceMemberService workspaceMemberService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@Autowired
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@Autowired

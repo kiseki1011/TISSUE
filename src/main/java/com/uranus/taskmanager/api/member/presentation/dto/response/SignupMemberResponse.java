@@ -1,21 +1,28 @@
 package com.uranus.taskmanager.api.member.presentation.dto.response;
 
+import java.time.LocalDateTime;
+
 import com.uranus.taskmanager.api.member.domain.Member;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class SignupMemberResponse {
 
-	private final String loginId;
-	private final String email;
+	private Long memberId;
+	private LocalDateTime createdAt;
+
+	@Builder
+	public SignupMemberResponse(Long memberId, LocalDateTime createdAt) {
+		this.memberId = memberId;
+		this.createdAt = createdAt;
+	}
 
 	public static SignupMemberResponse from(Member member) {
 		return SignupMemberResponse.builder()
-			.loginId(member.getLoginId())
-			.email(member.getEmail())
+			.memberId(member.getId())
+			.createdAt(member.getCreatedDate())
 			.build();
 	}
 }

@@ -7,9 +7,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
@@ -32,13 +32,13 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 			.password(passwordEncoder.encode("password1234!"))
 			.build());
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
 
 		// when
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
 		assertThat(response.getName()).isEqualTo("workspace1");
@@ -55,7 +55,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 			.password(passwordEncoder.encode("password1234!"))
 			.build());
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
@@ -78,7 +78,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 			.password(passwordEncoder.encode("password1234!"))
 			.build());
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
@@ -103,7 +103,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 				.build()
 		);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
@@ -128,12 +128,12 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 				.build()
 		);
 
-		WorkspaceCreateRequest request1 = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request1 = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
 
-		WorkspaceCreateRequest request2 = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request2 = CreateWorkspaceRequest.builder()
 			.name("workspace2")
 			.description("description2")
 			.build();
@@ -161,7 +161,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 
 		// Create 50 workspaces
 		for (int i = 0; i < 50; i++) {
-			WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+			CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 				.name("workspace" + i)
 				.description("description" + i)
 				.build();
@@ -169,7 +169,7 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 		}
 
 		// when & then
-		WorkspaceCreateRequest request51 = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request51 = CreateWorkspaceRequest.builder()
 			.name("workspace51")
 			.description("description51")
 			.build();
@@ -190,15 +190,15 @@ class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
 				.build()
 		);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build();
 
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode(), member.getId());
+		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.getCode(), member.getId());
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();

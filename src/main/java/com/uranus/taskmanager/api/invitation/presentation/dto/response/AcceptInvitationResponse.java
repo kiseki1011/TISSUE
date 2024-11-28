@@ -11,20 +11,20 @@ import lombok.Getter;
 public class AcceptInvitationResponse {
 	private Long invitationId;
 	private LocalDateTime acceptedAt;
-	private String code;
+	private String workspaceCode;
 
 	@Builder
-	public AcceptInvitationResponse(Long invitationId, LocalDateTime acceptedAt, String code) {
+	public AcceptInvitationResponse(Long invitationId, LocalDateTime acceptedAt, String workspaceCode) {
 		this.invitationId = invitationId;
 		this.acceptedAt = acceptedAt;
-		this.code = code;
+		this.workspaceCode = workspaceCode;
 	}
 
 	public static AcceptInvitationResponse from(Invitation invitation, String code) {
 		return AcceptInvitationResponse.builder()
 			.invitationId(invitation.getId())
 			.acceptedAt(invitation.getLastModifiedDate())
-			.code(code)
+			.workspaceCode(code)
 			.build();
 	}
 }

@@ -30,12 +30,11 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRe
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 import jakarta.servlet.http.HttpSession;
@@ -213,7 +212,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		UpdateMemberEmailResponse response = UpdateMemberEmailResponse.from(
 			Member.builder()
 				.email("newemail@test.com")
-				.build(), "previousmail@test.com");
+				.build());
 
 		when(memberService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong())).thenReturn(response);
 
@@ -224,7 +223,6 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Email update successful."))
-			.andExpect(jsonPath("$.data.emailUpdate.updatedEmail").value("newemail@test.com"))
 			.andDo(print());
 	}
 
@@ -260,7 +258,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(5))
 			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
@@ -272,7 +269,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(10))
 			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
@@ -283,7 +279,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// 기대하는 JSON 응답 생성
@@ -301,7 +297,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.andExpect(content().json(expectedJson))
 			.andDo(print());
 
-		verify(memberQueryService, times(1))
+		verify(memberWorkspaceQueryService, times(1))
 			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 	}
 
@@ -321,7 +317,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(5))
 			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.COLLABORATOR)
 			.build();
 
 		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
@@ -333,7 +328,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.createdAt(LocalDateTime.now().minusDays(10))
 			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
-			.role(WorkspaceRole.MANAGER)
 			.build();
 
 		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
@@ -341,7 +335,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.totalElements(2L)
 			.build();
 
-		when(memberQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// when & then
@@ -352,7 +346,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.param("size", "10"))
 			.andExpect(status().isOk());
 
-		verify(memberQueryService, times(1))
+		verify(memberWorkspaceQueryService, times(1))
 			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 
 	}

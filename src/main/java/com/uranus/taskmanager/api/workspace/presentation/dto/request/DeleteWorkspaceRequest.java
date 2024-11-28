@@ -5,11 +5,11 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WorkspaceDeleteRequest {
+public class DeleteWorkspaceRequest {
 
 	private String password;
 
-	public WorkspaceDeleteRequest(String password) {
+	public DeleteWorkspaceRequest(String password) {
 		this.password = password;
 	}
 }

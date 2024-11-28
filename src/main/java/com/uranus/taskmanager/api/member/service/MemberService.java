@@ -42,14 +42,12 @@ public class MemberService {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 
-		String previousEmail = member.getEmail();
-
 		String toBeEmail = request.getUpdateEmail();
 		memberValidator.validateEmailUpdate(toBeEmail);
 
 		member.updateEmail(toBeEmail);
 
-		return UpdateMemberEmailResponse.from(member, previousEmail);
+		return UpdateMemberEmailResponse.from(member);
 	}
 
 	@Transactional

@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.security.authentication.presentation.dto;
+package com.uranus.taskmanager.api.security.authentication.resolver;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 

@@ -30,7 +30,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 			.password("password123!")
 			.build();
 		LoginResponse loginResponse = LoginResponse.builder()
-			.id(1L)
+			.memberId(1L)
 			.loginId("user123")
 			.email("test@gmail.com")
 			.build();

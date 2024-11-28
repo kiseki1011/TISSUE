@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/members/workspaces")
 public class MemberWorkspaceController {
 
-	private final MemberQueryService memberQueryService;
-	private final WorkspaceMemberService workspaceMemberService;
+	private final MemberWorkspaceQueryService memberWorkspaceQueryService;
+	private final MemberWorkspaceCommandService memberWorkspaceCommandService;
 
 	/**
 	 * Todo
@@ -44,7 +44,7 @@ public class MemberWorkspaceController {
 		@ResolveLoginMember LoginMember loginMember,
 		Pageable pageable) {
 
-		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember.getId(), pageable);
+		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
 
 		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
@@ -57,7 +57,8 @@ public class MemberWorkspaceController {
 		@RequestBody @Valid WorkspaceJoinRequest request
 	) {
 
-		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(code, request, loginMember.getId());
+		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(code, request,
+			loginMember.getId());
 		return ApiResponse.ok("Joined workspace", response);
 	}
 }

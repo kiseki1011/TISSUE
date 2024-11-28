@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -37,7 +37,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Upda
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
+class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 
 	private Member member;
 
@@ -59,10 +59,9 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 	void testGetWorkspaceDetail_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode, loginMember.getId());
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode);
 
 		// then
 		assertThat(response).isNotNull();
@@ -74,10 +73,9 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
 		// given
 		String invalidCode = "INVALIDCODE";
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode, loginMember.getId()))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 
@@ -91,7 +89,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedMember.getLoginId());
 
 		// when
-		InviteMemberResponse inviteMemberResponse = workspaceMemberService.inviteMember(workspaceCode,
+		InviteMemberResponse inviteMemberResponse = workspaceMemberInviteService.inviteMember(workspaceCode,
 			inviteMemberRequest);
 
 		// then
@@ -106,7 +104,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest("nonexistentUser");
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberService.inviteMember(workspaceCode, inviteMemberRequest))
+		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -118,7 +116,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(member.getLoginId());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberService.inviteMember(workspaceCode, inviteMemberRequest))
+		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMember(workspaceCode, inviteMemberRequest))
 			.isInstanceOf(AlreadyJoinedWorkspaceException.class);
 	}
 
@@ -145,7 +143,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 			new FailedInvitedMember("member1", "Member already joined this Workspace"));
 
 		// when
-		InviteMembersResponse response = workspaceMemberService.inviteMembers(workspaceCode, request);
+		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspaceCode, request);
 
 		// then
 		assertThat(response.getInvitedMembers()).isEqualTo(invitedMembers);
@@ -163,7 +161,8 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberService.joinWorkspace(workspaceCode, request, loginMember.getId()))
+		assertThatThrownBy(
+			() -> memberWorkspaceCommandService.joinWorkspace(workspaceCode, request, loginMember.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -176,7 +175,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(workspaceCode, request,
+		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -192,7 +191,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(workspaceCode, request,
+		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -212,7 +211,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 			joiningMember.getEmail());
 
 		// when
-		WorkspaceJoinResponse response = workspaceMemberService.joinWorkspace(workspaceCode, request,
+		WorkspaceJoinResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
 			loginMember.getId());
 
 		// then
@@ -236,12 +235,13 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		workspaceMemberService.joinWorkspace(workspaceCode, new WorkspaceJoinRequest(), member2.getId());
+		memberWorkspaceCommandService.joinWorkspace(workspaceCode, new WorkspaceJoinRequest(), member2.getId());
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member2.getLoginId());
 
 		// when
-		KickWorkspaceMemberResponse response = workspaceMemberService.kickWorkspaceMember(workspaceCode, request);
+		KickWorkspaceMemberResponse response = workspaceMemberCommandService.kickWorkspaceMember(workspaceCode,
+			request);
 
 		// then
 		assertThat(member2.getLoginId()).isEqualTo(response.getMemberIdentifier());
@@ -257,7 +257,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("nonExistentIdentifier");
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberService.kickWorkspaceMember(workspaceCode, request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -272,7 +272,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(nonWorkspaceMember.getLoginId());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberService.kickWorkspaceMember(workspaceCode, request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 
@@ -307,7 +307,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 			WorkspaceRole.MANAGER);
 
 		// when
-		UpdateWorkspaceMemberRoleResponse response = workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+		UpdateWorkspaceMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId());
 
 		// then
@@ -336,7 +336,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("requester",
 			WorkspaceRole.MANAGER);
 
-		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
@@ -371,7 +371,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
@@ -406,7 +406,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.MANAGER);
 
-		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
@@ -441,7 +441,7 @@ class WorkspaceMemberServiceTest extends ServiceIntegrationTestHelper {
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() -> workspaceMemberService.updateWorkspaceMemberRole("TESTCODE",
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
 	}
 }

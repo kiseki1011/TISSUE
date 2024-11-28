@@ -44,8 +44,8 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 		SignupMemberResponse signupMemberResponse = memberService.signup(signupMemberRequest);
 
 		// then
-		assertThat(signupMemberResponse.getLoginId()).isEqualTo("testuser");
-		assertThat(signupMemberResponse.getEmail()).isEqualTo("testemail@test.com");
+		assertThat(signupMemberResponse.getMemberId()).isEqualTo(1L);
+		assertThat(memberRepository.findById(1L).get().getEmail()).isEqualTo("testemail@test.com");
 	}
 
 	@Test
@@ -103,7 +103,7 @@ class MemberServiceTest extends ServiceIntegrationTestHelper {
 		UpdateMemberEmailResponse response = memberService.updateEmail(request, member.getId());
 
 		// then
-		assertThat(response.getEmailUpdate().getUpdatedEmail()).isEqualTo(newEmail);
+		assertThat(response.getMemberId()).isEqualTo(member.getId());
 
 		Member updatedMember = memberRepository.findById(member.getId()).get();
 		assertThat(updatedMember.getEmail()).isEqualTo(newEmail);

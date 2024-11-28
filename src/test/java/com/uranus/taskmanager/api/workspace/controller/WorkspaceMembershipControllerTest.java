@@ -80,7 +80,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		InviteMemberResponse inviteMemberResponse = InviteMemberResponse.from(invitation);
 
-		when(workspaceMemberService.inviteMember(eq(workspaceCode), any(InviteMemberRequest.class)))
+		when(workspaceMemberInviteService.inviteMember(eq(workspaceCode), any(InviteMemberRequest.class)))
 			.thenReturn(inviteMemberResponse);
 
 		// when & then
@@ -116,7 +116,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		InviteMembersResponse inviteMembersResponse = new InviteMembersResponse(successfulResponses, failedResponses);
 
-		when(workspaceMemberService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
+		when(workspaceMemberInviteService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
@@ -164,7 +164,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.failedInvitedMembers(failedResponses)
 			.build();
 
-		when(workspaceMemberService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
+		when(workspaceMemberInviteService.inviteMembers(eq(workspaceCode), any(InviteMembersRequest.class)))
 			.thenReturn(inviteMembersResponse);
 
 		// when & then
@@ -200,7 +200,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		WorkspaceJoinResponse response = WorkspaceJoinResponse.from(workspace, workspaceMember, false);
 
-		when(workspaceMemberService.joinWorkspace(eq(workspaceCode),
+		when(memberWorkspaceCommandService.joinWorkspace(eq(workspaceCode),
 			any(WorkspaceJoinRequest.class),
 			anyLong())).thenReturn(response);
 
@@ -229,7 +229,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		WorkspaceJoinRequest request = new WorkspaceJoinRequest(invalidPassword);
 
-		when(workspaceMemberService.joinWorkspace(eq("TESTCODE"), any(WorkspaceJoinRequest.class), anyLong()))
+		when(memberWorkspaceCommandService.joinWorkspace(eq("TESTCODE"), any(WorkspaceJoinRequest.class), anyLong()))
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then
@@ -261,7 +261,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		KickWorkspaceMemberResponse response = KickWorkspaceMemberResponse.from("member1", workspaceMember);
 
-		when(workspaceMemberService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
+		when(workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/kick", workspaceCode)
@@ -297,7 +297,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
 
-		when(workspaceMemberService.updateWorkspaceMemberRole(eq(workspaceCode),
+		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
 			any(UpdateWorkspaceMemberRoleRequest.class),
 			anyLong())).thenReturn(response);
 
@@ -335,7 +335,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
 
-		when(workspaceMemberService.updateWorkspaceMemberRole(eq(workspaceCode),
+		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
 			any(UpdateWorkspaceMemberRoleRequest.class),
 			anyLong())).thenReturn(response);
 

@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.member.presentation.dto.response;
+package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,10 @@ import lombok.ToString;
 @Getter
 @ToString
 public class MyWorkspacesResponse {
-
+	/**
+	 * Todo
+	 *  - PageInfo 클래스를 만들어서 응답에 포함
+	 */
 	private List<WorkspaceDetail> workspaces = new ArrayList<>();
 	private long totalElements;
 

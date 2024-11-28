@@ -1,8 +1,7 @@
-package com.uranus.taskmanager.api.workspacemember.service;
+package com.uranus.taskmanager.api.workspacemember.service.command;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,40 +17,26 @@ import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.WorkspaceJoinRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.WorkspaceJoinResponse;
 import com.uranus.taskmanager.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceMemberService {
+public class WorkspaceMemberInviteService {
 
 	private final WorkspaceRepository workspaceRepository;
 	private final MemberRepository memberRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationRepository invitationRepository;
 
 	private final WorkspaceMemberValidator workspaceMemberValidator;
-	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public InviteMemberResponse inviteMember(String code, InviteMemberRequest request) {
@@ -102,98 +87,6 @@ public class WorkspaceMemberService {
 		}
 
 		return new InviteMembersResponse(invitedMembers, failedInvitedMembers);
-	}
-
-	/**
-	 * 참여할 워크스페이스의 코드와 참여 요청의 패스워드(null 허용)를 사용해서
-	 * 참여를 요청한 로그인 멤버를 해당 워크스페이스에 참여시킨다.
-	 *
-	 * @param code     - 워크스페이스의 고유 코드
-	 * @param request  - 워크스페이스 참여 요청 객체
-	 * @param memberId - 세션에서 꺼낸 멤버 id(PK)
-	 * @return - 워크스페이스 참여 응답을 위한 DTO
-	 */
-	@Transactional
-	public WorkspaceJoinResponse joinWorkspace(String code, WorkspaceJoinRequest request, Long memberId) {
-
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
-
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
-
-		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
-			memberId, code);
-		if (optionalWorkspaceMember.isPresent()) {
-			return WorkspaceJoinResponse.from(workspace, optionalWorkspaceMember.get(), true);
-		}
-
-		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
-
-		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
-
-		workspaceMemberRepository.save(workspaceMember);
-
-		return WorkspaceJoinResponse.from(workspace, workspaceMember, false);
-	}
-
-	@Transactional
-	public KickWorkspaceMemberResponse kickWorkspaceMember(String code, KickWorkspaceMemberRequest request) {
-
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
-
-		String identifier = request.getMemberIdentifier();
-		Member member = memberRepository.findByMemberIdentifier(identifier)
-			.orElseThrow(MemberNotFoundException::new);
-
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
-
-		workspaceMemberRepository.delete(workspaceMember);
-		workspace.decreaseMemberCount();
-
-		return KickWorkspaceMemberResponse.from(identifier, workspaceMember);
-	}
-
-	@Transactional
-	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(String code,
-		UpdateWorkspaceMemberRoleRequest request, Long requesterId) {
-
-		WorkspaceMember requester = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(requesterId, code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
-
-		WorkspaceMember target = workspaceMemberRepository
-			.findByMemberIdentifierAndWorkspaceCode(request.getMemberIdentifier(), code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
-
-		workspaceMemberValidator.validateRoleUpdate(requester, target);
-
-		target.updateRole(request.getUpdateWorkspaceRole());
-
-		return UpdateWorkspaceMemberRoleResponse.from(target);
-	}
-
-	@Transactional
-	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(String code,
-		TransferWorkspaceOwnershipRequest request, Long requesterId) {
-
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
-
-		WorkspaceMember requester = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceId(requesterId, workspace.getId())
-			.orElseThrow(MemberNotInWorkspaceException::new);
-
-		WorkspaceMember target = workspaceMemberRepository.findByMemberIdentifierAndWorkspaceCode(
-				request.getMemberIdentifier(), code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
-
-		requester.updateRoleFromOwnerToManager();
-		target.updateRoleToOwner();
-
-		return TransferWorkspaceOwnershipResponse.from(target);
 	}
 
 	private void checkIfPendingInvitationExists(Workspace workspace, Member invitedMember) {

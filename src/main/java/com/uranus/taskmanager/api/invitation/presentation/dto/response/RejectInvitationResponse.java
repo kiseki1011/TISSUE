@@ -11,19 +11,19 @@ import lombok.Getter;
 public class RejectInvitationResponse {
 	private Long invitationId;
 	private LocalDateTime rejectedAt;
-	private String code;
+	private String workspaceCode;
 
 	@Builder
-	public RejectInvitationResponse(Long invitationId, LocalDateTime rejectedAt, String code) {
+	public RejectInvitationResponse(Long invitationId, LocalDateTime rejectedAt, String workspaceCode) {
 		this.invitationId = invitationId;
 		this.rejectedAt = rejectedAt;
-		this.code = code;
+		this.workspaceCode = workspaceCode;
 	}
 
 	public static RejectInvitationResponse from(Invitation invitation, String code) {
 		return RejectInvitationResponse.builder()
 			.invitationId(invitation.getId())
-			.code(code)
+			.workspaceCode(code)
 			.rejectedAt(invitation.getLastModifiedDate())
 			.build();
 	}

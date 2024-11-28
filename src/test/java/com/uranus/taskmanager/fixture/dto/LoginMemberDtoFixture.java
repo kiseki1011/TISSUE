@@ -1,6 +1,6 @@
 package com.uranus.taskmanager.fixture.dto;
 
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 
 public class LoginMemberDtoFixture {
 	public LoginMember createLoginMemberDto(Long id, String loginId, String email) {

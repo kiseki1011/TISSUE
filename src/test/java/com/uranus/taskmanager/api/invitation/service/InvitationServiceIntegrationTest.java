@@ -35,14 +35,14 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when
 		AcceptInvitationResponse response = invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.getCode()).isEqualTo("TESTCODE");
+		assertThat(response.getWorkspaceCode()).isEqualTo("TESTCODE");
 		assertThat(response.getInvitationId()).isEqualTo(1L);
 	}
 
@@ -58,7 +58,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when
 		invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
@@ -81,7 +81,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when
 		invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
@@ -105,7 +105,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when & then
 		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), "INVALIDCODE")).isInstanceOf(
@@ -124,7 +124,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// 초대를 거절해서 초대 상태를 REJECTED로 변경
 		invitationService.rejectInvitation(invitedMember.getId(), "TESTCODE");
@@ -146,7 +146,7 @@ class InvitationServiceIntegrationTest extends ServiceIntegrationTestHelper {
 			"password1234!");
 		memberRepository.save(invitedMember);
 
-		workspaceMemberService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
+		workspaceMemberInviteService.inviteMember("TESTCODE", new InviteMemberRequest("invitedMember"));
 
 		// when
 		invitationService.rejectInvitation(invitedMember.getId(), "TESTCODE");

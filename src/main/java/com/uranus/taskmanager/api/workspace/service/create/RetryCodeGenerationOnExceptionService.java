@@ -15,8 +15,8 @@ import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -40,7 +40,7 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request, Long memberId) {
+	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request, Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
@@ -50,10 +50,10 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 				setWorkspaceCode(request);
 				setEncodedPasswordIfPresent(request);
 
-				Workspace workspace = workspaceRepository.saveWithNewTransaction(WorkspaceCreateRequest.to(request));
+				Workspace workspace = workspaceRepository.saveWithNewTransaction(CreateWorkspaceRequest.to(request));
 				addOwnerMemberToWorkspace(member, workspace);
 
-				return WorkspaceCreateResponse.from(workspace);
+				return CreateWorkspaceResponse.from(workspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
 				log.error("Catched exception for workspace code collision.");
 				log.error("Exception: ", e);
@@ -68,12 +68,12 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 		workspaceMemberRepository.save(workspaceMember);
 	}
 
-	private void setWorkspaceCode(WorkspaceCreateRequest request) {
+	private void setWorkspaceCode(CreateWorkspaceRequest request) {
 		String generatedCode = workspaceCodeGenerator.generateWorkspaceCode();
 		request.setCode(generatedCode);
 	}
 
-	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest request) {
+	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request) {
 		String encodedPassword = Optional.ofNullable(request.getPassword())
 			.map(passwordEncoder::encode)
 			.orElse(null);

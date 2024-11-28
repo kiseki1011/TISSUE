@@ -13,8 +13,8 @@ import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHandleException;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -53,7 +53,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public WorkspaceCreateResponse createWorkspace(WorkspaceCreateRequest request,
+	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request,
 		Long memberId) {
 
 		Member member = memberRepository.findById(memberId)
@@ -62,10 +62,10 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		setUniqueWorkspaceCode(request);
 		setEncodedPasswordIfPresent(request);
 
-		Workspace workspace = workspaceRepository.save(WorkspaceCreateRequest.to(request));
+		Workspace workspace = workspaceRepository.save(CreateWorkspaceRequest.to(request));
 		addOwnerMemberToWorkspace(member, workspace);
 
-		return WorkspaceCreateResponse.from(workspace);
+		return CreateWorkspaceResponse.from(workspace);
 	}
 
 	private Optional<String> generateUniqueWorkspaceCode() {
@@ -80,13 +80,13 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return Optional.empty();
 	}
 
-	private void setUniqueWorkspaceCode(WorkspaceCreateRequest workspaceCreateRequest) {
+	private void setUniqueWorkspaceCode(CreateWorkspaceRequest createWorkspaceRequest) {
 		String code = generateUniqueWorkspaceCode()
 			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
-		workspaceCreateRequest.setCode(code);
+		createWorkspaceRequest.setCode(code);
 	}
 
-	private void setEncodedPasswordIfPresent(WorkspaceCreateRequest request) {
+	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request) {
 		String encodedPassword = Optional.ofNullable(request.getPassword())
 			.map(passwordEncoder::encode)
 			.orElse(null);

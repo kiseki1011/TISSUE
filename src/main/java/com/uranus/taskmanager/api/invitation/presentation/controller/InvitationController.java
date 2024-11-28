@@ -10,7 +10,7 @@ import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInv
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 
 import lombok.RequiredArgsConstructor;

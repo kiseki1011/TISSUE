@@ -11,12 +11,12 @@ import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceContentUpdateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspacePasswordUpdateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceCreateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -33,13 +33,13 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(WorkspaceCreateRequest.builder()
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.build(), member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest(), response.getCode(),
+		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.getCode(),
 			member.getId());
 
 		// then
@@ -53,7 +53,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
 
-		WorkspaceCreateResponse response = workspaceCreateService.createWorkspace(WorkspaceCreateRequest.builder()
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
 			.description("description1")
 			.password("password1234!")
@@ -61,7 +61,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("InvalidPassword"),
+			() -> workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest("InvalidPassword"),
 				response.getCode(),
 				member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
@@ -80,7 +80,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new WorkspaceDeleteRequest("password1234!"), "INVALIDCODE",
+			() -> workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest("password1234!"), "INVALIDCODE",
 				member.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
@@ -93,17 +93,17 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
+		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
 			.name("Updated Name")
 			.description("Updated Description")
 			.build();
 
 		// when
-		WorkspaceContentUpdateResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
 
 		// then
-		assertThat(response.getUpdatedTo().getName()).isEqualTo("Updated Name");
-		assertThat(response.getUpdatedTo().getDescription()).isEqualTo("Updated Description");
+		assertThat(response.getName()).isEqualTo("Updated Name");
+		assertThat(response.getDescription()).isEqualTo("Updated Description");
 	}
 
 	@Transactional
@@ -113,16 +113,16 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
+		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
 			.name("Updated Name")
 			.build();
 
 		// when
-		WorkspaceContentUpdateResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
 
 		// then
-		assertThat(response.getUpdatedTo().getName()).isEqualTo("Updated Name");
-		assertThat(response.getUpdatedTo().getDescription()).isEqualTo("description1");
+		assertThat(response.getName()).isEqualTo("Updated Name");
+		assertThat(response.getDescription()).isEqualTo("description1");
 	}
 
 	@Transactional
@@ -132,16 +132,16 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		WorkspaceContentUpdateRequest request = WorkspaceContentUpdateRequest.builder()
+		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
 			.description("Updated Description")
 			.build();
 
 		// when
-		WorkspaceContentUpdateResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
 
 		// then
-		assertThat(response.getUpdatedTo().getName()).isEqualTo("workspace1");
-		assertThat(response.getUpdatedTo().getDescription()).isEqualTo("Updated Description");
+		assertThat(response.getName()).isEqualTo("workspace1");
+		assertThat(response.getDescription()).isEqualTo("Updated Description");
 	}
 
 	@Transactional
@@ -151,7 +151,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
-		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
+		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
 			.updatePassword("updated1234!")
 			.build();
@@ -172,7 +172,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
+		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.updatePassword("updated1234!")
 			.build();
 
@@ -191,7 +191,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
-		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
+		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("invalid1234!")
 			.updatePassword("updated1234!")
 			.build();
@@ -208,7 +208,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
-		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
+		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
 			.build();
 
@@ -229,7 +229,7 @@ class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
-		WorkspacePasswordUpdateRequest request = WorkspacePasswordUpdateRequest.builder()
+		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
 			.updatePassword(null)
 			.build();

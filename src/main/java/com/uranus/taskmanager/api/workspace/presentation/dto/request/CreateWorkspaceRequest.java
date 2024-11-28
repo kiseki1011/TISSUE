@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WorkspaceCreateRequest {
+public class CreateWorkspaceRequest {
 
 	@Size(min = 2, max = 50, message = "Workspace name must be 2 ~ 50 characters long")
 	@NotBlank(message = "Workspace name must not be blank")
@@ -29,7 +29,7 @@ public class WorkspaceCreateRequest {
 	private String code;
 
 	@Builder
-	public WorkspaceCreateRequest(String name, String description, String password, String code) {
+	public CreateWorkspaceRequest(String name, String description, String password, String code) {
 		this.name = name;
 		this.description = description;
 		this.password = password;
@@ -44,7 +44,7 @@ public class WorkspaceCreateRequest {
 		this.password = password;
 	}
 
-	public static Workspace to(WorkspaceCreateRequest request) {
+	public static Workspace to(CreateWorkspaceRequest request) {
 		return Workspace.builder()
 			.name(request.name)
 			.description(request.description)
