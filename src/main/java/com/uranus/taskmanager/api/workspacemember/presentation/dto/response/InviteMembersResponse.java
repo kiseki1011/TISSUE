@@ -2,7 +2,8 @@ package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 
 import java.util.List;
 
-import lombok.Builder;
+import com.uranus.taskmanager.api.member.domain.Member;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,12 +11,30 @@ import lombok.ToString;
 @ToString
 public class InviteMembersResponse {
 
+	private final String workspaceCode;
 	private final List<InvitedMember> invitedMembers;
-	private final List<FailedInvitedMember> failedInvitedMembers;
 
-	@Builder
-	public InviteMembersResponse(List<InvitedMember> invitedMembers, List<FailedInvitedMember> failedInvitedMembers) {
+	private InviteMembersResponse(String workspaceCode, List<InvitedMember> invitedMembers) {
+		this.workspaceCode = workspaceCode;
 		this.invitedMembers = invitedMembers;
-		this.failedInvitedMembers = failedInvitedMembers;
+	}
+
+	public static InviteMembersResponse of(String workspaceCode, List<InvitedMember> invitedMembers) {
+		return new InviteMembersResponse(workspaceCode, invitedMembers);
+	}
+
+	@Getter
+	public static class InvitedMember {
+		private final Long id;
+		private final String email;
+
+		private InvitedMember(Member member) {
+			this.id = member.getId();
+			this.email = member.getEmail();
+		}
+
+		public static InvitedMember from(Member member) {
+			return new InvitedMember(member);
+		}
 	}
 }

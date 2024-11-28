@@ -1,6 +1,8 @@
 package com.uranus.taskmanager.api.member.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +20,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByMemberIdentifier(
 		@Param("identifier") String identifier
 	);
+
+	@Query("SELECT m FROM Member m "
+		+ "WHERE m.email IN :identifiers OR m.loginId IN :identifiers")
+	List<Member> findAllByEmailInOrLoginIdIn(@Param("identifiers") Set<String> identifiers);
 
 	boolean existsByLoginId(String loginId);
 

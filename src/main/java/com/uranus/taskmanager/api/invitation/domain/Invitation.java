@@ -38,6 +38,9 @@ public class Invitation extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
+	@Column(name = "WORKSPACE_CODE", nullable = false)
+	private String workspaceCode;
+
 	@Enumerated(EnumType.STRING)
 	private InvitationStatus status;
 
@@ -46,6 +49,7 @@ public class Invitation extends BaseEntity {
 		this.member = member;
 		this.workspace = workspace;
 		this.status = status;
+		this.workspaceCode = workspace.getCode();
 	}
 
 	public static Invitation addInvitation(Member member, Workspace workspace, InvitationStatus status) {
@@ -59,6 +63,14 @@ public class Invitation extends BaseEntity {
 		workspace.getInvitations().add(invitation);
 
 		return invitation;
+	}
+
+	public static Invitation createPendingInvitation(Workspace workspace, Member member) {
+		return Invitation.builder()
+			.workspace(workspace)
+			.member(member)
+			.status(InvitationStatus.PENDING)
+			.build();
 	}
 
 	public WorkspaceMember addWorkspaceMember() {

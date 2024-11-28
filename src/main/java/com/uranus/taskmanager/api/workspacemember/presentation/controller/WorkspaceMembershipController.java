@@ -14,12 +14,10 @@ import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
@@ -48,17 +46,16 @@ public class WorkspaceMembershipController {
 	 *    - 조건에 따른 검색 적용 필요(QueryDSL 사용할까?)
 	 */
 
-	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
-	@PostMapping("/{code}/members/invite")
-	public ApiResponse<InviteMemberResponse> inviteMember(
-		@PathVariable String code,
-		@RequestBody @Valid InviteMemberRequest request) {
-
-		InviteMemberResponse response = workspaceMemberInviteService.inviteMember(code, request);
-		return ApiResponse.ok("Member invited", response);
-	}
-
+	// @LoginRequired
+	// @RoleRequired(roles = {WorkspaceRole.MANAGER})
+	// @PostMapping("/{code}/members/invite")
+	// public ApiResponse<InviteMemberResponse> inviteMember(
+	// 	@PathVariable String code,
+	// 	@RequestBody @Valid InviteMemberRequest request) {
+	//
+	// 	InviteMemberResponse response = workspaceMemberInviteService.inviteMember(code, request);
+	// 	return ApiResponse.ok("Member invited", response);
+	// }
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PostMapping("/{code}/members/invites")
