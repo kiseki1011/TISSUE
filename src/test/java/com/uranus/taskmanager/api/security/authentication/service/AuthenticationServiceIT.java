@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.authentication.service;
+package com.uranus.taskmanager.api.security.authentication.service;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -14,10 +14,9 @@ import com.uranus.taskmanager.api.security.authentication.exception.InvalidLogin
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.response.LoginResponse;
-import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class AuthenticationServiceTest extends ServiceIntegrationTestHelper {
+class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	@Autowired
 	private AuthenticationService authenticationService;
 	@Autowired

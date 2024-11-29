@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -11,12 +12,14 @@ import lombok.ToString;
 @ToString
 public class InviteMembersResponse {
 
-	private final String workspaceCode;
-	private final List<InvitedMember> invitedMembers;
+	private String workspaceCode;
+	private int totalInvitedMembers;
+	private List<InvitedMember> invitedMembers;
 
 	private InviteMembersResponse(String workspaceCode, List<InvitedMember> invitedMembers) {
 		this.workspaceCode = workspaceCode;
 		this.invitedMembers = invitedMembers;
+		this.totalInvitedMembers = invitedMembers.size();
 	}
 
 	public static InviteMembersResponse of(String workspaceCode, List<InvitedMember> invitedMembers) {
@@ -24,6 +27,7 @@ public class InviteMembersResponse {
 	}
 
 	@Getter
+	@EqualsAndHashCode
 	public static class InvitedMember {
 		private final Long id;
 		private final String email;

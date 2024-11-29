@@ -212,7 +212,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(workspaceQueryService.getWorkspaceDetail(eq(code)))
+		when(workspaceQueryService.getWorkspaceDetail(code))
 			.thenReturn(workspaceDetail);
 
 		// when & then

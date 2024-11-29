@@ -15,7 +15,7 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceCreateServiceTest extends ServiceIntegrationTestHelper {
+class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	public void tearDown() {

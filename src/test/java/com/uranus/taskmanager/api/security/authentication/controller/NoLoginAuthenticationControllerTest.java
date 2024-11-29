@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.authentication.controller;
+package com.uranus.taskmanager.api.security.authentication.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;

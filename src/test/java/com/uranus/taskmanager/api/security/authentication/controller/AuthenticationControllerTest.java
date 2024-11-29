@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.authentication.controller;
+package com.uranus.taskmanager.api.security.authentication.controller;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;

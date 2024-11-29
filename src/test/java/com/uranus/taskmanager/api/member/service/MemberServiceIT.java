@@ -23,7 +23,7 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class MemberServiceTest extends ServiceIntegrationTestHelper {
+class MemberServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	public void tearDown() {

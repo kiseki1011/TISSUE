@@ -1,8 +1,6 @@
-package com.uranus.taskmanager.api.workspace.service;
+package com.uranus.taskmanager.api.workspacemember.service.command;
 
 import static org.assertj.core.api.Assertions.*;
-
-import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,34 +8,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
-import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.FailedInvitedMember;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InvitedMember;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
+class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	private Member member;
 
@@ -52,171 +37,6 @@ class WorkspaceMemberCommandServiceTest extends ServiceIntegrationTestHelper {
 	@AfterEach
 	void tearDown() {
 		databaseCleaner.execute();
-	}
-
-	@Test
-	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 조회하면, 워크스페이스를 반환한다")
-	void testGetWorkspaceDetail_Success() {
-		// given
-		String workspaceCode = "TESTCODE";
-
-		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode);
-
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.getCode()).isEqualTo(workspaceCode);
-	}
-
-	@Test
-	@DisplayName("유효하지 않은 워크스페이스 코드로 워크스페이스를 조회하면, 예외가 발생한다")
-	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
-		// given
-		String invalidCode = "INVALIDCODE";
-
-		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode))
-			.isInstanceOf(WorkspaceNotFoundException.class);
-	}
-
-	@Test
-	@DisplayName("초대가 성공하면 초대가 PENDING 상태로 저장된다")
-	void testInviteMember_Success() {
-		// given
-		String workspaceCode = "TESTCODE";
-		Member invitedMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
-			"password1234!");
-		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(invitedMember.getLoginId());
-
-		// when
-		InviteMemberResponse inviteMemberResponse = workspaceMemberInviteService.inviteMember(workspaceCode,
-			inviteMemberRequest);
-
-		// then
-		assertThat(inviteMemberResponse.getStatus()).isEqualTo(InvitationStatus.PENDING);
-	}
-
-	@Test
-	@DisplayName("존재하지 않는 멤버를 초대하면 예외가 발생한다")
-	void testInviteMember_MemberNotFoundException() {
-		// given
-		String workspaceCode = "TESTCODE";
-		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest("nonexistentUser");
-
-		// when & then
-		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMember(workspaceCode, inviteMemberRequest))
-			.isInstanceOf(MemberNotFoundException.class);
-	}
-
-	@Test
-	@DisplayName("해당 워크스페이스에 이미 참여하고 있는 멤버를 다시 초대하면 예외가 발생한다")
-	void testInviteMember_AlreadyJoinedWorkspaceException() {
-		// given
-		String workspaceCode = "TESTCODE";
-		InviteMemberRequest inviteMemberRequest = new InviteMemberRequest(member.getLoginId());
-
-		// when & then
-		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMember(workspaceCode, inviteMemberRequest))
-			.isInstanceOf(AlreadyJoinedWorkspaceException.class);
-	}
-
-	/**
-	 * Todo
-	 *  - InvitedMember, FailedInvitedMember가 일치하지 않는 문제 때문에 equals & hashCode를 구현했다
-	 *  - 추후에 중복 멤버 또는 identifier를 거르기 위해서 Set을 사용할 예정
-	 *  - InvitedMember, FailedInvitedMember로 분리하지 않고 하나의 클래스를 만들어서 통합하기
-	 */
-	@Test
-	@DisplayName("다수의 멤버의 초대를 시도하면, 성공한 멤버와 실패한 멤버로 나뉜 응답을 받을 수 있다")
-	void testInviteMembers_Success() {
-		// given
-		String workspaceCode = "TESTCODE";
-		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		Member member3 = memberRepositoryFixture.createMember("member3", "member3@test.com", "password1234!");
-
-		InviteMembersRequest request = new InviteMembersRequest(
-			List.of(member.getLoginId(), member2.getLoginId(), member3.getLoginId()));
-
-		List<InvitedMember> invitedMembers = List.of(new InvitedMember(member2.getLoginId(), member2.getEmail()),
-			new InvitedMember(member3.getLoginId(), member3.getEmail()));
-		List<FailedInvitedMember> failedInvitedMembers = List.of(
-			new FailedInvitedMember("member1", "Member already joined this Workspace"));
-
-		// when
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspaceCode, request);
-
-		// then
-		assertThat(response.getInvitedMembers()).isEqualTo(invitedMembers);
-		assertThat(response.getFailedInvitedMembers()).isEqualTo(failedInvitedMembers);
-	}
-
-	@Test
-	@DisplayName("워크스페이스 참여 시 비밀번호가 일치하지 않는 경우 예외가 발생한다")
-	void testJoinWorkspace_InvalidPasswordException() {
-		// given
-		String workspaceCode = "CODE1234";
-		workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
-			"CODE1234", "password1234!");
-		JoinWorkspaceRequest request = new JoinWorkspaceRequest("WrongPassword1234!");
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
-
-		// when & then
-		assertThatThrownBy(
-			() -> memberWorkspaceCommandService.joinWorkspace(workspaceCode, request, loginMember.getId()))
-			.isInstanceOf(InvalidWorkspacePasswordException.class);
-	}
-
-	@Test
-	@DisplayName("워크스페이스 참여가 성공하는 경우 워크스페이스 참여 응답을 정상적으로 반환한다")
-	void testJoinWorkspace_Success() {
-		// given
-		String workspaceCode = "TESTCODE";
-		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
-
-		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
-
-		// then
-		assertThat(response).isNotNull();
-	}
-
-	@Test
-	@DisplayName("이미 워크스페이스에 참여하는 멤버가 참여를 시도하는 경우 응답은 정상적으로 반환되나, 참여 플래그를 true로 반환받는다")
-	void testJoinWorkspace_isAlreadyMemberTrue() {
-		// given
-		String workspaceCode = "TESTCODE";
-		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
-
-		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
-
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.isAlreadyMember()).isTrue();
-	}
-
-	@Test
-	@DisplayName("해당 워크스페이스에 참여하지 않은 멤버가 참여에 성공하는 경우, 참여 플래그를 false로 반환받는다")
-	void testJoinWorkspace_isAlreadyMemberFalse() {
-		// given
-		String workspaceCode = "TESTCODE";
-		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		Member joiningMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
-			"password1234!");
-		LoginMember loginMember = new LoginMember(joiningMember.getId(), joiningMember.getLoginId(),
-			joiningMember.getEmail());
-
-		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
-
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.isAlreadyMember()).isFalse();
 	}
 
 	/**

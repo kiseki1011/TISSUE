@@ -12,7 +12,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequ
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class MemberQueryServiceTest extends ServiceIntegrationTestHelper {
+class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	public void tearDown() {

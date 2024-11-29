@@ -20,7 +20,7 @@ import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWork
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceCommandServiceTest extends ServiceIntegrationTestHelper {
+class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	void tearDown() {

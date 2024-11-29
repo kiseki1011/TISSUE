@@ -46,16 +46,6 @@ public class WorkspaceMembershipController {
 	 *    - 조건에 따른 검색 적용 필요(QueryDSL 사용할까?)
 	 */
 
-	// @LoginRequired
-	// @RoleRequired(roles = {WorkspaceRole.MANAGER})
-	// @PostMapping("/{code}/members/invite")
-	// public ApiResponse<InviteMemberResponse> inviteMember(
-	// 	@PathVariable String code,
-	// 	@RequestBody @Valid InviteMemberRequest request) {
-	//
-	// 	InviteMemberResponse response = workspaceMemberInviteService.inviteMember(code, request);
-	// 	return ApiResponse.ok("Member invited", response);
-	// }
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PostMapping("/{code}/members/invites")
