@@ -3,13 +3,13 @@ package com.uranus.taskmanager.api.workspacemember.presentation.dto.request;
 import java.util.Set;
 
 import jakarta.validation.constraints.NotEmpty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
-@ToString
 @Getter
 @NoArgsConstructor
+@EqualsAndHashCode
 public class InviteMembersRequest {
 
 	@NotEmpty(message = "Member identifiers must not be empty")

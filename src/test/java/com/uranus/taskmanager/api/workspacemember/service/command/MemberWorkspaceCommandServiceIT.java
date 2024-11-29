@@ -22,10 +22,25 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	void setUp() {
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("Test Workspace", "Test Description",
-			"TESTCODE", null);
-		member = memberRepositoryFixture.createMember("member1", "member1@test.com", "password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		member = memberRepositoryFixture.createMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		workspaceRepositoryFixture.addMemberToWorkspace(
+			member,
+			workspace,
+			WorkspaceRole.COLLABORATOR
+		);
 	}
 
 	@AfterEach
@@ -37,15 +52,23 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 참여 시 비밀번호가 일치하지 않는 경우 예외가 발생한다")
 	void testJoinWorkspace_InvalidPasswordException() {
 		// given
-		String workspaceCode = "CODE1234";
-		workspaceRepositoryFixture.createWorkspace("Workspace", "Description",
-			"CODE1234", "password1234!");
+		workspaceRepositoryFixture.createWorkspace(
+			"Workspace",
+			"Workspace with Password",
+			"CODE1234",
+			"password1234!"
+		);
+
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest("WrongPassword1234!");
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(
+			member.getId(),
+			member.getLoginId(),
+			member.getEmail()
+		);
 
 		// when & then
 		assertThatThrownBy(
-			() -> memberWorkspaceCommandService.joinWorkspace(workspaceCode, request, loginMember.getId()))
+			() -> memberWorkspaceCommandService.joinWorkspace("CODE1234", request, loginMember.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -53,13 +76,20 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 참여가 성공하는 경우 워크스페이스 참여 응답을 정상적으로 반환한다")
 	void testJoinWorkspace_Success() {
 		// given
-		String workspaceCode = "TESTCODE";
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
+
+		LoginMember loginMember = new LoginMember(
+			member.getId(),
+			member.getLoginId(),
+			member.getEmail()
+		);
 
 		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+			"TESTCODE",
+			request,
+			loginMember.getId()
+		);
 
 		// then
 		assertThat(response).isNotNull();
@@ -71,11 +101,18 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		LoginMember loginMember = new LoginMember(member.getId(), member.getLoginId(), member.getEmail());
+		LoginMember loginMember = new LoginMember(
+			member.getId(),
+			member.getLoginId(),
+			member.getEmail()
+		);
 
 		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+			workspaceCode,
+			request,
+			loginMember.getId()
+		);
 
 		// then
 		assertThat(response).isNotNull();
@@ -86,16 +123,26 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("해당 워크스페이스에 참여하지 않은 멤버가 참여에 성공하는 경우, 참여 플래그를 false로 반환받는다")
 	void testJoinWorkspace_isAlreadyMemberFalse() {
 		// given
-		String workspaceCode = "TESTCODE";
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		Member joiningMember = memberRepositoryFixture.createMember("member2", "member2@test.com",
-			"password1234!");
-		LoginMember loginMember = new LoginMember(joiningMember.getId(), joiningMember.getLoginId(),
-			joiningMember.getEmail());
+
+		Member joiningMember = memberRepositoryFixture.createMember(
+			"member2",
+			"member2@test.com",
+			"password1234!"
+		);
+
+		LoginMember loginMember = new LoginMember(
+			joiningMember.getId(),
+			joiningMember.getLoginId(),
+			joiningMember.getEmail()
+		);
 
 		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(workspaceCode, request,
-			loginMember.getId());
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+			"TESTCODE",
+			request,
+			loginMember.getId()
+		);
 
 		// then
 		assertThat(response).isNotNull();

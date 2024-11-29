@@ -3,7 +3,6 @@ package com.uranus.taskmanager.api.workspacemember.service.command;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,22 +16,14 @@ import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateExc
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
-
-	private Member member;
-
-	@BeforeEach
-	void setUp() {
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("Test Workspace", "Test Description",
-			"TESTCODE", null);
-		member = memberRepositoryFixture.createMember("member1", "member1@test.com", "password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
-	}
 
 	@AfterEach
 	void tearDown() {
@@ -52,32 +43,56 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버가 워크스페이스에서 성공적으로 추방되면 응답이 반환되어야 한다")
 	void kickWorkspaceMember_Success() {
 		// given
-		String workspaceCode = "TESTCODE";
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
-		Member member2 = memberRepositoryFixture.createMember("member2", "member2@test.com", "password1234!");
-		memberWorkspaceCommandService.joinWorkspace(workspaceCode, new JoinWorkspaceRequest(), member2.getId());
+		Member member = memberRepositoryFixture.createMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
-		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member2.getLoginId());
+		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+
+		// 워크스페이스의 memberCount가 0이하로 떨어지지 않도록 방지하기 위해서 member2 추가
+		Member member2 = memberRepositoryFixture.createMember(
+			"member2",
+			"member2@test.com",
+			"password1234!"
+		);
+		memberWorkspaceCommandService.joinWorkspace("TESTCODE", new JoinWorkspaceRequest(), member2.getId());
+
+		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member.getLoginId());
 
 		// when
-		KickWorkspaceMemberResponse response = workspaceMemberCommandService.kickWorkspaceMember(workspaceCode,
-			request);
+		KickWorkspaceMemberResponse response = workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request);
 
 		// then
-		assertThat(member2.getLoginId()).isEqualTo(response.getMemberIdentifier());
+		assertThat(member.getLoginId()).isEqualTo(response.getMemberIdentifier());
 		assertThat(
-			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member2.getId(), workspaceCode)).isPresent();
+			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), "TESTCODE")
+		).isPresent();
 	}
 
 	@Test
 	@DisplayName("존재하지 않는 멤버를 추방하려고 하면 예외가 발생한다")
 	void kickWorkspaceMember_MemberNotFoundException() {
 		// given
-		String workspaceCode = "TESTCODE";
+		workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("nonExistentIdentifier");
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -85,14 +100,22 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스에 소속되지 않은 멤버를 추방하려는 경우 예외가 발생 한다")
 	void kickWorkspaceMember_MemberNotInWorkspaceException() {
 		// given
-		String workspaceCode = "TESTCODE";
-		Member nonWorkspaceMember = memberRepositoryFixture.createMember("member3", "member3@test.com",
+		workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		Member nonWorkspaceMember = memberRepositoryFixture.createMember(
+			"notJoinedMember",
+			"notJoinedMember@test.com",
 			"password1234!");
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(nonWorkspaceMember.getLoginId());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 
@@ -101,7 +124,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("특정 워크스페이스의 멤버의 권한을 변경에 성공하면 변경된 멤버의 정보를 응답으로 반환한다")
 	void updateWorkspaceMember_success_returnsUpdateWorkspaceMemberRoleResponse() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
 		Member requester = memberRepository.save(Member.builder()
 			.loginId("requester")
@@ -109,8 +137,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
-			WorkspaceRole.MANAGER, requester.getEmail());
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			requester,
+			workspace,
+			WorkspaceRole.MANAGER,
+			requester.getEmail()
+		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		Member targetMember = memberRepository.save(Member.builder()
@@ -119,8 +151,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
-			WorkspaceRole.VIEWER, targetMember.getEmail());
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			targetMember,
+			workspace,
+			WorkspaceRole.VIEWER,
+			targetMember.getEmail()
+		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
@@ -140,7 +176,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("자기 자신의 워크스페이스 멤버 권한을 변경하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateItself() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
 		Member requester = memberRepository.save(Member.builder()
 			.loginId("requester")
@@ -148,8 +189,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
-			WorkspaceRole.MANAGER, requester.getEmail());
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			requester,
+			workspace,
+			WorkspaceRole.MANAGER,
+			requester.getEmail()
+		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		// when & then
@@ -165,7 +210,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 멤버의 권한을 OWNER로 변경하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateToOwner() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
 		Member requester = memberRepository.save(Member.builder()
 			.loginId("requester")
@@ -173,8 +223,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
-			WorkspaceRole.MANAGER, requester.getEmail());
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			requester,
+			workspace,
+			WorkspaceRole.MANAGER,
+			requester.getEmail()
+		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		Member targetMember = memberRepository.save(Member.builder()
@@ -183,16 +237,21 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
-			WorkspaceRole.VIEWER, targetMember.getEmail());
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			targetMember,
+			workspace,
+			WorkspaceRole.VIEWER,
+			targetMember.getEmail()
+		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
-			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+		assertThatThrownBy(() ->
+			workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE", request, requester.getId()))
+			.isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
 	@Transactional
@@ -200,7 +259,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("자기 자신보다 높은 권한을 가진 멤버를 업데이트하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateHigherRoleWorkspaceMember() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
 		Member requester = memberRepository.save(Member.builder()
 			.loginId("requester")
@@ -208,8 +272,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
-			WorkspaceRole.MANAGER, requester.getEmail());
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			requester,
+			workspace,
+			WorkspaceRole.MANAGER,
+			requester.getEmail()
+		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		Member targetMember = memberRepository.save(Member.builder()
@@ -218,16 +286,21 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
-			WorkspaceRole.OWNER, targetMember.getEmail());
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			targetMember,
+			workspace,
+			WorkspaceRole.OWNER,
+			targetMember.getEmail()
+		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.MANAGER);
 
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
-			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+		assertThatThrownBy(() ->
+			workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE", request, requester.getId()))
+			.isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
 	@Transactional
@@ -235,7 +308,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버를 OWNER 권한으로 업데이트하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifOwnerTrysToUpdateWorkspaceMemberToOwner() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE").get();
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
 
 		Member requester = memberRepository.save(Member.builder()
 			.loginId("requester")
@@ -243,8 +321,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(requester, workspace,
-			WorkspaceRole.OWNER, requester.getEmail());
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			requester,
+			workspace,
+			WorkspaceRole.OWNER,
+			requester.getEmail()
+		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		Member targetMember = memberRepository.save(Member.builder()
@@ -253,15 +335,71 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.password("password1234!")
 			.build());
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(targetMember, workspace,
-			WorkspaceRole.MANAGER, targetMember.getEmail());
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			targetMember,
+			workspace,
+			WorkspaceRole.MANAGER,
+			targetMember.getEmail()
+		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
 		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
-			request, requester.getId())).isInstanceOf(InvalidRoleUpdateException.class);
+		assertThatThrownBy(() ->
+			workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE", request, requester.getId()))
+			.isInstanceOf(InvalidRoleUpdateException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버로 워크스페이스 소유권 이전을 성공하면 응답이 반환된다")
+	void testTransferWorkspaceOwnership_ifSuccess_returnTransferWorkspaceOwnershipResponse() {
+		// given
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		Member requester = memberRepository.save(Member.builder()
+			.loginId("requester")
+			.email("requester123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+			requester,
+			workspace
+		);
+		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		Member targetMember = memberRepository.save(Member.builder()
+			.loginId("target")
+			.email("target123@test.com")
+			.password("password1234!")
+			.build());
+
+		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+			targetMember,
+			workspace,
+			WorkspaceRole.MANAGER,
+			targetMember.getEmail()
+		);
+		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		TransferWorkspaceOwnershipRequest request = new TransferWorkspaceOwnershipRequest("target");
+
+		// when
+		TransferWorkspaceOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
+			"TESTCODE",
+			request,
+			requester.getId()
+		);
+
+		// then
+		assertThat(response).isNotNull();
 	}
 }

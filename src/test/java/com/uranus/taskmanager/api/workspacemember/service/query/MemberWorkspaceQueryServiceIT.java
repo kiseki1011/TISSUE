@@ -42,10 +42,18 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
-		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222",
-			null);
+		workspaceRepositoryFixture.createWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			null
+		);
+		workspaceRepositoryFixture.createWorkspace(
+			"workspace2",
+			"description2",
+			"TEST2222",
+			null
+		);
 
 		// member1은 workspace1,2에 참여
 		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember1.getId());
@@ -88,7 +96,12 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.email("member2@test.com")
 			.build();
 
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember2.getId());
+		memberWorkspaceCommandService.joinWorkspace(
+			"TEST1111",
+			new JoinWorkspaceRequest(),
+			loginMember2.getId()
+		);
+
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
@@ -119,13 +132,21 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 
 		// workspace3 ~ 7 이라는 이름으로 워크스페이스 5개 생성
 		for (int i = 3; i <= 7; i++) {
-			Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace" + i, "description" + i,
-				"TEST" + i, null);
+			Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+				"workspace" + i,
+				"description" + i,
+				"TEST" + i,
+				null
+			);
 			workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
 		}
 
 		// 워크스페이스 name 기준 역정렬을 하기 위한 PageRequest
-		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "workspace.name"));
+		Pageable pageable = PageRequest.of(
+			0,
+			20,
+			Sort.by(Sort.Direction.DESC, "workspace.name")
+		);
 
 		// when
 		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
@@ -135,8 +156,13 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 
 		// 역정렬 되었는지 검증
 		List<WorkspaceDetail> workspaces = response.getWorkspaces();
-		List<String> expectedOrder = Arrays.asList("workspace7", "workspace6",
-			"workspace5", "workspace4", "workspace3");
+		List<String> expectedOrder = Arrays.asList(
+			"workspace7",
+			"workspace6",
+			"workspace5",
+			"workspace4",
+			"workspace3"
+		);
 
 		for (int i = 0; i < workspaces.size(); i++) {
 			assertThat(workspaces.get(i).getName()).isEqualTo(expectedOrder.get(i));

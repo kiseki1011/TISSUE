@@ -6,6 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +22,11 @@ import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
@@ -54,14 +62,15 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		Member member = memberEntityFixture.createMember("member1", "member1@test.com");
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
-			workspace);
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
+			.createCollaboratorWorkspaceMember(member, workspace);
 
 		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("member1");
 
 		KickWorkspaceMemberResponse response = KickWorkspaceMemberResponse.from("member1", workspaceMember);
 
-		when(workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request)).thenReturn(response);
+		when(workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/kick", workspaceCode)
@@ -84,8 +93,10 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
-			WorkspaceRole.MANAGER);
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest(
+			"target",
+			WorkspaceRole.MANAGER
+		);
 
 		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
@@ -93,13 +104,16 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build(),
 			Workspace.builder()
 				.code("TESTCODE")
-				.build());
+				.build()
+		);
 
 		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
+		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+			eq(workspaceCode),
 			any(UpdateWorkspaceMemberRoleRequest.class),
-			anyLong())).thenReturn(response);
+			anyLong())
+		).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
@@ -121,8 +135,10 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
-			WorkspaceRole.MANAGER);
+		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest(
+			"target",
+			WorkspaceRole.MANAGER
+		);
 
 		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
@@ -131,13 +147,15 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build(),
 			Workspace.builder()
 				.code("TESTCODE")
-				.build());
+				.build()
+		);
 
 		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
 			any(UpdateWorkspaceMemberRoleRequest.class),
-			anyLong())).thenReturn(response);
+			anyLong())
+		).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
@@ -149,5 +167,93 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.workspaceMemberDetail.email").value("member1@test.com"))
 			.andExpect(jsonPath("$.data.workspaceMemberDetail.workspaceRole").value("MANAGER"))
 			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("워크스페이스 멤버 초대 성공")
+	void inviteMembers_Success() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		String workspaceCode = "TESTCODE";
+		Set<String> memberIdentifiers = new HashSet<>(Arrays.asList(
+			"john@example.com",
+			"jane@example.com"
+		));
+		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
+
+		List<InviteMembersResponse.InvitedMember> invitedMembers = Arrays.asList(
+			new InviteMembersResponse.InvitedMember(1L, "john@example.com"),
+			new InviteMembersResponse.InvitedMember(2L, "jane@example.com")
+		);
+
+		InviteMembersResponse response = InviteMembersResponse.of(workspaceCode, invitedMembers);
+
+		// 로그인 멤버 및 권한 설정
+		when(workspaceMemberInviteService.inviteMembers(workspaceCode, request)).thenReturn(response);
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("200"))
+			.andExpect(jsonPath("$.message").value("Members invited"))
+			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.totalInvitedMembers").value(2))
+			.andExpect(jsonPath("$.data.invitedMembers[0].id").value(1))
+			.andExpect(jsonPath("$.data.invitedMembers[0].email").value("john@example.com"))
+			.andExpect(jsonPath("$.data.invitedMembers[1].id").value(2))
+			.andExpect(jsonPath("$.data.invitedMembers[1].email").value("jane@example.com"))
+			.andDo(print());
+
+		verify(workspaceMemberInviteService).inviteMembers(workspaceCode, request);
+	}
+
+	@Test
+	@DisplayName("비어있는 멤버 목록으로 초대 요청 시 요청 검증 실패")
+	void inviteMembers_Fail_EmptyMemberList() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		String workspaceCode = "TESTCODE";
+		Set<String> memberIdentifiers = new HashSet<>();
+		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"));
+
+		verify(workspaceMemberInviteService, never()).inviteMembers(any(), any());
+	}
+
+	@Test
+	@DisplayName("모든 멤버 식별자가 초대 대상에서 제외되면 예외가 발생한다")
+	void inviteMembers_ifAllIdentifiersExcluded_throwsException() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		String workspaceCode = "TESTCODE";
+		Set<String> memberIdentifiers = Set.of("excludedMember1", "excludedMember2", "excludedMember3");
+		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
+
+		when(workspaceMemberInviteService.inviteMembers(workspaceCode, request)).thenThrow(
+			new NoValidMembersToInviteException());
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").value("No avaliable members were found for invitation."));
 	}
 }

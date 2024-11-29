@@ -37,6 +37,11 @@ public class InviteMembersResponse {
 			this.email = member.getEmail();
 		}
 
+		public InvitedMember(Long id, String email) {
+			this.id = id;
+			this.email = email;
+		}
+
 		public static InvitedMember from(Member member) {
 			return new InvitedMember(member);
 		}

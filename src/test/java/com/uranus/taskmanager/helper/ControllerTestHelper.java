@@ -83,8 +83,6 @@ public abstract class ControllerTestHelper {
 	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@MockBean
 	protected WorkspaceMemberInviteService workspaceMemberInviteService;
-	// @MockBean
-	// protected WorkspaceMembershipQueryService workspaceMembershipQueryService;
 	@MockBean
 	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
 	@MockBean

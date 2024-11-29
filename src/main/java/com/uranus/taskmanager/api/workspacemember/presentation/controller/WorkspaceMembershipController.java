@@ -40,7 +40,6 @@ public class WorkspaceMembershipController {
 
 	/**
 	 * Todo
-	 *  - inviteMember와 inviteMembers 통합하기
 	 *  - getWorkspaceMembers: 특정 워크스페이스에서 존재하는 모든 멤버 목록 조회
 	 *    - 페이징 적용
 	 *    - 조건에 따른 검색 적용 필요(QueryDSL 사용할까?)

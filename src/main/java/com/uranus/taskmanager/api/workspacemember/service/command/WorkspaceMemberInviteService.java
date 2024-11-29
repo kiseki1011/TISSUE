@@ -13,6 +13,7 @@ import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
+import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 
@@ -41,6 +42,10 @@ public class WorkspaceMemberInviteService {
 				return InviteMembersResponse.InvitedMember.from(member);
 			})
 			.toList();
+
+		if (invitedMembers.isEmpty()) {
+			throw new NoValidMembersToInviteException();
+		}
 
 		return InviteMembersResponse.of(workspaceCode, invitedMembers);
 	}
