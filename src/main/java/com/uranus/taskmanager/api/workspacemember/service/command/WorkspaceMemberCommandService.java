@@ -12,10 +12,10 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.validator.WorkspaceMemberValidator;
@@ -32,27 +32,41 @@ public class WorkspaceMemberCommandService {
 	private final WorkspaceMemberValidator workspaceMemberValidator;
 
 	@Transactional
-	public KickWorkspaceMemberResponse kickWorkspaceMember(String code, KickWorkspaceMemberRequest request) {
-
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
-
-		String identifier = request.getMemberIdentifier();
-		Member member = memberRepository.findByMemberIdentifier(identifier)
+	public KickOutMemberResponse kickOutMember(
+		String code,
+		KickOutMemberRequest request,
+		Long requesterId
+	) {
+		/*
+		 * Todo
+		 *  - KickOutMemberResponse에서 memberIdentifier를 응답으로 주는게 필요한건지 한번 고민
+		 *  - 내 생각에는 굳이 없어도 될듯
+		 */
+		String memberIdentifier = request.getMemberIdentifier();
+		Member member = memberRepository.findByMemberIdentifier(memberIdentifier)
 			.orElseThrow(MemberNotFoundException::new);
 
-		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), code)
+		WorkspaceMember target = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), code)
 			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		workspaceMemberRepository.delete(workspaceMember);
-		workspace.decreaseMemberCount();
+		WorkspaceMember requester = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceCode(requesterId, code)
+			.orElseThrow(MemberNotInWorkspaceException::new);
 
-		return KickWorkspaceMemberResponse.from(identifier, workspaceMember);
+		workspaceMemberValidator.validateKickOutMember(requester, target);
+
+		target.remove();
+		workspaceMemberRepository.delete(target);
+
+		return KickOutMemberResponse.from(memberIdentifier, target);
 	}
 
 	@Transactional
-	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(String code,
-		UpdateWorkspaceMemberRoleRequest request, Long requesterId) {
+	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(
+		String code,
+		UpdateWorkspaceMemberRoleRequest request,
+		Long requesterId
+	) {
 
 		WorkspaceMember requester = workspaceMemberRepository
 			.findByMemberIdAndWorkspaceCode(requesterId, code)
@@ -70,8 +84,11 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(String code,
-		TransferWorkspaceOwnershipRequest request, Long requesterId) {
+	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(
+		String code,
+		TransferWorkspaceOwnershipRequest request,
+		Long requesterId
+	) {
 
 		Workspace workspace = workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);

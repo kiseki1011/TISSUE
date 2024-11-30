@@ -137,6 +137,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.workspace(workspace)
 			.role(WorkspaceRole.MANAGER)
 			.build();
 
@@ -176,6 +177,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.workspace(workspace)
 			.role(WorkspaceRole.MANAGER)
 			.build();
 

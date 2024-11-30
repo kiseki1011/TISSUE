@@ -14,11 +14,10 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
@@ -50,49 +49,56 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member = memberRepositoryFixture.createMember(
+		Member requester = memberRepositoryFixture.createMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
 		);
+		WorkspaceMember.addOwnerWorkspaceMember(requester, workspace);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
-
-		// 워크스페이스의 memberCount가 0이하로 떨어지지 않도록 방지하기 위해서 member2 추가
-		Member member2 = memberRepositoryFixture.createMember(
+		Member target = memberRepositoryFixture.createMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"
 		);
-		memberWorkspaceCommandService.joinWorkspace("TESTCODE", new JoinWorkspaceRequest(), member2.getId());
+		workspaceRepositoryFixture.addMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
 
-		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(member.getLoginId());
+		KickOutMemberRequest request = new KickOutMemberRequest(target.getLoginId());
 
 		// when
-		KickWorkspaceMemberResponse response = workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request);
+		KickOutMemberResponse response = workspaceMemberCommandService.kickOutMember("TESTCODE", request,
+			requester.getId());
 
 		// then
-		assertThat(member.getLoginId()).isEqualTo(response.getMemberIdentifier());
+		assertThat(response.getMemberIdentifier()).isEqualTo(target.getLoginId());
 		assertThat(
-			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(member.getId(), "TESTCODE")
-		).isPresent();
+			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(target.getId(), "TESTCODE")
+		).isEmpty();
 	}
 
 	@Test
 	@DisplayName("존재하지 않는 멤버를 추방하려고 하면 예외가 발생한다")
 	void kickWorkspaceMember_MemberNotFoundException() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
 			null
 		);
 
-		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("nonExistentIdentifier");
+		Member requester = memberRepositoryFixture.createMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+
+		KickOutMemberRequest request = new KickOutMemberRequest("nonExistentIdentifier");
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickOutMember("TESTCODE", request, requester.getId()))
 			.isInstanceOf(MemberNotFoundException.class);
 	}
 
@@ -100,22 +106,30 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스에 소속되지 않은 멤버를 추방하려는 경우 예외가 발생 한다")
 	void kickWorkspaceMember_MemberNotInWorkspaceException() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
 			null
 		);
 
+		Member requester = memberRepositoryFixture.createMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+
 		Member nonWorkspaceMember = memberRepositoryFixture.createMember(
 			"notJoinedMember",
 			"notJoinedMember@test.com",
 			"password1234!");
 
-		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest(nonWorkspaceMember.getLoginId());
+		KickOutMemberRequest request = new KickOutMemberRequest(nonWorkspaceMember.getLoginId());
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.kickWorkspaceMember("TESTCODE", request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.kickOutMember("TESTCODE", request, requester.getId()))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 

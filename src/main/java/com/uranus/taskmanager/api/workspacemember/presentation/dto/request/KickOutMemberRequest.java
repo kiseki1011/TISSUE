@@ -5,11 +5,11 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class KickWorkspaceMemberRequest {
+public class KickOutMemberRequest {
 
 	private String memberIdentifier;
 
-	public KickWorkspaceMemberRequest(String memberIdentifier) {
+	public KickOutMemberRequest(String memberIdentifier) {
 		this.memberIdentifier = memberIdentifier;
 	}
 }

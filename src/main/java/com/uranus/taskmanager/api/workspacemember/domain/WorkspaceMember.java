@@ -38,6 +38,9 @@ public class WorkspaceMember extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
+	@Column(name = "WORKSPACE_CODE", nullable = false)
+	private String workspaceCode;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private WorkspaceRole role;
@@ -51,6 +54,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace = workspace;
 		this.role = role;
 		this.nickname = nickname;
+		this.workspaceCode = workspace.getCode();
 	}
 
 	public static WorkspaceMember addWorkspaceMember(Member member, Workspace workspace, WorkspaceRole role,

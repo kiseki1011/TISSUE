@@ -16,15 +16,26 @@ public class WorkspaceMemberValidator {
 		validateRequesterHasHigherRole(requester, target);
 	}
 
+	public void validateKickOutMember(WorkspaceMember requester, WorkspaceMember target) {
+		validateNotSelfKickOut(requester, target);
+		validateRequesterHasHigherRole(requester, target);
+	}
+
 	private void validateNotSelfUpdate(WorkspaceMember requester, WorkspaceMember target) {
 		if (requester.getId().equals(target.getId())) {
 			throw new InvalidRoleUpdateException("Cannot update own role.");
 		}
 	}
 
+	private void validateNotSelfKickOut(WorkspaceMember requester, WorkspaceMember target) {
+		if (requester.getId().equals(target.getId())) {
+			throw new InvalidRoleUpdateException("Cannot kick yourself out.");
+		}
+	}
+
 	private void validateRequesterHasHigherRole(WorkspaceMember requester, WorkspaceMember target) {
 		if (target.getRole().getLevel() >= requester.getRole().getLevel()) {
-			throw new InvalidRoleUpdateException("Cannot update role of member with higher or equal role.");
+			throw new InvalidRoleUpdateException("You must have a higher role than the target member.");
 		}
 	}
 }

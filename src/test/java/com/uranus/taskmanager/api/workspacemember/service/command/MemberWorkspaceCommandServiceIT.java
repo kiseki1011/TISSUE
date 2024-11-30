@@ -12,6 +12,7 @@ import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
@@ -78,10 +79,16 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 
+		Member member2 = memberRepositoryFixture.createMember(
+			"member2",
+			"member2@test.com",
+			"password1234!"
+		);
+
 		LoginMember loginMember = new LoginMember(
-			member.getId(),
-			member.getLoginId(),
-			member.getEmail()
+			member2.getId(),
+			member2.getLoginId(),
+			member2.getEmail()
 		);
 
 		// when
@@ -96,7 +103,7 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("이미 워크스페이스에 참여하는 멤버가 참여를 시도하는 경우 응답은 정상적으로 반환되나, 참여 플래그를 true로 반환받는다")
+	@DisplayName("이미 워크스페이스에 참여하는 멤버가 참여를 시도하는 경우 예외가 발생한다")
 	void testJoinWorkspace_isAlreadyMemberTrue() {
 		// given
 		String workspaceCode = "TESTCODE";
@@ -107,45 +114,13 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			member.getEmail()
 		);
 
-		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
-			workspaceCode,
-			request,
-			loginMember.getId()
-		);
-
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.isAlreadyMember()).isTrue();
+		// when & then
+		assertThatThrownBy(() -> memberWorkspaceCommandService.joinWorkspace(
+				workspaceCode,
+				request,
+				loginMember.getId()
+			)
+		).isInstanceOf(AlreadyJoinedWorkspaceException.class);
 	}
 
-	@Test
-	@DisplayName("해당 워크스페이스에 참여하지 않은 멤버가 참여에 성공하는 경우, 참여 플래그를 false로 반환받는다")
-	void testJoinWorkspace_isAlreadyMemberFalse() {
-		// given
-		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-
-		Member joiningMember = memberRepositoryFixture.createMember(
-			"member2",
-			"member2@test.com",
-			"password1234!"
-		);
-
-		LoginMember loginMember = new LoginMember(
-			joiningMember.getId(),
-			joiningMember.getLoginId(),
-			joiningMember.getEmail()
-		);
-
-		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
-			"TESTCODE",
-			request,
-			loginMember.getId()
-		);
-
-		// then
-		assertThat(response).isNotNull();
-		assertThat(response.isAlreadyMember()).isFalse();
-	}
 }

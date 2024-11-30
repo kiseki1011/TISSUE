@@ -1,7 +1,5 @@
 package com.uranus.taskmanager.api.workspacemember.service.command;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +12,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 
@@ -49,18 +48,15 @@ public class MemberWorkspaceCommandService {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 
-		Optional<WorkspaceMember> optionalWorkspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(
-			memberId, code);
-		if (optionalWorkspaceMember.isPresent()) {
-			return JoinWorkspaceResponse.from(workspace, optionalWorkspaceMember.get(), true);
+		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, code)) {
+			throw new AlreadyJoinedWorkspaceException();
 		}
 
 		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
-
 		workspaceMemberRepository.save(workspaceMember);
 
-		return JoinWorkspaceResponse.from(workspace, workspaceMember, false);
+		return JoinWorkspaceResponse.from(workspaceMember);
 	}
 }

@@ -1,6 +1,7 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import java.time.LocalDateTime;
+
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.Builder;
@@ -9,24 +10,23 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class KickWorkspaceMemberResponse {
+public class KickOutMemberResponse {
 
 	private String memberIdentifier;
 	private String nickname;
-	private WorkspaceRole role;
+	private LocalDateTime kickedOutAt;
 
 	@Builder
-	public KickWorkspaceMemberResponse(String memberIdentifier, String nickname, WorkspaceRole role) {
+	public KickOutMemberResponse(String memberIdentifier, String nickname) {
 		this.memberIdentifier = memberIdentifier;
 		this.nickname = nickname;
-		this.role = role;
+		this.kickedOutAt = LocalDateTime.now();
 	}
 
-	public static KickWorkspaceMemberResponse from(String memberIdentifier, WorkspaceMember workspaceMember) {
-		return KickWorkspaceMemberResponse.builder()
+	public static KickOutMemberResponse from(String memberIdentifier, WorkspaceMember workspaceMember) {
+		return KickOutMemberResponse.builder()
 			.memberIdentifier(memberIdentifier)
 			.nickname(workspaceMember.getNickname())
-			.role(workspaceMember.getRole())
 			.build();
 	}
 }

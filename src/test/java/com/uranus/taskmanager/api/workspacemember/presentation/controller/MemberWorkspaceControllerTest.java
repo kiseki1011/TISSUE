@@ -58,7 +58,7 @@ class MemberWorkspaceControllerTest extends ControllerTestHelper {
 			workspace);
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest();
 
-		JoinWorkspaceResponse response = JoinWorkspaceResponse.from(workspace, workspaceMember, false);
+		JoinWorkspaceResponse response = JoinWorkspaceResponse.from(workspaceMember);
 
 		when(memberWorkspaceCommandService.joinWorkspace(eq(workspaceCode),
 			any(JoinWorkspaceRequest.class),
@@ -71,9 +71,7 @@ class MemberWorkspaceControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Joined workspace"))
-			.andExpect(jsonPath("$.data.alreadyMember").value(false))
 			.andDo(print());
-
 	}
 
 	@Test

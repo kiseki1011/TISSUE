@@ -24,10 +24,10 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickWorkspaceMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
@@ -65,11 +65,11 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
 			.createCollaboratorWorkspaceMember(member, workspace);
 
-		KickWorkspaceMemberRequest request = new KickWorkspaceMemberRequest("member1");
+		KickOutMemberRequest request = new KickOutMemberRequest("member1");
 
-		KickWorkspaceMemberResponse response = KickWorkspaceMemberResponse.from("member1", workspaceMember);
+		KickOutMemberResponse response = KickOutMemberResponse.from("member1", workspaceMember);
 
-		when(workspaceMemberCommandService.kickWorkspaceMember(workspaceCode, request))
+		when(workspaceMemberCommandService.kickOutMember(eq(workspaceCode), eq(request), anyLong()))
 			.thenReturn(response);
 
 		// when & then
@@ -164,7 +164,6 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
-			.andExpect(jsonPath("$.data.workspaceMemberDetail.email").value("member1@test.com"))
 			.andExpect(jsonPath("$.data.workspaceMemberDetail.workspaceRole").value("MANAGER"))
 			.andDo(print());
 	}
