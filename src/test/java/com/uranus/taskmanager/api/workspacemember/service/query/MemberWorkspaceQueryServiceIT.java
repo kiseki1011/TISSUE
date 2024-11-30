@@ -21,7 +21,7 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
@@ -73,7 +73,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(1L, pageable);
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(1L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -105,7 +105,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(2L, pageable);
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(2L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -149,7 +149,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

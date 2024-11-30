@@ -34,7 +34,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberE
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 import jakarta.servlet.http.HttpSession;
@@ -271,7 +271,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.updatedAt(LocalDateTime.now())
 			.build();
 
-		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+		GetMyWorkspacesResponse response = GetMyWorkspacesResponse.builder()
 			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
 			.totalElements(2L)
 			.build();
@@ -330,7 +330,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.updatedAt(LocalDateTime.now())
 			.build();
 
-		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+		GetMyWorkspacesResponse response = GetMyWorkspacesResponse.builder()
 			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
 			.totalElements(2L)
 			.build();

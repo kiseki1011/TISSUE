@@ -13,8 +13,8 @@ import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequi
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 
@@ -40,11 +40,11 @@ public class MemberWorkspaceController {
 
 	@LoginRequired
 	@GetMapping
-	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
+	public ApiResponse<GetMyWorkspacesResponse> getMyWorkspaces(
 		@ResolveLoginMember LoginMember loginMember,
 		Pageable pageable) {
 
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
 
 		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}

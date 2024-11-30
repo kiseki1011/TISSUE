@@ -15,13 +15,13 @@ import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginM
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferOwnershipRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
@@ -59,13 +59,13 @@ public class WorkspaceMembershipController {
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{code}/members/role")
-	public ApiResponse<UpdateWorkspaceMemberRoleResponse> updateWorkspaceMemberRole(
+	public ApiResponse<UpdateMemberRoleResponse> updateWorkspaceMemberRole(
 		@PathVariable String code,
-		@RequestBody @Valid UpdateWorkspaceMemberRoleRequest request,
+		@RequestBody @Valid UpdateMemberRoleRequest request,
 		@ResolveLoginMember LoginMember loginMember
 	) {
 
-		UpdateWorkspaceMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(code,
+		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(code,
 			request,
 			loginMember.getId());
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
@@ -74,34 +74,34 @@ public class WorkspaceMembershipController {
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.OWNER})
 	@PatchMapping("/{code}/members/ownership")
-	public ApiResponse<TransferWorkspaceOwnershipResponse> transferWorkspaceOwnership(
+	public ApiResponse<TransferOwnershipResponse> transferWorkspaceOwnership(
 		@PathVariable String code,
-		@RequestBody @Valid TransferWorkspaceOwnershipRequest request,
+		@RequestBody @Valid TransferOwnershipRequest request,
 		@ResolveLoginMember LoginMember loginMember
 	) {
 
-		TransferWorkspaceOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
+		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			code,
 			request,
 			loginMember.getId()
 		);
 		return ApiResponse.ok("The ownership was successfully transfered", response);
 	}
-	
+
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@DeleteMapping("/{code}/members/kick")
-	public ApiResponse<KickOutMemberResponse> kickWorkspaceMember(
+	public ApiResponse<RemoveMemberResponse> kickWorkspaceMember(
 		@PathVariable String code,
-		@RequestBody @Valid KickOutMemberRequest request,
+		@RequestBody @Valid RemoveMemberRequest request,
 		@ResolveLoginMember LoginMember loginMember
 	) {
 
-		KickOutMemberResponse response = workspaceMemberCommandService.kickOutMember(
+		RemoveMemberResponse response = workspaceMemberCommandService.kickOutMember(
 			code,
 			request,
 			loginMember.getId()
 		);
-		return ApiResponse.ok("Member was kicked from this workspace", response);
+		return ApiResponse.ok("Member was removed from this workspace", response);
 	}
 }

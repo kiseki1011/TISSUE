@@ -24,11 +24,11 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
@@ -65,9 +65,9 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
 			.createCollaboratorWorkspaceMember(member, workspace);
 
-		KickOutMemberRequest request = new KickOutMemberRequest("member1");
+		RemoveMemberRequest request = new RemoveMemberRequest("member1");
 
-		KickOutMemberResponse response = KickOutMemberResponse.from("member1", workspaceMember);
+		RemoveMemberResponse response = RemoveMemberResponse.from("member1", workspaceMember);
 
 		when(workspaceMemberCommandService.kickOutMember(eq(workspaceCode), eq(request), anyLong()))
 			.thenReturn(response);
@@ -78,7 +78,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member was kicked from this workspace"))
+			.andExpect(jsonPath("$.message").value("Member was removed from this workspace"))
 			.andDo(print());
 
 	}
@@ -93,7 +93,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest(
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(
 			"target",
 			WorkspaceRole.MANAGER
 		);
@@ -107,11 +107,11 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(targetWorkspaceMember);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
 			eq(workspaceCode),
-			any(UpdateWorkspaceMemberRoleRequest.class),
+			any(UpdateMemberRoleRequest.class),
 			anyLong())
 		).thenReturn(response);
 
@@ -135,7 +135,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest(
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(
 			"target",
 			WorkspaceRole.MANAGER
 		);
@@ -150,10 +150,10 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateWorkspaceMemberRoleResponse response = UpdateWorkspaceMemberRoleResponse.from(targetWorkspaceMember);
+		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(targetWorkspaceMember);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
-			any(UpdateWorkspaceMemberRoleRequest.class),
+			any(UpdateMemberRoleRequest.class),
 			anyLong())
 		).thenReturn(response);
 

@@ -4,16 +4,18 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.WorkspaceMemberDetail;
 
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 @Getter
-public class UpdateWorkspaceMemberRoleResponse {
+public class TransferOwnershipResponse {
 	private WorkspaceMemberDetail workspaceMemberDetail;
 
-	public UpdateWorkspaceMemberRoleResponse(WorkspaceMemberDetail workspaceMemberDetail) {
+	public TransferOwnershipResponse(WorkspaceMemberDetail workspaceMemberDetail) {
 		this.workspaceMemberDetail = workspaceMemberDetail;
 	}
 
-	public static UpdateWorkspaceMemberRoleResponse from(WorkspaceMember workspaceMember) {
-		return new UpdateWorkspaceMemberRoleResponse(WorkspaceMemberDetail.from(workspaceMember));
+	public static TransferOwnershipResponse from(WorkspaceMember workspaceMember) {
+		return new TransferOwnershipResponse(WorkspaceMemberDetail.from(workspaceMember));
 	}
 }

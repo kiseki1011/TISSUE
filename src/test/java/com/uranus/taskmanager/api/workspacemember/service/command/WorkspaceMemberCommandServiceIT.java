@@ -14,12 +14,12 @@ import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferOwnershipRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -63,10 +63,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceRepositoryFixture.addMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
 
-		KickOutMemberRequest request = new KickOutMemberRequest(target.getLoginId());
+		RemoveMemberRequest request = new RemoveMemberRequest(target.getLoginId());
 
 		// when
-		KickOutMemberResponse response = workspaceMemberCommandService.kickOutMember("TESTCODE", request,
+		RemoveMemberResponse response = workspaceMemberCommandService.kickOutMember("TESTCODE", request,
 			requester.getId());
 
 		// then
@@ -95,7 +95,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
 
-		KickOutMemberRequest request = new KickOutMemberRequest("nonExistentIdentifier");
+		RemoveMemberRequest request = new RemoveMemberRequest("nonExistentIdentifier");
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.kickOutMember("TESTCODE", request, requester.getId()))
@@ -126,7 +126,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"notJoinedMember@test.com",
 			"password1234!");
 
-		KickOutMemberRequest request = new KickOutMemberRequest(nonWorkspaceMember.getLoginId());
+		RemoveMemberRequest request = new RemoveMemberRequest(nonWorkspaceMember.getLoginId());
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.kickOutMember("TESTCODE", request, requester.getId()))
@@ -173,11 +173,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest("target",
 			WorkspaceRole.MANAGER);
 
 		// when
-		UpdateWorkspaceMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
+		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
 			request, requester.getId());
 
 		// then
@@ -212,7 +212,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		// when & then
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("requester",
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest("requester",
 			WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole("TESTCODE",
@@ -260,7 +260,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
@@ -309,7 +309,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest("target",
 			WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() ->
@@ -358,7 +358,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateWorkspaceMemberRoleRequest request = new UpdateWorkspaceMemberRoleRequest("target",
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest("target",
 			WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
@@ -404,10 +404,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
-		TransferWorkspaceOwnershipRequest request = new TransferWorkspaceOwnershipRequest("target");
+		TransferOwnershipRequest request = new TransferOwnershipRequest("target");
 
 		// when
-		TransferWorkspaceOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
+		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			"TESTCODE",
 			request,
 			requester.getId()

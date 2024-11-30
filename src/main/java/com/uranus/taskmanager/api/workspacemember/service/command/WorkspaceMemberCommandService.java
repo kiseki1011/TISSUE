@@ -12,12 +12,12 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.KickOutMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferWorkspaceOwnershipRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateWorkspaceMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.KickOutMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferWorkspaceOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateWorkspaceMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferOwnershipRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -32,9 +32,9 @@ public class WorkspaceMemberCommandService {
 	private final WorkspaceMemberValidator workspaceMemberValidator;
 
 	@Transactional
-	public KickOutMemberResponse kickOutMember(
+	public RemoveMemberResponse kickOutMember(
 		String code,
-		KickOutMemberRequest request,
+		RemoveMemberRequest request,
 		Long requesterId
 	) {
 		/*
@@ -58,13 +58,13 @@ public class WorkspaceMemberCommandService {
 		target.remove();
 		workspaceMemberRepository.delete(target);
 
-		return KickOutMemberResponse.from(memberIdentifier, target);
+		return RemoveMemberResponse.from(memberIdentifier, target);
 	}
 
 	@Transactional
-	public UpdateWorkspaceMemberRoleResponse updateWorkspaceMemberRole(
+	public UpdateMemberRoleResponse updateWorkspaceMemberRole(
 		String code,
-		UpdateWorkspaceMemberRoleRequest request,
+		UpdateMemberRoleRequest request,
 		Long requesterId
 	) {
 
@@ -80,13 +80,13 @@ public class WorkspaceMemberCommandService {
 
 		target.updateRole(request.getUpdateWorkspaceRole());
 
-		return UpdateWorkspaceMemberRoleResponse.from(target);
+		return UpdateMemberRoleResponse.from(target);
 	}
 
 	@Transactional
-	public TransferWorkspaceOwnershipResponse transferWorkspaceOwnership(
+	public TransferOwnershipResponse transferWorkspaceOwnership(
 		String code,
-		TransferWorkspaceOwnershipRequest request,
+		TransferOwnershipRequest request,
 		Long requesterId
 	) {
 
@@ -104,6 +104,6 @@ public class WorkspaceMemberCommandService {
 		requester.updateRoleFromOwnerToManager();
 		target.updateRoleToOwner();
 
-		return TransferWorkspaceOwnershipResponse.from(target);
+		return TransferOwnershipResponse.from(target);
 	}
 }

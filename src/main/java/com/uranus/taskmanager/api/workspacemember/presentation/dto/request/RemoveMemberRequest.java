@@ -1,15 +1,15 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.dto.request;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TransferWorkspaceOwnershipRequest {
+@NoArgsConstructor
+public class RemoveMemberRequest {
+
 	private String memberIdentifier;
 
-	public TransferWorkspaceOwnershipRequest(String memberIdentifier) {
+	public RemoveMemberRequest(String memberIdentifier) {
 		this.memberIdentifier = memberIdentifier;
 	}
 }
