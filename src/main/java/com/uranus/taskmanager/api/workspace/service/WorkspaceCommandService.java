@@ -11,11 +11,10 @@ import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceContentUpdateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspacePasswordUpdateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.validator.WorkspaceValidator;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 
@@ -32,10 +31,9 @@ public class WorkspaceCommandService {
 	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
-	public WorkspaceContentUpdateResponse updateWorkspaceContent(WorkspaceContentUpdateRequest request, String code) {
+	public UpdateWorkspaceResponse updateWorkspaceContent(UpdateWorkspaceRequest request, String code) {
 		Workspace workspace = workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);
-		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(workspace);
 
 		if (request.hasName()) {
 			workspace.updateName(request.getName());
@@ -44,12 +42,11 @@ public class WorkspaceCommandService {
 			workspace.updateDescription(request.getDescription());
 		}
 
-		WorkspaceUpdateDetail updatedTo = WorkspaceUpdateDetail.from(workspace);
-		return WorkspaceContentUpdateResponse.from(original, updatedTo);
+		return UpdateWorkspaceResponse.from(workspace);
 	}
 
 	@Transactional
-	public void updateWorkspacePassword(WorkspacePasswordUpdateRequest request, String code) {
+	public void updateWorkspacePassword(UpdateWorkspacePasswordRequest request, String code) {
 		Workspace workspace = workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);
 
@@ -60,7 +57,7 @@ public class WorkspaceCommandService {
 	}
 
 	@Transactional
-	public void deleteWorkspace(WorkspaceDeleteRequest request, String code, Long id) {
+	public void deleteWorkspace(DeleteWorkspaceRequest request, String code, Long id) {
 		Workspace workspace = workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);
 

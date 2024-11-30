@@ -6,12 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.validator.MemberValidator;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 
@@ -27,16 +27,18 @@ public class MemberService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public SignupResponse signup(SignupRequest request) {
+	public SignupMemberResponse signup(SignupMemberRequest request) {
 		memberValidator.validateSignup(request);
 
-		Member member = createMember(request);
+		String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-		return SignupResponse.from(memberRepository.save(member));
+		Member member = SignupMemberRequest.to(request, encodedPassword);
+
+		return SignupMemberResponse.from(memberRepository.save(member));
 	}
 
 	@Transactional
-	public MemberEmailUpdateResponse updateEmail(MemberEmailUpdateRequest request, Long memberId) {
+	public UpdateMemberEmailResponse updateEmail(UpdateMemberEmailRequest request, Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 
@@ -45,21 +47,21 @@ public class MemberService {
 
 		member.updateEmail(toBeEmail);
 
-		return MemberEmailUpdateResponse.from(member);
+		return UpdateMemberEmailResponse.from(member);
 	}
 
 	@Transactional
-	public void updatePassword(MemberPasswordUpdateRequest request, Long id) {
+	public void updatePassword(UpdateMemberPasswordRequest request, Long id) {
 		Member member = memberRepository.findById(id)
 			.orElseThrow(MemberNotFoundException::new);
 
-		String toBePassword = encodePassword(request.getUpdatePassword());
+		String toBePassword = passwordEncoder.encode(request.getUpdatePassword());
 
 		member.updatePassword(toBePassword);
 	}
 
 	@Transactional
-	public void withdrawMember(MemberWithdrawRequest request, Long memberId) {
+	public void withdraw(WithdrawMemberRequest request, Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 
@@ -69,14 +71,4 @@ public class MemberService {
 		memberRepository.delete(member);
 	}
 
-	private Member createMember(SignupRequest request) {
-		String encodedPassword = encodePassword(request.getPassword());
-
-		// Todo: 그냥 빌더 사용 고려, SignupRequest의 toMember 제거
-		return SignupRequest.to(request, encodedPassword);
-	}
-
-	private String encodePassword(String password) {
-		return passwordEncoder.encode(password);
-	}
 }

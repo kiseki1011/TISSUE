@@ -29,8 +29,12 @@ import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMemberController;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.MemberWorkspaceController;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMembershipController;
+import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 		AuthenticationController.class,
 		InvitationController.class,
 		WorkspaceController.class,
-		WorkspaceMemberController.class,
+		WorkspaceMembershipController.class,
+		MemberWorkspaceController.class,
 		MemberController.class
 	},
 	excludeFilters = {
@@ -75,7 +80,13 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean
-	protected WorkspaceMemberService workspaceMemberService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	@MockBean
+	protected WorkspaceMemberInviteService workspaceMemberInviteService;
+	@MockBean
+	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
+	@MockBean
+	protected MemberWorkspaceCommandService memberWorkspaceCommandService;
 	@MockBean
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@MockBean

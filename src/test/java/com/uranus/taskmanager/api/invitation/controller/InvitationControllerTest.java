@@ -13,11 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
-import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
-import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
@@ -41,15 +38,9 @@ class InvitationControllerTest extends ControllerTestHelper {
 	void test1() throws Exception {
 		// given
 		String code = "TESTCODE";
-		Workspace workspace = Workspace.builder()
-			.code(code)
-			.name("workspace1")
-			.description("description1")
-			.build();
-
-		InvitationAcceptResponse response = InvitationAcceptResponse.builder()
-			.workspaceDetail(WorkspaceDetail.from(workspace, WorkspaceRole.COLLABORATOR))
-			.nickname("member1@test.com")
+		
+		AcceptInvitationResponse response = AcceptInvitationResponse.builder()
+			.invitationId(1L)
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
@@ -62,7 +53,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Invitation Accepted"))
+			.andExpect(jsonPath("$.message").value("Invitation Accepted."))
 			.andExpect(jsonPath("$.data").exists())
 			.andDo(print());
 	}
@@ -102,7 +93,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Invitation Rejected"))
+			.andExpect(jsonPath("$.message").value("Invitation Rejected."))
 			.andExpect(jsonPath("$.data").doesNotExist())
 			.andDo(print());
 	}

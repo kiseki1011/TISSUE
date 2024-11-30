@@ -6,7 +6,7 @@ import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
 import com.uranus.taskmanager.api.member.exception.DuplicateLoginIdException;
 import com.uranus.taskmanager.api.member.exception.OwnedWorkspaceExistsException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
@@ -22,7 +22,7 @@ public class MemberValidator {
 
 	private final PasswordEncoder passwordEncoder;
 
-	public void validateSignup(SignupRequest request) {
+	public void validateSignup(SignupMemberRequest request) {
 		validateLoginIdNotExists(request.getLoginId());
 		validateEmailNotExists(request.getEmail());
 	}
@@ -46,7 +46,7 @@ public class MemberValidator {
 			throw new DuplicateLoginIdException();
 		}
 	}
-	
+
 	private void validateEmailNotExists(String email) {
 		if (memberRepository.existsByEmail(email)) {
 			throw new DuplicateEmailException();

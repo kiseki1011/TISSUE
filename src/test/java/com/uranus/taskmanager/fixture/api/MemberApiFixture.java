@@ -3,7 +3,7 @@ package com.uranus.taskmanager.fixture.api;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -13,7 +13,7 @@ import io.restassured.response.Response;
 public class MemberApiFixture {
 
 	public void signupApi(String loginId, String email, String password) {
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email(email)
 			.password(password)
@@ -21,7 +21,7 @@ public class MemberApiFixture {
 
 		Response response = RestAssured.given()
 			.contentType(ContentType.JSON)
-			.body(signupRequest)
+			.body(signupMemberRequest)
 			.when()
 			.post("/api/v1/members/signup")
 			.then()

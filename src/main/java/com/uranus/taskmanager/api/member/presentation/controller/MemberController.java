@@ -1,9 +1,7 @@
 package com.uranus.taskmanager.api.member.presentation.controller;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,18 +10,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberEmailUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberPasswordUpdateRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.MemberWithdrawRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MemberEmailUpdateResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.api.member.presentation.dto.response.SignupResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.service.MemberQueryService;
 import com.uranus.taskmanager.api.member.service.MemberService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 import com.uranus.taskmanager.api.security.session.SessionValidator;
@@ -53,9 +50,9 @@ public class MemberController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping("/signup")
-	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
+	public ApiResponse<SignupMemberResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
 
-		SignupResponse response = memberService.signup(request);
+		SignupMemberResponse response = memberService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
 	}
 
@@ -74,13 +71,13 @@ public class MemberController {
 
 	@LoginRequired
 	@PatchMapping("/email")
-	public ApiResponse<MemberEmailUpdateResponse> updateEmail(
-		@RequestBody @Valid MemberEmailUpdateRequest request,
+	public ApiResponse<UpdateMemberEmailResponse> updateEmail(
+		@RequestBody @Valid UpdateMemberEmailRequest request,
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
 		sessionValidator.validateUpdatePermission(session);
-		MemberEmailUpdateResponse response = memberService.updateEmail(request, loginMember.getId());
+		UpdateMemberEmailResponse response = memberService.updateEmail(request, loginMember.getId());
 		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
 
 		return ApiResponse.ok("Email update successful.", response);
@@ -89,7 +86,7 @@ public class MemberController {
 	@LoginRequired
 	@PatchMapping("/password")
 	public ApiResponse<Void> updatePassword(
-		@RequestBody @Valid MemberPasswordUpdateRequest request,
+		@RequestBody @Valid UpdateMemberPasswordRequest request,
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
@@ -102,29 +99,14 @@ public class MemberController {
 	@LoginRequired
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
-		@RequestBody MemberWithdrawRequest request,
+		@RequestBody WithdrawMemberRequest request,
 		@ResolveLoginMember LoginMember loginMember,
 		HttpSession session) {
 
 		sessionValidator.validateUpdatePermission(session);
-		memberService.withdrawMember(request, loginMember.getId());
+		memberService.withdraw(request, loginMember.getId());
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
-	}
-
-	/**
-	 * Todo
-	 *  - MemberWorkspaceController로 이동
-	 */
-	@LoginRequired
-	@GetMapping("/workspaces")
-	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
-		@ResolveLoginMember LoginMember loginMember,
-		Pageable pageable) {
-
-		MyWorkspacesResponse response = memberQueryService.getMyWorkspaces(loginMember.getId(), pageable);
-
-		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
 }

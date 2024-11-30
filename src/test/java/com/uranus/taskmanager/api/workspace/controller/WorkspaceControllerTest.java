@@ -22,11 +22,10 @@ import org.springframework.mock.web.MockHttpSession;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceUpdateDetail;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceContentUpdateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceCreateRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.WorkspaceDeleteRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.WorkspaceContentUpdateResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
@@ -40,7 +39,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
@@ -76,7 +75,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name(name)
 			.description(description)
 			.build();
@@ -106,7 +105,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		String nameValidMsg = "Workspace name must be 2 ~ 50 characters long";
 		String descriptionValidMsg = "Workspace description must be 1 ~ 255 characters long";
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name(longName)
 			.description(longDescription)
 			.build();
@@ -129,16 +128,16 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		WorkspaceContentUpdateRequest request = new WorkspaceContentUpdateRequest("New Title", "New Description");
-		WorkspaceUpdateDetail original = WorkspaceUpdateDetail.from(Workspace.builder().build());
-		WorkspaceUpdateDetail updateTo = WorkspaceUpdateDetail.from(Workspace.builder().build());
-		WorkspaceContentUpdateResponse response = new WorkspaceContentUpdateResponse(original, updateTo);
+		UpdateWorkspaceRequest request = new UpdateWorkspaceRequest("New Title", "New Description");
+
+		UpdateWorkspaceResponse response = UpdateWorkspaceResponse.from(Workspace.builder().build());
 
 		// Workspace, WorkspaceMember 모의 객체 만들기
 		Workspace workspace = Workspace.builder()
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.workspace(workspace)
 			.role(WorkspaceRole.MANAGER)
 			.build();
 
@@ -147,7 +146,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
 
-		when(workspaceCommandService.updateWorkspaceContent(ArgumentMatchers.any(WorkspaceContentUpdateRequest.class),
+		when(workspaceCommandService.updateWorkspaceContent(ArgumentMatchers.any(UpdateWorkspaceRequest.class),
 			eq("TEST1111")))
 			.thenReturn(response);
 
@@ -161,7 +160,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
-			.updateWorkspaceContent(ArgumentMatchers.any(WorkspaceContentUpdateRequest.class), eq("TEST1111"));
+			.updateWorkspaceContent(ArgumentMatchers.any(UpdateWorkspaceRequest.class), eq("TEST1111"));
 	}
 
 	@Test
@@ -171,13 +170,14 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		WorkspaceDeleteRequest request = new WorkspaceDeleteRequest("password1234!");
+		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
 
 		// Workspace, WorkspaceMember 모의 객체 만들기
 		Workspace workspace = Workspace.builder()
 			.code("TEST1111")
 			.build();
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
+			.workspace(workspace)
 			.role(WorkspaceRole.MANAGER)
 			.build();
 
@@ -196,7 +196,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data").value("TEST1111"));
 
 		verify(workspaceCommandService, times(1))
-			.deleteWorkspace(ArgumentMatchers.any(WorkspaceDeleteRequest.class), eq("TEST1111"), anyLong());
+			.deleteWorkspace(ArgumentMatchers.any(DeleteWorkspaceRequest.class), eq("TEST1111"), anyLong());
 	}
 
 	@Test
@@ -208,14 +208,13 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		WorkspaceDetail workspaceDetail = WorkspaceDetail.builder()
 			.name("Test Workspace")
 			.description("Test Description")
-			.role(WorkspaceRole.MANAGER)
 			.code(code)
 			.build();
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(workspaceQueryService.getWorkspaceDetail(eq(code), anyLong()))
+		when(workspaceQueryService.getWorkspaceDetail(code))
 			.thenReturn(workspaceDetail);
 
 		// when & then

@@ -26,10 +26,10 @@ public class SessionManager {
 
 	// 로그인 세션 설정, 관리
 	public void createLoginSession(HttpSession session, LoginResponse loginResponse) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getId());
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getMemberId());
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
-		log.info("Login session created for member ID: {}", loginResponse.getId());
+		log.info("Login session created for member ID: {}", loginResponse.getMemberId());
 	}
 
 	public Member getLoginMember(HttpSession session) {

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UpdateAuthRequest {
+
 	private String password;
 
 	public UpdateAuthRequest(String password) {

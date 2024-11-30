@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 
 import lombok.RequiredArgsConstructor;
@@ -24,19 +25,19 @@ public class InvitationController {
 
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/accept")
-	public ApiResponse<InvitationAcceptResponse> acceptInvitation(@PathVariable String workspaceCode,
+	public ApiResponse<AcceptInvitationResponse> acceptInvitation(@PathVariable String workspaceCode,
 		@ResolveLoginMember LoginMember loginMember) {
 
-		InvitationAcceptResponse response = invitationService.acceptInvitation(loginMember.getId(), workspaceCode);
-		return ApiResponse.ok("Invitation Accepted", response);
+		AcceptInvitationResponse response = invitationService.acceptInvitation(loginMember.getId(), workspaceCode);
+		return ApiResponse.ok("Invitation Accepted.", response);
 	}
 
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/reject")
-	public ApiResponse<Void> rejectInvitation(@PathVariable String workspaceCode,
+	public ApiResponse<RejectInvitationResponse> rejectInvitation(@PathVariable String workspaceCode,
 		@ResolveLoginMember LoginMember loginMember) {
 
-		invitationService.rejectInvitation(loginMember.getId(), workspaceCode);
-		return ApiResponse.ok("Invitation Rejected", null);
+		RejectInvitationResponse response = invitationService.rejectInvitation(loginMember.getId(), workspaceCode);
+		return ApiResponse.ok("Invitation Rejected.", response);
 	}
 }

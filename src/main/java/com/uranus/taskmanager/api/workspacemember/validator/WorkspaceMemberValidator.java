@@ -3,8 +3,6 @@ package com.uranus.taskmanager.api.workspacemember.validator;
 import org.springframework.stereotype.Component;
 
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 
 import lombok.RequiredArgsConstructor;
@@ -13,20 +11,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceMemberValidator {
 
-	private final WorkspaceMemberRepository workspaceMemberRepository;
-
-	public void validateIfAlreadyJoined(Long memberId, String workspaceCode) {
-		if (isAlreadyWorkspaceMember(memberId, workspaceCode)) {
-			throw new AlreadyJoinedWorkspaceException();
-		}
-	}
-
-	private boolean isAlreadyWorkspaceMember(Long memberId, String workspaceCode) {
-		return workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode);
-	}
-
 	public void validateRoleUpdate(WorkspaceMember requester, WorkspaceMember target) {
 		validateNotSelfUpdate(requester, target);
+		validateRequesterHasHigherRole(requester, target);
+	}
+
+	public void validateKickOutMember(WorkspaceMember requester, WorkspaceMember target) {
+		validateNotSelfKickOut(requester, target);
 		validateRequesterHasHigherRole(requester, target);
 	}
 
@@ -36,9 +27,15 @@ public class WorkspaceMemberValidator {
 		}
 	}
 
+	private void validateNotSelfKickOut(WorkspaceMember requester, WorkspaceMember target) {
+		if (requester.getId().equals(target.getId())) {
+			throw new InvalidRoleUpdateException("Cannot kick yourself out.");
+		}
+	}
+
 	private void validateRequesterHasHigherRole(WorkspaceMember requester, WorkspaceMember target) {
 		if (target.getRole().getLevel() >= requester.getRole().getLevel()) {
-			throw new InvalidRoleUpdateException("Cannot update role of member with higher or equal role.");
+			throw new InvalidRoleUpdateException("You must have a higher role than the target member.");
 		}
 	}
 }

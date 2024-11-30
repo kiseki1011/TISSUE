@@ -8,7 +8,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
+import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.mock.MockAuthenticationInterceptor;
 import com.uranus.taskmanager.mock.MockAuthorizationInterceptor;
 import com.uranus.taskmanager.mock.MockLoginMemberArgumentResolver;

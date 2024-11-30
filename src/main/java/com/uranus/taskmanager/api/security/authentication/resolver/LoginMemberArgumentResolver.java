@@ -8,7 +8,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.security.authentication.presentation.dto.LoginMember;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;

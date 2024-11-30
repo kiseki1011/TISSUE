@@ -14,17 +14,20 @@ import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
 import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspace.service.create.RetryCodeGenerationOnExceptionService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.service.WorkspaceMemberService;
+import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @SpringBootTest
 public abstract class ServiceIntegrationTestHelper {
+
 	/**
 	 * Common
 	 */
@@ -39,7 +42,15 @@ public abstract class ServiceIntegrationTestHelper {
 	 * Service
 	 */
 	@Autowired
-	protected WorkspaceMemberService workspaceMemberService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	@Autowired
+	protected WorkspaceMemberInviteService workspaceMemberInviteService;
+	@Autowired
+	protected WorkspaceMemberQueryService workspaceMemberQueryService;
+	@Autowired
+	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
+	@Autowired
+	protected MemberWorkspaceCommandService memberWorkspaceCommandService;
 	@Autowired
 	protected WorkspaceQueryService workspaceQueryService;
 	@Autowired

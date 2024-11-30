@@ -3,11 +3,12 @@ package com.uranus.taskmanager.api.invitation.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
-import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationAcceptResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.uranus.taskmanager.api.invitation.validator.InvitationValidator;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -23,23 +24,23 @@ public class InvitationService {
 	private final InvitationValidator invitationValidator;
 
 	@Transactional
-	public InvitationAcceptResponse acceptInvitation(Long memberId, String workspaceCode) {
+	public AcceptInvitationResponse acceptInvitation(Long memberId, String workspaceCode) {
 
 		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
-
 		WorkspaceMember workspaceMember = invitation.accept();
 
 		workspaceMemberRepository.save(workspaceMember);
 
-		return InvitationAcceptResponse.from(invitation.getWorkspace());
+		return AcceptInvitationResponse.from(invitation, workspaceCode);
 	}
 
 	@Transactional
-	public void rejectInvitation(Long memberId, String workspaceCode) {
+	public RejectInvitationResponse rejectInvitation(Long memberId, String workspaceCode) {
 
 		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
-
 		invitation.reject();
+
+		return RejectInvitationResponse.from(invitation, workspaceCode);
 	}
 
 	private Invitation getValidPendingInvitation(Long memberId, String workspaceCode) {
