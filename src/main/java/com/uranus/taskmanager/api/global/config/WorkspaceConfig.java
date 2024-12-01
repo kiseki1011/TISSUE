@@ -7,8 +7,8 @@ import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.util.WorkspaceCodeGenerator;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.create.RetryCodeGenerationOnExceptionService;
-import com.uranus.taskmanager.api.workspace.service.create.WorkspaceCreateService;
+import com.uranus.taskmanager.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.uranus.taskmanager.api.workspace.service.command.create.WorkspaceCreateService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;

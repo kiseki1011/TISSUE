@@ -3,7 +3,6 @@ package com.uranus.taskmanager.api.workspacemember.domain;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 
 import jakarta.persistence.Column;

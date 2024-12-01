@@ -24,10 +24,10 @@ import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorks
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.create.WorkspaceCreateService;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandService;
+import com.uranus.taskmanager.api.workspace.service.command.create.WorkspaceCreateService;
+import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 
 import lombok.Builder;
 import lombok.Getter;

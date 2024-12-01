@@ -63,7 +63,7 @@ public class Workspace extends BaseEntity {
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workspace")
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
 
 	@Builder

@@ -9,7 +9,7 @@ import com.uranus.taskmanager.api.member.exception.OwnedWorkspaceExistsException
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;

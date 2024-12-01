@@ -17,8 +17,8 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPa
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.uranus.taskmanager.api.member.service.MemberQueryService;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
@@ -42,7 +42,7 @@ public class MemberController {
 	 * 	  - 기입한 로그인 ID, 이메일이 일치하면 이메일로 임시 비밀번호 보내기
 	 * 	  - 또는 비밀번호 재설정 링크 보내기
 	 */
-	private final MemberService memberService;
+	private final MemberCommandService memberCommandService;
 	private final MemberQueryService memberQueryService;
 
 	private final SessionManager sessionManager;
@@ -52,7 +52,7 @@ public class MemberController {
 	@PostMapping("/signup")
 	public ApiResponse<SignupMemberResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
 
-		SignupMemberResponse response = memberService.signup(request);
+		SignupMemberResponse response = memberCommandService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
 	}
 
@@ -77,7 +77,7 @@ public class MemberController {
 		HttpSession session) {
 
 		sessionValidator.validateUpdatePermission(session);
-		UpdateMemberEmailResponse response = memberService.updateEmail(request, loginMember.getId());
+		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMember.getId());
 		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
 
 		return ApiResponse.ok("Email update successful.", response);
@@ -91,7 +91,7 @@ public class MemberController {
 		HttpSession session) {
 
 		sessionValidator.validateUpdatePermission(session);
-		memberService.updatePassword(request, loginMember.getId());
+		memberCommandService.updatePassword(request, loginMember.getId());
 
 		return ApiResponse.okWithNoContent("Password update successful.");
 	}
@@ -104,7 +104,7 @@ public class MemberController {
 		HttpSession session) {
 
 		sessionValidator.validateUpdatePermission(session);
-		memberService.withdraw(request, loginMember.getId());
+		memberCommandService.withdraw(request, loginMember.getId());
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");

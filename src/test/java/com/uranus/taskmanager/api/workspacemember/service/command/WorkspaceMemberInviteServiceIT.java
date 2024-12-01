@@ -12,7 +12,7 @@ import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;

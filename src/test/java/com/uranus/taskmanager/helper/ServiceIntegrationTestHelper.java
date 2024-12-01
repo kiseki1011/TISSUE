@@ -6,13 +6,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberQueryService;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.create.RetryCodeGenerationOnExceptionService;
+import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandService;
+import com.uranus.taskmanager.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
@@ -56,7 +56,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceCommandService workspaceCommandService;
 	@Autowired
-	protected MemberService memberService;
+	protected MemberCommandService memberCommandService;
 	@Autowired
 	protected MemberQueryService memberQueryService;
 	@Autowired

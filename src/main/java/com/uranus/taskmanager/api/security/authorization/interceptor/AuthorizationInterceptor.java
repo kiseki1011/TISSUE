@@ -15,8 +15,8 @@ import com.uranus.taskmanager.api.security.session.SessionValidator;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 

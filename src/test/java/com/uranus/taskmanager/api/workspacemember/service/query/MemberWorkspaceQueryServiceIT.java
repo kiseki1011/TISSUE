@@ -19,7 +19,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRe
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
@@ -29,7 +29,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@BeforeEach
 	void setup() {
 		// member1 회원가입
-		memberService.signup(SignupMemberRequest.builder()
+		memberCommandService.signup(SignupMemberRequest.builder()
 			.loginId("member1")
 			.email("member1@test.com")
 			.password("member1password!")
@@ -84,7 +84,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
 	void test2() {
 		// given
-		memberService.signup(SignupMemberRequest.builder()
+		memberCommandService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
@@ -116,7 +116,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
 	void test6() {
 		// given
-		memberService.signup(SignupMemberRequest.builder()
+		memberCommandService.signup(SignupMemberRequest.builder()
 			.loginId("member2")
 			.email("member2@test.com")
 			.password("member2password!")
