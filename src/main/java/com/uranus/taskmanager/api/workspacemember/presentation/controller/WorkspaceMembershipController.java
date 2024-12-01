@@ -13,7 +13,7 @@ import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequi
 import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferOwnershipRequest;

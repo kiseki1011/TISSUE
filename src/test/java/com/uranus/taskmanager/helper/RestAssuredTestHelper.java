@@ -7,10 +7,10 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.fixture.api.LoginApiFixture;
@@ -43,7 +43,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected InvitationService invitationService;
 	@Autowired
-	protected MemberService memberService;
+	protected MemberCommandService memberCommandService;
 
 	/**
 	 * Repository

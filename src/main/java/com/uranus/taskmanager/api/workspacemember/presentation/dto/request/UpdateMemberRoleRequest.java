@@ -1,6 +1,6 @@
 package com.uranus.taskmanager.api.workspacemember.presentation.dto.request;
 
-import com.uranus.taskmanager.api.workspacemember.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -17,17 +17,17 @@ import com.uranus.taskmanager.api.invitation.presentation.controller.InvitationC
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.presentation.controller.MemberController;
-import com.uranus.taskmanager.api.member.service.MemberQueryService;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.presentation.controller.AuthenticationController;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 import com.uranus.taskmanager.api.security.session.SessionValidator;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.presentation.controller.WorkspaceController;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspace.service.create.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandService;
+import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.MemberWorkspaceController;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMembershipController;
@@ -76,7 +76,7 @@ public abstract class ControllerTestHelper {
 	 * Service
 	 */
 	@MockBean
-	protected MemberService memberService;
+	protected MemberCommandService memberCommandService;
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean

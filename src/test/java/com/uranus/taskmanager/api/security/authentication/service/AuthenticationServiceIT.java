@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginIdentityException;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.security.authentication.presentation.dto.request.LoginRequest;
@@ -20,7 +20,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	@Autowired
 	private AuthenticationService authenticationService;
 	@Autowired
-	private MemberService memberService;
+	private MemberCommandService memberCommandService;
 	@Autowired
 	private MemberRepository memberRepository;
 
@@ -38,7 +38,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupMemberRequest);
+		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("user123")
@@ -61,7 +61,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupMemberRequest);
+		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.email("user123@test.com")
@@ -84,7 +84,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupMemberRequest);
+		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("baduser123")
@@ -105,7 +105,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 			.email("user123@test.com")
 			.password("password123!")
 			.build();
-		memberService.signup(signupMemberRequest);
+		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
 			.loginId("user123")
