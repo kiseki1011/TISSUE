@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
@@ -29,21 +28,23 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member1password!")
 			.build());
 
-		LoginMember loginMember1 = LoginMember.builder()
-			.id(1L)
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
-
 		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
-			null);
-		workspaceRepositoryFixture.createWorkspace("workspace2", "description2", "TEST2222",
-			null);
+		workspaceRepositoryFixture.createWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			null
+		);
+		workspaceRepositoryFixture.createWorkspace(
+			"workspace2",
+			"description2",
+			"TEST2222",
+			null
+		);
 
 		// member1은 workspace1,2에 참여
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember1.getId());
-		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), loginMember1.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
+		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
 	}
 
 	@AfterEach
@@ -62,13 +63,11 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member2password!")
 			.build());
 
-		LoginMember loginMember2 = LoginMember.builder()
-			.id(2L)
-			.loginId("member2")
-			.email("member2@test.com")
-			.build();
-
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember2.getId());
+		memberWorkspaceCommandService.joinWorkspace(
+			"TEST1111",
+			new JoinWorkspaceRequest(),
+			2L
+		);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111");
@@ -99,9 +98,18 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	void testGetWorkspaceDetail_Success() {
 		// given
 		String workspaceCode = "TESTCODE";
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("Test Workspace", "Test Description",
-			"TESTCODE", null);
-		Member member = memberRepositoryFixture.createMember("member3", "member3@test.com", "password1234!");
+
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+		Member member = memberRepositoryFixture.createMember(
+			"member3",
+			"member3@test.com",
+			"password1234!"
+		);
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
@@ -117,9 +125,17 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
 		// given
 		String invalidCode = "INVALIDCODE";
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("Test Workspace", "Test Description",
-			"TESTCODE", null);
-		Member member = memberRepositoryFixture.createMember("member3", "member3@test.com", "password1234!");
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+		Member member = memberRepositoryFixture.createMember(
+			"member3",
+			"member3@test.com",
+			"password1234!"
+		);
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when & then

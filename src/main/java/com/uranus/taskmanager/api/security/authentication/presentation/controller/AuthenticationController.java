@@ -25,12 +25,16 @@ public class AuthenticationController {
 	private final SessionManager sessionManager;
 
 	@PostMapping("/login")
-	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
-		HttpServletRequest request) {
+	public ApiResponse<LoginResponse> login(
+		@Valid @RequestBody LoginRequest loginRequest,
+		HttpServletRequest request
+	) {
 
 		LoginResponse loginResponse = authenticationService.login(loginRequest);
-		sessionManager.createLoginSession(request.getSession(), loginResponse);
-
+		sessionManager.createLoginSession(
+			request.getSession(),
+			loginResponse
+		);
 		return ApiResponse.ok("Login successful.", loginResponse);
 	}
 

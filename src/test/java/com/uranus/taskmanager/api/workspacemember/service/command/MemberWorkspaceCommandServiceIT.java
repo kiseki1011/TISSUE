@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
@@ -61,15 +60,10 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest("WrongPassword1234!");
-		LoginMember loginMember = new LoginMember(
-			member.getId(),
-			member.getLoginId(),
-			member.getEmail()
-		);
 
 		// when & then
 		assertThatThrownBy(
-			() -> memberWorkspaceCommandService.joinWorkspace("CODE1234", request, loginMember.getId()))
+			() -> memberWorkspaceCommandService.joinWorkspace("CODE1234", request, member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -85,17 +79,11 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		LoginMember loginMember = new LoginMember(
-			member2.getId(),
-			member2.getLoginId(),
-			member2.getEmail()
-		);
-
 		// when
 		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
 			"TESTCODE",
 			request,
-			loginMember.getId()
+			member2.getId()
 		);
 
 		// then
@@ -108,17 +96,12 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
-		LoginMember loginMember = new LoginMember(
-			member.getId(),
-			member.getLoginId(),
-			member.getEmail()
-		);
 
 		// when & then
 		assertThatThrownBy(() -> memberWorkspaceCommandService.joinWorkspace(
 				workspaceCode,
 				request,
-				loginMember.getId()
+				member.getId()
 			)
 		).isInstanceOf(AlreadyJoinedWorkspaceException.class);
 	}

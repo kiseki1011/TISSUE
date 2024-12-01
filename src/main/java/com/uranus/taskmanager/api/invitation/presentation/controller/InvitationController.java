@@ -10,7 +10,6 @@ import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInv
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.uranus.taskmanager.api.invitation.service.InvitationService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 
 import lombok.RequiredArgsConstructor;
@@ -25,19 +24,29 @@ public class InvitationController {
 
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/accept")
-	public ApiResponse<AcceptInvitationResponse> acceptInvitation(@PathVariable String workspaceCode,
-		@ResolveLoginMember LoginMember loginMember) {
+	public ApiResponse<AcceptInvitationResponse> acceptInvitation(
+		@PathVariable String workspaceCode,
+		@ResolveLoginMember Long loginMemberId
+	) {
 
-		AcceptInvitationResponse response = invitationService.acceptInvitation(loginMember.getId(), workspaceCode);
+		AcceptInvitationResponse response = invitationService.acceptInvitation(
+			loginMemberId,
+			workspaceCode
+		);
 		return ApiResponse.ok("Invitation Accepted.", response);
 	}
 
 	@LoginRequired
 	@PostMapping("/{workspaceCode}/reject")
-	public ApiResponse<RejectInvitationResponse> rejectInvitation(@PathVariable String workspaceCode,
-		@ResolveLoginMember LoginMember loginMember) {
+	public ApiResponse<RejectInvitationResponse> rejectInvitation(
+		@PathVariable String workspaceCode,
+		@ResolveLoginMember Long loginMemberId
+	) {
 
-		RejectInvitationResponse response = invitationService.rejectInvitation(loginMember.getId(), workspaceCode);
+		RejectInvitationResponse response = invitationService.rejectInvitation(
+			loginMemberId,
+			workspaceCode
+		);
 		return ApiResponse.ok("Invitation Rejected.", response);
 	}
 }

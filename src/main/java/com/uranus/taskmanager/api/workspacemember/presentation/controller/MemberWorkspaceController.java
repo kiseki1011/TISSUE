@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
@@ -41,11 +40,14 @@ public class MemberWorkspaceController {
 	@LoginRequired
 	@GetMapping
 	public ApiResponse<GetMyWorkspacesResponse> getMyWorkspaces(
-		@ResolveLoginMember LoginMember loginMember,
-		Pageable pageable) {
+		@ResolveLoginMember Long loginMemberId,
+		Pageable pageable
+	) {
 
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember.getId(), pageable);
-
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(
+			loginMemberId,
+			pageable
+		);
 		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
 
@@ -53,12 +55,15 @@ public class MemberWorkspaceController {
 	@PostMapping("/{code}")
 	public ApiResponse<JoinWorkspaceResponse> joinWorkspace(
 		@PathVariable String code,
-		@ResolveLoginMember LoginMember loginMember,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid JoinWorkspaceRequest request
 	) {
 
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(code, request,
-			loginMember.getId());
+		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+			code,
+			request,
+			loginMemberId
+		);
 		return ApiResponse.ok("Joined workspace", response);
 	}
 }
