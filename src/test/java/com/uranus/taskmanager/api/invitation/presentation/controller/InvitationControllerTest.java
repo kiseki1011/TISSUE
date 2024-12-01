@@ -49,7 +49,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		when(invitationService.acceptInvitation(anyLong(), eq(code))).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/invitations/{code}/accept", code)
+		mockMvc.perform(post("/api/v1/members/invitations/{code}/accept", code)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
@@ -71,7 +71,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 			.thenThrow(new InvitationNotFoundException());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/accept", workspaceCode)
+		mockMvc.perform(post("/api/v1/members/invitations/{workspaceCode}/accept", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isNotFound())
@@ -89,7 +89,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
 		// when & then
-		mockMvc.perform(post("/api/v1/invitations/{workspaceCode}/reject", workspaceCode)
+		mockMvc.perform(post("/api/v1/members/invitations/{workspaceCode}/reject", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())

@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/v1/invitations")
+@RequestMapping("api/v1/members/invitations")
 public class InvitationController {
 	private final InvitationService invitationService;
 
