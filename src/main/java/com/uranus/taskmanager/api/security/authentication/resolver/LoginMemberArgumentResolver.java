@@ -7,7 +7,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
@@ -29,7 +29,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return isLoginMember(parameter)
+		return isLongType(parameter)
 			&& hasResolveLoginMemberAnnotation(parameter);
 	}
 
@@ -46,9 +46,8 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 		NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
 		HttpSession session = sessionManager.getSession(webRequest);
-		Member member = sessionManager.getLoginMember(session);
-
-		return LoginMember.from(member);
+		return sessionManager.getLoginMemberId(session)
+			.orElseThrow(UserNotLoggedInException::new);
 	}
 
 	private boolean hasResolveLoginMemberAnnotation(MethodParameter parameter) {
@@ -56,8 +55,8 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 		return parameter.hasParameterAnnotation(ResolveLoginMember.class);
 	}
 
-	private boolean isLoginMember(MethodParameter parameter) {
+	private boolean isLongType(MethodParameter parameter) {
 
-		return parameter.getParameterType().equals(LoginMember.class);
+		return parameter.getParameterType().equals(Long.class);
 	}
 }

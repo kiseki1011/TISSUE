@@ -20,7 +20,6 @@ import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberE
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 import com.uranus.taskmanager.api.security.session.SessionValidator;
@@ -60,10 +59,11 @@ public class MemberController {
 	@PostMapping("/update-auth")
 	public ApiResponse<Void> getUpdateAuthorization(
 		@RequestBody @Valid UpdateAuthRequest request,
-		@ResolveLoginMember LoginMember loginMember,
-		HttpSession session) {
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
 
-		memberQueryService.validatePasswordForUpdate(request, loginMember.getId());
+		memberQueryService.validatePasswordForUpdate(request, loginMemberId);
 		sessionManager.createUpdatePermission(session);
 
 		return ApiResponse.okWithNoContent("Update authorization granted.");
@@ -73,11 +73,12 @@ public class MemberController {
 	@PatchMapping("/email")
 	public ApiResponse<UpdateMemberEmailResponse> updateEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
-		@ResolveLoginMember LoginMember loginMember,
-		HttpSession session) {
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
 
 		sessionValidator.validateUpdatePermission(session);
-		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMember.getId());
+		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
 		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
 
 		return ApiResponse.ok("Email update successful.", response);
@@ -87,11 +88,12 @@ public class MemberController {
 	@PatchMapping("/password")
 	public ApiResponse<Void> updatePassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
-		@ResolveLoginMember LoginMember loginMember,
-		HttpSession session) {
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
 
 		sessionValidator.validateUpdatePermission(session);
-		memberCommandService.updatePassword(request, loginMember.getId());
+		memberCommandService.updatePassword(request, loginMemberId);
 
 		return ApiResponse.okWithNoContent("Password update successful.");
 	}
@@ -100,11 +102,12 @@ public class MemberController {
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
-		@ResolveLoginMember LoginMember loginMember,
-		HttpSession session) {
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
 
 		sessionValidator.validateUpdatePermission(session);
-		memberCommandService.withdraw(request, loginMember.getId());
+		memberCommandService.withdraw(request, loginMemberId);
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");

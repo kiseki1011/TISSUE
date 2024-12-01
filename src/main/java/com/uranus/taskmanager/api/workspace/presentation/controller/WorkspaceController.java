@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
@@ -47,49 +46,68 @@ public class WorkspaceController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateWorkspaceResponse> createWorkspace(
-		@ResolveLoginMember LoginMember loginMember,
-		@RequestBody @Valid CreateWorkspaceRequest request) {
+		@ResolveLoginMember Long loginMemberId,
+		@RequestBody @Valid CreateWorkspaceRequest request
+	) {
 
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, loginMember.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(
+			request,
+			loginMemberId
+		);
 		return ApiResponse.created("Workspace Created", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.OWNER)
 	@DeleteMapping("/{code}")
-	public ApiResponse<String> deleteWorkspace(@PathVariable String code,
-		@ResolveLoginMember LoginMember loginMember,
-		@RequestBody DeleteWorkspaceRequest request) {
+	public ApiResponse<String> deleteWorkspace(
+		@PathVariable String code,
+		@ResolveLoginMember Long loginMemberId,
+		@RequestBody DeleteWorkspaceRequest request
+	) {
 
-		workspaceCommandService.deleteWorkspace(request, code, loginMember.getId());
+		workspaceCommandService.deleteWorkspace(
+			request,
+			code,
+			loginMemberId
+		);
 		return ApiResponse.ok("Workspace Deleted", code);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MANAGER)
 	@PatchMapping("/{code}")
-	public ApiResponse<UpdateWorkspaceResponse> updateWorkspaceContent(@PathVariable String code,
-		@RequestBody @Valid UpdateWorkspaceRequest request) {
+	public ApiResponse<UpdateWorkspaceResponse> updateWorkspaceContent(
+		@PathVariable String code,
+		@RequestBody @Valid UpdateWorkspaceRequest request
+	) {
 
-		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, code);
+		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(
+			request,
+			code
+		);
 		return ApiResponse.ok("Workspace Title and Description Updated", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MANAGER)
 	@PutMapping("/{code}/password")
-	public ApiResponse<String> updateWorkspacePassword(@PathVariable String code,
-		@RequestBody @Valid UpdateWorkspacePasswordRequest request) {
+	public ApiResponse<String> updateWorkspacePassword(
+		@PathVariable String code,
+		@RequestBody @Valid UpdateWorkspacePasswordRequest request
+	) {
 
-		workspaceCommandService.updateWorkspacePassword(request, code);
+		workspaceCommandService.updateWorkspacePassword(
+			request,
+			code
+		);
 		return ApiResponse.okWithNoContent("Workspace Password Updated");
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.VIEWER)
 	@GetMapping("/{code}")
-	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(@PathVariable String code,
-		@ResolveLoginMember LoginMember loginMember) {
+	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(@PathVariable String code) {
 
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
 		return ApiResponse.ok("Workspace Found", response);

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
@@ -50,9 +49,13 @@ public class WorkspaceMembershipController {
 	@PostMapping("/{code}/members/invites")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,
-		@RequestBody @Valid InviteMembersRequest request) {
+		@RequestBody @Valid InviteMembersRequest request
+	) {
 
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(code, request);
+		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(
+			code,
+			request
+		);
 		return ApiResponse.ok("Members invited", response);
 	}
 
@@ -62,12 +65,13 @@ public class WorkspaceMembershipController {
 	public ApiResponse<UpdateMemberRoleResponse> updateWorkspaceMemberRole(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateMemberRoleRequest request,
-		@ResolveLoginMember LoginMember loginMember
+		@ResolveLoginMember Long loginMemberId
 	) {
 
 		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(code,
 			request,
-			loginMember.getId());
+			loginMemberId
+		);
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
 	}
 
@@ -77,13 +81,13 @@ public class WorkspaceMembershipController {
 	public ApiResponse<TransferOwnershipResponse> transferWorkspaceOwnership(
 		@PathVariable String code,
 		@RequestBody @Valid TransferOwnershipRequest request,
-		@ResolveLoginMember LoginMember loginMember
+		@ResolveLoginMember Long loginMemberId
 	) {
 
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			code,
 			request,
-			loginMember.getId()
+			loginMemberId
 		);
 		return ApiResponse.ok("The ownership was successfully transfered", response);
 	}
@@ -94,13 +98,13 @@ public class WorkspaceMembershipController {
 	public ApiResponse<RemoveMemberResponse> kickWorkspaceMember(
 		@PathVariable String code,
 		@RequestBody @Valid RemoveMemberRequest request,
-		@ResolveLoginMember LoginMember loginMember
+		@ResolveLoginMember Long loginMemberId
 	) {
 
 		RemoveMemberResponse response = workspaceMemberCommandService.kickOutMember(
 			code,
 			request,
-			loginMember.getId()
+			loginMemberId
 		);
 		return ApiResponse.ok("Member was removed from this workspace", response);
 	}
