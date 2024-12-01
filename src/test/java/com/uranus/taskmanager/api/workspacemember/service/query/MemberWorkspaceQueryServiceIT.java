@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
-import com.uranus.taskmanager.api.security.authentication.resolver.LoginMember;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
@@ -35,12 +34,6 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member1password!")
 			.build());
 
-		LoginMember loginMember1 = LoginMember.builder()
-			.id(1L)
-			.loginId("member1")
-			.email("member1@test.com")
-			.build();
-
 		// workspace1, workspace2 생성
 		workspaceRepositoryFixture.createWorkspace(
 			"workspace1",
@@ -56,8 +49,8 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// member1은 workspace1,2에 참여
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), loginMember1.getId());
-		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), loginMember1.getId());
+		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
+		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
 	}
 
 	@AfterEach
@@ -90,16 +83,10 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member2password!")
 			.build());
 
-		LoginMember loginMember2 = LoginMember.builder()
-			.id(2L)
-			.loginId("member2")
-			.email("member2@test.com")
-			.build();
-
 		memberWorkspaceCommandService.joinWorkspace(
 			"TEST1111",
 			new JoinWorkspaceRequest(),
-			loginMember2.getId()
+			2L
 		);
 
 		Pageable pageable = PageRequest.of(0, 20);
@@ -122,12 +109,6 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member2password!")
 			.build());
 
-		LoginMember loginMember2 = LoginMember.builder()
-			.id(2L)
-			.loginId("member2")
-			.email("member2@test.com")
-			.build();
-
 		Member member2 = memberRepository.findByLoginId("member2").get();
 
 		// workspace3 ~ 7 이라는 이름으로 워크스페이스 5개 생성
@@ -149,7 +130,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(loginMember2.getId(), pageable);
+		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(member2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

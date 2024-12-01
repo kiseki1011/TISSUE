@@ -3,6 +3,8 @@ package com.uranus.taskmanager.api.security.authentication.resolver;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.security.authentication.exception.UserNotLoggedInException;
 import com.uranus.taskmanager.api.security.session.SessionManager;
 
@@ -32,24 +32,24 @@ class ResolveLoginMemberArgumentResolverTest {
 	@InjectMocks
 	private LoginMemberArgumentResolver resolver;
 
-	public void dummyMethod(@ResolveLoginMember LoginMember loginMember) {
+	public void dummyMethod(@ResolveLoginMember Long loginMemberId) {
 		// LoginMember 타입을 사용하는 더미 메서드
 	}
 
-	public void dummyMethodWithoutLoginMember(@ResolveLoginMember String loginMember) {
+	public void dummyMethodWithoutLoginMember(@ResolveLoginMember String loginMemberId) {
 		// String 타입을 사용하는 더미 메서드(LoginMember 타입을 사용하지 않는)
 	}
 
-	public void dummyMethodWithoutAnnotation(LoginMember loginMember) {
+	public void dummyMethodWithoutAnnotation(Long loginMemberId) {
 		// @ResolveLoginMember 애노테이션을 사용하지 않는 더미 메서드
 	}
 
 	@Test
-	@DisplayName("supportsParameter는 파라미터가 LoginMember 타입과 @ResolveLoginMember 애노테이션이 있으면 true를 반환한다")
+	@DisplayName("supportsParameter는 파라미터가 Long 타입과 @ResolveLoginMember 애노테이션이 있으면 true를 반환한다")
 	void supportsParameter_WhenLoginMemberTypeAndAnnotation_ReturnTrue() throws Exception {
 		// given - LoginMemberDto 파라미터를 가진 dummyMethod의 MethodParameter 생성
 		MethodParameter parameter = new MethodParameter(
-			getClass().getDeclaredMethod("dummyMethod", LoginMember.class), 0);
+			getClass().getDeclaredMethod("dummyMethod", Long.class), 0);
 
 		// when
 		boolean result = resolver.supportsParameter(parameter);
@@ -59,7 +59,7 @@ class ResolveLoginMemberArgumentResolverTest {
 	}
 
 	@Test
-	@DisplayName("supportsParameter는 파라미터가 LoginMember 타입이 아니면 false를 반환한다")
+	@DisplayName("supportsParameter는 파라미터가 Long 타입이 아니면 false를 반환한다")
 	void supportsParameter_WhenNotLoginMemberType_ReturnFalse() throws Exception {
 		// given
 		MethodParameter parameter = new MethodParameter(
@@ -77,7 +77,7 @@ class ResolveLoginMemberArgumentResolverTest {
 	void supportsParameter_WhenNoAnnotation_ReturnFalse() throws Exception {
 		// given
 		MethodParameter parameter = new MethodParameter(
-			getClass().getDeclaredMethod("dummyMethodWithoutAnnotation", LoginMember.class), 0);
+			getClass().getDeclaredMethod("dummyMethodWithoutAnnotation", Long.class), 0);
 
 		// when
 		boolean result = resolver.supportsParameter(parameter);
@@ -87,30 +87,22 @@ class ResolveLoginMemberArgumentResolverTest {
 	}
 
 	@Test
-	@DisplayName("로그인된 회원 정보를 LoginMember로 변환해서 반환한다")
+	@DisplayName("로그인된 멤버의 id를 반환한다")
 	void resolveArgument_WhenLoggedIn_ReturnLoginMember() {
 		// given
-		String loginId = "user123";
-		String email = "user123@test.com";
-		Member member = Member.builder()
-			.loginId(loginId)
-			.email(email)
-			.build();
-
+		Long loginMemberId = 1L;
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMember(session)).thenReturn(member);
+		when(sessionManager.getLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
 
 		// when
-		LoginMember result = (LoginMember)resolver.resolveArgument(null, null, webRequest, null);
+		Long result = (Long)resolver.resolveArgument(null, null, webRequest, null);
 
 		// then
 		assertThat(result).isNotNull()
-			.isInstanceOf(LoginMember.class)
-			.extracting("loginId", "email")
-			.containsExactly(loginId, email);
+			.isInstanceOf(Long.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMember(session);
+		verify(sessionManager).getLoginMemberId(session);
 	}
 
 	@Test
@@ -128,18 +120,18 @@ class ResolveLoginMemberArgumentResolverTest {
 	}
 
 	@Test
-	@DisplayName("회원을 찾을 수 없으면 MemberNotFoundException을 던진다")
+	@DisplayName("세션의 속성값이 존재하지 않으면 예외가 발생한다")
 	void resolveArgument_WhenMemberNotFound_ThrowMemberNotFoundException() {
 		// given
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMember(session)).thenThrow(MemberNotFoundException.class);
+		when(sessionManager.getLoginMemberId(session)).thenThrow(new UserNotLoggedInException());
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
-			.isInstanceOf(MemberNotFoundException.class);
+			.isInstanceOf(UserNotLoggedInException.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMember(session);
+		verify(sessionManager).getLoginMemberId(session);
 	}
 
 }
