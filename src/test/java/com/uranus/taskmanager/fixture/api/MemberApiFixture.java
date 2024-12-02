@@ -7,7 +7,6 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRe
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 
 @Component
 public class MemberApiFixture {
@@ -19,11 +18,11 @@ public class MemberApiFixture {
 			.password(password)
 			.build();
 
-		Response response = RestAssured.given()
+		RestAssured.given()
 			.contentType(ContentType.JSON)
 			.body(signupMemberRequest)
 			.when()
-			.post("/api/v1/members/signup")
+			.post("/api/v1/members")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
 			.extract().response();

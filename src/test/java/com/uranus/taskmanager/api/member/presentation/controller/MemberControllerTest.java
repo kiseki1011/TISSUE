@@ -42,7 +42,7 @@ import jakarta.servlet.http.HttpSession;
 class MemberControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("POST /members/signup - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("POST /members - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
 	void test1() throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
@@ -51,7 +51,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isCreated())
@@ -66,7 +66,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		"'한글아이디', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 		"'test1한글', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 	})
-	@DisplayName("POST /members/signup - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
+	@DisplayName("POST /members - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
@@ -75,7 +75,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -94,7 +94,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		"'Test1234!한글', 'The password must be alphanumeric "
 			+ "including at least one special character and must be between 8 and 30 characters'",
 	})
-	@DisplayName("POST /members/signup - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
+	@DisplayName("POST /members - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
@@ -103,7 +103,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -121,7 +121,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /members/signup - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
+	@DisplayName("POST /members - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
 	void test4(String loginId, String email, String password) throws Exception {
 		// given
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
@@ -131,7 +131,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signupMemberRequest)))
 			.andExpect(status().isBadRequest())
@@ -142,7 +142,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/update-auth - 업데이트 권한 요청에 성공하면 OK를 응답한다")
+	@DisplayName("POST /members/verify-password - 업데이트 권한 요청에 성공하면 OK를 응답한다")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
 		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
@@ -152,7 +152,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/update-auth")
+		mockMvc.perform(post("/api/v1/members/verify-password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -161,7 +161,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/update-auth - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
+	@DisplayName("POST /members/verify-password - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
 	void getUpdateAuthorization_returnsUnauthorized_whenInvalidMemberPasswordException() throws Exception {
 		// given
 		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
@@ -171,7 +171,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/update-auth")
+		mockMvc.perform(post("/api/v1/members/verify-password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
