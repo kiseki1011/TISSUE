@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.invitation.presentation.dto.response;
 import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,21 +11,29 @@ import lombok.Getter;
 @Getter
 public class AcceptInvitationResponse {
 	private Long invitationId;
-	private LocalDateTime acceptedAt;
 	private String workspaceCode;
+	private InvitationStatus status;
+	private LocalDateTime acceptedAt;
 
 	@Builder
-	public AcceptInvitationResponse(Long invitationId, LocalDateTime acceptedAt, String workspaceCode) {
+	public AcceptInvitationResponse(
+		Long invitationId,
+		String workspaceCode,
+		InvitationStatus status,
+		LocalDateTime acceptedAt
+	) {
 		this.invitationId = invitationId;
-		this.acceptedAt = acceptedAt;
 		this.workspaceCode = workspaceCode;
+		this.status = status;
+		this.acceptedAt = acceptedAt;
 	}
 
-	public static AcceptInvitationResponse from(Invitation invitation, String code) {
+	public static AcceptInvitationResponse from(Invitation invitation) {
 		return AcceptInvitationResponse.builder()
 			.invitationId(invitation.getId())
+			.workspaceCode(invitation.getWorkspaceCode())
+			.status(invitation.getStatus())
 			.acceptedAt(invitation.getLastModifiedDate())
-			.workspaceCode(code)
 			.build();
 	}
 }

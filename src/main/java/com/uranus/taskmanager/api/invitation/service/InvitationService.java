@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
-import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
@@ -24,31 +23,33 @@ public class InvitationService {
 	private final InvitationValidator invitationValidator;
 
 	@Transactional
-	public AcceptInvitationResponse acceptInvitation(Long memberId, String workspaceCode) {
+	public AcceptInvitationResponse acceptInvitation(Long memberId, Long invitationId) {
 
-		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
+		Invitation invitation = getValidPendingInvitation(memberId, invitationId);
 		WorkspaceMember workspaceMember = invitation.accept();
 
 		workspaceMemberRepository.save(workspaceMember);
 
-		return AcceptInvitationResponse.from(invitation, workspaceCode);
+		return AcceptInvitationResponse.from(invitation);
 	}
 
 	@Transactional
-	public RejectInvitationResponse rejectInvitation(Long memberId, String workspaceCode) {
+	public RejectInvitationResponse rejectInvitation(Long memberId, Long invitationId) {
 
-		Invitation invitation = getValidPendingInvitation(memberId, workspaceCode);
+		Invitation invitation = getValidPendingInvitation(memberId, invitationId);
 		invitation.reject();
 
-		return RejectInvitationResponse.from(invitation, workspaceCode);
+		return RejectInvitationResponse.from(invitation);
 	}
 
-	private Invitation getValidPendingInvitation(Long memberId, String workspaceCode) {
+	private Invitation getValidPendingInvitation(Long memberId, Long invitationId) {
 		Invitation invitation = invitationRepository
-			.findByStatusAndWorkspaceCodeAndMemberId(InvitationStatus.PENDING, workspaceCode, memberId)
+			.findById(invitationId)
 			.orElseThrow(InvitationNotFoundException::new);
 
+		String workspaceCode = invitation.getWorkspaceCode();
 		invitationValidator.validateInvitation(memberId, workspaceCode);
+
 		return invitation;
 	}
 
