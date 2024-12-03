@@ -11,7 +11,6 @@ import com.uranus.taskmanager.api.security.authentication.exception.UserNotLogge
 import com.uranus.taskmanager.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.uranus.taskmanager.api.security.authorization.exception.InvalidWorkspaceCodeInUriException;
 import com.uranus.taskmanager.api.security.session.SessionManager;
-import com.uranus.taskmanager.api.security.session.SessionValidator;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -33,7 +32,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	private static final int WORKSPACE_PREFIX_LENGTH = 19;
 
 	private final SessionManager sessionManager;
-	private final SessionValidator sessionValidator;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 

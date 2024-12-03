@@ -10,7 +10,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class UpdateWorkspaceResponse {
+public class UpdateWorkspaceInfoResponse {
 
 	private Long id;
 	private LocalDateTime updatedAt;
@@ -20,7 +20,7 @@ public class UpdateWorkspaceResponse {
 	private String description;
 
 	@Builder
-	public UpdateWorkspaceResponse(
+	public UpdateWorkspaceInfoResponse(
 		Long id,
 		LocalDateTime updatedAt,
 		String updatedBy,
@@ -36,8 +36,8 @@ public class UpdateWorkspaceResponse {
 		this.description = description;
 	}
 
-	public static UpdateWorkspaceResponse from(Workspace workspace) {
-		return UpdateWorkspaceResponse.builder()
+	public static UpdateWorkspaceInfoResponse from(Workspace workspace) {
+		return UpdateWorkspaceInfoResponse.builder()
 			.id(workspace.getId())
 			.updatedAt(workspace.getLastModifiedDate())
 			.updatedBy(workspace.getLastModifiedBy())

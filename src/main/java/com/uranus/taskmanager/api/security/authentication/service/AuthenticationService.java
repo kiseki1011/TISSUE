@@ -17,21 +17,20 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationService {
 
 	private final MemberRepository memberRepository;
-
 	private final MemberValidator memberValidator;
 
 	@Transactional
-	public LoginResponse login(LoginRequest loginRequest) {
+	public LoginResponse login(LoginRequest request) {
 
-		Member member = findMemberByLoginIdOrEmail(loginRequest);
+		Member member = findMemberByLoginIdOrEmail(request);
 
-		memberValidator.validatePassword(loginRequest.getPassword(), member.getPassword());
+		memberValidator.validatePassword(request.getPassword(), member.getPassword());
 
 		return LoginResponse.from(member);
 	}
 
-	private Member findMemberByLoginIdOrEmail(LoginRequest loginRequest) {
-		return memberRepository.findByLoginIdOrEmail(loginRequest.getLoginId(), loginRequest.getEmail())
+	private Member findMemberByLoginIdOrEmail(LoginRequest request) {
+		return memberRepository.findByLoginIdOrEmail(request.getLoginId(), request.getEmail())
 			.orElseThrow(InvalidLoginIdentityException::new);
 	}
 }
