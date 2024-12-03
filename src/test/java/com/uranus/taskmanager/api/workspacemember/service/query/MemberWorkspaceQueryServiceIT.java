@@ -20,7 +20,7 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
@@ -49,8 +49,8 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// member1은 workspace1,2에 참여
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
-		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
 	}
 
 	@AfterEach
@@ -66,7 +66,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(1L, pageable);
+		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(1L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -83,7 +83,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member2password!")
 			.build());
 
-		memberWorkspaceCommandService.joinWorkspace(
+		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
 			new JoinWorkspaceRequest(),
 			2L
@@ -92,7 +92,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(2L, pageable);
+		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(2L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -130,7 +130,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(member2.getId(), pageable);
+		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(member2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

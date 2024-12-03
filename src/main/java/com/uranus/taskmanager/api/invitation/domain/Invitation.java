@@ -66,23 +66,12 @@ public class Invitation extends BaseEntity {
 	}
 
 	public static Invitation createPendingInvitation(Workspace workspace, Member member) {
-		return Invitation.builder()
-			.workspace(workspace)
-			.member(member)
-			.status(InvitationStatus.PENDING)
-			.build();
-	}
-
-	public WorkspaceMember addWorkspaceMember() {
-		return WorkspaceMember.addCollaboratorWorkspaceMember(
-			this.member,
-			this.workspace
-		);
+		return addInvitation(member, workspace, InvitationStatus.PENDING);
 	}
 
 	public WorkspaceMember accept() {
 		changeStatus(InvitationStatus.ACCEPTED);
-		return addWorkspaceMember();
+		return WorkspaceMember.addCollaboratorWorkspaceMember(this.member, this.workspace);
 	}
 
 	public void reject() {

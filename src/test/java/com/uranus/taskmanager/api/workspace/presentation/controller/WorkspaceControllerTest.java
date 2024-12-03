@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -24,10 +23,9 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class WorkspaceControllerTest extends ControllerTestHelper {
@@ -122,45 +120,39 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code} - 워크스페이스 정보 수정 요청에 성공하면 200을 응답받는다")
+	@DisplayName("PATCH /workspaces/{code}/info - 워크스페이스 정보 수정 요청에 성공하면 200을 응답받는다")
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		UpdateWorkspaceRequest request = new UpdateWorkspaceRequest("New Title", "New Description");
+		UpdateWorkspaceInfoRequest request = new UpdateWorkspaceInfoRequest("New Title", "New Description");
 
-		UpdateWorkspaceResponse response = UpdateWorkspaceResponse.from(Workspace.builder().build());
-
-		// Workspace, WorkspaceMember 모의 객체 만들기
 		Workspace workspace = Workspace.builder()
-			.code("TEST1111")
-			.build();
-		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-			.workspace(workspace)
-			.role(WorkspaceRole.MANAGER)
+			.code("TESTCODE")
+			.name("New Title")
+			.description("New Description")
 			.build();
 
-		// AuthorizationInterceptor 행위 모킹
-		when(workspaceRepository.findByCode("TEST1111")).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
-			.thenReturn(Optional.of(workspaceMember));
+		UpdateWorkspaceInfoResponse response = UpdateWorkspaceInfoResponse.from(workspace);
 
-		when(workspaceCommandService.updateWorkspaceContent(ArgumentMatchers.any(UpdateWorkspaceRequest.class),
-			eq("TEST1111")))
+		when(workspaceCommandService.updateWorkspaceInfo(
+			ArgumentMatchers.any(UpdateWorkspaceInfoRequest.class),
+			eq("TESTCODE")))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}", "TEST1111")
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/info", "TESTCODE")
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Workspace Title and Description Updated"))
+			.andExpect(jsonPath("$.message").value("Workspace info updated."))
+			.andExpect(jsonPath("$.data.name").value("New Title"))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
-			.updateWorkspaceContent(ArgumentMatchers.any(UpdateWorkspaceRequest.class), eq("TEST1111"));
+			.updateWorkspaceInfo(ArgumentMatchers.any(UpdateWorkspaceInfoRequest.class), eq("TESTCODE"));
 	}
 
 	@Test
@@ -172,31 +164,23 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
 
-		// Workspace, WorkspaceMember 모의 객체 만들기
-		Workspace workspace = Workspace.builder()
-			.code("TEST1111")
-			.build();
-		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-			.workspace(workspace)
-			.role(WorkspaceRole.MANAGER)
-			.build();
-
-		// AuthorizationInterceptor 행위 모킹
-		when(workspaceRepository.findByCode("TEST1111")).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
-			.thenReturn(Optional.of(workspaceMember));
+		when(workspaceCommandService.deleteWorkspace(
+			ArgumentMatchers.any(DeleteWorkspaceRequest.class),
+			eq("TESTCODE"),
+			anyLong()))
+			.thenReturn(DeleteWorkspaceResponse.from("TESTCODE"));
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TEST1111")
+		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TESTCODE")
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Workspace Deleted"))
-			.andExpect(jsonPath("$.data").value("TEST1111"));
+			.andExpect(jsonPath("$.message").value("Workspace deleted."))
+			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"));
 
 		verify(workspaceCommandService, times(1))
-			.deleteWorkspace(ArgumentMatchers.any(DeleteWorkspaceRequest.class), eq("TEST1111"), anyLong());
+			.deleteWorkspace(ArgumentMatchers.any(DeleteWorkspaceRequest.class), eq("TESTCODE"), anyLong());
 	}
 
 	@Test

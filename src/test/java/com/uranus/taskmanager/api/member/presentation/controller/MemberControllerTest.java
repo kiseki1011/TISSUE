@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -18,12 +17,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentMatchers;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
@@ -33,8 +29,6 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMember
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
-import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 import jakarta.servlet.http.HttpSession;
@@ -42,7 +36,7 @@ import jakarta.servlet.http.HttpSession;
 class MemberControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("POST /members/signup - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
+	@DisplayName("POST /members - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
 	void test1() throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
@@ -51,7 +45,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isCreated())
@@ -66,7 +60,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		"'한글아이디', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 		"'test1한글', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
 	})
-	@DisplayName("POST /members/signup - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
+	@DisplayName("POST /members - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
@@ -75,7 +69,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -94,7 +88,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		"'Test1234!한글', 'The password must be alphanumeric "
 			+ "including at least one special character and must be between 8 and 30 characters'",
 	})
-	@DisplayName("POST /members/signup - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
+	@DisplayName("POST /members - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
@@ -103,7 +97,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andExpect(status().isBadRequest())
@@ -121,7 +115,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /members/signup - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
+	@DisplayName("POST /members - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
 	void test4(String loginId, String email, String password) throws Exception {
 		// given
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
@@ -131,7 +125,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.build();
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/signup")
+		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signupMemberRequest)))
 			.andExpect(status().isBadRequest())
@@ -142,7 +136,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/update-auth - 업데이트 권한 요청에 성공하면 OK를 응답한다")
+	@DisplayName("POST /members/verify-password - 업데이트 권한 요청에 성공하면 OK를 응답한다")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
 		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
@@ -152,7 +146,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/update-auth")
+		mockMvc.perform(post("/api/v1/members/verify-password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -161,7 +155,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/update-auth - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
+	@DisplayName("POST /members/verify-password - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
 	void getUpdateAuthorization_returnsUnauthorized_whenInvalidMemberPasswordException() throws Exception {
 		// given
 		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
@@ -171,7 +165,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/update-auth")
+		mockMvc.perform(post("/api/v1/members/verify-password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
@@ -243,112 +237,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.message").value(
 				"You do not have authorization for update or the authorization has expired"))
 			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 기대하는 응답을 받는다")
-	void getMyWorkspaces_shouldReturn_completeJsonResponse() throws Exception {
-		// given
-		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
-			.id(1L)
-			.code("WS001")
-			.name("Workspace 1")
-			.description("Description 1")
-			.createdBy("member1")
-			.createdAt(LocalDateTime.now().minusDays(5))
-			.updatedBy("updater1")
-			.updatedAt(LocalDateTime.now())
-			.build();
-
-		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
-			.id(2L)
-			.code("WS002")
-			.name("Workspace 2")
-			.description("Description 2")
-			.createdBy("member1")
-			.createdAt(LocalDateTime.now().minusDays(10))
-			.updatedBy("updater2")
-			.updatedAt(LocalDateTime.now())
-			.build();
-
-		GetMyWorkspacesResponse response = GetMyWorkspacesResponse.builder()
-			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
-			.totalElements(2L)
-			.build();
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
-		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
-			.thenReturn(response);
-
-		// 기대하는 JSON 응답 생성
-		String expectedJson = objectMapper.writeValueAsString(
-			ApiResponse.ok("Currently joined workspaces found.", response)
-		);
-
-		// when & then - 요청 및 전체 JSON 비교 검증
-		mockMvc.perform(get("/api/v1/members/workspaces")
-				.session(session)
-				.contentType(MediaType.APPLICATION_JSON)
-				.param("page", "0")
-				.param("size", "10"))
-			.andExpect(status().isOk())
-			.andExpect(content().json(expectedJson))
-			.andDo(print());
-
-		verify(memberWorkspaceQueryService, times(1))
-			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
-	}
-
-	@Test
-	@DisplayName("GET /members/workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 OK를 응답받는다")
-	void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
-		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
-		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
-			.id(1L)
-			.code("WS001")
-			.name("Workspace 1")
-			.description("Description 1")
-			.createdBy("creator1")
-			.createdAt(LocalDateTime.now().minusDays(5))
-			.updatedBy("updater1")
-			.updatedAt(LocalDateTime.now())
-			.build();
-
-		WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
-			.id(2L)
-			.code("WS002")
-			.name("Workspace 2")
-			.description("Description 2")
-			.createdBy("creator2")
-			.createdAt(LocalDateTime.now().minusDays(10))
-			.updatedBy("updater2")
-			.updatedAt(LocalDateTime.now())
-			.build();
-
-		GetMyWorkspacesResponse response = GetMyWorkspacesResponse.builder()
-			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
-			.totalElements(2L)
-			.build();
-
-		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
-			.thenReturn(response);
-
-		// when & then
-		mockMvc.perform(get("/api/v1/members/workspaces")
-				.session(session)
-				.contentType(MediaType.APPLICATION_JSON)
-				.param("page", "0")
-				.param("size", "10"))
-			.andExpect(status().isOk());
-
-		verify(memberWorkspaceQueryService, times(1))
-			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
-
 	}
 
 	@Test

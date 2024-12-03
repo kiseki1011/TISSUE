@@ -18,34 +18,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/v1/members/invitations")
+@RequestMapping("api/v1/invitations")
 public class InvitationController {
 	private final InvitationService invitationService;
 
 	@LoginRequired
-	@PostMapping("/{workspaceCode}/accept")
+	@PostMapping("/{invitationId}/accept")
 	public ApiResponse<AcceptInvitationResponse> acceptInvitation(
-		@PathVariable String workspaceCode,
+		@PathVariable Long invitationId,
 		@ResolveLoginMember Long loginMemberId
 	) {
 
 		AcceptInvitationResponse response = invitationService.acceptInvitation(
 			loginMemberId,
-			workspaceCode
+			invitationId
 		);
 		return ApiResponse.ok("Invitation Accepted.", response);
 	}
 
 	@LoginRequired
-	@PostMapping("/{workspaceCode}/reject")
+	@PostMapping("/{invitationId}/reject")
 	public ApiResponse<RejectInvitationResponse> rejectInvitation(
-		@PathVariable String workspaceCode,
+		@PathVariable Long invitationId,
 		@ResolveLoginMember Long loginMemberId
 	) {
 
 		RejectInvitationResponse response = invitationService.rejectInvitation(
 			loginMemberId,
-			workspaceCode
+			invitationId
 		);
 		return ApiResponse.ok("Invitation Rejected.", response);
 	}

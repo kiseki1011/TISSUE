@@ -25,14 +25,4 @@ public class MemberQueryService {
 
 		memberValidator.validatePassword(request.getPassword(), member.getPassword());
 	}
-
-	// @Transactional(readOnly = true)
-	// public MyWorkspacesResponse getMyWorkspaces(Long memberId, Pageable pageable) {
-	// 	Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberId(memberId, pageable)
-	// 		.map(workspaceMember -> WorkspaceDetail.from(
-	// 			workspaceMember.getWorkspace()
-	// 		));
-	//
-	// 	return MyWorkspacesResponse.from(workspaceDetails.getContent(), workspaceDetails.getTotalElements());
-	// }
 }

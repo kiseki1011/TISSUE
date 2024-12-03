@@ -27,48 +27,83 @@ public class MemberCommandService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public SignupMemberResponse signup(SignupMemberRequest request) {
+	public SignupMemberResponse signup(
+		SignupMemberRequest request
+	) {
 		memberValidator.validateSignup(request);
 
-		String encodedPassword = passwordEncoder.encode(request.getPassword());
+		Member member = createMember(request);
+		Member savedMember = memberRepository.save(member);
 
-		Member member = SignupMemberRequest.to(request, encodedPassword);
-
-		return SignupMemberResponse.from(memberRepository.save(member));
+		return SignupMemberResponse.from(savedMember);
 	}
 
 	@Transactional
-	public UpdateMemberEmailResponse updateEmail(UpdateMemberEmailRequest request, Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+	public UpdateMemberEmailResponse updateEmail(
+		UpdateMemberEmailRequest request,
+		Long memberId
+	) {
+		Member member = findMemberById(memberId);
 
-		String toBeEmail = request.getUpdateEmail();
-		memberValidator.validateEmailUpdate(toBeEmail);
+		String newEmail = request.getNewEmail();
+		memberValidator.validateEmailUpdate(newEmail);
 
-		member.updateEmail(toBeEmail);
+		member.updateEmail(newEmail);
 
 		return UpdateMemberEmailResponse.from(member);
 	}
 
 	@Transactional
-	public void updatePassword(UpdateMemberPasswordRequest request, Long id) {
-		Member member = memberRepository.findById(id)
-			.orElseThrow(MemberNotFoundException::new);
+	public void updatePassword(
+		UpdateMemberPasswordRequest request,
+		Long memberId
+	) {
+		Member member = findMemberById(memberId);
 
-		String toBePassword = passwordEncoder.encode(request.getUpdatePassword());
+		String encodedNewPassword = encodePassword(request.getNewPassword());
 
-		member.updatePassword(toBePassword);
+		member.updatePassword(encodedNewPassword);
 	}
 
 	@Transactional
-	public void withdraw(WithdrawMemberRequest request, Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+	public void withdraw(
+		WithdrawMemberRequest request,
+		Long memberId
+	) {
+		Member member = findMemberById(memberId);
 
-		memberValidator.validatePassword(request.getPassword(), member.getPassword());
-		memberValidator.validateWithdraw(memberId);
+		validateMemberDeletion(request, memberId, member);
 
 		memberRepository.delete(member);
+	}
+
+	private Member findMemberById(
+		Long memberId
+	) {
+		return memberRepository.findById(memberId)
+			.orElseThrow(MemberNotFoundException::new);
+	}
+
+	private Member createMember(
+		SignupMemberRequest request
+	) {
+		String encodedPassword = encodePassword(request.getPassword());
+		return SignupMemberRequest.to(request, encodedPassword);
+	}
+
+	private String encodePassword(
+		String rawPassword
+	) {
+		return passwordEncoder.encode(rawPassword);
+	}
+
+	private void validateMemberDeletion(
+		WithdrawMemberRequest request,
+		Long memberId,
+		Member member
+	) {
+		memberValidator.validatePassword(request.getPassword(), member.getPassword());
+		memberValidator.validateWithdraw(memberId);
 	}
 
 }

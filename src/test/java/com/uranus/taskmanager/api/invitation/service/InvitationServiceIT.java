@@ -46,7 +46,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		AcceptInvitationResponse response = invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
+		AcceptInvitationResponse response = invitationService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		assertThat(response).isNotNull();
@@ -76,7 +76,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
+		invitationService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		Invitation invitation = invitationRepository.findById(workspace.getId()).get();
@@ -106,7 +106,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE");
+		invitationService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceId(invitedMember.getId(),
@@ -137,7 +137,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), "INVALIDCODE")).isInstanceOf(
+		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
 			InvitationNotFoundException.class);
 	}
 
@@ -163,10 +163,10 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// 초대를 거절해서 초대 상태를 REJECTED로 변경
-		invitationService.rejectInvitation(invitedMember.getId(), "TESTCODE");
+		invitationService.rejectInvitation(invitedMember.getId(), 1L);
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), "TESTCODE")).isInstanceOf(
+		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
 			InvitationNotFoundException.class);
 	}
 
@@ -192,7 +192,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.rejectInvitation(invitedMember.getId(), "TESTCODE");
+		invitationService.rejectInvitation(invitedMember.getId(), 1L);
 
 		// then
 		Invitation invitation = invitationRepository.findById(workspace.getId()).get();

@@ -9,11 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
-import com.uranus.taskmanager.api.member.domain.Member;
-import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
-	Optional<Invitation> findByWorkspaceAndMember(Workspace workspace, Member member);
 
 	Optional<Invitation> findByWorkspaceCodeAndMemberId(String workspaceCode, Long memberId);
 

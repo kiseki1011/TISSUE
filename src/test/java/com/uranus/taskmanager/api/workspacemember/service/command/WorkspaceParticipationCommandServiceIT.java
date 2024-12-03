@@ -16,7 +16,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinW
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
+class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	private Member member;
 
@@ -63,7 +63,7 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> memberWorkspaceCommandService.joinWorkspace("CODE1234", request, member.getId()))
+			() -> workspaceParticipationCommandService.joinWorkspace("CODE1234", request, member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
@@ -80,7 +80,7 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(
 			"TESTCODE",
 			request,
 			member2.getId()
@@ -98,7 +98,7 @@ class MemberWorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 
 		// when & then
-		assertThatThrownBy(() -> memberWorkspaceCommandService.joinWorkspace(
+		assertThatThrownBy(() -> workspaceParticipationCommandService.joinWorkspace(
 				workspaceCode,
 				request,
 				member.getId()

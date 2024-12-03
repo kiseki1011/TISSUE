@@ -48,7 +48,7 @@ public class MemberController {
 	private final SessionValidator sessionValidator;
 
 	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("/signup")
+	@PostMapping
 	public ApiResponse<SignupMemberResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
 
 		SignupMemberResponse response = memberCommandService.signup(request);
@@ -56,7 +56,7 @@ public class MemberController {
 	}
 
 	@LoginRequired
-	@PostMapping("/update-auth")
+	@PostMapping("/verify-password")
 	public ApiResponse<Void> getUpdateAuthorization(
 		@RequestBody @Valid UpdateAuthRequest request,
 		@ResolveLoginMember Long loginMemberId,
@@ -79,7 +79,7 @@ public class MemberController {
 
 		sessionValidator.validateUpdatePermission(session);
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
-		sessionManager.updateSessionEmail(session, request.getUpdateEmail());
+		sessionManager.updateSessionEmail(session, request.getNewEmail());
 
 		return ApiResponse.ok("Email update successful.", response);
 	}

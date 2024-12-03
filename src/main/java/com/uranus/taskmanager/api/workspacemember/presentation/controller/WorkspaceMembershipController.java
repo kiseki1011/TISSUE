@@ -14,8 +14,6 @@ import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginM
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.TransferOwnershipRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
@@ -31,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces")
+@RequestMapping("/api/v1/workspaces/{code}/members")
 public class WorkspaceMembershipController {
 
 	private final WorkspaceMemberCommandService workspaceMemberCommandService;
@@ -46,7 +44,7 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
-	@PostMapping("/{code}/members/invites")
+	@PostMapping("/invite")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,
 		@RequestBody @Valid InviteMembersRequest request
@@ -61,32 +59,35 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
-	@PatchMapping("/{code}/members/role")
+	@PatchMapping("/{memberId}/role")
 	public ApiResponse<UpdateMemberRoleResponse> updateWorkspaceMemberRole(
 		@PathVariable String code,
-		@RequestBody @Valid UpdateMemberRoleRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@PathVariable Long memberId,
+		@ResolveLoginMember Long loginMemberId,
+		@RequestBody @Valid UpdateMemberRoleRequest request
 	) {
 
-		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(code,
-			request,
-			loginMemberId
+		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
+			code,
+			memberId,
+			loginMemberId,
+			request
 		);
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.OWNER})
-	@PatchMapping("/{code}/members/ownership")
+	@PatchMapping("/{memberId}/ownership")
 	public ApiResponse<TransferOwnershipResponse> transferWorkspaceOwnership(
 		@PathVariable String code,
-		@RequestBody @Valid TransferOwnershipRequest request,
+		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
 
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			code,
-			request,
+			memberId,
 			loginMemberId
 		);
 		return ApiResponse.ok("The ownership was successfully transfered", response);
@@ -94,16 +95,16 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
-	@DeleteMapping("/{code}/members/kick")
-	public ApiResponse<RemoveMemberResponse> kickWorkspaceMember(
+	@DeleteMapping("/{memberId}")
+	public ApiResponse<RemoveMemberResponse> removeMember(
 		@PathVariable String code,
-		@RequestBody @Valid RemoveMemberRequest request,
+		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
 
-		RemoveMemberResponse response = workspaceMemberCommandService.kickOutMember(
+		RemoveMemberResponse response = workspaceMemberCommandService.removeMember(
 			code,
-			request,
+			memberId,
 			loginMemberId
 		);
 		return ApiResponse.ok("Member was removed from this workspace", response);

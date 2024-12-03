@@ -29,11 +29,11 @@ import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandServ
 import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.presentation.controller.MemberWorkspaceController;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMembershipController;
-import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceParticipationController;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 		InvitationController.class,
 		WorkspaceController.class,
 		WorkspaceMembershipController.class,
-		MemberWorkspaceController.class,
+		WorkspaceParticipationController.class,
 		MemberController.class
 	},
 	excludeFilters = {
@@ -86,7 +86,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
 	@MockBean
-	protected MemberWorkspaceCommandService memberWorkspaceCommandService;
+	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@MockBean
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@MockBean

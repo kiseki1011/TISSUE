@@ -14,9 +14,9 @@ public class UpdateMemberPasswordRequest {
 	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
 		message = "The password must be alphanumeric"
 			+ " including at least one special character and must be between 8 and 30 characters")
-	private String updatePassword;
+	private String newPassword;
 
-	public UpdateMemberPasswordRequest(String updatePassword) {
-		this.updatePassword = updatePassword;
+	public UpdateMemberPasswordRequest(String newPassword) {
+		this.newPassword = newPassword;
 	}
 }

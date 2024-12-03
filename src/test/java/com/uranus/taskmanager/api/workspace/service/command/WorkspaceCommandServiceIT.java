@@ -13,10 +13,10 @@ import com.uranus.taskmanager.api.workspace.exception.InvalidWorkspacePasswordEx
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.uranus.taskmanager.api.workspace.presentation.dto.request.UpdateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
-import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceResponse;
+import com.uranus.taskmanager.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -93,13 +93,13 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
+		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
 			.description("Updated Description")
 			.build();
 
 		// when
-		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
 
 		// then
 		assertThat(response.getName()).isEqualTo("Updated Name");
@@ -113,12 +113,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
+		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
 			.build();
 
 		// when
-		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
 
 		// then
 		assertThat(response.getName()).isEqualTo("Updated Name");
@@ -132,12 +132,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
 
-		UpdateWorkspaceRequest request = UpdateWorkspaceRequest.builder()
+		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.description("Updated Description")
 			.build();
 
 		// when
-		UpdateWorkspaceResponse response = workspaceCommandService.updateWorkspaceContent(request, "TEST1111");
+		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
 
 		// then
 		assertThat(response.getName()).isEqualTo("workspace1");

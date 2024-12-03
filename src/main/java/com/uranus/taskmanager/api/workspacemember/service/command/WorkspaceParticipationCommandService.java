@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MemberWorkspaceCommandService {
+public class WorkspaceParticipationCommandService {
 	/*
 	 * Todo
 	 *  - leaveWorkspace: 워크스페이스 떠나기(현재 OWNER 상태면 불가능)

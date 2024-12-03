@@ -7,10 +7,10 @@ import lombok.Getter;
 
 @Getter
 public class UpdateMemberRoleResponse {
-	private WorkspaceMemberDetail workspaceMemberDetail;
+	private WorkspaceMemberDetail targetDetail;
 
-	public UpdateMemberRoleResponse(WorkspaceMemberDetail workspaceMemberDetail) {
-		this.workspaceMemberDetail = workspaceMemberDetail;
+	public UpdateMemberRoleResponse(WorkspaceMemberDetail targetDetail) {
+		this.targetDetail = targetDetail;
 	}
 
 	public static UpdateMemberRoleResponse from(WorkspaceMember workspaceMember) {

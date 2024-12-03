@@ -43,8 +43,8 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// member1은 workspace1,2에 참여
-		memberWorkspaceCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
-		memberWorkspaceCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
 	}
 
 	@AfterEach
@@ -63,7 +63,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			.password("member2password!")
 			.build());
 
-		memberWorkspaceCommandService.joinWorkspace(
+		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
 			new JoinWorkspaceRequest(),
 			2L

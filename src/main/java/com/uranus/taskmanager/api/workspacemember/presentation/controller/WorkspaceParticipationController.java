@@ -12,9 +12,9 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.GetMyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
-import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 
 import jakarta.validation.Valid;
@@ -24,11 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/members/workspaces")
-public class MemberWorkspaceController {
+@RequestMapping("/api/v1/workspaces")
+public class WorkspaceParticipationController {
 
 	private final MemberWorkspaceQueryService memberWorkspaceQueryService;
-	private final MemberWorkspaceCommandService memberWorkspaceCommandService;
+	private final WorkspaceParticipationCommandService workspaceParticipationCommandService;
 
 	/**
 	 * Todo
@@ -38,20 +38,6 @@ public class MemberWorkspaceController {
 	 */
 
 	@LoginRequired
-	@GetMapping
-	public ApiResponse<GetMyWorkspacesResponse> getMyWorkspaces(
-		@ResolveLoginMember Long loginMemberId,
-		Pageable pageable
-	) {
-
-		GetMyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(
-			loginMemberId,
-			pageable
-		);
-		return ApiResponse.ok("Currently joined workspaces found.", response);
-	}
-
-	@LoginRequired
 	@PostMapping("/{code}")
 	public ApiResponse<JoinWorkspaceResponse> joinWorkspace(
 		@PathVariable String code,
@@ -59,11 +45,25 @@ public class MemberWorkspaceController {
 		@RequestBody @Valid JoinWorkspaceRequest request
 	) {
 
-		JoinWorkspaceResponse response = memberWorkspaceCommandService.joinWorkspace(
+		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(
 			code,
 			request,
 			loginMemberId
 		);
 		return ApiResponse.ok("Joined workspace", response);
+	}
+
+	@LoginRequired
+	@GetMapping
+	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
+		@ResolveLoginMember Long loginMemberId,
+		Pageable pageable
+	) {
+
+		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(
+			loginMemberId,
+			pageable
+		);
+		return ApiResponse.ok("Currently joined workspaces found.", response);
 	}
 }
