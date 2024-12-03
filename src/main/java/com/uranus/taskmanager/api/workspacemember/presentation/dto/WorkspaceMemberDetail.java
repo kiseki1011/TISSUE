@@ -15,18 +15,21 @@ public class WorkspaceMemberDetail {
 	private String nickname;
 	private WorkspaceRole workspaceRole;
 	private LocalDateTime joinedWorkspaceAt;
+	private LocalDateTime updatedAt;
 
 	@Builder
 	public WorkspaceMemberDetail(
 		Long workspaceMemberId,
 		String nickname,
 		WorkspaceRole workspaceRole,
-		LocalDateTime joinedWorkspaceAt
+		LocalDateTime joinedWorkspaceAt,
+		LocalDateTime updatedAt
 	) {
 		this.workspaceMemberId = workspaceMemberId;
 		this.nickname = nickname;
 		this.workspaceRole = workspaceRole;
 		this.joinedWorkspaceAt = joinedWorkspaceAt;
+		this.updatedAt = updatedAt;
 	}
 
 	public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
@@ -35,6 +38,7 @@ public class WorkspaceMemberDetail {
 			.nickname(workspaceMember.getNickname())
 			.workspaceRole(workspaceMember.getRole())
 			.joinedWorkspaceAt(workspaceMember.getCreatedDate())
+			.updatedAt(workspaceMember.getLastModifiedDate())
 			.build();
 	}
 }

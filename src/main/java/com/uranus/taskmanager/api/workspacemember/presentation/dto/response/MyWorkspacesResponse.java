@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class GetMyWorkspacesResponse {
+public class MyWorkspacesResponse {
 	/**
 	 * Todo
 	 *  - PageInfo 클래스를 만들어서 응답에 포함(totalElements 대신, 어차피 안에 포함 됨)
@@ -20,15 +20,15 @@ public class GetMyWorkspacesResponse {
 	private long totalElements;
 
 	@Builder
-	public GetMyWorkspacesResponse(List<WorkspaceDetail> workspaces, long totalElements) {
+	public MyWorkspacesResponse(List<WorkspaceDetail> workspaces, long totalElements) {
 		if (workspaces != null) {
 			this.workspaces = workspaces;
 		}
 		this.totalElements = totalElements;
 	}
 
-	public static GetMyWorkspacesResponse from(List<WorkspaceDetail> workspaces, long totalElements) {
-		return GetMyWorkspacesResponse.builder()
+	public static MyWorkspacesResponse from(List<WorkspaceDetail> workspaces, long totalElements) {
+		return MyWorkspacesResponse.builder()
 			.workspaces(workspaces)
 			.totalElements(totalElements)
 			.build();

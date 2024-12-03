@@ -24,7 +24,6 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.RemoveMemberRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
@@ -51,7 +50,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{code}/members/kick - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
+	@DisplayName("DELETE /workspaces/{code}/members/{memberId} - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -65,26 +64,24 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
 			.createCollaboratorWorkspaceMember(member, workspace);
 
-		RemoveMemberRequest request = new RemoveMemberRequest("member1");
+		RemoveMemberResponse response = RemoveMemberResponse.from(2L, workspaceMember);
 
-		RemoveMemberResponse response = RemoveMemberResponse.from("member1", workspaceMember);
-
-		when(workspaceMemberCommandService.kickOutMember(eq(workspaceCode), eq(request), anyLong()))
+		when(workspaceMemberCommandService.removeMember(eq(workspaceCode), eq(2L), anyLong()))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/kick", workspaceCode)
+		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/{memberId}", workspaceCode, 2L)
 				.session(session)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
+				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member was removed from this workspace"))
+			.andExpect(jsonPath("$.data.memberId").value(2L))
 			.andDo(print());
 
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/role - 워크스페이스 멤버의 권한을 변경하는데 성공하면 200을 응답받는다")
+	@DisplayName("PATCH /workspaces/{code}/members/{memberId}/role - 워크스페이스 멤버의 권한을 변경하는데 성공하면 200을 응답받는다")
 	void test14() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -93,12 +90,9 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(
-			"target",
-			WorkspaceRole.MANAGER
-		);
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
 
-		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
+		WorkspaceMember target = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
 				.loginId("member1")
 				.build(),
@@ -107,16 +101,17 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(targetWorkspaceMember);
+		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(target);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
 			eq(workspaceCode),
-			any(UpdateMemberRoleRequest.class),
-			anyLong())
+			anyLong(),
+			anyLong(),
+			any(UpdateMemberRoleRequest.class))
 		).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/{memberId}/role", workspaceCode, 2L)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -126,7 +121,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/role - 권한을 변경하는데 성공하면 해당 워크스페이스 멤버의 상세 정보를 응답 데이터로 받는다")
+	@DisplayName("PATCH /workspaces/{code}/members/{memberId}/role - 권한을 변경하는데 성공하면 해당 워크스페이스 멤버의 상세 정보를 응답 데이터로 받는다")
 	void test15() throws Exception {
 		// Session 모킹
 		MockHttpSession session = new MockHttpSession();
@@ -135,12 +130,9 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(
-			"target",
-			WorkspaceRole.MANAGER
-		);
+		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
 
-		WorkspaceMember targetWorkspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
+		WorkspaceMember target = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
 				.loginId("member1")
 				.email("member1@test.com")
@@ -150,26 +142,28 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(targetWorkspaceMember);
+		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(target);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(eq(workspaceCode),
-			any(UpdateMemberRoleRequest.class),
-			anyLong())
+		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+			eq(workspaceCode),
+			anyLong(),
+			anyLong(),
+			any(UpdateMemberRoleRequest.class))
 		).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/role", workspaceCode)
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/{memberId}/role", workspaceCode, 2L)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
-			.andExpect(jsonPath("$.data.workspaceMemberDetail.workspaceRole").value("MANAGER"))
+			.andExpect(jsonPath("$.data.targetDetail.workspaceRole").value("MANAGER"))
 			.andDo(print());
 	}
 
 	@Test
-	@DisplayName("워크스페이스 멤버 초대 성공")
+	@DisplayName("POST /workspaces/{code}/members/invite - 워크스페이스 멤버 초대 성공")
 	void inviteMembers_Success() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -193,7 +187,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		when(workspaceMemberInviteService.inviteMembers(workspaceCode, request)).thenReturn(response);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -212,7 +206,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("비어있는 멤버 목록으로 초대 요청 시 요청 검증 실패")
+	@DisplayName("POST /workspaces/{code}/members/invite - 비어있는 멤버 목록으로 초대 요청 시 요청 검증 실패")
 	void inviteMembers_Fail_EmptyMemberList() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -223,7 +217,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -234,7 +228,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("모든 멤버 식별자가 초대 대상에서 제외되면 예외가 발생한다")
+	@DisplayName("POST /workspaces/{code}/members/invite - 모든 멤버 식별자가 초대 대상에서 제외되면 예외가 발생한다")
 	void inviteMembers_ifAllIdentifiersExcluded_throwsException() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -248,7 +242,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			new NoValidMembersToInviteException());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invites", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))

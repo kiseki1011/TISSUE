@@ -14,9 +14,9 @@ import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandServ
 import com.uranus.taskmanager.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
 import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.uranus.taskmanager.api.workspacemember.service.command.MemberWorkspaceCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
@@ -50,7 +50,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
 	@Autowired
-	protected MemberWorkspaceCommandService memberWorkspaceCommandService;
+	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@Autowired
 	protected WorkspaceQueryService workspaceQueryService;
 	@Autowired

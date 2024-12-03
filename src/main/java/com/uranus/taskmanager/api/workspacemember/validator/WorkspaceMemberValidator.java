@@ -16,7 +16,7 @@ public class WorkspaceMemberValidator {
 		validateRequesterHasHigherRole(requester, target);
 	}
 
-	public void validateKickOutMember(WorkspaceMember requester, WorkspaceMember target) {
+	public void validateRemoveMember(WorkspaceMember requester, WorkspaceMember target) {
 		validateNotSelfKickOut(requester, target);
 		validateRequesterHasHigherRole(requester, target);
 	}
