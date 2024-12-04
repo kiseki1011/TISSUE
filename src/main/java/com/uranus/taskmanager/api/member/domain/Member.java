@@ -1,20 +1,26 @@
 package com.uranus.taskmanager.api.member.domain;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseDateEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.member.domain.vo.Name;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidWorkspaceCountException;
 import com.uranus.taskmanager.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -47,6 +53,20 @@ public class Member extends BaseDateEntity {
 	@Column(nullable = false)
 	private String password;
 
+	@Embedded
+	@Column(nullable = false)
+	private Name name;
+
+	@Lob
+	private String introduction;
+
+	@Column(nullable = false)
+	private LocalDate birthDate;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private JobType jobType;
+
 	@Column(nullable = false)
 	private int myWorkspaceCount = 0;
 
@@ -57,10 +77,15 @@ public class Member extends BaseDateEntity {
 	private List<Invitation> invitations = new ArrayList<>();
 
 	@Builder
-	public Member(String loginId, String email, String password) {
+	public Member(String loginId, String email, String password, String introduction, JobType jobType, Name name,
+		LocalDate birthDate) {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
+		this.introduction = introduction;
+		this.jobType = jobType;
+		this.name = name;
+		this.birthDate = birthDate;
 	}
 
 	public void increaseMyWorkspaceCount() {

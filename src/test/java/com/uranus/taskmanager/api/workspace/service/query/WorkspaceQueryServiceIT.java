@@ -22,11 +22,12 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@BeforeEach
 	void setup() {
 		// member1 회원가입
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password("member1password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member1",
+			"member1@test.com",
+			"member1password!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		// workspace1, workspace2 생성
 		workspaceRepositoryFixture.createWorkspace(
@@ -57,11 +58,12 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("해당 워크스페이스에 참여하고 있으면, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
 	void test3() {
 		// given
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member2")
-			.email("member2@test.com")
-			.password("member2password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member2",
+			"member2@test.com",
+			"member2password!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
@@ -82,11 +84,12 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 코드로 워크스페이스를 조회하면 예외가 발생한다")
 	void test5() {
 		// given
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member2")
-			.email("member2@test.com")
-			.password("member2password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member2",
+			"member2@test.com",
+			"member2password!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		// when & then
 		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1"))
@@ -105,11 +108,12 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"TESTCODE",
 			null
 		);
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member3",
 			"member3@test.com",
 			"password1234!"
 		);
+
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
@@ -131,11 +135,12 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"TESTCODE",
 			null
 		);
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member3",
 			"member3@test.com",
 			"password1234!"
 		);
+
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when & then

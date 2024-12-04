@@ -23,11 +23,11 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("업데이트 인가의 비밀번호 검증에 성공하면 예외가 발생하지 않는다")
 	void validatePasswordForUpdate_ifSuccess_NoException() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
 
@@ -41,11 +41,11 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("업데이트 인가의 비밀번호 검증에 실패하면 예외가 발생한다")
 	void validatePasswordForUpdate_ifFail_InvalidMemberPasswordException() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		UpdateAuthRequest request = new UpdateAuthRequest("invalidPassword");
 

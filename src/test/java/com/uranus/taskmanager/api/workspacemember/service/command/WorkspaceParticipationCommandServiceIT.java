@@ -30,7 +30,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 			null
 		);
 
-		member = memberRepositoryFixture.createMember(
+		member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -73,7 +73,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 		// given
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 
-		Member member2 = memberRepositoryFixture.createMember(
+		Member member2 = memberRepositoryFixture.createAndSaveMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"

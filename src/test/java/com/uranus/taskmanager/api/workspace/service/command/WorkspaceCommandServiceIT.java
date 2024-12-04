@@ -31,7 +31,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효한 워크스페이스 코드와 비밀번호로 워크스페이스를 삭제할 수 있다")
 	void test1() {
 		// given
-		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
 
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -51,7 +51,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 삭제 시도 시 비밀번호가 맞지 않으면 예외가 발생한다")
 	void test2() {
 		// given
-		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
 
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -73,7 +73,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 삭제 시도 시 코드가 유효하지 않으면 예외가 발생한다")
 	void test3() {
 		// given
-		Member member = memberRepositoryFixture.createMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
 			"password1234!");
 		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);

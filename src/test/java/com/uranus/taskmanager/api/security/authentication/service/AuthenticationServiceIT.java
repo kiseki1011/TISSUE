@@ -30,18 +30,19 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("가입된 멤버의 로그인ID로 로그인할 수 있다")
-	void test1() {
+	@DisplayName("가입된 멤버의 로그인ID로 로그인이 가능하다")
+	void testLoginWithLoginId_success() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("user123")
-			.email("user123@test.com")
-			.password("password123!")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testuser@test.com",
+			"password123!"
+		);
+
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("user123")
+			.loginId("testuser")
 			.password("password123!")
 			.build();
 		// when
@@ -49,22 +50,23 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.getLoginId()).isEqualTo("user123");
+		assertThat(loginResponse.getLoginId()).isEqualTo("testuser");
 	}
 
 	@Test
 	@DisplayName("가입된 멤버의 이메일로 로그인할 수 있다")
-	void test2() {
+	void testLoginWithEmail_success() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("user123")
-			.email("user123@test.com")
-			.password("password123!")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testuser@test.com",
+			"password123!"
+		);
+
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.email("user123@test.com")
+			.email("testuser@test.com")
 			.password("password123!")
 			.build();
 		// when
@@ -72,22 +74,22 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.getEmail()).isEqualTo("user123@test.com");
+		assertThat(loginResponse.getEmail()).isEqualTo("testuser@test.com");
 	}
 
 	@Test
 	@DisplayName("로그인 시 로그인ID 또는 이메일을 조회할 수 없으면 InvalidLoginIdentityException 발생")
 	void test3() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("user123")
-			.email("user123@test.com")
-			.password("password123!")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testuser@test.com",
+			"password123!"
+		);
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("baduser123")
+			.loginId("badtestuser")
 			.password("password123!")
 			.build();
 
@@ -100,15 +102,15 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("로그인 시 패스워드가 일치하지 않으면 InvalidLoginPasswordException 발생")
 	void test4() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("user123")
-			.email("user123@test.com")
-			.password("password123!")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testuser@test.com",
+			"password123!"
+		);
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("user123")
+			.loginId("testuser")
 			.password("wrongpassword123!")
 			.build();
 

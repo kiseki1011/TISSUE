@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -20,6 +21,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import com.uranus.taskmanager.api.member.domain.JobType;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
@@ -42,6 +44,11 @@ class MemberControllerTest extends ControllerTestHelper {
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
@@ -62,11 +69,18 @@ class MemberControllerTest extends ControllerTestHelper {
 	})
 	@DisplayName("POST /members - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
+
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
+
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
 		mockMvc.perform(post("/api/v1/members")
@@ -90,16 +104,21 @@ class MemberControllerTest extends ControllerTestHelper {
 	})
 	@DisplayName("POST /members - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
 	void test3(String password, String passwordValidMsg) throws Exception {
+
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
 			.password(password)
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
-		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
 
 		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(objectMapper.writeValueAsString(signupMemberRequest)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data..message").value(passwordValidMsg))
 			.andDo(print());
@@ -122,6 +141,11 @@ class MemberControllerTest extends ControllerTestHelper {
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
 
 		// when & then

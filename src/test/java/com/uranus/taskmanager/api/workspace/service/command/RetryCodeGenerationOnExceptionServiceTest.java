@@ -20,6 +20,7 @@ import com.uranus.taskmanager.api.workspace.exception.WorkspaceCodeCollisionHand
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.uranus.taskmanager.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
@@ -38,6 +39,8 @@ class RetryCodeGenerationOnExceptionServiceTest {
 	private EntityManager entityManager;
 	@Autowired
 	private DatabaseCleaner databaseCleaner;
+	@Autowired
+	private MemberRepositoryFixture memberRepositoryFixture;
 
 	@MockBean
 	private WorkspaceCodeGenerator workspaceCodeGenerator;
@@ -90,11 +93,11 @@ class RetryCodeGenerationOnExceptionServiceTest {
 	@DisplayName("최대 재시도 횟수를 초과하면 예외가 발생한다")
 	void createWorkspace_ExceedMaxRetries() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.email("test@test.com")
-			.password("password1234!")
-			.loginId("tester")
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
+		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")

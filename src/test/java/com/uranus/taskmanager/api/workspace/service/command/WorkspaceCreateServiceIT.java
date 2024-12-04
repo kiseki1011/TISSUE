@@ -26,11 +26,11 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 생성을 성공하면 워크스페이스 생성 응답을 반환한다")
 	void createWorkspace_returnsWorkspaceCreateResponse() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -49,11 +49,11 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 생성 시 OWNER 권한의 WorkspaceMember도 생성되고 저장된다")
 	void workspaceCreate_ownerWorkspaceMemberIsSaved() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -72,11 +72,11 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 별칭은 생성자의 이메일로 설정된다")
 	void workspaceCreate_workspaceMemberNicknameMustBeEmail() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -95,12 +95,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다")
 	void createWorkspace_increasesWorkspaceCount() {
 		// given
-		Member member = memberRepository.save(
-			Member.builder()
-				.loginId("member1")
-				.email("member1@test.com")
-				.password("password1234!")
-				.build()
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
 		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
@@ -120,12 +118,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다(워크스페이스 2개 생성)")
 	void createTwoWorkspaces_increasesWorkspaceCount() {
 		// given
-		Member member = memberRepository.save(
-			Member.builder()
-				.loginId("member1")
-				.email("member1@test.com")
-				.password("password1234!")
-				.build()
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
 		);
 
 		CreateWorkspaceRequest request1 = CreateWorkspaceRequest.builder()
@@ -151,12 +147,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 50개 생성 후 추가 생성 시 예외가 발생한다")
 	void createWorkspace_throwsException_whenLimitReached() {
 		// given
-		Member member = memberRepository.save(
-			Member.builder()
-				.loginId("member1")
-				.email("member1@test.com")
-				.password("password1")
-				.build()
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
 		);
 
 		// Create 50 workspaces
@@ -182,12 +176,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
 	void deleteWorkspace_decreasesWorkspaceCount() {
 		// given
-		Member member = memberRepository.save(
-			Member.builder()
-				.loginId("member1")
-				.email("member1@test.com")
-				.password("password1234!")
-				.build()
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
 		);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()

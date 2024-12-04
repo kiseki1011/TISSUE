@@ -1,8 +1,11 @@
 package com.uranus.taskmanager.fixture.api;
 
+import java.time.LocalDate;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import com.uranus.taskmanager.api.member.domain.JobType;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 
 import io.restassured.RestAssured;
@@ -16,6 +19,11 @@ public class MemberApiFixture {
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
 
 		RestAssured.given()
