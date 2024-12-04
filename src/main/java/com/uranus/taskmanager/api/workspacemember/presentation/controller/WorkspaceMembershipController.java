@@ -14,10 +14,12 @@ import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginM
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
@@ -49,12 +51,27 @@ public class WorkspaceMembershipController {
 		@PathVariable String code,
 		@RequestBody @Valid InviteMembersRequest request
 	) {
-
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(
 			code,
 			request
 		);
 		return ApiResponse.ok("Members invited", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@PatchMapping("/nickname")
+	public ApiResponse<UpdateMemberNicknameResponse> updateMemberNickname(
+		@PathVariable String code,
+		@ResolveLoginMember Long loginMemberId,
+		@RequestBody @Valid UpdateMemberNicknameRequest request
+	) {
+		UpdateMemberNicknameResponse response = workspaceMemberCommandService.updateWorkspaceMemberNickname(
+			code,
+			loginMemberId,
+			request
+		);
+		return ApiResponse.ok("Nickname updated.", response);
 	}
 
 	@LoginRequired
@@ -66,7 +83,6 @@ public class WorkspaceMembershipController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateMemberRoleRequest request
 	) {
-
 		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
 			code,
 			memberId,
@@ -84,7 +100,6 @@ public class WorkspaceMembershipController {
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			code,
 			memberId,
@@ -101,7 +116,6 @@ public class WorkspaceMembershipController {
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-
 		RemoveMemberResponse response = workspaceMemberCommandService.removeMember(
 			code,
 			memberId,
