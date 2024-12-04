@@ -23,7 +23,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinW
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
+class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	void setup() {
@@ -66,7 +66,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(1L, pageable);
+		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(1L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -92,7 +92,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(2L, pageable);
+		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(2L, pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(1);
@@ -130,7 +130,7 @@ class MemberWorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(member2.getId(), pageable);
+		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(member2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

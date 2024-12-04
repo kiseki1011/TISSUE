@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MemberWorkspaceQueryService {
+public class WorkspaceParticipationQueryService {
 
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 

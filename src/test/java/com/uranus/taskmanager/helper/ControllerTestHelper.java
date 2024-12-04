@@ -34,7 +34,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.controller.Worksp
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
-import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 import com.uranus.taskmanager.config.WebMvcTestConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +84,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected WorkspaceMemberInviteService workspaceMemberInviteService;
 	@MockBean
-	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
+	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	@MockBean
 	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@MockBean

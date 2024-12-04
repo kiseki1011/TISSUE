@@ -15,7 +15,7 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinW
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
-import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces")
 public class WorkspaceParticipationController {
 
-	private final MemberWorkspaceQueryService memberWorkspaceQueryService;
+	private final WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	private final WorkspaceParticipationCommandService workspaceParticipationCommandService;
 
 	/**
@@ -60,7 +60,7 @@ public class WorkspaceParticipationController {
 		Pageable pageable
 	) {
 
-		MyWorkspacesResponse response = memberWorkspaceQueryService.getMyWorkspaces(
+		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(
 			loginMemberId,
 			pageable
 		);

@@ -143,7 +143,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(workspaceParticipationQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// 기대하는 JSON 응답 생성
@@ -161,7 +161,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.andExpect(content().json(expectedJson))
 			.andDo(print());
 
-		verify(memberWorkspaceQueryService, times(1))
+		verify(workspaceParticipationQueryService, times(1))
 			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 	}
 
@@ -199,7 +199,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.totalElements(2L)
 			.build();
 
-		when(memberWorkspaceQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(workspaceParticipationQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// when & then
@@ -210,7 +210,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 				.param("size", "10"))
 			.andExpect(status().isOk());
 
-		verify(memberWorkspaceQueryService, times(1))
+		verify(workspaceParticipationQueryService, times(1))
 			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 
 	}
