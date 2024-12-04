@@ -15,12 +15,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "UK_WORKSPACE_NICKNAME",
+			columnNames = {"workspace_code", "nickname"})
+	}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {
@@ -103,6 +112,10 @@ public class WorkspaceMember extends BaseEntity {
 		validateCurrentRoleIsNotOwner();
 		this.role = WorkspaceRole.OWNER;
 		this.member.increaseMyWorkspaceCount();
+	}
+
+	public void updateNickname(String nickname) {
+		this.nickname = nickname;
 	}
 
 	private void validateCannotUpdateToOwnerRole(WorkspaceRole newRole) {

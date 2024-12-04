@@ -24,9 +24,11 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
@@ -78,6 +80,46 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.memberId").value(2L))
 			.andDo(print());
 
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/members/nickname - 별칭을 변경하는데 성공하면 200을 응답받는다")
+	void testUpdateNickname_ifSuccess_return200() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		String workspaceCode = "TESTCODE";
+
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
+			Member.builder()
+				.loginId("tester")
+				.email("test@test.com")
+				.build(),
+			Workspace.builder()
+				.code(workspaceCode)
+				.build()
+		);
+		workspaceMember.updateNickname("newNickname");
+
+		UpdateMemberNicknameResponse response = UpdateMemberNicknameResponse.from(workspaceMember);
+
+		when(workspaceMemberCommandService.updateWorkspaceMemberNickname(
+			eq(workspaceCode),
+			eq(1L),
+			any(UpdateMemberNicknameRequest.class))
+		)
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/nickname", workspaceCode)
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new UpdateMemberNicknameRequest("newNickname"))))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Nickname updated."))
+			.andExpect(jsonPath("$.data.updatedDetail.nickname").value("newNickname"))
+			.andDo(print());
 	}
 
 	@Test

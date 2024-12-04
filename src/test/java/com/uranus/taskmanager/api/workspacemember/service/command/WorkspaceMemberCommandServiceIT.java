@@ -11,11 +11,14 @@ import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
+import com.uranus.taskmanager.api.workspacemember.exception.DuplicateNicknameException;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -396,7 +399,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.loginId("requester")
 			.email("requester123@test.com")
 			.password("password1234!")
-			.build());
+			.build()
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
 			requester,
@@ -428,4 +432,94 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(response).isNotNull();
 	}
+
+	@Test
+	@DisplayName("워크스페이스 멤버의 별칭을 성공적으로 변경하면 응답으로 상세 정보를 반환한다")
+	void updateNickname_Success() {
+		// given
+		Member tester = memberRepository.save(Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.password("password1234!")
+			.build()
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		workspaceMemberRepository.save(
+			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
+		);
+
+		String newNickname = "newNickname";
+		UpdateMemberNicknameRequest request = new UpdateMemberNicknameRequest(newNickname);
+
+		// when
+		UpdateMemberNicknameResponse response = workspaceMemberCommandService.updateWorkspaceMemberNickname(
+			workspace.getCode(),
+			tester.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.getUpdatedDetail().getNickname()).isEqualTo(newNickname);
+
+		WorkspaceMember updatedMember = workspaceMemberRepository
+			.findByMemberIdAndWorkspaceCode(tester.getId(), workspace.getCode())
+			.orElseThrow();
+		assertThat(updatedMember.getNickname()).isEqualTo(newNickname);
+	}
+
+	@Test
+	@DisplayName("이미 사용 중인 별칭으로 변경 시 예외가 발생한다")
+	void updateNickname_Failed_DuplicateNickname() {
+		// given
+		Member tester = memberRepository.save(Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.password("password1234!")
+			.build()
+		);
+		Member existingMember = memberRepository.save(Member.builder()
+			.loginId("existingMember")
+			.email("existingMember@test.com")
+			.password("password1234!")
+			.build()
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		workspaceMemberRepository.save(
+			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
+		);
+		workspaceMemberRepository.save(
+			WorkspaceMember.addWorkspaceMember(
+				existingMember,
+				workspace,
+				WorkspaceRole.COLLABORATOR,
+				"existingNickname"
+			)
+		);
+
+		String existingNickname = "existingNickname";
+		UpdateMemberNicknameRequest request = new UpdateMemberNicknameRequest(existingNickname);
+
+		// when & then
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberNickname(
+			workspace.getCode(),
+			tester.getId(),
+			request
+		)).isInstanceOfAny(DuplicateNicknameException.class);
+
+	}
+
 }

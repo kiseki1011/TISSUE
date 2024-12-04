@@ -17,8 +17,8 @@ import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMem
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
-import com.uranus.taskmanager.api.workspacemember.service.query.MemberWorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
@@ -48,7 +48,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceMemberQueryService workspaceMemberQueryService;
 	@Autowired
-	protected MemberWorkspaceQueryService memberWorkspaceQueryService;
+	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	@Autowired
 	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@Autowired
