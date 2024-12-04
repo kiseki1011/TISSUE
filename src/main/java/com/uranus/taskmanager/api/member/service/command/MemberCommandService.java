@@ -22,10 +22,13 @@ import lombok.RequiredArgsConstructor;
 public class MemberCommandService {
 
 	private final MemberRepository memberRepository;
-
 	private final MemberValidator memberValidator;
 	private final PasswordEncoder passwordEncoder;
 
+	/**
+	 * Todo
+	 *  - 회원 가입도 동시성 관련 처리 필요
+	 */
 	@Transactional
 	public SignupMemberResponse signup(
 		SignupMemberRequest request
@@ -88,7 +91,7 @@ public class MemberCommandService {
 		SignupMemberRequest request
 	) {
 		String encodedPassword = encodePassword(request.getPassword());
-		return SignupMemberRequest.to(request, encodedPassword);
+		return request.toEntity(encodedPassword);
 	}
 
 	private String encodePassword(

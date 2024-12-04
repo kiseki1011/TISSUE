@@ -28,11 +28,12 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 	@BeforeEach
 	void setup() {
 		// member1 회원가입
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password("member1password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member1",
+			"member1@test.com",
+			"member1password!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		// workspace1, workspace2 생성
 		workspaceRepositoryFixture.createWorkspace(
@@ -77,11 +78,12 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
 	void test2() {
 		// given
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member2")
-			.email("member2@test.com")
-			.password("member2password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member2",
+			"member2@test.com",
+			"member2password!!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
@@ -103,11 +105,12 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
 	void test6() {
 		// given
-		memberCommandService.signup(SignupMemberRequest.builder()
-			.loginId("member2")
-			.email("member2@test.com")
-			.password("member2password!")
-			.build());
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"member2",
+			"member2@test.com",
+			"member2password!!"
+		);
+		memberCommandService.signup(signupMemberRequest);
 
 		Member member2 = memberRepository.findByLoginId("member2").get();
 

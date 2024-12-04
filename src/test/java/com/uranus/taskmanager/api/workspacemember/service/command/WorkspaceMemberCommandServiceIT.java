@@ -49,14 +49,14 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createMember(
+		Member requester = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
 		);
 		WorkspaceMember.addOwnerWorkspaceMember(requester, workspace);
 
-		Member target = memberRepositoryFixture.createMember(
+		Member target = memberRepositoryFixture.createAndSaveMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"
@@ -85,7 +85,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createMember(
+		Member requester = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -112,7 +112,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createMember(
+		Member requester = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -120,7 +120,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
 
-		Member nonWorkspaceMember = memberRepositoryFixture.createMember(
+		Member nonWorkspaceMember = memberRepositoryFixture.createAndSaveMember(
 			"notJoinedMember",
 			"notJoinedMember@test.com",
 			"password1234!");
@@ -143,11 +143,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build());
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			requester,
@@ -157,11 +157,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member targetMember = memberRepository.save(Member.builder()
-			.loginId("target")
-			.email("target123@test.com")
-			.password("password1234!")
-			.build());
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
+			"target",
+			"target123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			targetMember,
@@ -198,11 +198,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build());
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			requester,
@@ -236,11 +236,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build());
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			requester,
@@ -250,11 +250,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepository.save(Member.builder()
-			.loginId("target")
-			.email("target123@test.com")
-			.password("password1234!")
-			.build());
+		Member target = memberRepositoryFixture.createAndSaveMember(
+			"target",
+			"target123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			target,
@@ -289,11 +289,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build());
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			requester,
@@ -303,11 +303,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepository.save(Member.builder()
-			.loginId("target")
-			.email("target123@test.com")
-			.password("password1234!")
-			.build());
+		Member target = memberRepositoryFixture.createAndSaveMember(
+			"target",
+			"target123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			target,
@@ -342,11 +342,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build());
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			requester,
@@ -356,11 +356,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepository.save(Member.builder()
-			.loginId("target")
-			.email("target123@test.com")
-			.password("password1234!")
-			.build());
+		Member target = memberRepositoryFixture.createAndSaveMember(
+			"target",
+			"target123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
 			target,
@@ -395,11 +395,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepository.save(Member.builder()
-			.loginId("requester")
-			.email("requester123@test.com")
-			.password("password1234!")
-			.build()
+		Member requester = memberRepositoryFixture.createAndSaveMember(
+			"requester",
+			"requester123@test.com",
+			"password1234!"
 		);
 
 		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
@@ -408,11 +407,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member targetMember = memberRepository.save(Member.builder()
-			.loginId("target")
-			.email("target123@test.com")
-			.password("password1234!")
-			.build());
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
+			"target",
+			"target123@test.com",
+			"password1234!"
+		);
 
 		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
 			targetMember,
@@ -437,11 +436,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 멤버의 별칭을 성공적으로 변경하면 응답으로 상세 정보를 반환한다")
 	void updateNickname_Success() {
 		// given
-		Member tester = memberRepository.save(Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.password("password1234!")
-			.build()
+		Member tester = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
 		);
 
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
@@ -478,17 +476,16 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이미 사용 중인 별칭으로 변경 시 예외가 발생한다")
 	void updateNickname_Failed_DuplicateNickname() {
 		// given
-		Member tester = memberRepository.save(Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.password("password1234!")
-			.build()
+		Member tester = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
 		);
-		Member existingMember = memberRepository.save(Member.builder()
-			.loginId("existingMember")
-			.email("existingMember@test.com")
-			.password("password1234!")
-			.build()
+
+		Member existingMember = memberRepositoryFixture.createAndSaveMember(
+			"existingMember",
+			"existingMember@test.com",
+			"password1234!"
 		);
 
 		Workspace workspace = workspaceRepositoryFixture.createWorkspace(

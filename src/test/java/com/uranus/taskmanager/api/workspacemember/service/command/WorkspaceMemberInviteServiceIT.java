@@ -36,7 +36,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -63,7 +63,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -92,13 +92,13 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member2 = memberRepositoryFixture.createMember(
+		Member member2 = memberRepositoryFixture.createAndSaveMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"
 		);
 
-		Member member3 = memberRepositoryFixture.createMember(
+		Member member3 = memberRepositoryFixture.createAndSaveMember(
 			"member3",
 			"member3@test.com",
 			"password1234!"
@@ -129,13 +129,13 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member2 = memberRepositoryFixture.createMember(
+		Member member2 = memberRepositoryFixture.createAndSaveMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"
 		);
 
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
@@ -166,7 +166,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member member = memberRepositoryFixture.createMember(
+		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"

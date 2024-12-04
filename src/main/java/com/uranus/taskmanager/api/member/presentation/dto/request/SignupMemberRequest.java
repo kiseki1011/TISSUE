@@ -1,9 +1,17 @@
 package com.uranus.taskmanager.api.member.presentation.dto.request;
 
-import com.uranus.taskmanager.api.member.domain.Member;
+import java.time.LocalDate;
 
+import com.uranus.taskmanager.api.member.domain.JobType;
+import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.domain.vo.Name;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -38,18 +46,62 @@ public class SignupMemberRequest {
 			+ " including at least one special character and must be between 8 and 30 characters")
 	private String password;
 
+	@NotBlank(message = "First name must not be blank")
+	@Size(max = 50, message = "First name must be less than 50 characters")
+	private String firstName;
+
+	@NotBlank(message = "Last name must not be blank")
+	@Size(max = 50, message = "Last name must be less than 50 characters")
+	private String lastName;
+
+	@NotNull(message = "Birth date must not be null")
+	@Past(message = "Birth date must be in the past")
+	private LocalDate birthDate;
+
+	@NotNull(message = "Job type must not be null")
+	@Enumerated(EnumType.STRING)
+	private JobType jobType;
+
+	/**
+	 * Todo
+	 *  - introduction에 size 검증 필요
+	 */
+	@Size(max = 255, message = "Introduction must be less than 255 characters")
+	private String introduction;
+
 	@Builder
-	public SignupMemberRequest(String loginId, String email, String password) {
+	public SignupMemberRequest(
+		String loginId,
+		String email,
+		String password,
+		String firstName,
+		String lastName,
+		LocalDate birthDate,
+		JobType jobType,
+		String introduction
+	) {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.birthDate = birthDate;
+		this.jobType = jobType;
+		this.introduction = introduction;
 	}
 
-	public static Member to(SignupMemberRequest request, String encodedPassword) {
+	public Member toEntity(String encodedPassword) {
 		return Member.builder()
-			.loginId(request.loginId)
-			.email(request.getEmail())
+			.loginId(this.loginId)
+			.email(this.email)
 			.password(encodedPassword)
+			.name(Name.builder()
+				.firstName(this.firstName)
+				.lastName(this.lastName)
+				.build())
+			.birthDate(this.birthDate)
+			.jobType(this.jobType)
+			.introduction(this.introduction)
 			.build();
 	}
 }

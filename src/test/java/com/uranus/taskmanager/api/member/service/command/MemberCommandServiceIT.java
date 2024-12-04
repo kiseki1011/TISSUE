@@ -34,11 +34,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("회원 가입에 성공하면 멤버가 저장된다")
 	void signup_sucess_memberIsSaved() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("testuser")
-			.password("testpassword1234!")
-			.email("testemail@test.com")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testemail@test.com",
+			"testpassword1234!"
+		);
 
 		// when
 		SignupMemberResponse signupMemberResponse = memberCommandService.signup(signupMemberRequest);
@@ -52,11 +52,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("회원 가입에 성공하여 저장된 멤버의 패스워드는 암호화 되어 있다")
 	void signup_sucess_memberPasswordIsEncrypted() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("testuser")
-			.password("testpassword1234!")
-			.email("testemail@test.com")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testemail@test.com",
+			"testpassword1234!"
+		);
 
 		// when
 		memberCommandService.signup(signupMemberRequest);
@@ -71,11 +71,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("회원 가입 시 입력한 패스워드와 암호화한 패스워드는 서로 다르다")
 	void signup_sucess_requestPaswordMustBeDifferentWithEncryptedPassword() {
 		// given
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("testuser")
-			.password("testpassword1234!")
-			.email("testemail@test.com")
-			.build();
+		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
+			"testuser",
+			"testemail@test.com",
+			"testpassword1234!"
+		);
 
 		// when
 		memberCommandService.signup(signupMemberRequest);
@@ -90,11 +90,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이메일 업데이트를 성공하면 이메일 업데이트 응답을 반환한다")
 	void updateEmail_success_returnsMemberEmailUpdateResponse() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		String newEmail = "newemail@test.com";
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(newEmail);
@@ -113,12 +113,10 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이메일 업데이트 시 이메일이 중복되면 예외가 발생한다")
 	void updateEmail_throwsException_whenEmailDuplicated() {
 		// given
-		Member existingMember = memberRepository.save(
-			Member.builder()
-				.loginId("member1")
-				.email("member1@test.com")
-				.password(passwordEncoder.encode("password1"))
-				.build()
+		Member existingMember = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
 		);
 
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(existingMember.getEmail());
@@ -132,11 +130,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("패스워드 업데이트를 성공하면 아무것도 반환하지 않는다")
 	void updatePassword_success_returnsNothing() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		String newPassword = "newpassword1234!";
 		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
@@ -149,11 +147,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("패스워드 업데이트를 성공하면 업데이트 된 멤버는 암호화된 새로운 패스워드를 가진다")
 	void updatePassword_success_updatedMemberHasNewEncrytedPassword() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		String newPassword = "newpassword1234!";
 		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
@@ -170,11 +168,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버 탈퇴에 성공하면 해당 멤버는 삭제된다")
 	void withdrawMember_success_memberIsDeleted() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
@@ -189,11 +187,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버 탈퇴에 요청의 패스워드가 멤버 패스워드와 일치하지 않으면 예외가 발생한다")
 	void withdrawMember_throwsException_ifRequestPasswordsIsNotValid() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		WithdrawMemberRequest request = new WithdrawMemberRequest("invalidPassword");
 
@@ -206,11 +204,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버 탈퇴에 요청 시 워크스페이스 소유자(OWNER)로 등록되어 있으면 예외가 발생한다")
 	void withdrawMember_throwsException_ifRequesterIsOwnerOfWorkspace() {
 		// given
-		Member member = memberRepository.save(Member.builder()
-			.loginId("member1")
-			.email("member1@test.com")
-			.password(passwordEncoder.encode("password1234!"))
-			.build());
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
 
 		Workspace workspace = workspaceRepository.save(Workspace.builder()
 			.code("TESTCODE")
