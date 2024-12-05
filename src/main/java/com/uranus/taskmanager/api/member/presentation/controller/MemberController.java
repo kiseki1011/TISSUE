@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberNameResponse;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
@@ -60,15 +62,15 @@ public class MemberController {
 
 	@LoginRequired
 	@PostMapping("/verify-password")
-	public ApiResponse<Void> getUpdateAuthorization(
-		@RequestBody @Valid UpdateAuthRequest request,
+	public ApiResponse<Void> getUpdatePermission(
+		@RequestBody @Valid UpdatePermissionRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
 		memberQueryService.validatePasswordForUpdate(request, loginMemberId);
 		sessionManager.createUpdatePermission(session);
 
-		return ApiResponse.okWithNoContent("Update authorization granted.");
+		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
 
 	@LoginRequired
@@ -83,8 +85,19 @@ public class MemberController {
 	}
 
 	@LoginRequired
+	@PatchMapping("/name")
+	public ApiResponse<UpdateMemberNameResponse> updateMemberName(
+		@RequestBody @Valid UpdateMemberNameRequest request,
+		@ResolveLoginMember Long loginMemberId
+	) {
+		UpdateMemberNameResponse response = memberCommandService.updateName(request, loginMemberId);
+
+		return ApiResponse.ok("Member name updated.", response);
+	}
+
+	@LoginRequired
 	@PatchMapping("/email")
-	public ApiResponse<UpdateMemberEmailResponse> updateEmail(
+	public ApiResponse<UpdateMemberEmailResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
@@ -93,12 +106,12 @@ public class MemberController {
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
 		sessionManager.updateSessionEmail(session, request.getNewEmail());
 
-		return ApiResponse.ok("Email updated.", response);
+		return ApiResponse.ok("Member email updated.", response);
 	}
 
 	@LoginRequired
 	@PatchMapping("/password")
-	public ApiResponse<Void> updatePassword(
+	public ApiResponse<Void> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
@@ -106,7 +119,7 @@ public class MemberController {
 		sessionValidator.validateUpdatePermission(session);
 		memberCommandService.updatePassword(request, loginMemberId);
 
-		return ApiResponse.okWithNoContent("Password updated.");
+		return ApiResponse.okWithNoContent("Member password updated.");
 	}
 
 	@LoginRequired

@@ -113,6 +113,10 @@ public class Member extends BaseDateEntity {
 		this.email = email;
 	}
 
+	public void updateName(Name name) {
+		this.name = name;
+	}
+
 	public void updateIntroduction(String introduction) {
 		this.introduction = introduction;
 	}

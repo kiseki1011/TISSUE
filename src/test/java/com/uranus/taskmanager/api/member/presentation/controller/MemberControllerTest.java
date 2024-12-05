@@ -26,9 +26,9 @@ import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.domain.vo.Name;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
-import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
@@ -166,18 +166,18 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("POST /members/verify-password - 업데이트 권한 요청에 성공하면 OK를 응답한다")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
-		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
+		UpdatePermissionRequest request = new UpdatePermissionRequest("password1234!");
 
 		doNothing()
 			.when(memberQueryService)
-			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
+			.validatePasswordForUpdate(any(UpdatePermissionRequest.class), anyLong());
 
 		// when & then
 		mockMvc.perform(post("/api/v1/members/verify-password")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Update authorization granted."))
+			.andExpect(jsonPath("$.message").value("Update permission granted."))
 			.andDo(print());
 	}
 
@@ -185,11 +185,11 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("POST /members/verify-password - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
 	void getUpdateAuthorization_returnsUnauthorized_whenInvalidMemberPasswordException() throws Exception {
 		// given
-		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
+		UpdatePermissionRequest request = new UpdatePermissionRequest("password1234!");
 
 		doThrow(new InvalidMemberPasswordException())
 			.when(memberQueryService)
-			.validatePasswordForUpdate(any(UpdateAuthRequest.class), anyLong());
+			.validatePasswordForUpdate(any(UpdatePermissionRequest.class), anyLong());
 
 		// when & then
 		mockMvc.perform(post("/api/v1/members/verify-password")
@@ -292,7 +292,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email updated."))
+			.andExpect(jsonPath("$.message").value("Member email updated."))
 			.andDo(print());
 	}
 
@@ -319,7 +319,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email updated."))
+			.andExpect(jsonPath("$.message").value("Member email updated."))
 			.andDo(print());
 	}
 

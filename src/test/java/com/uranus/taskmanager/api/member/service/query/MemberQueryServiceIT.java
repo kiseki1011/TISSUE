@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
-import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -29,7 +29,7 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateAuthRequest request = new UpdateAuthRequest("password1234!");
+		UpdatePermissionRequest request = new UpdatePermissionRequest("password1234!");
 
 		// when & then
 		assertThatNoException()
@@ -47,7 +47,7 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateAuthRequest request = new UpdateAuthRequest("invalidPassword");
+		UpdatePermissionRequest request = new UpdatePermissionRequest("invalidPassword");
 
 		// when & then
 		assertThatThrownBy(() -> memberQueryService.validatePasswordForUpdate(request, member.getId()))
@@ -59,7 +59,7 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("업데이트 인가에서 존재하지 않는 회원으로 시도하면 예외가 발생한다")
 	void validatePasswordForUpdate_ifFail_MemberNotFoundException() {
 		// given
-		UpdateAuthRequest request = new UpdateAuthRequest("invalidPassword");
+		UpdatePermissionRequest request = new UpdatePermissionRequest("invalidPassword");
 
 		// when & then
 		Long invalidMemberId = 999L;
