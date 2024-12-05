@@ -2,25 +2,29 @@ package com.uranus.taskmanager.api.member.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.uranus.taskmanager.api.member.domain.JobType;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.domain.vo.Name;
 import com.uranus.taskmanager.api.member.exception.DuplicateEmailException;
 import com.uranus.taskmanager.api.member.exception.OwnedWorkspaceExistsException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.uranus.taskmanager.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -127,23 +131,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("패스워드 업데이트를 성공하면 아무것도 반환하지 않는다")
-	void updatePassword_success_returnsNothing() {
-		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		String newPassword = "newpassword1234!";
-		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
-
-		// when & then
-		assertThatNoException().isThrownBy(() -> memberCommandService.updatePassword(request, member.getId()));
-	}
-
-	@Test
 	@DisplayName("패스워드 업데이트를 성공하면 업데이트 된 멤버는 암호화된 새로운 패스워드를 가진다")
 	void updatePassword_success_updatedMemberHasNewEncrytedPassword() {
 		// given
@@ -216,13 +203,92 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.description("description1")
 			.build());
 
-		workspaceMemberRepository.save(WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
-			member.getEmail()));
+		workspaceMemberRepository.save(WorkspaceMember.addOwnerWorkspaceMember(member, workspace));
 
 		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
 		// when & then
-		assertThatThrownBy(() -> memberCommandService.withdraw(request, member.getId())).isInstanceOf(
-			OwnedWorkspaceExistsException.class);
+		assertThatThrownBy(() -> memberCommandService.withdraw(request, member.getId()))
+			.isInstanceOf(OwnedWorkspaceExistsException.class);
+	}
+
+	@Test
+	@DisplayName("멤버 정보(프로필) 변경에 성공하면 변경된 멤버의 id가 포함된 응답을 반환한다")
+	void testUpdateMemberInfo_ifSuccess_returnUpdateMemberInfoResponse() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.password("test1234!")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.introduction("Im a backend developer")
+			.jobType(JobType.DEVELOPER)
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.build());
+
+		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+			.introduction("Im currently unemployed")
+			.jobType(JobType.ETC)
+			.birthDate(LocalDate.of(1995, 2, 2))
+			.build();
+
+		// when
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+
+		// then
+		assertThat(response.getMemberId()).isEqualTo(member.getId());
+		assertThat(memberRepository.findById(member.getId())
+			.get()
+			.getJobType()
+		)
+			.isEqualTo(JobType.ETC);
+	}
+
+	@Test
+	@DisplayName("멤버 정보(프로필) 변경 요청 시, null인 필드는 변경이 일어나지 않는다")
+	void testUpdateMemberInfo_requestNullFieldsNotChanged() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.password("test1234!")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.introduction("Im a backend developer")
+			.jobType(JobType.DEVELOPER)
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.build());
+
+		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+			.introduction("Im currently unemployed")
+			.build();
+
+		// when
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+
+		// then
+		assertThat(response.getMemberId()).isEqualTo(member.getId());
+		assertThat(memberRepository.findById(member.getId())
+			.get()
+			.getIntroduction()
+		)
+			.isEqualTo("Im currently unemployed");
+
+		assertThat(memberRepository.findById(member.getId())
+			.get()
+			.getJobType()
+		)
+			.isEqualTo(JobType.DEVELOPER);
+
+		assertThat(memberRepository.findById(member.getId())
+			.get()
+			.getBirthDate()
+		)
+			.isEqualTo(LocalDate.of(1995, 1, 1));
 	}
 }
