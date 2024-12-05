@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.member.presentation.dto;
+package com.uranus.taskmanager.api.member.presentation.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,8 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class MemberDetail {
-
+public class MyProfileResponse {
 	private String loginId;
 	private String email;
 	private String lastName;
@@ -24,7 +23,7 @@ public class MemberDetail {
 	private LocalDateTime updatedAt;
 
 	@Builder
-	public MemberDetail(
+	public MyProfileResponse(
 		String loginId,
 		String email,
 		String lastName,
@@ -48,8 +47,8 @@ public class MemberDetail {
 		this.updatedAt = updatedAt;
 	}
 
-	public static MemberDetail from(Member member) {
-		return MemberDetail.builder()
+	public static MyProfileResponse from(Member member) {
+		return MyProfileResponse.builder()
 			.loginId(member.getLoginId())
 			.email(member.getEmail())
 			.lastName(member.getName().getLastName())
