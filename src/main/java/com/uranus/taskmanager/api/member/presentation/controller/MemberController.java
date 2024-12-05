@@ -13,10 +13,12 @@ import com.uranus.taskmanager.api.common.ApiResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
@@ -49,8 +51,9 @@ public class MemberController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<SignupMemberResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
-
+	public ApiResponse<SignupMemberResponse> signup(
+		@Valid @RequestBody SignupMemberRequest request
+	) {
 		SignupMemberResponse response = memberCommandService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
 	}
@@ -62,11 +65,21 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-
 		memberQueryService.validatePasswordForUpdate(request, loginMemberId);
 		sessionManager.createUpdatePermission(session);
 
 		return ApiResponse.okWithNoContent("Update authorization granted.");
+	}
+
+	@LoginRequired
+	@PatchMapping
+	public ApiResponse<UpdateMemberInfoResponse> updateMemberInfo(
+		@RequestBody @Valid UpdateMemberInfoRequest request,
+		@ResolveLoginMember Long loginMemberId
+	) {
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, loginMemberId);
+
+		return ApiResponse.ok("Member info updated.", response);
 	}
 
 	@LoginRequired
@@ -76,12 +89,11 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-
 		sessionValidator.validateUpdatePermission(session);
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
 		sessionManager.updateSessionEmail(session, request.getNewEmail());
 
-		return ApiResponse.ok("Email update successful.", response);
+		return ApiResponse.ok("Email updated.", response);
 	}
 
 	@LoginRequired
@@ -91,11 +103,10 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-
 		sessionValidator.validateUpdatePermission(session);
 		memberCommandService.updatePassword(request, loginMemberId);
 
-		return ApiResponse.okWithNoContent("Password update successful.");
+		return ApiResponse.okWithNoContent("Password updated.");
 	}
 
 	@LoginRequired
@@ -105,7 +116,6 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-
 		sessionValidator.validateUpdatePermission(session);
 		memberCommandService.withdraw(request, loginMemberId);
 		session.invalidate();

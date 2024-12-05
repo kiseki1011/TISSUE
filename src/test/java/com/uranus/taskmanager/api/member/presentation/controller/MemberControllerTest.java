@@ -213,7 +213,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update successful."))
+			.andExpect(jsonPath("$.message").value("Email updated."))
 			.andDo(print());
 	}
 
@@ -240,7 +240,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Email update successful."))
+			.andExpect(jsonPath("$.message").value("Email updated."))
 			.andDo(print());
 	}
 

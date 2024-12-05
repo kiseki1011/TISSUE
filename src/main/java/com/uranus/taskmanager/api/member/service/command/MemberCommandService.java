@@ -8,10 +8,12 @@ import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.exception.MemberNotFoundException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.uranus.taskmanager.api.member.validator.MemberValidator;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 
@@ -39,6 +41,18 @@ public class MemberCommandService {
 		Member savedMember = memberRepository.save(member);
 
 		return SignupMemberResponse.from(savedMember);
+	}
+
+	@Transactional
+	public UpdateMemberInfoResponse updateInfo(
+		UpdateMemberInfoRequest request,
+		Long memberId
+	) {
+		Member member = findMemberById(memberId);
+
+		updateMemberInfoIfPresent(request, member);
+
+		return UpdateMemberInfoResponse.from(member);
 	}
 
 	@Transactional
@@ -78,6 +92,19 @@ public class MemberCommandService {
 		validateMemberDeletion(request, memberId, member);
 
 		memberRepository.delete(member);
+	}
+
+	private void updateMemberInfoIfPresent(UpdateMemberInfoRequest request, Member member) {
+
+		if (request.hasBirthDate()) {
+			member.updateBirthDate(request.getBirthDate());
+		}
+		if (request.hasJobType()) {
+			member.updateJobType(request.getJobType());
+		}
+		if (request.hasIntroduction()) {
+			member.updateIntroduction(request.getIntroduction());
+		}
 	}
 
 	private Member findMemberById(

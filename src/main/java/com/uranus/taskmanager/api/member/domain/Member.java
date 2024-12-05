@@ -106,6 +106,22 @@ public class Member extends BaseDateEntity {
 		this.email = email;
 	}
 
+	public void updateName(Name name) {
+		this.name = name;
+	}
+
+	public void updateIntroduction(String introduction) {
+		this.introduction = introduction;
+	}
+
+	public void updateBirthDate(LocalDate birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public void updateJobType(JobType jobType) {
+		this.jobType = jobType;
+	}
+
 	private void validateWorkspaceLimit() {
 		if (this.myWorkspaceCount >= MAX_MY_WORKSPACE_COUNT) {
 			throw new WorkspaceCreationLimitExceededException();
