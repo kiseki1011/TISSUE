@@ -2,6 +2,7 @@ package com.uranus.taskmanager.api.member.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberNa
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyProfileResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.SignupMemberResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
@@ -47,9 +49,16 @@ public class MemberController {
 	 */
 	private final MemberCommandService memberCommandService;
 	private final MemberQueryService memberQueryService;
-
 	private final SessionManager sessionManager;
 	private final SessionValidator sessionValidator;
+
+	@GetMapping
+	public ApiResponse<MyProfileResponse> getMyProfile(
+		@ResolveLoginMember Long loginMemberId
+	) {
+		MyProfileResponse response = memberQueryService.getMyProfile(loginMemberId);
+		return ApiResponse.ok("Found my profile.", response);
+	}
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping

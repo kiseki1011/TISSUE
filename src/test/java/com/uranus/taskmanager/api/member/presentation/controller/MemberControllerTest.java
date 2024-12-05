@@ -30,6 +30,7 @@ import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEm
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.response.MyProfileResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
@@ -39,6 +40,50 @@ import com.uranus.taskmanager.helper.ControllerTestHelper;
 import jakarta.servlet.http.HttpSession;
 
 class MemberControllerTest extends ControllerTestHelper {
+
+	@Test
+	@DisplayName("GET /members - 멤버 프로필(상세 정보) 조회에 성공하면 OK를 기대한다")
+	void getMyProfile_success_OK() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/members")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Found my profile."))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("GET /members - 멤버 프로필 조회에 성공하면 멤버의 상세 정보를 응답 데이터로 받는다")
+	void getMyProfile_success_responeDataIsMemberDetail() throws Exception {
+		// given
+		Member member = Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.birthDate(LocalDate.of(1990, 1, 1))
+			.jobType(JobType.DEVELOPER)
+			.introduction("Im a backend developer.")
+			.build();
+
+		when(memberQueryService.getMyProfile(anyLong())).thenReturn(MyProfileResponse.from(member));
+
+		// when & then
+		mockMvc.perform(get("/api/v1/members")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Found my profile."))
+			.andExpect(jsonPath("$.data.firstName").value("Gildong"))
+			.andExpect(jsonPath("$.data.birthDate").value(LocalDate.of(1990, 1, 1).toString()))
+			.andDo(print());
+	}
 
 	@Test
 	@DisplayName("POST /members - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
@@ -72,8 +117,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	})
 	@DisplayName("POST /members - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
 	void test2(String loginId, String loginIdValidMsg) throws Exception {
-
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
+		// given
+		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email("testemail@gmail.com")
 			.password("Testpassword1234!")
@@ -84,11 +129,10 @@ class MemberControllerTest extends ControllerTestHelper {
 			.jobType(JobType.DEVELOPER)
 			.build();
 
-		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
-
+		// when & then
 		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
+				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data..message").value(loginIdValidMsg))
 			.andDo(print());
