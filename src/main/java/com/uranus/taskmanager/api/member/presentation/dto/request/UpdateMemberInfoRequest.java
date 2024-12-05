@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.uranus.taskmanager.api.member.domain.JobType;
 
+import jakarta.validation.constraints.Past;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class UpdateMemberInfoRequest {
 	 * Todo
 	 *  - size 검증 필요
 	 */
+	@Past(message = "Birth date must be in the past")
 	private LocalDate birthDate;
 	private JobType jobType;
 	private String introduction;

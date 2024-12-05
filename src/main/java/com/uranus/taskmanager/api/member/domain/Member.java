@@ -44,7 +44,7 @@ public class Member extends BaseDateEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "MEMBER_ID")
-	Long id;
+	private Long id;
 
 	@Column(unique = true, nullable = false)
 	private String loginId;
@@ -77,8 +77,15 @@ public class Member extends BaseDateEntity {
 	private List<Invitation> invitations = new ArrayList<>();
 
 	@Builder
-	public Member(String loginId, String email, String password, String introduction, JobType jobType, Name name,
-		LocalDate birthDate) {
+	public Member(
+		String loginId,
+		String email,
+		String password,
+		String introduction,
+		JobType jobType,
+		Name name,
+		LocalDate birthDate
+	) {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
@@ -104,10 +111,6 @@ public class Member extends BaseDateEntity {
 
 	public void updateEmail(String email) {
 		this.email = email;
-	}
-
-	public void updateName(Name name) {
-		this.name = name;
 	}
 
 	public void updateIntroduction(String introduction) {

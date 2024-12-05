@@ -23,12 +23,15 @@ import org.springframework.mock.web.MockHttpSession;
 
 import com.uranus.taskmanager.api.member.domain.JobType;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.member.domain.vo.Name;
 import com.uranus.taskmanager.api.member.exception.InvalidMemberPasswordException;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateAuthRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberEmailResponse;
+import com.uranus.taskmanager.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.uranus.taskmanager.api.security.authorization.exception.UpdatePermissionException;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
@@ -194,6 +197,82 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.message").value("The given password is invalid"))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK를 응답한다")
+	void updateMemberInfo_success_OK() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.jobType(JobType.DEVELOPER)
+			.introduction("Im a backend developer")
+			.build();
+
+		Member member = Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.jobType(JobType.DEVELOPER)
+			.introduction("Im a backend developer")
+			.build();
+
+		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
+			.thenReturn(UpdateMemberInfoResponse.from(member));
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/members")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Member info updated."))
+			.andExpect(jsonPath("$.data.memberId").value(member.getId()))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
+	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
+		// given
+		MockHttpSession session = new MockHttpSession();
+		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+
+		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+			.birthDate(LocalDate.of(2995, 1, 1))
+			.build();
+
+		Member member = Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.jobType(JobType.DEVELOPER)
+			.introduction("Im a backend developer")
+			.build();
+
+		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
+			.thenReturn(UpdateMemberInfoResponse.from(member));
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/members")
+				.session(session)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
+			.andExpect(jsonPath("$.data..message").value("Birth date must be in the past"))
 			.andDo(print());
 	}
 
