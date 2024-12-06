@@ -68,7 +68,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			requester.getId());
 
 		// then
-		assertThat(response.getMemberId()).isEqualTo(target.getId());
+		assertThat(response.memberId()).isEqualTo(target.getId());
 		assertThat(
 			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(target.getId(), "TESTCODE")
 		).isEmpty();
@@ -182,8 +182,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.getTargetDetail().getNickname()).isEqualTo("target123@test.com");
-		assertThat(response.getTargetDetail().getWorkspaceRole()).isEqualTo(WorkspaceRole.MANAGER);
+		assertThat(response.role()).isEqualTo(WorkspaceRole.MANAGER);
 	}
 
 	@Transactional
@@ -464,7 +463,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.getUpdatedDetail().getNickname()).isEqualTo(newNickname);
+		assertThat(response.nickname()).isEqualTo(newNickname);
 
 		WorkspaceMember updatedMember = workspaceMemberRepository
 			.findByMemberIdAndWorkspaceCode(tester.getId(), workspace.getCode())

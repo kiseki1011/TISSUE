@@ -53,9 +53,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 			.post("/api/v1/workspaces")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
-			.body("data.name", equalTo("Test Workspace"))
-			.body("data.description", equalTo("Test Description"))
-			.body("data.code", notNullValue())
+			.body("data.id", equalTo(1))
 			.extract().response();
 	}
 

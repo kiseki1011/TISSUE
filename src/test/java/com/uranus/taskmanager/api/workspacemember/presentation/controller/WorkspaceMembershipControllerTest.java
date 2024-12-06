@@ -118,7 +118,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(new UpdateMemberNicknameRequest("newNickname"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Nickname updated."))
-			.andExpect(jsonPath("$.data.updatedDetail.nickname").value("newNickname"))
+			.andExpect(jsonPath("$.data.nickname").value("newNickname"))
 			.andDo(print());
 	}
 
@@ -200,7 +200,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
-			.andExpect(jsonPath("$.data.targetDetail.workspaceRole").value("MANAGER"))
+			.andExpect(jsonPath("$.data.role").value("MANAGER"))
 			.andDo(print());
 	}
 
@@ -237,7 +237,6 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.code").value("200"))
 			.andExpect(jsonPath("$.message").value("Members invited"))
 			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
-			.andExpect(jsonPath("$.data.totalInvitedMembers").value(2))
 			.andExpect(jsonPath("$.data.invitedMembers[0].id").value(1))
 			.andExpect(jsonPath("$.data.invitedMembers[0].email").value("john@example.com"))
 			.andExpect(jsonPath("$.data.invitedMembers[1].id").value(2))

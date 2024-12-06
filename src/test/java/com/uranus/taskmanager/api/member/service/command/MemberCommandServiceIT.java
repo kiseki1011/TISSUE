@@ -48,7 +48,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		SignupMemberResponse signupMemberResponse = memberCommandService.signup(signupMemberRequest);
 
 		// then
-		assertThat(signupMemberResponse.getMemberId()).isEqualTo(1L);
+		assertThat(signupMemberResponse.memberId()).isEqualTo(1L);
 		assertThat(memberRepository.findById(1L).get().getEmail()).isEqualTo("testemail@test.com");
 	}
 
@@ -107,7 +107,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, member.getId());
 
 		// then
-		assertThat(response.getMemberId()).isEqualTo(member.getId());
+		assertThat(response.memberId()).isEqualTo(member.getId());
 
 		Member updatedMember = memberRepository.findById(member.getId()).get();
 		assertThat(updatedMember.getEmail()).isEqualTo(newEmail);
@@ -239,7 +239,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
-		assertThat(response.getMemberId()).isEqualTo(member.getId());
+		assertThat(response.memberId()).isEqualTo(member.getId());
 		assertThat(memberRepository.findById(member.getId())
 			.get()
 			.getJobType()
@@ -272,7 +272,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
-		assertThat(response.getMemberId()).isEqualTo(member.getId());
+		assertThat(response.memberId()).isEqualTo(member.getId());
 		assertThat(memberRepository.findById(member.getId())
 			.get()
 			.getIntroduction()

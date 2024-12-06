@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.uranus.taskmanager.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
@@ -41,8 +42,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		assertThat(response.getName()).isEqualTo("workspace1");
-		assertThat(response.getDescription()).isEqualTo("description1");
+		Workspace workspace = workspaceRepository.findById(response.id())
+			.orElseThrow();
+
+		assertThat(response.code()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
@@ -190,7 +193,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.getCode(), member.getId());
+		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(), member.getId());
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();

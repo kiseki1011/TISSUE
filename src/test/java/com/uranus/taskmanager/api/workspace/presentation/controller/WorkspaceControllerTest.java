@@ -148,7 +148,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Workspace info updated."))
-			.andExpect(jsonPath("$.data.name").value("New Title"))
+			.andExpect(jsonPath("$.data.code").value("TESTCODE"))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
@@ -164,11 +164,15 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
 
+		Workspace workspace = Workspace.builder()
+			.code("TESTCODE")
+			.build();
+
 		when(workspaceCommandService.deleteWorkspace(
 			ArgumentMatchers.any(DeleteWorkspaceRequest.class),
 			eq("TESTCODE"),
 			anyLong()))
-			.thenReturn(DeleteWorkspaceResponse.from("TESTCODE"));
+			.thenReturn(DeleteWorkspaceResponse.from(workspace));
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TESTCODE")
@@ -177,7 +181,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Workspace deleted."))
-			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"));
+			.andExpect(jsonPath("$.data.code").value("TESTCODE"));
 
 		verify(workspaceCommandService, times(1))
 			.deleteWorkspace(ArgumentMatchers.any(DeleteWorkspaceRequest.class), eq("TESTCODE"), anyLong());

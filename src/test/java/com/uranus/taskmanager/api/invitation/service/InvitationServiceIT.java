@@ -50,8 +50,8 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.getWorkspaceCode()).isEqualTo("TESTCODE");
-		assertThat(response.getInvitationId()).isEqualTo(1L);
+		assertThat(response.workspaceCode()).isEqualTo("TESTCODE");
+		assertThat(response.invitationId()).isEqualTo(1L);
 	}
 
 	@Test
