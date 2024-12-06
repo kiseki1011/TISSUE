@@ -2,11 +2,13 @@ package com.uranus.taskmanager.api.invitation.service;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
@@ -198,5 +200,66 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Invitation invitation = invitationRepository.findById(workspace.getId()).get();
 		assertThat(invitation).isNotNull();
 		assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.REJECTED);
+	}
+
+	@Test
+	@DisplayName("사용자의 ACCEPTED, REJECTED 상태인 초대를 모두 삭제한다")
+	@Transactional
+	void deleteInvitations() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"test1234!"
+		);
+
+		Workspace workspace1 = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Workspace1",
+			"Description1",
+			"TESTCODE1",
+			null
+		);
+
+		Workspace workspace2 = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Workspace2",
+			"Description2",
+			"TESTCODE2",
+			null
+		);
+
+		Workspace workspace3 = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Workspace3",
+			"Description3",
+			"TESTCODE3",
+			null
+		);
+
+		invitationRepositoryFixture.createAndSaveInvitation(
+			workspace1,
+			member,
+			InvitationStatus.ACCEPTED
+		);
+
+		invitationRepositoryFixture.createAndSaveInvitation(
+			workspace2,
+			member,
+			InvitationStatus.REJECTED
+		);
+
+		Invitation pendingInvitation = invitationRepositoryFixture.createAndSaveInvitation(
+			workspace3,
+			member,
+			InvitationStatus.PENDING
+		);
+
+		entityManager.flush();
+		entityManager.clear();
+
+		// when
+		invitationCommandService.deleteInvitations(member.getId());
+
+		// then
+		List<Invitation> remainingInvitations = invitationRepository.findAllByMemberId(member.getId());
+		assertThat(remainingInvitations.get(0).getId()).isEqualTo(pendingInvitation.getId());
 	}
 }
