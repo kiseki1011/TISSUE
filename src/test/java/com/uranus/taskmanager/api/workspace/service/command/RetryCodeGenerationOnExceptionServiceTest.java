@@ -85,7 +85,7 @@ class RetryCodeGenerationOnExceptionServiceTest {
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		assertThat(response.getCode()).isEqualTo("SUCCESS-CODE");
+		assertThat(response.code()).isEqualTo("SUCCESS-CODE");
 		verify(workspaceCodeGenerator, times(5)).generateWorkspaceCode();
 	}
 

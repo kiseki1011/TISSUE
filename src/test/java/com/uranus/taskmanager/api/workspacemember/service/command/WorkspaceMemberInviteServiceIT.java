@@ -77,8 +77,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers("TESTCODE", request);
 
 		// then
-		assertThat(response.getTotalInvitedMembers()).isEqualTo(1L);
-		assertThat(response.getInvitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member));
+		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member));
 	}
 
 	@Test
@@ -110,9 +109,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers("TESTCODE", request);
 
 		// then
-		assertThat(response.getTotalInvitedMembers()).isEqualTo(2L);
-
-		assertThat(response.getInvitedMembers()).contains(
+		assertThat(response.invitedMembers()).contains(
 			InviteMembersResponse.InvitedMember.from(member2),
 			InviteMembersResponse.InvitedMember.from(member3)
 		);
@@ -150,9 +147,8 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers("TESTCODE", request);
 
 		// then
-		assertThat(response.getTotalInvitedMembers()).isEqualTo(1L);
-		assertThat(response.getInvitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member2));
-		assertThat(response.getWorkspaceCode()).isEqualTo("TESTCODE");
+		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member2));
+		assertThat(response.workspaceCode()).isEqualTo("TESTCODE");
 	}
 
 	@Test

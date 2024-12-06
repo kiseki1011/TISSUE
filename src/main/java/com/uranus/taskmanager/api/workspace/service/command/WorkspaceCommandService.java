@@ -69,7 +69,7 @@ public class WorkspaceCommandService {
 		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 		workspaceRepository.delete(workspace);
 
-		return DeleteWorkspaceResponse.from(code);
+		return DeleteWorkspaceResponse.from(workspace);
 	}
 
 	private Workspace findWorkspaceByCode(String code) {

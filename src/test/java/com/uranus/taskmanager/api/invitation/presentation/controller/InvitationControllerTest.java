@@ -39,10 +39,8 @@ class InvitationControllerTest extends ControllerTestHelper {
 		// given
 		Long invitationId = 1L;
 
-		AcceptInvitationResponse response = AcceptInvitationResponse.builder()
-			.invitationId(1L)
-			.build();
-
+		AcceptInvitationResponse response = new AcceptInvitationResponse(invitationId, null, null);
+		
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 

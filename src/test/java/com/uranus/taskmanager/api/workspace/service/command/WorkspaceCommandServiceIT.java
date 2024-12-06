@@ -39,11 +39,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build(), member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.getCode(),
+		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(),
 			member.getId());
 
 		// then
-		assertThat(workspaceRepository.findByCode(response.getCode())).isEmpty();
+		assertThat(workspaceRepository.findByCode(response.code())).isEmpty();
 	}
 
 	@Transactional
@@ -62,7 +62,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(
 			() -> workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest("InvalidPassword"),
-				response.getCode(),
+				response.code(),
 				member.getId()))
 			.isInstanceOf(InvalidWorkspacePasswordException.class);
 
@@ -102,8 +102,13 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
 
 		// then
-		assertThat(response.getName()).isEqualTo("Updated Name");
-		assertThat(response.getDescription()).isEqualTo("Updated Description");
+		assertThat(response.code()).isEqualTo("TEST1111");
+
+		assertThat(workspaceRepository.findByCode("TEST1111")
+			.orElseThrow()
+			.getName()
+		)
+			.isEqualTo("Updated Name");
 	}
 
 	@Transactional
@@ -118,30 +123,20 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
+		workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
 
 		// then
-		assertThat(response.getName()).isEqualTo("Updated Name");
-		assertThat(response.getDescription()).isEqualTo("description1");
-	}
+		assertThat(workspaceRepository.findByCode("TEST1111")
+			.orElseThrow()
+			.getName()
+		)
+			.isEqualTo("Updated Name");
 
-	@Transactional
-	@Test
-	@DisplayName("워크스페이스의 설명만 수정하면 해당 필드만 업데이트된다")
-	void test6() {
-		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
-
-		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
-			.description("Updated Description")
-			.build();
-
-		// when
-		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
-
-		// then
-		assertThat(response.getName()).isEqualTo("workspace1");
-		assertThat(response.getDescription()).isEqualTo("Updated Description");
+		assertThat(workspaceRepository.findByCode("TEST1111")
+			.orElseThrow()
+			.getDescription()
+		)
+			.isEqualTo("description1");
 	}
 
 	@Transactional

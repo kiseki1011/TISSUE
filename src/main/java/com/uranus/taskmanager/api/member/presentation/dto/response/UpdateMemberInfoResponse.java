@@ -4,24 +4,14 @@ import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.member.domain.Member;
 
-import lombok.Builder;
-import lombok.Getter;
-
-@Getter
-public class UpdateMemberInfoResponse {
-	private Long memberId;
-	private LocalDateTime updatedAt;
-
-	@Builder
-	public UpdateMemberInfoResponse(Long memberId, LocalDateTime updatedAt) {
-		this.memberId = memberId;
-		this.updatedAt = updatedAt;
-	}
-
+public record UpdateMemberInfoResponse(
+	Long memberId,
+	LocalDateTime updatedAt
+) {
 	public static UpdateMemberInfoResponse from(Member member) {
-		return UpdateMemberInfoResponse.builder()
-			.memberId(member.getId())
-			.updatedAt(member.getLastModifiedDate())
-			.build();
+		return new UpdateMemberInfoResponse(
+			member.getId(),
+			member.getLastModifiedDate()
+		);
 	}
 }
