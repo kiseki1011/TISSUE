@@ -1,24 +1,13 @@
-package com.uranus.taskmanager.api.common;
+package com.uranus.taskmanager.api.common.dto;
 
 import org.springframework.http.HttpStatus;
 
-import lombok.Getter;
-
-@Getter
-public class ApiResponse<T> {
-
-	private final int code;
-	private final HttpStatus status;
-	private final String message;
-	private final T data;
-
-	public ApiResponse(HttpStatus status, String message, T data) {
-		this.code = status.value();
-		this.status = status;
-		this.message = message;
-		this.data = data;
-	}
-
+public record ApiResponse<T>(
+	int code,
+	HttpStatus status,
+	String message,
+	T data
+) {
 	public static <T> ApiResponse<T> ok(String message, T data) {
 		return new ApiResponse<>(HttpStatus.OK, message, data);
 	}
@@ -33,5 +22,9 @@ public class ApiResponse<T> {
 
 	public static <T> ApiResponse<T> fail(HttpStatus status, String message, T data) {
 		return new ApiResponse<>(status, message, data);
+	}
+
+	private ApiResponse(HttpStatus status, String message, T data) {
+		this(status.value(), status, message, data);
 	}
 }
