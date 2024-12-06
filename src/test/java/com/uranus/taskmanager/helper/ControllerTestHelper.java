@@ -14,7 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uranus.taskmanager.api.global.config.WebMvcConfig;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.presentation.controller.InvitationController;
-import com.uranus.taskmanager.api.invitation.service.InvitationService;
+import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
+import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.presentation.controller.MemberController;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
@@ -96,7 +97,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected AuthenticationService authenticationService;
 	@MockBean
-	protected InvitationService invitationService;
+	protected InvitationCommandService invitationCommandService;
+	@MockBean
+	protected InvitationQueryService invitationQueryService;
 
 	/**
 	 * Repository

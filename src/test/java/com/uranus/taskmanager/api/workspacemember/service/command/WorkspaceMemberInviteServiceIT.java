@@ -29,7 +29,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대가 성공하면 초대가 PENDING 상태로 저장된다")
 	void testInviteMembers_ifSuccess_invitationStatusIsPending() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -56,7 +56,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("존재하지 않는 멤버에 대한 초대는 초대 대상에서 제외된다")
 	void testInviteMembers_ifMemberNotExist_excludedFromInvite() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -84,7 +84,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("다수의 멤버를 초대할 때 존재하지 않는 멤버는 대상에서 제외되고, 존재하는 멤버는 초대된다")
 	void testInviteMembers_memberNotExistExcluded_memberExistInvited() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -119,7 +119,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("해당 워크스페이스에 이미 참여하고 있는 멤버는 초대 대상에서 제외된다")
 	void testInviteMembers_AlreadyJoinedMemberExcluded() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -137,7 +137,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			"member1@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		InviteMembersRequest request = InviteMembersRequest.of(
 			Set.of("member2", "member1")
@@ -155,7 +155,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버 식별자들을 필터링 후 초대 대상에 대한 리스트가 비어 있으면 예외가 발생한다")
 	void testInviteMembers_ifListOfInvitedMembersEmpty_throwException() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -167,7 +167,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			"member1@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		InviteMembersRequest request = InviteMembersRequest.of(Set.of("member1"));
 

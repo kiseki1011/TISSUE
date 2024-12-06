@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.common.FieldErrorDto;
+import com.uranus.taskmanager.api.common.dto.ApiResponse;
+import com.uranus.taskmanager.api.common.dto.FieldErrorDto;
 import com.uranus.taskmanager.api.common.exception.AuthenticationException;
 import com.uranus.taskmanager.api.common.exception.AuthorizationException;
 import com.uranus.taskmanager.api.common.exception.InvitationException;

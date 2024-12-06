@@ -74,9 +74,10 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	void test3() {
 		// given
 		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111",
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1",
+			"TEST1111",
 			"password1234!");
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
 		assertThatThrownBy(
@@ -91,7 +92,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효한 워크스페이스 코드로 워크스페이스의 이름과 설명을 수정할 수 있다")
 	void test4() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
@@ -116,7 +117,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 이름만 수정하면 해당 필드만 업데이트된다")
 	void test5() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
@@ -144,7 +145,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하면 요청의 수정 비밀번호로 업데이트된다")
 	void test7() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
@@ -165,7 +166,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 비밀번호가 null이면 비밀번호 수정 요청의 수정 비밀번호로 업데이트된다")
 	void test8() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.updatePassword("updated1234!")
@@ -184,7 +185,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하지 않으면 예외가 발생한다")
 	void test9() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("invalid1234!")
@@ -201,7 +202,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 제공하지 않으면 비밀번호는 null로 업데이트 된다")
 	void test10() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
@@ -222,7 +223,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 null로 제공하면 비밀번호는 null로 업데이트 된다")
 	void test11() {
 		// given
-		workspaceRepositoryFixture.createWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")

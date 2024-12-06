@@ -42,7 +42,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버가 워크스페이스에서 성공적으로 추방되면 응답이 반환되어야 한다")
 	void kickWorkspaceMember_Success() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -61,7 +61,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"member2@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
 		RemoveMemberResponse response = workspaceMemberCommandService.removeMember("TESTCODE", target.getId(),
@@ -78,7 +78,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("존재하지 않는 멤버를 추방하려고 하면 예외가 발생한다")
 	void kickWorkspaceMember_MemberNotFoundException() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -91,7 +91,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
 
 		Long nonExistMemberId = 999L;
 
@@ -105,7 +105,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스에 소속되지 않은 멤버를 추방하려는 경우 예외가 발생 한다")
 	void kickWorkspaceMember_MemberNotInWorkspaceException() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -118,7 +118,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
 
 		Member nonWorkspaceMember = memberRepositoryFixture.createAndSaveMember(
 			"notJoinedMember",
@@ -136,7 +136,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("특정 워크스페이스의 멤버의 권한을 변경에 성공하면 변경된 멤버의 정보를 응답으로 반환한다")
 	void updateWorkspaceMember_success_returnsUpdateWorkspaceMemberRoleResponse() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -190,7 +190,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("자기 자신의 워크스페이스 멤버 권한을 변경하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateItself() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -228,7 +228,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 멤버의 권한을 OWNER로 변경하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateToOwner() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -281,7 +281,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("자기 자신보다 높은 권한을 가진 멤버를 업데이트하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateHigherRoleWorkspaceMember() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -334,7 +334,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버를 OWNER 권한으로 업데이트하려고 하면 예외가 발생한다")
 	void updateWorkspaceMember_fail_ifOwnerTrysToUpdateWorkspaceMemberToOwner() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -387,7 +387,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버로 워크스페이스 소유권 이전을 성공하면 응답이 반환된다")
 	void testTransferWorkspaceOwnership_ifSuccess_returnTransferWorkspaceOwnershipResponse() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -441,7 +441,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -487,7 +487,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",

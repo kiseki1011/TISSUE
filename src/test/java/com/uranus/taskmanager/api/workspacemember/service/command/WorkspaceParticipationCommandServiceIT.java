@@ -23,7 +23,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 	@BeforeEach
 	void setUp() {
 
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -36,7 +36,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
 			member,
 			workspace,
 			WorkspaceRole.COLLABORATOR
@@ -52,7 +52,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 	@DisplayName("워크스페이스 참여 시 비밀번호가 일치하지 않는 경우 예외가 발생한다")
 	void testJoinWorkspace_InvalidPasswordException() {
 		// given
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Workspace",
 			"Workspace with Password",
 			"CODE1234",
