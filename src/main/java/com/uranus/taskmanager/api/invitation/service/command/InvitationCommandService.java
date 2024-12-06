@@ -1,9 +1,12 @@
 package com.uranus.taskmanager.api.invitation.service.command;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
@@ -42,6 +45,14 @@ public class InvitationCommandService {
 		return RejectInvitationResponse.from(invitation);
 	}
 
+	@Transactional
+	public void deleteInvitations(Long memberId) {
+		invitationRepository.deleteAllByMemberIdAndStatusIn(
+			memberId,
+			List.of(InvitationStatus.ACCEPTED, InvitationStatus.REJECTED)
+		);
+	}
+
 	private Invitation getValidPendingInvitation(Long memberId, Long invitationId) {
 		Invitation invitation = invitationRepository
 			.findById(invitationId)
@@ -52,5 +63,4 @@ public class InvitationCommandService {
 
 		return invitation;
 	}
-
 }

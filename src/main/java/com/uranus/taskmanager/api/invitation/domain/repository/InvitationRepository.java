@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,6 +20,8 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 		String workspaceCode,
 		Long memberId
 	);
+
+	List<Invitation> findAllByMemberId(Long id);
 
 	@Query("SELECT i FROM Invitation i "
 		+ "WHERE i.member.id = :memberId "
@@ -36,5 +39,14 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 		+ "WHERE i.workspace.id = :workspaceId AND i.status = 'PENDING'")
 	Set<Long> findExistingMemberIds(
 		@Param("workspaceId") Long workspaceId
+	);
+
+	@Modifying
+	@Query("DELETE FROM Invitation i "
+		+ "WHERE i.member.id = :memberId "
+		+ "AND i.status IN :statuses")
+	void deleteAllByMemberIdAndStatusIn(
+		@Param("memberId") Long memberId,
+		@Param("statuses") List<InvitationStatus> statuses
 	);
 }
