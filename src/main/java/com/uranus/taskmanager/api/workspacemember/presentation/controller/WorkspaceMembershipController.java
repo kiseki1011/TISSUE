@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginMember;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;

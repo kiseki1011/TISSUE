@@ -12,22 +12,4 @@ public class WorkspaceEntityFixture {
 			.password("workspace1234!")
 			.build();
 	}
-
-	public Workspace createWorkspaceWithPassword(String code, String password) {
-		return Workspace.builder()
-			.code(code)
-			.name("test name")
-			.description("test description")
-			.password(password)
-			.build();
-	}
-
-	public Workspace createWorkspaceWithoutPassword(String code) {
-		return Workspace.builder()
-			.code(code)
-			.name("test name")
-			.description("test description")
-			.build();
-	}
-
 }

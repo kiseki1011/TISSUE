@@ -33,7 +33,7 @@ public class WorkspaceRepositoryFixture {
 	 * @param password    - 워크스페이스의 비밀번호 (null 값 허용, 비밀번호가 없는 경우 null 전달, 있으면 암호화)
 	 * @return 저장된 Workspace 객체
 	 */
-	public Workspace createWorkspace(String name, String description, String code, String password) {
+	public Workspace createAndSaveWorkspace(String name, String description, String code, String password) {
 		Workspace workspace = Workspace.builder()
 			.name(name)
 			.description(description)
@@ -51,7 +51,7 @@ public class WorkspaceRepositoryFixture {
 	 * @param role      - 워크스페이스 내 역할
 	 * @return 저장된 WorkspaceMember 객체
 	 */
-	public WorkspaceMember addMemberToWorkspace(Member member, Workspace workspace, WorkspaceRole role) {
+	public WorkspaceMember addAndSaveMemberToWorkspace(Member member, Workspace workspace, WorkspaceRole role) {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
 			member, workspace, role, member.getEmail()
 		);

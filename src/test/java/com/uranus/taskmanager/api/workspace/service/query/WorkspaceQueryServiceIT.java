@@ -30,13 +30,13 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.signup(signupMemberRequest);
 
 		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TEST1111",
 			null
 		);
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace2",
 			"description2",
 			"TEST2222",
@@ -102,7 +102,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -114,7 +114,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode);
@@ -129,7 +129,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
 		// given
 		String invalidCode = "INVALIDCODE";
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"Test Workspace",
 			"Test Description",
 			"TESTCODE",
@@ -141,7 +141,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when & then
 		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode))

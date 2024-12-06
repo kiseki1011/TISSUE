@@ -30,7 +30,6 @@ import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.Invi
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
-import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
@@ -41,14 +40,12 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
 	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
-	InvitationEntityFixture invitationEntityFixture;
 
 	@BeforeEach
 	public void setup() {
 		workspaceEntityFixture = new WorkspaceEntityFixture();
 		memberEntityFixture = new MemberEntityFixture();
 		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
-		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
 	@Test

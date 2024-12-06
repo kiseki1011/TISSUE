@@ -18,7 +18,7 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-class InvitationServiceIT extends ServiceIntegrationTestHelper {
+class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	public void tearDown() {
@@ -29,7 +29,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대 수락에 성공하면 초대 수락 응답을 반환 받는다")
 	void testAcceptInvitation_ifSuccess_returnsAcceptInvitationResponse() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -46,7 +46,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		AcceptInvitationResponse response = invitationService.acceptInvitation(invitedMember.getId(), 1L);
+		AcceptInvitationResponse response = invitationCommandService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		assertThat(response).isNotNull();
@@ -58,7 +58,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대가 성공하면 초대의 상태가 ACCEPTED로 변경된다")
 	void testAcceptInvitation_ifSuccess_invitationStatusChangeToAccepted() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -76,7 +76,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.acceptInvitation(invitedMember.getId(), 1L);
+		invitationCommandService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		Invitation invitation = invitationRepository.findById(workspace.getId()).get();
@@ -88,7 +88,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대의 수락이 성공하면 해당 워크스페이스에 참여 된다")
 	void testAcceptInvitation_ifSuccess_memberJoinsWorkspace() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -106,7 +106,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.acceptInvitation(invitedMember.getId(), 1L);
+		invitationCommandService.acceptInvitation(invitedMember.getId(), 1L);
 
 		// then
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceId(invitedMember.getId(),
@@ -119,7 +119,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 초대 코드를 사용해서 초대를 수락하면 예외가 발생한다")
 	void testAcceptInvitation_ifUseInvalidCode_throwsException() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -137,7 +137,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
+		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
 			InvitationNotFoundException.class);
 	}
 
@@ -145,7 +145,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대 수락 시, 초대의 상태가 PENDING이 아니면 예외가 발생한다")
 	void testAcceptInvitation_whenInvitationStatusNotPending_throwsException() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -163,10 +163,10 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// 초대를 거절해서 초대 상태를 REJECTED로 변경
-		invitationService.rejectInvitation(invitedMember.getId(), 1L);
+		invitationCommandService.rejectInvitation(invitedMember.getId(), 1L);
 
 		// when & then
-		assertThatThrownBy(() -> invitationService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
+		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
 			InvitationNotFoundException.class);
 	}
 
@@ -174,7 +174,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("초대를 거절하면 초대 상태가 REJECTED로 변경된다")
 	void testRejectInvitation_ifSuccess_invitationStatusChangeToRejected() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TESTCODE",
@@ -192,7 +192,7 @@ class InvitationServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when
-		invitationService.rejectInvitation(invitedMember.getId(), 1L);
+		invitationCommandService.rejectInvitation(invitedMember.getId(), 1L);
 
 		// then
 		Invitation invitation = invitationRepository.findById(workspace.getId()).get();

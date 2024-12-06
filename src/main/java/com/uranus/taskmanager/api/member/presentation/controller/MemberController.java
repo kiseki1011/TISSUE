@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.uranus.taskmanager.api.member.presentation.dto.request.UpdateMemberInfoRequest;

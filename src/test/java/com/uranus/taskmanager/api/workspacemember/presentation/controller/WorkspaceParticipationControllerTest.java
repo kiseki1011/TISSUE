@@ -17,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
+import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -27,7 +27,6 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
-import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
@@ -38,14 +37,12 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
 	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
-	InvitationEntityFixture invitationEntityFixture;
 
 	@BeforeEach
 	public void setup() {
 		workspaceEntityFixture = new WorkspaceEntityFixture();
 		memberEntityFixture = new MemberEntityFixture();
 		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
-		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
 	@Test

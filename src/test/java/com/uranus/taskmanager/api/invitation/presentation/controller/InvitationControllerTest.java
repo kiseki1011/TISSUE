@@ -1,21 +1,33 @@
 package com.uranus.taskmanager.api.invitation.presentation.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 import com.uranus.taskmanager.api.invitation.exception.InvitationNotFoundException;
+import com.uranus.taskmanager.api.invitation.presentation.dto.InvitationSearchCondition;
 import com.uranus.taskmanager.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.uranus.taskmanager.api.invitation.presentation.dto.response.InvitationResponse;
 import com.uranus.taskmanager.api.security.session.SessionAttributes;
-import com.uranus.taskmanager.fixture.entity.InvitationEntityFixture;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
@@ -24,13 +36,11 @@ class InvitationControllerTest extends ControllerTestHelper {
 
 	WorkspaceEntityFixture workspaceEntityFixture;
 	MemberEntityFixture memberEntityFixture;
-	InvitationEntityFixture invitationEntityFixture;
 
 	@BeforeEach
 	public void setup() {
 		workspaceEntityFixture = new WorkspaceEntityFixture();
 		memberEntityFixture = new MemberEntityFixture();
-		invitationEntityFixture = new InvitationEntityFixture();
 	}
 
 	@Test
@@ -40,11 +50,11 @@ class InvitationControllerTest extends ControllerTestHelper {
 		Long invitationId = 1L;
 
 		AcceptInvitationResponse response = new AcceptInvitationResponse(invitationId, null, null);
-		
+
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
-		when(invitationService.acceptInvitation(anyLong(), eq(invitationId))).thenReturn(response);
+		when(invitationCommandService.acceptInvitation(anyLong(), eq(invitationId))).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{invitationId}/accept", invitationId)
@@ -65,7 +75,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(invitationService.acceptInvitation(1L, invalidInvitationId))
+		when(invitationCommandService.acceptInvitation(1L, invalidInvitationId))
 			.thenThrow(new InvitationNotFoundException());
 
 		// when & then
@@ -96,4 +106,91 @@ class InvitationControllerTest extends ControllerTestHelper {
 			.andDo(print());
 	}
 
+	@Test
+	@DisplayName("GET /invitations - 자신의 초대 목록 조회 시 기본적으로 PENDING 상태의 초대들을 조회된다")
+	void getMyInvitations_defaultStatusConditionIsPending() throws Exception {
+		// given
+		Long loginMemberId = 1L;
+		InvitationSearchCondition searchCondition = new InvitationSearchCondition(List.of(InvitationStatus.PENDING));
+		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdDate"));
+
+		List<InvitationResponse> content = List.of(
+			new InvitationResponse(
+				1L, "TESTCODE1",
+				"inviter@test.com",
+				InvitationStatus.PENDING,
+				LocalDateTime.now()
+			),
+			new InvitationResponse(
+				2L,
+				"TESTCODE2",
+				"inviter@test.com",
+				InvitationStatus.PENDING,
+				LocalDateTime.now()
+			)
+		);
+		Page<InvitationResponse> page = new PageImpl<>(content, pageable, content.size());
+
+		when(invitationQueryService.getInvitations(loginMemberId, searchCondition, pageable))
+			.thenReturn(page);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/invitations")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Found invitations"))
+			.andExpect(jsonPath("$.data.content", hasSize(2)))
+			.andExpect(jsonPath("$.data.content[0].invitationId").value(1))
+			.andExpect(jsonPath("$.data.content[0].workspaceCode").value("TESTCODE1"))
+			.andExpect(jsonPath("$.data.content[0].status").value("PENDING"))
+			.andExpect(jsonPath("$.data.pageInfo.totalElements").value(2))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("GET /invitations - 초대 목록 조회 시 상태를 필터링할 수 있다")
+	void getMyInvitationsWithStatusFilter() throws Exception {
+		// given
+		Pageable pageable = PageRequest.of(
+			0,
+			20,
+			Sort.by(Sort.Direction.DESC, "createdDate")
+		);
+
+		List<InvitationResponse> content = List.of(
+			new InvitationResponse(
+				1L,
+				"TESTCODE1",
+				"inviter@test.com",
+				InvitationStatus.ACCEPTED,
+				LocalDateTime.now()
+			),
+			new InvitationResponse(
+				2L,
+				"TESTCODE2",
+				"inviter@test.com",
+				InvitationStatus.REJECTED,
+				LocalDateTime.now()
+			)
+		);
+
+		Page<InvitationResponse> page = new PageImpl<>(content, pageable, content.size());
+
+		when(invitationQueryService.getInvitations(
+			anyLong(),
+			ArgumentMatchers.any(InvitationSearchCondition.class),
+			eq(pageable))
+		)
+			.thenReturn(page);
+
+		// when & then
+		mockMvc.perform(get("/api/v1/invitations")
+				.param("statuses", "ACCEPTED", "REJECTED")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Found invitations"))
+			.andExpect(jsonPath("$.data.content[0].status").value("ACCEPTED"))
+			.andExpect(jsonPath("$.data.content[1].status").value("REJECTED"))
+			.andDo(print());
+	}
 }

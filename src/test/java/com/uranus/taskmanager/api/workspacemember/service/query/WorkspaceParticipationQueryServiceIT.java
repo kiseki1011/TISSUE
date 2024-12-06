@@ -36,13 +36,13 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		memberCommandService.signup(signupMemberRequest);
 
 		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace1",
 			"description1",
 			"TEST1111",
 			null
 		);
-		workspaceRepositoryFixture.createWorkspace(
+		workspaceRepositoryFixture.createAndSaveWorkspace(
 			"workspace2",
 			"description2",
 			"TEST2222",
@@ -116,13 +116,13 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 
 		// workspace3 ~ 7 이라는 이름으로 워크스페이스 5개 생성
 		for (int i = 3; i <= 7; i++) {
-			Workspace workspace = workspaceRepositoryFixture.createWorkspace(
+			Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 				"workspace" + i,
 				"description" + i,
 				"TEST" + i,
 				null
 			);
-			workspaceRepositoryFixture.addMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
+			workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
 		}
 
 		// 워크스페이스 name 기준 역정렬을 하기 위한 PageRequest
