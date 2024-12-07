@@ -1,8 +1,14 @@
 # Default
-# active: local
 spring:
   profiles:
     active: local
+
+---
+# Local & Test
+spring:
+  config:
+    activate:
+      on-profile: local
 
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -12,15 +18,14 @@ spring:
 
   jpa:
     hibernate:
-      dialect:
       ddl-auto: create
     properties:
       hibernate:
         format_sql: true
 
-logging.level:
-  org.hibernate.SQL: debug
-  org.hibernate.orm.jdbc.bind: trace
+  logging.level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
 
 ---
 # Development
@@ -30,10 +35,10 @@ spring:
       on-profile: dev
 
   datasource:
-    url: jdbc:h2:tcp://localhost:1521/taskmanager-dev-db
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/devdb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: rootpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 ---
 # Production
@@ -43,10 +48,10 @@ spring:
       on-profile: prod
 
   datasource:
-    url:
-    username:
-    password:
-    driver-class-name:
+    url: jdbc:mysql://localhost:3306/proddb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: rootpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
