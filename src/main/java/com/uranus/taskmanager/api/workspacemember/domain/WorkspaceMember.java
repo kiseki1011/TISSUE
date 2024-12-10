@@ -2,6 +2,7 @@ package com.uranus.taskmanager.api.workspacemember.domain;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 
@@ -49,6 +50,11 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
+	// Position과의 다대일 관계 추가
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "POSITION_ID")
+	private Position position;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private WorkspaceRole role;
@@ -63,6 +69,21 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 		this.nickname = nickname;
 		this.workspaceCode = workspace.getCode();
+	}
+
+	public void updatePosition(Position position) {
+		// position이 null인 경우도 허용 (Position 미지정)
+		if (position != null) {
+			validatePositionBelongsToWorkspace(position);
+		}
+		this.position = position;
+	}
+
+	private void validatePositionBelongsToWorkspace(Position position) {
+		if (!position.getWorkspaceCode().equals(this.workspaceCode)) {
+			throw new RuntimeException(
+				"Position must belong to the same workspace"); // Todo: InvalidPositionException 만들어서 사용하기
+		}
 	}
 
 	public static WorkspaceMember addWorkspaceMember(Member member, Workspace workspace, WorkspaceRole role,

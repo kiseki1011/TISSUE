@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.workspace.exception.InvalidMemberCountException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceMemberLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -60,6 +61,10 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private int memberCount = 0;
 
+	// Position과의 양방향 관계 추가
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Position> positions = new ArrayList<>();
+
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
@@ -72,6 +77,27 @@ public class Workspace extends BaseEntity {
 		this.name = name;
 		this.description = description;
 		this.password = password;
+	}
+
+	public Position createPosition(String name, String description) {
+		return Position.builder()
+			.name(name)
+			.description(description)
+			.workspace(this)
+			.build();
+	}
+
+	public void removePosition(Position position) {
+		// Position이 이 워크스페이스의 것인지 검증
+		validatePositionBelongsToWorkspace(position);
+		this.positions.remove(position);
+	}
+
+	private void validatePositionBelongsToWorkspace(Position position) {
+		if (!position.getWorkspace().equals(this)) {
+			throw new RuntimeException(
+				"Position does not belong to this workspace"); // Todo: InvalidPositionException 만들기
+		}
 	}
 
 	public void setCode(String code) {
