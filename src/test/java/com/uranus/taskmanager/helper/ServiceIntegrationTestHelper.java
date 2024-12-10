@@ -9,6 +9,9 @@ import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryServic
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
+import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
+import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandService;
@@ -68,6 +71,10 @@ public abstract class ServiceIntegrationTestHelper {
 	protected InvitationCommandService invitationCommandService;
 	@Autowired
 	protected InvitationQueryService invitationQueryService;
+	@Autowired
+	protected PositionCommandService positionCommandService;
+	@Autowired
+	protected PositionQueryService positionQueryService;
 
 	/**
 	 * Repository
@@ -80,6 +87,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberRepository memberRepository;
 	@Autowired
 	protected InvitationRepository invitationRepository;
+	@Autowired
+	protected PositionRepository positionRepository;
 
 	/**
 	 * Fixture

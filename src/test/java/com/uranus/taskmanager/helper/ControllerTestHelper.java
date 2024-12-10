@@ -20,6 +20,10 @@ import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.presentation.controller.MemberController;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
+import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.presentation.controller.PositionController;
+import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
+import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
 import com.uranus.taskmanager.api.security.authentication.presentation.controller.AuthenticationController;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.security.session.SessionManager;
@@ -48,7 +52,8 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceController.class,
 		WorkspaceMembershipController.class,
 		WorkspaceParticipationController.class,
-		MemberController.class
+		MemberController.class,
+		PositionController.class
 	},
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
@@ -100,6 +105,10 @@ public abstract class ControllerTestHelper {
 	protected InvitationCommandService invitationCommandService;
 	@MockBean
 	protected InvitationQueryService invitationQueryService;
+	@MockBean
+	protected PositionCommandService positionCommandService;
+	@MockBean
+	protected PositionQueryService positionQueryService;
 
 	/**
 	 * Repository
@@ -112,5 +121,7 @@ public abstract class ControllerTestHelper {
 	protected WorkspaceMemberRepository workspaceMemberRepository;
 	@MockBean
 	protected InvitationRepository invitationRepository;
+	@MockBean
+	protected PositionRepository positionRepository;
 
 }
