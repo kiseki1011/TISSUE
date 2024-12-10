@@ -16,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +25,12 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(uniqueConstraints = {
+	@UniqueConstraint(
+		name = "UK_WORKSPACE_POSITION_NAME",
+		columnNames = {"workspace_code", "name"}
+	)
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Position extends BaseEntity {
 	@Id
@@ -47,7 +55,11 @@ public class Position extends BaseEntity {
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@Builder
-	public Position(String name, String description, Workspace workspace) {
+	public Position(
+		String name,
+		String description,
+		Workspace workspace
+	) {
 		this.name = name;
 		this.description = description;
 		this.workspace = workspace;
