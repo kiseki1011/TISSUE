@@ -5,6 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.exception.PositionInUseException;
+import com.uranus.taskmanager.api.position.exception.PositionNotFoundException;
 import com.uranus.taskmanager.api.position.presentation.dto.request.CreatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.response.CreatePositionResponse;
@@ -46,9 +48,7 @@ public class PositionCommandService {
 		UpdatePositionRequest request) {
 		// Position 조회 및 검증
 		Position position = positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(() ->
-				new RuntimeException("PositionNotFound: " + positionId)
-			); // Todo: new PositionNotFoundException(positionId) 사용
+			.orElseThrow(PositionNotFoundException::new);
 
 		// Position 업데이트
 		position.updateName(request.name());
@@ -64,13 +64,11 @@ public class PositionCommandService {
 	public DeletePositionResponse deletePosition(String workspaceCode, Long positionId) {
 		// Position 조회 및 검증
 		Position position = positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(() ->
-				new RuntimeException("PositionNotFound: " + positionId)
-			); // Todo: new PositionNotFoundException(positionId) 사용
+			.orElseThrow(PositionNotFoundException::new);
 
 		// Position이 사용 중인지 확인
 		if (positionRepository.existsByWorkspaceMembers(position)) {
-			throw new RuntimeException("Cannot delete position that is in use"); // Todo: PositionInUseException 정의해서 사용
+			throw new PositionInUseException();
 		}
 
 		// Position 삭제
