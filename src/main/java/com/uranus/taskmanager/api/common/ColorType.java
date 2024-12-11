@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public enum ColorPalette {
+public enum ColorType {
 
 	RED("#FF5733", "Red"),
 	PINK("#FF69B4", "Pink"),
@@ -43,13 +43,13 @@ public enum ColorPalette {
 
 	private static final Random RANDOM = new Random();
 
-	public static ColorPalette getRandomUnusedColor(Set<ColorPalette> usedColors) {
-		List<ColorPalette> availableColors = Arrays.stream(ColorPalette.values())
+	public static ColorType getRandomUnusedColor(Set<ColorType> usedColors) {
+		List<ColorType> availableColors = Arrays.stream(ColorType.values())
 			.filter(color -> !usedColors.contains(color))
 			.toList();
 
 		if (availableColors.isEmpty()) {
-			availableColors = Arrays.asList(ColorPalette.values());
+			availableColors = Arrays.asList(ColorType.values());
 		}
 
 		return availableColors.get(RANDOM.nextInt(availableColors.size()));

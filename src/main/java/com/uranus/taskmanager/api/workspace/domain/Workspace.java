@@ -3,7 +3,7 @@ package com.uranus.taskmanager.api.workspace.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.uranus.taskmanager.api.common.ColorPalette;
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
 import com.uranus.taskmanager.api.position.domain.Position;
@@ -80,7 +80,7 @@ public class Workspace extends BaseEntity {
 		this.password = password;
 	}
 
-	public Position createPosition(String name, String description, ColorPalette color) {
+	public Position createPosition(String name, String description, ColorType color) {
 		return Position.builder()
 			.name(name)
 			.description(description)

@@ -3,7 +3,7 @@ package com.uranus.taskmanager.api.position.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.uranus.taskmanager.api.common.ColorPalette;
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -49,7 +49,7 @@ public class Position extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private ColorPalette color;
+	private ColorType color;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
@@ -66,7 +66,7 @@ public class Position extends BaseEntity {
 		String name,
 		String description,
 		Workspace workspace,
-		ColorPalette color
+		ColorType color
 	) {
 		this.name = name;
 		this.description = description;
@@ -84,7 +84,7 @@ public class Position extends BaseEntity {
 		this.description = description;
 	}
 
-	public void updateColor(ColorPalette color) {
+	public void updateColor(ColorType color) {
 		this.color = color;
 	}
 }

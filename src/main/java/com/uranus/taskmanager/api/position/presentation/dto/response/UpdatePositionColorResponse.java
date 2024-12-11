@@ -2,19 +2,18 @@ package com.uranus.taskmanager.api.position.presentation.dto.response;
 
 import java.time.LocalDateTime;
 
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.position.domain.Position;
 
-public record UpdatePositionResponse(
+public record UpdatePositionColorResponse(
 	Long positionId,
-	String name,
-	String description,
+	ColorType color,
 	LocalDateTime updatedAt
 ) {
-	public static UpdatePositionResponse from(Position position) {
-		return new UpdatePositionResponse(
+	public static UpdatePositionColorResponse from(Position position) {
+		return new UpdatePositionColorResponse(
 			position.getId(),
-			position.getName(),
-			position.getDescription(),
+			position.getColor(),
 			position.getLastModifiedDate()
 		);
 	}
