@@ -62,7 +62,6 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private int memberCount = 0;
 
-	// Position과의 양방향 관계 추가
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Position> positions = new ArrayList<>();
 
