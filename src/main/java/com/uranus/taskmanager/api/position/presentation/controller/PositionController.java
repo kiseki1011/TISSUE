@@ -37,6 +37,13 @@ public class PositionController {
 	private final PositionCommandService positionCommandService;
 	private final PositionQueryService positionQueryService;
 
+	/**
+	 * Todo
+	 *  - updatePositionColor 필요
+	 *  - 색상 필드에 대한 기능을 추가하면서 같이 추가
+	 *  - 색상 필드 적용 시, createPosition에는 초기에는 랜덤한 색상으로 설정하도록 만들 필요 있음
+	 */
+
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@ResponseStatus(HttpStatus.CREATED)

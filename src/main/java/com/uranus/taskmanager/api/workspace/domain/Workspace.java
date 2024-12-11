@@ -87,19 +87,6 @@ public class Workspace extends BaseEntity {
 			.build();
 	}
 
-	public void removePosition(Position position) {
-		// Position이 이 워크스페이스의 것인지 검증
-		validatePositionBelongsToWorkspace(position);
-		this.positions.remove(position);
-	}
-
-	private void validatePositionBelongsToWorkspace(Position position) {
-		if (!position.getWorkspace().equals(this)) {
-			throw new RuntimeException(
-				"Position does not belong to this workspace"); // Todo: InvalidPositionException 만들기
-		}
-	}
-
 	public void setCode(String code) {
 		this.code = code;
 	}
@@ -137,5 +124,4 @@ public class Workspace extends BaseEntity {
 			throw new InvalidMemberCountException();
 		}
 	}
-
 }

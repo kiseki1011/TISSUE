@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.workspacemember.domain;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.position.domain.Position;
+import com.uranus.taskmanager.api.position.exception.PositionNotFoundException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 
@@ -71,21 +72,6 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspaceCode = workspace.getCode();
 	}
 
-	public void updatePosition(Position position) {
-		// position이 null인 경우도 허용 (Position 미지정)
-		if (position != null) {
-			validatePositionBelongsToWorkspace(position);
-		}
-		this.position = position;
-	}
-
-	private void validatePositionBelongsToWorkspace(Position position) {
-		if (!position.getWorkspaceCode().equals(this.workspaceCode)) {
-			throw new RuntimeException(
-				"Position must belong to the same workspace"); // Todo: InvalidPositionException 만들어서 사용하기
-		}
-	}
-
 	public static WorkspaceMember addWorkspaceMember(Member member, Workspace workspace, WorkspaceRole role,
 		String nickname) {
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
@@ -118,6 +104,13 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
+	public void changePosition(Position position) {
+		if (position != null) {
+			validatePositionBelongsToWorkspace(position);
+		}
+		this.position = position;
+	}
+
 	public void updateRole(WorkspaceRole role) {
 		validateCannotUpdateToOwnerRole(role);
 		this.role = role;
@@ -137,6 +130,12 @@ public class WorkspaceMember extends BaseEntity {
 
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	private void validatePositionBelongsToWorkspace(Position position) {
+		if (!position.getWorkspaceCode().equals(this.workspaceCode)) {
+			throw new PositionNotFoundException();
+		}
 	}
 
 	private void validateCannotUpdateToOwnerRole(WorkspaceRole newRole) {
