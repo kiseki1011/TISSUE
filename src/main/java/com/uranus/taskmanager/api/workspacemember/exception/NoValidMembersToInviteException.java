@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.workspacemember.exception;
 
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.common.exception.WorkspaceMemberException;
+import com.uranus.taskmanager.api.common.exception.domain.WorkspaceMemberException;
 
 public class NoValidMembersToInviteException extends WorkspaceMemberException {
 	private static final String MESSAGE = "No avaliable members were found for invitation.";
