@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.member.exception;
 
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.common.exception.MemberException;
+import com.uranus.taskmanager.api.common.exception.domain.MemberException;
 
 public class DuplicateEmailException extends MemberException {
 

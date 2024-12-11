@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.workspace.exception;
 
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.common.exception.AuthenticationException;
+import com.uranus.taskmanager.api.common.exception.domain.AuthenticationException;
 
 public class InvalidWorkspacePasswordException extends AuthenticationException {
 	private static final String MESSAGE = "The given workspace password is invalid";

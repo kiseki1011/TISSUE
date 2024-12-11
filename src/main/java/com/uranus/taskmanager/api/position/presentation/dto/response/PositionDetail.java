@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import com.uranus.taskmanager.api.position.domain.Position;
 
 public record PositionDetail(
-	Long id,
+	Long positionId,
 	String name,
 	String description,
 	LocalDateTime createdAt,

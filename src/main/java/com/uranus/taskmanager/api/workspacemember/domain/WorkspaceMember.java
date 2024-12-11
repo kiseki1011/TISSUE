@@ -50,8 +50,7 @@ public class WorkspaceMember extends BaseEntity {
 
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
-
-	// Position과의 다대일 관계 추가
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "POSITION_ID")
 	private Position position;

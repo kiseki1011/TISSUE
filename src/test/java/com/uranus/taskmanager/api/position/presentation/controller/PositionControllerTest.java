@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.position.presentation.controller;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
@@ -12,11 +13,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.position.presentation.dto.request.CreatePositionRequest;
+import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.response.CreatePositionResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.GetPositionsResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.PositionDetail;
+import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
@@ -52,8 +56,9 @@ class PositionControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.message").value("Position created."))
-			.andExpect(jsonPath("$.data.id").value(1L))
-			.andExpect(jsonPath("$.data.name").value("Developer"));
+			.andExpect(jsonPath("$.data.positionId").value(1L))
+			.andExpect(jsonPath("$.data.name").value("Developer"))
+			.andDo(print());
 	}
 
 	@Test
@@ -70,7 +75,8 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"));
+			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
+			.andDo(print());
 	}
 
 	@Test
@@ -98,7 +104,55 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.name").value("Senior Developer"));
+			.andExpect(jsonPath("$.data.name").value("Senior Developer"))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/positions/{positionId/color - Position 색의 수정에 성공하면 OK 응답")
+	void updatePositionColor_Success() throws Exception {
+		// Given
+		Long positionId = 1L;
+		UpdatePositionColorRequest request = new UpdatePositionColorRequest(
+			ColorType.GREEN
+		);
+
+		UpdatePositionColorResponse expectedResponse = new UpdatePositionColorResponse(
+			positionId,
+			ColorType.GREEN,
+			LocalDateTime.now()
+		);
+
+		when(positionCommandService.updatePositionColor(WORKSPACE_CODE, positionId, request))
+			.thenReturn(expectedResponse);
+
+		// When & Then
+		mockMvc.perform(patch(BASE_URL + "/{positionId}/color", 1L)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.color").value("GREEN"))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/positions/{positionId}/color - Position의 색 수정 요청에 잘못된 값이 들어오면 유효성 검증에 실패한다")
+	void updatePositionColor_Fail() throws Exception {
+		// Given - 잘못된 colorType 값을 포함한 JSON 문자열을 직접 생성
+		String invalidRequestJson = """
+			{
+			   "colorType": "RAINBOW"
+			}
+			""";
+
+		// When & Then
+		mockMvc.perform(patch(BASE_URL + "/{positionId}/color", 1L)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(invalidRequestJson))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("Invalid enum value provided"))
+			.andExpect(jsonPath("$.data").isEmpty())
+			.andDo(print());
 	}
 
 	@Test
@@ -119,6 +173,7 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.positions", hasSize(2)))
-			.andExpect(jsonPath("$.data.positions[0].name").value("Developer"));
+			.andExpect(jsonPath("$.data.positions[0].name").value("Developer"))
+			.andDo(print());
 	}
 }

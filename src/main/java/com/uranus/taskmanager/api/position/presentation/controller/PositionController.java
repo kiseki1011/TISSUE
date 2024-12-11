@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.request.CreatePositionRequest;
+import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.response.CreatePositionResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.DeletePositionResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.GetPositionsResponse;
+import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
 import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
@@ -36,13 +38,6 @@ public class PositionController {
 
 	private final PositionCommandService positionCommandService;
 	private final PositionQueryService positionQueryService;
-
-	/**
-	 * Todo
-	 *  - updatePositionColor 필요
-	 *  - 색상 필드에 대한 기능을 추가하면서 같이 추가
-	 *  - 색상 필드 적용 시, createPosition에는 초기에는 랜덤한 색상으로 설정하도록 만들 필요 있음
-	 */
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
@@ -66,6 +61,18 @@ public class PositionController {
 	) {
 		UpdatePositionResponse response = positionCommandService.updatePosition(code, positionId, request);
 		return ApiResponse.ok("Position updated.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{positionId}/color")
+	public ApiResponse<UpdatePositionColorResponse> updatePositionColor(
+		@PathVariable String code,
+		@PathVariable Long positionId,
+		@Valid @RequestBody UpdatePositionColorRequest request
+	) {
+		UpdatePositionColorResponse response = positionCommandService.updatePositionColor(code, positionId, request);
+		return ApiResponse.ok("Position color updated.", response);
 	}
 
 	@LoginRequired

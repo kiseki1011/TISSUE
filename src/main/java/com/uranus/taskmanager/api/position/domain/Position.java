@@ -3,12 +3,15 @@ package com.uranus.taskmanager.api.position.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,6 +47,10 @@ public class Position extends BaseEntity {
 	@Column(nullable = false)
 	private String description;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ColorType color;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
@@ -58,12 +65,14 @@ public class Position extends BaseEntity {
 	public Position(
 		String name,
 		String description,
-		Workspace workspace
+		Workspace workspace,
+		ColorType color
 	) {
 		this.name = name;
 		this.description = description;
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
+		this.color = color;
 		workspace.getPositions().add(this);
 	}
 
@@ -73,5 +82,9 @@ public class Position extends BaseEntity {
 
 	public void updateDescription(String description) {
 		this.description = description;
+	}
+
+	public void updateColor(ColorType color) {
+		this.color = color;
 	}
 }

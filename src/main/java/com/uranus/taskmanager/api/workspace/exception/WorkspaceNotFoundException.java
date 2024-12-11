@@ -2,7 +2,7 @@ package com.uranus.taskmanager.api.workspace.exception;
 
 import org.springframework.http.HttpStatus;
 
-import com.uranus.taskmanager.api.common.exception.WorkspaceException;
+import com.uranus.taskmanager.api.common.exception.domain.WorkspaceException;
 
 public class WorkspaceNotFoundException extends WorkspaceException {
 

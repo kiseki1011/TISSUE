@@ -1,15 +1,21 @@
 package com.uranus.taskmanager.api.position.service.command;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
 import com.uranus.taskmanager.api.position.exception.PositionNotFoundException;
 import com.uranus.taskmanager.api.position.presentation.dto.request.CreatePositionRequest;
+import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.response.CreatePositionResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.DeletePositionResponse;
+import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.uranus.taskmanager.api.position.validator.PositionValidator;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -41,9 +47,24 @@ public class PositionCommandService {
 			request.name()
 		);
 
+		// 현재 워크스페이스에서 사용 중인 색상들을 Set으로 추출
+		Set<ColorType> usedColors = workspace.getPositions().stream()
+			.map(Position::getColor)
+			.collect(Collectors.toSet());
+
+		// 사용되지 않은 색상 중에서 랜덤으로 선택
+		ColorType randomColor = ColorType.getRandomUnusedColor(usedColors);
+
 		Position savedPosition = createPosition(
 			request,
-			workspace
+			workspace,
+			randomColor
+		);
+
+		log.debug("Position {} created with color: {} ({})",
+			request.name(),
+			randomColor.getDisplayName(),
+			randomColor.getHexCode()
 		);
 
 		return CreatePositionResponse.from(savedPosition);
@@ -73,6 +94,23 @@ public class PositionCommandService {
 	}
 
 	@Transactional
+	public UpdatePositionColorResponse updatePositionColor(
+		String workspaceCode,
+		Long positionId,
+		UpdatePositionColorRequest request
+	) {
+
+		Position position = findPositionByIdAndWorkspaceCode(
+			workspaceCode,
+			positionId
+		);
+
+		position.updateColor(request.colorType());
+
+		return UpdatePositionColorResponse.from(position);
+	}
+
+	@Transactional
 	public DeletePositionResponse deletePosition(
 		String workspaceCode,
 		Long positionId
@@ -90,8 +128,8 @@ public class PositionCommandService {
 		return DeletePositionResponse.from(position);
 	}
 
-	private Position createPosition(CreatePositionRequest request, Workspace workspace) {
-		Position position = workspace.createPosition(request.name(), request.description());
+	private Position createPosition(CreatePositionRequest request, Workspace workspace, ColorType color) {
+		Position position = workspace.createPosition(request.name(), request.description(), color);
 		return positionRepository.save(position);
 	}
 
