@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.common;
+package com.uranus.taskmanager.api.common.dto;
 
 import java.util.List;
 
