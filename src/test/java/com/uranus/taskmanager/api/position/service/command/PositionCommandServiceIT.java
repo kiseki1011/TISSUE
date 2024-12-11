@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.uranus.taskmanager.api.common.ColorPalette;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.position.exception.DuplicatePositionNameException;
@@ -58,6 +59,25 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@DisplayName("Position을 생성하면 ColorPalette의 색상 중 랜덤한 색을 배정받는다")
+	void createPosition_assignedRandomColor() {
+		// Given
+		CreatePositionRequest request = new CreatePositionRequest(
+			"Developer",
+			"Backend Developer"
+		);
+
+		// When
+		CreatePositionResponse createResponse = positionCommandService.createPosition("TESTCODE", request);
+
+		// Then
+		Position findPosition = positionRepository.findById(createResponse.id()).orElseThrow();
+
+		assertThat(findPosition.getColor()).isNotNull();
+		assertThat(findPosition.getColor()).isInstanceOf(ColorPalette.class);
+	}
+
+	@Test
 	@DisplayName("이름이 중복되는 Position을 생성하면 예외 발생")
 	void createDuplicatePosition_throwsException() {
 		// given
@@ -82,7 +102,11 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("Position을 수정하면 수정 응답 반환")
 	void updatePosition() {
 		// Given
-		Position position = workspace.createPosition("Developer", "Backend Developer");
+		Position position = workspace.createPosition(
+			"Developer",
+			"Backend Developer",
+			ColorPalette.BLACK
+		);
 		positionRepository.save(position);
 
 		UpdatePositionRequest request = new UpdatePositionRequest(
@@ -106,7 +130,11 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("사용 중인 Position 삭제를 시도하면 예외 발생")
 	void deletePosition_WhenInUse_ThrowsException() {
 		// Given
-		Position position = workspace.createPosition("Developer", "Backend Developer");
+		Position position = workspace.createPosition(
+			"Developer",
+			"Backend Developer",
+			ColorPalette.BLACK
+		);
 		positionRepository.save(position);
 
 		// WorkspaceMember 생성 및 Position 할당
