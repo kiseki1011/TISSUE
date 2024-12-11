@@ -1,12 +1,17 @@
 package com.uranus.taskmanager.api.common;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public enum ColorPallete {
+public enum ColorPalette {
 
 	RED("#FF5733", "Red"),
 	PINK("#FF69B4", "Pink"),
@@ -35,4 +40,18 @@ public enum ColorPallete {
 
 	private final String hexCode;
 	private final String displayName;
+
+	private static final Random RANDOM = new Random();
+
+	public static ColorPalette getRandomUnusedColor(Set<ColorPalette> usedColors) {
+		List<ColorPalette> availableColors = Arrays.stream(ColorPalette.values())
+			.filter(color -> !usedColors.contains(color))
+			.toList();
+
+		if (availableColors.isEmpty()) {
+			availableColors = Arrays.asList(ColorPalette.values());
+		}
+
+		return availableColors.get(RANDOM.nextInt(availableColors.size()));
+	}
 }
