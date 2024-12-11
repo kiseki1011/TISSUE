@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.workspace.exception.InvalidMemberCountException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceMemberLimitExceededException;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
@@ -60,6 +61,10 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private int memberCount = 0;
 
+	// Position과의 양방향 관계 추가
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Position> positions = new ArrayList<>();
+
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
@@ -72,6 +77,14 @@ public class Workspace extends BaseEntity {
 		this.name = name;
 		this.description = description;
 		this.password = password;
+	}
+
+	public Position createPosition(String name, String description) {
+		return Position.builder()
+			.name(name)
+			.description(description)
+			.workspace(this)
+			.build();
 	}
 
 	public void setCode(String code) {
@@ -111,5 +124,4 @@ public class Workspace extends BaseEntity {
 			throw new InvalidMemberCountException();
 		}
 	}
-
 }

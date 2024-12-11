@@ -8,6 +8,9 @@ import com.uranus.taskmanager.api.invitation.domain.repository.InvitationReposit
 import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
+import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
 import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
@@ -44,6 +47,10 @@ public abstract class RestAssuredTestHelper {
 	protected InvitationCommandService invitationCommandService;
 	@Autowired
 	protected MemberCommandService memberCommandService;
+	@Autowired
+	protected PositionCommandService positionCommandService;
+	@Autowired
+	protected PositionQueryService positionQueryService;
 
 	/**
 	 * Repository
@@ -56,6 +63,8 @@ public abstract class RestAssuredTestHelper {
 	protected WorkspaceMemberRepository workspaceMemberRepository;
 	@Autowired
 	protected InvitationRepository invitationRepository;
+	@Autowired
+	protected PositionRepository positionRepository;
 
 	/**
 	 * Fixture
