@@ -7,14 +7,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.uranus.taskmanager.api.common.ColorPalette;
+import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.position.exception.DuplicatePositionNameException;
 import com.uranus.taskmanager.api.position.exception.PositionInUseException;
 import com.uranus.taskmanager.api.position.presentation.dto.request.CreatePositionRequest;
+import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.uranus.taskmanager.api.position.presentation.dto.response.CreatePositionResponse;
+import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.uranus.taskmanager.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -71,10 +73,10 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreatePositionResponse createResponse = positionCommandService.createPosition("TESTCODE", request);
 
 		// Then
-		Position findPosition = positionRepository.findById(createResponse.id()).orElseThrow();
+		Position findPosition = positionRepository.findById(createResponse.positionId()).orElseThrow();
 
 		assertThat(findPosition.getColor()).isNotNull();
-		assertThat(findPosition.getColor()).isInstanceOf(ColorPalette.class);
+		assertThat(findPosition.getColor()).isInstanceOf(ColorType.class);
 	}
 
 	@Test
@@ -105,7 +107,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		Position position = workspace.createPosition(
 			"Developer",
 			"Backend Developer",
-			ColorPalette.BLACK
+			ColorType.BLACK
 		);
 		positionRepository.save(position);
 
@@ -127,13 +129,37 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@DisplayName("Position의 ColorType를 수정하면 수정 응답 반환")
+	void updatePositionColor() {
+		// given
+		Position position = workspace.createPosition(
+			"Developer",
+			"Backend Developer",
+			ColorType.BLACK
+		);
+		positionRepository.save(position);
+
+		UpdatePositionColorRequest request = new UpdatePositionColorRequest(ColorType.GREEN);
+
+		// when
+		UpdatePositionColorResponse response = positionCommandService.updatePositionColor(
+			"TESTCODE",
+			position.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.color()).isEqualTo(ColorType.GREEN);
+	}
+
+	@Test
 	@DisplayName("사용 중인 Position 삭제를 시도하면 예외 발생")
 	void deletePosition_WhenInUse_ThrowsException() {
 		// Given
 		Position position = workspace.createPosition(
 			"Developer",
 			"Backend Developer",
-			ColorPalette.BLACK
+			ColorType.BLACK
 		);
 		positionRepository.save(position);
 
