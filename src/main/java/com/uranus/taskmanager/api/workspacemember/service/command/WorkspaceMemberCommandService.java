@@ -102,7 +102,7 @@ public class WorkspaceMemberCommandService {
 		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
 		WorkspaceMember target = findWorkspaceMember(code, targetId);
 
-		requester.updateRoleFromOwnerToManager();
+		requester.updateRoleFromOwnerToAdmin();
 		target.updateRoleToOwner();
 
 		return TransferOwnershipResponse.from(requester, target);

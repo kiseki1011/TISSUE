@@ -40,8 +40,6 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 	/**
 	 * Todo
-	 *  - 회원 정보 조회
-	 *    - 나의 이메일, 비밀번호, 가입 날짜
 	 *  - 비밀번호 찾기 (세션 불필요)
 	 * 	  - 가입한 이메일, 로그인 ID를 통한 비밀번호 찾기
 	 * 	  - 기입한 로그인 ID, 이메일이 일치하면 이메일로 임시 비밀번호 보내기
