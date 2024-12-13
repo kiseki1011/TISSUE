@@ -4,15 +4,15 @@ import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
-public record UpdateMemberNicknameResponse(
+public record AssignPositionResponse(
 	Long workspaceMemberId,
-	String nickname,
-	LocalDateTime updatedAt
+	String assignedPosition,
+	LocalDateTime assignedAt
 ) {
-	public static UpdateMemberNicknameResponse from(WorkspaceMember workspaceMember) {
-		return new UpdateMemberNicknameResponse(
+	public static AssignPositionResponse from(WorkspaceMember workspaceMember) {
+		return new AssignPositionResponse(
 			workspaceMember.getId(),
-			workspaceMember.getNickname(),
+			workspaceMember.getPosition().getName(),
 			workspaceMember.getLastModifiedDate()
 		);
 	}

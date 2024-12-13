@@ -14,13 +14,11 @@ import com.uranus.taskmanager.api.security.authentication.resolver.ResolveLoginM
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
@@ -59,31 +57,15 @@ public class WorkspaceMembershipController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
-	@PatchMapping("/nickname")
-	public ApiResponse<UpdateMemberNicknameResponse> updateMemberNickname(
-		@PathVariable String code,
-		@ResolveLoginMember Long loginMemberId,
-		@RequestBody @Valid UpdateMemberNicknameRequest request
-	) {
-		UpdateMemberNicknameResponse response = workspaceMemberCommandService.updateWorkspaceMemberNickname(
-			code,
-			loginMemberId,
-			request
-		);
-		return ApiResponse.ok("Nickname updated.", response);
-	}
-
-	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{memberId}/role")
-	public ApiResponse<UpdateMemberRoleResponse> updateWorkspaceMemberRole(
+	public ApiResponse<UpdateRoleResponse> updateMemberRole(
 		@PathVariable String code,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId,
-		@RequestBody @Valid UpdateMemberRoleRequest request
+		@RequestBody @Valid UpdateRoleRequest request
 	) {
-		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
+		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
 			code,
 			memberId,
 			loginMemberId,
@@ -111,12 +93,12 @@ public class WorkspaceMembershipController {
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@DeleteMapping("/{memberId}")
-	public ApiResponse<RemoveMemberResponse> removeMember(
+	public ApiResponse<RemoveWorkspaceMemberResponse> removeWorkspaceMember(
 		@PathVariable String code,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RemoveMemberResponse response = workspaceMemberCommandService.removeMember(
+		RemoveWorkspaceMemberResponse response = workspaceMemberCommandService.removeWorkspaceMember(
 			code,
 			memberId,
 			loginMemberId

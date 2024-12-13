@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UpdateMemberRoleRequest {
+public class UpdateRoleRequest {
 
 	@NotNull(message = "Select a valid workspace role")
 	private WorkspaceRole updateWorkspaceRole;
 
-	public UpdateMemberRoleRequest(WorkspaceRole updateWorkspaceRole) {
+	public UpdateRoleRequest(WorkspaceRole updateWorkspaceRole) {
 		this.updateWorkspaceRole = updateWorkspaceRole;
 	}
 }

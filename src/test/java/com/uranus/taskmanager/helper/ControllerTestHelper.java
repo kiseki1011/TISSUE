@@ -34,6 +34,7 @@ import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandServ
 import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
 import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
 import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMemberInfoController;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceMembershipController;
 import com.uranus.taskmanager.api.workspacemember.presentation.controller.WorkspaceParticipationController;
 import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
@@ -52,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceController.class,
 		WorkspaceMembershipController.class,
 		WorkspaceParticipationController.class,
+		WorkspaceMemberInfoController.class,
 		MemberController.class,
 		PositionController.class
 	},

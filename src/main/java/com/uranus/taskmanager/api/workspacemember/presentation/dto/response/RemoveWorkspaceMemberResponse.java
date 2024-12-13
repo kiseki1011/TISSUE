@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
-public record RemoveMemberResponse(
+public record RemoveWorkspaceMemberResponse(
 	/*
 	 * Todo
 	 *  - 추후에 포지션(Position)을 추가하면, 포지션도 응답으로 추가
@@ -13,8 +13,8 @@ public record RemoveMemberResponse(
 	Long workspaceMemberId,
 	LocalDateTime removedAt
 ) {
-	public static RemoveMemberResponse from(Long memberId, WorkspaceMember workspaceMember) {
-		return new RemoveMemberResponse(
+	public static RemoveWorkspaceMemberResponse from(Long memberId, WorkspaceMember workspaceMember) {
+		return new RemoveWorkspaceMemberResponse(
 			memberId,
 			workspaceMember.getId(),
 			workspaceMember.getLastModifiedDate()

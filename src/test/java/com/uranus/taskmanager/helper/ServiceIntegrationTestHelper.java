@@ -26,6 +26,7 @@ import com.uranus.taskmanager.api.workspacemember.service.query.WorkspacePartici
 import com.uranus.taskmanager.fixture.dto.SignupRequestDtoFixture;
 import com.uranus.taskmanager.fixture.repository.InvitationRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
+import com.uranus.taskmanager.fixture.repository.PositionRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
@@ -101,5 +102,7 @@ public abstract class ServiceIntegrationTestHelper {
 	protected InvitationRepositoryFixture invitationRepositoryFixture;
 	@Autowired
 	protected SignupRequestDtoFixture signupRequestDtoFixture;
+	@Autowired
+	protected PositionRepositoryFixture positionRepositoryFixture;
 
 }
