@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.member.domain.Member;
+import com.uranus.taskmanager.api.position.domain.Position;
+import com.uranus.taskmanager.api.position.exception.PositionNotFoundException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
@@ -16,6 +18,7 @@ import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateExc
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
@@ -520,4 +523,67 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	}
 
+	@Transactional
+	@Test
+	@DisplayName("Position 할당에 성공하면 응답을 반환한다")
+	void assignPosition_Success() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		Position position = positionRepositoryFixture.createAndSavePosition("BACKEND-DEV", workspace);
+
+		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+
+		// When
+		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+			workspace.getCode(),
+			position.getId(),
+			member.getId()
+		);
+
+		// Then
+		assertThat(response.workspaceMemberId()).isEqualTo(workspaceMember.getId());
+		assertThat(response.assignedPosition()).isEqualTo(position.getName());
+
+		WorkspaceMember updatedMember = workspaceMemberRepository.findById(workspaceMember.getId()).get();
+		assertThat(updatedMember.getPosition()).isEqualTo(position);
+	}
+
+	@Test
+	@DisplayName("존재하지 않는 Position으로 할당 시도하면 예외 발생")
+	void assignPosition_WithNonExistentPosition_ThrowsException() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		// When & Then
+		assertThatThrownBy(() ->
+			workspaceMemberCommandService.assignPosition(
+				workspace.getCode(),
+				999L,
+				member.getId()
+			)
+		).isInstanceOf(PositionNotFoundException.class);
+	}
 }
