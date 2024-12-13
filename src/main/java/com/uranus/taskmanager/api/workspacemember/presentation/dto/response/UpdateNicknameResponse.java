@@ -3,17 +3,16 @@ package com.uranus.taskmanager.api.workspacemember.presentation.dto.response;
 import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
-import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 
-public record UpdateMemberRoleResponse(
+public record UpdateNicknameResponse(
 	Long workspaceMemberId,
-	WorkspaceRole role,
+	String nickname,
 	LocalDateTime updatedAt
 ) {
-	public static UpdateMemberRoleResponse from(WorkspaceMember workspaceMember) {
-		return new UpdateMemberRoleResponse(
+	public static UpdateNicknameResponse from(WorkspaceMember workspaceMember) {
+		return new UpdateNicknameResponse(
 			workspaceMember.getId(),
-			workspaceMember.getRole(),
+			workspaceMember.getNickname(),
 			workspaceMember.getLastModifiedDate()
 		);
 	}

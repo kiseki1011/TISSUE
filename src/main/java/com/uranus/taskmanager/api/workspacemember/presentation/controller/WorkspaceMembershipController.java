@@ -59,7 +59,7 @@ public class WorkspaceMembershipController {
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{memberId}/role")
-	public ApiResponse<UpdateRoleResponse> updateWorkspaceMemberRole(
+	public ApiResponse<UpdateRoleResponse> updateMemberRole(
 		@PathVariable String code,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId,

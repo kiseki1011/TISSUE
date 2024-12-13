@@ -34,7 +34,7 @@ public class WorkspaceMemberCommandService {
 	private final PositionRepository positionRepository;
 
 	@Transactional
-	public UpdateNicknameResponse updateMemberNickname(
+	public UpdateNicknameResponse updateNickname(
 		String code,
 		Long memberId,
 		UpdateNicknameRequest request

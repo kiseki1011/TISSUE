@@ -14,12 +14,12 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.DuplicateNicknameException;
 import com.uranus.taskmanager.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.uranus.taskmanager.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -64,7 +64,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
-		RemoveMemberResponse response = workspaceMemberCommandService.removeMember("TESTCODE", target.getId(),
+		RemoveWorkspaceMemberResponse response = workspaceMemberCommandService.removeWorkspaceMember("TESTCODE",
+			target.getId(),
 			requester.getId());
 
 		// then
@@ -97,7 +98,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeMember("TESTCODE", nonExistMemberId, requester.getId()))
+			() -> workspaceMemberCommandService.removeWorkspaceMember("TESTCODE", nonExistMemberId, requester.getId()))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 
@@ -127,7 +128,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeMember("TESTCODE", nonWorkspaceMember.getId(), requester.getId()))
+			() -> workspaceMemberCommandService.removeWorkspaceMember("TESTCODE", nonWorkspaceMember.getId(),
+				requester.getId()))
 			.isInstanceOf(MemberNotInWorkspaceException.class);
 	}
 
@@ -171,10 +173,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		// when
-		UpdateMemberRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
+		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
 			"TESTCODE",
 			targetMember.getId(),
 			requester.getId(),
@@ -212,7 +214,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(requesterWorkspaceMember);
 
 		// when & then
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
 			"TESTCODE",
@@ -264,7 +266,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.OWNER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
@@ -317,7 +319,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
@@ -370,7 +372,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberRepository.save(targetWorkspaceMember);
 
 		// when & then
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.OWNER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
@@ -453,10 +455,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		String newNickname = "newNickname";
-		UpdateMemberNicknameRequest request = new UpdateMemberNicknameRequest(newNickname);
+		UpdateNicknameRequest request = new UpdateNicknameRequest(newNickname);
 
 		// when
-		UpdateMemberNicknameResponse response = workspaceMemberCommandService.updateWorkspaceMemberNickname(
+		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
 			workspace.getCode(),
 			tester.getId(),
 			request
@@ -507,10 +509,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		String existingNickname = "existingNickname";
-		UpdateMemberNicknameRequest request = new UpdateMemberNicknameRequest(existingNickname);
+		UpdateNicknameRequest request = new UpdateNicknameRequest(existingNickname);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberNickname(
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
 			workspace.getCode(),
 			tester.getId(),
 			request

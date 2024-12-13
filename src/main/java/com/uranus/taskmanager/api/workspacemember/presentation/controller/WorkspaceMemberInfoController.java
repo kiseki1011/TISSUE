@@ -58,7 +58,7 @@ public class WorkspaceMemberInfoController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateNicknameRequest request
 	) {
-		UpdateNicknameResponse response = workspaceMemberCommandService.updateMemberNickname(
+		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
 			code,
 			loginMemberId,
 			request

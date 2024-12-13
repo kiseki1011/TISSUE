@@ -24,12 +24,12 @@ import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
 import com.uranus.taskmanager.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberNicknameRequest;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateMemberRoleRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveMemberResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberNicknameResponse;
-import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateMemberRoleResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
+import com.uranus.taskmanager.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
 import com.uranus.taskmanager.fixture.entity.MemberEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceEntityFixture;
 import com.uranus.taskmanager.fixture.entity.WorkspaceMemberEntityFixture;
@@ -63,9 +63,9 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
 			.createCollaboratorWorkspaceMember(member, workspace);
 
-		RemoveMemberResponse response = RemoveMemberResponse.from(2L, workspaceMember);
+		RemoveWorkspaceMemberResponse response = RemoveWorkspaceMemberResponse.from(2L, workspaceMember);
 
-		when(workspaceMemberCommandService.removeMember(eq(workspaceCode), eq(2L), anyLong()))
+		when(workspaceMemberCommandService.removeWorkspaceMember(eq(workspaceCode), eq(2L), anyLong()))
 			.thenReturn(response);
 
 		// when & then
@@ -99,12 +99,12 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		);
 		workspaceMember.updateNickname("newNickname");
 
-		UpdateMemberNicknameResponse response = UpdateMemberNicknameResponse.from(workspaceMember);
+		UpdateNicknameResponse response = UpdateNicknameResponse.from(workspaceMember);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberNickname(
+		when(workspaceMemberCommandService.updateNickname(
 			eq(workspaceCode),
 			eq(1L),
-			any(UpdateMemberNicknameRequest.class))
+			any(UpdateNicknameRequest.class))
 		)
 			.thenReturn(response);
 
@@ -112,7 +112,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/nickname", workspaceCode)
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new UpdateMemberNicknameRequest("newNickname"))))
+				.content(objectMapper.writeValueAsString(new UpdateNicknameRequest("newNickname"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Nickname updated."))
 			.andExpect(jsonPath("$.data.nickname").value("newNickname"))
@@ -129,7 +129,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		WorkspaceMember target = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
@@ -140,13 +140,13 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(target);
+		UpdateRoleResponse response = UpdateRoleResponse.from(target);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
 			eq(workspaceCode),
 			anyLong(),
 			anyLong(),
-			any(UpdateMemberRoleRequest.class))
+			any(UpdateRoleRequest.class))
 		).thenReturn(response);
 
 		// when & then
@@ -169,7 +169,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 
-		UpdateMemberRoleRequest request = new UpdateMemberRoleRequest(WorkspaceRole.MANAGER);
+		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		WorkspaceMember target = workspaceMemberEntityFixture.createManagerWorkspaceMember(
 			Member.builder()
@@ -181,13 +181,13 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateMemberRoleResponse response = UpdateMemberRoleResponse.from(target);
+		UpdateRoleResponse response = UpdateRoleResponse.from(target);
 
 		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
 			eq(workspaceCode),
 			anyLong(),
 			anyLong(),
-			any(UpdateMemberRoleRequest.class))
+			any(UpdateRoleRequest.class))
 		).thenReturn(response);
 
 		// when & then
