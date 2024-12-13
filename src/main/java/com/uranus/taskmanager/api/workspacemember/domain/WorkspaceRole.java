@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum WorkspaceRole {
-	OWNER(4),
+	OWNER(5),
+	ADMIN(4),
 	MANAGER(3),
 	COLLABORATOR(2),
 	VIEWER(1);

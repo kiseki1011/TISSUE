@@ -49,7 +49,6 @@ public class WorkspaceController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateWorkspaceRequest request
 	) {
-
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(
 			request,
 			loginMemberId
@@ -58,13 +57,12 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MANAGER)
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/info")
 	public ApiResponse<UpdateWorkspaceInfoResponse> updateWorkspaceInfo(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
 	) {
-
 		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(
 			request,
 			code
@@ -73,13 +71,12 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MANAGER)
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
 	public ApiResponse<Void> updateWorkspacePassword(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateWorkspacePasswordRequest request
 	) {
-
 		workspaceCommandService.updateWorkspacePassword(
 			request,
 			code
@@ -95,7 +92,6 @@ public class WorkspaceController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
-
 		DeleteWorkspaceResponse response = workspaceCommandService.deleteWorkspace(
 			request,
 			code,
@@ -110,7 +106,6 @@ public class WorkspaceController {
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(
 		@PathVariable String code
 	) {
-
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
 		return ApiResponse.ok("Workspace found.", response);
 	}

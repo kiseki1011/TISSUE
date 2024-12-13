@@ -43,7 +43,7 @@ public class WorkspaceMembershipController {
 	 */
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(roles = {WorkspaceRole.COLLABORATOR})
 	@PostMapping("/invite")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,
@@ -57,7 +57,7 @@ public class WorkspaceMembershipController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(roles = {WorkspaceRole.ADMIN})
 	@PatchMapping("/{memberId}/role")
 	public ApiResponse<UpdateRoleResponse> updateMemberRole(
 		@PathVariable String code,
@@ -91,7 +91,7 @@ public class WorkspaceMembershipController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(roles = {WorkspaceRole.ADMIN})
 	@DeleteMapping("/{memberId}")
 	public ApiResponse<RemoveWorkspaceMemberResponse> removeWorkspaceMember(
 		@PathVariable String code,
