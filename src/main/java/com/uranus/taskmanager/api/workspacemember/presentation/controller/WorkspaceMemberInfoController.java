@@ -96,4 +96,33 @@ public class WorkspaceMemberInfoController {
 		return ApiResponse.okWithNoContent("Position removed from member.");
 	}
 
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{memberId}/positions/{positionId}")
+	public ApiResponse<AssignPositionResponse> assignMemberPosition(
+		@PathVariable String code,
+		@PathVariable Long memberId,
+		@PathVariable Long positionId
+	) {
+		AssignPositionResponse response = workspaceMemberCommandService.assignMemberPosition(
+			code,
+			positionId,
+			memberId
+		);
+		return ApiResponse.ok("Position assigned to member.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{memberId}/positions")
+	public ApiResponse<Void> removeMemberPosition(
+		@PathVariable String code,
+		@PathVariable Long memberId
+	) {
+		workspaceMemberCommandService.removeMemberPosition(
+			code,
+			memberId
+		);
+		return ApiResponse.okWithNoContent("Position removed from member.");
+	}
 }

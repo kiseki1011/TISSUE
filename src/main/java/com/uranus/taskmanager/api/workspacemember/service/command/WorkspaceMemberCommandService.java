@@ -94,6 +94,29 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
+	public AssignPositionResponse assignMemberPosition(
+		String code,
+		Long positionId,
+		Long targetMemberId
+	) {
+		Position position = findPosition(positionId);
+
+		WorkspaceMember target = findWorkspaceMember(code, targetMemberId);
+		target.changePosition(position);
+
+		return AssignPositionResponse.from(target);
+	}
+
+	@Transactional
+	public void removeMemberPosition(
+		String code,
+		Long targetMemberId
+	) {
+		WorkspaceMember target = findWorkspaceMember(code, targetMemberId);
+		target.removePosition();
+	}
+
+	@Transactional
 	public TransferOwnershipResponse transferWorkspaceOwnership(
 		String code,
 		Long targetId,
