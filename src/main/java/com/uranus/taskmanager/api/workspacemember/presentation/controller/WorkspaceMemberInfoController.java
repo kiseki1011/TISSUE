@@ -104,7 +104,7 @@ public class WorkspaceMemberInfoController {
 		@PathVariable Long memberId,
 		@PathVariable Long positionId
 	) {
-		AssignPositionResponse response = workspaceMemberCommandService.assignMemberPosition(
+		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
 			code,
 			positionId,
 			memberId
@@ -119,7 +119,7 @@ public class WorkspaceMemberInfoController {
 		@PathVariable String code,
 		@PathVariable Long memberId
 	) {
-		workspaceMemberCommandService.removeMemberPosition(
+		workspaceMemberCommandService.removePosition(
 			code,
 			memberId
 		);

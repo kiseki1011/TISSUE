@@ -74,11 +74,11 @@ public class WorkspaceMemberCommandService {
 	public AssignPositionResponse assignPosition(
 		String code,
 		Long positionId,
-		Long loginMemberId
+		Long memberId
 	) {
 		Position position = findPosition(positionId);
 
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, loginMemberId);
+		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
 		workspaceMember.changePosition(position);
 
 		return AssignPositionResponse.from(workspaceMember);
@@ -87,33 +87,10 @@ public class WorkspaceMemberCommandService {
 	@Transactional
 	public void removePosition(
 		String code,
-		Long loginMemberId
+		Long memberId
 	) {
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, loginMemberId);
+		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
 		workspaceMember.removePosition();
-	}
-
-	@Transactional
-	public AssignPositionResponse assignMemberPosition(
-		String code,
-		Long positionId,
-		Long targetMemberId
-	) {
-		Position position = findPosition(positionId);
-
-		WorkspaceMember target = findWorkspaceMember(code, targetMemberId);
-		target.changePosition(position);
-
-		return AssignPositionResponse.from(target);
-	}
-
-	@Transactional
-	public void removeMemberPosition(
-		String code,
-		Long targetMemberId
-	) {
-		WorkspaceMember target = findWorkspaceMember(code, targetMemberId);
-		target.removePosition();
 	}
 
 	@Transactional

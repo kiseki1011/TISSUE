@@ -76,7 +76,7 @@ class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
 			LocalDateTime.now()
 		);
 
-		when(workspaceMemberCommandService.assignMemberPosition(
+		when(workspaceMemberCommandService.assignPosition(
 			workspaceCode,
 			positionId,
 			targetMemberId
