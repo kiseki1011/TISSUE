@@ -50,7 +50,7 @@ public class WorkspaceMember extends BaseEntity {
 
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "POSITION_ID")
 	private Position position;
@@ -108,6 +108,13 @@ public class WorkspaceMember extends BaseEntity {
 			validatePositionBelongsToWorkspace(position);
 		}
 		this.position = position;
+	}
+
+	public void removePosition() {
+		if (this.position != null) {
+			this.position.getWorkspaceMembers().remove(this);
+			this.position = null;
+		}
 	}
 
 	public void updateRole(WorkspaceRole role) {
