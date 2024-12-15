@@ -6,6 +6,7 @@ import java.util.List;
 import com.uranus.taskmanager.api.common.ColorType;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.invitation.domain.Invitation;
+import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.position.domain.Position;
 import com.uranus.taskmanager.api.workspace.exception.InvalidMemberCountException;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceMemberLimitExceededException;
@@ -70,6 +71,9 @@ public class Workspace extends BaseEntity {
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
+
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Issue> issues = new ArrayList<>();
 
 	@Builder
 	public Workspace(String code, String name, String description, String password) {

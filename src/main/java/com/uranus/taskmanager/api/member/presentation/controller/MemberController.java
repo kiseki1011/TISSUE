@@ -44,6 +44,8 @@ public class MemberController {
 	 * 	  - 가입한 이메일, 로그인 ID를 통한 비밀번호 찾기
 	 * 	  - 기입한 로그인 ID, 이메일이 일치하면 이메일로 임시 비밀번호 보내기
 	 * 	  - 또는 비밀번호 재설정 링크 보내기
+	 * 	- 회원 가입 시, 이메일 확인 로직 필요(이메일로 확인 이메일 보내기)
+	 *  - 이메일 업데이트 시, 이메일로 확인(검증) 이메일 보내기
 	 */
 	private final MemberCommandService memberCommandService;
 	private final MemberQueryService memberQueryService;
