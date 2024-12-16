@@ -117,14 +117,14 @@ class InvitationControllerTest extends ControllerTestHelper {
 		List<InvitationResponse> content = List.of(
 			new InvitationResponse(
 				1L, "TESTCODE1",
-				"inviter@test.com",
+				1L,
 				InvitationStatus.PENDING,
 				LocalDateTime.now()
 			),
 			new InvitationResponse(
 				2L,
 				"TESTCODE2",
-				"inviter@test.com",
+				1L,
 				InvitationStatus.PENDING,
 				LocalDateTime.now()
 			)
@@ -161,14 +161,14 @@ class InvitationControllerTest extends ControllerTestHelper {
 			new InvitationResponse(
 				1L,
 				"TESTCODE1",
-				"inviter@test.com",
+				1L,
 				InvitationStatus.ACCEPTED,
 				LocalDateTime.now()
 			),
 			new InvitationResponse(
 				2L,
 				"TESTCODE2",
-				"inviter@test.com",
+				1L,
 				InvitationStatus.REJECTED,
 				LocalDateTime.now()
 			)

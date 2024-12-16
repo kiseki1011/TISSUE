@@ -7,6 +7,7 @@ import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
 import com.uranus.taskmanager.api.workspace.presentation.dto.WorkspaceDetail;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceQueryService {
 
 	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional(readOnly = true)
 	public WorkspaceDetail getWorkspaceDetail(String workspaceCode) {
@@ -26,4 +28,14 @@ public class WorkspaceQueryService {
 
 		return WorkspaceDetail.from(workspace);
 	}
+
+	// @Transactional(readOnly = true)
+	// public Long getWorkspaceMemberId(String code, Long id) {
+	//
+	// 	WorkspaceMember workspaceMember = workspaceMemberRepository
+	// 		.findByMemberIdAndWorkspaceCode(id, code)
+	// 		.orElseThrow(MemberNotInWorkspaceException::new);
+	//
+	// 	return workspaceMember.getId();
+	// }
 }
