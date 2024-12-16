@@ -17,9 +17,9 @@ public class WorkspaceDetail {
 	private String name;
 	private String description;
 	private int memberCount;
-	private String createdBy;
+	private Long createdBy;
 	private LocalDateTime createdAt;
-	private String updatedBy;
+	private Long updatedBy;
 	private LocalDateTime updatedAt;
 
 	@Builder
@@ -29,9 +29,9 @@ public class WorkspaceDetail {
 		String name,
 		String description,
 		int memberCount,
-		String createdBy,
+		Long createdBy,
 		LocalDateTime createdAt,
-		String updatedBy,
+		Long updatedBy,
 		LocalDateTime updatedAt
 	) {
 		this.id = id;

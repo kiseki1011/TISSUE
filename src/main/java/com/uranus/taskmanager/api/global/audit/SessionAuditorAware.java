@@ -12,12 +12,12 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class SessionAuditorAware implements AuditorAware<String> {
+public class SessionAuditorAware implements AuditorAware<Long> {
 	private final HttpSession session;
 
 	@Override
-	public Optional<String> getCurrentAuditor() {
-		String loginId = (String)session.getAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID);
-		return Optional.ofNullable(loginId);
+	public Optional<Long> getCurrentAuditor() {
+		Long loginMemberId = (Long)session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID);
+		return Optional.ofNullable(loginMemberId);
 	}
 }

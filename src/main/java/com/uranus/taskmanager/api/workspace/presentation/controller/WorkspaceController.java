@@ -110,4 +110,20 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace found.", response);
 	}
 
+	// @LoginRequired
+	// @RoleRequired(roles = WorkspaceRole.VIEWER)
+	// @GetMapping("/{code}/switch")
+	// public ApiResponse<Void> switchWorkspace(
+	// 	@PathVariable String code,
+	// 	@ResolveLoginMember Long loginMemberId,
+	// 	HttpSession session
+	// ) {
+	// 	Long workspaceMemberId = workspaceQueryService.getWorkspaceMemberId(code, loginMemberId);
+	//
+	// 	session.setAttribute(SessionAttributes.CURRENT_WORKSPACE_CODE, code);
+	// 	session.setAttribute(SessionAttributes.CURRENT_WORKSPACE_MEMBER_ID, workspaceMemberId);
+	//
+	// 	return ApiResponse.okWithNoContent("Workspace switched to \"" + code + "\".");
+	// }
+
 }

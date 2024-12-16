@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.helper.RestAssuredTestHelper;
@@ -109,12 +110,11 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 			.statusCode(HttpStatus.CREATED.value())
 			.extract().response();
 
-		Optional<Workspace> optionalWorkspace = workspaceRepository.findById(1L);
+		Workspace workspace = workspaceRepository.findById(1L).get();
+		Member member = memberRepository.findByLoginId("user123").get();
 
 		// then
-		assertThat(optionalWorkspace).isPresent();
-		Workspace workspace = optionalWorkspace.get();
-		assertThat(workspace.getCreatedBy()).isEqualTo(loginId);
+		assertThat(workspace.getCreatedBy()).isEqualTo(member.getId());
 	}
 
 	@Test

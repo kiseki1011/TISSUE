@@ -8,7 +8,7 @@ import com.uranus.taskmanager.api.invitation.domain.InvitationStatus;
 public record InvitationResponse(
 	Long invitationId,
 	String workspaceCode,
-	String inviter,
+	Long invitedBy,
 	InvitationStatus status,
 	LocalDateTime invitedAt
 ) {

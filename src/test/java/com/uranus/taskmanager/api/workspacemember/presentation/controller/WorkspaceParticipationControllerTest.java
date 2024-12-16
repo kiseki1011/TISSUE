@@ -115,9 +115,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.code("WS001")
 			.name("Workspace 1")
 			.description("Description 1")
-			.createdBy("member1")
 			.createdAt(LocalDateTime.now().minusDays(5))
-			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
 			.build();
 
@@ -126,9 +124,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.code("WS002")
 			.name("Workspace 2")
 			.description("Description 2")
-			.createdBy("member1")
 			.createdAt(LocalDateTime.now().minusDays(10))
-			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
 			.build();
 
@@ -174,9 +170,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.code("WS001")
 			.name("Workspace 1")
 			.description("Description 1")
-			.createdBy("creator1")
 			.createdAt(LocalDateTime.now().minusDays(5))
-			.updatedBy("updater1")
 			.updatedAt(LocalDateTime.now())
 			.build();
 
@@ -185,9 +179,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.code("WS002")
 			.name("Workspace 2")
 			.description("Description 2")
-			.createdBy("creator2")
 			.createdAt(LocalDateTime.now().minusDays(10))
-			.updatedBy("updater2")
 			.updatedAt(LocalDateTime.now())
 			.build();
 
