@@ -103,4 +103,94 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(savedIssue.getParentIssue().getId()).isEqualTo(parentIssue.getId());
 	}
 
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성 시, SUB_TASK 타입 이슈를 부모로 지정하면 예외가 발생한다")
+	void createIssue_WithParent_Fails_ifParentIsSubTask() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Issue.builder()
+			.workspace(workspace)
+			.type(IssueType.SUB_TASK)
+			.title("Parent Issue")
+			.content("Parent issue content")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateIssueRequest(
+			IssueType.STORY,
+			"Child Issue",
+			"Child issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			parentIssue.getId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성 시, EPIC 타입 이슈를 SUB_TASK 타입의 부모로 지정하면 예외가 발생한다")
+	void createIssue_WithParent_Fails_ifParentIsEpic_whenChildIsSubTask() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Issue.builder()
+			.workspace(workspace)
+			.type(IssueType.EPIC)
+			.title("Parent Issue")
+			.content("Parent issue content")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateIssueRequest(
+			IssueType.SUB_TASK,
+			"Child Issue",
+			"Child issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			parentIssue.getId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성 시, 같은 위계의 타입을 가진 이슈를 부모로 지정하면 예외가 발생한다")
+	void createIssue_WithParent_Fails_ifParentIsSameHierarchy() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Issue.builder()
+			.workspace(workspace)
+			.type(IssueType.TASK)
+			.title("Parent Issue")
+			.content("Parent issue content")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateIssueRequest(
+			IssueType.TASK,
+			"Child Issue",
+			"Child issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			parentIssue.getId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+	}
+
 }
