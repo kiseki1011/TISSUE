@@ -16,6 +16,9 @@ import com.uranus.taskmanager.api.invitation.domain.repository.InvitationReposit
 import com.uranus.taskmanager.api.invitation.presentation.controller.InvitationController;
 import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
 import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryService;
+import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
+import com.uranus.taskmanager.api.issue.presentation.controller.IssueController;
+import com.uranus.taskmanager.api.issue.service.IssueCommandService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.presentation.controller.MemberController;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
@@ -55,7 +58,8 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceParticipationController.class,
 		WorkspaceMemberInfoController.class,
 		MemberController.class,
-		PositionController.class
+		PositionController.class,
+		IssueController.class
 	},
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
@@ -111,6 +115,8 @@ public abstract class ControllerTestHelper {
 	protected PositionCommandService positionCommandService;
 	@MockBean
 	protected PositionQueryService positionQueryService;
+	@MockBean
+	protected IssueCommandService issueCommandService;
 
 	/**
 	 * Repository
@@ -125,5 +131,7 @@ public abstract class ControllerTestHelper {
 	protected InvitationRepository invitationRepository;
 	@MockBean
 	protected PositionRepository positionRepository;
+	@MockBean
+	protected IssueRepository issueRepository;
 
 }
