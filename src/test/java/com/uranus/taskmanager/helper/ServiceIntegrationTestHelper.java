@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
 import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
 import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryService;
+import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
+import com.uranus.taskmanager.api.issue.service.IssueCommandService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
@@ -76,6 +78,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected PositionCommandService positionCommandService;
 	@Autowired
 	protected PositionQueryService positionQueryService;
+	@Autowired
+	protected IssueCommandService issueCommandService;
 
 	/**
 	 * Repository
@@ -90,6 +94,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected InvitationRepository invitationRepository;
 	@Autowired
 	protected PositionRepository positionRepository;
+	@Autowired
+	protected IssueRepository issueRepository;
 
 	/**
 	 * Fixture

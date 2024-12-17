@@ -44,6 +44,7 @@ class PositionControllerTest extends ControllerTestHelper {
 			positionId,
 			"Developer",
 			"Backend Developer",
+			ColorType.BLACK,
 			LocalDateTime.now()
 		);
 
@@ -160,8 +161,10 @@ class PositionControllerTest extends ControllerTestHelper {
 	void getPositions_Success() throws Exception {
 		// Given
 		List<PositionDetail> positions = List.of(
-			new PositionDetail(1L, "Developer", "Backend Developer", LocalDateTime.now(), LocalDateTime.now()),
-			new PositionDetail(2L, "Designer", "UI/UX Designer", LocalDateTime.now(), LocalDateTime.now())
+			new PositionDetail(1L, "Developer", "Backend Developer", ColorType.BLACK, LocalDateTime.now(),
+				LocalDateTime.now()),
+			new PositionDetail(2L, "Designer", "UI/UX Designer", ColorType.BLACK, LocalDateTime.now(),
+				LocalDateTime.now())
 		);
 		GetPositionsResponse expectedResponse = new GetPositionsResponse(positions);
 
