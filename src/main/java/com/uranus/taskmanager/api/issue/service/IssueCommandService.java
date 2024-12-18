@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
+import com.uranus.taskmanager.api.issue.exception.IssueNotFoundException;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
@@ -56,7 +57,7 @@ public class IssueCommandService {
 		UpdateStatusRequest request
 	) {
 		Issue issue = issueRepository.findByIdAndWorkspaceCode(issueId, code)
-			.orElseThrow(() -> new RuntimeException("Issue not found.")); // Todo: IssueNotFoundException 만들기
+			.orElseThrow(IssueNotFoundException::new);
 
 		issue.updateStatus(request.status());
 
@@ -66,6 +67,6 @@ public class IssueCommandService {
 	private Optional<Issue> findParentIssue(Long parentIssueId, String workspaceCode) {
 		return Optional.ofNullable(parentIssueId)
 			.map(id -> issueRepository.findByIdAndWorkspaceCode(id, workspaceCode)
-				.orElseThrow(() -> new IllegalArgumentException("Issue does not exist in this workspace.")));
+				.orElseThrow(() -> new IssueNotFoundException("Issue does not exist in this workspace.")));
 	}
 }

@@ -11,8 +11,4 @@ public class InvitationNotFoundException extends InvitationException {
 	public InvitationNotFoundException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
-
-	public InvitationNotFoundException(Throwable cause) {
-		super(MESSAGE, HTTP_STATUS, cause);
-	}
 }

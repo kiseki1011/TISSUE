@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.IssueType;
+import com.uranus.taskmanager.api.issue.exception.SubTaskParentIssueException;
+import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
+import com.uranus.taskmanager.api.issue.exception.WrongChildIssueTypeException;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
@@ -130,7 +133,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(SubTaskParentIssueException.class);
 	}
 
 	@Transactional
@@ -160,7 +163,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(SubTaskWrongParentTypeException.class);
 	}
 
 	@Transactional
@@ -190,7 +193,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(WrongChildIssueTypeException.class);
 	}
 
 }

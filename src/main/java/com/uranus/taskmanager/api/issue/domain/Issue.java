@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
+import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
+import com.uranus.taskmanager.api.issue.exception.ParentIssueNotSameWorkspaceException;
+import com.uranus.taskmanager.api.issue.exception.SubTaskParentIssueException;
+import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
+import com.uranus.taskmanager.api.issue.exception.UpdateIssueInReviewStatusException;
+import com.uranus.taskmanager.api.issue.exception.WrongChildIssueTypeException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
@@ -179,39 +185,34 @@ public class Issue extends BaseEntity {
 
 	private void validateNotInReview() {
 		if (this.status == IssueStatus.IN_REVIEW) {
-			// Todo: 커스텀 예외 만들기 UpdateIssueStatusInReviewException
-			throw new IllegalArgumentException("Cannot update status while issue is under review");
+			throw new UpdateIssueInReviewStatusException();
 		}
 	}
 
 	private void validateNotUpdateToInReview(IssueStatus newStatus) {
 		if (newStatus == IssueStatus.IN_REVIEW) {
-			// Todo: 커스텀 예외 만들기 StatusDirectUpdateToInReviewException
-			throw new IllegalArgumentException(
-				"Cannot directly change status to IN_REVIEW. "
-					+ "Status will be automatically updated when reviews are pending."
-			);
+			throw new DirectUpdateToInReviewException();
 		}
 	}
 
 	private void validateParentIssue(Issue parentIssue) {
 		// 동일한 워크스페이스에 속하는지 검증
 		if (workspaceCodeIsDifferent(parentIssue)) {
-			// Todo: 커스텀 예외 만들기, ParentIssueNotSameWorkspaceException
-			throw new IllegalArgumentException("Parent issue must belong to the same workspace");
+			throw new ParentIssueNotSameWorkspaceException();
+		}
+
+		if (issueTypeIsSubTask(parentIssue)) {
+			throw new SubTaskParentIssueException();
 		}
 
 		// 이슈 타입에 따른 부모-자식 관계 검증
-		if (issueTypeIsSubTask(this)
-			&& (issueTypeIsEpic(parentIssue) || issueTypeIsSubTask(parentIssue))
+		if (issueTypeIsSubTask(this) && (issueTypeIsEpic(parentIssue) || issueTypeIsSubTask(parentIssue))
 		) {
-			// Todo: SubTaskWrongParentTypeException
-			throw new IllegalArgumentException("Sub-tasks can only have Story, Task, or Bug as parent");
+			throw new SubTaskWrongParentTypeException();
 		}
 
 		if (issueTypeIsNotSubTask(this) && issueTypeIsNotEpic(parentIssue)) {
-			// Todo: WrongChildIssueTypeException
-			throw new IllegalArgumentException("Only Epic can have non-subtask children");
+			throw new WrongChildIssueTypeException();
 		}
 	}
 
