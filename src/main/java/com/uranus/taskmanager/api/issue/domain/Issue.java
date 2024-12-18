@@ -124,6 +124,46 @@ public class Issue extends BaseEntity {
 		}
 	}
 
+	public void updateStatus(IssueStatus newStatus) {
+		// IN_REVIEW 상태인 이슈는 상태 변경 불가
+		validateNotInReview();
+
+		// IN_REVIEW로의 직접적인 상태 변경 불가
+		validateNotUpdateToInReview(newStatus);
+
+		// 상태별 특수 처리가 필요한 경우 해당 메서드 호출
+		if (newStatus == IssueStatus.IN_PROGRESS) {
+			updateStatusToInProgress();
+			return;
+		}
+
+		if (newStatus == IssueStatus.DONE) {
+			updateStatusToDone();
+			return;
+		}
+
+		// 그 외의 경우 단순 상태 변경
+		this.status = newStatus;
+	}
+
+	public void updateStatusToDone() {
+		this.status = IssueStatus.DONE;
+		this.finishedAt = LocalDateTime.now();
+	}
+
+	public void updateStatusToInProgress() {
+		this.status = IssueStatus.IN_PROGRESS;
+		if (this.startedAt == null) {
+			this.startedAt = LocalDateTime.now();
+		}
+	}
+
+	public void updateStatusToInReview() {
+		this.status = IssueStatus.IN_REVIEW;
+	}
+
+	// Todo: 리뷰어 신청을 해서 리뷰 상태 중 하나라도 PENDING이라면 이슈 status는 IN_REVIEW
+
 	public void addToWorkspace(Workspace workspace) {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
@@ -137,29 +177,61 @@ public class Issue extends BaseEntity {
 		}
 	}
 
+	private void validateNotInReview() {
+		if (this.status == IssueStatus.IN_REVIEW) {
+			// Todo: 커스텀 예외 만들기 UpdateIssueStatusInReviewException
+			throw new IllegalArgumentException("Cannot update status while issue is under review");
+		}
+	}
+
+	private void validateNotUpdateToInReview(IssueStatus newStatus) {
+		if (newStatus == IssueStatus.IN_REVIEW) {
+			// Todo: 커스텀 예외 만들기 StatusDirectUpdateToInReviewException
+			throw new IllegalArgumentException(
+				"Cannot directly change status to IN_REVIEW. "
+					+ "Status will be automatically updated when reviews are pending."
+			);
+		}
+	}
+
 	private void validateParentIssue(Issue parentIssue) {
 		// 동일한 워크스페이스에 속하는지 검증
-		if (ifWorkspaceCodeIsDifferent(parentIssue)) {
+		if (workspaceCodeIsDifferent(parentIssue)) {
 			// Todo: 커스텀 예외 만들기, ParentIssueNotSameWorkspaceException
 			throw new IllegalArgumentException("Parent issue must belong to the same workspace");
 		}
 
 		// 이슈 타입에 따른 부모-자식 관계 검증
-		if (this.type == IssueType.SUB_TASK
-			&& (parentIssue.getType() == IssueType.EPIC || parentIssue.getType() == IssueType.SUB_TASK)
+		if (issueTypeIsSubTask(this)
+			&& (issueTypeIsEpic(parentIssue) || issueTypeIsSubTask(parentIssue))
 		) {
 			// Todo: SubTaskWrongParentTypeException
 			throw new IllegalArgumentException("Sub-tasks can only have Story, Task, or Bug as parent");
 		}
 
-		if (this.type != IssueType.SUB_TASK
-			&& parentIssue.getType() != IssueType.EPIC) {
+		if (issueTypeIsNotSubTask(this) && issueTypeIsNotEpic(parentIssue)) {
 			// Todo: WrongChildIssueTypeException
 			throw new IllegalArgumentException("Only Epic can have non-subtask children");
 		}
 	}
 
-	private boolean ifWorkspaceCodeIsDifferent(Issue parentIssue) {
-		return !parentIssue.getWorkspaceCode().equals(this.workspaceCode);
+	private boolean issueTypeIsEpic(Issue issue) {
+		return issue.type == IssueType.EPIC;
+	}
+
+	private boolean issueTypeIsNotEpic(Issue issue) {
+		return issue.type != IssueType.EPIC;
+	}
+
+	private boolean issueTypeIsSubTask(Issue issue) {
+		return issue.type == IssueType.SUB_TASK;
+	}
+
+	private boolean issueTypeIsNotSubTask(Issue issue) {
+		return issue.type != IssueType.SUB_TASK;
+	}
+
+	private boolean workspaceCodeIsDifferent(Issue issue) {
+		return !issue.getWorkspaceCode().equals(this.workspaceCode);
 	}
 }

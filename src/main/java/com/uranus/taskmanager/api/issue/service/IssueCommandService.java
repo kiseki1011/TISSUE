@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.UpdateStatusResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
 import com.uranus.taskmanager.api.workspace.exception.WorkspaceNotFoundException;
@@ -39,7 +41,7 @@ public class IssueCommandService {
 
 		Issue issue = request.to(
 			workspace,
-			findParentIssue(request.parentIssueId()).orElse(null)
+			findParentIssue(request.parentIssueId(), code).orElse(null)
 		);
 
 		issueRepository.save(issue);
@@ -47,9 +49,23 @@ public class IssueCommandService {
 		return CreateIssueResponse.from(issue);
 	}
 
-	private Optional<Issue> findParentIssue(Long parentIssueId) {
+	@Transactional
+	public UpdateStatusResponse updateIssueStatus(
+		Long issueId,
+		String code,
+		UpdateStatusRequest request
+	) {
+		Issue issue = issueRepository.findByIdAndWorkspaceCode(issueId, code)
+			.orElseThrow(() -> new RuntimeException("Issue not found.")); // Todo: IssueNotFoundException 만들기
+
+		issue.updateStatus(request.status());
+
+		return UpdateStatusResponse.from(issue);
+	}
+
+	private Optional<Issue> findParentIssue(Long parentIssueId, String workspaceCode) {
 		return Optional.ofNullable(parentIssueId)
-			.map(id -> issueRepository.findByIdWithWorkspace(id)
-				.orElseThrow(() -> new IllegalArgumentException("Issue does not exist.")));
+			.map(id -> issueRepository.findByIdAndWorkspaceCode(id, workspaceCode)
+				.orElseThrow(() -> new IllegalArgumentException("Issue does not exist in this workspace.")));
 	}
 }
