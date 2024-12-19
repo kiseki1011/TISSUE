@@ -16,7 +16,7 @@ import com.uranus.taskmanager.api.issue.domain.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.IssueStatus;
 import com.uranus.taskmanager.api.issue.domain.IssueType;
 import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
-import com.uranus.taskmanager.api.issue.exception.SubTaskParentIssueException;
+import com.uranus.taskmanager.api.issue.exception.ParentIssueTypeSubTaskException;
 import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
 import com.uranus.taskmanager.api.issue.exception.WrongChildIssueTypeException;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
@@ -69,8 +69,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.type()).isEqualTo(IssueType.TASK);
 		assertThat(response.parentIssueId()).isNull();
 
-		Issue savedIssue = issueRepository.findById(response.issueId())
-			.orElseThrow();
+		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
 		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
 	}
 
@@ -138,7 +137,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(SubTaskParentIssueException.class);
+			.isInstanceOf(ParentIssueTypeSubTaskException.class);
 	}
 
 	@Transactional

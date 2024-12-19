@@ -8,7 +8,7 @@ import java.util.List;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
 import com.uranus.taskmanager.api.issue.exception.ParentIssueNotSameWorkspaceException;
-import com.uranus.taskmanager.api.issue.exception.SubTaskParentIssueException;
+import com.uranus.taskmanager.api.issue.exception.ParentIssueTypeSubTaskException;
 import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
 import com.uranus.taskmanager.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.uranus.taskmanager.api.issue.exception.WrongChildIssueTypeException;
@@ -202,7 +202,7 @@ public class Issue extends BaseEntity {
 		}
 
 		if (issueTypeIsSubTask(parentIssue)) {
-			throw new SubTaskParentIssueException();
+			throw new ParentIssueTypeSubTaskException();
 		}
 
 		// 이슈 타입에 따른 부모-자식 관계 검증

@@ -6,7 +6,7 @@ import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
 public class WrongChildIssueTypeException extends IssueException {
 
-	private static final String MESSAGE = "Only EPIC type issues can have non SUB_TASK children.";
+	private static final String MESSAGE = "Only EPIC type issues can have STORY, TASK, BUG type children.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
 	public WrongChildIssueTypeException() {
