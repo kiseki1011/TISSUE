@@ -8,7 +8,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.uranus.taskmanager.api.authentication.dto.LoginMember;
 import com.uranus.taskmanager.mock.MockAuthenticationInterceptor;
 import com.uranus.taskmanager.mock.MockAuthorizationInterceptor;
 import com.uranus.taskmanager.mock.MockLoginMemberArgumentResolver;
@@ -30,12 +29,7 @@ public class WebMvcTestConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		LoginMember loginMember = LoginMember.builder()
-			.id(id)
-			.loginId(loginId)
-			.email(email)
-			.build();
-		resolvers.add(new MockLoginMemberArgumentResolver(loginMember));
+		resolvers.add(new MockLoginMemberArgumentResolver(id));
 	}
 
 	@Override

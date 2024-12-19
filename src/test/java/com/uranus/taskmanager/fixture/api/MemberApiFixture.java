@@ -1,29 +1,36 @@
 package com.uranus.taskmanager.fixture.api;
 
+import java.time.LocalDate;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.uranus.taskmanager.api.member.dto.request.SignupRequest;
+import com.uranus.taskmanager.api.member.domain.JobType;
+import com.uranus.taskmanager.api.member.presentation.dto.request.SignupMemberRequest;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 
 @Component
 public class MemberApiFixture {
 
 	public void signupApi(String loginId, String email, String password) {
-		SignupRequest signupRequest = SignupRequest.builder()
+		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.introduction("Im a backend engineer.")
+			.jobType(JobType.DEVELOPER)
 			.build();
 
-		Response response = RestAssured.given()
+		RestAssured.given()
 			.contentType(ContentType.JSON)
-			.body(signupRequest)
+			.body(signupMemberRequest)
 			.when()
-			.post("/api/v1/members/signup")
+			.post("/api/v1/members")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
 			.extract().response();

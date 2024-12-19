@@ -4,15 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.uranus.taskmanager.api.authentication.service.AuthenticationService;
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
-import com.uranus.taskmanager.api.invitation.service.InvitationService;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberService;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
+import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
+import com.uranus.taskmanager.api.security.authentication.service.AuthenticationService;
+import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.service.command.create.CheckCodeDuplicationService;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.uranus.taskmanager.fixture.api.LoginApiFixture;
 import com.uranus.taskmanager.fixture.api.MemberApiFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
@@ -37,13 +40,17 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceAccessService workspaceAccessService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@Autowired
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@Autowired
-	protected InvitationService invitationService;
+	protected InvitationCommandService invitationCommandService;
 	@Autowired
-	protected MemberService memberService;
+	protected MemberCommandService memberCommandService;
+	@Autowired
+	protected PositionCommandService positionCommandService;
+	@Autowired
+	protected PositionQueryService positionQueryService;
 
 	/**
 	 * Repository
@@ -56,6 +63,8 @@ public abstract class RestAssuredTestHelper {
 	protected WorkspaceMemberRepository workspaceMemberRepository;
 	@Autowired
 	protected InvitationRepository invitationRepository;
+	@Autowired
+	protected PositionRepository positionRepository;
 
 	/**
 	 * Fixture

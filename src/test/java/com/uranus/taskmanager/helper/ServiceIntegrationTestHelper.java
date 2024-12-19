@@ -3,27 +3,40 @@ package com.uranus.taskmanager.helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.uranus.taskmanager.api.invitation.repository.InvitationRepository;
-import com.uranus.taskmanager.api.member.repository.MemberRepository;
-import com.uranus.taskmanager.api.member.service.MemberQueryService;
-import com.uranus.taskmanager.api.member.service.MemberService;
+import com.uranus.taskmanager.api.invitation.domain.repository.InvitationRepository;
+import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
+import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryService;
+import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
+import com.uranus.taskmanager.api.issue.service.IssueCommandService;
+import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
+import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
+import com.uranus.taskmanager.api.member.service.query.MemberQueryService;
+import com.uranus.taskmanager.api.position.domain.repository.PositionRepository;
+import com.uranus.taskmanager.api.position.service.command.PositionCommandService;
+import com.uranus.taskmanager.api.position.service.query.PositionQueryService;
 import com.uranus.taskmanager.api.security.PasswordEncoder;
-import com.uranus.taskmanager.api.workspace.repository.WorkspaceRepository;
-import com.uranus.taskmanager.api.workspace.service.CheckCodeDuplicationService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceAccessService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceCommandService;
-import com.uranus.taskmanager.api.workspace.service.WorkspaceQueryService;
-import com.uranus.taskmanager.api.workspacemember.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspace.domain.repository.WorkspaceRepository;
+import com.uranus.taskmanager.api.workspace.service.command.WorkspaceCommandService;
+import com.uranus.taskmanager.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.uranus.taskmanager.api.workspace.service.query.WorkspaceQueryService;
+import com.uranus.taskmanager.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.uranus.taskmanager.api.workspacemember.service.command.WorkspaceParticipationCommandService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.uranus.taskmanager.api.workspacemember.service.query.WorkspaceParticipationQueryService;
+import com.uranus.taskmanager.fixture.dto.SignupRequestDtoFixture;
+import com.uranus.taskmanager.fixture.repository.InvitationRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.MemberRepositoryFixture;
+import com.uranus.taskmanager.fixture.repository.PositionRepositoryFixture;
 import com.uranus.taskmanager.fixture.repository.WorkspaceRepositoryFixture;
 import com.uranus.taskmanager.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @SpringBootTest
 public abstract class ServiceIntegrationTestHelper {
+
 	/**
 	 * Common
 	 */
@@ -38,17 +51,35 @@ public abstract class ServiceIntegrationTestHelper {
 	 * Service
 	 */
 	@Autowired
-	protected WorkspaceAccessService workspaceAccessService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	@Autowired
+	protected WorkspaceMemberInviteService workspaceMemberInviteService;
+	@Autowired
+	protected WorkspaceMemberQueryService workspaceMemberQueryService;
+	@Autowired
+	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
+	@Autowired
+	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@Autowired
 	protected WorkspaceQueryService workspaceQueryService;
 	@Autowired
 	protected WorkspaceCommandService workspaceCommandService;
 	@Autowired
-	protected MemberService memberService;
+	protected MemberCommandService memberCommandService;
 	@Autowired
 	protected MemberQueryService memberQueryService;
 	@Autowired
-	protected CheckCodeDuplicationService workspaceCreateService;
+	protected RetryCodeGenerationOnExceptionService workspaceCreateService;
+	@Autowired
+	protected InvitationCommandService invitationCommandService;
+	@Autowired
+	protected InvitationQueryService invitationQueryService;
+	@Autowired
+	protected PositionCommandService positionCommandService;
+	@Autowired
+	protected PositionQueryService positionQueryService;
+	@Autowired
+	protected IssueCommandService issueCommandService;
 
 	/**
 	 * Repository
@@ -61,6 +92,10 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberRepository memberRepository;
 	@Autowired
 	protected InvitationRepository invitationRepository;
+	@Autowired
+	protected PositionRepository positionRepository;
+	@Autowired
+	protected IssueRepository issueRepository;
 
 	/**
 	 * Fixture
@@ -69,5 +104,11 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
 	protected MemberRepositoryFixture memberRepositoryFixture;
+	@Autowired
+	protected InvitationRepositoryFixture invitationRepositoryFixture;
+	@Autowired
+	protected SignupRequestDtoFixture signupRequestDtoFixture;
+	@Autowired
+	protected PositionRepositoryFixture positionRepositoryFixture;
 
 }

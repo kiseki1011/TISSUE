@@ -38,6 +38,8 @@ out/
 
 ### h2 docker-compose ###
 docker-compose-h2.yml
+docker-compose-mysql.yml
 
 ### h2 db ###
 /h2/
+/mysql-data/

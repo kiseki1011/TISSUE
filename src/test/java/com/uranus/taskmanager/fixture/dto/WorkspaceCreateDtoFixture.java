@@ -1,11 +1,11 @@
 package com.uranus.taskmanager.fixture.dto;
 
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 
 public class WorkspaceCreateDtoFixture {
 
-	public WorkspaceCreateRequest createWorkspaceCreateRequest(String password) {
-		return WorkspaceCreateRequest.builder()
+	public CreateWorkspaceRequest createWorkspaceCreateRequest(String password) {
+		return CreateWorkspaceRequest.builder()
 			.name("test name")
 			.description("test description")
 			.password(password)

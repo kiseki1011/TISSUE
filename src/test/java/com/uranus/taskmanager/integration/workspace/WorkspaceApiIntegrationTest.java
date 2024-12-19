@@ -13,8 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
-import com.uranus.taskmanager.api.workspace.dto.request.WorkspaceCreateRequest;
+import com.uranus.taskmanager.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.uranus.taskmanager.helper.RestAssuredTestHelper;
 
 import io.restassured.RestAssured;
@@ -40,7 +41,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
 		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
@@ -53,9 +54,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 			.post("/api/v1/workspaces")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
-			.body("data.name", equalTo("Test Workspace"))
-			.body("data.description", equalTo("Test Description"))
-			.body("data.code", notNullValue())
+			.body("data.id", equalTo(1))
 			.extract().response();
 	}
 
@@ -66,7 +65,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
 		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
@@ -95,7 +94,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 		memberApiFixture.signupApi(loginId, email, password);
 		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();
@@ -111,12 +110,11 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 			.statusCode(HttpStatus.CREATED.value())
 			.extract().response();
 
-		Optional<Workspace> optionalWorkspace = workspaceRepository.findById(1L);
+		Workspace workspace = workspaceRepository.findById(1L).get();
+		Member member = memberRepository.findByLoginId("user123").get();
 
 		// then
-		assertThat(optionalWorkspace).isPresent();
-		Workspace workspace = optionalWorkspace.get();
-		assertThat(workspace.getCreatedBy()).isEqualTo(loginId);
+		assertThat(workspace.getCreatedBy()).isEqualTo(member.getId());
 	}
 
 	@Test
@@ -130,7 +128,7 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 		memberApiFixture.signupApi(loginId, email, password);
 		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
-		WorkspaceCreateRequest request = WorkspaceCreateRequest.builder()
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
 			.description("Test Description")
 			.build();

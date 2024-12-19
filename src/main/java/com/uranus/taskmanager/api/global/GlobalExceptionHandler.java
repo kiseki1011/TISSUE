@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,14 +13,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.uranus.taskmanager.api.common.ApiResponse;
-import com.uranus.taskmanager.api.common.FieldErrorDto;
-import com.uranus.taskmanager.api.common.exception.AuthenticationException;
-import com.uranus.taskmanager.api.common.exception.InvitationException;
-import com.uranus.taskmanager.api.common.exception.MemberException;
-import com.uranus.taskmanager.api.common.exception.WorkspaceException;
-import com.uranus.taskmanager.api.common.exception.WorkspaceMemberException;
-import com.uranus.taskmanager.api.workspacemember.authorization.exception.AuthorizationException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.uranus.taskmanager.api.common.dto.ApiResponse;
+import com.uranus.taskmanager.api.common.dto.FieldErrorDto;
+import com.uranus.taskmanager.api.common.exception.domain.AuthenticationException;
+import com.uranus.taskmanager.api.common.exception.domain.AuthorizationException;
+import com.uranus.taskmanager.api.common.exception.domain.InvitationException;
+import com.uranus.taskmanager.api.common.exception.domain.MemberException;
+import com.uranus.taskmanager.api.common.exception.domain.WorkspaceException;
+import com.uranus.taskmanager.api.common.exception.domain.WorkspaceMemberException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,6 +75,25 @@ public class GlobalExceptionHandler {
 	private FieldErrorDto toFieldErrorDto(FieldError error) {
 		String rejectedValue = Objects.toString(error.getRejectedValue(), "");
 		return new FieldErrorDto(error.getField(), rejectedValue, error.getDefaultMessage());
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ApiResponse<Void> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+		// enum 타입 변환 실패로 인한 예외인 경우
+		if (ex.getCause() instanceof InvalidFormatException) {
+			return ApiResponse.fail(
+				HttpStatus.BAD_REQUEST,
+				"Invalid enum value provided",
+				null
+			);
+		}
+
+		// 그 외의 요청 본문 관련 예외
+		return ApiResponse.fail(HttpStatus.BAD_REQUEST,
+			"Invalid request body",
+			null
+		);
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
@@ -129,4 +150,5 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(httpStatus)
 			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
 	}
+
 }

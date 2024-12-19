@@ -1,9 +1,9 @@
 package com.uranus.taskmanager.api.invitation.domain;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
-import com.uranus.taskmanager.api.invitation.InvitationStatus;
 import com.uranus.taskmanager.api.member.domain.Member;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
+import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +38,9 @@ public class Invitation extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
+	@Column(name = "WORKSPACE_CODE", nullable = false)
+	private String workspaceCode;
+
 	@Enumerated(EnumType.STRING)
 	private InvitationStatus status;
 
@@ -46,10 +49,7 @@ public class Invitation extends BaseEntity {
 		this.member = member;
 		this.workspace = workspace;
 		this.status = status;
-	}
-
-	public void changeStatus(InvitationStatus status) {
-		this.status = status;
+		this.workspaceCode = workspace.getCode();
 	}
 
 	public static Invitation addInvitation(Member member, Workspace workspace, InvitationStatus status) {
@@ -63,5 +63,22 @@ public class Invitation extends BaseEntity {
 		workspace.getInvitations().add(invitation);
 
 		return invitation;
+	}
+
+	public static Invitation createPendingInvitation(Workspace workspace, Member member) {
+		return addInvitation(member, workspace, InvitationStatus.PENDING);
+	}
+
+	public WorkspaceMember accept() {
+		changeStatus(InvitationStatus.ACCEPTED);
+		return WorkspaceMember.addCollaboratorWorkspaceMember(this.member, this.workspace);
+	}
+
+	public void reject() {
+		changeStatus(InvitationStatus.REJECTED);
+	}
+
+	private void changeStatus(InvitationStatus status) {
+		this.status = status;
 	}
 }
