@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.issue.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.UpdateStatusResponse;
 import com.uranus.taskmanager.api.issue.service.IssueCommandService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
@@ -23,12 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}")
+@RequestMapping("/api/v1/workspaces/{code}/issues")
 public class IssueController {
 
 	/**
 	 * Todo
-	 *  - 이슈 생성
 	 *  - 이슈 상태 변경
 	 *    - DONE으로 변경하는 경우 끝난 날짜(finishedDate) 업데이트 됨
 	 *    - 처음으로 IN_PROGRESS로 변경하면 현재 날짜 시간으로 startDate가 설정 됨
@@ -79,7 +81,7 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
 	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("/issues")
+	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
 		@PathVariable String code,
 		@RequestBody @Valid CreateIssueRequest request
@@ -91,4 +93,19 @@ public class IssueController {
 		return ApiResponse.ok("Issue created.", response);
 	}
 
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@PutMapping("/{issueId}/status")
+	public ApiResponse<UpdateStatusResponse> updateIssueStatus(
+		@PathVariable String code,
+		@PathVariable Long issueId,
+		@RequestBody @Valid UpdateStatusRequest request
+	) {
+		UpdateStatusResponse response = issueCommandService.updateIssueStatus(
+			issueId,
+			code,
+			request
+		);
+		return ApiResponse.ok("Issue status was updated to " + response.status(), response);
+	}
 }

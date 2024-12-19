@@ -16,7 +16,9 @@ import com.uranus.taskmanager.api.issue.domain.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.IssueStatus;
 import com.uranus.taskmanager.api.issue.domain.IssueType;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.UpdateStatusResponse;
 import com.uranus.taskmanager.helper.ControllerTestHelper;
 
 class IssueControllerTest extends ControllerTestHelper {
@@ -117,6 +119,27 @@ class IssueControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.data.dueDate").isEmpty())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PUT /workspaces/{code}/issues/{issueId}/status - 이슈 상태 업데이트에 성공하면 OK를 응답한다")
+	void updateIssueStatus_success() throws Exception {
+		// given
+		String code = "ABCDEFGH";
+
+		UpdateStatusRequest request = new UpdateStatusRequest(IssueStatus.IN_PROGRESS);
+		UpdateStatusResponse response = new UpdateStatusResponse(1L, IssueStatus.IN_PROGRESS, LocalDateTime.now());
+
+		when(issueCommandService.updateIssueStatus(1L, code, request))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(put("/api/v1/workspaces/{code}/issues/{issueId}/status", code, 1L)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.status").value("IN_PROGRESS"))
 			.andDo(print());
 	}
 }

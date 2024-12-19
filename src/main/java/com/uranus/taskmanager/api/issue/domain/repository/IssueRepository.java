@@ -12,4 +12,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
 	@Query("SELECT i FROM Issue i JOIN FETCH i.workspace WHERE i.id = :id")
 	Optional<Issue> findByIdWithWorkspace(@Param("id") Long id);
+
+	Optional<Issue> findByIdAndWorkspaceCode(Long id, String workspaceCode);
 }

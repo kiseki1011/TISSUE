@@ -3,6 +3,7 @@ package com.uranus.taskmanager.api.issue.service;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.IssueStatus;
 import com.uranus.taskmanager.api.issue.domain.IssueType;
+import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
+import com.uranus.taskmanager.api.issue.exception.ParentIssueTypeSubTaskException;
+import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
+import com.uranus.taskmanager.api.issue.exception.WrongChildIssueTypeException;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.UpdateStatusResponse;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
@@ -61,8 +69,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.type()).isEqualTo(IssueType.TASK);
 		assertThat(response.parentIssueId()).isNull();
 
-		Issue savedIssue = issueRepository.findById(response.issueId())
-			.orElseThrow();
+		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
 		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
 	}
 
@@ -130,7 +137,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(ParentIssueTypeSubTaskException.class);
 	}
 
 	@Transactional
@@ -160,7 +167,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(SubTaskWrongParentTypeException.class);
 	}
 
 	@Transactional
@@ -190,7 +197,105 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-			.isInstanceOf(IllegalArgumentException.class); // Todo: 커스텀 예외 만들면 수정
+			.isInstanceOf(WrongChildIssueTypeException.class);
 	}
 
+	@Test
+	@DisplayName("이슈 상태 업데이트를 성공하면 이슈 상태 업데이트 응답을 반환한다")
+	void updateIssueStatus_success_returnUpdateStatusResponse() {
+		// given
+		CreateIssueRequest createRequest = new CreateIssueRequest(
+			IssueType.TASK,
+			"Test Issue",
+			"Test issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			null
+		);
+		issueCommandService.createIssue("TESTCODE", createRequest);
+
+		UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_PROGRESS);
+
+		// when
+		UpdateStatusResponse response = issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+
+		// then
+		assertThat(response.issueId()).isEqualTo(1L);
+		assertThat(response.status()).isEqualTo(IssueStatus.IN_PROGRESS);
+	}
+
+	@Test
+	@DisplayName("이슈 상태를 IN_REVIEW로 직접 업데이트 시도하는 경우 예외가 발생한다")
+	void updateIssueStatus_fails_ifUpdateDirectlyToInReview() {
+		// given
+		CreateIssueRequest createRequest = new CreateIssueRequest(
+			IssueType.TASK,
+			"Test Issue",
+			"Test issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			null
+		);
+		issueCommandService.createIssue("TESTCODE", createRequest);
+
+		UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_REVIEW);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest))
+			.isInstanceOf(DirectUpdateToInReviewException.class);
+	}
+
+	@Test
+	@DisplayName("이슈 상태를 처음으로 IN_PROGRESS로 업데이트하는 경우, startedAt이 현재 날짜와 시간으로 기록된다")
+	void updateIssueStatus_toInProgress_startedAtIsRecorded() {
+		// given
+		CreateIssueRequest createRequest = new CreateIssueRequest(
+			IssueType.TASK,
+			"Test Issue",
+			"Test issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			null
+		);
+		issueCommandService.createIssue("TESTCODE", createRequest);
+
+		UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_PROGRESS);
+
+		// when
+		LocalDateTime timeBeforeUpdate = LocalDateTime.now();
+		issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+
+		// then
+		Issue issue = issueRepository.findById(1L).orElseThrow();
+
+		assertThat(issue.getStartedAt()).isAfter(timeBeforeUpdate);
+		assertThat(issue.getStartedAt()).isBefore(timeBeforeUpdate.plusMinutes(1));
+	}
+
+	@Test
+	@DisplayName("이슈 상태를 DONE으로 업데이트하는 경우 finishedAt이 현재 날짜와 시간으로 기록된다")
+	void updateIssueStatus_toDone_finishedAtIsRecorded() {
+		// given
+		CreateIssueRequest createRequest = new CreateIssueRequest(
+			IssueType.TASK,
+			"Test Issue",
+			"Test issue content",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			null
+		);
+		issueCommandService.createIssue("TESTCODE", createRequest);
+
+		UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.DONE);
+
+		// when
+		LocalDateTime timeBeforeUpdate = LocalDateTime.now();
+		issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+
+		// then
+		Issue issue = issueRepository.findById(1L).orElseThrow();
+
+		assertThat(issue.getFinishedAt()).isAfter(timeBeforeUpdate);
+		assertThat(issue.getFinishedAt()).isBefore(timeBeforeUpdate.plusMinutes(1));
+	}
 }
