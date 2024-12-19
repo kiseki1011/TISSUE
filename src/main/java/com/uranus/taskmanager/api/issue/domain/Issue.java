@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
+import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
 import com.uranus.taskmanager.api.issue.exception.ParentIssueNotSameWorkspaceException;
 import com.uranus.taskmanager.api.issue.exception.ParentIssueTypeSubTaskException;
@@ -67,15 +70,14 @@ public class Issue extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private IssueStatus status; // Default: TODO
+	private IssueStatus status;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private IssuePriority priority;  // Default: Medium
+	private IssuePriority priority;
 
-	// different from createdAt, must be updated implicitly
-	private LocalDateTime startedAt; // updated when the first status change to IN_PROGRESS is made
-	private LocalDateTime finishedAt; // updated when status change to DONE
+	private LocalDateTime startedAt;
+	private LocalDateTime finishedAt;
 
 	/**
 	 * Todo

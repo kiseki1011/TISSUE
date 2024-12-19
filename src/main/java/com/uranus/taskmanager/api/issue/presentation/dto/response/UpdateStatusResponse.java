@@ -3,7 +3,7 @@ package com.uranus.taskmanager.api.issue.presentation.dto.response;
 import java.time.LocalDateTime;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
-import com.uranus.taskmanager.api.issue.domain.IssueStatus;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
 
 public record UpdateStatusResponse(
 	Long issueId,

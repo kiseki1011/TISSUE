@@ -3,8 +3,8 @@ package com.uranus.taskmanager.api.issue.presentation.dto.request;
 import java.time.LocalDate;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
-import com.uranus.taskmanager.api.issue.domain.IssuePriority;
-import com.uranus.taskmanager.api.issue.domain.IssueType;
+import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;

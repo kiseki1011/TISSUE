@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
-import com.uranus.taskmanager.api.issue.domain.IssuePriority;
-import com.uranus.taskmanager.api.issue.domain.IssueStatus;
-import com.uranus.taskmanager.api.issue.domain.IssueType;
+import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
 import com.uranus.taskmanager.api.issue.exception.ParentIssueTypeSubTaskException;
 import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;

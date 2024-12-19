@@ -12,9 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.uranus.taskmanager.api.issue.domain.IssuePriority;
-import com.uranus.taskmanager.api.issue.domain.IssueStatus;
-import com.uranus.taskmanager.api.issue.domain.IssueType;
+import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.CreateIssueRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.CreateIssueResponse;
