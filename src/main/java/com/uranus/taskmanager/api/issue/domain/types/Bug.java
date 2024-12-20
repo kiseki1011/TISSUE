@@ -41,9 +41,6 @@ public class Bug extends Issue {
 
 	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
 
-	@Column(nullable = false)
-	private String environment;
-
 	@Lob
 	@Column(nullable = false)
 	private String reproducingSteps;
@@ -70,14 +67,12 @@ public class Bug extends Issue {
 		IssuePriority priority,
 		LocalDate dueDate,
 		Issue parentIssue,
-		String environment,
 		String reproducingSteps,
 		BugSeverity severity,
 		Set<String> affectedVersions,
 		Difficulty difficulty
 	) {
 		super(workspace, title, content, summary, priority, dueDate, parentIssue);
-		this.environment = environment;
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity != null ? severity : BugSeverity.MINOR;
 

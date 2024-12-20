@@ -22,10 +22,10 @@ import lombok.NoArgsConstructor;
 public class Epic extends Issue {
 
 	@Column(nullable = false)
-	private String businessGoal; // 에픽의 목표
+	private String businessGoal;
 
-	private LocalDate targetReleaseDate; // 릴리즈 예정일
-	private LocalDate hardDeadLine; // 협상 불가능한 마감일
+	private LocalDate targetReleaseDate;
+	private LocalDate hardDeadLine;
 
 	@Builder
 	public Epic(

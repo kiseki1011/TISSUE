@@ -22,16 +22,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends Issue {
 
-	/**
-	 * Todo
-	 *  - parentIssue를 위해서 Epic epic 필드를 추가하는 것이 좋을까?
-	 *    - 생성자의 parentIssue 대신 this.epic을 넣으면 됨
-	 *  - 마찬가지로 childIssue를 위해서 List<SubTask> subTasks 필드를 추가할까?
-	 *  -> 근데 생각해보니깐 다 별로인 듯... -> 그냥 조인해서 가져오지 뭐
-	 */
-
 	@Column(nullable = false)
-	private String userValue;
+	private String userStory;
 
 	private String acceptanceCriteria;
 
@@ -46,12 +38,12 @@ public class Story extends Issue {
 		IssuePriority priority,
 		LocalDate dueDate,
 		Issue parentIssue,
-		String userValue,
+		String userStory,
 		String acceptanceCriteria,
 		Difficulty difficulty
 	) {
 		super(workspace, title, content, summary, priority, dueDate, parentIssue);
-		this.userValue = userValue;
+		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 		this.difficulty = difficulty;
 	}

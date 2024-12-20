@@ -42,6 +42,7 @@ public abstract class Issue extends BaseEntity {
 	 *    - 순서대로 증가
 	 *    - 워크스페이스 마다 고유
 	 *    - 예시: EPIC-3, STORY-333, TASK-456, BUG-77, SUBTASK-1004
+	 *    - 예시: ADMIN이상이 정하는 경우 -> TISSUE-1234
 	 *  - dueDate가 null인 경우의 처리가 필요
 	 * 	  - 예시: null이면 1주일 후의 날짜를 dueDate로 설정(생성자에서)
 	 *  - parentIssue 추가하는 경우 해당 parentIssue에는 현재의 이슈가 childIssue로 추가
