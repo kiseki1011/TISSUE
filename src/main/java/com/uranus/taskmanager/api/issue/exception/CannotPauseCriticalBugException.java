@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
-public class ParentIssueNotSameWorkspaceException extends IssueException {
+public class CannotPauseCriticalBugException extends IssueException {
 
-	private static final String MESSAGE = "Parent issue must belong to the same workspace of child issue.";
+	private static final String MESSAGE = "Cannot change the status of a Bug to PAUSE with CRITICAL level or higher.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public ParentIssueNotSameWorkspaceException() {
+	public CannotPauseCriticalBugException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public ParentIssueNotSameWorkspaceException(String message) {
+	public CannotPauseCriticalBugException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }

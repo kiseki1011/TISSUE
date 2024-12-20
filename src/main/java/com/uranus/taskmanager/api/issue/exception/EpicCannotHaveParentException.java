@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
-public class WrongChildIssueTypeException extends IssueException {
+public class EpicCannotHaveParentException extends IssueException {
 
-	private static final String MESSAGE = "Only EPIC type issues can have STORY, TASK, BUG type children.";
+	private static final String MESSAGE = "Epics cannot have a parent issue.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public WrongChildIssueTypeException() {
+	public EpicCannotHaveParentException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public WrongChildIssueTypeException(String message) {
+	public EpicCannotHaveParentException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }

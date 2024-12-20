@@ -8,8 +8,8 @@ import java.util.List;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
-import com.uranus.taskmanager.api.issue.exception.DirectUpdateToInReviewException;
 import com.uranus.taskmanager.api.issue.exception.UpdateIssueInReviewStatusException;
+import com.uranus.taskmanager.api.issue.exception.UpdateStatusToInReviewException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
@@ -67,6 +67,10 @@ public abstract class Issue extends BaseEntity {
 	@Column(nullable = false)
 	private String content;
 
+	@Lob
+	@Column
+	private String summary;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private IssueStatus status;
@@ -80,6 +84,9 @@ public abstract class Issue extends BaseEntity {
 
 	private LocalDate dueDate;
 
+	@Column(nullable = false)
+	private Long reporter = getCreatedBy();
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
@@ -91,6 +98,7 @@ public abstract class Issue extends BaseEntity {
 		Workspace workspace,
 		String title,
 		String content,
+		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
 		Issue parentIssue
@@ -101,6 +109,7 @@ public abstract class Issue extends BaseEntity {
 
 		this.title = title;
 		this.content = content;
+		this.summary = summary;
 		this.status = IssueStatus.TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
 		this.dueDate = dueDate;
@@ -116,6 +125,10 @@ public abstract class Issue extends BaseEntity {
 		validateStatusTransition(newStatus);
 		this.status = newStatus;
 		updateTimestamps(newStatus);
+	}
+
+	public void updatePriority(IssuePriority priority) {
+		this.priority = priority;
 	}
 
 	public void addToWorkspace(Workspace workspace) {
@@ -136,7 +149,7 @@ public abstract class Issue extends BaseEntity {
 			throw new UpdateIssueInReviewStatusException();
 		}
 		if (newStatus == IssueStatus.IN_REVIEW) {
-			throw new DirectUpdateToInReviewException();
+			throw new UpdateStatusToInReviewException();
 		}
 	}
 

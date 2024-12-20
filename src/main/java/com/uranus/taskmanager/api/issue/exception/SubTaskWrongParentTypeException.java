@@ -6,7 +6,8 @@ import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
 public class SubTaskWrongParentTypeException extends IssueException {
 
-	private static final String MESSAGE = "SUB_TASK can only have STORY, TASK, or BUG type as the parent issue.";
+	private static final String MESSAGE = "A Sub-task must have a parent "
+		+ "and can only have STORY, TASK, or BUG type as the parent issue.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
 	public SubTaskWrongParentTypeException() {

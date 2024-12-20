@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
-public class ParentIssueTypeSubTaskException extends IssueException {
+public class ParentMustBeEpicException extends IssueException {
 
-	private static final String MESSAGE = "Parent issue cannot be a SUB_TASK.";
+	private static final String MESSAGE = "Story/Task/Bug type issues can only have Epic as their parent issue.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public ParentIssueTypeSubTaskException() {
+	public ParentMustBeEpicException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public ParentIssueTypeSubTaskException(String message) {
+	public ParentMustBeEpicException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }
