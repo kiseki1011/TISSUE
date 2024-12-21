@@ -1,15 +1,20 @@
 package com.uranus.taskmanager.api.issue.presentation.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uranus.taskmanager.api.common.dto.ApiResponse;
 import com.uranus.taskmanager.api.issue.presentation.dto.request.UpdateStatusRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.uranus.taskmanager.api.issue.presentation.dto.response.UpdateStatusResponse;
-import com.uranus.taskmanager.api.issue.service.IssueCommandService;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.create.CreateIssueResponse;
+import com.uranus.taskmanager.api.issue.service.command.IssueCommandService;
 import com.uranus.taskmanager.api.security.authentication.interceptor.LoginRequired;
 import com.uranus.taskmanager.api.security.authorization.interceptor.RoleRequired;
 import com.uranus.taskmanager.api.workspacemember.domain.WorkspaceRole;
@@ -73,20 +78,22 @@ public class IssueController {
 
 	private final IssueCommandService issueCommandService;
 
-	// @LoginRequired
-	// @RoleRequired(roles = WorkspaceRole.COLLABORATOR)
-	// @ResponseStatus(HttpStatus.CREATED)
-	// @PostMapping
-	// public ApiResponse<CreateIssueResponse> createIssue(
-	// 	@PathVariable String code,
-	// 	@RequestBody @Valid CreateIssueRequest request
-	// ) {
-	// 	CreateIssueResponse response = issueCommandService.createIssue(
-	// 		code,
-	// 		request
-	// 	);
-	// 	return ApiResponse.ok("Issue created.", response);
-	// }
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@ResponseStatus(HttpStatus.CREATED)
+	@PostMapping
+	public ApiResponse<CreateIssueResponse> createIssue(
+		@PathVariable String code,
+		@RequestBody @Valid CreateIssueRequest request
+	) {
+
+		CreateIssueResponse response = issueCommandService.createIssue(
+			code,
+			request
+		);
+
+		return ApiResponse.ok(response.getType() + " issue created.", response);
+	}
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
