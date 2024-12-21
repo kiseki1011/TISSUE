@@ -8,11 +8,13 @@ import java.util.List;
 import com.uranus.taskmanager.api.common.entity.BaseEntity;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.enums.IssueStatus;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.uranus.taskmanager.api.issue.exception.UpdateStatusToInReviewException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,6 +35,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Issue extends BaseEntity {
 
@@ -53,6 +56,10 @@ public abstract class Issue extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "type", insertable = false, updatable = false)
+	private IssueType type;  // DB의 discriminator column과 매핑
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
@@ -97,6 +104,7 @@ public abstract class Issue extends BaseEntity {
 
 	protected Issue(
 		Workspace workspace,
+		IssueType type,
 		String title,
 		String content,
 		String summary,
@@ -108,6 +116,7 @@ public abstract class Issue extends BaseEntity {
 		this.workspaceCode = workspace.getCode();
 		workspace.getIssues().add(this);
 
+		this.type = type;
 		this.title = title;
 		this.content = content;
 		this.summary = summary;

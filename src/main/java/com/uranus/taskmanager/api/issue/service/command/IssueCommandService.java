@@ -46,7 +46,7 @@ public class IssueCommandService {
 		);
 
 		Issue savedIssue = issueRepository.save(issue);
-		return CreateIssueResponse.from(savedIssue, request.getType());
+		return CreateIssueResponse.from(savedIssue);
 	}
 
 	@Transactional

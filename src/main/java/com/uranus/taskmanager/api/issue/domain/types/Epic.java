@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.EpicCannotHaveParentException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
@@ -39,7 +40,7 @@ public class Epic extends Issue {
 		LocalDate targetReleaseDate,
 		LocalDate hardDeadLine
 	) {
-		super(workspace, title, content, summary, priority, dueDate, null);
+		super(workspace, IssueType.EPIC, title, content, summary, priority, dueDate, null);
 		this.businessGoal = businessGoal;
 		this.targetReleaseDate = targetReleaseDate;
 		this.hardDeadLine = hardDeadLine;

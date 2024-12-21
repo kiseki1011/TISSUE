@@ -11,8 +11,8 @@ import com.uranus.taskmanager.api.issue.domain.types.Task;
 public interface CreateIssueResponse {
 	IssueType getType();
 
-	static CreateIssueResponse from(Issue issue, IssueType type) {
-		return switch (type) {
+	static CreateIssueResponse from(Issue issue) {
+		return switch (issue.getType()) {
 			case EPIC -> CreateEpicResponse.from((Epic)issue);
 			case STORY -> CreateStoryResponse.from((Story)issue);
 			case TASK -> CreateTaskResponse.from((Task)issue);

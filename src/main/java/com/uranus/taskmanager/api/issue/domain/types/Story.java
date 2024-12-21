@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.ParentMustBeEpicException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
@@ -42,7 +43,7 @@ public class Story extends Issue {
 		String acceptanceCriteria,
 		Difficulty difficulty
 	) {
-		super(workspace, title, content, summary, priority, dueDate, parentIssue);
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueDate, parentIssue);
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 		this.difficulty = difficulty;

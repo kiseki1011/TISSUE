@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
 import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
 import com.uranus.taskmanager.api.workspace.domain.Workspace;
 
@@ -34,7 +35,7 @@ public class SubTask extends Issue {
 		Issue parentIssue,
 		Difficulty difficulty
 	) {
-		super(workspace, title, content, summary, priority, dueDate, parentIssue);
+		super(workspace, IssueType.SUB_TASK, title, content, summary, priority, dueDate, parentIssue);
 		this.difficulty = difficulty;
 	}
 
