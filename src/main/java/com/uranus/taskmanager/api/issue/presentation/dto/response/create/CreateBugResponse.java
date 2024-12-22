@@ -1,8 +1,10 @@
 package com.uranus.taskmanager.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
+import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.BugSeverity;
 import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
@@ -39,7 +41,7 @@ public record CreateBugResponse(
 		return CreateBugResponse.builder()
 			.issueId(bug.getId())
 			.workspaceCode(bug.getWorkspaceCode())
-			.reporterId(bug.getReporter())
+			.reporterId(bug.getCreatedBy())
 			.title(bug.getTitle())
 			.content(bug.getContent())
 			.summary(bug.getSummary())
@@ -50,7 +52,9 @@ public record CreateBugResponse(
 			.affectedVersions(bug.getAffectedVersions())
 			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
-			.parentIssueId(bug.getParentIssue().getId())
+			.parentIssueId(Optional.ofNullable(bug.getParentIssue())
+				.map(Issue::getId)
+				.orElse(null))
 			.build();
 	}
 }

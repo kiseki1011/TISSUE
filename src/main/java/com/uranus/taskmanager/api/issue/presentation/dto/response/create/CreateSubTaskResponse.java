@@ -1,7 +1,9 @@
 package com.uranus.taskmanager.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
+import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
@@ -32,14 +34,16 @@ public record CreateSubTaskResponse(
 		return CreateSubTaskResponse.builder()
 			.issueId(subTask.getId())
 			.workspaceCode(subTask.getWorkspaceCode())
-			.reporterId(subTask.getReporter())
+			.reporterId(subTask.getCreatedBy())
 			.title(subTask.getTitle())
 			.content(subTask.getContent())
 			.summary(subTask.getSummary())
 			.priority(subTask.getPriority())
 			.dueDate(subTask.getDueDate())
 			.difficulty(subTask.getDifficulty())
-			.parentIssueId(subTask.getParentIssue().getId())
+			.parentIssueId(Optional.ofNullable(subTask.getParentIssue())
+				.map(Issue::getId)
+				.orElse(null))
 			.build();
 	}
 }

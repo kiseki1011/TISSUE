@@ -92,9 +92,6 @@ public abstract class Issue extends BaseEntity {
 
 	private LocalDate dueDate;
 
-	@Column(nullable = false)
-	private Long reporter = getCreatedBy();
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;

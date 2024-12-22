@@ -1,7 +1,9 @@
 package com.uranus.taskmanager.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
+import com.uranus.taskmanager.api.issue.domain.Issue;
 import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
 import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
 import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
@@ -34,7 +36,7 @@ public record CreateStoryResponse(
 		return CreateStoryResponse.builder()
 			.issueId(story.getId())
 			.workspaceCode(story.getWorkspaceCode())
-			.reporterId(story.getReporter())
+			.reporterId(story.getCreatedBy())
 			.title(story.getTitle())
 			.content(story.getContent())
 			.summary(story.getSummary())
@@ -43,7 +45,9 @@ public record CreateStoryResponse(
 			.userStory(story.getUserStory())
 			.acceptanceCriteria(story.getAcceptanceCriteria())
 			.difficulty(story.getDifficulty())
-			.parentIssueId(story.getParentIssue().getId())
+			.parentIssueId(Optional.ofNullable(story.getParentIssue())
+				.map(Issue::getId)
+				.orElse(null))
 			.build();
 	}
 }
