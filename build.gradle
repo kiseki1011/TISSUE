@@ -6,7 +6,7 @@ plugins {
     id 'checkstyle'
 }
 
-group = 'com.uranus'
+group = 'com.tissue'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -57,8 +57,8 @@ jacocoTestReport {
         classDirectories.setFrom(
                 files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: [
-                            "com.uranus/taskmanager/api/**/domain/**",
-                            "com.uranus/taskmanager/api/**/dto/**",
+                            "com.tissue/api/**/domain/**",
+                            "com.tissue/api/**/dto/**",
                             "**/*Application*",
                             "**/*Request*",
                             "**/*Response*",
@@ -87,8 +87,8 @@ jacocoTestReport {
                 }
 
                 excludes = [
-                        "com.uranus.taskmanager.api.**.domain.**",
-                        "com.uranus.taskmanager.api.**.dto.**",
+                        "com.tissue.api.**.domain.**",
+                        "com.tissue.api.**.dto.**",
                         "**.*Application*",
                         "**.*Request*",
                         "**.*Response*",
