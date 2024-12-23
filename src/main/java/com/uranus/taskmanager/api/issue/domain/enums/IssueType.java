@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.issue.domain;
+package com.uranus.taskmanager.api.issue.domain.enums;
 
 public enum IssueType {
 	EPIC,

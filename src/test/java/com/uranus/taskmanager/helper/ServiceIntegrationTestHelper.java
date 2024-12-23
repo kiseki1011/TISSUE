@@ -7,7 +7,7 @@ import com.uranus.taskmanager.api.invitation.domain.repository.InvitationReposit
 import com.uranus.taskmanager.api.invitation.service.command.InvitationCommandService;
 import com.uranus.taskmanager.api.invitation.service.query.InvitationQueryService;
 import com.uranus.taskmanager.api.issue.domain.repository.IssueRepository;
-import com.uranus.taskmanager.api.issue.service.IssueCommandService;
+import com.uranus.taskmanager.api.issue.service.command.IssueCommandService;
 import com.uranus.taskmanager.api.member.domain.repository.MemberRepository;
 import com.uranus.taskmanager.api.member.service.command.MemberCommandService;
 import com.uranus.taskmanager.api.member.service.query.MemberQueryService;

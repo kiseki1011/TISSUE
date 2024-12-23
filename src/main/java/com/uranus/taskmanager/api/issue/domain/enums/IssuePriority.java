@@ -1,4 +1,4 @@
-package com.uranus.taskmanager.api.issue.domain;
+package com.uranus.taskmanager.api.issue.domain.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

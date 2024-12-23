@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.uranus.taskmanager.api.common.exception.domain.IssueException;
 
-public class ParentIssueTypeSubTaskException extends IssueException {
+public class CannotPauseCriticalBugException extends IssueException {
 
-	private static final String MESSAGE = "Parent issue cannot be a SUB_TASK.";
+	private static final String MESSAGE = "Cannot change the status of a Bug to PAUSE with CRITICAL level or higher.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public ParentIssueTypeSubTaskException() {
+	public CannotPauseCriticalBugException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public ParentIssueTypeSubTaskException(String message) {
+	public CannotPauseCriticalBugException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }
