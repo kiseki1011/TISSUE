@@ -13,9 +13,11 @@ import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
@@ -31,7 +33,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효한 워크스페이스 코드와 비밀번호로 워크스페이스를 삭제할 수 있다")
 	void test1() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"member1password!"
+		);
 
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -51,7 +57,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 삭제 시도 시 비밀번호가 맞지 않으면 예외가 발생한다")
 	void test2() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"member1password!"
+		);
 
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
 			.name("workspace1")
@@ -73,16 +83,26 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스 삭제 시도 시 코드가 유효하지 않으면 예외가 발생한다")
 	void test3() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember("member1", "member1@test.com", "member1password!");
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1",
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"member1password!"
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
 			"TEST1111",
-			"password1234!");
+			"password1234!"
+		);
 		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
-		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest("password1234!"), "INVALIDCODE",
-				member.getId()))
+		assertThatThrownBy(() -> workspaceCommandService.deleteWorkspace(
+			new DeleteWorkspaceRequest("password1234!"),
+			"INVALIDCODE",
+			member.getId())
+		)
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
@@ -92,7 +112,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효한 워크스페이스 코드로 워크스페이스의 이름과 설명을 수정할 수 있다")
 	void test4() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			null
+		);
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
@@ -117,7 +142,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 이름만 수정하면 해당 필드만 업데이트된다")
 	void test5() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			null
+		);
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
 			.name("Updated Name")
@@ -145,7 +175,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하면 요청의 수정 비밀번호로 업데이트된다")
 	void test7() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			"password1234!"
+		);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
@@ -166,7 +201,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("워크스페이스의 비밀번호가 null이면 비밀번호 수정 요청의 수정 비밀번호로 업데이트된다")
 	void test8() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", null);
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			null
+		);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.updatePassword("updated1234!")
@@ -185,7 +225,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하지 않으면 예외가 발생한다")
 	void test9() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			"password1234!"
+		);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("invalid1234!")
@@ -202,7 +247,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 제공하지 않으면 비밀번호는 null로 업데이트 된다")
 	void test10() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			"password1234!"
+		);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
@@ -215,7 +265,6 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
 		assertThat(updatedPassword).isNull();
-
 	}
 
 	@Transactional
@@ -223,7 +272,12 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 null로 제공하면 비밀번호는 null로 업데이트 된다")
 	void test11() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace("workspace1", "description1", "TEST1111", "password1234!");
+		workspaceRepositoryFixture.createAndSaveWorkspace(
+			"workspace1",
+			"description1",
+			"TEST1111",
+			"password1234!"
+		);
 
 		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
 			.originalPassword("password1234!")
@@ -237,6 +291,57 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
 		assertThat(updatedPassword).isNull();
+	}
 
+	@Test
+	@DisplayName("워크스페이스 생성 시, key prefix의 값을 제공하지 않으면 기본적으로 'ISSUE'로 설정된다")
+	void workspaceCreate_ifNoKeyPrefixProvided_setToDefaultPrefix() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		// when
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+
+		// then
+		Workspace workspace = workspaceRepository.findById(response.id())
+			.orElseThrow();
+
+		assertThat(workspace.getKeyPrefix()).isEqualTo("ISSUE");
+	}
+
+	@Test
+	@DisplayName("key prefix를 요청을 통해 제공한 key prefix로 업데이트 할 수 있다")
+	void testUpdateKeyPrefix() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		CreateWorkspaceRequest createRequest = CreateWorkspaceRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		workspaceCreateService.createWorkspace(createRequest, member.getId());
+
+		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("UPDATEPREFIX");
+
+		// when
+		Workspace workspace = workspaceRepository.findById(1L).orElseThrow();
+		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKey(workspace.getCode(), request);
+
+		// then
+		assertThat(response.keyPrefix()).isEqualTo("UPDATEPREFIX");
 	}
 }
