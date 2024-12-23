@@ -1,0 +1,71 @@
+# Default
+spring:
+  profiles:
+    active: local
+
+---
+# Local & Test
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:h2:tcp://localhost:1521/testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties.hibernate:
+      format_sql: true
+      show-sql: true
+      highlight_sql: true
+
+  logging.level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        orm.jdbc.bind: TRACE
+
+---
+# Development
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/devdb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: rootpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+---
+# Production
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/proddb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: rootpassword
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+
+logging.level:
+  org.hibernate.SQL: off
+  org.hibernate.type.descriptor.sql.BasicBinder: off
+  org.hibernate.orm.jdbc.bind: off
+  org.hibernate.stat: off
