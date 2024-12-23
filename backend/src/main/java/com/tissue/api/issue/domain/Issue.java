@@ -9,9 +9,9 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -39,6 +39,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Issue extends BaseEntity {
 
+	@OneToMany(mappedBy = "parentIssue")
+	private final List<Issue> childIssues = new ArrayList<>();
 	/**
 	 * Todo
 	 *  - 이슈 마다 코드를 부여하자
@@ -56,6 +58,9 @@ public abstract class Issue extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	// @Column(nullable = false, unique = true)
+	// private String key;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", insertable = false, updatable = false)
@@ -89,15 +94,11 @@ public abstract class Issue extends BaseEntity {
 
 	private LocalDateTime startedAt;
 	private LocalDateTime finishedAt;
-
 	private LocalDate dueDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
-
-	@OneToMany(mappedBy = "parentIssue")
-	private List<Issue> childIssues = new ArrayList<>();
 
 	protected Issue(
 		Workspace workspace,

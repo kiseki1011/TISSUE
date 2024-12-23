@@ -3,15 +3,15 @@ package com.tissue.api.workspace.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.position.domain.Position;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.common.ColorType;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.position.domain.Position;
 import com.tissue.api.workspace.exception.InvalidMemberCountException;
 import com.tissue.api.workspace.exception.WorkspaceMemberLimitExceededException;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,6 +39,7 @@ public class Workspace extends BaseEntity {
 	 * {@link Member#MAX_MY_WORKSPACE_COUNT}
 	 */
 	private static final int MAX_MEMBER_COUNT = 500;
+	private static final String DEFAULT_KEY_PREFIX = "ISSUE";
 
 	/**
 	 * Todo
@@ -64,6 +65,12 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private int memberCount = 0;
 
+	@Column(nullable = false)
+	private String keyPrefix;
+
+	@Column(nullable = false)
+	private Integer nextIssueNumber = 1;
+
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Position> positions = new ArrayList<>();
 
@@ -77,11 +84,18 @@ public class Workspace extends BaseEntity {
 	private List<Issue> issues = new ArrayList<>();
 
 	@Builder
-	public Workspace(String code, String name, String description, String password) {
+	public Workspace(
+		String code,
+		String name,
+		String description,
+		String password,
+		String keyPrefix
+	) {
 		this.code = code;
 		this.name = name;
 		this.description = description;
 		this.password = password;
+		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
 	public Position createPosition(String name, String description, ColorType color) {
@@ -95,6 +109,11 @@ public class Workspace extends BaseEntity {
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public void updateKeyPrefix(String keyPrefix) {
+		// TODO: 굳이 null 검증이 필요한가? 이미 요청 DTO에서 null이 아닌 값이 들어온다는 것은 보장됨
+		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
 	public void updatePassword(String password) {
@@ -117,6 +136,10 @@ public class Workspace extends BaseEntity {
 	public void decreaseMemberCount() {
 		validatePositiveMemberCount();
 		this.memberCount--;
+	}
+
+	private String toUpperCaseOrDefault(String keyPrefix) {
+		return keyPrefix != null ? keyPrefix.toUpperCase() : DEFAULT_KEY_PREFIX;
 	}
 
 	private void validateMemberLimit() {
