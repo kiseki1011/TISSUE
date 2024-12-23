@@ -40,7 +40,7 @@ public class Epic extends Issue {
 		LocalDate targetReleaseDate,
 		LocalDate hardDeadLine
 	) {
-		super(workspace, IssueType.EPIC, title, content, summary, priority, dueDate, null);
+		super(workspace, IssueType.EPIC, title, content, summary, priority, dueDate);
 		this.businessGoal = businessGoal;
 		this.targetReleaseDate = targetReleaseDate;
 		this.hardDeadLine = hardDeadLine;

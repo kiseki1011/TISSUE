@@ -39,9 +39,9 @@ public record CreateStoryRequest(
 			.priority(priority)
 			.dueDate(dueDate)
 			.difficulty(difficulty)
-			.parentIssue(parentIssue)
 			.userStory(userStory)
 			.acceptanceCriteria(acceptanceCriteria)
+			.parentIssue(parentIssue)
 			.build();
 	}
 }

@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends Issue {
 
-	@Column(nullable = false)
+	@Column(name = "USER_STORY", nullable = false)
 	private String userStory;
 
 	private String acceptanceCriteria;
@@ -38,15 +38,20 @@ public class Story extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
+		Difficulty difficulty,
 		Issue parentIssue,
 		String userStory,
-		String acceptanceCriteria,
-		Difficulty difficulty
+		String acceptanceCriteria
 	) {
-		super(workspace, IssueType.STORY, title, content, summary, priority, dueDate, parentIssue);
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueDate);
+		this.difficulty = difficulty;
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
-		this.difficulty = difficulty;
+
+		if (parentIssue != null) {
+			validateParentIssue(parentIssue);
+			setParentIssue(parentIssue);
+		}
 	}
 
 	@Override

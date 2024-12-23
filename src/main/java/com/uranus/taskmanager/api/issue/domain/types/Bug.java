@@ -73,7 +73,7 @@ public class Bug extends Issue {
 		Set<String> affectedVersions,
 		Difficulty difficulty
 	) {
-		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate, parentIssue);
+		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate);
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity != null ? severity : BugSeverity.MINOR;
 
@@ -84,6 +84,11 @@ public class Bug extends Issue {
 		}
 
 		this.difficulty = difficulty;
+
+		if (parentIssue != null) {
+			validateParentIssue(parentIssue);
+			setParentIssue(parentIssue);
+		}
 	}
 
 	@Override

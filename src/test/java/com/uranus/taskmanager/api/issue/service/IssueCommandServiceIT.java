@@ -1,12 +1,35 @@
 package com.uranus.taskmanager.api.issue.service;
 
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.uranus.taskmanager.api.issue.domain.Issue;
+import com.uranus.taskmanager.api.issue.domain.enums.Difficulty;
+import com.uranus.taskmanager.api.issue.domain.enums.IssuePriority;
+import com.uranus.taskmanager.api.issue.domain.enums.IssueType;
+import com.uranus.taskmanager.api.issue.domain.types.Epic;
+import com.uranus.taskmanager.api.issue.domain.types.Task;
+import com.uranus.taskmanager.api.issue.exception.ParentMustBeEpicException;
+import com.uranus.taskmanager.api.issue.exception.SubTaskWrongParentTypeException;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.create.CreateIssueRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.create.CreateStoryRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.request.create.CreateTaskRequest;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.create.CreateStoryResponse;
+import com.uranus.taskmanager.api.issue.presentation.dto.response.create.CreateTaskResponse;
+import com.uranus.taskmanager.api.workspace.domain.Workspace;
 import com.uranus.taskmanager.helper.ServiceIntegrationTestHelper;
 
-@Disabled
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
@@ -25,161 +48,176 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		databaseCleaner.execute();
 	}
 
-	// @Transactional
-	// @Test
-	// @DisplayName("이슈 생성에 성공하면 이슈 생성 응답을 반환 받는다")
-	// void createIssue_Success_returnsCreateIssueResponse() {
-	// 	// given
-	// 	CreateIssueRequest request = new CreateIssueRequest(
-	// 		IssueType.TASK,
-	// 		"Test Issue",
-	// 		"Test content",
-	// 		IssuePriority.HIGH,
-	// 		LocalDate.now(),
-	// 		null
-	// 	);
-	//
-	// 	// when
-	// 	CreateIssueResponse response = issueCommandService.createIssue(
-	// 		"TESTCODE",
-	// 		request
-	// 	);
-	//
-	// 	// then
-	// 	assertThat(response.title()).isEqualTo("Test Issue");
-	// 	assertThat(response.type()).isEqualTo(IssueType.TASK);
-	// 	assertThat(response.parentIssueId()).isNull();
-	//
-	// 	Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-	// 	assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
-	// }
-	//
-	// @Transactional
-	// @Test
-	// @DisplayName("부모 이슈를 지정하여 이슈를 생성할 수 있다")
-	// void createIssue_WithParent_Success() {
-	// 	// given
-	// 	Workspace workspace = workspaceRepository.findByCode("TESTCODE")
-	// 		.orElseThrow();
-	//
-	// 	Issue parentIssue = Issue.builder()
-	// 		.workspace(workspace)
-	// 		.type(IssueType.EPIC)
-	// 		.title("Parent Issue")
-	// 		.content("Parent issue content")
-	// 		.build();
-	// 	issueRepository.save(parentIssue);
-	//
-	// 	CreateIssueRequest request = new CreateIssueRequest(
-	// 		IssueType.STORY,
-	// 		"Child Issue",
-	// 		"Child issue content",
-	// 		IssuePriority.HIGH,
-	// 		LocalDate.now(),
-	// 		parentIssue.getId()
-	// 	);
-	//
-	// 	// when
-	// 	CreateIssueResponse response = issueCommandService.createIssue(
-	// 		"TESTCODE",
-	// 		request
-	// 	);
-	//
-	// 	// then
-	// 	Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-	//
-	// 	assertThat(savedIssue.getParentIssue().getId()).isEqualTo(parentIssue.getId());
-	// }
-	//
-	// @Transactional
-	// @Test
-	// @DisplayName("이슈 생성 시, SUB_TASK 타입 이슈를 부모로 지정하면 예외가 발생한다")
-	// void createIssue_WithParent_Fails_ifParentIsSubTask() {
-	// 	// given
-	// 	Workspace workspace = workspaceRepository.findByCode("TESTCODE")
-	// 		.orElseThrow();
-	//
-	// 	Issue parentIssue = Issue.builder()
-	// 		.workspace(workspace)
-	// 		.type(IssueType.SUB_TASK)
-	// 		.title("Parent Issue")
-	// 		.content("Parent issue content")
-	// 		.build();
-	// 	issueRepository.save(parentIssue);
-	//
-	// 	CreateIssueRequest request = new CreateIssueRequest(
-	// 		IssueType.STORY,
-	// 		"Child Issue",
-	// 		"Child issue content",
-	// 		IssuePriority.HIGH,
-	// 		LocalDate.now(),
-	// 		parentIssue.getId()
-	// 	);
-	//
-	// 	// when & then
-	// 	assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-	// 		.isInstanceOf(ParentIssueTypeSubTaskException.class);
-	// }
-	//
-	// @Transactional
-	// @Test
-	// @DisplayName("이슈 생성 시, EPIC 타입 이슈를 SUB_TASK 타입의 부모로 지정하면 예외가 발생한다")
-	// void createIssue_WithParent_Fails_ifParentIsEpic_whenChildIsSubTask() {
-	// 	// given
-	// 	Workspace workspace = workspaceRepository.findByCode("TESTCODE")
-	// 		.orElseThrow();
-	//
-	// 	Issue parentIssue = Issue.builder()
-	// 		.workspace(workspace)
-	// 		.type(IssueType.EPIC)
-	// 		.title("Parent Issue")
-	// 		.content("Parent issue content")
-	// 		.build();
-	// 	issueRepository.save(parentIssue);
-	//
-	// 	CreateIssueRequest request = new CreateIssueRequest(
-	// 		IssueType.SUB_TASK,
-	// 		"Child Issue",
-	// 		"Child issue content",
-	// 		IssuePriority.HIGH,
-	// 		LocalDate.now(),
-	// 		parentIssue.getId()
-	// 	);
-	//
-	// 	// when & then
-	// 	assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-	// 		.isInstanceOf(SubTaskWrongParentTypeException.class);
-	// }
-	//
-	// @Transactional
-	// @Test
-	// @DisplayName("이슈 생성 시, 같은 위계의 타입을 가진 이슈를 부모로 지정하면 예외가 발생한다")
-	// void createIssue_WithParent_Fails_ifParentIsSameHierarchy() {
-	// 	// given
-	// 	Workspace workspace = workspaceRepository.findByCode("TESTCODE")
-	// 		.orElseThrow();
-	//
-	// 	Issue parentIssue = Issue.builder()
-	// 		.workspace(workspace)
-	// 		.type(IssueType.TASK)
-	// 		.title("Parent Issue")
-	// 		.content("Parent issue content")
-	// 		.build();
-	// 	issueRepository.save(parentIssue);
-	//
-	// 	CreateIssueRequest request = new CreateIssueRequest(
-	// 		IssueType.TASK,
-	// 		"Child Issue",
-	// 		"Child issue content",
-	// 		IssuePriority.HIGH,
-	// 		LocalDate.now(),
-	// 		parentIssue.getId()
-	// 	);
-	//
-	// 	// when & then
-	// 	assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
-	// 		.isInstanceOf(WrongChildIssueTypeException.class);
-	// }
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성에 성공하면 이슈 생성 응답을 반환 받는다")
+	void createIssue_Success_returnsCreateIssueResponse() {
+		// given
+		CreateIssueRequest request = new CreateTaskRequest(
+			"Test Issue",
+			"Test content",
+			null,
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			null
+		);
+
+		// when
+		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			request
+		);
+
+		// then
+		log.info("response = {}", response);
+
+		assertThat(response.getType()).isEqualTo(IssueType.TASK);
+		assertThat(response.title()).isEqualTo("Test Issue");
+
+		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
+		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("부모 이슈를 지정하여 이슈를 생성할 수 있다")
+	void createIssue_WithParent_Success() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Epic.builder()
+			.workspace(workspace)
+			.title("Parent Epic Issue")
+			.content("Parent Epic Issue")
+			.businessGoal("Parent Epic Issue")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateStoryRequest(
+			"Child Story Issue",
+			"Child Story Issue",
+			null,
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			parentIssue.getId(),
+			"Child Story Issue User Story",
+			"Child Story Issue Acceptance Criteria"
+		);
+
+		// when
+		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			request
+		);
+
+		// then
+		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
+
+		assertThat(savedIssue.getParentIssue().getId()).isEqualTo(parentIssue.getId());
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("STORY 타입 이슈 생성 시, TASK 타입 이슈를 부모로 지정하면 예외가 발생한다")
+	void createStoryIssue_WithParent_Fails_ifParentIsTask() {
+		// given
+		CreateTaskRequest parentCreateRequest = new CreateTaskRequest(
+			"Parent Task Issue",
+			"Parent Task Issue",
+			"Parent Task Issue",
+			null,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			null
+		);
+
+		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			parentCreateRequest
+		);
+
+		Long parentIssueId = response.issueId();
+
+		CreateStoryRequest request = new CreateStoryRequest(
+			"Child Issue",
+			"Child issue content",
+			"Test summary",
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			parentIssueId,
+			"Test user story",
+			"Acceptance Criteria"
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(ParentMustBeEpicException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성 시, EPIC 타입 이슈를 SUB_TASK 타입의 부모로 지정하면 예외가 발생한다")
+	void createIssue_WithParent_Fails_ifParentIsEpic_whenChildIsSubTask() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Epic.builder()
+			.workspace(workspace)
+			.title("Parent Issue")
+			.content("Parent issue content")
+			.businessGoal("Test business goal")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateSubTaskRequest(
+			"Child Issue",
+			"Child issue content",
+			null,
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			parentIssue.getId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(SubTaskWrongParentTypeException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("이슈 생성 시, 같은 위계의 타입을 가진 이슈를 부모로 지정하면 예외가 발생한다")
+	void createIssue_WithParent_Fails_ifParentIsSameHierarchy() {
+		// given
+		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+			.orElseThrow();
+
+		Issue parentIssue = Task.builder()
+			.workspace(workspace)
+			.title("Parent Issue")
+			.content("Parent issue content")
+			.build();
+		issueRepository.save(parentIssue);
+
+		CreateIssueRequest request = new CreateTaskRequest(
+			"Child Issue",
+			"Child issue content",
+			null,
+			IssuePriority.HIGH,
+			LocalDate.now(),
+			Difficulty.NORMAL,
+			parentIssue.getId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+			.isInstanceOf(ParentMustBeEpicException.class);
+	}
 	//
 	// @Test
 	// @DisplayName("이슈 상태 업데이트를 성공하면 이슈 상태 업데이트 응답을 반환한다")

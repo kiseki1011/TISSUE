@@ -106,8 +106,7 @@ public abstract class Issue extends BaseEntity {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
-		Issue parentIssue
+		LocalDate dueDate
 	) {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
@@ -120,12 +119,6 @@ public abstract class Issue extends BaseEntity {
 		this.status = IssueStatus.TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
 		this.dueDate = dueDate;
-
-		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
-			this.parentIssue = parentIssue;
-			parentIssue.getChildIssues().add(this);
-		}
 	}
 
 	public void updateStatus(IssueStatus newStatus) {
@@ -149,6 +142,11 @@ public abstract class Issue extends BaseEntity {
 			this.parentIssue.getChildIssues().remove(this);
 			this.parentIssue = null;
 		}
+	}
+
+	protected void setParentIssue(Issue parentIssue) {
+		this.parentIssue = parentIssue;
+		parentIssue.getChildIssues().add(this);
 	}
 
 	protected void validateStatusTransition(IssueStatus newStatus) {

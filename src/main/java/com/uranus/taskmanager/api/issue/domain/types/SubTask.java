@@ -37,8 +37,13 @@ public class SubTask extends Issue {
 		Issue parentIssue,
 		Difficulty difficulty
 	) {
-		super(workspace, IssueType.SUB_TASK, title, content, summary, priority, dueDate, parentIssue);
+		super(workspace, IssueType.SUB_TASK, title, content, summary, priority, dueDate);
 		this.difficulty = difficulty;
+
+		if (parentIssue != null) {
+			validateParentIssue(parentIssue);
+			setParentIssue(parentIssue);
+		}
 	}
 
 	@Override
