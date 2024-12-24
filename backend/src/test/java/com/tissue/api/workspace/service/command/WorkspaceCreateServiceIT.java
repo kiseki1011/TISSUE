@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -176,8 +175,8 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
-	void deleteWorkspace_decreasesWorkspaceCount() {
+	@DisplayName("워크스페이스 생성 시, key prefix의 값을 제공하지 않으면 기본적으로 'ISSUE'로 설정된다")
+	void workspaceCreate_ifNoKeyPrefixProvided_setToDefaultPrefix() {
 		// given
 		Member member = memberRepositoryFixture.createAndSaveMember(
 			"member1",
@@ -190,13 +189,39 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.description("description1")
 			.build();
 
+		// when
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
+		// then
+		Workspace workspace = workspaceRepository.findById(response.id())
+			.orElseThrow();
+
+		assertThat(workspace.getKeyPrefix()).isEqualTo("ISSUE");
+	}
+
+	@Test
+	@DisplayName("워크스페이스 생성 시, 제공한 key prefix의 값으로 keyPrefix가 설정된다")
+	void workspaceCreate_ifKeyPrefixProvided_setToGivenPrefix() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.keyPrefix("TESTPREFIX")
+			.build();
+
 		// when
-		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(), member.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(0);
+		Workspace workspace = workspaceRepository.findById(response.id())
+			.orElseThrow();
+
+		assertThat(workspace.getKeyPrefix()).isEqualTo("TESTPREFIX");
 	}
 }

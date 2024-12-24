@@ -294,31 +294,6 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시, key prefix의 값을 제공하지 않으면 기본적으로 'ISSUE'로 설정된다")
-	void workspaceCreate_ifNoKeyPrefixProvided_setToDefaultPrefix() {
-		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.build();
-
-		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
-
-		// then
-		Workspace workspace = workspaceRepository.findById(response.id())
-			.orElseThrow();
-
-		assertThat(workspace.getKeyPrefix()).isEqualTo("ISSUE");
-	}
-
-	@Test
 	@DisplayName("key prefix를 요청을 통해 제공한 key prefix로 업데이트 할 수 있다")
 	void testUpdateKeyPrefix() {
 		// given
@@ -343,5 +318,30 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.keyPrefix()).isEqualTo("UPDATEPREFIX");
+	}
+
+	@Test
+	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
+	void deleteWorkspace_decreasesWorkspaceCount() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"member1",
+			"member1@test.com",
+			"password1234!"
+		);
+
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
+			.name("workspace1")
+			.description("description1")
+			.build();
+
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+
+		// when
+		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(), member.getId());
+
+		// then
+		Member updatedMember = memberRepository.findById(member.getId()).get();
+		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(0);
 	}
 }
