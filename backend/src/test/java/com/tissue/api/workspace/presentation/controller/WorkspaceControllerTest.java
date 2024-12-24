@@ -18,37 +18,19 @@ import org.mockito.ArgumentMatchers;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.helper.ControllerTestHelper;
-import com.tissue.api.security.session.SessionAttributes;
-import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 
 class WorkspaceControllerTest extends ControllerTestHelper {
-
-	@Test
-	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 201을 응답한다")
-	void test1() throws Exception {
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
-		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("Test Workspace")
-			.description("Test Description")
-			.build();
-
-		mockMvc.perform(post("/api/v1/workspaces")
-				.session(session)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isCreated())
-			.andDo(print());
-	}
 
 	/**
 	 * Todo
@@ -65,21 +47,35 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		);
 	}
 
+	@Test
+	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 201을 응답한다")
+	void test1() throws Exception {
+		// given
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
+			.name("Test Workspace")
+			.description("Test Description")
+			.build();
+
+		// when & then
+		mockMvc.perform(post("/api/v1/workspaces")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isCreated())
+			.andDo(print());
+	}
+
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
 	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름과 설명은 null, 빈 문자열 또는 공백이면 검증 오류가 발생한다")
 	void test2(String name, String description) throws Exception {
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
+		// given
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name(name)
 			.description(description)
 			.build();
 
+		// when & then
 		mockMvc.perform(post("/api/v1/workspaces")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
@@ -95,9 +91,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지키지 않으면 400을 응답한다")
 	void test3() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
 		String nameValidMsg = "Workspace name must be 2 ~ 50 characters long";
@@ -110,7 +103,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
@@ -123,9 +115,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /workspaces/{code}/info - 워크스페이스 정보 수정 요청에 성공하면 200을 응답받는다")
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		UpdateWorkspaceInfoRequest request = new UpdateWorkspaceInfoRequest("New Title", "New Description");
 
 		Workspace workspace = Workspace.builder()
@@ -143,7 +132,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/info", "TESTCODE")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -159,9 +147,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 200을 응답받는다")
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
 
 		Workspace workspace = Workspace.builder()
@@ -176,7 +161,6 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TESTCODE")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -214,5 +198,48 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.description").value("Test Description"))
 			.andDo(print());
 
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/key - key prefix 수정에 성공하면 OK를 응답한다")
+	void updateWorkspaceIssueKeyPrefix_shouldReturnOK() throws Exception {
+		// given
+		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("TESTPREFIX");
+
+		UpdateIssueKeyResponse response = UpdateIssueKeyResponse.builder()
+			.workspaceId(1L)
+			.workspaceCode("TESTCODE")
+			.keyPrefix("TESTPREFIX")
+			.build();
+
+		when(workspaceCommandService.updateIssueKey("TESTCODE", request))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/key", "TESTCODE")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Issue key prefix updated."))
+			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
+			.andExpect(jsonPath("$.data.keyPrefix").value("TESTPREFIX"))
+			.andDo(print());
+
+		verify(workspaceCommandService, times(1))
+			.updateIssueKey("TESTCODE", request);
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/key - key prefix 수정 요청에 영문자 외 사용하면 검증을 실패한다")
+	void updateWorkspaceIssueKeyPrefix_failsRequestValidation() throws Exception {
+		// given
+		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("잘못된접두사");
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/key", "TESTCODE")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andDo(print());
 	}
 }

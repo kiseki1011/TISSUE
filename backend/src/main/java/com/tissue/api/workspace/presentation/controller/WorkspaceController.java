@@ -11,22 +11,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
-import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -108,6 +110,20 @@ public class WorkspaceController {
 	) {
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
 		return ApiResponse.ok("Workspace found.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@PatchMapping("/{code}/key")
+	public ApiResponse<UpdateIssueKeyResponse> updateIssueKey(
+		@PathVariable String code,
+		@RequestBody @Valid UpdateIssueKeyRequest request
+	) {
+		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKey(
+			code,
+			request
+		);
+		return ApiResponse.ok("Issue key prefix updated.", response);
 	}
 
 	// @LoginRequired

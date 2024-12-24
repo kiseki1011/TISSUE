@@ -5,18 +5,20 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
+import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
+import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
 
 import lombok.RequiredArgsConstructor;
@@ -70,6 +72,18 @@ public class WorkspaceCommandService {
 		workspaceRepository.delete(workspace);
 
 		return DeleteWorkspaceResponse.from(workspace);
+	}
+
+	@Transactional
+	public UpdateIssueKeyResponse updateIssueKey(
+		String code,
+		UpdateIssueKeyRequest request
+	) {
+		Workspace workspace = findWorkspaceByCode(code);
+
+		workspace.updateKeyPrefix(request.issueKeyPrefix());
+
+		return UpdateIssueKeyResponse.from(workspace);
 	}
 
 	private Workspace findWorkspaceByCode(String code) {

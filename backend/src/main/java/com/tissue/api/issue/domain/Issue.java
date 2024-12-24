@@ -9,9 +9,9 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -39,13 +39,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Issue extends BaseEntity {
 
+	@OneToMany(mappedBy = "parentIssue")
+	private final List<Issue> childIssues = new ArrayList<>();
 	/**
 	 * Todo
-	 *  - 이슈 마다 코드를 부여하자
-	 *    - 순서대로 증가
-	 *    - 워크스페이스 마다 고유
-	 *    - 예시: EPIC-3, STORY-333, TASK-456, BUG-77, SUBTASK-1004
-	 *    - 예시: ADMIN이상이 정하는 경우 -> TISSUE-1234
 	 *  - dueDate가 null인 경우의 처리가 필요
 	 * 	  - 예시: null이면 1주일 후의 날짜를 dueDate로 설정(생성자에서)
 	 *  - parentIssue 추가하는 경우 해당 parentIssue에는 현재의 이슈가 childIssue로 추가
@@ -56,6 +53,16 @@ public abstract class Issue extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	/**
+	 * Todo
+	 *  - 이슈 키를 위해서 VO(@Embeddeble) 사용 고려
+	 *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
+	 *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
+	 *  Workspace에 Optimistic locking을 적용한다
+	 */
+	@Column(nullable = false, unique = true)
+	private String issueKey;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", insertable = false, updatable = false)
@@ -89,15 +96,11 @@ public abstract class Issue extends BaseEntity {
 
 	private LocalDateTime startedAt;
 	private LocalDateTime finishedAt;
-
 	private LocalDate dueDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
-
-	@OneToMany(mappedBy = "parentIssue")
-	private List<Issue> childIssues = new ArrayList<>();
 
 	protected Issue(
 		Workspace workspace,
@@ -108,6 +111,9 @@ public abstract class Issue extends BaseEntity {
 		IssuePriority priority,
 		LocalDate dueDate
 	) {
+		this.issueKey = workspace.getIssueKey();
+		workspace.increaseNextIssueNumber();
+
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		workspace.getIssues().add(this);
@@ -121,6 +127,12 @@ public abstract class Issue extends BaseEntity {
 		this.dueDate = dueDate;
 	}
 
+	/**
+	 * Todo
+	 *  - 상태 업데이트는 도메인 이벤트(Domain Event) 발행으로 구현하는 것을 고려
+	 *  - 상태 변경과 관련된 부가 작업들(알림 발송, 감사 로그 기록 등)을
+	 *  이벤트 핸들러에서 처리할 수 있어 확장성이 좋아짐
+	 */
 	public void updateStatus(IssueStatus newStatus) {
 		validateStatusTransition(newStatus);
 		this.status = newStatus;
@@ -149,6 +161,11 @@ public abstract class Issue extends BaseEntity {
 		parentIssue.getChildIssues().add(this);
 	}
 
+	/**
+	 * Todo
+	 *  - 상태 패턴(State, State Machine Pattern)의 사용 고려
+	 *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
+	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		if (this.status == IssueStatus.IN_REVIEW) {
 			throw new UpdateIssueInReviewStatusException();
