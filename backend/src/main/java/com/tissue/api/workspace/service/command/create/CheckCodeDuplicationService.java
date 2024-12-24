@@ -7,17 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
+import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,13 +59,15 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 
-		setUniqueWorkspaceCode(request);
-		setEncodedPasswordIfPresent(request);
+		Workspace workspace = CreateWorkspaceRequest.to(request);
+		setUniqueWorkspaceCode(workspace);
+		setEncodedPasswordIfPresent(request, workspace);
+		setKeyPrefix(request, workspace);
+		
+		Workspace savedWorkspace = workspaceRepository.save(workspace);
+		addOwnerMemberToWorkspace(member, savedWorkspace);
 
-		Workspace workspace = workspaceRepository.save(CreateWorkspaceRequest.to(request));
-		addOwnerMemberToWorkspace(member, workspace);
-
-		return CreateWorkspaceResponse.from(workspace);
+		return CreateWorkspaceResponse.from(savedWorkspace);
 	}
 
 	private Optional<String> generateUniqueWorkspaceCode() {
@@ -80,17 +82,21 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return Optional.empty();
 	}
 
-	private void setUniqueWorkspaceCode(CreateWorkspaceRequest createWorkspaceRequest) {
-		String code = generateUniqueWorkspaceCode()
-			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
-		createWorkspaceRequest.setCode(code);
+	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
+		workspace.updateKeyPrefix(request.keyPrefix());
 	}
 
-	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request) {
-		String encodedPassword = Optional.ofNullable(request.getPassword())
+	private void setUniqueWorkspaceCode(Workspace workspace) {
+		String code = generateUniqueWorkspaceCode()
+			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
+		workspace.setCode(code);
+	}
+
+	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request, Workspace workspace) {
+		String encodedPassword = Optional.ofNullable(request.password())
 			.map(passwordEncoder::encode)
 			.orElse(null);
-		request.setPassword(encodedPassword);
+		workspace.updatePassword(encodedPassword);
 	}
 
 	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
