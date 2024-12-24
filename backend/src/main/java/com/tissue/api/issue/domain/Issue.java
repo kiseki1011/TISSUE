@@ -54,6 +54,13 @@ public abstract class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	/**
+	 * Todo
+	 *  - 이슈 키를 위해서 VO(@Embeddeble) 사용 고려
+	 *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
+	 *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
+	 *  Workspace에 Optimistic locking을 적용한다
+	 */
 	@Column(nullable = false, unique = true)
 	private String issueKey;
 
@@ -120,6 +127,12 @@ public abstract class Issue extends BaseEntity {
 		this.dueDate = dueDate;
 	}
 
+	/**
+	 * Todo
+	 *  - 상태 업데이트는 도메인 이벤트(Domain Event) 발행으로 구현하는 것을 고려
+	 *  - 상태 변경과 관련된 부가 작업들(알림 발송, 감사 로그 기록 등)을
+	 *  이벤트 핸들러에서 처리할 수 있어 확장성이 좋아짐
+	 */
 	public void updateStatus(IssueStatus newStatus) {
 		validateStatusTransition(newStatus);
 		this.status = newStatus;
@@ -148,6 +161,11 @@ public abstract class Issue extends BaseEntity {
 		parentIssue.getChildIssues().add(this);
 	}
 
+	/**
+	 * Todo
+	 *  - 상태 패턴(State, State Machine Pattern)의 사용 고려
+	 *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
+	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		if (this.status == IssueStatus.IN_REVIEW) {
 			throw new UpdateIssueInReviewStatusException();
