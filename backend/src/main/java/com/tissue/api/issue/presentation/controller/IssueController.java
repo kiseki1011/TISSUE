@@ -12,9 +12,9 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
+import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -83,12 +83,10 @@ public class IssueController {
 		@PathVariable String code,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-
 		CreateIssueResponse response = issueCommandService.createIssue(
 			code,
 			request
 		);
-
 		return ApiResponse.ok(response.getType() + " issue created.", response);
 	}
 }

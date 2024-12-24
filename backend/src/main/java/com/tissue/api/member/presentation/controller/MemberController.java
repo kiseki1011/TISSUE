@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
@@ -21,12 +19,14 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordReques
 import com.tissue.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
+import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberNameResponse;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
 
@@ -76,7 +76,10 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberQueryService.validatePasswordForUpdate(request, loginMemberId);
+		memberQueryService.validatePasswordForUpdate(
+			request,
+			loginMemberId
+		);
 		sessionManager.createUpdatePermission(session);
 
 		return ApiResponse.okWithNoContent("Update permission granted.");
@@ -88,7 +91,10 @@ public class MemberController {
 		@RequestBody @Valid UpdateMemberInfoRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, loginMemberId);
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(
+			request,
+			loginMemberId
+		);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
@@ -99,7 +105,10 @@ public class MemberController {
 		@RequestBody @Valid UpdateMemberNameRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateMemberNameResponse response = memberCommandService.updateName(request, loginMemberId);
+		UpdateMemberNameResponse response = memberCommandService.updateName(
+			request,
+			loginMemberId
+		);
 
 		return ApiResponse.ok("Member name updated.", response);
 	}
@@ -112,8 +121,14 @@ public class MemberController {
 		HttpSession session
 	) {
 		sessionValidator.validateUpdatePermission(session);
-		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
-		sessionManager.updateSessionEmail(session, request.getNewEmail());
+		UpdateMemberEmailResponse response = memberCommandService.updateEmail(
+			request,
+			loginMemberId
+		);
+		sessionManager.updateSessionEmail(
+			session,
+			request.getNewEmail()
+		);
 
 		return ApiResponse.ok("Member email updated.", response);
 	}

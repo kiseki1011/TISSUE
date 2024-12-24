@@ -2,11 +2,11 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
-import com.tissue.api.issue.exception.EpicCannotHaveParentException;
-import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.exception.EpicCannotHaveParentException;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;

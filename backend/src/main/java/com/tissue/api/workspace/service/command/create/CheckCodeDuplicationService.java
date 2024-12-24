@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class CheckCodeDuplicationService implements WorkspaceCreateService {
-
 	private static final int MAX_RETRIES = 5;
 
 	private final WorkspaceRepository workspaceRepository;
@@ -63,7 +62,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		setUniqueWorkspaceCode(workspace);
 		setEncodedPasswordIfPresent(request, workspace);
 		setKeyPrefix(request, workspace);
-		
+
 		Workspace savedWorkspace = workspaceRepository.save(workspace);
 		addOwnerMemberToWorkspace(member, savedWorkspace);
 

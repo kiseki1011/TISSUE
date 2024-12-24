@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
-import com.tissue.api.security.authentication.service.AuthenticationService;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.api.security.authentication.service.AuthenticationService;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,5 +46,4 @@ public class AuthenticationController {
 
 		return ApiResponse.okWithNoContent("Logout successful.");
 	}
-
 }
