@@ -5,8 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
@@ -14,6 +12,8 @@ import com.tissue.api.invitation.exception.InvitationNotFoundException;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.tissue.api.invitation.validator.InvitationValidator;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

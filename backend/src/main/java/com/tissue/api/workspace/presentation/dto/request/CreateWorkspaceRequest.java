@@ -17,16 +17,15 @@ public record CreateWorkspaceRequest(
 	@NotBlank(message = "Workspace description must not be blank")
 	String description,
 
-	@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
+	@Pattern(regexp = "^(?!.*[가-힣])(?=.*\\d)(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,30}",
 		message = "The password must be alphanumeric"
 			+ " including at least one special character and must be between 8 and 30 characters")
 	String password,
-	
+
 	@Pattern(regexp = "^[a-zA-Z]+$", message = "Must contain only alphabetic characters.")
 	@Size(min = 3, max = 16, message = "A issue key must between 3 ~ 16 characters long.")
 	String keyPrefix
 ) {
-
 	public static Workspace to(CreateWorkspaceRequest request) {
 		return Workspace.builder()
 			.name(request.name)

@@ -8,19 +8,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
-import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +53,7 @@ public class WorkspaceMembershipController {
 			code,
 			request
 		);
+
 		return ApiResponse.ok("Members invited", response);
 	}
 
@@ -71,6 +72,7 @@ public class WorkspaceMembershipController {
 			loginMemberId,
 			request
 		);
+
 		return ApiResponse.ok("Member's role for this workspace was updated", response);
 	}
 
@@ -87,6 +89,7 @@ public class WorkspaceMembershipController {
 			memberId,
 			loginMemberId
 		);
+
 		return ApiResponse.ok("The ownership was successfully transfered", response);
 	}
 
@@ -103,6 +106,7 @@ public class WorkspaceMembershipController {
 			memberId,
 			loginMemberId
 		);
+
 		return ApiResponse.ok("Member was removed from this workspace", response);
 	}
 }

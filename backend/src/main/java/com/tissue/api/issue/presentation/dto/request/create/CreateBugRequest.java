@@ -3,13 +3,13 @@ package com.tissue.api.issue.presentation.dto.request.create;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
 

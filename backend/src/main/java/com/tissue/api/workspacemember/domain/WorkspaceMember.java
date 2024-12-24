@@ -3,9 +3,9 @@ package com.tissue.api.workspacemember.domain;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

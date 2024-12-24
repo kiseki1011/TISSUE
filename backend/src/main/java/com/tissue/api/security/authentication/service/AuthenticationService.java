@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.validator.MemberValidator;
-import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.exception.InvalidLoginIdentityException;
+import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 
 import lombok.RequiredArgsConstructor;

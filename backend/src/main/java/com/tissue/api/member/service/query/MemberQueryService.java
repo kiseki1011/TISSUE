@@ -5,10 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
 import com.tissue.api.member.validator.MemberValidator;
-import com.tissue.api.member.exception.MemberNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 

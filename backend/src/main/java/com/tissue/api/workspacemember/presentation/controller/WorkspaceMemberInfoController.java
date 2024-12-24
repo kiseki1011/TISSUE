@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +63,7 @@ public class WorkspaceMemberInfoController {
 			loginMemberId,
 			request
 		);
+
 		return ApiResponse.ok("Nickname updated.", response);
 	}
 
@@ -79,6 +80,7 @@ public class WorkspaceMemberInfoController {
 			positionId,
 			loginMemberId
 		);
+
 		return ApiResponse.ok("Position assigned to member.", response);
 	}
 
@@ -93,6 +95,7 @@ public class WorkspaceMemberInfoController {
 			code,
 			loginMemberId
 		);
+
 		return ApiResponse.okWithNoContent("Position removed from member.");
 	}
 
@@ -109,6 +112,7 @@ public class WorkspaceMemberInfoController {
 			positionId,
 			memberId
 		);
+
 		return ApiResponse.ok("Position assigned to member.", response);
 	}
 
@@ -123,6 +127,7 @@ public class WorkspaceMemberInfoController {
 			code,
 			memberId
 		);
+
 		return ApiResponse.okWithNoContent("Position removed from member.");
 	}
 }

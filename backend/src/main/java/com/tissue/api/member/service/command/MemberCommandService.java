@@ -5,20 +5,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.validator.MemberValidator;
-import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberNameResponse;
+import com.tissue.api.member.validator.MemberValidator;
+import com.tissue.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -111,8 +111,10 @@ public class MemberCommandService {
 		memberRepository.delete(member);
 	}
 
-	private void updateMemberInfoIfPresent(UpdateMemberInfoRequest request, Member member) {
-
+	private void updateMemberInfoIfPresent(
+		UpdateMemberInfoRequest request,
+		Member member
+	) {
 		if (request.hasBirthDate()) {
 			member.updateBirthDate(request.getBirthDate());
 		}
