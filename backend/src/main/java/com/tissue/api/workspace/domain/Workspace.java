@@ -128,6 +128,14 @@ public class Workspace extends BaseEntity {
 		this.description = description;
 	}
 
+	public String getIssueKey() {
+		return keyPrefix + "-" + nextIssueNumber;
+	}
+
+	public void increaseNextIssueNumber() {
+		this.nextIssueNumber++;
+	}
+
 	public void increaseMemberCount() {
 		validateMemberLimit();
 		this.memberCount++;

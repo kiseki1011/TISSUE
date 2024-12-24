@@ -43,11 +43,6 @@ public abstract class Issue extends BaseEntity {
 	private final List<Issue> childIssues = new ArrayList<>();
 	/**
 	 * Todo
-	 *  - 이슈 마다 코드를 부여하자
-	 *    - 순서대로 증가
-	 *    - 워크스페이스 마다 고유
-	 *    - 예시: EPIC-3, STORY-333, TASK-456, BUG-77, SUBTASK-1004
-	 *    - 예시: ADMIN이상이 정하는 경우 -> TISSUE-1234
 	 *  - dueDate가 null인 경우의 처리가 필요
 	 * 	  - 예시: null이면 1주일 후의 날짜를 dueDate로 설정(생성자에서)
 	 *  - parentIssue 추가하는 경우 해당 parentIssue에는 현재의 이슈가 childIssue로 추가
@@ -59,8 +54,8 @@ public abstract class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// @Column(nullable = false, unique = true)
-	// private String key;
+	@Column(nullable = false, unique = true)
+	private String issueKey;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", insertable = false, updatable = false)
@@ -109,6 +104,9 @@ public abstract class Issue extends BaseEntity {
 		IssuePriority priority,
 		LocalDate dueDate
 	) {
+		this.issueKey = workspace.getIssueKey();
+		workspace.increaseNextIssueNumber();
+
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		workspace.getIssues().add(this);
