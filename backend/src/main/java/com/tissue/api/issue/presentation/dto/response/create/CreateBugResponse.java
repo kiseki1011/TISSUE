@@ -17,6 +17,7 @@ import lombok.Builder;
 @Builder
 public record CreateBugResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
 	Long reporterId, // Todo: workspaceMemberDetail 사용 고려, SessionAuditorAware에서 workspaceMemberId 반환하는 형태로 변경
 	String title,
@@ -32,14 +33,10 @@ public record CreateBugResponse(
 	Long parentIssueId
 ) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.BUG;
-	}
-
 	public static CreateBugResponse from(Bug bug) {
 		return CreateBugResponse.builder()
 			.issueId(bug.getId())
+			.issueKey(bug.getIssueKey())
 			.workspaceCode(bug.getWorkspaceCode())
 			.reporterId(bug.getCreatedBy())
 			.title(bug.getTitle())
@@ -56,5 +53,10 @@ public record CreateBugResponse(
 				.map(Issue::getId)
 				.orElse(null))
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.BUG;
 	}
 }

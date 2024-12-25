@@ -6,7 +6,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 public record UpdateNicknameResponse(
 	Long workspaceMemberId,
-	String nickname,
+	String updatedNickname,
 	LocalDateTime updatedAt
 ) {
 	public static UpdateNicknameResponse from(WorkspaceMember workspaceMember) {

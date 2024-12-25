@@ -52,7 +52,7 @@ public class WorkspaceParticipationCommandService {
 			throw new AlreadyJoinedWorkspaceException();
 		}
 
-		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
+		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.password());
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
 		workspaceMemberRepository.save(workspaceMember);

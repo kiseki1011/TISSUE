@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 
+import lombok.Builder;
+
+@Builder
 public record InvitationResponse(
 	Long invitationId,
 	String workspaceCode,
@@ -13,12 +16,12 @@ public record InvitationResponse(
 	LocalDateTime invitedAt
 ) {
 	public static InvitationResponse from(Invitation invitation) {
-		return new InvitationResponse(
-			invitation.getId(),
-			invitation.getWorkspaceCode(),
-			invitation.getCreatedBy(),
-			invitation.getStatus(),
-			invitation.getCreatedDate()
-		);
+		return InvitationResponse.builder()
+			.invitationId(invitation.getId())
+			.workspaceCode(invitation.getWorkspaceCode())
+			.invitedBy(invitation.getCreatedBy())
+			.status(invitation.getStatus())
+			.invitedAt(invitation.getCreatedDate())
+			.build();
 	}
 }

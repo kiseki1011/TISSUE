@@ -11,6 +11,7 @@ import lombok.Builder;
 @Builder
 public record CreateEpicResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
 	Long reporterId,
 	String title,
@@ -24,14 +25,10 @@ public record CreateEpicResponse(
 	Long parentIssueId
 ) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.EPIC;
-	}
-
 	public static CreateEpicResponse from(Epic epic) {
 		return CreateEpicResponse.builder()
 			.issueId(epic.getId())
+			.issueKey(epic.getIssueKey())
 			.workspaceCode(epic.getWorkspaceCode())
 			.reporterId(epic.getCreatedBy())
 			.title(epic.getTitle())
@@ -44,5 +41,10 @@ public record CreateEpicResponse(
 			.hardDeadLine(epic.getHardDeadLine())
 			.parentIssueId(epic.getParentIssue().getId())
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.EPIC;
 	}
 }

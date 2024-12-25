@@ -48,13 +48,15 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
 	}
 
+	/**
+	 * Todo
+	 *  - API 설계 개선 필요(리소스 접근 방법 변경)
+	 *  - /workspaces/{code}/members/{memberId} -> /workspaces/{code}/members/{workspaceMemberId}
+	 */
+
 	@Test
 	@DisplayName("DELETE /workspaces/{code}/members/{memberId} - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
-		// Session 모킹
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		// given
 		String workspaceCode = "TESTCODE";
 
@@ -63,18 +65,16 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture
 			.createCollaboratorWorkspaceMember(member, workspace);
 
-		RemoveWorkspaceMemberResponse response = RemoveWorkspaceMemberResponse.from(2L, workspaceMember);
+		RemoveWorkspaceMemberResponse response = RemoveWorkspaceMemberResponse.from(workspaceMember);
 
 		when(workspaceMemberCommandService.removeWorkspaceMember(eq(workspaceCode), eq(2L), anyLong()))
 			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/{memberId}", workspaceCode, 2L)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member was removed from this workspace"))
-			.andExpect(jsonPath("$.data.memberId").value(2L))
 			.andDo(print());
 
 	}
@@ -115,7 +115,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(new UpdateNicknameRequest("newNickname"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Nickname updated."))
-			.andExpect(jsonPath("$.data.nickname").value("newNickname"))
+			.andExpect(jsonPath("$.data.updatedNickname").value("newNickname"))
 			.andDo(print());
 	}
 
@@ -197,7 +197,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
-			.andExpect(jsonPath("$.data.role").value("MANAGER"))
+			.andExpect(jsonPath("$.data.updatedRole").value("MANAGER"))
 			.andDo(print());
 	}
 
