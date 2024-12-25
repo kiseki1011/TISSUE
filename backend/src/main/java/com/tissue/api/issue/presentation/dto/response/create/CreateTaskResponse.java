@@ -14,6 +14,7 @@ import lombok.Builder;
 @Builder
 public record CreateTaskResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
 	Long reporterId,
 	String title,
@@ -25,14 +26,10 @@ public record CreateTaskResponse(
 	Long parentIssueId
 ) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.TASK;
-	}
-
 	public static CreateTaskResponse from(Task task) {
 		return CreateTaskResponse.builder()
 			.issueId(task.getId())
+			.issueKey(task.getIssueKey())
 			.workspaceCode(task.getWorkspaceCode())
 			.reporterId(task.getCreatedBy())
 			.title(task.getTitle())
@@ -45,5 +42,10 @@ public record CreateTaskResponse(
 				.map(Issue::getId)
 				.orElse(null))
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.TASK;
 	}
 }

@@ -50,8 +50,8 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		);
 
 		// member1은 workspace1,2에 참여
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(), 1L);
-		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(null), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(null), 1L);
 	}
 
 	@AfterEach
@@ -87,7 +87,7 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 
 		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
-			new JoinWorkspaceRequest(),
+			new JoinWorkspaceRequest(null),
 			2L
 		);
 

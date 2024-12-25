@@ -33,7 +33,7 @@ public class WorkspaceMemberInviteService {
 			.orElseThrow(WorkspaceNotFoundException::new);
 
 		// 1. 초대 가능한 멤버 필터링
-		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.getMemberIdentifiers());
+		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.memberIdentifiers());
 
 		// 2. 초대장 생성 및 초대된 멤버 정보 수집
 		List<InviteMembersResponse.InvitedMember> invitedMembers = membersToInvite.stream()

@@ -42,7 +42,7 @@ public class WorkspaceMemberCommandService {
 		try {
 			WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
 
-			workspaceMember.updateNickname(request.getNickname());
+			workspaceMember.updateNickname(request.nickname());
 			workspaceMemberRepository.saveAndFlush(workspaceMember);
 
 			return UpdateNicknameResponse.from(workspaceMember);
@@ -65,7 +65,7 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
-		target.updateRole(request.getUpdateWorkspaceRole());
+		target.updateRole(request.updateWorkspaceRole());
 
 		return UpdateRoleResponse.from(target);
 	}
@@ -122,7 +122,7 @@ public class WorkspaceMemberCommandService {
 		target.remove();
 		workspaceMemberRepository.delete(target);
 
-		return RemoveWorkspaceMemberResponse.from(targetId, target);
+		return RemoveWorkspaceMemberResponse.from(target);
 	}
 
 	private WorkspaceMember findWorkspaceMember(String code, Long memberId) {

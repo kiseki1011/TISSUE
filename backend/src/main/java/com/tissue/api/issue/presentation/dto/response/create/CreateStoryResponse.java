@@ -14,6 +14,7 @@ import lombok.Builder;
 @Builder
 public record CreateStoryResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
 	Long reporterId,
 	String title,
@@ -27,14 +28,10 @@ public record CreateStoryResponse(
 	Long parentIssueId
 ) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.STORY;
-	}
-
 	public static CreateStoryResponse from(Story story) {
 		return CreateStoryResponse.builder()
 			.issueId(story.getId())
+			.issueKey(story.getIssueKey())
 			.workspaceCode(story.getWorkspaceCode())
 			.reporterId(story.getCreatedBy())
 			.title(story.getTitle())
@@ -49,5 +46,10 @@ public record CreateStoryResponse(
 				.map(Issue::getId)
 				.orElse(null))
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.STORY;
 	}
 }

@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import com.tissue.api.common.ColorType;
 import com.tissue.api.position.domain.Position;
 
+import lombok.Builder;
+
+@Builder
 public record PositionDetail(
 	Long positionId,
 	String name,
@@ -14,13 +17,13 @@ public record PositionDetail(
 	LocalDateTime updatedAt
 ) {
 	public static PositionDetail from(Position position) {
-		return new PositionDetail(
-			position.getId(),
-			position.getName(),
-			position.getDescription(),
-			position.getColor(),
-			position.getCreatedDate(),
-			position.getLastModifiedDate()
-		);
+		return PositionDetail.builder()
+			.positionId(position.getId())
+			.name(position.getName())
+			.description(position.getDescription())
+			.color(position.getColor())
+			.createdAt(position.getCreatedDate())
+			.updatedAt(position.getLastModifiedDate())
+			.build();
 	}
 }

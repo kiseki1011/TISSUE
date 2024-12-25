@@ -2,7 +2,6 @@ package com.tissue.api.workspacemember.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,14 +16,13 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
 import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.helper.ServiceIntegrationTestHelper;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
@@ -68,13 +66,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
 
 		// when
-		RemoveWorkspaceMemberResponse response = workspaceMemberCommandService.removeWorkspaceMember("TESTCODE",
+		workspaceMemberCommandService.removeWorkspaceMember("TESTCODE",
 			target.getId(),
 			requester.getId());
 
 		// then
-		assertThat(response.memberId()).isEqualTo(target.getId());
-		Assertions.assertThat(
+		assertThat(
 			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(target.getId(), "TESTCODE")
 		).isEmpty();
 	}
@@ -188,7 +185,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.role()).isEqualTo(WorkspaceRole.MANAGER);
+		assertThat(response.updatedRole()).isEqualTo(WorkspaceRole.MANAGER);
 	}
 
 	@Transactional
@@ -469,7 +466,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.nickname()).isEqualTo(newNickname);
+		assertThat(response.updatedNickname()).isEqualTo(newNickname);
 
 		WorkspaceMember updatedMember = workspaceMemberRepository
 			.findByMemberIdAndWorkspaceCode(tester.getId(), workspace.getCode())
@@ -558,7 +555,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.assignedPosition()).isEqualTo(position.getName());
 
 		WorkspaceMember updatedMember = workspaceMemberRepository.findById(workspaceMember.getId()).get();
-		Assertions.assertThat(updatedMember.getPosition()).isEqualTo(position);
+		assertThat(updatedMember.getPosition()).isEqualTo(position);
 	}
 
 	@Test

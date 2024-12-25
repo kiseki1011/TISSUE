@@ -98,10 +98,10 @@ public class WorkspaceCommandService {
 
 	private void updateWorkspaceInfoIfPresent(UpdateWorkspaceInfoRequest request, Workspace workspace) {
 		if (request.hasName()) {
-			workspace.updateName(request.getName());
+			workspace.updateName(request.name());
 		}
 		if (request.hasDescription()) {
-			workspace.updateDescription(request.getDescription());
+			workspace.updateDescription(request.description());
 		}
 	}
 
