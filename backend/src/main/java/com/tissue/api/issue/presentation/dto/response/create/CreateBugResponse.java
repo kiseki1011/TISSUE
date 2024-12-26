@@ -38,7 +38,7 @@ public record CreateBugResponse(
 			.issueId(bug.getId())
 			.issueKey(bug.getIssueKey())
 			.workspaceCode(bug.getWorkspaceCode())
-			.reporterId(bug.getCreatedBy())
+			.reporterId(bug.getCreatedByWorkspaceMember())
 			.title(bug.getTitle())
 			.content(bug.getContent())
 			.summary(bug.getSummary())

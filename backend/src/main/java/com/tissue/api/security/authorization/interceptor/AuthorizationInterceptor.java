@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class AuthorizationInterceptor implements HandlerInterceptor {
+	public static final String CURRENT_WORKSPACE_MEMBER_ID = "currentWorkspaceMemberId";
 	private static final String WORKSPACE_PREFIX = "/api/v1/workspaces/";
 	private static final int WORKSPACE_PREFIX_LENGTH = 19;
 
@@ -35,8 +36,16 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
+	private static boolean isNotHandlerMethod(Object handler) {
+		return !(handler instanceof HandlerMethod);
+	}
+
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+	public boolean preHandle(
+		HttpServletRequest request,
+		HttpServletResponse response,
+		Object handler
+	) {
 
 		if (isNotHandlerMethod(handler)) {
 			return true;
@@ -64,11 +73,9 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
 		validateRole(workspaceMember, roleRequired);
 
-		return true;
-	}
+		request.setAttribute(CURRENT_WORKSPACE_MEMBER_ID, workspaceMember.getId());
 
-	private static boolean isNotHandlerMethod(Object handler) {
-		return !(handler instanceof HandlerMethod);
+		return true;
 	}
 
 	private Optional<RoleRequired> getRoleRequired(Object handler) {
@@ -76,25 +83,13 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
 	}
 
-	private void validateRole(WorkspaceMember workspaceMember, RoleRequired roleRequired) {
+	private void validateRole(
+		WorkspaceMember workspaceMember,
+		RoleRequired roleRequired
+	) {
 		if (isAccessDenied(workspaceMember.getRole(), roleRequired.roles())) {
 			throw new InsufficientWorkspaceRoleException();
 		}
-	}
-
-	/**
-	 * 권한에 integer level을 부여해서 부등호 형식으로 비교한다
-	 * 권한 수준: OWNER(4) > MANAGER(3) > COLLABORATOR(2) > VIEWER(1)
-	 *
-	 * @param userRole      - 사용자의 권한
-	 * @param requiredRoles - 권한 리스트
-	 * @return boolean - 접근 거부 여부(예시: 권한이 부족한 true 반환)
-	 */
-	private boolean isAccessDenied(WorkspaceRole userRole, WorkspaceRole[] requiredRoles) {
-		int userRoleLevel = userRole.getLevel();
-		return Arrays.stream(requiredRoles)
-			.map(WorkspaceRole::getLevel)
-			.noneMatch(requiredRoleLevel -> userRoleLevel >= requiredRoleLevel);
 	}
 
 	/**
@@ -103,6 +98,10 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	 *
 	 * @param uri - 현재 HTTP 요청의 URI
 	 * @return String - URI에서 추출된 워크스페이스 코드
+	 * <br>
+	 * Todo
+	 *  - 유틸 클래스로 분리, 테스트 목적으로 public으로 여는 설계는 피하자
+	 *  - extractWorkspaceCodeFromUri가 현재 클래스의 책임인지 고민해보자
 	 */
 	public String extractWorkspaceCodeFromUri(String uri) {
 		return Optional.of(uri.indexOf(WORKSPACE_PREFIX))
@@ -116,6 +115,24 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 			})
 			.filter(this::isNotEmpty)
 			.orElseThrow(InvalidWorkspaceCodeInUriException::new);
+	}
+
+	/**
+	 * 권한에 integer level을 부여해서 부등호 형식으로 비교한다
+	 * 권한 수준: OWNER(4) > MANAGER(3) > COLLABORATOR(2) > VIEWER(1)
+	 *
+	 * @param userRole      - 사용자의 권한
+	 * @param requiredRoles - 권한 리스트
+	 * @return boolean - 접근 거부 여부(예시: 권한이 부족한 true 반환)
+	 */
+	private boolean isAccessDenied(
+		WorkspaceRole userRole,
+		WorkspaceRole[] requiredRoles
+	) {
+		int userRoleLevel = userRole.getLevel();
+		return Arrays.stream(requiredRoles)
+			.map(WorkspaceRole::getLevel)
+			.noneMatch(requiredRoleLevel -> userRoleLevel >= requiredRoleLevel);
 	}
 
 	private boolean isNotEmpty(String code) {

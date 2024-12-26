@@ -31,7 +31,7 @@ public record CreateSubTaskResponse(
 			.issueId(subTask.getId())
 			.issueKey(subTask.getIssueKey())
 			.workspaceCode(subTask.getWorkspaceCode())
-			.reporterId(subTask.getCreatedBy())
+			.reporterId(subTask.getCreatedByWorkspaceMember())
 			.title(subTask.getTitle())
 			.content(subTask.getContent())
 			.summary(subTask.getSummary())

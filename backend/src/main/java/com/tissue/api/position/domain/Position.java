@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.ColorType;
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -29,13 +29,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(
-		name = "UK_WORKSPACE_POSITION_NAME",
-		columnNames = {"workspace_code", "name"}
-	)
+	@UniqueConstraint(name = "UK_WORKSPACE_POSITION_NAME",
+		columnNames = {"workspace_code", "name"})
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Position extends BaseEntity {
+public class Position extends WorkspaceContextBaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "POSITION_ID")

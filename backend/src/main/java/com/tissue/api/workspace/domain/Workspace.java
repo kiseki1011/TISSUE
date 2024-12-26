@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.ColorType;
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.WorkspaceBaseEntity;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Workspace extends BaseEntity {
+public class Workspace extends WorkspaceBaseEntity {
 
 	// Todo: 추후 낙관적 락 적용
 	// @Version
@@ -113,7 +113,6 @@ public class Workspace extends BaseEntity {
 	}
 
 	public void updateKeyPrefix(String keyPrefix) {
-		// TODO: 굳이 null 검증이 필요한가? 이미 요청 DTO에서 null이 아닌 값이 들어온다는 것은 보장됨
 		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
