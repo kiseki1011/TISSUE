@@ -17,6 +17,7 @@ import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
@@ -49,6 +50,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected DatabaseCleaner databaseCleaner;
 	@Autowired
 	protected PasswordEncoder passwordEncoder;
+	@Autowired
+	protected WorkspaceCodeParser workspaceCodeParser;
 	@Autowired
 	protected EntityManager entityManager;
 
