@@ -1,12 +1,10 @@
-package com.tissue.api.workspace.util;
+package com.tissue.api.util;
 
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import com.tissue.api.util.WorkspaceCodeGenerator;
 
 class WorkspaceCodeGeneratorTest {
 
