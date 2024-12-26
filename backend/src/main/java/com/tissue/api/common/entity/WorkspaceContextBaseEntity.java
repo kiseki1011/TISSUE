@@ -20,8 +20,4 @@ public class WorkspaceContextBaseEntity extends BaseDateEntity {
 
 	@LastModifiedBy
 	private Long lastModifiedByWorkspaceMember;
-
-	public void setCreatedByWorkspaceMember(Long createdByWorkspaceMember) {
-		this.createdByWorkspaceMember = createdByWorkspaceMember;
-	}
 }
