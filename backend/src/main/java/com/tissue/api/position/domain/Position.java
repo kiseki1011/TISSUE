@@ -29,10 +29,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(
-		name = "UK_WORKSPACE_POSITION_NAME",
-		columnNames = {"workspace_code", "name"}
-	)
+	@UniqueConstraint(name = "UK_WORKSPACE_POSITION_NAME",
+		columnNames = {"workspace_code", "name"})
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Position extends WorkspaceContextBaseEntity {
