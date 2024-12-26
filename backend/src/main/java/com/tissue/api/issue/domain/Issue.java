@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -37,7 +37,7 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Issue extends BaseEntity {
+public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();

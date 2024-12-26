@@ -17,10 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 public class AuthenticationInterceptor implements HandlerInterceptor {
+
 	private final SessionValidator sessionValidator;
 
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+	public boolean preHandle(
+		HttpServletRequest request,
+		HttpServletResponse response,
+		Object handler
+	) {
 		if (isNotHandlerMethod(handler)) {
 			return true;
 		}

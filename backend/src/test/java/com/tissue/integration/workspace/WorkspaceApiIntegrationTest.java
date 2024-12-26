@@ -110,11 +110,11 @@ class WorkspaceApiIntegrationTest extends RestAssuredTestHelper {
 			.statusCode(HttpStatus.CREATED.value())
 			.extract().response();
 
-		Workspace workspace = workspaceRepository.findById(1L).get();
-		Member member = memberRepository.findByLoginId("user123").get();
+		Workspace workspace = workspaceRepository.findById(1L).orElseThrow();
+		Member member = memberRepository.findByLoginId("user123").orElseThrow();
 
 		// then
-		assertThat(workspace.getCreatedBy()).isEqualTo(member.getId());
+		assertThat(workspace.getCreatedByMember()).isEqualTo(member.getId());
 	}
 
 	@Test

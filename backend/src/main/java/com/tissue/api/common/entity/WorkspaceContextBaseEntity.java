@@ -12,12 +12,16 @@ import lombok.Getter;
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseEntity extends BaseDateEntity {
+public class WorkspaceContextBaseEntity extends BaseDateEntity {
 
 	@CreatedBy
 	@Column(updatable = false)
-	private Long createdBy;
+	private Long createdByWorkspaceMember;
 
 	@LastModifiedBy
-	private Long lastModifiedBy;
+	private Long lastModifiedByWorkspaceMember;
+
+	public void setCreatedByWorkspaceMember(Long createdByWorkspaceMember) {
+		this.createdByWorkspaceMember = createdByWorkspaceMember;
+	}
 }

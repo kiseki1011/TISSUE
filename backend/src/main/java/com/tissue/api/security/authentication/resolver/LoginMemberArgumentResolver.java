@@ -42,8 +42,12 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	 * @return LoginMemberDto
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-		NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+	public Object resolveArgument(
+		MethodParameter parameter,
+		ModelAndViewContainer mavContainer,
+		NativeWebRequest webRequest,
+		WebDataBinderFactory binderFactory
+	) {
 
 		HttpSession session = sessionManager.getSession(webRequest);
 		return sessionManager.getLoginMemberId(session)

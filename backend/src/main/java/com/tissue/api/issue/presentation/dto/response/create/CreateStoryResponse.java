@@ -33,7 +33,7 @@ public record CreateStoryResponse(
 			.issueId(story.getId())
 			.issueKey(story.getIssueKey())
 			.workspaceCode(story.getWorkspaceCode())
-			.reporterId(story.getCreatedBy())
+			.reporterId(story.getCreatedByWorkspaceMember())
 			.title(story.getTitle())
 			.content(story.getContent())
 			.summary(story.getSummary())

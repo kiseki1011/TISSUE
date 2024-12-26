@@ -31,7 +31,7 @@ public record CreateTaskResponse(
 			.issueId(task.getId())
 			.issueKey(task.getIssueKey())
 			.workspaceCode(task.getWorkspaceCode())
-			.reporterId(task.getCreatedBy())
+			.reporterId(task.getCreatedByWorkspaceMember())
 			.title(task.getTitle())
 			.content(task.getContent())
 			.summary(task.getSummary())
