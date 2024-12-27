@@ -8,14 +8,19 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.tissue.mock.MockAuthorizationInterceptor;
-import com.tissue.mock.MockLoginMemberArgumentResolver;
 import com.tissue.mock.MockAuthenticationInterceptor;
+import com.tissue.mock.MockAuthorizationInterceptor;
+import com.tissue.mock.MockCurrentWorkspaceMemberArgumentResolver;
+import com.tissue.mock.MockLoginMemberArgumentResolver;
 
 @TestConfiguration
 public class WebMvcTestConfig implements WebMvcConfigurer {
+
 	@Value("${test.member.id:1}")
-	private Long id;
+	private Long memberId;
+
+	@Value("${test.workspaceMember.id:1}")
+	private Long workspaceMemberId;
 
 	@Value("${test.member.loginId:member1}")
 	private String loginId;
@@ -29,12 +34,15 @@ public class WebMvcTestConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.add(new MockLoginMemberArgumentResolver(id));
+		resolvers.add(new MockLoginMemberArgumentResolver(memberId));
+		resolvers.add(new MockCurrentWorkspaceMemberArgumentResolver(workspaceMemberId));
 	}
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new MockAuthorizationInterceptor(hasSufficientRole));
-		registry.addInterceptor(new MockAuthenticationInterceptor(isLogin));
+		registry.addInterceptor(new MockAuthenticationInterceptor(isLogin))
+			.order(1);
+		registry.addInterceptor(new MockAuthorizationInterceptor(hasSufficientRole))
+			.order(2);
 	}
 }

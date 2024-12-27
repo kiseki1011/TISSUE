@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
+
 	private final SessionManager sessionManager;
 
 	/**
@@ -55,12 +56,10 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	}
 
 	private boolean hasResolveLoginMemberAnnotation(MethodParameter parameter) {
-
 		return parameter.hasParameterAnnotation(ResolveLoginMember.class);
 	}
 
 	private boolean isLongType(MethodParameter parameter) {
-
 		return parameter.getParameterType().equals(Long.class);
 	}
 }

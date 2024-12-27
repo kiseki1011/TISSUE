@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
@@ -19,6 +18,7 @@ import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersRes
 import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
@@ -59,17 +59,15 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.ADMIN})
-	@PatchMapping("/{memberId}/role")
+	@PatchMapping("/{workspaceMemberId}/role")
 	public ApiResponse<UpdateRoleResponse> updateMemberRole(
-		@PathVariable String code,
-		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId,
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid UpdateRoleRequest request
 	) {
 		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
-			code,
-			memberId,
-			loginMemberId,
+			workspaceMemberId,
+			currentWorkspaceMemberId,
 			request
 		);
 
@@ -78,16 +76,14 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.OWNER})
-	@PatchMapping("/{memberId}/ownership")
+	@PatchMapping("/{workspaceMemberId}/ownership")
 	public ApiResponse<TransferOwnershipResponse> transferWorkspaceOwnership(
-		@PathVariable String code,
-		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
-			code,
-			memberId,
-			loginMemberId
+			workspaceMemberId,
+			currentWorkspaceMemberId
 		);
 
 		return ApiResponse.ok("The ownership was successfully transfered", response);
@@ -95,16 +91,15 @@ public class WorkspaceMembershipController {
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.ADMIN})
-	@DeleteMapping("/{memberId}")
+	@DeleteMapping("/{workspaceMemberId}")
 	public ApiResponse<RemoveWorkspaceMemberResponse> removeWorkspaceMember(
 		@PathVariable String code,
-		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		RemoveWorkspaceMemberResponse response = workspaceMemberCommandService.removeWorkspaceMember(
-			code,
-			memberId,
-			loginMemberId
+			workspaceMemberId,
+			currentWorkspaceMemberId
 		);
 
 		return ApiResponse.ok("Member was removed from this workspace", response);
