@@ -13,11 +13,9 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
 
-	Page<WorkspaceMember> findByMemberId(Long id, Pageable pageable);
+	Page<WorkspaceMember> findByMemberId(Long memberId, Pageable pageable);
 
-	Optional<WorkspaceMember> findByMemberLoginIdAndWorkspaceCode(String loginId, String workspaceCode);
-
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long memberId, String workspaceCode);
 
 	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
 

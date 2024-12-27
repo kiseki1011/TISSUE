@@ -11,7 +11,7 @@ import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
-import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
+import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
@@ -35,12 +35,11 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public UpdateNicknameResponse updateNickname(
-		String code,
-		Long memberId,
+		Long workspaceMemberId,
 		UpdateNicknameRequest request
 	) {
 		try {
-			WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
+			WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
 
 			workspaceMember.updateNickname(request.nickname());
 			workspaceMemberRepository.saveAndFlush(workspaceMember);
@@ -55,13 +54,12 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public UpdateRoleResponse updateWorkspaceMemberRole(
-		String code,
 		Long targetId,
 		Long requesterId,
 		UpdateRoleRequest request
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterId);
+		WorkspaceMember target = findWorkspaceMember(targetId);
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
@@ -72,35 +70,34 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public AssignPositionResponse assignPosition(
-		String code,
 		Long positionId,
-		Long memberId
+		Long workspaceMemberId
 	) {
 		Position position = findPosition(positionId);
 
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
+		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
+
 		workspaceMember.changePosition(position);
 
 		return AssignPositionResponse.from(workspaceMember);
 	}
 
 	@Transactional
-	public void removePosition(
-		String code,
-		Long memberId
+	public void clearPosition(
+		Long workspaceMemberId
 	) {
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
+		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
+
 		workspaceMember.removePosition();
 	}
 
 	@Transactional
 	public TransferOwnershipResponse transferWorkspaceOwnership(
-		String code,
 		Long targetId,
 		Long requesterId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterId);
+		WorkspaceMember target = findWorkspaceMember(targetId);
 
 		requester.updateRoleFromOwnerToAdmin();
 		target.updateRoleToOwner();
@@ -110,12 +107,11 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public RemoveWorkspaceMemberResponse removeWorkspaceMember(
-		String code,
 		Long targetId,
 		Long requesterId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterId);
+		WorkspaceMember target = findWorkspaceMember(targetId);
 
 		workspaceMemberValidator.validateRemoveMember(requester, target);
 
@@ -125,11 +121,16 @@ public class WorkspaceMemberCommandService {
 		return RemoveWorkspaceMemberResponse.from(target);
 	}
 
-	private WorkspaceMember findWorkspaceMember(String code, Long memberId) {
-		return workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(memberId, code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
+	private WorkspaceMember findWorkspaceMember(Long workspaceMemberId) {
+		return workspaceMemberRepository.findById(workspaceMemberId)
+			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
+
+	// private WorkspaceMember findWorkspaceMember(String code, Long memberId) {
+	// 	return workspaceMemberRepository
+	// 		.findByMemberIdAndWorkspaceCode(memberId, code)
+	// 		.orElseThrow(MemberNotInWorkspaceException::new);
+	// }
 
 	private Position findPosition(Long positionId) {
 		return positionRepository
