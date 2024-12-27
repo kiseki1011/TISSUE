@@ -15,7 +15,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
 import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
-import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
+import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
@@ -51,28 +51,33 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
 		);
-		WorkspaceMember.addOwnerWorkspaceMember(requester, workspace);
 
-		Member target = memberRepositoryFixture.createAndSaveMember(
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"member2",
 			"member2@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(target, workspace, WorkspaceRole.COLLABORATOR);
+
+		WorkspaceMember target = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(targetMember, workspace,
+			WorkspaceRole.COLLABORATOR);
+		entityManager.flush();
 
 		// when
-		workspaceMemberCommandService.removeWorkspaceMember("TESTCODE",
+		workspaceMemberCommandService.removeWorkspaceMember(
 			target.getId(),
-			requester.getId());
+			requester.getId()
+		);
 
 		// then
 		assertThat(
-			workspaceMemberRepository.findByMemberIdAndWorkspaceCode(target.getId(), "TESTCODE")
+			workspaceMemberRepository.findById(target.getId())
 		).isEmpty();
 	}
 
@@ -87,20 +92,24 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+		WorkspaceMember requester = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
+			requesterMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
 
 		Long nonExistMemberId = 999L;
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember("TESTCODE", nonExistMemberId, requester.getId()))
-			.isInstanceOf(MemberNotInWorkspaceException.class);
+			() -> workspaceMemberCommandService.removeWorkspaceMember(nonExistMemberId, requester.getId()))
+			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
 	@Test
@@ -114,24 +123,25 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"member1",
 			"member1@test.com",
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(requester, workspace, WorkspaceRole.OWNER);
+		WorkspaceMember requester = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
+			requesterMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
 
-		Member nonWorkspaceMember = memberRepositoryFixture.createAndSaveMember(
-			"notJoinedMember",
-			"notJoinedMember@test.com",
-			"password1234!");
+		Long nonExistingWorkspaceMemberId = 999L;
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember("TESTCODE", nonWorkspaceMember.getId(),
+			() -> workspaceMemberCommandService.removeWorkspaceMember(nonExistingWorkspaceMemberId,
 				requester.getId()))
-			.isInstanceOf(MemberNotInWorkspaceException.class);
+			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
 	@Transactional
@@ -146,19 +156,20 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
+			requesterMember,
 			workspace,
 			WorkspaceRole.MANAGER,
-			requester.getEmail()
+			requesterMember.getEmail()
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		requester = workspaceMemberRepository.save(requester);
 
 		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"target",
@@ -166,20 +177,20 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
+		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
 			targetMember,
 			workspace,
 			WorkspaceRole.VIEWER,
 			targetMember.getEmail()
 		);
-		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		target = workspaceMemberRepository.save(target);
 
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		// when
 		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
-			"TESTCODE",
-			targetMember.getId(),
+			target.getId(),
 			requester.getId(),
 			request
 		);
@@ -200,25 +211,25 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
+			requesterMember,
 			workspace,
 			WorkspaceRole.MANAGER,
-			requester.getEmail()
+			requesterMember.getEmail()
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		workspaceMemberRepository.save(requester);
 
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			"TESTCODE",
 			requester.getId(),
 			requester.getId(),
 			request
@@ -238,40 +249,41 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
+			requesterMember,
 			workspace,
 			WorkspaceRole.MANAGER,
-			requester.getEmail()
+			requesterMember.getEmail()
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepositoryFixture.createAndSaveMember(
+		workspaceMemberRepository.save(requester);
+
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"target",
 			"target123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			target,
+		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
+			targetMember,
 			workspace,
 			WorkspaceRole.VIEWER,
-			target.getEmail()
+			targetMember.getEmail()
 		);
-		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		workspaceMemberRepository.save(target);
 
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				"TESTCODE",
 				target.getId(),
 				requester.getId(),
 				request
@@ -291,40 +303,41 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
+			requesterMember,
 			workspace,
 			WorkspaceRole.MANAGER,
-			requester.getEmail()
+			requesterMember.getEmail()
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepositoryFixture.createAndSaveMember(
+		workspaceMemberRepository.save(requester);
+
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"target",
 			"target123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			target,
+		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
+			targetMember,
 			workspace,
 			WorkspaceRole.OWNER,
-			target.getEmail()
+			targetMember.getEmail()
 		);
-		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		workspaceMemberRepository.save(target);
 
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				"TESTCODE",
 				target.getId(),
 				requester.getId(),
 				request
@@ -344,40 +357,41 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
+			requesterMember,
 			workspace,
 			WorkspaceRole.OWNER,
-			requester.getEmail()
+			requesterMember.getEmail()
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
 
-		Member target = memberRepositoryFixture.createAndSaveMember(
+		workspaceMemberRepository.save(requester);
+
+		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"target",
 			"target123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember targetWorkspaceMember = WorkspaceMember.addWorkspaceMember(
-			target,
+		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
+			targetMember,
 			workspace,
 			WorkspaceRole.MANAGER,
-			target.getEmail()
+			targetMember.getEmail()
 		);
-		workspaceMemberRepository.save(targetWorkspaceMember);
+
+		workspaceMemberRepository.save(target);
 
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				"TESTCODE",
 				target.getId(),
 				requester.getId(),
 				request
@@ -397,17 +411,18 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		Member requester = memberRepositoryFixture.createAndSaveMember(
+		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
 			"requester",
 			"requester123@test.com",
 			"password1234!"
 		);
 
-		WorkspaceMember requesterWorkspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
-			requester,
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(
+			requesterMember,
 			workspace
 		);
-		workspaceMemberRepository.save(requesterWorkspaceMember);
+
+		workspaceMemberRepository.save(requester);
 
 		Member targetMember = memberRepositoryFixture.createAndSaveMember(
 			"target",
@@ -421,11 +436,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			WorkspaceRole.MANAGER,
 			targetMember.getEmail()
 		);
+
 		workspaceMemberRepository.save(target);
 
 		// when
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
-			"TESTCODE",
 			target.getId(),
 			requester.getId()
 		);
@@ -451,7 +466,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		workspaceMemberRepository.save(
+		WorkspaceMember workspaceMember = workspaceMemberRepository.save(
 			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
 		);
 
@@ -460,8 +475,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
-			workspace.getCode(),
-			tester.getId(),
+			workspaceMember.getId(),
 			request
 		);
 
@@ -497,9 +511,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		workspaceMemberRepository.save(
+		WorkspaceMember testerWorkspaceMember = workspaceMemberRepository.save(
 			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
 		);
+
 		workspaceMemberRepository.save(
 			WorkspaceMember.addWorkspaceMember(
 				existingMember,
@@ -514,8 +529,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
-			workspace.getCode(),
-			tester.getId(),
+			testerWorkspaceMember.getId(),
 			request
 		)).isInstanceOfAny(DuplicateNicknameException.class);
 
@@ -542,12 +556,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Position position = positionRepositoryFixture.createAndSavePosition("BACKEND-DEV", workspace);
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+		entityManager.flush();
 
 		// When
 		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
-			workspace.getCode(),
 			position.getId(),
-			member.getId()
+			workspaceMember.getId()
 		);
 
 		// Then
@@ -575,12 +589,13 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
+		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+
 		// When & Then
 		assertThatThrownBy(() ->
 			workspaceMemberCommandService.assignPosition(
-				workspace.getCode(),
 				999L,
-				member.getId()
+				workspaceMember.getId()
 			)
 		).isInstanceOf(PositionNotFoundException.class);
 	}
