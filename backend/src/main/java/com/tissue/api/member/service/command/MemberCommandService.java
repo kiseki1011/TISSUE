@@ -80,7 +80,7 @@ public class MemberCommandService {
 		Member member = findMemberById(memberId);
 
 		String newEmail = request.getNewEmail();
-		memberValidator.validateEmailUpdate(newEmail);
+		memberValidator.validateUpdateEmail(newEmail);
 
 		member.updateEmail(newEmail);
 
@@ -151,7 +151,7 @@ public class MemberCommandService {
 		Long memberId,
 		Member member
 	) {
-		memberValidator.validatePassword(request.getPassword(), member.getPassword());
+		memberValidator.validatePasswordMatch(request.getPassword(), member.getPassword());
 		memberValidator.validateWithdraw(memberId);
 	}
 }

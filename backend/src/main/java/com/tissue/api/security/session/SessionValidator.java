@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.common.dto.PermissionContext;
+import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
 import com.tissue.api.security.authorization.exception.UpdatePermissionException;
 
@@ -25,24 +27,64 @@ public class SessionValidator {
 		}
 	}
 
-	public void validateUpdatePermission(HttpSession session) {
-		Boolean updatePermission = (Boolean)session.getAttribute(SessionAttributes.UPDATE_AUTH);
-		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
+	public void validateMemberPermissionInSession(HttpSession session, PermissionType permissionType) {
 
-		if (updatePermissionIsNull(updatePermission)
-			|| updatePermissionIsFalse(updatePermission)
-			|| expirationPeriodIsNull(expiresAt)
-			|| LocalDateTime.now().isAfter(expiresAt)
+		PermissionContext permissionContext = getPermissionContext(session, permissionType);
+
+		if (isInvalidPermission(permissionContext)
 		) {
-			clearUpdatePermission(session);
+			clearPermission(session, permissionType);
 			throw new UpdatePermissionException();
 		}
 	}
 
+	private PermissionContext getPermissionContext(HttpSession session, PermissionType permissionType) {
+		return switch (permissionType) {
+			case UPDATE -> new PermissionContext(
+				(Boolean)session.getAttribute(SessionAttributes.MEMBER_UPDATE_AUTH),
+				(LocalDateTime)session.getAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT)
+			);
+			case DELETE -> new PermissionContext(
+				(Boolean)session.getAttribute(SessionAttributes.MEMBER_DELETE_AUTH),
+				(LocalDateTime)session.getAttribute(SessionAttributes.MEMBER_DELETE_AUTH_EXPIRES_AT)
+			);
+			default -> throw new IllegalArgumentException("Unknown permission type: " + permissionType);
+		};
+	}
+
+	private boolean isInvalidPermission(PermissionContext permissionContext) {
+		return updatePermissionIsNull(permissionContext.updatePermission())
+			|| updatePermissionIsFalse(permissionContext.updatePermission())
+			|| expirationPeriodIsNull(permissionContext.expiresAt())
+			|| LocalDateTime.now().isAfter(permissionContext.expiresAt());
+	}
+
+	private void clearPermission(HttpSession session, PermissionType permissionType) {
+		switch (permissionType) {
+			case UPDATE -> {
+				session.removeAttribute(SessionAttributes.MEMBER_UPDATE_AUTH);
+				session.removeAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT);
+				log.info("Update permission cleared due to validation failure.");
+			}
+			case DELETE -> {
+				session.removeAttribute(SessionAttributes.MEMBER_DELETE_AUTH);
+				session.removeAttribute(SessionAttributes.MEMBER_DELETE_AUTH_EXPIRES_AT);
+				log.info("Delete permission cleared due to validation failure.");
+			}
+			default -> throw new IllegalArgumentException("Unknown permission type: " + permissionType);
+		}
+	}
+
 	private void clearUpdatePermission(HttpSession session) {
-		session.removeAttribute(SessionAttributes.UPDATE_AUTH);
-		session.removeAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT);
+		session.removeAttribute(SessionAttributes.MEMBER_UPDATE_AUTH);
+		session.removeAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT);
 		log.info("Update permission cleared due to validation failure.");
+	}
+
+	private void clearDeletePermission(HttpSession session) {
+		session.removeAttribute(SessionAttributes.MEMBER_DELETE_AUTH);
+		session.removeAttribute(SessionAttributes.MEMBER_DELETE_AUTH_EXPIRES_AT);
+		log.info("Delete permission cleared due to validation failure.");
 	}
 
 	private boolean expirationPeriodIsNull(LocalDateTime expiresAt) {

@@ -11,12 +11,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
-import com.tissue.api.member.presentation.dto.request.UpdatePermissionRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
@@ -25,6 +26,7 @@ import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberNameResponse;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
@@ -49,6 +51,7 @@ public class MemberController {
 	 */
 	private final MemberCommandService memberCommandService;
 	private final MemberQueryService memberQueryService;
+	private final MemberValidator memberValidator;
 	private final SessionManager sessionManager;
 	private final SessionValidator sessionValidator;
 
@@ -67,22 +70,6 @@ public class MemberController {
 	) {
 		SignupMemberResponse response = memberCommandService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
-	}
-
-	@LoginRequired
-	@PostMapping("/verify-password")
-	public ApiResponse<Void> getUpdatePermission(
-		@RequestBody @Valid UpdatePermissionRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
-	) {
-		memberQueryService.validatePasswordForUpdate(
-			request,
-			loginMemberId
-		);
-		sessionManager.createUpdatePermission(session);
-
-		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
 
 	@LoginRequired
@@ -120,15 +107,9 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateUpdatePermission(session);
-		UpdateMemberEmailResponse response = memberCommandService.updateEmail(
-			request,
-			loginMemberId
-		);
-		sessionManager.updateSessionEmail(
-			session,
-			request.getNewEmail()
-		);
+		sessionValidator.validateMemberPermissionInSession(session, PermissionType.UPDATE);
+		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
+		sessionManager.updateSessionEmail(session, request.getNewEmail());
 
 		return ApiResponse.ok("Member email updated.", response);
 	}
@@ -140,7 +121,7 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateUpdatePermission(session);
+		sessionValidator.validateMemberPermissionInSession(session, PermissionType.UPDATE);
 		memberCommandService.updatePassword(request, loginMemberId);
 
 		return ApiResponse.okWithNoContent("Member password updated.");
@@ -153,10 +134,36 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateUpdatePermission(session);
+		sessionValidator.validateMemberPermissionInSession(session, PermissionType.DELETE);
 		memberCommandService.withdraw(request, loginMemberId);
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
+	}
+
+	@LoginRequired
+	@PostMapping("/permissions/update")
+	public ApiResponse<Void> getMemberUpdatePermission(
+		@RequestBody @Valid PermissionRequest request,
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
+		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
+		sessionManager.setTemporaryUpdatePermission(session);
+
+		return ApiResponse.okWithNoContent("Update permission granted.");
+	}
+
+	@LoginRequired
+	@PostMapping("/permissions/delete")
+	public ApiResponse<Void> getMemberDeletePermission(
+		@RequestBody @Valid PermissionRequest request,
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
+		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
+		sessionManager.setTemporaryDeletePermission(session);
+
+		return ApiResponse.okWithNoContent("Delete permission granted.");
 	}
 }

@@ -1,5 +1,7 @@
 package com.tissue.api.security.session;
 
+import static com.tissue.api.security.session.SessionAttributes.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -21,14 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 public class SessionManager {
-	private static final int UPDATE_PERMISSION_MINUTES = 5;
+	private static final int UPDATE_PERMISSION_MINUTES = 3;
+	private static final int DELETE_PERMISSION_MINUTES = 1;
+
 	private final MemberRepository memberRepository;
 
-	// 로그인 세션 설정, 관리
 	public void createLoginSession(HttpSession session, LoginResponse loginResponse) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getMemberId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
+		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.getMemberId());
+		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
+		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
 		log.info("Login session created for member ID: {}", loginResponse.getMemberId());
 	}
 
@@ -41,24 +44,28 @@ public class SessionManager {
 
 	public Optional<Long> getLoginMemberId(HttpSession session) {
 		return Optional.ofNullable(session)
-			.map(s -> (Long)s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID));
+			.map(s -> (Long)s.getAttribute(LOGIN_MEMBER_ID));
 	}
 
-	// 업데이트 권한 설정, 관리
-	public void createUpdatePermission(HttpSession session) {
+	public void setTemporaryUpdatePermission(HttpSession session) {
 		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(UPDATE_PERMISSION_MINUTES);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, expiresAt);
+		session.setAttribute(MEMBER_UPDATE_AUTH, true);
+		session.setAttribute(MEMBER_UPDATE_AUTH_EXPIRES_AT, expiresAt);
 		log.info("Update permission created, expires at: {}", expiresAt);
 	}
 
-	// 세션 정보 업데이트
+	public void setTemporaryDeletePermission(HttpSession session) {
+		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(DELETE_PERMISSION_MINUTES);
+		session.setAttribute(MEMBER_DELETE_AUTH, true);
+		session.setAttribute(MEMBER_DELETE_AUTH_EXPIRES_AT, expiresAt);
+		log.info("Delete permission created, expires at: {}", expiresAt);
+	}
+
 	public void updateSessionEmail(HttpSession session, String newEmail) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, newEmail);
+		session.setAttribute(LOGIN_MEMBER_EMAIL, newEmail);
 		log.info("Session email updated to: {}", newEmail);
 	}
 
-	// 세션 종료
 	public void invalidateSession(HttpServletRequest request) {
 		Optional.ofNullable(request.getSession(false))
 			.ifPresent(session -> {
@@ -67,7 +74,6 @@ public class SessionManager {
 			});
 	}
 
-	// HttpSession 조회
 	public HttpSession getSession(NativeWebRequest webRequest) {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 
