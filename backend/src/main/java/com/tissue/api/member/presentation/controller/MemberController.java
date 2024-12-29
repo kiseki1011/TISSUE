@@ -159,16 +159,4 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
 
-	@LoginRequired
-	@PostMapping("/permissions/delete")
-	public ApiResponse<Void> getMemberDeletePermission(
-		@RequestBody @Valid PermissionRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
-	) {
-		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
-		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_DELETE);
-
-		return ApiResponse.okWithNoContent("Delete permission granted.");
-	}
 }
