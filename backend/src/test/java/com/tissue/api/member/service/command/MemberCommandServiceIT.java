@@ -13,20 +13,18 @@ import org.junit.jupiter.api.Test;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
+import com.tissue.api.member.exception.DuplicateEmailException;
 import com.tissue.api.member.exception.OwnedWorkspaceExistsException;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.security.authentication.exception.InvalidLoginPasswordException;
+import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.helper.ServiceIntegrationTestHelper;
-import com.tissue.api.member.exception.DuplicateEmailException;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
-import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 
 class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
@@ -102,7 +100,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		String newEmail = "newemail@test.com";
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(newEmail);
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", newEmail);
 
 		// when
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, member.getId());
@@ -124,7 +122,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest(existingMember.getEmail());
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", existingMember.getEmail());
 
 		// when & then
 		assertThatThrownBy(() -> memberCommandService.updateEmail(request, existingMember.getId()))
@@ -142,7 +140,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		String newPassword = "newpassword1234!";
-		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest(newPassword);
+		UpdateMemberPasswordRequest request = new UpdateMemberPasswordRequest("password1234!", newPassword);
 
 		// when
 		memberCommandService.updatePassword(request, member.getId());
@@ -162,30 +160,11 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
-
 		// when
-		memberCommandService.withdraw(request, member.getId());
+		memberCommandService.withdraw(member.getId());
 
 		// then
 		Assertions.assertThat(memberRepository.findById(member.getId())).isEmpty();
-	}
-
-	@Test
-	@DisplayName("멤버 탈퇴에 요청의 패스워드가 멤버 패스워드와 일치하지 않으면 예외가 발생한다")
-	void withdrawMember_throwsException_ifRequestPasswordsIsNotValid() {
-		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		WithdrawMemberRequest request = new WithdrawMemberRequest("invalidPassword");
-
-		// when & then
-		assertThatThrownBy(() -> memberCommandService.withdraw(request, member.getId())).isInstanceOf(
-			InvalidLoginPasswordException.class);
 	}
 
 	@Test
@@ -206,10 +185,8 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		workspaceMemberRepository.save(WorkspaceMember.addOwnerWorkspaceMember(member, workspace));
 
-		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
-
 		// when & then
-		assertThatThrownBy(() -> memberCommandService.withdraw(request, member.getId()))
+		assertThatThrownBy(() -> memberCommandService.withdraw(member.getId()))
 			.isInstanceOf(OwnedWorkspaceExistsException.class);
 	}
 
@@ -242,9 +219,9 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
 		Assertions.assertThat(memberRepository.findById(member.getId())
-			.get()
-			.getJobType()
-		)
+				.get()
+				.getJobType()
+			)
 			.isEqualTo(JobType.ETC);
 	}
 
@@ -275,21 +252,21 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
 		Assertions.assertThat(memberRepository.findById(member.getId())
-			.get()
-			.getIntroduction()
-		)
+				.get()
+				.getIntroduction()
+			)
 			.isEqualTo("Im currently unemployed");
 
 		Assertions.assertThat(memberRepository.findById(member.getId())
-			.get()
-			.getJobType()
-		)
+				.get()
+				.getJobType()
+			)
 			.isEqualTo(JobType.DEVELOPER);
 
 		Assertions.assertThat(memberRepository.findById(member.getId())
-			.get()
-			.getBirthDate()
-		)
+				.get()
+				.getBirthDate()
+			)
 			.isEqualTo(LocalDate.of(1995, 1, 1));
 	}
 }
