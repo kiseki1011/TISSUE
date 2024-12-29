@@ -23,6 +23,7 @@ import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.presentation.controller.MemberController;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
 import com.tissue.api.position.service.command.PositionCommandService;
@@ -122,6 +123,12 @@ public abstract class ControllerTestHelper {
 	protected PositionQueryService positionQueryService;
 	@MockBean
 	protected IssueCommandService issueCommandService;
+
+	/**
+	 * Validator
+	 */
+	@MockBean
+	protected MemberValidator memberValidator;
 
 	/**
 	 * Repository

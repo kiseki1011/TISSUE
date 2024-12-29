@@ -122,11 +122,11 @@ class SessionManagerTest {
 	@DisplayName("업데이트 권한 생성 요청이 오면 세션에 권한 정보가 저장된다")
 	void createUpdatePermission() {
 		// when
-		sessionManager.createUpdatePermission(session);
+		sessionManager.setTemporaryUpdatePermission(session);
 
 		// then
-		verify(session).setAttribute(eq(SessionAttributes.UPDATE_AUTH), eq(true));
-		verify(session).setAttribute(eq(SessionAttributes.UPDATE_AUTH_EXPIRES_AT), any(LocalDateTime.class));
+		verify(session).setAttribute(eq(SessionAttributes.MEMBER_UPDATE_AUTH), eq(true));
+		verify(session).setAttribute(eq(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT), any(LocalDateTime.class));
 	}
 
 	@Test
