@@ -13,9 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
-import com.tissue.helper.ControllerTestHelper;
-import com.tissue.api.common.ColorType;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
@@ -23,6 +21,8 @@ import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.position.presentation.dto.response.PositionDetail;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
+import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.helper.ControllerTestHelper;
 
 class PositionControllerTest extends ControllerTestHelper {
 

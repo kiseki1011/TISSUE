@@ -55,6 +55,7 @@ public class WorkspaceController {
 			request,
 			loginMemberId
 		);
+
 		return ApiResponse.created("Workspace created.", response);
 	}
 
@@ -69,8 +70,18 @@ public class WorkspaceController {
 			request,
 			code
 		);
+
 		return ApiResponse.ok("Workspace info updated.", response);
 	}
+
+	/**
+	 * Todo
+	 *  - 다음의 세 API에는 비밀번호 검증이 필요(서비스 계층 말고)
+	 *  - 워크스페이스 참여
+	 *  - 워크스페이스 패스워드 업데이트
+	 *  - 워크스페이스 삭제
+	 *  - MemberController의 /verify-password API와 비슷하게 구현하면 될 듯
+	 */
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.ADMIN)
@@ -83,6 +94,7 @@ public class WorkspaceController {
 			request,
 			code
 		);
+
 		return ApiResponse.okWithNoContent("Workspace password updated.");
 	}
 
@@ -99,6 +111,7 @@ public class WorkspaceController {
 			code,
 			loginMemberId
 		);
+
 		return ApiResponse.ok("Workspace deleted.", response);
 	}
 
@@ -109,6 +122,7 @@ public class WorkspaceController {
 		@PathVariable String code
 	) {
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
+
 		return ApiResponse.ok("Workspace found.", response);
 	}
 
@@ -123,23 +137,7 @@ public class WorkspaceController {
 			code,
 			request
 		);
+
 		return ApiResponse.ok("Issue key prefix updated.", response);
 	}
-
-	// @LoginRequired
-	// @RoleRequired(roles = WorkspaceRole.VIEWER)
-	// @GetMapping("/{code}/switch")
-	// public ApiResponse<Void> switchWorkspace(
-	// 	@PathVariable String code,
-	// 	@ResolveLoginMember Long loginMemberId,
-	// 	HttpSession session
-	// ) {
-	// 	Long workspaceMemberId = workspaceQueryService.getWorkspaceMemberId(code, loginMemberId);
-	//
-	// 	session.setAttribute(SessionAttributes.CURRENT_WORKSPACE_CODE, code);
-	// 	session.setAttribute(SessionAttributes.CURRENT_WORKSPACE_MEMBER_ID, workspaceMemberId);
-	//
-	// 	return ApiResponse.okWithNoContent("Workspace switched to \"" + code + "\".");
-	// }
-
 }

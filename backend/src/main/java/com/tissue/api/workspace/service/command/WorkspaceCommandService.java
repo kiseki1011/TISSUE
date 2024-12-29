@@ -51,9 +51,7 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = findWorkspaceByCode(code);
 
-		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getOriginalPassword());
-
-		String encodedUpdatePassword = encodePasswordIfPresent(request.getUpdatePassword());
+		String encodedUpdatePassword = encodePasswordIfPresent(request.updatePassword());
 		workspace.updatePassword(encodedUpdatePassword);
 	}
 

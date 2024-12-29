@@ -1,4 +1,4 @@
-package com.tissue.api.common;
+package com.tissue.api.common.enums;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,10 +38,9 @@ public enum ColorType {
 	GRAY("#808080", "Gray"),
 	BLACK("#000000", "Black");
 
+	private static final Random RANDOM = new Random();
 	private final String hexCode;
 	private final String displayName;
-
-	private static final Random RANDOM = new Random();
 
 	public static ColorType getRandomUnusedColor(Set<ColorType> usedColors) {
 		List<ColorType> availableColors = Arrays.stream(ColorType.values())

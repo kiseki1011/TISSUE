@@ -3,8 +3,8 @@ package com.tissue.api.position.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.ColorType;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
