@@ -72,12 +72,18 @@ public class MemberController {
 		return ApiResponse.created("Signup successful.", response);
 	}
 
+	/**
+	 * Todo
+	 *  - Info를 업데이트하는 API에 name을 업데이트 하는 API를 통합
+	 */
 	@LoginRequired
 	@PatchMapping
 	public ApiResponse<UpdateMemberInfoResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberInfoRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
 	) {
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		UpdateMemberInfoResponse response = memberCommandService.updateInfo(
 			request,
 			loginMemberId
@@ -90,8 +96,10 @@ public class MemberController {
 	@PatchMapping("/name")
 	public ApiResponse<UpdateMemberNameResponse> updateMemberName(
 		@RequestBody @Valid UpdateMemberNameRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
 	) {
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		UpdateMemberNameResponse response = memberCommandService.updateName(
 			request,
 			loginMemberId
@@ -107,9 +115,9 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		memberValidator.validateMemberPassword(request.password(), loginMemberId);
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
-		sessionManager.updateSessionEmail(session, request.getNewEmail());
+		sessionManager.updateSessionEmail(session, request.newEmail());
 
 		return ApiResponse.ok("Member email updated.", response);
 	}
@@ -121,7 +129,8 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		// sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		memberValidator.validateMemberPassword(request.originalPassword(), loginMemberId);
 		memberCommandService.updatePassword(request, loginMemberId);
 
 		return ApiResponse.okWithNoContent("Member password updated.");
@@ -134,18 +143,14 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_DELETE);
-		memberCommandService.withdraw(request, loginMemberId);
+		// sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_DELETE);
+		memberValidator.validateMemberPassword(request.getPassword(), loginMemberId);
+		memberCommandService.withdraw(loginMemberId);
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
-	/**
-	 * Todo
-	 *  - 권한 얻는 API를 "/permissions/{type}"으로 합치는 것 고려
-	 *  - 컨트롤러 메서드에서 분기문 처리해서 sessionManager로 넘기면 될 듯
-	 */
 	@LoginRequired
 	@PostMapping("/permissions/update")
 	public ApiResponse<Void> getMemberUpdatePermission(
@@ -153,7 +158,7 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
+		memberValidator.validateMemberPassword(request.getPassword(), loginMemberId);
 		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
 
 		return ApiResponse.okWithNoContent("Update permission granted.");

@@ -33,7 +33,7 @@ public class MemberValidator {
 		validateEmailIsUnique(email);
 	}
 
-	public void validateMemberPasswordForPermission(String password, Long memberId) {
+	public void validateMemberPassword(String password, Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(MemberNotFoundException::new);
 

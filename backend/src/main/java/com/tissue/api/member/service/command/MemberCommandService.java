@@ -12,7 +12,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
-import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
@@ -65,8 +64,8 @@ public class MemberCommandService {
 		Member member = findMemberById(memberId);
 
 		member.updateName(Name.builder()
-			.firstName(request.getFirstName())
-			.lastName(request.getLastName())
+			.firstName(request.firstName())
+			.lastName(request.lastName())
 			.build());
 
 		return UpdateMemberNameResponse.from(member);
@@ -79,7 +78,7 @@ public class MemberCommandService {
 	) {
 		Member member = findMemberById(memberId);
 
-		String newEmail = request.getNewEmail();
+		String newEmail = request.newEmail();
 		memberValidator.validateUpdateEmail(newEmail);
 
 		member.updateEmail(newEmail);
@@ -94,35 +93,39 @@ public class MemberCommandService {
 	) {
 		Member member = findMemberById(memberId);
 
-		String encodedNewPassword = encodePassword(request.getNewPassword());
+		String encodedNewPassword = passwordEncoder.encode(request.newPassword());
 
 		member.updatePassword(encodedNewPassword);
 	}
 
 	@Transactional
 	public void withdraw(
-		WithdrawMemberRequest request,
 		Long memberId
 	) {
 		Member member = findMemberById(memberId);
 
-		validateMemberDeletion(request, memberId, member);
+		memberValidator.validateWithdraw(memberId);
 
 		memberRepository.delete(member);
 	}
 
+	/**
+	 * Todo
+	 *  - MemberProfile이라는 VO를 만들어서 사용 고려
+	 *  - or 요청 DTO에 검증 로직을 포함시키거나
+	 */
 	private void updateMemberInfoIfPresent(
 		UpdateMemberInfoRequest request,
 		Member member
 	) {
 		if (request.hasBirthDate()) {
-			member.updateBirthDate(request.getBirthDate());
+			member.updateBirthDate(request.birthDate());
 		}
 		if (request.hasJobType()) {
-			member.updateJobType(request.getJobType());
+			member.updateJobType(request.jobType());
 		}
 		if (request.hasIntroduction()) {
-			member.updateIntroduction(request.getIntroduction());
+			member.updateIntroduction(request.introduction());
 		}
 	}
 
@@ -136,22 +139,7 @@ public class MemberCommandService {
 	private Member createMember(
 		SignupMemberRequest request
 	) {
-		String encodedPassword = encodePassword(request.getPassword());
+		String encodedPassword = passwordEncoder.encode(request.getPassword());
 		return request.toEntity(encodedPassword);
-	}
-
-	private String encodePassword(
-		String rawPassword
-	) {
-		return passwordEncoder.encode(rawPassword);
-	}
-
-	private void validateMemberDeletion(
-		WithdrawMemberRequest request,
-		Long memberId,
-		Member member
-	) {
-		memberValidator.validatePasswordMatch(request.getPassword(), member.getPassword());
-		memberValidator.validateWithdraw(memberId);
 	}
 }
