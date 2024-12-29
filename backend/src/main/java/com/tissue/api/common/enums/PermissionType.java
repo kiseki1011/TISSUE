@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 public enum PermissionType {
 	MEMBER_UPDATE,
 	MEMBER_DELETE,
-	WORKSPACE_JOIN,
 	WORKSPACE_PASSWORD_UPDATE,
 	WORKSPACE_DELETE
 }

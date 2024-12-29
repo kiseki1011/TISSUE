@@ -14,6 +14,7 @@ import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.api.security.authorization.exception.UnknownPermissionTypeException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SessionManager {
 	private static final int UPDATE_PERMISSION_MINUTES = 3;
 	private static final int DELETE_PERMISSION_MINUTES = 1;
-
-	private static final int WORKSPACE_JOIN_PERMISSION_MINUTES = 1;
 
 	private final MemberRepository memberRepository;
 
@@ -50,32 +49,15 @@ public class SessionManager {
 			.map(s -> (Long)s.getAttribute(LOGIN_MEMBER_ID));
 	}
 
-	public void setTemporaryUpdatePermission(HttpSession session) {
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(UPDATE_PERMISSION_MINUTES);
-		session.setAttribute(MEMBER_UPDATE_AUTH, true);
-		session.setAttribute(MEMBER_UPDATE_AUTH_EXPIRES_AT, expiresAt);
-		log.info("Update permission created, expires at: {}", expiresAt);
-	}
-
-	public void setTemporaryDeletePermission(HttpSession session) {
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(DELETE_PERMISSION_MINUTES);
-		session.setAttribute(MEMBER_DELETE_AUTH, true);
-		session.setAttribute(MEMBER_DELETE_AUTH_EXPIRES_AT, expiresAt);
-		log.info("Delete permission created, expires at: {}", expiresAt);
-	}
-
 	public void setTemporaryPermission(HttpSession session, PermissionType permissionType) {
 		LocalDateTime expiresAt = LocalDateTime.now();
 
-		// 권한 타입에 따라 유효 기간 설정
 		expiresAt = switch (permissionType) {
 			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE -> expiresAt.plusMinutes(UPDATE_PERMISSION_MINUTES);
 			case MEMBER_DELETE, WORKSPACE_DELETE -> expiresAt.plusMinutes(DELETE_PERMISSION_MINUTES);
-			case WORKSPACE_JOIN -> expiresAt.plusMinutes(WORKSPACE_JOIN_PERMISSION_MINUTES);
-			default -> throw new IllegalArgumentException("Unknown permission type: " + permissionType);
+			default -> throw new UnknownPermissionTypeException();
 		};
 
-		// 세션에 권한 타입과 만료 시간 저장
 		session.setAttribute(SessionAttributes.PERMISSION_TYPE, permissionType);
 		session.setAttribute(SessionAttributes.PERMISSION_EXISTS, true);
 		session.setAttribute(SessionAttributes.PERMISSION_EXPIRES_AT, expiresAt);
