@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -119,14 +120,14 @@ class SessionManagerTest {
 	}
 
 	@Test
-	@DisplayName("업데이트 권한 생성 요청이 오면 세션에 권한 정보가 저장된다")
+	@DisplayName("업데이트 권한 생성 요청을 하면 세션에 권한 정보가 저장된다")
 	void createUpdatePermission() {
 		// when
-		sessionManager.createUpdatePermission(session);
+		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
 
 		// then
-		verify(session).setAttribute(eq(SessionAttributes.UPDATE_AUTH), eq(true));
-		verify(session).setAttribute(eq(SessionAttributes.UPDATE_AUTH_EXPIRES_AT), any(LocalDateTime.class));
+		verify(session).setAttribute(SessionAttributes.PERMISSION_TYPE, PermissionType.MEMBER_UPDATE);
+		verify(session).setAttribute(eq(SessionAttributes.PERMISSION_EXPIRES_AT), any(LocalDateTime.class));
 	}
 
 	@Test

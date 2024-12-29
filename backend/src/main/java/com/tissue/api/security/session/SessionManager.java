@@ -1,16 +1,20 @@
 package com.tissue.api.security.session;
 
+import static com.tissue.api.security.session.SessionAttributes.*;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 
+import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.api.security.authorization.exception.UnknownPermissionTypeException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -21,14 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 public class SessionManager {
-	private static final int UPDATE_PERMISSION_MINUTES = 5;
+	private static final int UPDATE_PERMISSION_MINUTES = 3;
+	private static final int DELETE_PERMISSION_MINUTES = 1;
+
 	private final MemberRepository memberRepository;
 
-	// 로그인 세션 설정, 관리
 	public void createLoginSession(HttpSession session, LoginResponse loginResponse) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, loginResponse.getMemberId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
+		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.getMemberId());
+		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
+		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
 		log.info("Login session created for member ID: {}", loginResponse.getMemberId());
 	}
 
@@ -41,24 +46,37 @@ public class SessionManager {
 
 	public Optional<Long> getLoginMemberId(HttpSession session) {
 		return Optional.ofNullable(session)
-			.map(s -> (Long)s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID));
+			.map(s -> (Long)s.getAttribute(LOGIN_MEMBER_ID));
 	}
 
-	// 업데이트 권한 설정, 관리
-	public void createUpdatePermission(HttpSession session) {
-		LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(UPDATE_PERMISSION_MINUTES);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT, expiresAt);
-		log.info("Update permission created, expires at: {}", expiresAt);
+	public void setTemporaryPermission(HttpSession session, PermissionType permissionType) {
+		LocalDateTime expiresAt = LocalDateTime.now();
+
+		expiresAt = switch (permissionType) {
+			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE -> expiresAt.plusMinutes(UPDATE_PERMISSION_MINUTES);
+			case MEMBER_DELETE, WORKSPACE_DELETE -> expiresAt.plusMinutes(DELETE_PERMISSION_MINUTES);
+			default -> throw new UnknownPermissionTypeException();
+		};
+
+		session.setAttribute(SessionAttributes.PERMISSION_TYPE, permissionType);
+		session.setAttribute(SessionAttributes.PERMISSION_EXISTS, true);
+		session.setAttribute(SessionAttributes.PERMISSION_EXPIRES_AT, expiresAt);
+
+		log.info("{} permission granted. Expires at: {}", permissionType, expiresAt);
 	}
 
-	// 세션 정보 업데이트
+	public void clearPermission(HttpSession session) {
+		session.removeAttribute(SessionAttributes.PERMISSION_TYPE);
+		session.removeAttribute(SessionAttributes.PERMISSION_EXISTS);
+		session.removeAttribute(SessionAttributes.PERMISSION_EXPIRES_AT);
+		log.info("Permission cleared.");
+	}
+
 	public void updateSessionEmail(HttpSession session, String newEmail) {
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, newEmail);
+		session.setAttribute(LOGIN_MEMBER_EMAIL, newEmail);
 		log.info("Session email updated to: {}", newEmail);
 	}
 
-	// 세션 종료
 	public void invalidateSession(HttpServletRequest request) {
 		Optional.ofNullable(request.getSession(false))
 			.ifPresent(session -> {
@@ -67,7 +85,6 @@ public class SessionManager {
 			});
 	}
 
-	// HttpSession 조회
 	public HttpSession getSession(NativeWebRequest webRequest) {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 

@@ -4,15 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.domain.AuthorizationException;
 
-public class UpdatePermissionException extends AuthorizationException {
-	private static final String MESSAGE = "You do not have authorization for update or the authorization has expired";
+public class PermissionMismatchException extends AuthorizationException {
+
+	private static final String MESSAGE = "Permission type of request does not match with current permission type.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.FORBIDDEN;
 
-	public UpdatePermissionException() {
+	public PermissionMismatchException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public UpdatePermissionException(Throwable cause) {
+	public PermissionMismatchException(Throwable cause) {
 		super(MESSAGE, HTTP_STATUS, cause);
 	}
 }

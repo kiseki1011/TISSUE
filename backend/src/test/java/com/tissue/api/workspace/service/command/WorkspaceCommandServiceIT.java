@@ -182,10 +182,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
-			.originalPassword("password1234!")
-			.updatePassword("updated1234!")
-			.build();
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("updated1234!");
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -208,9 +205,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
-			.updatePassword("updated1234!")
-			.build();
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("updated1234!");
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -219,27 +214,6 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
-	}
-
-	@Test
-	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하지 않으면 예외가 발생한다")
-	void test9() {
-		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			"password1234!"
-		);
-
-		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
-			.originalPassword("invalid1234!")
-			.updatePassword("updated1234!")
-			.build();
-
-		// when
-		assertThatThrownBy(() -> workspaceCommandService.updateWorkspacePassword(request, "TEST1111"))
-			.isInstanceOf(InvalidWorkspacePasswordException.class);
 	}
 
 	@Transactional
@@ -254,9 +228,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
-			.originalPassword("password1234!")
-			.build();
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null);
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -279,10 +251,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateWorkspacePasswordRequest request = UpdateWorkspacePasswordRequest.builder()
-			.originalPassword("password1234!")
-			.updatePassword(null)
-			.build();
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null);
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");

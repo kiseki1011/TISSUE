@@ -24,7 +24,7 @@ public class AuthenticationService {
 
 		Member member = findMemberByLoginIdOrEmail(request);
 
-		memberValidator.validatePassword(request.getPassword(), member.getPassword());
+		memberValidator.validatePasswordMatch(request.getPassword(), member.getPassword());
 
 		return LoginResponse.from(member);
 	}

@@ -12,8 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
-import com.tissue.api.security.authorization.exception.UpdatePermissionException;
+import com.tissue.api.security.authorization.exception.InvalidPermissionException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +26,8 @@ class SessionValidatorTest {
 	private HttpSession session;
 	@Mock
 	private HttpServletRequest request;
+	@Mock
+	private SessionManager sessionManager;
 
 	@InjectMocks
 	private SessionValidator sessionValidator;
@@ -68,59 +71,69 @@ class SessionValidatorTest {
 	@DisplayName("업데이트 권한 검증 - 권한이 없는 경우 예외가 발생한다")
 	void validateUpdatePermission_WhenAuthIsNull() {
 		// given
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH)).thenReturn(null);
+		when(session.getAttribute(SessionAttributes.PERMISSION_TYPE)).thenReturn(PermissionType.MEMBER_UPDATE);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXISTS)).thenReturn(null);
 
 		// when & then
-		assertThatThrownBy(() -> sessionValidator.validateUpdatePermission(session))
-			.isInstanceOf(UpdatePermissionException.class);
+		assertThatThrownBy(
+			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
+			.isInstanceOf(InvalidPermissionException.class);
 	}
 
 	@Test
 	@DisplayName("업데이트 권한 검증 - 권한이 false인 경우 예외가 발생한다")
 	void validateUpdatePermission_WhenAuthIsFalse() {
 		// given
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH)).thenReturn(false);
+		when(session.getAttribute(SessionAttributes.PERMISSION_TYPE)).thenReturn(PermissionType.MEMBER_UPDATE);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXISTS)).thenReturn(false);
 
 		// when & then
-		assertThatThrownBy(() -> sessionValidator.validateUpdatePermission(session))
-			.isInstanceOf(UpdatePermissionException.class);
+		assertThatThrownBy(
+			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
+			.isInstanceOf(InvalidPermissionException.class);
 	}
 
 	@Test
 	@DisplayName("업데이트 권한 검증 - 만료 시간이 null인 경우 예외가 발생한다")
 	void validateUpdatePermission_WhenExpiresAtIsNull() {
 		// given
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH)).thenReturn(true);
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT)).thenReturn(null);
+		when(session.getAttribute(SessionAttributes.PERMISSION_TYPE)).thenReturn(PermissionType.MEMBER_UPDATE);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXISTS)).thenReturn(true);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXPIRES_AT)).thenReturn(null);
 
 		// when & then
-		assertThatThrownBy(() -> sessionValidator.validateUpdatePermission(session))
-			.isInstanceOf(UpdatePermissionException.class);
+		assertThatThrownBy(
+			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
+			.isInstanceOf(InvalidPermissionException.class);
 	}
 
 	@Test
 	@DisplayName("업데이트 권한 검증 - 만료된 경우 예외가 발생한다")
 	void validateUpdatePermission_WhenExpired() {
 		// given
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH)).thenReturn(true);
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT))
+		when(session.getAttribute(SessionAttributes.PERMISSION_TYPE)).thenReturn(PermissionType.MEMBER_UPDATE);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXISTS)).thenReturn(true);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXPIRES_AT))
 			.thenReturn(LocalDateTime.now().minusMinutes(1));
 
 		// when & then
-		assertThatThrownBy(() -> sessionValidator.validateUpdatePermission(session))
-			.isInstanceOf(UpdatePermissionException.class);
+		assertThatThrownBy(
+			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
+			.isInstanceOf(InvalidPermissionException.class);
 	}
 
 	@Test
 	@DisplayName("업데이트 권한 검증 - 정상 케이스")
 	void validateUpdatePermission_Success() {
 		// given
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH)).thenReturn(true);
-		when(session.getAttribute(SessionAttributes.UPDATE_AUTH_EXPIRES_AT))
+		when(session.getAttribute(SessionAttributes.PERMISSION_TYPE)).thenReturn(PermissionType.MEMBER_UPDATE);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXISTS)).thenReturn(true);
+		when(session.getAttribute(SessionAttributes.PERMISSION_EXPIRES_AT))
 			.thenReturn(LocalDateTime.now().plusMinutes(4));
 
 		// when & then
 		assertThatNoException()
-			.isThrownBy(() -> sessionValidator.validateUpdatePermission(session));
+			.isThrownBy(
+				() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE));
 	}
 }

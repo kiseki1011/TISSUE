@@ -13,6 +13,7 @@ import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
@@ -88,6 +89,12 @@ public abstract class ServiceIntegrationTestHelper {
 	protected PositionQueryService positionQueryService;
 	@Autowired
 	protected IssueCommandService issueCommandService;
+
+	/**
+	 * Validator
+	 */
+	@Autowired
+	protected MemberValidator memberValidator;
 
 	/**
 	 * Repository

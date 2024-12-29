@@ -7,22 +7,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.exception.DuplicatePositionNameException;
 import com.tissue.api.position.exception.PositionInUseException;
+import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
+import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
+import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
+import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
+import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
-import com.tissue.api.common.ColorType;
-import com.tissue.api.position.exception.DuplicatePositionNameException;
-import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
-import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
-import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
-import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
 
 class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
