@@ -107,7 +107,7 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateMemberPermissionInSession(session, PermissionType.UPDATE);
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
 		sessionManager.updateSessionEmail(session, request.getNewEmail());
 
@@ -121,7 +121,7 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateMemberPermissionInSession(session, PermissionType.UPDATE);
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		memberCommandService.updatePassword(request, loginMemberId);
 
 		return ApiResponse.okWithNoContent("Member password updated.");
@@ -134,13 +134,18 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		sessionValidator.validateMemberPermissionInSession(session, PermissionType.DELETE);
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_DELETE);
 		memberCommandService.withdraw(request, loginMemberId);
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
+	/**
+	 * Todo
+	 *  - 권한 얻는 API를 "/permissions/{type}"으로 합치는 것 고려
+	 *  - 컨트롤러 메서드에서 분기문 처리해서 sessionManager로 넘기면 될 듯
+	 */
 	@LoginRequired
 	@PostMapping("/permissions/update")
 	public ApiResponse<Void> getMemberUpdatePermission(
@@ -149,7 +154,7 @@ public class MemberController {
 		HttpSession session
 	) {
 		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
-		sessionManager.setTemporaryUpdatePermission(session);
+		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
 
 		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
@@ -162,7 +167,7 @@ public class MemberController {
 		HttpSession session
 	) {
 		memberValidator.validateMemberPasswordForPermission(request.getPassword(), loginMemberId);
-		sessionManager.setTemporaryDeletePermission(session);
+		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_DELETE);
 
 		return ApiResponse.okWithNoContent("Delete permission granted.");
 	}

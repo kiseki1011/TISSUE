@@ -1,0 +1,18 @@
+package com.tissue.api.security.authorization.exception;
+
+import org.springframework.http.HttpStatus;
+
+import com.tissue.api.common.exception.domain.AuthorizationException;
+
+public class InvalidPermissionException extends AuthorizationException {
+	private static final String MESSAGE = "You do not have authorization for update or the authorization has expired";
+	private static final HttpStatus HTTP_STATUS = HttpStatus.FORBIDDEN;
+
+	public InvalidPermissionException() {
+		super(MESSAGE, HTTP_STATUS);
+	}
+
+	public InvalidPermissionException(Throwable cause) {
+		super(MESSAGE, HTTP_STATUS, cause);
+	}
+}

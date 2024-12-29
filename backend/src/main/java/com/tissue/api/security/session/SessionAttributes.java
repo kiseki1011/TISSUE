@@ -21,6 +21,13 @@ public final class SessionAttributes {
 	public static final String MEMBER_DELETE_AUTH = "MEMBER_DELETE_AUTH";
 	public static final String MEMBER_DELETE_AUTH_EXPIRES_AT = "MEMBER_DELETE_AUTH_EXPIRES_AT";
 
+	/**
+	 * Permission related
+	 */
+	public static final String PERMISSION_TYPE = "PERMISSION_TYPE";
+	public static final String PERMISSION_EXISTS = "PERMISSION_EXISTS";
+	public static final String PERMISSION_EXPIRES_AT = "PERMISSION_EXPIRES_AT";
+
 	private SessionAttributes() {
 	}
 }

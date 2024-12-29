@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public enum PermissionType {
-	UPDATE,
-	DELETE
+	MEMBER_UPDATE,
+	MEMBER_DELETE,
+	WORKSPACE_JOIN,
+	WORKSPACE_PASSWORD_UPDATE,
+	WORKSPACE_DELETE
 }

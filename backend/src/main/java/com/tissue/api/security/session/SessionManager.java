@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 
+import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -25,6 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SessionManager {
 	private static final int UPDATE_PERMISSION_MINUTES = 3;
 	private static final int DELETE_PERMISSION_MINUTES = 1;
+
+	private static final int WORKSPACE_JOIN_PERMISSION_MINUTES = 1;
 
 	private final MemberRepository memberRepository;
 
@@ -59,6 +62,32 @@ public class SessionManager {
 		session.setAttribute(MEMBER_DELETE_AUTH, true);
 		session.setAttribute(MEMBER_DELETE_AUTH_EXPIRES_AT, expiresAt);
 		log.info("Delete permission created, expires at: {}", expiresAt);
+	}
+
+	public void setTemporaryPermission(HttpSession session, PermissionType permissionType) {
+		LocalDateTime expiresAt = LocalDateTime.now();
+
+		// 권한 타입에 따라 유효 기간 설정
+		expiresAt = switch (permissionType) {
+			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE -> expiresAt.plusMinutes(UPDATE_PERMISSION_MINUTES);
+			case MEMBER_DELETE, WORKSPACE_DELETE -> expiresAt.plusMinutes(DELETE_PERMISSION_MINUTES);
+			case WORKSPACE_JOIN -> expiresAt.plusMinutes(WORKSPACE_JOIN_PERMISSION_MINUTES);
+			default -> throw new IllegalArgumentException("Unknown permission type: " + permissionType);
+		};
+
+		// 세션에 권한 타입과 만료 시간 저장
+		session.setAttribute(SessionAttributes.PERMISSION_TYPE, permissionType);
+		session.setAttribute(SessionAttributes.PERMISSION_EXISTS, true);
+		session.setAttribute(SessionAttributes.PERMISSION_EXPIRES_AT, expiresAt);
+
+		log.info("{} permission granted. Expires at: {}", permissionType, expiresAt);
+	}
+
+	public void clearPermission(HttpSession session) {
+		session.removeAttribute(SessionAttributes.PERMISSION_TYPE);
+		session.removeAttribute(SessionAttributes.PERMISSION_EXISTS);
+		session.removeAttribute(SessionAttributes.PERMISSION_EXPIRES_AT);
+		log.info("Permission cleared.");
 	}
 
 	public void updateSessionEmail(HttpSession session, String newEmail) {
