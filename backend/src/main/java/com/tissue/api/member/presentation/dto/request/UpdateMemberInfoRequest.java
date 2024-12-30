@@ -13,12 +13,17 @@ import lombok.Builder;
  */
 @Builder
 public record UpdateMemberInfoRequest(
+	String firstName,
+	String lastName,
 	@Past(message = "Birth date must be in the past")
 	LocalDate birthDate,
 	JobType jobType,
-	String introduction
-
+	String biography
 ) {
+	public boolean hasName() {
+		return isNotBlank(firstName) && isNotBlank(lastName);
+	}
+
 	public boolean hasBirthDate() {
 		return birthDate != null;
 	}
@@ -27,8 +32,8 @@ public record UpdateMemberInfoRequest(
 		return jobType != null;
 	}
 
-	public boolean hasIntroduction() {
-		return isNotBlank(introduction);
+	public boolean hasBiography() {
+		return isNotBlank(biography);
 	}
 
 	private boolean isNotBlank(String value) {

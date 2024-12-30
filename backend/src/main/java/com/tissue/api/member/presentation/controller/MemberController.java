@@ -16,14 +16,12 @@ import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberNameResponse;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.member.validator.MemberValidator;
@@ -72,10 +70,6 @@ public class MemberController {
 		return ApiResponse.created("Signup successful.", response);
 	}
 
-	/**
-	 * Todo
-	 *  - Info를 업데이트하는 API에 name을 업데이트 하는 API를 통합
-	 */
 	@LoginRequired
 	@PatchMapping
 	public ApiResponse<UpdateMemberInfoResponse> updateMemberInfo(
@@ -84,29 +78,26 @@ public class MemberController {
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(
-			request,
-			loginMemberId
-		);
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, loginMemberId);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	@LoginRequired
-	@PatchMapping("/name")
-	public ApiResponse<UpdateMemberNameResponse> updateMemberName(
-		@RequestBody @Valid UpdateMemberNameRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
-	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		UpdateMemberNameResponse response = memberCommandService.updateName(
-			request,
-			loginMemberId
-		);
-
-		return ApiResponse.ok("Member name updated.", response);
-	}
+	// @LoginRequired
+	// @PatchMapping("/name")
+	// public ApiResponse<UpdateMemberNameResponse> updateMemberName(
+	// 	@RequestBody @Valid UpdateMemberNameRequest request,
+	// 	@ResolveLoginMember Long loginMemberId,
+	// 	HttpSession session
+	// ) {
+	// 	sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+	// 	UpdateMemberNameResponse response = memberCommandService.updateName(
+	// 		request,
+	// 		loginMemberId
+	// 	);
+	//
+	// 	return ApiResponse.ok("Member name updated.", response);
+	// }
 
 	@LoginRequired
 	@PatchMapping("/email")
@@ -129,7 +120,6 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		// sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		memberValidator.validateMemberPassword(request.originalPassword(), loginMemberId);
 		memberCommandService.updatePassword(request, loginMemberId);
 
@@ -143,7 +133,6 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		// sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_DELETE);
 		memberValidator.validateMemberPassword(request.getPassword(), loginMemberId);
 		memberCommandService.withdraw(loginMemberId);
 		session.invalidate();

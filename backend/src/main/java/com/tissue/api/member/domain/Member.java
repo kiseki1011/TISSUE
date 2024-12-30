@@ -54,17 +54,14 @@ public class Member extends BaseDateEntity {
 	private String password;
 
 	@Embedded
-	@Column(nullable = false)
 	private Name name;
 
 	@Lob
-	private String introduction;
+	private String biography;
 
-	@Column(nullable = false)
 	private LocalDate birthDate;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private JobType jobType;
 
 	@Column(nullable = false)
@@ -81,7 +78,7 @@ public class Member extends BaseDateEntity {
 		String loginId,
 		String email,
 		String password,
-		String introduction,
+		String biography,
 		JobType jobType,
 		Name name,
 		LocalDate birthDate
@@ -89,7 +86,7 @@ public class Member extends BaseDateEntity {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
-		this.introduction = introduction;
+		this.biography = biography;
 		this.jobType = jobType;
 		this.name = name;
 		this.birthDate = birthDate;
@@ -117,8 +114,8 @@ public class Member extends BaseDateEntity {
 		this.name = name;
 	}
 
-	public void updateIntroduction(String introduction) {
-		this.introduction = introduction;
+	public void updateBiography(String biography) {
+		this.biography = biography;
 	}
 
 	public void updateBirthDate(LocalDate birthDate) {

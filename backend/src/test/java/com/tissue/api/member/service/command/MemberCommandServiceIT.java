@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,7 +47,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(signupMemberResponse.memberId()).isEqualTo(1L);
-		Assertions.assertThat(memberRepository.findById(1L).get().getEmail()).isEqualTo("testemail@test.com");
+		assertThat(findMemberById(1L).getEmail()).isEqualTo("testemail@test.com");
 	}
 
 	@Test
@@ -67,7 +66,8 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Optional<Member> member = memberRepository.findByLoginId("testuser");
 		String encodedPassword = member.get().getPassword();
-		Assertions.assertThat(passwordEncoder.matches("testpassword1234!", encodedPassword)).isTrue();
+
+		assertThat(passwordEncoder.matches("testpassword1234!", encodedPassword)).isTrue();
 	}
 
 	@Test
@@ -86,6 +86,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Optional<Member> member = memberRepository.findByLoginId("testuser");
 		String encodedPassword = member.get().getPassword();
+
 		assertThat(encodedPassword).isNotEqualTo("testpassword1234!");
 	}
 
@@ -108,7 +109,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
 
-		Member updatedMember = memberRepository.findById(member.getId()).get();
+		Member updatedMember = findMemberById(member.getId());
 		assertThat(updatedMember.getEmail()).isEqualTo(newEmail);
 	}
 
@@ -146,8 +147,8 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.updatePassword(request, member.getId());
 
 		// then
-		Member updatedMember = memberRepository.findById(member.getId()).get();
-		Assertions.assertThat(passwordEncoder.matches(newPassword, updatedMember.getPassword())).isTrue();
+		Member updatedMember = findMemberById(member.getId());
+		assertThat(passwordEncoder.matches(newPassword, updatedMember.getPassword())).isTrue();
 	}
 
 	@Test
@@ -164,7 +165,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.withdraw(member.getId());
 
 		// then
-		Assertions.assertThat(memberRepository.findById(member.getId())).isEmpty();
+		assertThat(memberRepository.findById(member.getId())).isEmpty();
 	}
 
 	@Test
@@ -202,13 +203,13 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 				.firstName("Gildong")
 				.lastName("Hong")
 				.build())
-			.introduction("Im a backend developer")
+			.biography("Im a backend developer")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
-			.introduction("Im currently unemployed")
+			.biography("Im currently unemployed")
 			.jobType(JobType.ETC)
 			.birthDate(LocalDate.of(1995, 2, 2))
 			.build();
@@ -218,11 +219,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		Assertions.assertThat(memberRepository.findById(member.getId())
-				.get()
-				.getJobType()
-			)
-			.isEqualTo(JobType.ETC);
+		assertThat(findMemberById(member.getId()).getJobType()).isEqualTo(JobType.ETC);
 	}
 
 	@Test
@@ -237,13 +234,13 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 				.firstName("Gildong")
 				.lastName("Hong")
 				.build())
-			.introduction("Im a backend developer")
+			.biography("Im a backend developer")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
-			.introduction("Im currently unemployed")
+			.biography("Im currently unemployed")
 			.build();
 
 		// when
@@ -251,22 +248,43 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		Assertions.assertThat(memberRepository.findById(member.getId())
-				.get()
-				.getIntroduction()
-			)
-			.isEqualTo("Im currently unemployed");
 
-		Assertions.assertThat(memberRepository.findById(member.getId())
-				.get()
-				.getJobType()
-			)
-			.isEqualTo(JobType.DEVELOPER);
+		assertThat(findMemberById(member.getId()).getBiography()).isEqualTo("Im currently unemployed");
+		assertThat(findMemberById(member.getId()).getJobType()).isEqualTo(JobType.DEVELOPER);
+		assertThat(findMemberById(member.getId()).getBirthDate()).isEqualTo(LocalDate.of(1995, 1, 1));
+	}
 
-		Assertions.assertThat(memberRepository.findById(member.getId())
-				.get()
-				.getBirthDate()
-			)
-			.isEqualTo(LocalDate.of(1995, 1, 1));
+	@Test
+	@DisplayName("멤버 정보(프로필) 변경 요청 시, firstName 또는 lastName 둘 중 하나라도 비어있으면 이름은 변경되지 않는다")
+	void test() {
+		// given
+		Member member = memberRepository.save(Member.builder()
+			.loginId("tester")
+			.email("test@test.com")
+			.password("test1234!")
+			.name(Name.builder()
+				.firstName("Gildong")
+				.lastName("Hong")
+				.build())
+			.biography("Im a backend developer")
+			.jobType(JobType.DEVELOPER)
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.build());
+
+		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+			.lastName("Kim")
+			.build();
+
+		// when
+		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+
+		// then
+		assertThat(response.memberId()).isEqualTo(member.getId());
+		assertThat(findMemberById(member.getId()).getName().getLastName()).isEqualTo("Hong");
+	}
+
+	private Member findMemberById(Long id) {
+		return memberRepository.findById(id)
+			.orElseThrow();
 	}
 }
