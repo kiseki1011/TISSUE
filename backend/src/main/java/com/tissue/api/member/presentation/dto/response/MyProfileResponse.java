@@ -13,7 +13,7 @@ public record MyProfileResponse(
 	String firstName,
 	LocalDate birthDate,
 	JobType jobType,
-	String introduction,
+	String biography,
 	int ownedWorkspaceCount,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt
@@ -26,7 +26,7 @@ public record MyProfileResponse(
 			member.getName().getFirstName(),
 			member.getBirthDate(),
 			member.getJobType(),
-			member.getIntroduction(),
+			member.getBiography(),
 			member.getMyWorkspaceCount(),
 			member.getCreatedDate(),
 			member.getLastModifiedDate()

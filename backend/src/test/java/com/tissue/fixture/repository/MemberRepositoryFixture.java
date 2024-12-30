@@ -43,7 +43,7 @@ public class MemberRepositoryFixture {
 				.lastName("Hong")
 				.build())
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 		return memberRepository.save(member);

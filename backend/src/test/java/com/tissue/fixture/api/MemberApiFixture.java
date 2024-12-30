@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.domain.JobType;
+import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -22,7 +22,7 @@ public class MemberApiFixture {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 

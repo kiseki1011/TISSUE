@@ -57,6 +57,7 @@ public class MemberCommandService {
 		return UpdateMemberInfoResponse.from(member);
 	}
 
+	@Transactional
 	public UpdateMemberNameResponse updateName(
 		UpdateMemberNameRequest request,
 		Long memberId
@@ -118,14 +119,20 @@ public class MemberCommandService {
 		UpdateMemberInfoRequest request,
 		Member member
 	) {
+		if (request.hasName()) {
+			member.updateName(Name.builder()
+				.firstName(request.firstName())
+				.lastName(request.lastName())
+				.build());
+		}
 		if (request.hasBirthDate()) {
 			member.updateBirthDate(request.birthDate());
 		}
 		if (request.hasJobType()) {
 			member.updateJobType(request.jobType());
 		}
-		if (request.hasIntroduction()) {
-			member.updateIntroduction(request.introduction());
+		if (request.hasBiography()) {
+			member.updateBiography(request.biography());
 		}
 	}
 

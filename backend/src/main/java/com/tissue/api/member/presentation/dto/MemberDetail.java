@@ -18,7 +18,7 @@ public class MemberDetail {
 	private String firstName;
 	private LocalDate birthDate;
 	private JobType jobType;
-	private String introduction;
+	private String biography;
 	private int ownedWorkspaceCount;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
@@ -31,7 +31,7 @@ public class MemberDetail {
 		String firstName,
 		LocalDate birthDate,
 		JobType jobType,
-		String introduction,
+		String biography,
 		int ownedWorkspaceCount,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt
@@ -42,7 +42,7 @@ public class MemberDetail {
 		this.firstName = firstName;
 		this.birthDate = birthDate;
 		this.jobType = jobType;
-		this.introduction = introduction;
+		this.biography = biography;
 		this.ownedWorkspaceCount = ownedWorkspaceCount;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -56,7 +56,7 @@ public class MemberDetail {
 			.firstName(member.getName().getFirstName())
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
-			.introduction(member.getIntroduction())
+			.biography(member.getBiography())
 			.ownedWorkspaceCount(member.getMyWorkspaceCount())
 			.createdAt(member.getCreatedDate())
 			.updatedAt(member.getLastModifiedDate())

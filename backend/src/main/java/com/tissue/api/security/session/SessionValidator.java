@@ -45,7 +45,6 @@ public class SessionValidator {
 		Boolean permissionExists = (Boolean)session.getAttribute(SessionAttributes.PERMISSION_EXISTS);
 		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(SessionAttributes.PERMISSION_EXPIRES_AT);
 
-		// 현재 세션에 저장된 권한 정보가 요청한 권한 타입과 일치하는지 확인
 		if (storedPermissionType != permissionType) {
 			throw new PermissionMismatchException();
 		}

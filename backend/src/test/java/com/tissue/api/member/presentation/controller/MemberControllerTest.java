@@ -75,7 +75,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.build())
 			.birthDate(LocalDate.of(1990, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.introduction("Im a backend developer.")
+			.biography("Im a backend developer.")
 			.build();
 
 		when(memberQueryService.getMyProfile(anyLong())).thenReturn(MyProfileResponse.from(member));
@@ -100,7 +100,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
@@ -130,7 +130,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -164,7 +164,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -188,7 +188,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.introduction("Im a backend engineer.")
+			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -245,13 +245,10 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK를 응답한다")
 	void updateMemberInfo_success_OK() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.introduction("Im a backend developer")
+			.biography("Im a backend developer")
 			.build();
 
 		Member member = Member.builder()
@@ -263,7 +260,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.build())
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.introduction("Im a backend developer")
+			.biography("Im a backend developer")
 			.build();
 
 		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
@@ -271,7 +268,6 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -284,9 +280,6 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
 	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
 			.birthDate(LocalDate.of(2995, 1, 1))
 			.build();
@@ -300,7 +293,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.build())
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.introduction("Im a backend developer")
+			.biography("Im a backend developer")
 			.build();
 
 		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
@@ -308,7 +301,6 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
