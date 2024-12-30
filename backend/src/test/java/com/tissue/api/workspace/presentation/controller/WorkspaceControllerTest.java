@@ -48,7 +48,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 201을 응답한다")
+	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 CREATED를 응답한다")
 	void test1() throws Exception {
 		// given
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
@@ -88,7 +88,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지키지 않으면 400을 응답한다")
+	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지키지 않으면 BAD_REQUEST 응답한다")
 	void test3() throws Exception {
 		// given
 		String longName = createLongString(51);
@@ -112,7 +112,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/info - 워크스페이스 정보 수정 요청에 성공하면 200을 응답받는다")
+	@DisplayName("PATCH /workspaces/{code}/info - 워크스페이스 정보 수정 요청에 성공하면 OK를 응답한다")
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		UpdateWorkspaceInfoRequest request = new UpdateWorkspaceInfoRequest("New Title", "New Description");
@@ -144,7 +144,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 200을 응답받는다")
+	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 OK를 응답한다")
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
@@ -153,10 +153,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TESTCODE")
 			.build();
 
-		when(workspaceCommandService.deleteWorkspace(
-			ArgumentMatchers.any(DeleteWorkspaceRequest.class),
-			eq("TESTCODE"),
-			anyLong()))
+		when(workspaceCommandService.deleteWorkspace(eq("TESTCODE"), anyLong()))
 			.thenReturn(DeleteWorkspaceResponse.from(workspace));
 
 		// when & then
@@ -168,11 +165,11 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.code").value("TESTCODE"));
 
 		verify(workspaceCommandService, times(1))
-			.deleteWorkspace(ArgumentMatchers.any(DeleteWorkspaceRequest.class), eq("TESTCODE"), anyLong());
+			.deleteWorkspace(eq("TESTCODE"), anyLong());
 	}
 
 	@Test
-	@DisplayName("GET /workspaces/{code} - 워크스페이스 상세 정보 조회를 성공하면 200을 응답한다")
+	@DisplayName("GET /workspaces/{code} - 워크스페이스 상세 정보 조회를 성공하면 OK를 응답한다")
 	void test5() throws Exception {
 		// given
 		String code = "ABCD1234";

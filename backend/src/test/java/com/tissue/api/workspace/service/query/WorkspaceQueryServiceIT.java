@@ -14,7 +14,6 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
@@ -44,8 +43,8 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// member1은 workspace1,2에 참여
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(null), 1L);
-		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(null), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST2222", 1L);
 	}
 
 	@AfterEach
@@ -65,11 +64,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 		memberCommandService.signup(signupMemberRequest);
 
-		workspaceParticipationCommandService.joinWorkspace(
-			"TEST1111",
-			new JoinWorkspaceRequest(null),
-			2L
-		);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", 2L);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111");

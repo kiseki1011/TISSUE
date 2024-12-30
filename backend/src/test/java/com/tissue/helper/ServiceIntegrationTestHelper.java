@@ -23,6 +23,7 @@ import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
@@ -95,6 +96,8 @@ public abstract class ServiceIntegrationTestHelper {
 	 */
 	@Autowired
 	protected MemberValidator memberValidator;
+	@Autowired
+	protected WorkspaceValidator workspaceValidator;
 
 	/**
 	 * Repository

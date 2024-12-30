@@ -48,10 +48,6 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	@Test
 	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
 	void test11() throws Exception {
-		// Session 모킹
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		// given
 		String workspaceCode = "TESTCODE";
 		String loginId = "member1";
@@ -65,13 +61,11 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		JoinWorkspaceResponse response = JoinWorkspaceResponse.from(workspaceMember);
 
-		when(workspaceParticipationCommandService.joinWorkspace(eq(workspaceCode),
-			any(JoinWorkspaceRequest.class),
-			anyLong())).thenReturn(response);
+		when(workspaceParticipationCommandService.joinWorkspace(eq(workspaceCode), anyLong()))
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -82,23 +76,17 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	@Test
 	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
 	void test12() throws Exception {
-		// Session 모킹
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-
 		// given
 		String workspaceCode = "TESTCODE";
 		String invalidPassword = "invalid1234!";
 
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(invalidPassword);
 
-		when(workspaceParticipationCommandService.joinWorkspace(eq("TESTCODE"), any(JoinWorkspaceRequest.class),
-			anyLong()))
+		when(workspaceParticipationCommandService.joinWorkspace(eq("TESTCODE"), anyLong()))
 			.thenThrow(new InvalidWorkspacePasswordException());
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
