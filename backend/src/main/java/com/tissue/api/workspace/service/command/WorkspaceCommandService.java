@@ -11,7 +11,6 @@ import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
@@ -51,13 +50,12 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = findWorkspaceByCode(code);
 
-		String encodedUpdatePassword = encodePasswordIfPresent(request.updatePassword());
+		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
 		workspace.updatePassword(encodedUpdatePassword);
 	}
 
 	@Transactional
 	public DeleteWorkspaceResponse deleteWorkspace(
-		DeleteWorkspaceRequest request,
 		String code,
 		Long memberId
 	) {
@@ -66,7 +64,6 @@ public class WorkspaceCommandService {
 		Member member = findMemberById(memberId);
 		member.decreaseMyWorkspaceCount();
 
-		workspaceValidator.validatePasswordIfExists(workspace.getPassword(), request.getPassword());
 		workspaceRepository.delete(workspace);
 
 		return DeleteWorkspaceResponse.from(workspace);

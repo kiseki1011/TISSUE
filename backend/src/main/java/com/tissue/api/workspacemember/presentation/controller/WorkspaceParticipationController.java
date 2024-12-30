@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
@@ -29,6 +30,7 @@ public class WorkspaceParticipationController {
 
 	private final WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	private final WorkspaceParticipationCommandService workspaceParticipationCommandService;
+	private final WorkspaceValidator workspaceValidator;
 
 	/**
 	 * Todo
@@ -44,12 +46,8 @@ public class WorkspaceParticipationController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid JoinWorkspaceRequest request
 	) {
-
-		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(
-			code,
-			request,
-			loginMemberId
-		);
+		workspaceValidator.validateWorkspacePassword(request.password(), code);
+		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(code, loginMemberId);
 		return ApiResponse.ok("Joined workspace", response);
 	}
 

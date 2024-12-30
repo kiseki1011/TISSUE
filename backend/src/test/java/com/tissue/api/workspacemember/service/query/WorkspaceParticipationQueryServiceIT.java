@@ -19,7 +19,6 @@ import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
@@ -50,8 +49,8 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		);
 
 		// member1은 workspace1,2에 참여
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", new JoinWorkspaceRequest(null), 1L);
-		workspaceParticipationCommandService.joinWorkspace("TEST2222", new JoinWorkspaceRequest(null), 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST1111", 1L);
+		workspaceParticipationCommandService.joinWorkspace("TEST2222", 1L);
 	}
 
 	@AfterEach
@@ -87,7 +86,6 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 
 		workspaceParticipationCommandService.joinWorkspace(
 			"TEST1111",
-			new JoinWorkspaceRequest(null),
 			2L
 		);
 

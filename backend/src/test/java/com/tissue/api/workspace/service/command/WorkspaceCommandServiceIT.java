@@ -9,10 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
@@ -30,7 +28,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("유효한 워크스페이스 코드와 비밀번호로 워크스페이스를 삭제할 수 있다")
+	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 삭제할 수 있다")
 	void test1() {
 		// given
 		Member member = memberRepositoryFixture.createAndSaveMember(
@@ -45,37 +43,10 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build(), member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(),
-			member.getId());
+		workspaceCommandService.deleteWorkspace(response.code(), member.getId());
 
 		// then
 		assertThat(workspaceRepository.findByCode(response.code())).isEmpty();
-	}
-
-	@Transactional
-	@Test
-	@DisplayName("워크스페이스 삭제 시도 시 비밀번호가 맞지 않으면 예외가 발생한다")
-	void test2() {
-		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"member1password!"
-		);
-
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.password("password1234!")
-			.build(), member.getId());
-
-		// when & then
-		assertThatThrownBy(
-			() -> workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest("InvalidPassword"),
-				response.code(),
-				member.getId()))
-			.isInstanceOf(InvalidWorkspacePasswordException.class);
-
 	}
 
 	@Transactional
@@ -98,11 +69,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceCommandService.deleteWorkspace(
-			new DeleteWorkspaceRequest("password1234!"),
-			"INVALIDCODE",
-			member.getId())
-		)
+		assertThatThrownBy(() -> workspaceCommandService.deleteWorkspace("INVALIDCODE", member.getId()))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 
 	}
@@ -182,7 +149,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("updated1234!");
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("password1234!", "updated1234!");
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -205,7 +172,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			null
 		);
 
-		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("updated1234!");
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null, "updated1234!");
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -214,29 +181,6 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
-	}
-
-	@Transactional
-	@Test
-	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 제공하지 않으면 비밀번호는 null로 업데이트 된다")
-	void test10() {
-		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			"password1234!"
-		);
-
-		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null);
-
-		// when
-		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
-		entityManager.flush();
-
-		// then
-		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
-		assertThat(updatedPassword).isNull();
 	}
 
 	@Transactional
@@ -251,7 +195,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null);
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("password1234!", null);
 
 		// when
 		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
@@ -307,7 +251,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// when
-		workspaceCommandService.deleteWorkspace(new DeleteWorkspaceRequest(), response.code(), member.getId());
+		workspaceCommandService.deleteWorkspace(response.code(), member.getId());
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();

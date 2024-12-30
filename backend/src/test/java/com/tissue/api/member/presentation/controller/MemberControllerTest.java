@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -21,7 +20,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
@@ -34,11 +32,9 @@ import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
-import com.tissue.api.security.authorization.exception.InvalidPermissionException;
+import com.tissue.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.helper.ControllerTestHelper;
-
-import jakarta.servlet.http.HttpSession;
 
 class MemberControllerTest extends ControllerTestHelper {
 
@@ -215,7 +211,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		doNothing()
 			.when(memberValidator)
-			.validateMemberPasswordForPermission(anyString(), anyLong());
+			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
 		mockMvc.perform(post("/api/v1/members/permissions/update")
@@ -234,7 +230,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		doThrow(new InvalidMemberPasswordException())
 			.when(memberValidator)
-			.validateMemberPasswordForPermission(anyString(), anyLong());
+			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
 		mockMvc.perform(post("/api/v1/members/permissions/update")
@@ -325,15 +321,10 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK를 응답한다")
 	void updateEmail_success_OK() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -345,11 +336,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 이메일 업데이트 응답을 데이터로 받는다")
 	void updateEmail_success_returnsMemberEmailUpdateResponse() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
-
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
 		UpdateMemberEmailResponse response = UpdateMemberEmailResponse.from(
 			Member.builder()
@@ -360,7 +347,6 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -369,39 +355,33 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 업데이트 권한이 없으면 FORBIDDEN을 응답한다")
+	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 패스워드 검증을 실패하면 UNAUTHORIZED을 응답한다")
 	void updateEmail_forbidden_ifUpdateAuthIsInvalid() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
-		doThrow(new InvalidPermissionException())
-			.when(sessionValidator)
-			.validatePermissionInSession(any(HttpSession.class), eq(PermissionType.MEMBER_UPDATE));
+		doThrow(new InvalidLoginPasswordException())
+			.when(memberValidator)
+			.validateMemberPassword(eq("password1234!"), anyLong());
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isForbidden())
+			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.message").value(
-				"You do not have authorization for update or the authorization has expired"))
+				"The given login password is invalid"))
 			.andDo(print());
 	}
 
 	@Test
 	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK를 응답받는다")
 	void withdrawMember_shouldReturn200_ifSuccess() throws Exception {
-		// Mock Session
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH, true);
-		session.setAttribute(SessionAttributes.MEMBER_UPDATE_AUTH_EXPIRES_AT, LocalDateTime.now().plusMinutes(5));
-
 		// given
 		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/members")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
