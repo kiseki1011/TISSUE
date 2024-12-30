@@ -28,6 +28,7 @@ import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoRes
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -43,6 +44,7 @@ public class WorkspaceController {
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceCommandService workspaceCommandService;
 	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceValidator workspaceValidator;
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -74,15 +76,6 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace info updated.", response);
 	}
 
-	/**
-	 * Todo
-	 *  - 다음의 세 API에는 비밀번호 검증이 필요(서비스 계층 말고)
-	 *  - 워크스페이스 참여
-	 *  - 워크스페이스 패스워드 업데이트
-	 *  - 워크스페이스 삭제
-	 *  - MemberController의 /verify-password API와 비슷하게 구현하면 될 듯
-	 */
-
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
@@ -90,10 +83,8 @@ public class WorkspaceController {
 		@PathVariable String code,
 		@RequestBody @Valid UpdateWorkspacePasswordRequest request
 	) {
-		workspaceCommandService.updateWorkspacePassword(
-			request,
-			code
-		);
+		workspaceValidator.validateWorkspacePassword(request.originalPassword(), code);
+		workspaceCommandService.updateWorkspacePassword(request, code);
 
 		return ApiResponse.okWithNoContent("Workspace password updated.");
 	}
@@ -106,11 +97,8 @@ public class WorkspaceController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
-		DeleteWorkspaceResponse response = workspaceCommandService.deleteWorkspace(
-			request,
-			code,
-			loginMemberId
-		);
+		workspaceValidator.validateWorkspacePassword(request.getPassword(), code);
+		DeleteWorkspaceResponse response = workspaceCommandService.deleteWorkspace(code, loginMemberId);
 
 		return ApiResponse.ok("Workspace deleted.", response);
 	}

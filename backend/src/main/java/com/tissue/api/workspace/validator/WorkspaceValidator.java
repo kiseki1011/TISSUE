@@ -3,8 +3,10 @@ package com.tissue.api.workspace.validator;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,23 +15,24 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceValidator {
 
 	private final WorkspaceRepository workspaceRepository;
-
 	private final PasswordEncoder passwordEncoder;
 
-	public boolean validateWorkspaceCodeIsUnique(String code) {
-		return !workspaceRepository.existsByCode(code);
-	}
+	public void validateWorkspacePassword(String inputPassword, String workspaceCode) {
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(WorkspaceNotFoundException::new);
 
-	public void validatePasswordIfExists(String workspacePassword, String inputPassword) {
-		if (workspacePassword == null) {
+		if (workspace.getPassword() == null) {
 			return;
 		}
-		if (passwordDoesNotMatch(workspacePassword, inputPassword)) {
+		if (inputPassword == null) {
+			throw new InvalidWorkspacePasswordException();
+		}
+		if (!passwordEncoder.matches(inputPassword, workspace.getPassword())) {
 			throw new InvalidWorkspacePasswordException();
 		}
 	}
 
-	private boolean passwordDoesNotMatch(String workspacePassword, String inputPassword) {
-		return !passwordEncoder.matches(inputPassword, workspacePassword);
+	public boolean validateWorkspaceCodeIsUnique(String code) {
+		return !workspaceRepository.existsByCode(code);
 	}
 }
