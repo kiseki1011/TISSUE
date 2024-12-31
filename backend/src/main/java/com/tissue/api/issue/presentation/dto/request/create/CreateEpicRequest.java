@@ -9,7 +9,9 @@ import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record CreateEpicRequest(
 	@NotBlank String title,
 	@NotBlank String content,

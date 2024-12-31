@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,7 +20,8 @@ public record CreateBugResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long reporterId,
+	Long createrId,
+	LocalDateTime createdAt,
 	String title,
 	String content,
 	String summary,
@@ -38,7 +40,8 @@ public record CreateBugResponse(
 			.issueId(bug.getId())
 			.issueKey(bug.getIssueKey())
 			.workspaceCode(bug.getWorkspaceCode())
-			.reporterId(bug.getCreatedByWorkspaceMember())
+			.createrId(bug.getCreatedByWorkspaceMember())
+			.createdAt(bug.getCreatedDate())
 			.title(bug.getTitle())
 			.content(bug.getContent())
 			.summary(bug.getSummary())

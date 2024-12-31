@@ -9,7 +9,6 @@ import com.tissue.api.issue.domain.types.SubTask;
 import com.tissue.api.issue.domain.types.Task;
 
 public interface CreateIssueResponse {
-	IssueType getType();
 
 	static CreateIssueResponse from(Issue issue) {
 		return switch (issue.getType()) {
@@ -20,4 +19,6 @@ public interface CreateIssueResponse {
 			case SUB_TASK -> CreateSubTaskResponse.from((SubTask)issue);
 		};
 	}
+
+	IssueType getType();
 }

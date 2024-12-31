@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -13,7 +14,8 @@ public record CreateEpicResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long reporterId,
+	Long createrId,
+	LocalDateTime createdAt,
 	String title,
 	String content,
 	String summary,
@@ -30,7 +32,8 @@ public record CreateEpicResponse(
 			.issueId(epic.getId())
 			.issueKey(epic.getIssueKey())
 			.workspaceCode(epic.getWorkspaceCode())
-			.reporterId(epic.getCreatedByWorkspaceMember())
+			.createrId(epic.getCreatedByWorkspaceMember())
+			.createdAt(epic.getCreatedDate())
 			.title(epic.getTitle())
 			.content(epic.getContent())
 			.summary(epic.getSummary())

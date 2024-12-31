@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.tissue.api.issue.domain.Issue;
@@ -16,7 +17,8 @@ public record CreateStoryResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long reporterId,
+	Long createrId,
+	LocalDateTime createdAt,
 	String title,
 	String content,
 	String summary,
@@ -33,7 +35,8 @@ public record CreateStoryResponse(
 			.issueId(story.getId())
 			.issueKey(story.getIssueKey())
 			.workspaceCode(story.getWorkspaceCode())
-			.reporterId(story.getCreatedByWorkspaceMember())
+			.createrId(story.getCreatedByWorkspaceMember())
+			.createdAt(story.getCreatedDate())
 			.title(story.getTitle())
 			.content(story.getContent())
 			.summary(story.getSummary())

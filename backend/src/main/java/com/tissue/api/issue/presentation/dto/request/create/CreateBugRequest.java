@@ -12,7 +12,9 @@ import com.tissue.api.issue.domain.types.Bug;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record CreateBugRequest(
 	@NotBlank String title,
 	@NotBlank String content,

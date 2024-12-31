@@ -10,7 +10,9 @@ import com.tissue.api.issue.domain.types.Task;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record CreateTaskRequest(
 	@NotBlank String title,
 	@NotBlank String content,
