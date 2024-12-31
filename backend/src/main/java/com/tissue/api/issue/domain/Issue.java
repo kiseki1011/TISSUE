@@ -32,6 +32,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Todo 1
+ *  - workspaceCode + issueKey 복합 인덱스를 위한 필드 고려?
+ *  - 모든 이슈의 조회를 workspaceCode + issueKey를 사용 중
+ */
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -56,7 +61,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	/**
 	 * Todo
-	 *  - 이슈 키를 위해서 VO(@Embeddeble) 사용 고려
 	 *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
 	 *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
 	 *  Workspace에 Optimistic locking을 적용한다
@@ -66,7 +70,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", insertable = false, updatable = false)
-	private IssueType type;  // DB의 discriminator column과 매핑
+	private IssueType type;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
@@ -96,6 +100,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private LocalDateTime startedAt;
 	private LocalDateTime finishedAt;
+
 	private LocalDate dueDate;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -127,14 +132,31 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.dueDate = dueDate;
 	}
 
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
+	}
+
+	public void updateSummary(String summary) {
+		this.summary = summary;
+	}
+
+	public void updateDueDate(LocalDate dueDate) {
+		this.dueDate = dueDate;
+	}
+
 	/**
 	 * Todo
 	 *  - 상태 업데이트는 도메인 이벤트(Domain Event) 발행으로 구현하는 것을 고려
 	 *  - 상태 변경과 관련된 부가 작업들(알림 발송, 감사 로그 기록 등)을
 	 *  이벤트 핸들러에서 처리할 수 있어 확장성이 좋아짐
 	 */
+
 	public void updateStatus(IssueStatus newStatus) {
-		validateStatusTransition(newStatus);
+		// validateStatusTransition(newStatus);
 		this.status = newStatus;
 		updateTimestamps(newStatus);
 	}
@@ -165,6 +187,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	 * Todo
 	 *  - 상태 패턴(State, State Machine Pattern)의 사용 고려
 	 *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
+	 * Todo 2
+	 *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
 	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		if (this.status == IssueStatus.IN_REVIEW) {

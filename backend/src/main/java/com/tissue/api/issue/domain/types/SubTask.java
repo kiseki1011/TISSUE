@@ -46,6 +46,10 @@ public class SubTask extends Issue {
 		}
 	}
 
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
+	}
+
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		// SubTask는 반드시 부모 이슈가 있어야 함, 그리고 반드시 Task/Story/Bug의 자식 이슈

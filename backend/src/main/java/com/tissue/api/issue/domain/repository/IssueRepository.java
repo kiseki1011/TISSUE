@@ -17,6 +17,8 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 
 	Optional<Issue> findByIdAndWorkspaceCode(Long id, String workspaceCode);
 
+	Optional<Issue> findByIssueKeyAndWorkspaceCode(String issueKey, String workspaceCode);
+
 	/**
 	 * 워크스페이스 코드와 이슈 ID로 이슈와 그 하위 이슈들을 함께 조회합니다.
 	 * 부모 이슈 설정 시 N+1 문제를 방지하기 위해 fetch join을 사용합니다.

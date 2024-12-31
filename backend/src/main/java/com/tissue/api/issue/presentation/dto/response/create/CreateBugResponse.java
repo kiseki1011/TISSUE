@@ -19,7 +19,7 @@ public record CreateBugResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long reporterId, // Todo: workspaceMemberDetail 사용 고려, SessionAuditorAware에서 workspaceMemberId 반환하는 형태로 변경
+	Long reporterId,
 	String title,
 	String content,
 	String summary,

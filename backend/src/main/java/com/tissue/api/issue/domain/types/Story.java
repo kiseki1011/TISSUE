@@ -23,12 +23,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends Issue {
 
+	private Difficulty difficulty;
+
 	@Column(name = "USER_STORY", nullable = false)
 	private String userStory;
 
 	private String acceptanceCriteria;
-
-	private Difficulty difficulty;
 
 	@Builder
 	public Story(
@@ -52,6 +52,18 @@ public class Story extends Issue {
 			validateParentIssue(parentIssue);
 			setParentIssue(parentIssue);
 		}
+	}
+
+	public void updateUserStory(String userStory) {
+		this.userStory = userStory;
+	}
+
+	public void updateAcceptanceCriteria(String acceptanceCriteria) {
+		this.acceptanceCriteria = acceptanceCriteria;
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
 	}
 
 	@Override

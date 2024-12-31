@@ -49,6 +49,10 @@ public class Task extends Issue {
 		}
 	}
 
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
+	}
+
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
