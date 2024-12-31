@@ -8,7 +8,9 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record UpdateEpicRequest(
 	@NotBlank String title,
 	@NotBlank String content,

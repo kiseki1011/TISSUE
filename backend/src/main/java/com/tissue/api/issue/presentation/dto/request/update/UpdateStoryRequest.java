@@ -9,7 +9,9 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Story;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record UpdateStoryRequest(
 	@NotBlank String title,
 	@NotBlank String content,
@@ -17,7 +19,7 @@ public record UpdateStoryRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	String userStory,
+	@NotBlank String userStory,
 	String acceptanceCriteria
 ) implements UpdateIssueRequest {
 

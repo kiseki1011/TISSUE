@@ -11,8 +11,9 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
+@Builder
 public record UpdateBugRequest(
 	@NotBlank String title,
 	@NotBlank String content,
@@ -21,7 +22,7 @@ public record UpdateBugRequest(
 	LocalDate dueDate,
 	Difficulty difficulty,
 	@NotBlank String reproducingSteps,
-	@NotNull BugSeverity severity,
+	BugSeverity severity,
 	Set<String> affectedVersions
 ) implements UpdateIssueRequest {
 

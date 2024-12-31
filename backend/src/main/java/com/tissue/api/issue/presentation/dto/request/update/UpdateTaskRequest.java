@@ -9,7 +9,9 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Task;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+@Builder
 public record UpdateTaskRequest(
 	@NotBlank String title,
 	@NotBlank String content,

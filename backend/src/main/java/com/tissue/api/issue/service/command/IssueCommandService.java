@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
-import com.tissue.api.issue.presentation.dto.request.UpdateStatusRequest;
+import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
-import com.tissue.api.issue.presentation.dto.response.UpdateStatusResponse;
+import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
+import com.tissue.api.issue.validator.IssueValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
@@ -26,6 +29,7 @@ public class IssueCommandService {
 
 	private final IssueRepository issueRepository;
 	private final WorkspaceRepository workspaceRepository;
+	private final IssueValidator issueValidator;
 
 	/*
 	 * Todo
@@ -53,22 +57,41 @@ public class IssueCommandService {
 	}
 
 	@Transactional
-	public UpdateStatusResponse updateIssueStatus(
-		Long issueId,
+	public UpdateIssueResponse updateIssue(
 		String code,
-		UpdateStatusRequest request
+		String issueKey,
+		UpdateIssueRequest request
 	) {
-		Issue issue = issueRepository.findByIdAndWorkspaceCode(issueId, code)
-			.orElseThrow(IssueNotFoundException::new);
+		Issue issue = findIssue(code, issueKey);
+
+		issueValidator.validateIssueTypeMatch(issue, request);
+
+		request.update(issue);
+
+		return UpdateIssueResponse.from(issue);
+	}
+
+	@Transactional
+	public UpdateIssueStatusResponse updateIssueStatus(
+		String code,
+		String issueKey,
+		UpdateIssueStatusRequest request
+	) {
+		Issue issue = findIssue(code, issueKey);
 
 		issue.updateStatus(request.status());
 
-		return UpdateStatusResponse.from(issue);
+		return UpdateIssueStatusResponse.from(issue);
 	}
 
 	private Optional<Issue> findParentIssue(Long parentIssueId, String workspaceCode) {
 		return Optional.ofNullable(parentIssueId)
 			.map(id -> issueRepository.findByIdAndWorkspaceCode(id, workspaceCode)
 				.orElseThrow(() -> new IssueNotFoundException("Issue does not exist in this workspace.")));
+	}
+
+	private Issue findIssue(String code, String issueKey) {
+		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
+			.orElseThrow(IssueNotFoundException::new);
 	}
 }

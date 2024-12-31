@@ -49,7 +49,6 @@ public class Bug extends Issue {
 	private String reproducingSteps;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private BugSeverity severity;
 
 	@ElementCollection
