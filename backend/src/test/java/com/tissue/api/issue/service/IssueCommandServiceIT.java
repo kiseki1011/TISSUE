@@ -16,6 +16,7 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.issue.domain.types.Task;
+import com.tissue.api.issue.exception.CannotDeleteParentOfSubTaskException;
 import com.tissue.api.issue.exception.IssueTypeMismatchException;
 import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.issue.exception.SubTaskWrongParentTypeException;
@@ -25,6 +26,7 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
+import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.helper.ServiceIntegrationTestHelper;
@@ -52,7 +54,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Transactional
 	@Test
-	@DisplayName("TASK 타입 이슈 생성에 성공하면 CreateTaskResponse를 반환 받는다")
+	@DisplayName("TASK 타입 이슈 생성에 성공하면 CreateTaskResponse를 반환한다")
 	void createTask_Success_returnsCreateTaskResponse() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
@@ -287,7 +289,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("STORY 타입 이슈 업데이트에 성공하면 UpdateStoryResponse를 반환 받는다")
+	@DisplayName("STORY 타입 이슈 업데이트에 성공하면 UpdateStoryResponse를 반환한다")
 	void updateIssue_Story_Success() {
 		// given
 		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
@@ -361,6 +363,67 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.updateIssue("TESTCODE", createResponse.issueKey(), request))
 			.isInstanceOf(IssueTypeMismatchException.class);
+	}
+
+	@Test
+	@DisplayName("이슈 삭제에 성공하면 DeleteIssueResponse를 반환한다")
+	void deleteIssue_success_returnsDeleteIssueResponse() {
+		// given
+		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
+			.title("Test Title")
+			.content("Test Content")
+			.summary("Test Summary")
+			.priority(IssuePriority.MEDIUM)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.userStory("Test User Story")
+			.acceptanceCriteria("Test Acceptance Criteria")
+			.build();
+
+		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			createStoryRequest
+		);
+
+		// when
+		DeleteIssueResponse response = issueCommandService.deleteIssue("TESTCODE", createResponse.issueKey());
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(createResponse.issueKey());
+		assertThat(response.issueId()).isEqualTo(createResponse.issueId());
+	}
+
+	@Test
+	@DisplayName("SubTask 타입 이슈의 부모 삭제를 시도하면 예외가 발생한다")
+	void deleteIssue_thatIsParentOfSubTask_throwsException() {
+		// given
+		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
+			.title("Test Title")
+			.content("Test Content")
+			.summary("Test Summary")
+			.priority(IssuePriority.MEDIUM)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.userStory("Test User Story")
+			.acceptanceCriteria("Test Acceptance Criteria")
+			.build();
+
+		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			createStoryRequest
+		);
+
+		CreateSubTaskRequest createSubTaskRequest = CreateSubTaskRequest.builder()
+			.title("Child SubTask Title")
+			.content("Child SubTask Content")
+			.parentIssueId(createResponse.issueId())
+			.build();
+
+		issueCommandService.createIssue("TESTCODE", createSubTaskRequest);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.deleteIssue("TESTCODE", createResponse.issueKey()))
+			.isInstanceOf(CannotDeleteParentOfSubTaskException.class);
 	}
 
 	//
