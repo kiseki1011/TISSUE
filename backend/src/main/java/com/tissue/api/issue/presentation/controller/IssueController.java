@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -133,16 +135,15 @@ public class IssueController {
 	// 	return ApiResponse.ok("Parent issue relationship removed.", response);
 	// }
 	//
-	// @LoginRequired
-	// @RoleRequired(roles = WorkspaceRole.ADMIN)
-	// @DeleteMapping("/{issueKey}")
-	// public ApiResponse<DeleteIssueResponse> deleteIssue(
-	// 	@PathVariable String code,
-	// 	@PathVariable String issueKey,
-	// 	@RequestBody @Valid DeleteIssueRequest request
-	// ) {
-	// 	DeleteIssueResponse response = issueCommandService.deleteIssue(code, issueKey, request);
-	//
-	// 	return ApiResponse.ok("Parent issue deleted.", response);
-	// }
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@DeleteMapping("/{issueKey}")
+	public ApiResponse<DeleteIssueResponse> deleteIssue(
+		@PathVariable String code,
+		@PathVariable String issueKey
+	) {
+		DeleteIssueResponse response = issueCommandService.deleteIssue(code, issueKey);
+
+		return ApiResponse.ok("Parent issue deleted.", response);
+	}
 }

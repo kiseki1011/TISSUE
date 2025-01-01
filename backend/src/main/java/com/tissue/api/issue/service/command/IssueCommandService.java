@@ -1,5 +1,6 @@
 package com.tissue.api.issue.service.command;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.validator.IssueValidator;
 import com.tissue.api.workspace.domain.Workspace;
@@ -82,6 +84,22 @@ public class IssueCommandService {
 		issue.updateStatus(request.status());
 
 		return UpdateIssueStatusResponse.from(issue);
+	}
+
+	@Transactional
+	public DeleteIssueResponse deleteIssue(
+		String code,
+		String issueKey
+	) {
+		Issue issue = findIssue(code, issueKey);
+
+		issueValidator.validateNotParentOfSubTask(issue);
+
+		Long issueId = issue.getId();
+
+		issueRepository.delete(issue);
+
+		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
 	}
 
 	private Optional<Issue> findParentIssue(Long parentIssueId, String workspaceCode) {
