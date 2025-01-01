@@ -16,14 +16,16 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.issue.domain.types.Task;
+import com.tissue.api.issue.exception.IssueTypeMismatchException;
 import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.issue.exception.SubTaskWrongParentTypeException;
-import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
+import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
+import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
@@ -50,18 +52,17 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Transactional
 	@Test
-	@DisplayName("이슈 생성에 성공하면 이슈 생성 응답을 반환 받는다")
-	void createIssue_Success_returnsCreateIssueResponse() {
+	@DisplayName("TASK 타입 이슈 생성에 성공하면 CreateTaskResponse를 반환 받는다")
+	void createTask_Success_returnsCreateTaskResponse() {
 		// given
-		CreateIssueRequest request = new CreateTaskRequest(
-			"Test Issue",
-			"Test content",
-			null,
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			null
-		);
+		CreateTaskRequest request = CreateTaskRequest.builder()
+			.title("Test Issue")
+			.content("Test Content")
+			.summary("Test Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
@@ -79,7 +80,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Transactional
 	@Test
-	@DisplayName("부모 이슈를 지정하여 이슈를 생성할 수 있다")
+	@DisplayName("특정 이슈를 부모로 지정하여 이슈를 생성하는 것이 가능하다")
 	void createIssue_WithParent() {
 		// given
 		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
@@ -93,17 +94,17 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 		issueRepository.save(parentIssue);
 
-		CreateIssueRequest request = new CreateStoryRequest(
-			"Child Story Issue",
-			"Child Story Issue",
-			null,
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			parentIssue.getId(),
-			"Child Story Issue User Story",
-			"Child Story Issue Acceptance Criteria"
-		);
+		CreateStoryRequest request = CreateStoryRequest.builder()
+			.title("Child Story Title")
+			.content("Child Story Content")
+			.summary("Child Story Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.parentIssueId(parentIssue.getId())
+			.userStory("Child Story User Story")
+			.acceptanceCriteria("Child Story Acceptance Criteria")
+			.build();
 
 		// when
 		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
@@ -122,34 +123,31 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("STORY 타입 이슈 생성 시, TASK 타입 이슈를 부모로 지정하면 예외가 발생한다")
 	void createStoryIssue_WithParent_Fails_ifParentIsTask() {
 		// given
-		CreateTaskRequest parentCreateRequest = new CreateTaskRequest(
-			"Parent Task Issue",
-			"Parent Task Issue",
-			"Parent Task Issue",
-			null,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			null
-		);
+		CreateTaskRequest parentCreateRequest = CreateTaskRequest.builder()
+			.title("Parent Task Title")
+			.content("Parent Task Content")
+			.summary("Parent Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
 
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			"TESTCODE",
 			parentCreateRequest
 		);
 
-		Long parentIssueId = response.issueId();
-
-		CreateStoryRequest request = new CreateStoryRequest(
-			"Child Story Issue",
-			"Child Story Issue",
-			"Test summary",
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			parentIssueId,
-			"Child Story Issue User Story",
-			"Child Story Issue Acceptance Criteria"
-		);
+		CreateStoryRequest request = CreateStoryRequest.builder()
+			.title("Child Story Title")
+			.content("Child Story Content")
+			.summary("Child Story Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.parentIssueId(response.issueId())
+			.userStory("Child Story User Story")
+			.acceptanceCriteria("Child Story Acceptance Criteria")
+			.build();
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
@@ -166,21 +164,21 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		Issue parentIssue = Epic.builder()
 			.workspace(workspace)
-			.title("Parent Epic Issue")
-			.content("Parent Epic Issue")
-			.businessGoal("Parent Epic Issue")
+			.title("Parent Epic Title")
+			.content("Parent Epic Content")
+			.businessGoal("Parent Epic Business Goal")
 			.build();
 		issueRepository.save(parentIssue);
 
-		CreateIssueRequest request = new CreateSubTaskRequest(
-			"Child Sub-task Issue",
-			"Child Sub-task Issue",
-			null,
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			parentIssue.getId()
-		);
+		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
+			.title("Child SubTask Title")
+			.content("Child SubTask Content")
+			.summary("Child SubTask Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.parentIssueId(parentIssue.getId())
+			.build();
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
@@ -197,20 +195,20 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		Issue parentIssue = Task.builder()
 			.workspace(workspace)
-			.title("Parent Task Issue")
-			.content("Parent Task Issue")
+			.title("Parent Task Title")
+			.content("Parent Task Content")
 			.build();
 		issueRepository.save(parentIssue);
 
-		CreateIssueRequest request = new CreateTaskRequest(
-			"Child Task Issue",
-			"Child Task Issue",
-			null,
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			parentIssue.getId()
-		);
+		CreateTaskRequest request = CreateTaskRequest.builder()
+			.title("Child Task Title")
+			.content("Child Task Content")
+			.summary("Child Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.parentIssueId(parentIssue.getId())
+			.build();
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
@@ -222,15 +220,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("가장 처음 생성된 이슈의 IssueKey는 'ISSUE-1'이어야 한다")
 	void createIssue_firstIssue_issueKeyMustBe_ISSUE_1() {
 		// given
-		CreateIssueRequest request = new CreateTaskRequest(
-			"Test Task Issue",
-			"Test Task Issue",
-			"Test Task Issue",
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			null
-		);
+		CreateTaskRequest request = CreateTaskRequest.builder()
+			.title("Test Task Title")
+			.content("Test Task Content")
+			.summary("Test Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
@@ -240,7 +237,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.getType()).isEqualTo(IssueType.TASK);
-		assertThat(response.title()).isEqualTo("Test Task Issue");
+		assertThat(response.title()).isEqualTo("Test Task Title");
 
 		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
 		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
@@ -252,25 +249,23 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("두번째 생성된 이슈의 IssueKey는 'ISSUE-2'이어야 한다")
 	void createIssue_secondIssue_issueKeyMustBe_ISSUE_2() {
 		// given
-		CreateIssueRequest request1 = new CreateTaskRequest(
-			"Test Task Issue",
-			"Test Task Issue",
-			"Test Task Issue",
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			null
-		);
+		CreateTaskRequest request1 = CreateTaskRequest.builder()
+			.title("Test Task Title")
+			.content("Test Task Content")
+			.summary("Test Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
 
-		CreateIssueRequest request2 = new CreateTaskRequest(
-			"Second Test Task Issue",
-			"Second Test Task Issue",
-			"Second Test Task Issue",
-			IssuePriority.HIGH,
-			LocalDate.now(),
-			Difficulty.NORMAL,
-			null
-		);
+		CreateTaskRequest request2 = CreateTaskRequest.builder()
+			.title("Second Test Task Title")
+			.content("Second Test Task Content")
+			.summary("Second Test Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
 
 		issueCommandService.createIssue(
 			"TESTCODE",
@@ -285,10 +280,86 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.getType()).isEqualTo(IssueType.TASK);
-		assertThat(response.title()).isEqualTo("Second Test Task Issue");
+		assertThat(response.title()).isEqualTo("Second Test Task Title");
 
 		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
 		assertThat(savedIssue.getIssueKey()).isEqualTo("ISSUE-2");
+	}
+
+	@Test
+	@DisplayName("STORY 타입 이슈 업데이트에 성공하면 UpdateStoryResponse를 반환 받는다")
+	void updateIssue_Story_Success() {
+		// given
+		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
+			.title("Test Title")
+			.content("Test Content")
+			.summary("Test Summary")
+			.priority(IssuePriority.MEDIUM)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.userStory("Test User Story")
+			.acceptanceCriteria("Test Acceptance Criteria")
+			.build();
+
+		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			createStoryRequest
+		);
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.title("Updated Title")
+			.content("Updated Content")
+			.summary("Updated Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.HARD)
+			.userStory("Updated User Story")
+			.acceptanceCriteria("Updated Acceptance Criteria")
+			.build();
+
+		// when
+		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+			"TESTCODE",
+			createResponse.issueKey(),
+			request
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(createResponse.issueKey());
+		assertThat(response.title()).isEqualTo("Updated Title");
+	}
+
+	@Test
+	void updateIssue_TypeMismatch_ThrowsException() {
+		// given
+		CreateTaskRequest createTaskRequest = CreateTaskRequest.builder()
+			.title("Test Task Title")
+			.content("Test Task Content")
+			.summary("Test Task Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.NORMAL)
+			.build();
+
+		CreateTaskResponse createResponse = (CreateTaskResponse)issueCommandService.createIssue(
+			"TESTCODE",
+			createTaskRequest
+		);
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.title("Updated Title")
+			.content("Updated Content")
+			.summary("Updated Summary")
+			.priority(IssuePriority.HIGH)
+			.dueDate(LocalDate.now())
+			.difficulty(Difficulty.HARD)
+			.userStory("Updated User Story")
+			.acceptanceCriteria("Updated Acceptance Criteria")
+			.build();
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.updateIssue("TESTCODE", createResponse.issueKey(), request))
+			.isInstanceOf(IssueTypeMismatchException.class);
 	}
 
 	//
