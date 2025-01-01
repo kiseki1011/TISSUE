@@ -330,6 +330,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@DisplayName("요청의 이슈 타입과 업데이트를 위해 조회한 이슈 타입이 불일치하면 예외가 발생한다")
 	void updateIssue_TypeMismatch_ThrowsException() {
 		// given
 		CreateTaskRequest createTaskRequest = CreateTaskRequest.builder()
