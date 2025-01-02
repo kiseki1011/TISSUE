@@ -21,7 +21,7 @@ public record CreateStoryRequest(
 	LocalDate dueDate,
 	Difficulty difficulty,
 	Long parentIssueId,
-	String userStory,
+	@NotBlank String userStory,
 	String acceptanceCriteria
 
 ) implements CreateIssueRequest {

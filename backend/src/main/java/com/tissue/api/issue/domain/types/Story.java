@@ -49,7 +49,6 @@ public class Story extends Issue {
 		this.acceptanceCriteria = acceptanceCriteria;
 
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
 			setParentIssue(parentIssue);
 		}
 	}

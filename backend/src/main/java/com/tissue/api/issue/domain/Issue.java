@@ -13,7 +13,6 @@ import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.workspace.domain.Workspace;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -115,7 +114,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
 
-	@OneToMany(mappedBy = "parentIssue", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();
 
 	protected Issue(
@@ -182,7 +181,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	protected void setParentIssue(Issue parentIssue) {
+	public void setParentIssue(Issue parentIssue) {
+		validateParentIssue(parentIssue);
+		removeFromParent();
+
 		this.parentIssue = parentIssue;
 		parentIssue.getChildIssues().add(this);
 	}

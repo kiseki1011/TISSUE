@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
@@ -109,32 +111,31 @@ public class IssueController {
 		return ApiResponse.ok("Issue details updated.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(roles = WorkspaceRole.COLLABORATOR)
-	// @PatchMapping("/{issueKey}/parent")
-	// public ApiResponse<AssignParentIssueResponse> assignParentIssue(
-	// 	@PathVariable String code,
-	// 	@PathVariable String issueKey,
-	// 	@RequestBody @Valid AssignParentIssueRequest request
-	// ) {
-	// 	AssignParentIssueResponse response = issueCommandService.assignParentIssue(code, issueKey, request);
-	//
-	// 	return ApiResponse.ok("Parent issue assigned.", response);
-	// }
-	//
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@PatchMapping("/{issueKey}/parent")
+	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@RequestBody @Valid AssignParentIssueRequest request
+	) {
+		AssignParentIssueResponse response = issueCommandService.assignParentIssue(code, issueKey, request);
+
+		return ApiResponse.ok("Parent issue assigned.", response);
+	}
+
 	// @LoginRequired
 	// @RoleRequired(roles = WorkspaceRole.COLLABORATOR)
 	// @DeleteMapping("/{issueKey}/parent")
 	// public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
 	// 	@PathVariable String code,
-	// 	@PathVariable String issueKey,
-	// 	@RequestBody @Valid RemoveParentIssueRequest request
+	// 	@PathVariable String issueKey
 	// ) {
-	// 	RemoveParentIssueResponse response = issueCommandService.removeParentIssue(code, issueKey, request);
+	// 	RemoveParentIssueResponse response = issueCommandService.removeParentIssue(code, issueKey);
 	//
 	// 	return ApiResponse.ok("Parent issue relationship removed.", response);
 	// }
-	//
+
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.ADMIN)
 	@DeleteMapping("/{issueKey}")

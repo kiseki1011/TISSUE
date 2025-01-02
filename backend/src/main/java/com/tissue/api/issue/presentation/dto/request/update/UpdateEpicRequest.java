@@ -18,7 +18,8 @@ public record UpdateEpicRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	@NotBlank String businessGoal,
-	LocalDate targetReleaseDate
+	LocalDate targetReleaseDate,
+	LocalDate hardDeadLine
 ) implements UpdateIssueRequest {
 
 	@Override
@@ -37,5 +38,6 @@ public record UpdateEpicRequest(
 		epic.updateDueDate(dueDate);
 		epic.updateBusinessGoal(businessGoal);
 		epic.updateTargetReleaseDate(targetReleaseDate);
+		epic.updateHardDeadLine(hardDeadLine);
 	}
 }

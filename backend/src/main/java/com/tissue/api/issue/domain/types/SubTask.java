@@ -41,7 +41,6 @@ public class SubTask extends Issue {
 		this.difficulty = difficulty;
 
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
 			setParentIssue(parentIssue);
 		}
 	}

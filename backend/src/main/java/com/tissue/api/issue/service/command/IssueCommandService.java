@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
@@ -84,6 +86,20 @@ public class IssueCommandService {
 		issue.updateStatus(request.status());
 
 		return UpdateIssueStatusResponse.from(issue);
+	}
+
+	@Transactional
+	public AssignParentIssueResponse assignParentIssue(
+		String code,
+		String issueKey,
+		AssignParentIssueRequest request
+	) {
+		Issue issue = findIssue(code, issueKey);
+		Issue parentIssue = findIssue(code, request.parentIssueKey());
+
+		issue.setParentIssue(parentIssue);
+
+		return AssignParentIssueResponse.from(issue);
 	}
 
 	@Transactional

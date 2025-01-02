@@ -42,7 +42,6 @@ public record CreateEpicResponse(
 			.businessGoal(epic.getBusinessGoal())
 			.targetReleaseDate(epic.getTargetReleaseDate())
 			.hardDeadLine(epic.getHardDeadLine())
-			.parentIssueId(epic.getParentIssue().getId())
 			.build();
 	}
 
