@@ -8,12 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
+import com.tissue.api.issue.exception.CannotRemoveParentException;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
@@ -102,6 +104,20 @@ public class IssueCommandService {
 		return AssignParentIssueResponse.from(issue);
 	}
 
+	public RemoveParentIssueResponse removeParentIssue(
+		String code,
+		String issueKey
+	) {
+		Issue issue = findIssue(code, issueKey);
+
+		if (cannotRemoveParent(issue)) {
+			throw new CannotRemoveParentException();
+		}
+		issue.removeParentRelationship();
+
+		return RemoveParentIssueResponse.from(issue);
+	}
+
 	@Transactional
 	public DeleteIssueResponse deleteIssue(
 		String code,
@@ -127,5 +143,9 @@ public class IssueCommandService {
 	private Issue findIssue(String code, String issueKey) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(IssueNotFoundException::new);
+	}
+
+	private boolean cannotRemoveParent(Issue issue) {
+		return !issue.canRemoveParentRelationship();
 	}
 }

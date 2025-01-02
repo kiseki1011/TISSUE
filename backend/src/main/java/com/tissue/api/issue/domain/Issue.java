@@ -174,16 +174,20 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		workspace.getIssues().add(this);
 	}
 
-	public void removeFromParent() {
+	public void removeParentRelationship() {
 		if (this.parentIssue != null) {
 			this.parentIssue.getChildIssues().remove(this);
 			this.parentIssue = null;
 		}
 	}
 
+	public boolean canRemoveParentRelationship() {
+		return true;
+	}
+
 	public void setParentIssue(Issue parentIssue) {
 		validateParentIssue(parentIssue);
-		removeFromParent();
+		removeParentRelationship();
 
 		this.parentIssue = parentIssue;
 		parentIssue.getChildIssues().add(this);
