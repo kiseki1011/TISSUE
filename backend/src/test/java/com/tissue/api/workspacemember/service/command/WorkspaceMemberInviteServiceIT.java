@@ -137,7 +137,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			"member1@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
 
 		InviteMembersRequest request = InviteMembersRequest.of(
 			Set.of("member2", "member1")
@@ -167,7 +167,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 			"member1@test.com",
 			"password1234!"
 		);
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
 
 		InviteMembersRequest request = InviteMembersRequest.of(Set.of("member1"));
 

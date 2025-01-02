@@ -109,7 +109,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
 
 		// when
 		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode);
@@ -136,7 +136,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.COLLABORATOR);
+		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
 
 		// when & then
 		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode))

@@ -66,7 +66,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		WorkspaceMember target = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(targetMember, workspace,
-			WorkspaceRole.COLLABORATOR);
+			WorkspaceRole.MEMBER);
 		entityManager.flush();
 
 		// when
@@ -519,7 +519,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			WorkspaceMember.addWorkspaceMember(
 				existingMember,
 				workspace,
-				WorkspaceRole.COLLABORATOR,
+				WorkspaceRole.MEMBER,
 				"existingNickname"
 			)
 		);

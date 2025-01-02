@@ -61,7 +61,7 @@ public class IssueController {
 	private final IssueCommandService issueCommandService;
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
@@ -100,7 +100,7 @@ public class IssueController {
 	// 	return ApiResponse.ok("Issue status updated.", response);
 	// }
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
 		@PathVariable String code,
@@ -113,7 +113,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
 		@PathVariable String code,
@@ -126,7 +126,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
 		@PathVariable String code,
