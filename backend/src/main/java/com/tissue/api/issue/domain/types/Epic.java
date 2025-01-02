@@ -46,6 +46,18 @@ public class Epic extends Issue {
 		this.hardDeadLine = hardDeadLine;
 	}
 
+	public void updateBusinessGoal(String businessGoal) {
+		this.businessGoal = businessGoal;
+	}
+
+	public void updateTargetReleaseDate(LocalDate targetReleaseDate) {
+		this.targetReleaseDate = targetReleaseDate;
+	}
+
+	public void updateHardDeadLine(LocalDate hardDeadLine) {
+		this.hardDeadLine = hardDeadLine;
+	}
+
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		throw new EpicCannotHaveParentException();

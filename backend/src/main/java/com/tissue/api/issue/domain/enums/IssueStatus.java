@@ -5,5 +5,6 @@ public enum IssueStatus {
 	IN_PROGRESS,
 	IN_REVIEW,
 	DONE,
-	PAUSED
+	PAUSED,
+	CLOSED
 }

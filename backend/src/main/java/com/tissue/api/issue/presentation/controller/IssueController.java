@@ -1,6 +1,8 @@
 package com.tissue.api.issue.presentation.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,8 +11,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -28,29 +36,6 @@ public class IssueController {
 
 	/**
 	 * Todo
-	 *  - 이슈 상태 변경
-	 *    - DONE으로 변경하는 경우 끝난 날짜(finishedDate) 업데이트 됨
-	 *    - 처음으로 IN_PROGRESS로 변경하면 현재 날짜 시간으로 startDate가 설정 됨
-	 *  - 이슈 타입 변경
-	 *  - 이슈 나머지 정보 변경(우선 순위, 이름, 내용)
-	 *  - 이슈 라벨 변경
-	 *  - 이슈 라벨 생성(등록)
-	 *    - 이름(중복 불가)
-	 *    - 색상
-	 *  - 라벨 수정
-	 *  - 이슈 라벨 삭제
-	 *  - 이슈 마감일 설정
-	 *  - 부모 이슈 등록하기
-	 *    - STORY, TASK, BUG는 EPIC을 부모로 가질 수 있음
-	 *    - SUB_TASK는 STORY, TASK, BUG를 부모로 가질 수 있음
-	 *    - EPIC > STORY, TASK, BUG > SUB_TASK
-	 *  - 생성된 이슈에 대해 자식 이슈 만들기
-	 *    - STORY, TASK, BUG는 SUB_TASK를 자식으로 가짐
-	 *    - EPIC은 STORY, TASK, BUG를 자식으로 가짐
-	 *  - EPIC <-> SUB_TASK간 자식-부모 관계는 불가. 무조건 중간 위계의 이슈를 통해 조회 필요
-	 *  - 부모 이슈 해제하기
-	 *  - 이슈 삭제
-	 *  ---
 	 *  아래부터는 리뷰, 댓글 기능(아마 다른 컨트롤러에서 API 정의 할 듯)
 	 *  - 이슈에 리뷰어 등록하기
 	 *  - 리뷰어는 리뷰 등록 가능
@@ -83,10 +68,84 @@ public class IssueController {
 		@PathVariable String code,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(
-			code,
-			request
-		);
+		CreateIssueResponse response = issueCommandService.createIssue(code, request);
+
 		return ApiResponse.ok(response.getType() + " issue created.", response);
+	}
+
+	/**
+	 * Todo 1
+	 *  - 이슈 리소스 식별을 id vs issueKey?
+	 *  - 내 고민은 id로 조회하는 것을 가능하게 할지 고민 중
+	 *  - Issue는 Soft Delete 적용 -> 상태 변경으로 적용
+	 *    - IssueStatus에 CLOSED 또는 CANCELLED를 추가하면 될 듯
+	 *  - Issue의 완전 삭제(Hard Delete)는 ADMIN 권한 이상만 할 수 있도록 구현 ㄱㄱ
+	 *  <br>
+	 * Todo 2
+	 *  - 이슈 상태 변경에 대한 조건부 설정 구현
+	 *  - Issue 상태 변경 -> review 제출이 필요 없는 경우에만 가능(설정으로 규칙 설정 가능하도록)
+	 *  -> 모든 review가 APPROVED인 경우 상태를 DONE으로 변경 가능
+	 */
+
+	// @LoginRequired
+	// @RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	// @PatchMapping("/{issueKey}/status")
+	// public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
+	// 	@PathVariable String code,
+	// 	@PathVariable String issueKey,
+	// 	@RequestBody @Valid UpdateIssueStatusRequest request
+	// ) {
+	// 	UpdateIssueStatusResponse response = issueCommandService.updateIssueStatus(code, issueKey, request);
+	//
+	// 	return ApiResponse.ok("Issue status updated.", response);
+	// }
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@PatchMapping("/{issueKey}")
+	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@RequestBody @Valid UpdateIssueRequest request
+	) {
+		UpdateIssueResponse response = issueCommandService.updateIssue(code, issueKey, request);
+
+		return ApiResponse.ok("Issue details updated.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@PatchMapping("/{issueKey}/parent")
+	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@RequestBody @Valid AssignParentIssueRequest request
+	) {
+		AssignParentIssueResponse response = issueCommandService.assignParentIssue(code, issueKey, request);
+
+		return ApiResponse.ok("Parent issue assigned.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.COLLABORATOR)
+	@DeleteMapping("/{issueKey}/parent")
+	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
+		@PathVariable String code,
+		@PathVariable String issueKey
+	) {
+		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(code, issueKey);
+
+		return ApiResponse.ok("Parent issue relationship removed.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@DeleteMapping("/{issueKey}")
+	public ApiResponse<DeleteIssueResponse> deleteIssue(
+		@PathVariable String code,
+		@PathVariable String issueKey
+	) {
+		DeleteIssueResponse response = issueCommandService.deleteIssue(code, issueKey);
+
+		return ApiResponse.ok("Parent issue deleted.", response);
 	}
 }

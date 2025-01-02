@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.domain.IssueException;
 
-public class SubTaskNoParentException extends IssueException {
+public class SubTaskMustHaveParentException extends IssueException {
 
-	private static final String MESSAGE = "Sub-task type issues must have a parent issue.";
+	private static final String MESSAGE = "SubTask type issues must have a parent issue.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public SubTaskNoParentException() {
+	public SubTaskMustHaveParentException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public SubTaskNoParentException(String message) {
+	public SubTaskMustHaveParentException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }

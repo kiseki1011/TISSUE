@@ -42,12 +42,13 @@ public class Bug extends Issue {
 
 	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
 
+	private Difficulty difficulty;
+
 	@Lob
 	@Column(nullable = false)
 	private String reproducingSteps;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private BugSeverity severity;
 
 	@ElementCollection
@@ -57,8 +58,6 @@ public class Bug extends Issue {
 	)
 	private Set<String> affectedVersions = new HashSet<>();
 
-	private Difficulty difficulty;
-
 	@Builder
 	public Bug(
 		Workspace workspace,
@@ -67,15 +66,16 @@ public class Bug extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
+		Difficulty difficulty,
 		Issue parentIssue,
 		String reproducingSteps,
 		BugSeverity severity,
-		Set<String> affectedVersions,
-		Difficulty difficulty
+		Set<String> affectedVersions
 	) {
 		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate);
+		this.difficulty = difficulty;
 		this.reproducingSteps = reproducingSteps;
-		this.severity = severity != null ? severity : BugSeverity.MINOR;
+		this.severity = severity;
 
 		updatePriorityByBugSeverity();
 
@@ -83,12 +83,25 @@ public class Bug extends Issue {
 			this.affectedVersions.addAll(affectedVersions);
 		}
 
-		this.difficulty = difficulty;
-
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
 			setParentIssue(parentIssue);
 		}
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	public void updateReproducingSteps(String reproducingSteps) {
+		this.reproducingSteps = reproducingSteps;
+	}
+
+	public void updateSeverity(BugSeverity severity) {
+		this.severity = severity;
+	}
+
+	public void updateAffectedVersions(Set<String> affectedVersions) {
+		this.affectedVersions = affectedVersions;
 	}
 
 	@Override

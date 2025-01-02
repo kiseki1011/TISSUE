@@ -44,9 +44,12 @@ public class Task extends Issue {
 		this.difficulty = difficulty;
 
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
 			setParentIssue(parentIssue);
 		}
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
 	}
 
 	@Override

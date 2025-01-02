@@ -1,4 +1,4 @@
-package com.tissue.api.issue.presentation.dto.response.create;
+package com.tissue.api.issue.presentation.dto.response.update;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,12 +10,12 @@ import com.tissue.api.issue.domain.types.Epic;
 import lombok.Builder;
 
 @Builder
-public record CreateEpicResponse(
+public record UpdateEpicResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long createrId,
-	LocalDateTime createdAt,
+	Long updaterId,
+	LocalDateTime updatedAt,
 	String title,
 	String content,
 	String summary,
@@ -23,17 +23,16 @@ public record CreateEpicResponse(
 	LocalDate dueDate,
 	String businessGoal,
 	LocalDate targetReleaseDate,
-	LocalDate hardDeadLine,
-	Long parentIssueId
-) implements CreateIssueResponse {
+	LocalDate hardDeadLine
+) implements UpdateIssueResponse {
 
-	public static CreateEpicResponse from(Epic epic) {
-		return CreateEpicResponse.builder()
+	public static UpdateEpicResponse from(Epic epic) {
+		return UpdateEpicResponse.builder()
 			.issueId(epic.getId())
 			.issueKey(epic.getIssueKey())
 			.workspaceCode(epic.getWorkspaceCode())
-			.createrId(epic.getCreatedByWorkspaceMember())
-			.createdAt(epic.getCreatedDate())
+			.updaterId(epic.getLastModifiedByWorkspaceMember())
+			.updatedAt(epic.getLastModifiedDate())
 			.title(epic.getTitle())
 			.content(epic.getContent())
 			.summary(epic.getSummary())

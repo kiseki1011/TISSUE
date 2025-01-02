@@ -1,10 +1,8 @@
-package com.tissue.api.issue.presentation.dto.response.create;
+package com.tissue.api.issue.presentation.dto.response.update;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -13,37 +11,33 @@ import com.tissue.api.issue.domain.types.Task;
 import lombok.Builder;
 
 @Builder
-public record CreateTaskResponse(
+public record UpdateTaskResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-	Long createrId,
-	LocalDateTime createdAt,
+	Long updaterId,
+	LocalDateTime updatedAt,
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
-	Difficulty difficulty,
-	Long parentIssueId
-) implements CreateIssueResponse {
+	Difficulty difficulty
+) implements UpdateIssueResponse {
 
-	public static CreateTaskResponse from(Task task) {
-		return CreateTaskResponse.builder()
+	public static UpdateTaskResponse from(Task task) {
+		return UpdateTaskResponse.builder()
 			.issueId(task.getId())
 			.issueKey(task.getIssueKey())
 			.workspaceCode(task.getWorkspaceCode())
-			.createrId(task.getCreatedByWorkspaceMember())
-			.createdAt(task.getCreatedDate())
+			.updaterId(task.getLastModifiedByWorkspaceMember())
+			.updatedAt(task.getLastModifiedDate())
 			.title(task.getTitle())
 			.content(task.getContent())
 			.summary(task.getSummary())
 			.priority(task.getPriority())
 			.dueDate(task.getDueDate())
 			.difficulty(task.getDifficulty())
-			.parentIssueId(Optional.ofNullable(task.getParentIssue())
-				.map(Issue::getId)
-				.orElse(null))
 			.build();
 	}
 

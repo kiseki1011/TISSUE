@@ -1,4 +1,4 @@
-package com.tissue.api.issue.presentation.dto.request.create;
+package com.tissue.api.issue.presentation.dto.request.update;
 
 import java.time.LocalDate;
 
@@ -6,23 +6,21 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
-import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 @Builder
-public record CreateEpicRequest(
+public record UpdateEpicRequest(
 	@NotBlank String title,
 	@NotBlank String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
-	Long parentIssueId,
 	@NotBlank String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
-) implements CreateIssueRequest {
+) implements UpdateIssueRequest {
 
 	@Override
 	public IssueType getType() {
@@ -30,17 +28,16 @@ public record CreateEpicRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
-		return Epic.builder()
-			.workspace(workspace)
-			.title(title)
-			.content(content)
-			.summary(summary)
-			.priority(priority)
-			.dueDate(dueDate)
-			.businessGoal(businessGoal)
-			.targetReleaseDate(targetReleaseDate)
-			.hardDeadLine(hardDeadLine)
-			.build();
+	public void update(Issue issue) {
+		Epic epic = (Epic)issue;
+
+		epic.updateTitle(title);
+		epic.updateContent(content);
+		epic.updateSummary(summary);
+		epic.updatePriority(priority);
+		epic.updateDueDate(dueDate);
+		epic.updateBusinessGoal(businessGoal);
+		epic.updateTargetReleaseDate(targetReleaseDate);
+		epic.updateHardDeadLine(hardDeadLine);
 	}
 }

@@ -19,6 +19,7 @@ import com.tissue.api.common.dto.FieldErrorDto;
 import com.tissue.api.common.exception.domain.AuthenticationException;
 import com.tissue.api.common.exception.domain.AuthorizationException;
 import com.tissue.api.common.exception.domain.InvitationException;
+import com.tissue.api.common.exception.domain.IssueException;
 import com.tissue.api.common.exception.domain.MemberException;
 import com.tissue.api.common.exception.domain.WorkspaceException;
 import com.tissue.api.common.exception.domain.WorkspaceMemberException;
@@ -136,6 +137,15 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvitationException.class)
 	public ResponseEntity<ApiResponse<?>> handleInvitationException(InvitationException exception) {
 		log.error("Invitation Related Exception: ", exception);
+
+		HttpStatus httpStatus = exception.getHttpStatus();
+		return ResponseEntity.status(httpStatus)
+			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
+	}
+
+	@ExceptionHandler(IssueException.class)
+	public ResponseEntity<ApiResponse<?>> handleIssueException(IssueException exception) {
+		log.error("Issue Related Exception: ", exception);
 
 		HttpStatus httpStatus = exception.getHttpStatus();
 		return ResponseEntity.status(httpStatus)
