@@ -15,9 +15,11 @@ import org.springframework.http.MediaType;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.exception.IssueTypeMismatchException;
+import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
+import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateEpicResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.helper.ControllerTestHelper;
@@ -172,6 +174,39 @@ class IssueControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 등록에 성공하면 OK를 응답한다")
+	void assignParentIssue() throws Exception {
+		// given
+		String code = "WORKSPACE";
+		String issueKey = "ISSUE-1";
+		String parentIssueKey = "ISSUE-999";
+		AssignParentIssueRequest request = new AssignParentIssueRequest(parentIssueKey);
+
+		AssignParentIssueResponse response = AssignParentIssueResponse.builder()
+			.issueId(1L)
+			.issueKey(issueKey)
+			.parentIssueId(2L)
+			.parentIssueKey(parentIssueKey)
+			.assignedAt(LocalDateTime.now())
+			.build();
+
+		when(issueCommandService.assignParentIssue(code, issueKey, request))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}/parent", code, issueKey)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Parent issue assigned."))
+			.andExpect(jsonPath("$.data.issueId").value(response.issueId()))
+			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
+			.andExpect(jsonPath("$.data.parentIssueId").value(response.parentIssueId()))
+			.andExpect(jsonPath("$.data.parentIssueKey").value(response.parentIssueKey()))
 			.andDo(print());
 	}
 }

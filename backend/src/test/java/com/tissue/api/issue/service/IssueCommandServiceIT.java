@@ -20,10 +20,13 @@ import com.tissue.api.issue.exception.CannotDeleteParentOfSubTaskException;
 import com.tissue.api.issue.exception.IssueTypeMismatchException;
 import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.issue.exception.SubTaskWrongParentTypeException;
+import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
+import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.create.CreateEpicResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
@@ -394,7 +397,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("SubTask 타입 이슈의 부모 삭제를 시도하면 예외가 발생한다")
+	@DisplayName("SubTask의 부모 삭제를 시도하면 예외가 발생한다")
 	void deleteIssue_thatIsParentOfSubTask_throwsException() {
 		// given
 		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
@@ -424,6 +427,86 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.deleteIssue("TESTCODE", createResponse.issueKey()))
 			.isInstanceOf(CannotDeleteParentOfSubTaskException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("Story의 부모로 Epic을 등록할 수 있다")
+	void assignParentIssue_StoryToEpic() {
+		// given
+		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic("TESTCODE", "Test Epic");
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE", "Test Story",
+			null);
+
+		// when
+		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+			"TESTCODE",
+			storyResponse.issueKey(),
+			new AssignParentIssueRequest(epicResponse.issueKey())
+		);
+
+		// then
+		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(epicResponse.issueKey());
+		assertThat(assignParentResponse.parentIssueId()).isEqualTo(epicResponse.issueId());
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("Story의 부모로 Story를 등록 시도하면 예외가 발생한다")
+	void assignParentIssue_StoryToStory_throwsException() {
+		// given
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE", "Story 1",
+			null);
+		CreateStoryResponse parentStoryResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE",
+			"(Parent) Story 2",
+			null);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.assignParentIssue(
+			"TESTCODE",
+			storyResponse.issueKey(),
+			new AssignParentIssueRequest(parentStoryResponse.issueKey()))
+		).isInstanceOf(ParentMustBeEpicException.class);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("이미 부모가 있는 이슈의 부모를 변경할 수 있다")
+	void assignParentIssue_toIssueThatAlreadyHasParent() {
+		// given
+		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
+			"TESTCODE",
+			"Test Epic"
+		);
+
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
+			"Test Story",
+			null
+		);
+
+		issueCommandService.assignParentIssue(
+			"TESTCODE",
+			storyResponse.issueKey(),
+			new AssignParentIssueRequest(epicResponse.issueKey())
+		);
+
+		// 변경할 부모 이슈
+		CreateEpicResponse newParentEpicResponse = (CreateEpicResponse)issueFixture.createEpic(
+			"TESTCODE",
+			"New Parent Epic"
+		);
+
+		// when
+		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+			"TESTCODE",
+			storyResponse.issueKey(),
+			new AssignParentIssueRequest(newParentEpicResponse.issueKey())
+		);
+
+		// then
+		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(newParentEpicResponse.issueKey());
+		assertThat(assignParentResponse.parentIssueId()).isEqualTo(newParentEpicResponse.issueId());
 	}
 
 	//

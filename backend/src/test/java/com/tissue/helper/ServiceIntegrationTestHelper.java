@@ -35,6 +35,7 @@ import com.tissue.fixture.repository.InvitationRepositoryFixture;
 import com.tissue.fixture.repository.MemberRepositoryFixture;
 import com.tissue.fixture.repository.PositionRepositoryFixture;
 import com.tissue.fixture.repository.WorkspaceRepositoryFixture;
+import com.tissue.fixture.service.IssueFixture;
 import com.tissue.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
@@ -128,5 +129,7 @@ public abstract class ServiceIntegrationTestHelper {
 	protected SignupRequestDtoFixture signupRequestDtoFixture;
 	@Autowired
 	protected PositionRepositoryFixture positionRepositoryFixture;
+	@Autowired
+	protected IssueFixture issueFixture;
 
 }
