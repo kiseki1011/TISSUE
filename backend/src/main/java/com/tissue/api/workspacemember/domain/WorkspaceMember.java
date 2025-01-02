@@ -94,7 +94,7 @@ public class WorkspaceMember extends BaseEntity {
 
 	public static WorkspaceMember addCollaboratorWorkspaceMember(Member member, Workspace workspace) {
 		workspace.increaseMemberCount();
-		return addWorkspaceMember(member, workspace, WorkspaceRole.COLLABORATOR, member.getEmail());
+		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, member.getEmail());
 	}
 
 	public void remove() {

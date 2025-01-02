@@ -37,7 +37,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
 			member,
 			workspace,
-			WorkspaceRole.COLLABORATOR
+			WorkspaceRole.MEMBER
 		);
 	}
 

@@ -43,7 +43,7 @@ public class WorkspaceMembershipController {
 	 */
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.COLLABORATOR})
+	@RoleRequired(roles = {WorkspaceRole.MEMBER})
 	@PostMapping("/invite")
 	public ApiResponse<InviteMembersResponse> inviteMembers(
 		@PathVariable String code,

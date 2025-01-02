@@ -211,7 +211,7 @@ class AuthorizationInterceptorTest {
 		when(workspaceRepository.findByCode(TEST_WORKSPACE_CODE)).thenReturn(Optional.of(workspace));
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
 			.thenReturn(Optional.of(workspaceMember));
-		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.COLLABORATOR});
+		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.MEMBER});
 
 		when(request.getRequestURI()).thenReturn(TEST_URI);
 		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))

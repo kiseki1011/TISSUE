@@ -173,7 +173,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
 			member,
 			workspace,
-			WorkspaceRole.COLLABORATOR,
+			WorkspaceRole.MEMBER,
 			"nickname"
 		);
 		workspaceMember.changePosition(position);
