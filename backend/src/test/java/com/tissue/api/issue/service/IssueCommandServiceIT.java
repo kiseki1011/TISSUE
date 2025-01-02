@@ -17,6 +17,7 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.issue.domain.types.Task;
 import com.tissue.api.issue.exception.CannotDeleteParentOfSubTaskException;
+import com.tissue.api.issue.exception.CannotRemoveParentException;
 import com.tissue.api.issue.exception.IssueTypeMismatchException;
 import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.issue.exception.SubTaskWrongParentTypeException;
@@ -26,8 +27,10 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateEpicResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
+import com.tissue.api.issue.presentation.dto.response.create.CreateSubTaskResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
@@ -507,6 +510,58 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(newParentEpicResponse.issueKey());
 		assertThat(assignParentResponse.parentIssueId()).isEqualTo(newParentEpicResponse.issueId());
+	}
+
+	@Test
+	@DisplayName("Story가 부모 이슈인 Epic을 가지고 있으면, 해당 부모 관계를 해제할 수 있다")
+	void storyHasParent_canRemoveParentRelationship() {
+		// given
+		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
+			"TESTCODE",
+			"Test Epic"
+		);
+
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
+			"Test Story",
+			epicResponse.parentIssueId()
+		);
+
+		// when
+		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
+			"TESTCODE",
+			storyResponse.issueKey()
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(storyResponse.issueKey());
+
+		Issue updatedIssue = issueRepository.findById(response.issueId()).orElseThrow();
+		assertThat(updatedIssue.getParentIssue()).isNull();
+	}
+
+	@Test
+	@DisplayName("SubTask의 부모 이슈 해제를 시도하면 예외가 발생한다")
+	void removeSubTaskParent_throwsException() {
+		// given
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
+			"Test Story",
+			null
+		);
+
+		CreateSubTaskResponse subTaskResponse = (CreateSubTaskResponse)issueFixture.createSubTask(
+			"TESTCODE",
+			"Test Story",
+			storyResponse.parentIssueId()
+		);
+
+		// when & then
+		assertThatThrownBy(() -> issueCommandService.removeParentIssue(
+			"TESTCODE",
+			subTaskResponse.issueKey()
+		)).isInstanceOf(CannotRemoveParentException.class);
+
 	}
 
 	//

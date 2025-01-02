@@ -20,6 +20,7 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateEpicResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.helper.ControllerTestHelper;
@@ -207,6 +208,32 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
 			.andExpect(jsonPath("$.data.parentIssueId").value(response.parentIssueId()))
 			.andExpect(jsonPath("$.data.parentIssueKey").value(response.parentIssueKey()))
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("DELETE /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 해제에 성공하면 OK를 응답한다")
+	void removeParentIssue_fromStory() throws Exception {
+		// given
+		String code = "WORKSPACE";
+		String issueKey = "ISSUE-1";
+
+		RemoveParentIssueResponse response = RemoveParentIssueResponse.builder()
+			.issueId(1L)
+			.issueKey(issueKey)
+			.removedAt(LocalDateTime.now())
+			.build();
+
+		when(issueCommandService.removeParentIssue(code, issueKey))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(delete("/api/v1/workspaces/{code}/issues/{issueKey}/parent", code, issueKey)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Parent issue relationship removed."))
+			.andExpect(jsonPath("$.data.issueId").value(response.issueId()))
+			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
 			.andDo(print());
 	}
 }
