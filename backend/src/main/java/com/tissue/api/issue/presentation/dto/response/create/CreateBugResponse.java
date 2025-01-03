@@ -32,7 +32,7 @@ public record CreateBugResponse(
 	Set<String> affectedVersions,
 	Difficulty difficulty,
 	IssueStatus status,
-	Long parentIssueId
+	String parentIssueKey
 ) implements CreateIssueResponse {
 
 	public static CreateBugResponse from(Bug bug) {
@@ -52,8 +52,8 @@ public record CreateBugResponse(
 			.affectedVersions(bug.getAffectedVersions())
 			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
-			.parentIssueId(Optional.ofNullable(bug.getParentIssue())
-				.map(Issue::getId)
+			.parentIssueKey(Optional.ofNullable(bug.getParentIssue())
+				.map(Issue::getIssueKey)
 				.orElse(null))
 			.build();
 	}

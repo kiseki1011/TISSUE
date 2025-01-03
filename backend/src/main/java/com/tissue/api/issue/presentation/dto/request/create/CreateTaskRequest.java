@@ -20,7 +20,7 @@ public record CreateTaskRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId
+	String parentIssueKey
 ) implements CreateIssueRequest {
 
 	@Override

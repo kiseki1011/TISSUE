@@ -27,7 +27,7 @@ public record CreateStoryResponse(
 	String userStory,
 	String acceptanceCriteria,
 	Difficulty difficulty,
-	Long parentIssueId
+	String parentIssueKey
 ) implements CreateIssueResponse {
 
 	public static CreateStoryResponse from(Story story) {
@@ -45,8 +45,8 @@ public record CreateStoryResponse(
 			.userStory(story.getUserStory())
 			.acceptanceCriteria(story.getAcceptanceCriteria())
 			.difficulty(story.getDifficulty())
-			.parentIssueId(Optional.ofNullable(story.getParentIssue())
-				.map(Issue::getId)
+			.parentIssueKey(Optional.ofNullable(story.getParentIssue())
+				.map(Issue::getIssueKey)
 				.orElse(null))
 			.build();
 	}

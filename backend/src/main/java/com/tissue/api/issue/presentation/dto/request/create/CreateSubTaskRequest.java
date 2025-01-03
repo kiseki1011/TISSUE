@@ -20,7 +20,7 @@ public record CreateSubTaskRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId
+	String parentIssueKey
 
 ) implements CreateIssueRequest {
 
@@ -39,7 +39,7 @@ public record CreateSubTaskRequest(
 			.priority(priority)
 			.dueDate(dueDate)
 			.difficulty(difficulty)
-			.parentIssue(parentIssue)
+			.parentIssue(parentIssue) // 서비스 계층의 parentIssue 찾는 로직 변경
 			.build();
 	}
 }

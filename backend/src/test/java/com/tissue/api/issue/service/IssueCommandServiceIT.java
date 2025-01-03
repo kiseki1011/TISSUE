@@ -109,7 +109,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.priority(IssuePriority.HIGH)
 			.dueDate(LocalDate.now())
 			.difficulty(Difficulty.NORMAL)
-			.parentIssueId(parentIssue.getId())
+			.parentIssueKey(parentIssue.getIssueKey())
 			.userStory("Child Story User Story")
 			.acceptanceCriteria("Child Story Acceptance Criteria")
 			.build();
@@ -152,7 +152,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.priority(IssuePriority.HIGH)
 			.dueDate(LocalDate.now())
 			.difficulty(Difficulty.NORMAL)
-			.parentIssueId(response.issueId())
+			.parentIssueKey(response.issueKey())
 			.userStory("Child Story User Story")
 			.acceptanceCriteria("Child Story Acceptance Criteria")
 			.build();
@@ -185,7 +185,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.priority(IssuePriority.HIGH)
 			.dueDate(LocalDate.now())
 			.difficulty(Difficulty.NORMAL)
-			.parentIssueId(parentIssue.getId())
+			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
 		// when & then
@@ -215,7 +215,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.priority(IssuePriority.HIGH)
 			.dueDate(LocalDate.now())
 			.difficulty(Difficulty.NORMAL)
-			.parentIssueId(parentIssue.getId())
+			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
 		// when & then
@@ -422,7 +422,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateSubTaskRequest createSubTaskRequest = CreateSubTaskRequest.builder()
 			.title("Child SubTask Title")
 			.content("Child SubTask Content")
-			.parentIssueId(createResponse.issueId())
+			.parentIssueKey(createResponse.issueKey())
 			.build();
 
 		issueCommandService.createIssue("TESTCODE", createSubTaskRequest);
@@ -437,8 +437,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("Story의 부모로 Epic을 등록할 수 있다")
 	void assignParentIssue_StoryToEpic() {
 		// given
-		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic("TESTCODE", "Test Epic");
-		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE", "Test Story",
+		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
+			"TESTCODE",
+			"Test Epic");
+
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
+			"Test Story",
 			null);
 
 		// when
@@ -458,9 +463,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("Story의 부모로 Story를 등록 시도하면 예외가 발생한다")
 	void assignParentIssue_StoryToStory_throwsException() {
 		// given
-		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE", "Story 1",
+		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
+			"Story 1",
 			null);
-		CreateStoryResponse parentStoryResponse = (CreateStoryResponse)issueFixture.createStory("TESTCODE",
+
+		CreateStoryResponse parentStoryResponse = (CreateStoryResponse)issueFixture.createStory(
+			"TESTCODE",
 			"(Parent) Story 2",
 			null);
 
@@ -512,6 +521,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(assignParentResponse.parentIssueId()).isEqualTo(newParentEpicResponse.issueId());
 	}
 
+	@Transactional
 	@Test
 	@DisplayName("Story가 부모 이슈인 Epic을 가지고 있으면, 해당 부모 관계를 해제할 수 있다")
 	void storyHasParent_canRemoveParentRelationship() {
@@ -524,7 +534,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
 			"TESTCODE",
 			"Test Story",
-			epicResponse.parentIssueId()
+			epicResponse.issueKey()
 		);
 
 		// when
@@ -553,7 +563,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateSubTaskResponse subTaskResponse = (CreateSubTaskResponse)issueFixture.createSubTask(
 			"TESTCODE",
 			"Test Story",
-			storyResponse.parentIssueId()
+			storyResponse.issueKey()
 		);
 
 		// when & then
