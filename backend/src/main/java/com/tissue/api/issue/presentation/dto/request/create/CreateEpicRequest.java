@@ -18,10 +18,11 @@ public record CreateEpicRequest(
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
-	Long parentIssueId,
+	String parentIssueKey,
 	@NotBlank String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
+
 ) implements CreateIssueRequest {
 
 	@Override

@@ -23,8 +23,7 @@ public record CreateEpicResponse(
 	LocalDate dueDate,
 	String businessGoal,
 	LocalDate targetReleaseDate,
-	LocalDate hardDeadLine,
-	Long parentIssueId
+	LocalDate hardDeadLine
 ) implements CreateIssueResponse {
 
 	public static CreateEpicResponse from(Epic epic) {

@@ -33,7 +33,7 @@ public interface CreateIssueRequest {
 
 	LocalDate dueDate();
 
-	Long parentIssueId();
+	String parentIssueKey();
 
 	IssueType getType();
 

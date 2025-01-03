@@ -25,7 +25,7 @@ public record CreateTaskResponse(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId
+	String parentIssueKey
 ) implements CreateIssueResponse {
 
 	public static CreateTaskResponse from(Task task) {
@@ -41,8 +41,8 @@ public record CreateTaskResponse(
 			.priority(task.getPriority())
 			.dueDate(task.getDueDate())
 			.difficulty(task.getDifficulty())
-			.parentIssueId(Optional.ofNullable(task.getParentIssue())
-				.map(Issue::getId)
+			.parentIssueKey(Optional.ofNullable(task.getParentIssue())
+				.map(Issue::getIssueKey)
 				.orElse(null))
 			.build();
 	}

@@ -22,7 +22,7 @@ public record CreateBugRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId,
+	String parentIssueKey,
 	@NotBlank String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions

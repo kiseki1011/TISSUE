@@ -42,7 +42,7 @@ public class IssueFixture {
 	public CreateIssueResponse createTask(
 		String workspaceCode,
 		String title,
-		Long parentIssueId
+		String parentIssueKey
 	) {
 		CreateTaskRequest request = CreateTaskRequest.builder()
 			.title(title)
@@ -50,7 +50,7 @@ public class IssueFixture {
 			.summary("Task Summary")
 			.difficulty(Difficulty.NORMAL)
 			.dueDate(LocalDate.now())
-			.parentIssueId(parentIssueId)
+			.parentIssueKey(parentIssueKey)
 			.build();
 
 		return issueCommandService.createIssue(workspaceCode, request);
@@ -59,7 +59,7 @@ public class IssueFixture {
 	public CreateIssueResponse createStory(
 		String workspaceCode,
 		String title,
-		Long parentIssueId
+		String parentIssueKey
 	) {
 		CreateStoryRequest request = CreateStoryRequest.builder()
 			.title(title)
@@ -67,7 +67,7 @@ public class IssueFixture {
 			.summary("Story Summary")
 			.difficulty(Difficulty.NORMAL)
 			.dueDate(LocalDate.now())
-			.parentIssueId(parentIssueId)
+			.parentIssueKey(parentIssueKey)
 			.userStory("Story User Story")
 			.acceptanceCriteria("Story Acceptance Criteria")
 			.build();
@@ -78,7 +78,7 @@ public class IssueFixture {
 	public CreateIssueResponse createBug(
 		String workspaceCode,
 		String title,
-		Long parentIssueId
+		String parentIssueKey
 	) {
 		CreateBugRequest request = CreateBugRequest.builder()
 			.title(title)
@@ -86,7 +86,7 @@ public class IssueFixture {
 			.summary("Bug Summary")
 			.difficulty(Difficulty.NORMAL)
 			.dueDate(LocalDate.now())
-			.parentIssueId(parentIssueId)
+			.parentIssueKey(parentIssueKey)
 			.reproducingSteps("Bug Reproduce Steps")
 			.severity(BugSeverity.MAJOR)
 			.affectedVersions(Set.of("1.0.0", "1.0.1"))
@@ -98,7 +98,7 @@ public class IssueFixture {
 	public CreateIssueResponse createSubTask(
 		String workspaceCode,
 		String title,
-		Long parentIssueId
+		String parentIssueKey
 	) {
 		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
 			.title(title)
@@ -106,7 +106,7 @@ public class IssueFixture {
 			.summary("SubTask Summary")
 			.difficulty(Difficulty.NORMAL)
 			.dueDate(LocalDate.now())
-			.parentIssueId(parentIssueId)
+			.parentIssueKey(parentIssueKey)
 			.build();
 
 		return issueCommandService.createIssue(workspaceCode, request);

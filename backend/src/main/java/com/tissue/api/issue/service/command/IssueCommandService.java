@@ -55,7 +55,7 @@ public class IssueCommandService {
 
 		Issue issue = request.to(
 			workspace,
-			findParentIssue(request.parentIssueId(), code).orElse(null)
+			findParentIssue(request.parentIssueKey(), code).orElse(null)
 		);
 
 		Issue savedIssue = issueRepository.save(issue);
@@ -134,9 +134,9 @@ public class IssueCommandService {
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
 	}
 
-	private Optional<Issue> findParentIssue(Long parentIssueId, String workspaceCode) {
-		return Optional.ofNullable(parentIssueId)
-			.map(id -> issueRepository.findByIdAndWorkspaceCode(id, workspaceCode)
+	private Optional<Issue> findParentIssue(String parentIssueKey, String workspaceCode) {
+		return Optional.ofNullable(parentIssueKey)
+			.map(issueKey -> issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
 				.orElseThrow(() -> new IssueNotFoundException("Issue does not exist in this workspace.")));
 	}
 

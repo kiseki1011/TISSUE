@@ -20,7 +20,7 @@ public record CreateStoryRequest(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId,
+	String parentIssueKey,
 	@NotBlank String userStory,
 	String acceptanceCriteria
 
