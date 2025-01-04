@@ -12,6 +12,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.service.ReviewCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -59,6 +60,19 @@ public class ReviewController {
 		);
 
 		return ApiResponse.ok("Reviewer added.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@PostMapping("/reviewers")
+	public ApiResponse<RequestReviewResponse> requestReview(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long requesterId
+	) {
+		RequestReviewResponse response = reviewCommandService.requestReview(code, issueKey, requesterId);
+
+		return ApiResponse.ok("Requested reviewing for issue.", response);
 	}
 
 	@LoginRequired

@@ -16,6 +16,7 @@ import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.review.validator.ReviewerValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -44,13 +45,34 @@ public class ReviewCommandService {
 		Long reviewerId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember reviewer = findReviewer(reviewerId, workspaceCode);
+		WorkspaceMember reviewer = findWorkspaceMember(reviewerId, workspaceCode);
 
 		reviewerValidator.validateReviewer(reviewer);
 
 		issue.addReviewer(reviewer);
 
 		return AddReviewerResponse.from(reviewer);
+	}
+
+	/*
+	 * Todo
+	 *  - 요청자가 이슈 assignee에 포함되는지 검증 추가(assignee 구현하고 나서)
+	 *  - 아니면 assignee에 포함되는지 인터셉터에서 확인하도록 하는 방법도 있지만, 별로 인듯 -> 로직 추적하기가 어려움
+	 */
+	@Transactional
+	public RequestReviewResponse requestReview(
+		String workspaceCode,
+		String issueKey,
+		Long requesterId
+	) {
+		Issue issue = findIssue(workspaceCode, issueKey);
+
+		// WorkspaceMember requester = findWorkspaceMember(requesterId, workspaceCode);
+		// reviewValidator.validateRequester(requester);
+
+		issue.requestReview();
+
+		return RequestReviewResponse.from(issue);
 	}
 
 	@Transactional
@@ -85,7 +107,7 @@ public class ReviewCommandService {
 			.orElseThrow(IssueNotFoundException::new);
 	}
 
-	private WorkspaceMember findReviewer(Long id, String code) {
+	private WorkspaceMember findWorkspaceMember(Long id, String code) {
 		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}

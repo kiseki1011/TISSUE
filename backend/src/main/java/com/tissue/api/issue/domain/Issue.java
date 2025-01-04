@@ -135,19 +135,17 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID")
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
+	// Todo
+	//  - reviewRequestedAt 필드 추가
+	//  - updateTimestamp에서 reviewRequestedAt를 업데이트 하도록 분기문 추가
 	public void requestReview() {
 		validateReviewersExist();
 
+		if (isNotFirstReviewRound()) {
+			validateCanStartNewReviewRound();
+		}
 		this.currentReviewRound++;
 		this.updateStatus(IssueStatus.IN_REVIEW);
-	}
-
-	public void requestNewReviewRound() {
-		validateReviewersExist();
-		validateCanStartNewReviewRound();
-
-		this.currentReviewRound++;
-		this.status = IssueStatus.IN_REVIEW;
 	}
 
 	public void addReviewer(WorkspaceMember reviewer) {
@@ -282,6 +280,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	public boolean canRemoveParentRelationship() {
 		return true;
+	}
+
+	public boolean isNotFirstReviewRound() {
+		return this.getCurrentReviewRound() != 0;
 	}
 
 	private void updateTimestamps(IssueStatus newStatus) {

@@ -44,7 +44,12 @@ public class Review extends WorkspaceContextBaseEntity {
 	private int reviewRound;
 
 	@Builder
-	public Review(IssueReviewer issueReviewer, ReviewStatus status, String content, int reviewRound) {
+	public Review(
+		IssueReviewer issueReviewer,
+		ReviewStatus status,
+		String content,
+		int reviewRound
+	) {
 		this.issueReviewer = issueReviewer;
 		this.status = status;
 		this.content = content;
