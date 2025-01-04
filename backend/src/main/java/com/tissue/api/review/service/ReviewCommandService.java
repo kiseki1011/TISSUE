@@ -33,7 +33,7 @@ public class ReviewCommandService {
 		Long reviewerId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember reviewer = findReviewer(reviewerId);
+		WorkspaceMember reviewer = findReviewer(reviewerId, workspaceCode);
 
 		issueReviewerValidator.validateReviewer(reviewer);
 
@@ -47,8 +47,8 @@ public class ReviewCommandService {
 			.orElseThrow(IssueNotFoundException::new);
 	}
 
-	private WorkspaceMember findReviewer(Long id) {
-		return workspaceMemberRepository.findById(id)
+	private WorkspaceMember findReviewer(Long id, String code) {
+		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
 }
