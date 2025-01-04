@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class IssueReviewerValidator {
+public class ReviewerValidator {
 
 	public void validateReviewer(WorkspaceMember reviewer) {
 		validateRoleIsLowerThanMember(reviewer);

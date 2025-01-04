@@ -41,17 +41,28 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 		this.reviewer = reviewer;
 	}
 
-	public void addReview(ReviewStatus status, String comment, int reviewRound) {
+	public Review addReview(ReviewStatus status, String comment, int reviewRound) {
 		// 해당 라운드에 이미 리뷰가 있는지 확인
+		validateNoExistingReviewInRound(reviewRound);
+
+		Review review = new Review(this, status, comment, reviewRound);
+		this.reviews.add(review);
+
+		return review;
+	}
+
+	public boolean hasReviewForRound(int reviewRound) {
+		return reviews.stream()
+			.anyMatch(review -> review.getReviewRound() == reviewRound);
+	}
+
+	private void validateNoExistingReviewInRound(int reviewRound) {
 		boolean hasReviewInRound = reviews.stream()
 			.anyMatch(review -> review.getReviewRound() == reviewRound);
 
 		if (hasReviewInRound) {
 			throw new DuplicateReviewInRoundException();
 		}
-
-		Review review = new Review(this, status, comment, reviewRound);
-		this.reviews.add(review);
 	}
 
 	public ReviewStatus getCurrentReviewStatus(int reviewRound) {

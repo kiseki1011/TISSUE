@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -35,17 +36,18 @@ public class Review extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private ReviewStatus status;
 
+	@Lob
 	@Column(nullable = false)
-	private String comment;
+	private String content;
 
 	@Column(nullable = false)
 	private int reviewRound;
 
 	@Builder
-	public Review(IssueReviewer issueReviewer, ReviewStatus status, String comment, int reviewRound) {
+	public Review(IssueReviewer issueReviewer, ReviewStatus status, String content, int reviewRound) {
 		this.issueReviewer = issueReviewer;
 		this.status = status;
-		this.comment = comment;
+		this.content = content;
 		this.reviewRound = reviewRound;
 	}
 }

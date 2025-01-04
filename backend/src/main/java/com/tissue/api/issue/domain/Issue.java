@@ -13,8 +13,10 @@ import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.exception.DuplicateReviewerException;
+import com.tissue.api.review.exception.IncompleteReviewRoundException;
+import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
 import com.tissue.api.review.exception.MaxReviewersExceededException;
-import com.tissue.api.review.exception.NoReviewersAssignedException;
+import com.tissue.api.review.exception.NoReviewersAddedException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -134,12 +136,18 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
 	public void requestReview() {
-		if (reviewers.isEmpty()) {
-			throw new NoReviewersAssignedException();
-		}
+		validateReviewersExist();
 
 		this.currentReviewRound++;
 		this.updateStatus(IssueStatus.IN_REVIEW);
+	}
+
+	public void requestNewReviewRound() {
+		validateReviewersExist();
+		validateCanStartNewReviewRound();
+
+		this.currentReviewRound++;
+		this.status = IssueStatus.IN_REVIEW;
 	}
 
 	public void addReviewer(WorkspaceMember reviewer) {
@@ -147,6 +155,38 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateNotAlreadyReviewer(reviewer);
 
 		reviewers.add(new IssueReviewer(reviewer));
+	}
+
+	private void validateReviewersExist() {
+		if (reviewers.isEmpty()) {
+			throw new NoReviewersAddedException();
+		}
+	}
+
+	private void validateCanStartNewReviewRound() {
+		// 현재 상태 검증
+		if (this.status != IssueStatus.CHANGES_REQUESTED) {
+			// Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
+			throw new IssueStatusNotChangesRequestedException(
+				String.format(
+					"The issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+					this.status
+				)
+			);
+		}
+
+		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
+		boolean allReviewersSubmitted = reviewers.stream()
+			.allMatch(reviewer -> reviewer.hasReviewForRound(this.currentReviewRound));
+
+		if (!allReviewersSubmitted) {
+			throw new IncompleteReviewRoundException(
+				String.format(
+					"There are reviewers that have not completed their review for this round. Current round: (%d)",
+					this.currentReviewRound
+				)
+			);
+		}
 	}
 
 	private void validateReviewerLimit() {

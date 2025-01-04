@@ -3,17 +3,22 @@ package com.tissue.api.review.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
+import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.service.ReviewCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,14 +46,38 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("/reviewer/{reviewerId}")
+	@PostMapping("/reviewers/{reviewerId}")
 	public ApiResponse<AddReviewerResponse> addReviewer(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewerId
 	) {
-		AddReviewerResponse response = reviewCommandService.addReviewer(code, issueKey, reviewerId);
-		return ApiResponse.ok("Reviewers added.", response);
+		AddReviewerResponse response = reviewCommandService.addReviewer(
+			code,
+			issueKey,
+			reviewerId
+		);
+
+		return ApiResponse.ok("Reviewer added.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@ResponseStatus(HttpStatus.CREATED)
+	@PostMapping("/reviews")
+	public ApiResponse<CreateReviewResponse> createReview(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long reviewerId,
+		@RequestBody @Valid CreateReviewRequest request
+	) {
+		CreateReviewResponse response = reviewCommandService.createReview(
+			code,
+			issueKey,
+			reviewerId,
+			request
+		);
+
+		return ApiResponse.ok("Review created.", response);
 	}
 }

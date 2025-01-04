@@ -19,7 +19,7 @@ import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.ReviewCommandService;
-import com.tissue.api.review.validator.IssueReviewerValidator;
+import com.tissue.api.review.validator.ReviewerValidator;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -107,7 +107,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceValidator workspaceValidator;
 	@Autowired
-	protected IssueReviewerValidator issueReviewerValidator;
+	protected ReviewerValidator reviewerValidator;
 
 	/**
 	 * Repository

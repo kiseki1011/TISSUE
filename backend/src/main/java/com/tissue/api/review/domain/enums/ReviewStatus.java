@@ -9,5 +9,5 @@ public enum ReviewStatus {
 
 	PENDING,
 	APPROVED,
-	CHANGES_REQUIRED
+	CHANGES_REQUESTED
 }
