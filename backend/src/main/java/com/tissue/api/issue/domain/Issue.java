@@ -115,6 +115,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private LocalDateTime startedAt;
 	private LocalDateTime finishedAt;
+	private LocalDateTime reviewRequestedAt;
 
 	private LocalDate dueDate;
 
@@ -135,9 +136,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID")
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
-	// Todo
-	//  - reviewRequestedAt 필드 추가
-	//  - updateTimestamp에서 reviewRequestedAt를 업데이트 하도록 분기문 추가
 	public void requestReview() {
 		validateReviewersExist();
 
@@ -289,6 +287,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private void updateTimestamps(IssueStatus newStatus) {
 		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
 			this.startedAt = LocalDateTime.now();
+			return;
+		}
+		if (newStatus == IssueStatus.IN_REVIEW) {
+			this.reviewRequestedAt = LocalDateTime.now();
 			return;
 		}
 		if (newStatus == IssueStatus.DONE) {

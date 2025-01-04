@@ -13,11 +13,10 @@ public record RequestReviewResponse(
 	LocalDateTime reviewRequestedAt,
 	List<ReviewerDetail> reviewerDetails
 ) {
-
 	public static RequestReviewResponse from(Issue issue) {
 		return RequestReviewResponse.builder()
 			.currentReviewRound(issue.getCurrentReviewRound())
-			.reviewRequestedAt(issue.getLastModifiedDate()) // Todo: reviewRequestedAt 추가되면 변경
+			.reviewRequestedAt(issue.getReviewRequestedAt())
 			.reviewerDetails(issue.getReviewers().stream()
 				.map(ReviewerDetail::from)
 				.toList())
