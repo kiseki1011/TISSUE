@@ -12,8 +12,9 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.exception.DuplicateReviewerException;
+import com.tissue.api.review.exception.MaxReviewersExceededException;
 import com.tissue.api.review.exception.NoReviewersAssignedException;
-import com.tissue.api.review.exception.ReviewerAlreadyExistsException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -123,14 +124,13 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private final List<Issue> childIssues = new ArrayList<>();
 
 	// ---Review 도메인 관련 코드---
+	private static final int MAX_REVIEWERS = 10;
+
 	@Column(nullable = false)
 	private int currentReviewRound = 0;
 
-	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	// private final List<IssueReviewer> reviewers = new ArrayList<>();
-
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "issue_id")
+	@JoinColumn(name = "ISSUE_ID")
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
 	public void requestReview() {
@@ -143,15 +143,30 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void addReviewer(WorkspaceMember reviewer) {
-		boolean alreadyExists = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().equals(reviewer));
+		validateReviewerLimit();
+		validateNotAlreadyReviewer(reviewer);
 
-		if (alreadyExists) {
-			throw new ReviewerAlreadyExistsException();
-		}
-
-		// reviewers.add(new IssueReviewer(this, reviewer));
 		reviewers.add(new IssueReviewer(reviewer));
+	}
+
+	private void validateReviewerLimit() {
+		if (reviewers.size() >= MAX_REVIEWERS) {
+			throw new MaxReviewersExceededException(
+				String.format(
+					"The max number of reviewers for a single issue is %d.",
+					MAX_REVIEWERS
+				)
+			);
+		}
+	}
+
+	private void validateNotAlreadyReviewer(WorkspaceMember reviewer) {
+		boolean isAlreadyReviewer = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().getId().equals(reviewer.getId()));
+
+		if (isAlreadyReviewer) {
+			throw new DuplicateReviewerException();
+		}
 	}
 	// -----------------------------
 
@@ -167,9 +182,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
 
-		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
-		workspace.getIssues().add(this);
+		addToWorkspace(workspace);
 
 		this.type = type;
 		this.title = title;
@@ -206,6 +219,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.priority = priority;
 	}
 
+	public void setParentIssue(Issue parentIssue) {
+		validateParentIssue(parentIssue);
+		removeParentRelationship();
+
+		this.parentIssue = parentIssue;
+		parentIssue.getChildIssues().add(this);
+	}
+
 	public void addToWorkspace(Workspace workspace) {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
@@ -223,12 +244,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return true;
 	}
 
-	public void setParentIssue(Issue parentIssue) {
-		validateParentIssue(parentIssue);
-		removeParentRelationship();
-
-		this.parentIssue = parentIssue;
-		parentIssue.getChildIssues().add(this);
+	private void updateTimestamps(IssueStatus newStatus) {
+		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
+			this.startedAt = LocalDateTime.now();
+			return;
+		}
+		if (newStatus == IssueStatus.DONE) {
+			this.finishedAt = LocalDateTime.now();
+		}
 	}
 
 	protected void validateStatusTransition(IssueStatus newStatus) {
@@ -237,16 +260,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 		if (newStatus == IssueStatus.IN_REVIEW) {
 			throw new UpdateStatusToInReviewException();
-		}
-	}
-
-	private void updateTimestamps(IssueStatus newStatus) {
-		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
-			this.startedAt = LocalDateTime.now();
-			return;
-		}
-		if (newStatus == IssueStatus.DONE) {
-			this.finishedAt = LocalDateTime.now();
 		}
 	}
 

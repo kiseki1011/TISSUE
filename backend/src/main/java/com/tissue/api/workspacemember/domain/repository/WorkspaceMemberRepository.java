@@ -1,5 +1,6 @@
 package com.tissue.api.workspacemember.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 	boolean existsByMemberIdAndRole(Long id, WorkspaceRole role);
 
 	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+
+	List<WorkspaceMember> findAllByIdIn(List<Long> idList);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

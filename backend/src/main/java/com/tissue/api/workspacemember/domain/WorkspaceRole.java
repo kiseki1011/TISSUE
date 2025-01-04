@@ -13,4 +13,12 @@ public enum WorkspaceRole {
 	VIEWER(1);
 
 	private final int level;
+
+	public boolean isLowerThan(WorkspaceRole role) {
+		return this.getLevel() < role.getLevel();
+	}
+
+	public boolean hasPermissionOf(WorkspaceRole requiredRole) {
+		return this.level >= requiredRole.level;
+	}
 }

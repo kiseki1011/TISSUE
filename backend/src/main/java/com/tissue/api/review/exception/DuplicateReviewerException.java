@@ -4,16 +4,16 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.domain.IssueException;
 
-public class ReviewerAlreadyExistsException extends IssueException {
+public class DuplicateReviewerException extends IssueException {
 
 	private static final String MESSAGE = "Already assigned as a reviewer.";
 	private static final HttpStatus HTTP_STATUS = HttpStatus.BAD_REQUEST;
 
-	public ReviewerAlreadyExistsException() {
+	public DuplicateReviewerException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
 
-	public ReviewerAlreadyExistsException(String message) {
+	public DuplicateReviewerException(String message) {
 		super(message, HTTP_STATUS);
 	}
 }

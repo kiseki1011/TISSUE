@@ -21,6 +21,10 @@ public class InsufficientWorkspaceRoleException extends AuthorizationException {
 		super(MESSAGE + " You must be at least " + role + ".", HTTP_STATUS);
 	}
 
+	public InsufficientWorkspaceRoleException(String message) {
+		super(message, HTTP_STATUS);
+	}
+
 	public InsufficientWorkspaceRoleException(Throwable cause) {
 		super(MESSAGE, HTTP_STATUS, cause);
 	}

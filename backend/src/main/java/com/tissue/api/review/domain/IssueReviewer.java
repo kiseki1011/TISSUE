@@ -30,22 +30,12 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// Todo: 굳이 양방향 연관관계가 필요한가?
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "ISSUE_ID", nullable = false)
-	// private Issue issue;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "REVIEWER_ID", nullable = false)
 	private WorkspaceMember reviewer;
 
 	@OneToMany(mappedBy = "issueReviewer", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<Review> reviews = new ArrayList<>();
-
-	// public IssueReviewer(Issue issue, WorkspaceMember reviewer) {
-	// 	this.issue = issue;
-	// 	this.reviewer = reviewer;
-	// }
 
 	public IssueReviewer(WorkspaceMember reviewer) {
 		this.reviewer = reviewer;
