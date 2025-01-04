@@ -11,8 +11,13 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
+import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.exception.NoReviewersAssignedException;
+import com.tissue.api.review.exception.ReviewerAlreadyExistsException;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -116,6 +121,39 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();
+
+	// ---Review 도메인 관련 코드---
+	@Column(nullable = false)
+	private int currentReviewRound = 0;
+
+	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	// private final List<IssueReviewer> reviewers = new ArrayList<>();
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "issue_id")
+	private List<IssueReviewer> reviewers = new ArrayList<>();
+
+	public void requestReview() {
+		if (reviewers.isEmpty()) {
+			throw new NoReviewersAssignedException();
+		}
+
+		this.currentReviewRound++;
+		this.updateStatus(IssueStatus.IN_REVIEW);
+	}
+
+	public void addReviewer(WorkspaceMember reviewer) {
+		boolean alreadyExists = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().equals(reviewer));
+
+		if (alreadyExists) {
+			throw new ReviewerAlreadyExistsException();
+		}
+
+		// reviewers.add(new IssueReviewer(this, reviewer));
+		reviewers.add(new IssueReviewer(reviewer));
+	}
+	// -----------------------------
 
 	protected Issue(
 		Workspace workspace,
