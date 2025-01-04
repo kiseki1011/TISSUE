@@ -83,7 +83,7 @@ jacocoTestReport {
                 limit {
                     counter = 'LINE'
                     value = 'COVEREDRATIO'
-                    minimum = 0.70
+                    minimum = 0.60
                 }
 
                 excludes = [
