@@ -1,6 +1,7 @@
 package com.tissue.api.review.presentation.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
@@ -70,6 +72,25 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@DeleteMapping("/reviewers/{reviewerId}")
+	public ApiResponse<RemoveReviewerResponse> removeReviewer(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@PathVariable Long reviewerId,
+		@CurrentWorkspaceMember Long requesterId
+	) {
+		RemoveReviewerResponse response = reviewCommandService.removeReviewer(
+			code,
+			issueKey,
+			reviewerId,
+			requesterId
+		);
+
+		return ApiResponse.ok("Reviewer removed.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@PostMapping("/reviewers")
 	public ApiResponse<RequestReviewResponse> requestReview(
 		@PathVariable String code,
@@ -88,13 +109,13 @@ public class ReviewController {
 	public ApiResponse<CreateReviewResponse> createReview(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long reviewerId,
+		@CurrentWorkspaceMember Long requesterId,
 		@RequestBody @Valid CreateReviewRequest request
 	) {
 		CreateReviewResponse response = reviewCommandService.createReview(
 			code,
 			issueKey,
-			reviewerId,
+			requesterId,
 			request
 		);
 
@@ -106,12 +127,12 @@ public class ReviewController {
 	@PatchMapping("/reviews/{reviewId}")
 	public ApiResponse<UpdateReviewResponse> updateReview(
 		@PathVariable Long reviewId,
-		@CurrentWorkspaceMember Long reviewerWorkspaceMemberId,
+		@CurrentWorkspaceMember Long requesterId,
 		@RequestBody @Valid UpdateReviewRequest request
 	) {
 		UpdateReviewResponse response = reviewCommandService.updateReview(
 			reviewId,
-			reviewerWorkspaceMemberId,
+			requesterId,
 			request
 		);
 
@@ -125,14 +146,14 @@ public class ReviewController {
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
-		@CurrentWorkspaceMember Long reviewerWorkspaceMemberId,
+		@CurrentWorkspaceMember Long requesterId,
 		@RequestBody @Valid UpdateReviewStatusRequest request
 	) {
 		UpdateReviewStatusResponse response = reviewCommandService.updateReviewStatus(
 			code,
 			issueKey,
 			reviewId,
-			reviewerWorkspaceMemberId,
+			requesterId,
 			request
 		);
 

@@ -18,6 +18,7 @@ import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
@@ -43,22 +44,42 @@ public class ReviewCommandService {
 	public AddReviewerResponse addReviewer(
 		String workspaceCode,
 		String issueKey,
-		Long reviewerId
+		Long reviewerWorkspaceMemberId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerId, workspaceCode);
+		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 
 		reviewValidator.validateRoleIsLowerThanMember(reviewer);
+		// Todo: 요청자가 이슈 assignee에 포함되는지 검증 추가(assignee 구현하고 나서)
+		//  - currentWorkspaceMemberId를 컨트롤러에서 받아와서 사용
 
 		issue.addReviewer(reviewer);
 
 		return AddReviewerResponse.from(reviewer);
 	}
 
+	@Transactional
+	public RemoveReviewerResponse removeReviewer(
+		String workspaceCode,
+		String issueKey,
+		Long reviewerId,
+		Long requesterId
+	) {
+		Issue issue = findIssue(workspaceCode, issueKey);
+
+		WorkspaceMember reviewer = findWorkspaceMember(reviewerId, workspaceCode);
+
+		// Todo: validateRequesterIsAssignee or requesterIsReviewer 추가
+		issue.removeReviewer(reviewer);
+
+		return RemoveReviewerResponse.from(reviewer, issue);
+	}
+
 	/*
 	 * Todo
 	 *  - 요청자가 이슈 assignee에 포함되는지 검증 추가(assignee 구현하고 나서)
 	 *  - 아니면 assignee에 포함되는지 인터셉터에서 확인하도록 하는 방법도 있지만, 별로 인듯 -> 로직 추적하기가 어려움
+	 *  - currentWorkspaceMemberId를 컨트롤러에서 받아와서 사용
 	 */
 	@Transactional
 	public RequestReviewResponse requestReview(
@@ -68,6 +89,7 @@ public class ReviewCommandService {
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 
+		// Todo
 		// WorkspaceMember requester = findWorkspaceMember(requesterId, workspaceCode);
 		// reviewValidator.validateRequester(requester);
 
@@ -125,13 +147,13 @@ public class ReviewCommandService {
 		String workspaceCode,
 		String issueKey,
 		Long reviewId,
-		Long reviewerWorkspaceMemberId,
+		Long requesterId,
 		UpdateReviewStatusRequest request
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 		Review review = findReview(reviewId);
 
-		reviewValidator.validateReviewOwnership(review, reviewerWorkspaceMemberId);
+		reviewValidator.validateReviewOwnership(review, requesterId);
 
 		review.updateStatus(request.status());
 		updateIssueStatusBasedOnReview(issue, request.status());

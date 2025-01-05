@@ -12,11 +12,13 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
 import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.exception.CannotRemoveReviewerException;
 import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.exception.IncompleteReviewRoundException;
 import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
 import com.tissue.api.review.exception.MaxReviewersExceededException;
 import com.tissue.api.review.exception.NoReviewersAddedException;
+import com.tissue.api.review.exception.ReviewerNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -151,6 +153,26 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateNotAlreadyReviewer(reviewer);
 
 		reviewers.add(new IssueReviewer(reviewer));
+	}
+
+	public void removeReviewer(WorkspaceMember reviewer) {
+		// 해당 reviewer의 IssueReviewer를 찾아 제거
+		IssueReviewer issueReviewer = reviewers.stream()
+			.filter(r -> r.getReviewer().getId().equals(reviewer.getId()))
+			.findFirst()
+			.orElseThrow(ReviewerNotFoundException::new);
+
+		// 리뷰어가 이미 리뷰를 작성했는지 검증
+		validateHasReviewForCurrentRound(issueReviewer);
+
+		reviewers.remove(issueReviewer);
+	}
+
+	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
+		if (issueReviewer.hasReviewForRound(this.currentReviewRound)) {
+			throw new CannotRemoveReviewerException(
+				"Cannot remove reviewer who already wrote a review for current round.");
+		}
 	}
 
 	private void validateReviewersExist() {
