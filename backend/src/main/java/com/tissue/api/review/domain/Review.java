@@ -2,6 +2,7 @@ package com.tissue.api.review.domain;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.review.domain.enums.ReviewStatus;
+import com.tissue.api.review.exception.CannotChangeReviewStatusException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -62,7 +63,14 @@ public class Review extends WorkspaceContextBaseEntity {
 	}
 
 	public void updateStatus(ReviewStatus status) {
+		validateIsPendingStatus();
 		this.status = status;
+	}
+
+	private void validateIsPendingStatus() {
+		if (this.status != ReviewStatus.PENDING) {
+			throw new CannotChangeReviewStatusException();
+		}
 	}
 
 	public void updateTitle(String title) {

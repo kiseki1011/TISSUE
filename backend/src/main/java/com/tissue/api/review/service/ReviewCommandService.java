@@ -15,10 +15,12 @@ import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.exception.ReviewNotFoundException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
+import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -116,6 +118,25 @@ public class ReviewCommandService {
 		review.updateContent(request.content());
 
 		return UpdateReviewResponse.from(review);
+	}
+
+	@Transactional
+	public UpdateReviewStatusResponse updateReviewStatus(
+		String workspaceCode,
+		String issueKey,
+		Long reviewId,
+		Long reviewerWorkspaceMemberId,
+		UpdateReviewStatusRequest request
+	) {
+		Issue issue = findIssue(workspaceCode, issueKey);
+		Review review = findReview(reviewId);
+
+		reviewValidator.validateReviewOwnership(review, reviewerWorkspaceMemberId);
+
+		review.updateStatus(request.status());
+		updateIssueStatusBasedOnReview(issue, request.status());
+
+		return UpdateReviewStatusResponse.from(review);
 	}
 
 	private Issue findIssue(String code, String issueKey) {
