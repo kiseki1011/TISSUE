@@ -10,15 +10,16 @@ import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
-import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.exception.NotIssueReviewerException;
+import com.tissue.api.review.exception.ReviewNotFoundException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
+import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
+import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.validator.ReviewValidator;
-import com.tissue.api.review.validator.ReviewerValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
@@ -33,9 +34,7 @@ public class ReviewCommandService {
 
 	private final ReviewRepository reviewRepository;
 	private final IssueRepository issueRepository;
-	private final IssueReviewerRepository issueReviewerRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final ReviewerValidator reviewerValidator;
 	private final ReviewValidator reviewValidator;
 
 	@Transactional
@@ -47,7 +46,7 @@ public class ReviewCommandService {
 		Issue issue = findIssue(workspaceCode, issueKey);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerId, workspaceCode);
 
-		reviewerValidator.validateReviewer(reviewer);
+		reviewValidator.validateRoleIsLowerThanMember(reviewer);
 
 		issue.addReviewer(reviewer);
 
@@ -93,6 +92,7 @@ public class ReviewCommandService {
 
 		Review review = issueReviewer.addReview(
 			request.status(),
+			request.title(),
 			request.content(),
 			issue.getCurrentReviewRound()
 		);
@@ -100,6 +100,22 @@ public class ReviewCommandService {
 		updateIssueStatusBasedOnReview(issue, request.status());
 
 		return CreateReviewResponse.from(review);
+	}
+
+	@Transactional
+	public UpdateReviewResponse updateReview(
+		Long reviewId,
+		Long reviewerWorkspaceMemberId,
+		UpdateReviewRequest request
+	) {
+		Review review = findReview(reviewId);
+
+		reviewValidator.validateReviewOwnership(review, reviewerWorkspaceMemberId);
+
+		review.updateTitle(request.title());
+		review.updateContent(request.content());
+
+		return UpdateReviewResponse.from(review);
 	}
 
 	private Issue findIssue(String code, String issueKey) {
@@ -110,6 +126,11 @@ public class ReviewCommandService {
 	private WorkspaceMember findWorkspaceMember(Long id, String code) {
 		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
+	}
+
+	private Review findReview(Long reviewId) {
+		return reviewRepository.findById(reviewId)
+			.orElseThrow(ReviewNotFoundException::new);
 	}
 
 	private void updateIssueStatusBasedOnReview(Issue issue, ReviewStatus reviewStatus) {

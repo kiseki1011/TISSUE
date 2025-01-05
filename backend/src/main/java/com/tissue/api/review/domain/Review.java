@@ -36,6 +36,9 @@ public class Review extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private ReviewStatus status;
 
+	@Column(nullable = false)
+	private String title;
+
 	@Lob
 	@Column(nullable = false)
 	private String content;
@@ -47,12 +50,30 @@ public class Review extends WorkspaceContextBaseEntity {
 	public Review(
 		IssueReviewer issueReviewer,
 		ReviewStatus status,
+		String title,
 		String content,
 		int reviewRound
 	) {
 		this.issueReviewer = issueReviewer;
 		this.status = status;
+		this.title = title;
 		this.content = content;
 		this.reviewRound = reviewRound;
+	}
+
+	public void updateStatus(ReviewStatus status) {
+		this.status = status;
+	}
+
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
+	}
+
+	public String getWorkspaceCode() {
+		return issueReviewer.getReviewer().getWorkspaceCode();
 	}
 }

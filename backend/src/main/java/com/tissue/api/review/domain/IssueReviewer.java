@@ -41,11 +41,18 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 		this.reviewer = reviewer;
 	}
 
-	public Review addReview(ReviewStatus status, String comment, int reviewRound) {
+	public Review addReview(ReviewStatus status, String title, String content, int reviewRound) {
 		// 해당 라운드에 이미 리뷰가 있는지 확인
 		validateNoExistingReviewInRound(reviewRound);
 
-		Review review = new Review(this, status, comment, reviewRound);
+		Review review = Review.builder()
+			.issueReviewer(this)
+			.status(status)
+			.title(title)
+			.content(content)
+			.reviewRound(reviewRound)
+			.build();
+
 		this.reviews.add(review);
 
 		return review;

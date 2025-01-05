@@ -9,6 +9,9 @@ public record CreateReviewRequest(
 	@NotNull(message = "Review status is required.")
 	ReviewStatus status,
 
+	@NotBlank(message = "Review title is required.")
+	String title,
+
 	@NotBlank(message = "Review content is required.")
 	String content
 ) {
