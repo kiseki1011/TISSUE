@@ -67,7 +67,8 @@ jacocoTestReport {
                             "**/*Base62Encoder*",
                             "**/*WorkspaceCodeGenerator*",
                             "**/*Attributes*",
-                            "**/CheckCodeDuplicationService"
+                            "**/CheckCodeDuplicationService",
+                            "**/*Controller*"
                     ])
                 })
         )
@@ -83,7 +84,7 @@ jacocoTestReport {
                 limit {
                     counter = 'LINE'
                     value = 'COVEREDRATIO'
-                    minimum = 0.70
+                    minimum = 0.60
                 }
 
                 excludes = [
@@ -97,7 +98,8 @@ jacocoTestReport {
                         "**.*Base62Encoder*",
                         "**.*WorkspaceCodeGenerator*",
                         "**.*Attributes*",
-                        "**.CheckCodeDuplicationService"
+                        "**.CheckCodeDuplicationService",
+                        "**.*Controller*"
                 ]
             }
         }

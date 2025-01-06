@@ -13,7 +13,8 @@ public record CreateWorkspaceResponse(
 	String name,
 	String description,
 	String keyPrefix,
-	LocalDateTime createdAt
+	LocalDateTime createdAt,
+	Long createdBy
 ) {
 	public static CreateWorkspaceResponse from(Workspace workspace) {
 		return CreateWorkspaceResponse.builder()
@@ -23,6 +24,7 @@ public record CreateWorkspaceResponse(
 			.description(workspace.getDescription())
 			.keyPrefix(workspace.getKeyPrefix())
 			.createdAt(workspace.getCreatedDate())
+			.createdBy(workspace.getCreatedByMember())
 			.build();
 	}
 }

@@ -4,6 +4,7 @@ public enum IssueStatus {
 	TODO,
 	IN_PROGRESS,
 	IN_REVIEW,
+	CHANGES_REQUESTED,
 	DONE,
 	PAUSED,
 	CLOSED

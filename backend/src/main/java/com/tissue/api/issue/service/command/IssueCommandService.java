@@ -104,6 +104,7 @@ public class IssueCommandService {
 		return AssignParentIssueResponse.from(issue);
 	}
 
+	@Transactional
 	public RemoveParentIssueResponse removeParentIssue(
 		String code,
 		String issueKey
@@ -134,6 +135,13 @@ public class IssueCommandService {
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
 	}
 
+	/**
+	 * Todo
+	 *  - 기존에는 issueId로 찾던것을 issueKey로 찾도록 변경했음
+	 *  - 로직을 변경해야 함 -> 왜냐하면 code + issueKey로 찾기 때문에 해당 워크스페이스에 존재할 수 밖에 없음
+	 *  - 기존 id로 찾는 방식은 다른 워크스페이스에 존재하는 이슈를 조회가 가능했기 때문에 아래 처럼 사용
+	 *  - 그러나 지금은 그럴 필요가 없고 그냥 findIssue()를 사용하면 될 듯
+	 */
 	private Optional<Issue> findParentIssue(String parentIssueKey, String workspaceCode) {
 		return Optional.ofNullable(parentIssueKey)
 			.map(issueKey -> issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)

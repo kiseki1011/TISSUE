@@ -17,6 +17,9 @@ import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.review.domain.repository.ReviewRepository;
+import com.tissue.api.review.service.ReviewCommandService;
+import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -36,6 +39,8 @@ import com.tissue.fixture.repository.MemberRepositoryFixture;
 import com.tissue.fixture.repository.PositionRepositoryFixture;
 import com.tissue.fixture.repository.WorkspaceRepositoryFixture;
 import com.tissue.fixture.service.IssueFixture;
+import com.tissue.fixture.service.MemberFixture;
+import com.tissue.fixture.service.WorkspaceFixture;
 import com.tissue.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
@@ -91,6 +96,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected PositionQueryService positionQueryService;
 	@Autowired
 	protected IssueCommandService issueCommandService;
+	@Autowired
+	protected ReviewCommandService reviewCommandService;
 
 	/**
 	 * Validator
@@ -99,6 +106,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberValidator memberValidator;
 	@Autowired
 	protected WorkspaceValidator workspaceValidator;
+	@Autowired
+	protected ReviewValidator reviewValidator;
 
 	/**
 	 * Repository
@@ -115,6 +124,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected PositionRepository positionRepository;
 	@Autowired
 	protected IssueRepository issueRepository;
+	@Autowired
+	protected ReviewRepository reviewRepository;
 
 	/**
 	 * Fixture
@@ -131,5 +142,9 @@ public abstract class ServiceIntegrationTestHelper {
 	protected PositionRepositoryFixture positionRepositoryFixture;
 	@Autowired
 	protected IssueFixture issueFixture;
+	@Autowired
+	protected MemberFixture memberFixture;
+	@Autowired
+	protected WorkspaceFixture workspaceFixture;
 
 }

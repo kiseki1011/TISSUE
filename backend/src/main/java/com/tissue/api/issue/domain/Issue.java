@@ -11,8 +11,18 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
 import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
+import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.exception.CannotRemoveReviewerException;
+import com.tissue.api.review.exception.DuplicateReviewerException;
+import com.tissue.api.review.exception.IncompleteReviewRoundException;
+import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
+import com.tissue.api.review.exception.MaxReviewersExceededException;
+import com.tissue.api.review.exception.NoReviewersAddedException;
+import com.tissue.api.review.exception.ReviewerNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -107,6 +117,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private LocalDateTime startedAt;
 	private LocalDateTime finishedAt;
+	private LocalDateTime reviewRequestedAt;
 
 	private LocalDate dueDate;
 
@@ -116,6 +127,106 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();
+
+	// ---Review 도메인 관련 코드---
+	private static final int MAX_REVIEWERS = 10;
+
+	@Column(nullable = false)
+	private int currentReviewRound = 0;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "ISSUE_ID")
+	private List<IssueReviewer> reviewers = new ArrayList<>();
+
+	public void requestReview() {
+		validateReviewersExist();
+
+		if (isNotFirstReviewRound()) {
+			validateCanStartNewReviewRound();
+		}
+		this.currentReviewRound++;
+		this.updateStatus(IssueStatus.IN_REVIEW);
+	}
+
+	public void addReviewer(WorkspaceMember reviewer) {
+		validateReviewerLimit();
+		validateNotAlreadyReviewer(reviewer);
+
+		reviewers.add(new IssueReviewer(reviewer));
+	}
+
+	public void removeReviewer(WorkspaceMember reviewer) {
+		// 해당 reviewer의 IssueReviewer를 찾아 제거
+		IssueReviewer issueReviewer = reviewers.stream()
+			.filter(r -> r.getReviewer().getId().equals(reviewer.getId()))
+			.findFirst()
+			.orElseThrow(ReviewerNotFoundException::new);
+
+		// 리뷰어가 이미 리뷰를 작성했는지 검증
+		validateHasReviewForCurrentRound(issueReviewer);
+
+		reviewers.remove(issueReviewer);
+	}
+
+	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
+		if (issueReviewer.hasReviewForRound(this.currentReviewRound)) {
+			throw new CannotRemoveReviewerException(
+				"Cannot remove reviewer who already wrote a review for current round.");
+		}
+	}
+
+	private void validateReviewersExist() {
+		if (reviewers.isEmpty()) {
+			throw new NoReviewersAddedException();
+		}
+	}
+
+	private void validateCanStartNewReviewRound() {
+		// 현재 상태 검증
+		if (this.status != IssueStatus.CHANGES_REQUESTED) {
+			// Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
+			throw new IssueStatusNotChangesRequestedException(
+				String.format(
+					"The issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+					this.status
+				)
+			);
+		}
+
+		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
+		boolean allReviewersSubmitted = reviewers.stream()
+			.allMatch(reviewer -> reviewer.hasReviewForRound(this.currentReviewRound));
+
+		if (!allReviewersSubmitted) {
+			throw new IncompleteReviewRoundException(
+				String.format(
+					"There are reviewers that have not completed their review for this round. Current round: (%d)",
+					this.currentReviewRound
+				)
+			);
+		}
+	}
+
+	private void validateReviewerLimit() {
+		if (reviewers.size() >= MAX_REVIEWERS) {
+			throw new MaxReviewersExceededException(
+				String.format(
+					"The max number of reviewers for a single issue is %d.",
+					MAX_REVIEWERS
+				)
+			);
+		}
+	}
+
+	private void validateNotAlreadyReviewer(WorkspaceMember reviewer) {
+		boolean isAlreadyReviewer = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().getId().equals(reviewer.getId()));
+
+		if (isAlreadyReviewer) {
+			throw new DuplicateReviewerException();
+		}
+	}
+	// -----------------------------
 
 	protected Issue(
 		Workspace workspace,
@@ -129,9 +240,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
 
-		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
-		workspace.getIssues().add(this);
+		addToWorkspace(workspace);
 
 		this.type = type;
 		this.title = title;
@@ -168,6 +277,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.priority = priority;
 	}
 
+	public void setParentIssue(Issue parentIssue) {
+		validateParentIssue(parentIssue);
+		removeParentRelationship();
+
+		this.parentIssue = parentIssue;
+		parentIssue.getChildIssues().add(this);
+	}
+
 	public void addToWorkspace(Workspace workspace) {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
@@ -185,12 +302,22 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return true;
 	}
 
-	public void setParentIssue(Issue parentIssue) {
-		validateParentIssue(parentIssue);
-		removeParentRelationship();
+	public boolean isNotFirstReviewRound() {
+		return this.getCurrentReviewRound() != 0;
+	}
 
-		this.parentIssue = parentIssue;
-		parentIssue.getChildIssues().add(this);
+	private void updateTimestamps(IssueStatus newStatus) {
+		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
+			this.startedAt = LocalDateTime.now();
+			return;
+		}
+		if (newStatus == IssueStatus.IN_REVIEW) {
+			this.reviewRequestedAt = LocalDateTime.now();
+			return;
+		}
+		if (newStatus == IssueStatus.DONE) {
+			this.finishedAt = LocalDateTime.now();
+		}
 	}
 
 	protected void validateStatusTransition(IssueStatus newStatus) {
@@ -199,16 +326,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 		if (newStatus == IssueStatus.IN_REVIEW) {
 			throw new UpdateStatusToInReviewException();
-		}
-	}
-
-	private void updateTimestamps(IssueStatus newStatus) {
-		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
-			this.startedAt = LocalDateTime.now();
-			return;
-		}
-		if (newStatus == IssueStatus.DONE) {
-			this.finishedAt = LocalDateTime.now();
 		}
 	}
 

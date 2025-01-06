@@ -28,6 +28,8 @@ import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.review.presentation.controller.ReviewController;
+import com.tissue.api.review.service.ReviewCommandService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
 import com.tissue.api.security.authentication.service.AuthenticationService;
 import com.tissue.api.security.session.SessionManager;
@@ -62,7 +64,8 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceMemberInfoController.class,
 		MemberController.class,
 		PositionController.class,
-		IssueController.class
+		IssueController.class,
+		ReviewController.class
 	},
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
@@ -124,6 +127,8 @@ public abstract class ControllerTestHelper {
 	protected PositionQueryService positionQueryService;
 	@MockBean
 	protected IssueCommandService issueCommandService;
+	@MockBean
+	protected ReviewCommandService reviewCommandService;
 
 	/**
 	 * Validator

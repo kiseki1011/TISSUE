@@ -1,0 +1,45 @@
+package com.tissue.api.review.presentation.controller;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+
+import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.helper.ControllerTestHelper;
+
+class ReviewControllerTest extends ControllerTestHelper {
+
+	@Test
+	@DisplayName("POST /workspaces/{code}/issues/{issueKey}/reviewers/{reviewerId} - 리뷰어 추가에 성공하면 OK를 응답한다")
+	void addReviewer_success_statusOk() throws Exception {
+		// given
+		String workspaceCode = "TESTCODE";
+		String issueKey = "ISSUE-1";
+		Long reviewerId = 1L;
+
+		AddReviewerResponse response = AddReviewerResponse.builder()
+			.reviewerId(reviewerId)
+			.reviewerNickname("testNickname")
+			.reviewerRole(WorkspaceRole.MEMBER)
+			.build();
+
+		when(reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId))
+			.thenReturn(response);
+
+		// when & then
+		mockMvc.perform(
+				post("/api/v1/workspaces/{code}/issues/{issueKey}/reviewers/{reviewerId}", workspaceCode, issueKey,
+					reviewerId)
+					.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.message").value("Reviewer added."))
+			.andExpect(jsonPath("$.data.reviewerId").value(1L))
+			.andDo(print());
+	}
+}
