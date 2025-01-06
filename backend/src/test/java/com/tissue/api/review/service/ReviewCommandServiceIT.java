@@ -1,21 +1,37 @@
 package com.tissue.api.review.service;
 
+import static com.tissue.api.review.domain.enums.ReviewStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
+import com.tissue.api.review.exception.DuplicateReviewInRoundException;
 import com.tissue.api.review.exception.DuplicateReviewerException;
+import com.tissue.api.review.exception.IssueStatusNotInReviewException;
+import com.tissue.api.review.exception.NotIssueReviewerException;
+import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
+import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
+import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
+import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	String workspaceCode;
@@ -23,11 +39,11 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	public void setUp() {
-		// 테스트 멤버 testuser, testuser2 추가
+		// 테스트 멤버 testuser, testuser2 생성
 		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
 		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
 
-		// testuser가 생성한 테스트 워크스페이스 추가
+		// testuser가 테스트 워크스페이스 생성
 		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
 
 		workspaceCode = createWorkspace.code();
@@ -39,7 +55,8 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateStoryResponse createdStory = (CreateStoryResponse)issueFixture.createStory(
 			workspaceCode,
 			"Test Story",
-			null);
+			null
+		);
 
 		issueKey = createdStory.issueKey();
 	}
@@ -60,7 +77,8 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		AddReviewerResponse response = reviewCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
-			workspaceMember.getId());
+			workspaceMember.getId()
+		);
 
 		// then
 		assertThat(response.reviewerId()).isEqualTo(workspaceMember.getId());
@@ -77,7 +95,8 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThatThrownBy(() -> reviewCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
-			invalidWorkspaceMemberId))
+			invalidWorkspaceMemberId)
+		)
 			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
@@ -94,8 +113,233 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThatThrownBy(() -> reviewCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
-			workspaceMember.getId()))
+			workspaceMember.getId())
+		)
 			.isInstanceOf(DuplicateReviewerException.class);
 	}
 
+	@Test
+	@DisplayName("리뷰어 해제에 성공하면 RemoveReviewerResponse를 반환한다")
+	void removeReviewer_success_returnsRemoveReviewerResponse() {
+		// given
+		Long requesterId = 1L;
+
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(2L, workspaceCode)
+			.orElseThrow();
+
+		AddReviewerResponse addReviewerResponse = reviewCommandService.addReviewer(
+			workspaceCode,
+			issueKey,
+			workspaceMember.getId()
+		);
+
+		// when
+		RemoveReviewerResponse response = reviewCommandService.removeReviewer(
+			workspaceCode,
+			issueKey,
+			addReviewerResponse.reviewerId(),
+			requesterId
+		);
+
+		// then
+		assertThat(response.workspaceMemberId()).isEqualTo(2L);
+	}
+
+	@Test
+	@Disabled
+	@DisplayName("이슈의 assignee에 포함되지 않았지만 리뷰어 해제를 시도하는 경우 예외가 발생한다")
+	void removeReviewer_whenNotAssignee_throwsException() {
+		// given
+
+		// when
+
+		// then
+
+	}
+
+	@Test
+	@DisplayName("리뷰 요청이 성공하면 이슈의 상태는 IN_REVIEW로 변한다")
+	void fistReviewRequest_success_currentReviewRound_isOne() {
+		// given
+		Long requesterId = 1L;
+
+		WorkspaceMember workspaceMember = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(2L, workspaceCode)
+			.orElseThrow();
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, workspaceMember.getId());
+
+		// when
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		// then
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode).orElseThrow();
+
+		assertThat(issue.getStatus()).isEqualTo(IssueStatus.IN_REVIEW);
+	}
+
+	@Test
+	@DisplayName("이슈가 IN_REVIEW 상태가 아닐때 리뷰 작성을 시도하면 예외가 발생한다")
+	void createReview_whenIssueIsNotInReview_throwsException() {
+		// given
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+
+		CreateReviewRequest request = new CreateReviewRequest(APPROVED, "Title", "Content");
+
+		// when & then
+		assertThatThrownBy(() -> reviewCommandService.createReview(workspaceCode, issueKey, reviewerId, request))
+			.isInstanceOf(IssueStatusNotInReviewException.class);
+
+	}
+
+	@Test
+	@DisplayName("이슈에 대해 리뷰 신청을 통해 IN_REVIEW 상태로 전환되어야 리뷰 작성을 할 수 있다")
+	void test() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest request = new CreateReviewRequest(APPROVED, "Title", "Content");
+
+		// when
+		CreateReviewResponse response = reviewCommandService.createReview(workspaceCode, issueKey, reviewerId, request);
+
+		// then
+		assertThat(response.reviewerId()).isEqualTo(reviewerId);
+		assertThat(response.status()).isEqualTo(APPROVED);
+	}
+
+	@Test
+	@DisplayName("리뷰 상태를 CHANGES_REQUESTED로 설정해서 리뷰 작성에 성공하면, 이슈의 상태도 CHANGES_REQUESTED로 변한다")
+	void createReview_success_ifReviewStatusIsChangesRequested_issueStatusUpdatedToChangesRequested() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest request = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
+
+		// when
+		reviewCommandService.createReview(workspaceCode, issueKey, reviewerId, request);
+
+		// then
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode).orElseThrow();
+
+		assertThat(issue.getStatus()).isEqualTo(IssueStatus.CHANGES_REQUESTED);
+	}
+
+	@Test
+	@DisplayName("이슈의 최초 리뷰 요청이 성공하면 이슈의 currentReviewRound는 1이어야 한다")
+	void firstReviewRequest_currentReviewRound_shouldBeOne() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest request = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
+
+		// when
+		reviewCommandService.createReview(workspaceCode, issueKey, reviewerId, request);
+
+		// then
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode).orElseThrow();
+
+		assertThat(issue.getCurrentReviewRound()).isEqualTo(1);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("특정 이슈의 리뷰 재요청이 성공하면 이슈의 currentReviewRound가 1 증가해야 한다")
+	void secondReviewRequest_currentReviewRound_increaseByOne() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
+
+		CreateReviewResponse createReview = reviewCommandService.createReview(
+			workspaceCode,
+			issueKey,
+			reviewerId,
+			createReviewRequest
+		);
+
+		UpdateReviewStatusRequest updateReviewStatusRequest = new UpdateReviewStatusRequest(CHANGES_REQUESTED);
+
+		log.info("createReviewResponse = {}", createReview);
+
+		reviewCommandService.updateReviewStatus(
+			workspaceCode,
+			issueKey,
+			createReview.reviewId(),
+			reviewerId,
+			updateReviewStatusRequest
+		);
+
+		// when
+		RequestReviewResponse response = reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		// then
+		assertThat(response.currentReviewRound()).isEqualTo(2);
+	}
+
+	@Test
+	@DisplayName("리뷰어가 아닌데 해당 이슈의 리뷰 작성을 시도하면 예외가 발생한다")
+	void createReview_whenNotReviewer_throwsException() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
+
+		// when & then
+		assertThatThrownBy(() -> reviewCommandService.createReview(
+			workspaceCode,
+			issueKey,
+			requesterId, // 리뷰어가 아닌 자가 리뷰 생성 시도
+			createReviewRequest
+		)).isInstanceOf(NotIssueReviewerException.class);
+	}
+
+	@Test
+	@DisplayName("리뷰 작성을 시도할 때, 해당 리뷰 라운드에 이미 작성한 리뷰가 존재하면 예외가 발생한다")
+	void createReview_ifReviewExistsForCurrentRound_throwsException() {
+		// given
+		Long requesterId = 1L;
+		Long reviewerId = 2L;
+
+		reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId);
+		reviewCommandService.requestReview(workspaceCode, issueKey, requesterId);
+
+		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
+
+		reviewCommandService.createReview(
+			workspaceCode,
+			issueKey,
+			reviewerId,
+			createReviewRequest
+		);
+
+		// when & then
+		assertThatThrownBy(() -> reviewCommandService.createReview(
+			workspaceCode,
+			issueKey,
+			reviewerId,
+			createReviewRequest
+		)).isInstanceOf(DuplicateReviewInRoundException.class);
+	}
 }

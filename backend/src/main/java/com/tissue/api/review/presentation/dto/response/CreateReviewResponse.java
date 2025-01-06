@@ -24,6 +24,7 @@ public record CreateReviewResponse(
 			.status(review.getStatus())
 			.content(review.getContent())
 			.reviewRound(review.getReviewRound())
+			.reviewerId(review.getIssueReviewer().getReviewer().getId())
 			.reviewerNickName(
 				review.getIssueReviewer().getReviewer().getNickname()) // Todo: 최적화 여지, 서비스의 WorkspaceMember에서 가져오기
 			.createdAt(review.getCreatedDate())
