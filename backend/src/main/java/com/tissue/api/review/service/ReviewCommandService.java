@@ -11,7 +11,6 @@ import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.review.domain.repository.ReviewRepository;
-import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.exception.ReviewNotFoundException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
@@ -30,6 +29,16 @@ import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Todo
+ *  - currentReviewRound가 아닌 리뷰에 대해서는 수정 불가하도록 검증 로직 추가
+ *  - 리뷰어 등록/해제는 해당 이슈의 assignees에 포함되어 있어야 가능하도록 검증 로직 추가
+ *    - 리뷰어로 등록된 경우, 본인이 리뷰어 해제하는 것도 허용
+ *  - 리뷰 업데이트는 해당 리뷰를 작성한 리뷰어만 가능하도록 검증 로직 추가
+ *  - 리뷰 삭제는 해당 리뷰를 작성한 리뷰어만 가능하도록 검증 로직 추가
+ *  - 알림 서비스 구현 필요
+ *    - 리뷰 상태 변경 -> 모든 리뷰가 작성되었고 전부 APPROVED -> 이슈 assignees에게 알림
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -107,11 +116,7 @@ public class ReviewCommandService {
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 
-		IssueReviewer issueReviewer = issue.getReviewers().stream()
-			.filter(reviewer -> reviewer.getReviewer().getId().equals(reviewerId))
-			.findFirst()
-			.orElseThrow(NotIssueReviewerException::new);
-
+		IssueReviewer issueReviewer = reviewValidator.validateIsReviewerAndGet(reviewerId, issue);
 		reviewValidator.validateReviewIsCreateable(issue);
 
 		Review review = issueReviewer.addReview(
@@ -121,9 +126,11 @@ public class ReviewCommandService {
 			issue.getCurrentReviewRound()
 		);
 
+		Review savedReview = reviewRepository.save(review);
+
 		updateIssueStatusBasedOnReview(issue, request.status());
 
-		return CreateReviewResponse.from(review);
+		return CreateReviewResponse.from(savedReview);
 	}
 
 	@Transactional

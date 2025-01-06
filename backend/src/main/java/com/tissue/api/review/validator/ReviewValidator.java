@@ -4,8 +4,10 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.exception.IssueStatusNotInReviewException;
+import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.exception.UnauthorizedReviewAccessException;
 import com.tissue.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -16,6 +18,13 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class ReviewValidator {
+
+	public IssueReviewer validateIsReviewerAndGet(Long reviewerId, Issue issue) {
+		return issue.getReviewers().stream()
+			.filter(reviewer -> reviewer.getReviewer().getId().equals(reviewerId))
+			.findFirst()
+			.orElseThrow(NotIssueReviewerException::new);
+	}
 
 	public void validateReviewIsCreateable(Issue issue) {
 		if (issue.getStatus() != IssueStatus.IN_REVIEW) {
