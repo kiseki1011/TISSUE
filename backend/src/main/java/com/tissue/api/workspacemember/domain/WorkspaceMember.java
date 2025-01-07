@@ -1,12 +1,17 @@
 package com.tissue.api.workspacemember.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.domain.WorkspaceMemberPosition;
 import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +22,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -51,9 +57,12 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "POSITION_ID")
-	private Position position;
+	// @ManyToOne(fetch = FetchType.LAZY)
+	// @JoinColumn(name = "POSITION_ID")
+	// private Position position;
+
+	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -103,18 +112,37 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
-	public void changePosition(Position position) {
-		if (position != null) {
-			validatePositionBelongsToWorkspace(position);
-		}
-		this.position = position;
+	// public void changePosition(Position position) {
+	// 	if (position != null) {
+	// 		validatePositionBelongsToWorkspace(position);
+	// 	}
+	// 	this.position = position;
+	// }
+	//
+	// public void removePosition() {
+	// 	if (this.position != null) {
+	// 		this.position.getWorkspaceMembers().remove(this);
+	// 		this.position = null;
+	// 	}
+	// }
+
+	public void addPosition(Position position) {
+		validatePositionBelongsToWorkspace(position);
+		WorkspaceMemberPosition.builder()
+			.workspaceMember(this)
+			.position(position)
+			.build();
 	}
 
-	public void removePosition() {
-		if (this.position != null) {
-			this.position.getWorkspaceMembers().remove(this);
-			this.position = null;
-		}
+	public void removePosition(Position position) {
+		workspaceMemberPositions.stream()
+			.filter(wmp -> wmp.getPosition().equals(position))
+			.findFirst()
+			.ifPresent(wmp -> workspaceMemberPositions.remove(wmp));
+	}
+
+	public void clearPositions() {
+		workspaceMemberPositions.clear();
 	}
 
 	public void updateRole(WorkspaceRole role) {

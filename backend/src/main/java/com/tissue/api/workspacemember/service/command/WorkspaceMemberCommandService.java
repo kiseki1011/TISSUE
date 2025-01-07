@@ -88,7 +88,7 @@ public class WorkspaceMemberCommandService {
 	) {
 		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
 
-		workspaceMember.removePosition();
+		// workspaceMember.removePosition();
 	}
 
 	@Transactional

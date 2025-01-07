@@ -6,8 +6,8 @@ import java.util.List;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -56,8 +56,11 @@ public class Position extends WorkspaceContextBaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
-	@OneToMany(mappedBy = "position")
-	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+	// @OneToMany(mappedBy = "position")
+	// private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
 	@Builder
 	public Position(
