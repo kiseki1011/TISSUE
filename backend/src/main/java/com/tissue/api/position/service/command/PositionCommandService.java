@@ -1,8 +1,5 @@
 package com.tissue.api.position.service.command;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,13 +44,8 @@ public class PositionCommandService {
 			request.name()
 		);
 
-		// 현재 워크스페이스에서 사용 중인 색상들을 Set으로 추출
-		Set<ColorType> usedColors = workspace.getPositions().stream()
-			.map(Position::getColor)
-			.collect(Collectors.toSet());
-
 		// 사용되지 않은 색상 중에서 랜덤으로 선택
-		ColorType randomColor = ColorType.getRandomUnusedColor(usedColors);
+		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
 		Position savedPosition = createPosition(
 			request,
