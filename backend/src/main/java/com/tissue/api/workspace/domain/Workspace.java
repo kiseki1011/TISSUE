@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.WorkspaceBaseEntity;
-import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
@@ -99,14 +98,14 @@ public class Workspace extends WorkspaceBaseEntity {
 		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
-	public Position createPosition(String name, String description, ColorType color) {
-		return Position.builder()
-			.name(name)
-			.description(description)
-			.color(color)
-			.workspace(this)
-			.build();
-	}
+	// public Position createPosition(String name, String description, ColorType color) {
+	// 	return Position.builder()
+	// 		.name(name)
+	// 		.description(description)
+	// 		.color(color)
+	// 		.workspace(this)
+	// 		.build();
+	// }
 
 	public void setCode(String code) {
 		this.code = code;

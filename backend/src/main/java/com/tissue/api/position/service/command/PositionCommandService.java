@@ -129,7 +129,15 @@ public class PositionCommandService {
 	}
 
 	private Position createPosition(CreatePositionRequest request, Workspace workspace, ColorType color) {
-		Position position = workspace.createPosition(request.name(), request.description(), color);
+		// Position position = workspace.createPosition(request.name(), request.description(), color);
+
+		Position position = Position.builder()
+			.name(request.name())
+			.description(request.description())
+			.color(color)
+			.workspace(workspace)
+			.build();
+
 		return positionRepository.save(position);
 	}
 
