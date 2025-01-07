@@ -36,28 +36,11 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-
 		Workspace workspace = findWorkspaceByCode(workspaceCode);
 
-		positionValidator.validateDuplicatePositionName(
-			workspaceCode,
-			request.name()
-		);
-
-		// 사용되지 않은 색상 중에서 랜덤으로 선택
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
-		Position savedPosition = createPosition(
-			request,
-			workspace,
-			randomColor
-		);
-
-		log.debug("Position {} created with color: {} ({})",
-			request.name(),
-			randomColor.getDisplayName(),
-			randomColor.getHexCode()
-		);
+		Position savedPosition = createPosition(request, workspace, randomColor);
 
 		return CreatePositionResponse.from(savedPosition);
 	}
@@ -68,16 +51,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-
-		positionValidator.validateDuplicatePositionName(
-			workspaceCode,
-			request.name()
-		);
-
-		Position position = findPositionByIdAndWorkspaceCode(
-			workspaceCode,
-			positionId
-		);
+		Position position = findPosition(workspaceCode, positionId);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -91,8 +65,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-
-		Position position = findPositionByIdAndWorkspaceCode(
+		Position position = findPosition(
 			workspaceCode,
 			positionId
 		);
@@ -108,7 +81,7 @@ public class PositionCommandService {
 		Long positionId
 	) {
 
-		Position position = findPositionByIdAndWorkspaceCode(
+		Position position = findPosition(
 			workspaceCode,
 			positionId
 		);
@@ -120,8 +93,11 @@ public class PositionCommandService {
 		return DeletePositionResponse.from(position);
 	}
 
-	private Position createPosition(CreatePositionRequest request, Workspace workspace, ColorType color) {
-		// Position position = workspace.createPosition(request.name(), request.description(), color);
+	private Position createPosition(
+		CreatePositionRequest request,
+		Workspace workspace,
+		ColorType color
+	) {
 
 		Position position = Position.builder()
 			.name(request.name())
@@ -138,7 +114,10 @@ public class PositionCommandService {
 			.orElseThrow(WorkspaceNotFoundException::new);
 	}
 
-	private Position findPositionByIdAndWorkspaceCode(String workspaceCode, Long positionId) {
+	private Position findPosition(
+		String workspaceCode,
+		Long positionId
+	) {
 		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
 			.orElseThrow(PositionNotFoundException::new);
 	}

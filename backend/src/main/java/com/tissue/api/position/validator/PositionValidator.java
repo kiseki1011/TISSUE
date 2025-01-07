@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
-import com.tissue.api.position.exception.DuplicatePositionNameException;
 import com.tissue.api.position.exception.PositionInUseException;
 
 import lombok.RequiredArgsConstructor;
@@ -22,12 +21,6 @@ import lombok.RequiredArgsConstructor;
 public class PositionValidator {
 
 	private final PositionRepository positionRepository;
-
-	public void validateDuplicatePositionName(String workspaceCode, String positionName) {
-		if (positionRepository.existsByWorkspaceCodeAndName(workspaceCode, positionName)) {
-			throw new DuplicatePositionNameException();
-		}
-	}
 
 	public void validatePositionIsUsed(Position position) {
 		if (positionRepository.existsByWorkspaceMembers(position)) {
