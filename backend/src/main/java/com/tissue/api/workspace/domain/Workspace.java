@@ -11,6 +11,7 @@ import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.team.domain.Team;
 import com.tissue.api.workspace.exception.InvalidMemberCountException;
 import com.tissue.api.workspace.exception.WorkspaceMemberLimitExceededException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -78,6 +79,9 @@ public class Workspace extends WorkspaceBaseEntity {
 	private List<Position> positions = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Team> teams = new ArrayList<>();
+
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -124,6 +128,12 @@ public class Workspace extends WorkspaceBaseEntity {
 	public Set<ColorType> getUsedPositionColors() {
 		return this.positions.stream()
 			.map(Position::getColor)
+			.collect(Collectors.toSet());
+	}
+
+	public Set<ColorType> getUsedTeamColors() {
+		return this.teams.stream()
+			.map(Team::getColor)
 			.collect(Collectors.toSet());
 	}
 

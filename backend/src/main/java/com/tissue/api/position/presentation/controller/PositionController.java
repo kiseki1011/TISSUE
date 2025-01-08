@@ -28,9 +28,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/workspaces/{code}/positions")
 @RequiredArgsConstructor
