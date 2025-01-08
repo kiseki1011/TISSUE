@@ -79,7 +79,7 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMember.addPosition(position);
 
-		return AssignPositionResponse.from(workspaceMember, position);
+		return AssignPositionResponse.from(workspaceMember);
 	}
 
 	@Transactional
