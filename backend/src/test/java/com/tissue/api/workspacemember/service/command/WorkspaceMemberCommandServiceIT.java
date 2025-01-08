@@ -65,8 +65,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			"password1234!"
 		);
 
-		WorkspaceMember target = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(targetMember, workspace,
-			WorkspaceRole.MEMBER);
+		WorkspaceMember target = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
+			targetMember,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
 		entityManager.flush();
 
 		// when
@@ -76,9 +79,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(
-			workspaceMemberRepository.findById(target.getId())
-		).isEmpty();
+		assertThat(workspaceMemberRepository.findById(target.getId())).isEmpty();
 	}
 
 	@Test
@@ -336,12 +337,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
-		assertThatThrownBy(() ->
-			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				target.getId(),
-				requester.getId(),
-				request
-			))
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
 			.isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
@@ -390,12 +387,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() ->
-			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				target.getId(),
-				requester.getId(),
-				request
-			))
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
 			.isInstanceOf(InvalidRoleUpdateException.class);
 	}
 
@@ -528,16 +521,13 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateNicknameRequest request = new UpdateNicknameRequest(existingNickname);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
-			testerWorkspaceMember.getId(),
-			request
-		)).isInstanceOfAny(DuplicateNicknameException.class);
-
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(testerWorkspaceMember.getId(), request))
+			.isInstanceOfAny(DuplicateNicknameException.class);
 	}
 
 	@Transactional
 	@Test
-	@DisplayName("Position 할당에 성공하면 응답을 반환한다")
+	@DisplayName("포지션 할당에 성공하면 반환하는 응답에는 할당된 포지션의 이름이 포함된다")
 	void assignPosition_Success() {
 		// given
 		Member member = memberRepositoryFixture.createAndSaveMember(
@@ -560,20 +550,56 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When
 		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+			"TESTCODE",
 			position.getId(),
 			workspaceMember.getId()
 		);
 
 		// Then
 		assertThat(response.workspaceMemberId()).isEqualTo(workspaceMember.getId());
-		assertThat(response.assignedPosition()).isEqualTo(position.getName());
+		assertThat(response.assignedPositions().get(0).name()).isEqualTo(position.getName());
 
 		WorkspaceMember updatedMember = workspaceMemberRepository.findById(workspaceMember.getId()).get();
-		assertThat(updatedMember.getPosition()).isEqualTo(position);
+		assertThat(updatedMember.getWorkspaceMemberPositions().get(0).getPosition()).isEqualTo(position);
+	}
+
+	@Transactional
+	@Test
+	@DisplayName("하나의 워크스페이스 멤버에게 여러가지 포지션의 할당이 가능하다")
+	void assignMultiplePositions() {
+		// given
+		Member member = memberRepositoryFixture.createAndSaveMember(
+			"tester",
+			"test@test.com",
+			"password1234!"
+		);
+
+		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
+			"Test Workspace",
+			"Test Description",
+			"TESTCODE",
+			null
+		);
+
+		Position position1 = positionRepositoryFixture.createAndSavePosition("BACKEND-DEV", workspace);
+		Position position2 = positionRepositoryFixture.createAndSavePosition("FRONTEND-DEV", workspace);
+
+		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
+		entityManager.flush();
+
+		workspaceMemberCommandService.assignPosition("TESTCODE", position1.getId(), workspaceMember.getId());
+
+		// when
+		AssignPositionResponse response = workspaceMemberCommandService.assignPosition("TESTCODE", position2.getId(),
+			workspaceMember.getId());
+
+		// then
+		assertThat(response.assignedPositions().get(0).name()).isEqualTo("BACKEND-DEV");
+		assertThat(response.assignedPositions().get(1).name()).isEqualTo("FRONTEND-DEV");
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 Position으로 할당 시도하면 예외 발생")
+	@DisplayName("존재하지 않는 포지션으로 할당 시도하면 예외 발생")
 	void assignPosition_WithNonExistentPosition_ThrowsException() {
 		// given
 		Member member = memberRepositoryFixture.createAndSaveMember(
@@ -592,11 +618,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
 
 		// When & Then
-		assertThatThrownBy(() ->
-			workspaceMemberCommandService.assignPosition(
-				999L,
-				workspaceMember.getId()
-			)
-		).isInstanceOf(PositionNotFoundException.class);
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.assignPosition("TESTCODE", 999L, workspaceMember.getId()))
+			.isInstanceOf(PositionNotFoundException.class);
 	}
 }

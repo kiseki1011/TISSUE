@@ -5,10 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.position.presentation.dto.response.PositionDetail;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.helper.ControllerTestHelper;
 
@@ -26,11 +29,16 @@ class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
 
 		AssignPositionResponse response = new AssignPositionResponse(
 			1L,
-			"Developer",
+			List.of(PositionDetail.builder()
+				.name("Developer")
+				.description("Developer description")
+				.color(ColorType.BLACK)
+				.build()),
 			LocalDateTime.now()
 		);
 
 		when(workspaceMemberCommandService.assignPosition(
+			workspaceCode,
 			positionId,
 			workspaceMemberId
 		))
@@ -39,24 +47,26 @@ class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
 		// When & Then
 		mockMvc.perform(patch(BASE_URL + "/positions/{positionId}", workspaceCode, positionId))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Position assigned to member."))
+			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
 			.andExpect(jsonPath("$.data.workspaceMemberId").value(1))
-			.andExpect(jsonPath("$.data.assignedPosition").value("Developer"));
+			.andExpect(jsonPath("$.data.assignedPositions[0].name").value("Developer"));
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/positions - 내 Position 해제를 성공하면 OK 응답, 응답 데이터 없음")
+	@DisplayName("PATCH /workspaces/{code}/members/positions/{positionId} - 내 Position 해제를 성공하면 OK 응답, 응답 데이터 없음")
 	void removePosition_Success() throws Exception {
 		// Given
 		String workspaceCode = "TESTCODE";
 		Long currentWorkspaceMemberId = 1L;
+		Long positionId = 1L;
 
-		doNothing().when(workspaceMemberCommandService).clearPosition(currentWorkspaceMemberId);
+		doNothing().when(workspaceMemberCommandService)
+			.removePosition(workspaceCode, positionId, currentWorkspaceMemberId);
 
 		// When & Then
-		mockMvc.perform(patch(BASE_URL + "/positions", workspaceCode))
+		mockMvc.perform(patch(BASE_URL + "/positions/{positionId}", workspaceCode, positionId))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Position removed from member."))
+			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
 			.andExpect(jsonPath("$.data").doesNotExist());
 	}
 
@@ -71,11 +81,16 @@ class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
 
 		AssignPositionResponse response = new AssignPositionResponse(
 			2L,
-			"Developer",
+			List.of(PositionDetail.builder()
+				.name("Developer")
+				.description("Developer description")
+				.color(ColorType.BLACK)
+				.build()),
 			LocalDateTime.now()
 		);
 
 		when(workspaceMemberCommandService.assignPosition(
+			workspaceCode,
 			positionId,
 			targetWorkspaceMemberId
 		))
@@ -85,8 +100,8 @@ class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
 		mockMvc.perform(
 				patch(BASE_URL + "/{memberId}/positions/{positionId}", workspaceCode, targetWorkspaceMemberId, positionId))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Position assigned to member."))
+			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
 			.andExpect(jsonPath("$.data.workspaceMemberId").value(2))
-			.andExpect(jsonPath("$.data.assignedPosition").value("Developer"));
+			.andExpect(jsonPath("$.data.assignedPositions[0].name").value("Developer"));
 	}
 }

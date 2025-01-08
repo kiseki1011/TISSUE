@@ -1,5 +1,6 @@
 package com.tissue.api.workspacemember.presentation.controller;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,51 +65,67 @@ public class WorkspaceMemberInfoController {
 	@RoleRequired(roles = {WorkspaceRole.VIEWER})
 	@PatchMapping("/positions/{positionId}")
 	public ApiResponse<AssignPositionResponse> assignMyPosition(
+		@PathVariable String code,
 		@PathVariable Long positionId,
 		@CurrentWorkspaceMember Long workspaceMemberId
 	) {
 		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+			code,
 			positionId,
 			workspaceMemberId
 		);
 
-		return ApiResponse.ok("Position assigned to member.", response);
+		return ApiResponse.ok("Position assigned to workspace member.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.VIEWER})
-	@PatchMapping("/positions")
-	public ApiResponse<Void> clearMyPosition(
+	@DeleteMapping("/positions/{positionId}")
+	public ApiResponse<Void> removeMyPosition(
+		@PathVariable String code,
+		@PathVariable Long positionId,
 		@CurrentWorkspaceMember Long workspaceMemberId
 	) {
-		workspaceMemberCommandService.clearPosition(workspaceMemberId);
+		workspaceMemberCommandService.removePosition(
+			code,
+			positionId,
+			workspaceMemberId
+		);
 
-		return ApiResponse.okWithNoContent("Position removed from member.");
+		return ApiResponse.okWithNoContent("Position removed from workspace member.");
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{workspaceMemberId}/positions/{positionId}")
 	public ApiResponse<AssignPositionResponse> assignPosition(
+		@PathVariable String code,
 		@PathVariable Long workspaceMemberId,
 		@PathVariable Long positionId
 	) {
 		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+			code,
 			positionId,
 			workspaceMemberId
 		);
 
-		return ApiResponse.ok("Position assigned to member.", response);
+		return ApiResponse.ok("Position assigned to workspace member.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{workspaceMemberId}/positions")
-	public ApiResponse<Void> clearMemberPosition(
+	public ApiResponse<Void> removeMemberPosition(
+		@PathVariable String code,
+		@PathVariable Long positionId,
 		@PathVariable Long workspaceMemberId
 	) {
-		workspaceMemberCommandService.clearPosition(workspaceMemberId);
+		workspaceMemberCommandService.removePosition(
+			code,
+			positionId,
+			workspaceMemberId
+		);
 
-		return ApiResponse.okWithNoContent("Position removed from member.");
+		return ApiResponse.okWithNoContent("Position removed from workspace member.");
 	}
 }

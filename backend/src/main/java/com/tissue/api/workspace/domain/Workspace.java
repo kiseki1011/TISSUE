@@ -2,6 +2,8 @@ package com.tissue.api.workspace.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.tissue.api.common.entity.WorkspaceBaseEntity;
 import com.tissue.api.common.enums.ColorType;
@@ -99,15 +101,6 @@ public class Workspace extends WorkspaceBaseEntity {
 		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
-	public Position createPosition(String name, String description, ColorType color) {
-		return Position.builder()
-			.name(name)
-			.description(description)
-			.color(color)
-			.workspace(this)
-			.build();
-	}
-
 	public void setCode(String code) {
 		this.code = code;
 	}
@@ -126,6 +119,12 @@ public class Workspace extends WorkspaceBaseEntity {
 
 	public void updateDescription(String description) {
 		this.description = description;
+	}
+
+	public Set<ColorType> getUsedPositionColors() {
+		return this.positions.stream()
+			.map(Position::getColor)
+			.collect(Collectors.toSet());
 	}
 
 	public String getIssueKey() {
