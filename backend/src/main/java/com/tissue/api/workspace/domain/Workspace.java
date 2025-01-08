@@ -101,15 +101,6 @@ public class Workspace extends WorkspaceBaseEntity {
 		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
 	}
 
-	// public Position createPosition(String name, String description, ColorType color) {
-	// 	return Position.builder()
-	// 		.name(name)
-	// 		.description(description)
-	// 		.color(color)
-	// 		.workspace(this)
-	// 		.build();
-	// }
-
 	public void setCode(String code) {
 		this.code = code;
 	}

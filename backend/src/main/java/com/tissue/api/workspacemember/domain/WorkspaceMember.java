@@ -7,6 +7,8 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.WorkspaceMemberPosition;
+import com.tissue.api.position.exception.DuplicatePositionAssignmentException;
+import com.tissue.api.position.exception.PositionNotAssignedException;
 import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
@@ -35,7 +37,7 @@ import lombok.NoArgsConstructor;
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "UK_WORKSPACE_NICKNAME",
-			columnNames = {"workspace_code", "nickname"})
+			columnNames = {"WORKSPACE_CODE", "nickname"})
 	}
 )
 @Getter
@@ -57,10 +59,6 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "POSITION_ID")
-	// private Position position;
-
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
@@ -72,7 +70,12 @@ public class WorkspaceMember extends BaseEntity {
 	private String nickname;
 
 	@Builder
-	public WorkspaceMember(Member member, Workspace workspace, WorkspaceRole role, String nickname) {
+	public WorkspaceMember(
+		Member member,
+		Workspace workspace,
+		WorkspaceRole role,
+		String nickname
+	) {
 		this.member = member;
 		this.workspace = workspace;
 		this.role = role;
@@ -80,8 +83,12 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspaceCode = workspace.getCode();
 	}
 
-	public static WorkspaceMember addWorkspaceMember(Member member, Workspace workspace, WorkspaceRole role,
-		String nickname) {
+	public static WorkspaceMember addWorkspaceMember(
+		Member member,
+		Workspace workspace,
+		WorkspaceRole role,
+		String nickname
+	) {
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
 			.member(member)
 			.workspace(workspace)
@@ -95,13 +102,19 @@ public class WorkspaceMember extends BaseEntity {
 		return workspaceMember;
 	}
 
-	public static WorkspaceMember addOwnerWorkspaceMember(Member member, Workspace workspace) {
+	public static WorkspaceMember addOwnerWorkspaceMember(
+		Member member,
+		Workspace workspace
+	) {
 		member.increaseMyWorkspaceCount();
 		workspace.increaseMemberCount();
 		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, member.getEmail());
 	}
 
-	public static WorkspaceMember addCollaboratorWorkspaceMember(Member member, Workspace workspace) {
+	public static WorkspaceMember addCollaboratorWorkspaceMember(
+		Member member,
+		Workspace workspace
+	) {
 		workspace.increaseMemberCount();
 		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, member.getEmail());
 	}
@@ -112,22 +125,10 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
-	// public void changePosition(Position position) {
-	// 	if (position != null) {
-	// 		validatePositionBelongsToWorkspace(position);
-	// 	}
-	// 	this.position = position;
-	// }
-	//
-	// public void removePosition() {
-	// 	if (this.position != null) {
-	// 		this.position.getWorkspaceMembers().remove(this);
-	// 		this.position = null;
-	// 	}
-	// }
-
 	public void addPosition(Position position) {
 		validatePositionBelongsToWorkspace(position);
+		validateDuplicateAssignedPosition(position);
+
 		WorkspaceMemberPosition.builder()
 			.workspaceMember(this)
 			.position(position)
@@ -135,10 +136,14 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	public void removePosition(Position position) {
-		workspaceMemberPositions.stream()
+		WorkspaceMemberPosition workspaceMemberPosition = workspaceMemberPositions.stream()
 			.filter(wmp -> wmp.getPosition().equals(position))
 			.findFirst()
-			.ifPresent(wmp -> workspaceMemberPositions.remove(wmp));
+			.orElseThrow(() -> new PositionNotAssignedException(
+				String.format("Position '%s' is not assigned to this workspace member", position.getName())
+			));
+
+		workspaceMemberPositions.remove(workspaceMemberPosition);
 	}
 
 	public void clearPositions() {
@@ -164,6 +169,17 @@ public class WorkspaceMember extends BaseEntity {
 
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	private void validateDuplicateAssignedPosition(Position position) {
+		boolean isAlreadyAssigned = this.workspaceMemberPositions.stream()
+			.anyMatch(wmp -> wmp.getPosition().equals(position));
+
+		if (isAlreadyAssigned) {
+			throw new DuplicatePositionAssignmentException(
+				String.format("Position '%s' is already assigned to this workspace member", position.getName())
+			);
+		}
 	}
 
 	private void validatePositionBelongsToWorkspace(Position position) {

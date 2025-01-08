@@ -98,7 +98,6 @@ public class PositionCommandService {
 		Workspace workspace,
 		ColorType color
 	) {
-
 		Position position = Position.builder()
 			.name(request.name())
 			.description(request.description())

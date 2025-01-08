@@ -70,25 +70,28 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public AssignPositionResponse assignPosition(
+		String workspaceCode,
 		Long positionId,
 		Long workspaceMemberId
 	) {
-		Position position = findPosition(positionId);
-
+		Position position = findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
 
-		workspaceMember.changePosition(position);
+		workspaceMember.addPosition(position);
 
-		return AssignPositionResponse.from(workspaceMember);
+		return AssignPositionResponse.from(workspaceMember, position);
 	}
 
 	@Transactional
-	public void clearPosition(
+	public void removePosition(
+		String workspaceCode,
+		Long positionId,
 		Long workspaceMemberId
 	) {
+		Position position = findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
 
-		// workspaceMember.removePosition();
+		workspaceMember.removePosition(position);
 	}
 
 	@Transactional
@@ -126,15 +129,9 @@ public class WorkspaceMemberCommandService {
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
 
-	// private WorkspaceMember findWorkspaceMember(String code, Long memberId) {
-	// 	return workspaceMemberRepository
-	// 		.findByMemberIdAndWorkspaceCode(memberId, code)
-	// 		.orElseThrow(MemberNotInWorkspaceException::new);
-	// }
-
-	private Position findPosition(Long positionId) {
+	private Position findPosition(Long positionId, String workspaceCode) {
 		return positionRepository
-			.findById(positionId)
+			.findByIdAndWorkspaceCode(positionId, workspaceCode)
 			.orElseThrow(PositionNotFoundException::new);
 	}
 }
