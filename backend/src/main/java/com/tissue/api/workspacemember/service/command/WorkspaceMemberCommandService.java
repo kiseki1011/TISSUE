@@ -8,6 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.exception.PositionNotFoundException;
+import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.respository.TeamRepository;
+import com.tissue.api.team.exception.TeamNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
@@ -15,6 +18,7 @@ import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
@@ -32,6 +36,7 @@ public class WorkspaceMemberCommandService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
 	private final PositionRepository positionRepository;
+	private final TeamRepository teamRepository;
 
 	@Transactional
 	public UpdateNicknameResponse updateNickname(
@@ -95,6 +100,32 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
+	public AssignTeamResponse assignTeam(
+		String workspaceCode,
+		Long teamId,
+		Long workspaceMemberId
+	) {
+		Team team = findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
+
+		workspaceMember.addTeam(team);
+
+		return AssignTeamResponse.from(workspaceMember);
+	}
+
+	@Transactional
+	public void removeTeam(
+		String workspaceCode,
+		Long teamId,
+		Long workspaceMemberId
+	) {
+		Team team = findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = findWorkspaceMember(workspaceMemberId);
+
+		workspaceMember.removeTeam(team);
+	}
+
+	@Transactional
 	public TransferOwnershipResponse transferWorkspaceOwnership(
 		Long targetId,
 		Long requesterId
@@ -133,5 +164,11 @@ public class WorkspaceMemberCommandService {
 		return positionRepository
 			.findByIdAndWorkspaceCode(positionId, workspaceCode)
 			.orElseThrow(PositionNotFoundException::new);
+	}
+
+	private Team findTeam(Long positionId, String workspaceCode) {
+		return teamRepository
+			.findByIdAndWorkspaceCode(positionId, workspaceCode)
+			.orElseThrow(TeamNotFoundException::new);
 	}
 }

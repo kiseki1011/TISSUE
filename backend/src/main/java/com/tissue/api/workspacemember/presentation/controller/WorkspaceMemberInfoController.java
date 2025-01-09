@@ -13,6 +13,7 @@ import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
@@ -36,14 +37,6 @@ public class WorkspaceMemberInfoController {
 	 *  - setNicknameSchema: 워크스페이스의 별칭 스키마 정하기 (OWNER)
 	 *    - 예시: [멤버의 소속 부서/팀][멤버의 포지션]멤버의 이름 -> 이렇게 정하는 것이 가능, 중복되는 경우 숫자 붙이기
 	 *    - 예시: [SearchTeam][BACKEND-DEV]HongGilDong
-	 *  - assignTeam: 내 팀(부서) 소속 할당 (VIEWER)
-	 *  - removeTeam: 내 팀(부서) 소속 해제 (VIEWER)
-	 *  - assignMemberTeam: 특정 멤버의 팀(부서) 소속 할당 (MANAGER)
-	 *  - removeMemberTeam: 특정 멤버의 팀(부서) 소속 해제 (MANAGER)
-	 *  - <br>
-	 *  - 필요한 도메인
-	 *  - Team(Department, 소속)
-	 *  - Level(경력)
 	 */
 
 	@LoginRequired
@@ -115,7 +108,7 @@ public class WorkspaceMemberInfoController {
 	@LoginRequired
 	@RoleRequired(roles = {WorkspaceRole.MANAGER})
 	@PatchMapping("/{workspaceMemberId}/positions")
-	public ApiResponse<Void> removeMemberPosition(
+	public ApiResponse<Void> removePosition(
 		@PathVariable String code,
 		@PathVariable Long positionId,
 		@PathVariable Long workspaceMemberId
@@ -127,5 +120,73 @@ public class WorkspaceMemberInfoController {
 		);
 
 		return ApiResponse.okWithNoContent("Position removed from workspace member.");
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@PatchMapping("/teams/{teamId}")
+	public ApiResponse<AssignTeamResponse> assignMyTeam(
+		@PathVariable String code,
+		@PathVariable Long teamId,
+		@CurrentWorkspaceMember Long workspaceMemberId
+	) {
+		AssignTeamResponse response = workspaceMemberCommandService.assignTeam(
+			code,
+			teamId,
+			workspaceMemberId
+		);
+
+		return ApiResponse.ok("Team assigned to workspace member.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@DeleteMapping("/teams/{teamId}")
+	public ApiResponse<Void> removeMyTeam(
+		@PathVariable String code,
+		@PathVariable Long teamId,
+		@CurrentWorkspaceMember Long workspaceMemberId
+	) {
+		workspaceMemberCommandService.removeTeam(
+			code,
+			teamId,
+			workspaceMemberId
+		);
+
+		return ApiResponse.okWithNoContent("Team removed from workspace member.");
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{workspaceMemberId}/teams/{teamId}")
+	public ApiResponse<AssignTeamResponse> assignTeam(
+		@PathVariable String code,
+		@PathVariable Long workspaceMemberId,
+		@PathVariable Long teamId
+	) {
+		AssignTeamResponse response = workspaceMemberCommandService.assignTeam(
+			code,
+			teamId,
+			workspaceMemberId
+		);
+
+		return ApiResponse.ok("Team assigned to workspace member.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@PatchMapping("/{workspaceMemberId}/teams")
+	public ApiResponse<Void> removeTeam(
+		@PathVariable String code,
+		@PathVariable Long teamId,
+		@PathVariable Long workspaceMemberId
+	) {
+		workspaceMemberCommandService.removeTeam(
+			code,
+			teamId,
+			workspaceMemberId
+		);
+
+		return ApiResponse.okWithNoContent("Team removed from workspace member.");
 	}
 }
