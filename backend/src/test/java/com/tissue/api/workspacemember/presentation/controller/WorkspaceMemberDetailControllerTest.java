@@ -15,7 +15,7 @@ import com.tissue.api.position.presentation.dto.response.PositionDetail;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.helper.ControllerTestHelper;
 
-class WorkspaceMemberInfoControllerTest extends ControllerTestHelper {
+class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 
 	private static final String BASE_URL = "/api/v1/workspaces/{code}/members";
 

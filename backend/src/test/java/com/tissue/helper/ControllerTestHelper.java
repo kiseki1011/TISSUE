@@ -42,7 +42,7 @@ import com.tissue.api.workspace.service.command.create.CheckCodeDuplicationServi
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.controller.WorkspaceMemberInfoController;
+import com.tissue.api.workspacemember.presentation.controller.WorkspaceMemberDetailController;
 import com.tissue.api.workspacemember.presentation.controller.WorkspaceMembershipController;
 import com.tissue.api.workspacemember.presentation.controller.WorkspaceParticipationController;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
@@ -61,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceController.class,
 		WorkspaceMembershipController.class,
 		WorkspaceParticipationController.class,
-		WorkspaceMemberInfoController.class,
+		WorkspaceMemberDetailController.class,
 		MemberController.class,
 		PositionController.class,
 		IssueController.class,
