@@ -68,7 +68,8 @@ jacocoTestReport {
                             "**/*WorkspaceCodeGenerator*",
                             "**/*Attributes*",
                             "**/CheckCodeDuplicationService",
-                            "**/*Controller*"
+                            "**/*Controller*",
+                            "**/Team*"
                     ])
                 })
         )
@@ -99,7 +100,8 @@ jacocoTestReport {
                         "**.*WorkspaceCodeGenerator*",
                         "**.*Attributes*",
                         "**.CheckCodeDuplicationService",
-                        "**.*Controller*"
+                        "**.*Controller*",
+                        "**.Team*"
                 ]
             }
         }

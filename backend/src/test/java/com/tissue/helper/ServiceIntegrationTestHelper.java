@@ -21,6 +21,9 @@ import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.ReviewCommandService;
 import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.team.domain.respository.TeamRepository;
+import com.tissue.api.team.service.command.TeamCommandService;
+import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
@@ -95,6 +98,10 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected PositionQueryService positionQueryService;
 	@Autowired
+	protected TeamCommandService teamCommandService;
+	@Autowired
+	protected TeamQueryService teamQueryService;
+	@Autowired
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected ReviewCommandService reviewCommandService;
@@ -123,6 +130,8 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected PositionRepository positionRepository;
 	@Autowired
+	protected TeamRepository teamRepository;
+	@Autowired
 	protected IssueRepository issueRepository;
 	@Autowired
 	protected ReviewRepository reviewRepository;
@@ -146,5 +155,4 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberFixture memberFixture;
 	@Autowired
 	protected WorkspaceFixture workspaceFixture;
-
 }

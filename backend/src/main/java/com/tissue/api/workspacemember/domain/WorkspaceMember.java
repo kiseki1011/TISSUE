@@ -10,6 +10,11 @@ import com.tissue.api.position.domain.WorkspaceMemberPosition;
 import com.tissue.api.position.exception.DuplicatePositionAssignmentException;
 import com.tissue.api.position.exception.PositionNotAssignedException;
 import com.tissue.api.position.exception.PositionNotFoundException;
+import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.WorkspaceMemberTeam;
+import com.tissue.api.team.exception.DuplicateTeamAssignmentException;
+import com.tissue.api.team.exception.TeamNotAssignedException;
+import com.tissue.api.team.exception.TeamNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 
@@ -61,6 +66,9 @@ public class WorkspaceMember extends BaseEntity {
 
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
+
+	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -146,8 +154,25 @@ public class WorkspaceMember extends BaseEntity {
 		workspaceMemberPositions.remove(workspaceMemberPosition);
 	}
 
-	public void clearPositions() {
-		workspaceMemberPositions.clear();
+	public void addTeam(Team team) {
+		validateTeamBelongsToWorkspace(team);
+		validateDuplicateAssignedTeam(team);
+
+		WorkspaceMemberTeam.builder()
+			.workspaceMember(this)
+			.team(team)
+			.build();
+	}
+
+	public void removeTeam(Team team) {
+		WorkspaceMemberTeam workspaceMemberTeam = workspaceMemberTeams.stream()
+			.filter(wmp -> wmp.getTeam().equals(team))
+			.findFirst()
+			.orElseThrow(() -> new TeamNotAssignedException(
+				String.format("Team '%s' is not assigned to this workspace member", team.getName())
+			));
+
+		workspaceMemberTeams.remove(workspaceMemberTeam);
 	}
 
 	public void updateRole(WorkspaceRole role) {
@@ -185,6 +210,23 @@ public class WorkspaceMember extends BaseEntity {
 	private void validatePositionBelongsToWorkspace(Position position) {
 		if (!position.getWorkspaceCode().equals(this.workspaceCode)) {
 			throw new PositionNotFoundException();
+		}
+	}
+
+	private void validateDuplicateAssignedTeam(Team team) {
+		boolean isAlreadyAssigned = this.workspaceMemberTeams.stream()
+			.anyMatch(wmt -> wmt.getTeam().equals(team));
+
+		if (isAlreadyAssigned) {
+			throw new DuplicateTeamAssignmentException(
+				String.format("Team '%s' is already assigned to this workspace member", team.getName())
+			);
+		}
+	}
+
+	private void validateTeamBelongsToWorkspace(Team team) {
+		if (!team.getWorkspaceCode().equals(this.workspaceCode)) {
+			throw new TeamNotFoundException();
 		}
 	}
 

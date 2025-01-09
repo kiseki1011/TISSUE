@@ -1,4 +1,4 @@
-package com.tissue.api.position.domain;
+package com.tissue.api.team.domain;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,16 +28,24 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(uniqueConstraints = {
+	@UniqueConstraint(
+		name = "UK_WORKSPACE_TEAM_NAME",
+		columnNames = {"WORKSPACE_CODE", "name"}
+	)
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Position extends WorkspaceContextBaseEntity {
+public class Team extends WorkspaceContextBaseEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "POSITION_ID")
+	@Column(name = "TEAM_ID")
 	private Long id;
 
 	@Column(nullable = false)
 	private String name;
 
+	@Column(nullable = false)
 	private String description;
 
 	@Enumerated(EnumType.STRING)
@@ -49,22 +59,22 @@ public class Position extends WorkspaceContextBaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
-	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
+	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
 
 	@Builder
-	public Position(
+	public Team(
 		String name,
 		String description,
 		Workspace workspace,
 		ColorType color
 	) {
 		this.name = name;
-		this.description = description != null ? description : "";
+		this.description = description;
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		this.color = color;
-		workspace.getPositions().add(this);
+		workspace.getTeams().add(this);
 	}
 
 	public void updateName(String name) {
