@@ -55,16 +55,16 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@PostMapping("/reviewers/{reviewerId}")
+	@PostMapping("/reviewers/{workspaceMemberId}")
 	public ApiResponse<AddReviewerResponse> addReviewer(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@PathVariable Long reviewerId
+		@PathVariable Long workspaceMemberId
 	) {
 		AddReviewerResponse response = reviewCommandService.addReviewer(
 			code,
 			issueKey,
-			reviewerId
+			workspaceMemberId
 		);
 
 		return ApiResponse.ok("Reviewer added.", response);
@@ -72,17 +72,17 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@DeleteMapping("/reviewers/{reviewerId}")
+	@DeleteMapping("/reviewers/{workspaceMemberId}")
 	public ApiResponse<RemoveReviewerResponse> removeReviewer(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@PathVariable Long reviewerId,
+		@PathVariable Long workspaceMemberId,
 		@CurrentWorkspaceMember Long requesterId
 	) {
 		RemoveReviewerResponse response = reviewCommandService.removeReviewer(
 			code,
 			issueKey,
-			reviewerId,
+			workspaceMemberId,
 			requesterId
 		);
 
