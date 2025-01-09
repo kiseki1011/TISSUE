@@ -59,12 +59,12 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public UpdateRoleResponse updateWorkspaceMemberRole(
-		Long targetId,
-		Long requesterId,
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId,
 		UpdateRoleRequest request
 	) {
-		WorkspaceMember requester = findWorkspaceMember(requesterId);
-		WorkspaceMember target = findWorkspaceMember(targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
@@ -127,11 +127,11 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public TransferOwnershipResponse transferWorkspaceOwnership(
-		Long targetId,
-		Long requesterId
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(requesterId);
-		WorkspaceMember target = findWorkspaceMember(targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = findWorkspaceMember(targetWorkspaceMemberId);
 
 		requester.updateRoleFromOwnerToAdmin();
 		target.updateRoleToOwner();
@@ -141,11 +141,11 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public RemoveWorkspaceMemberResponse removeWorkspaceMember(
-		Long targetId,
-		Long requesterId
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(requesterId);
-		WorkspaceMember target = findWorkspaceMember(targetId);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRemoveMember(requester, target);
 

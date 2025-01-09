@@ -71,12 +71,12 @@ public class ReviewCommandService {
 	public RemoveReviewerResponse removeReviewer(
 		String workspaceCode,
 		String issueKey,
-		Long reviewerId,
-		Long requesterId
+		Long reviewerWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerId, workspaceCode);
+		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 
 		// Todo: validateRequesterIsAssignee or requesterIsReviewer 추가
 		issue.removeReviewer(reviewer);
@@ -94,7 +94,7 @@ public class ReviewCommandService {
 	public RequestReviewResponse requestReview(
 		String workspaceCode,
 		String issueKey,
-		Long requesterId
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 
@@ -111,12 +111,12 @@ public class ReviewCommandService {
 	public CreateReviewResponse createReview(
 		String workspaceCode,
 		String issueKey,
-		Long reviewerId,
+		Long reviewerWorkspaceMemberId,
 		CreateReviewRequest request
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 
-		IssueReviewer issueReviewer = reviewValidator.validateIsReviewerAndGet(reviewerId, issue);
+		IssueReviewer issueReviewer = reviewValidator.validateIsReviewerAndGet(reviewerWorkspaceMemberId, issue);
 		reviewValidator.validateReviewIsCreateable(issue);
 
 		Review review = issueReviewer.addReview(
@@ -154,13 +154,13 @@ public class ReviewCommandService {
 		String workspaceCode,
 		String issueKey,
 		Long reviewId,
-		Long requesterId,
+		Long requesterWorkspaceMemberId,
 		UpdateReviewStatusRequest request
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 		Review review = findReview(reviewId);
 
-		reviewValidator.validateReviewOwnership(review, requesterId);
+		reviewValidator.validateReviewOwnership(review, requesterWorkspaceMemberId);
 
 		review.updateStatus(request.status());
 		updateIssueStatusBasedOnReview(issue, request.status());
@@ -178,8 +178,8 @@ public class ReviewCommandService {
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
 
-	private Review findReview(Long reviewId) {
-		return reviewRepository.findById(reviewId)
+	private Review findReview(Long id) {
+		return reviewRepository.findById(id)
 			.orElseThrow(ReviewNotFoundException::new);
 	}
 
