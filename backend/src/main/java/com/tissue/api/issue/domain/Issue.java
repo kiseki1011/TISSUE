@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tissue.api.assignee.domain.IssueAssignee;
+import com.tissue.api.assignee.exception.AssigneeNotFoundException;
+import com.tissue.api.assignee.exception.DuplicateAssigneeException;
+import com.tissue.api.assignee.exception.InvalidAssigneeException;
+import com.tissue.api.assignee.exception.MaxAssigneesExceededException;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
@@ -226,6 +231,60 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			throw new DuplicateReviewerException();
 		}
 	}
+	// -----------------------------
+
+	// --assignee 도메인 관련 코드--
+
+	private static final int MAX_ASSIGNEES = 10;
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "ISSUE_ID")
+	private final List<IssueAssignee> assignees = new ArrayList<>();
+
+	public void addAssignee(WorkspaceMember assignee) {
+		validateAssigneeLimit();
+		validateAssigneeBelongsToWorkspace(assignee);
+		validateNotAlreadyAssigned(assignee);
+
+		assignees.add(new IssueAssignee(this, assignee));
+	}
+
+	public void removeAssignee(WorkspaceMember assignee) {
+		IssueAssignee issueAssignee = assignees.stream()
+			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
+			.findFirst()
+			.orElseThrow(() -> new AssigneeNotFoundException(
+				String.format("Assignee '%s' is not assigned to this issue", assignee.getNickname())
+			));
+
+		assignees.remove(issueAssignee);
+	}
+
+	private void validateAssigneeLimit() {
+		if (assignees.size() >= MAX_ASSIGNEES) {
+			throw new MaxAssigneesExceededException(
+				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES)
+			);
+		}
+	}
+
+	private void validateAssigneeBelongsToWorkspace(WorkspaceMember assignee) {
+		if (!assignee.getWorkspaceCode().equals(this.workspaceCode)) {
+			throw new InvalidAssigneeException("Assignee must belong to the same workspace");
+		}
+	}
+
+	private void validateNotAlreadyAssigned(WorkspaceMember assignee) {
+		boolean isAlreadyAssigned = this.assignees.stream()
+			.anyMatch(ia -> ia.getAssignee().getId().equals(assignee.getId()));
+
+		if (isAlreadyAssigned) {
+			throw new DuplicateAssigneeException(
+				String.format("Member '%s' is already assigned to this issue", assignee.getNickname())
+			);
+		}
+	}
+
 	// -----------------------------
 
 	protected Issue(
