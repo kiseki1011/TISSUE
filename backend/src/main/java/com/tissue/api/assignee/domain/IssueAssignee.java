@@ -3,7 +3,6 @@ package com.tissue.api.assignee.domain;
 import java.time.LocalDateTime;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
@@ -34,13 +33,8 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private LocalDateTime assignedAt;
 
-	public IssueAssignee(Issue issue, WorkspaceMember assignee) {
-		this.issue = issue;
+	public IssueAssignee(WorkspaceMember assignee) {
 		this.assignee = assignee;
 		this.assignedAt = LocalDateTime.now();
-	}
-
-	public String getWorkspaceCode() {
-		return issue.getWorkspaceCode();
 	}
 }

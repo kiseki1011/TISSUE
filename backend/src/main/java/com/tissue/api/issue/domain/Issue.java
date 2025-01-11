@@ -10,6 +10,7 @@ import com.tissue.api.assignee.exception.AssigneeNotFoundException;
 import com.tissue.api.assignee.exception.DuplicateAssigneeException;
 import com.tissue.api.assignee.exception.InvalidAssigneeException;
 import com.tissue.api.assignee.exception.MaxAssigneesExceededException;
+import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
@@ -246,7 +247,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateAssigneeBelongsToWorkspace(assignee);
 		validateNotAlreadyAssigned(assignee);
 
-		assignees.add(new IssueAssignee(this, assignee));
+		assignees.add(new IssueAssignee(assignee));
 	}
 
 	public void removeAssignee(WorkspaceMember assignee) {
@@ -258,6 +259,17 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			));
 
 		assignees.remove(issueAssignee);
+	}
+
+	public void validateIsAssignee(Long workspaceMemberId) {
+		boolean isAssignee = assignees.stream()
+			.anyMatch(issueAssignee ->
+				issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+
+		if (!isAssignee) {
+			throw new UnauthorizedAssigneeModificationException(
+				"Only assignees can modify issue assignments.");
+		}
 	}
 
 	private void validateAssigneeLimit() {
