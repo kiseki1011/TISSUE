@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.tissue.api.assignee.service.command.AssigneeCommandService;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
@@ -105,6 +106,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected ReviewCommandService reviewCommandService;
+	@Autowired
+	protected AssigneeCommandService assigneeCommandService;
 
 	/**
 	 * Validator
