@@ -57,12 +57,14 @@ public class ReviewController {
 	public ApiResponse<AddReviewerResponse> addReviewer(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@PathVariable Long workspaceMemberId
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long requesterId
 	) {
 		AddReviewerResponse response = reviewCommandService.addReviewer(
 			code,
 			issueKey,
-			workspaceMemberId
+			workspaceMemberId,
+			requesterId
 		);
 
 		return ApiResponse.ok("Reviewer added.", response);

@@ -10,6 +10,7 @@ import com.tissue.api.position.domain.WorkspaceMemberPosition;
 import com.tissue.api.position.exception.DuplicatePositionAssignmentException;
 import com.tissue.api.position.exception.PositionNotAssignedException;
 import com.tissue.api.position.exception.PositionNotFoundException;
+import com.tissue.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.WorkspaceMemberTeam;
 import com.tissue.api.team.exception.DuplicateTeamAssignmentException;
@@ -194,6 +195,17 @@ public class WorkspaceMember extends BaseEntity {
 
 	public void updateNickname(String nickname) {
 		this.nickname = nickname;
+	}
+
+	public void validateRoleIsHigherThanViewer() {
+		if (this.getRole().isLowerThan(WorkspaceRole.MEMBER)) {
+			throw new InsufficientWorkspaceRoleException(
+				String.format(
+					"Must have a workspace role higher than VIEWER. Current workspace role: %s",
+					this.getRole()
+				)
+			);
+		}
 	}
 
 	private void validateDuplicateAssignedPosition(Position position) {

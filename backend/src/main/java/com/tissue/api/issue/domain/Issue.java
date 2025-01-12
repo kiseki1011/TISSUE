@@ -22,9 +22,11 @@ import com.tissue.api.review.exception.CannotRemoveReviewerException;
 import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.exception.IncompleteReviewRoundException;
 import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
+import com.tissue.api.review.exception.IssueStatusNotInReviewException;
 import com.tissue.api.review.exception.MaxReviewersExceededException;
 import com.tissue.api.review.exception.NoReviewersAddedException;
 import com.tissue.api.review.exception.ReviewerNotFoundException;
+import com.tissue.api.review.exception.UnauthorizedReviewerModificationException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -174,6 +176,23 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		reviewers.remove(issueReviewer);
 	}
 
+	public void validateCanRemoveReviewer(Long requesterWorkspaceMemberId, Long reviewerWorkspaceMemberId) {
+		// 자기 자신을 제거하는 경우는 바로 통과
+		if (requesterWorkspaceMemberId.equals(reviewerWorkspaceMemberId)) {
+			return;
+		}
+
+		// 작업자인 경우도 통과
+		boolean isAssignee = assignees.stream()
+			.anyMatch(issueAssignee ->
+				issueAssignee.getAssignee().getId().equals(requesterWorkspaceMemberId));
+
+		if (!isAssignee) {
+			throw new UnauthorizedReviewerModificationException(
+				"Only the reviewer themselves or issue assignees can remove reviewers.");
+		}
+	}
+
 	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
 		if (issueReviewer.hasReviewForRound(this.currentReviewRound)) {
 			throw new CannotRemoveReviewerException(
@@ -232,6 +251,13 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			throw new DuplicateReviewerException();
 		}
 	}
+
+	public void validateReviewIsCreateable() {
+		if (this.getStatus() != IssueStatus.IN_REVIEW) {
+			throw new IssueStatusNotInReviewException(); // Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
+		}
+	}
+
 	// -----------------------------
 
 	// --assignee 도메인 관련 코드--
@@ -268,7 +294,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 		if (!isAssignee) {
 			throw new UnauthorizedAssigneeModificationException(
-				"Only assignees can modify issue assignments.");
+				"You must be an assignee of the Issue.");
 		}
 	}
 
