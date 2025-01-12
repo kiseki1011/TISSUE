@@ -18,9 +18,9 @@ import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.ReviewCommandService;
-import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.team.domain.respository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
@@ -116,8 +116,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberValidator memberValidator;
 	@Autowired
 	protected WorkspaceValidator workspaceValidator;
-	@Autowired
-	protected ReviewValidator reviewValidator;
 
 	/**
 	 * Repository
@@ -138,6 +136,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueRepository issueRepository;
 	@Autowired
 	protected ReviewRepository reviewRepository;
+	@Autowired
+	protected IssueReviewerRepository issueReviewerRepository;
 
 	/**
 	 * Fixture
