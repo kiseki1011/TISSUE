@@ -1,7 +1,6 @@
 package com.tissue.api.review.presentation.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,10 +13,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.review.service.ReviewCommandService;
@@ -31,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}")
+@RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}/reviews")
 public class ReviewController {
 
 	private final ReviewCommandService reviewCommandService;
@@ -50,59 +46,8 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@PostMapping("/reviewers/{workspaceMemberId}")
-	public ApiResponse<AddReviewerResponse> addReviewer(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@PathVariable Long workspaceMemberId,
-		@CurrentWorkspaceMember Long requesterId
-	) {
-		AddReviewerResponse response = reviewCommandService.addReviewer(
-			code,
-			issueKey,
-			workspaceMemberId,
-			requesterId
-		);
-
-		return ApiResponse.ok("Reviewer added.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@DeleteMapping("/reviewers/{workspaceMemberId}")
-	public ApiResponse<RemoveReviewerResponse> removeReviewer(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@PathVariable Long workspaceMemberId,
-		@CurrentWorkspaceMember Long requesterId
-	) {
-		RemoveReviewerResponse response = reviewCommandService.removeReviewer(
-			code,
-			issueKey,
-			workspaceMemberId,
-			requesterId
-		);
-
-		return ApiResponse.ok("Reviewer removed.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@PostMapping("/reviewers")
-	public ApiResponse<RequestReviewResponse> requestReview(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long requesterId
-	) {
-		RequestReviewResponse response = reviewCommandService.requestReview(code, issueKey, requesterId);
-
-		return ApiResponse.ok("Requested reviewing for issue.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("/reviews")
+	@PostMapping
 	public ApiResponse<CreateReviewResponse> createReview(
 		@PathVariable String code,
 		@PathVariable String issueKey,
@@ -121,7 +66,7 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@PatchMapping("/reviews/{reviewId}")
+	@PatchMapping("/{reviewId}")
 	public ApiResponse<UpdateReviewResponse> updateReview(
 		@PathVariable Long reviewId,
 		@CurrentWorkspaceMember Long requesterId,
@@ -138,7 +83,7 @@ public class ReviewController {
 
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
-	@PatchMapping("/reviews/{reviewId}/status")
+	@PatchMapping("/{reviewId}/status")
 	public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
 		@PathVariable String code,
 		@PathVariable String issueKey,

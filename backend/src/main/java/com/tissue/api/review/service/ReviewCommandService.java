@@ -17,10 +17,7 @@ import com.tissue.api.review.exception.ReviewNotFoundException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -45,62 +42,6 @@ public class ReviewCommandService {
 	private final IssueRepository issueRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
-
-	@Transactional
-	public AddReviewerResponse addReviewer(
-		String workspaceCode,
-		String issueKey,
-		Long reviewerWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
-	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
-
-		reviewer.validateRoleIsHigherThanViewer();
-
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssignee(requesterWorkspaceMemberId);
-		}
-
-		issue.addReviewer(reviewer);
-
-		return AddReviewerResponse.from(reviewer);
-	}
-
-	@Transactional
-	public RemoveReviewerResponse removeReviewer(
-		String workspaceCode,
-		String issueKey,
-		Long reviewerWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
-	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
-
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
-		}
-
-		issue.removeReviewer(reviewer);
-
-		return RemoveReviewerResponse.from(reviewer, issue);
-	}
-
-	@Transactional
-	public RequestReviewResponse requestReview(
-		String workspaceCode,
-		String issueKey,
-		Long requesterWorkspaceMemberId
-	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
-
-		issue.validateIsAssignee(requesterWorkspaceMemberId);
-		issue.requestReview();
-
-		return RequestReviewResponse.from(issue);
-	}
 
 	@Transactional
 	public CreateReviewResponse createReview(

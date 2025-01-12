@@ -9,24 +9,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.review.exception.DuplicateReviewInRoundException;
-import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.exception.IssueStatusNotInReviewException;
 import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -69,162 +63,6 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("리뷰어 추가에 성공하면 AddReviewerResponse를 반환한다")
-	void addReviewer_success_returnAddReviewerResponse() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		WorkspaceMember reviewer = workspaceMemberRepository.findByMemberIdAndWorkspaceCode(reviewerWorkspaceMemberId,
-				workspaceCode)
-			.orElseThrow();
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		// when
-		AddReviewerResponse response = reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		// then
-		assertThat(response.reviewerId()).isEqualTo(reviewer.getId());
-		assertThat(response.reviewerNickname()).isEqualTo(reviewer.getNickname());
-	}
-
-	@Test
-	@DisplayName("워크스페이스에 존재하지 않는 멤버를 리뷰어로 추가하려고 시도하면 예외가 발생한다")
-	void addReviewer_thatIsNotInWorkspace_throwsException() {
-		// given
-		Long invalidWorkspaceMemberId = 999L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		// when & then
-		assertThatThrownBy(() -> reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			invalidWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		)).isInstanceOf(WorkspaceMemberNotFoundException.class);
-	}
-
-	@Test
-	@DisplayName("이미 리뷰어로 등록된 멤버를 리뷰어로 추가하려고 시도하면 예외가 발생한다")
-	void addReviewer_thatIsAlreadyReviewer_throwsException() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		// when & then
-		assertThatThrownBy(() -> reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		)).isInstanceOf(DuplicateReviewerException.class);
-	}
-
-	@Test
-	@DisplayName("리뷰어 해제에 성공하면 RemoveReviewerResponse를 반환한다")
-	void removeReviewer_success_returnsRemoveReviewerResponse() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		// when
-		RemoveReviewerResponse response = reviewCommandService.removeReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(reviewerWorkspaceMemberId);
-	}
-
-	@Test
-	@DisplayName("이슈의 assignee에 포함되지 않았지만 리뷰어 추가를 시도하는 경우 예외가 발생한다")
-	void addReviewer_whenNotAssignee_throwsException() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 3L;
-
-		// when & then
-		assertThatThrownBy(() -> reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		)).isInstanceOf(UnauthorizedAssigneeModificationException.class);
-	}
-
-	@Test
-	@DisplayName("리뷰 요청이 성공하면 이슈의 상태는 IN_REVIEW로 변한다")
-	void fistReviewRequest_success_currentReviewRound_isOne() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		reviewCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		// when
-		reviewCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		// then
-		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode).orElseThrow();
-
-		assertThat(issue.getStatus()).isEqualTo(IssueStatus.IN_REVIEW);
-	}
-
-	@Test
 	@DisplayName("이슈가 IN_REVIEW 상태가 아닐때 리뷰 작성을 시도하면 예외가 발생한다")
 	void createReview_whenIssueIsNotInReview_throwsException() {
 		// given
@@ -237,7 +75,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
@@ -266,13 +104,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode, issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -302,14 +140,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -345,14 +183,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -389,14 +227,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -422,7 +260,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		RequestReviewResponse response = reviewCommandService.requestReview(
+		RequestReviewResponse response = reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -445,14 +283,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId
@@ -482,14 +320,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.addReviewer(
+		reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		reviewCommandService.requestReview(
+		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			requesterWorkspaceMemberId

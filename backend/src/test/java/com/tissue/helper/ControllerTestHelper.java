@@ -30,7 +30,9 @@ import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.presentation.controller.ReviewController;
+import com.tissue.api.review.presentation.controller.ReviewerController;
 import com.tissue.api.review.service.ReviewCommandService;
+import com.tissue.api.review.service.ReviewerCommandService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
 import com.tissue.api.security.authentication.service.AuthenticationService;
 import com.tissue.api.security.session.SessionManager;
@@ -66,7 +68,8 @@ import lombok.extern.slf4j.Slf4j;
 		MemberController.class,
 		PositionController.class,
 		IssueController.class,
-		ReviewController.class
+		ReviewController.class,
+		ReviewerController.class
 	},
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
@@ -130,6 +133,8 @@ public abstract class ControllerTestHelper {
 	protected IssueCommandService issueCommandService;
 	@MockBean
 	protected ReviewCommandService reviewCommandService;
+	@MockBean
+	protected ReviewerCommandService reviewerCommandService;
 
 	/**
 	 * Validator
