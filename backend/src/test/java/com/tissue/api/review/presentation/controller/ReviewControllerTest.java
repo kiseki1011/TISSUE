@@ -21,21 +21,22 @@ class ReviewControllerTest extends ControllerTestHelper {
 		// given
 		String workspaceCode = "TESTCODE";
 		String issueKey = "ISSUE-1";
-		Long reviewerId = 1L;
+		Long reviewerWorkspaceMemberId = 1L;
 
 		AddReviewerResponse response = AddReviewerResponse.builder()
-			.reviewerId(reviewerId)
+			.reviewerId(reviewerWorkspaceMemberId)
 			.reviewerNickname("testNickname")
 			.reviewerRole(WorkspaceRole.MEMBER)
 			.build();
 
-		when(reviewCommandService.addReviewer(workspaceCode, issueKey, reviewerId))
+		when(reviewCommandService.addReviewer(eq(workspaceCode), eq(issueKey), eq(reviewerWorkspaceMemberId),
+			anyLong()))
 			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(
 				post("/api/v1/workspaces/{code}/issues/{issueKey}/reviewers/{reviewerId}", workspaceCode, issueKey,
-					reviewerId)
+					reviewerWorkspaceMemberId)
 					.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Reviewer added."))

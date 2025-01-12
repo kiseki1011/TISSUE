@@ -18,6 +18,10 @@ public enum WorkspaceRole {
 		return this.getLevel() < role.getLevel();
 	}
 
+	public boolean isHigherThan(WorkspaceRole role) {
+		return this.getLevel() > role.getLevel();
+	}
+
 	public boolean hasPermissionOf(WorkspaceRole requiredRole) {
 		return this.level >= requiredRole.level;
 	}

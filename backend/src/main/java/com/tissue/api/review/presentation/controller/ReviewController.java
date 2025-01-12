@@ -28,9 +28,7 @@ import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}")
@@ -40,12 +38,9 @@ public class ReviewController {
 
 	/*
 	 * Todo
-	 *  - 리뷰어 등록
 	 *  - 리뷰어들에게 리뷰 요청
 	 *    - 알림 보내기(추후에 Notification 도메인과 함께 개발)
 	 *    - 이벤트 기반 아키텍쳐 사용?
-	 *  - 리뷰 작성/등록
-	 *  - 리뷰 수정
 	 *  - 리뷰 상태 변경
 	 *    - 이벤트 기반 아키텍쳐 사용?
 	 *  - 리뷰 삭제(내꺼)
@@ -59,12 +54,14 @@ public class ReviewController {
 	public ApiResponse<AddReviewerResponse> addReviewer(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@PathVariable Long workspaceMemberId
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long requesterId
 	) {
 		AddReviewerResponse response = reviewCommandService.addReviewer(
 			code,
 			issueKey,
-			workspaceMemberId
+			workspaceMemberId,
+			requesterId
 		);
 
 		return ApiResponse.ok("Reviewer added.", response);

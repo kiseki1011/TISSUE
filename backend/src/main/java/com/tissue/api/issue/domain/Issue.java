@@ -5,6 +5,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tissue.api.assignee.domain.IssueAssignee;
+import com.tissue.api.assignee.exception.AssigneeNotFoundException;
+import com.tissue.api.assignee.exception.DuplicateAssigneeException;
+import com.tissue.api.assignee.exception.InvalidAssigneeException;
+import com.tissue.api.assignee.exception.MaxAssigneesExceededException;
+import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
@@ -16,9 +22,11 @@ import com.tissue.api.review.exception.CannotRemoveReviewerException;
 import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.exception.IncompleteReviewRoundException;
 import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
+import com.tissue.api.review.exception.IssueStatusNotInReviewException;
 import com.tissue.api.review.exception.MaxReviewersExceededException;
 import com.tissue.api.review.exception.NoReviewersAddedException;
 import com.tissue.api.review.exception.ReviewerNotFoundException;
+import com.tissue.api.review.exception.UnauthorizedReviewerModificationException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -168,6 +176,23 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		reviewers.remove(issueReviewer);
 	}
 
+	public void validateCanRemoveReviewer(Long requesterWorkspaceMemberId, Long reviewerWorkspaceMemberId) {
+		// 자기 자신을 제거하는 경우는 바로 통과
+		if (requesterWorkspaceMemberId.equals(reviewerWorkspaceMemberId)) {
+			return;
+		}
+
+		// 작업자인 경우도 통과
+		boolean isAssignee = assignees.stream()
+			.anyMatch(issueAssignee ->
+				issueAssignee.getAssignee().getId().equals(requesterWorkspaceMemberId));
+
+		if (!isAssignee) {
+			throw new UnauthorizedReviewerModificationException(
+				"Only the reviewer themselves or issue assignees can remove reviewers.");
+		}
+	}
+
 	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
 		if (issueReviewer.hasReviewForRound(this.currentReviewRound)) {
 			throw new CannotRemoveReviewerException(
@@ -226,6 +251,78 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			throw new DuplicateReviewerException();
 		}
 	}
+
+	public void validateReviewIsCreateable() {
+		if (this.getStatus() != IssueStatus.IN_REVIEW) {
+			throw new IssueStatusNotInReviewException(); // Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
+		}
+	}
+
+	// -----------------------------
+
+	// --assignee 도메인 관련 코드--
+
+	private static final int MAX_ASSIGNEES = 10;
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "ISSUE_ID")
+	private final List<IssueAssignee> assignees = new ArrayList<>();
+
+	public void addAssignee(WorkspaceMember assignee) {
+		validateAssigneeLimit();
+		validateAssigneeBelongsToWorkspace(assignee);
+		validateNotAlreadyAssigned(assignee);
+
+		assignees.add(new IssueAssignee(assignee));
+	}
+
+	public void removeAssignee(WorkspaceMember assignee) {
+		IssueAssignee issueAssignee = assignees.stream()
+			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
+			.findFirst()
+			.orElseThrow(() -> new AssigneeNotFoundException(
+				String.format("Assignee '%s' is not assigned to this issue", assignee.getNickname())
+			));
+
+		assignees.remove(issueAssignee);
+	}
+
+	public void validateIsAssignee(Long workspaceMemberId) {
+		boolean isAssignee = assignees.stream()
+			.anyMatch(issueAssignee ->
+				issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+
+		if (!isAssignee) {
+			throw new UnauthorizedAssigneeModificationException(
+				"You must be an assignee of the Issue.");
+		}
+	}
+
+	private void validateAssigneeLimit() {
+		if (assignees.size() >= MAX_ASSIGNEES) {
+			throw new MaxAssigneesExceededException(
+				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES)
+			);
+		}
+	}
+
+	private void validateAssigneeBelongsToWorkspace(WorkspaceMember assignee) {
+		if (!assignee.getWorkspaceCode().equals(this.workspaceCode)) {
+			throw new InvalidAssigneeException("Assignee must belong to the same workspace");
+		}
+	}
+
+	private void validateNotAlreadyAssigned(WorkspaceMember assignee) {
+		boolean isAlreadyAssigned = this.assignees.stream()
+			.anyMatch(ia -> ia.getAssignee().getId().equals(assignee.getId()));
+
+		if (isAlreadyAssigned) {
+			throw new DuplicateAssigneeException(
+				String.format("Member '%s' is already assigned to this issue", assignee.getNickname())
+			);
+		}
+	}
+
 	// -----------------------------
 
 	protected Issue(

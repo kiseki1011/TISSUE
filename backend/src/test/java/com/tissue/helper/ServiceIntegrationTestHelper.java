@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.tissue.api.assignee.service.command.AssigneeCommandService;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
@@ -17,9 +18,9 @@ import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.ReviewCommandService;
-import com.tissue.api.review.validator.ReviewValidator;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.team.domain.respository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
@@ -105,6 +106,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected ReviewCommandService reviewCommandService;
+	@Autowired
+	protected AssigneeCommandService assigneeCommandService;
 
 	/**
 	 * Validator
@@ -113,8 +116,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected MemberValidator memberValidator;
 	@Autowired
 	protected WorkspaceValidator workspaceValidator;
-	@Autowired
-	protected ReviewValidator reviewValidator;
 
 	/**
 	 * Repository
@@ -135,6 +136,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueRepository issueRepository;
 	@Autowired
 	protected ReviewRepository reviewRepository;
+	@Autowired
+	protected IssueReviewerRepository issueReviewerRepository;
 
 	/**
 	 * Fixture
