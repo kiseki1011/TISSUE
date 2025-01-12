@@ -39,17 +39,19 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	public void setUp() {
-		// 테스트 멤버 testuser, testuser2 생성
+		// 테스트 멤버 testUser, testUser2, testUser3 생성
 		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
 		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
+		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
 
 		// testuser가 테스트 워크스페이스 생성
 		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
 
 		workspaceCode = createWorkspace.code();
 
-		// testUser2를 테스트 워크스페이스에 참가
+		// testUser2, testUser3 테스트 워크스페이스에 참가
 		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
+		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
 
 		// 테스트 워크스페이스에 Story 추가
 		CreateStoryResponse createdStory = (CreateStoryResponse)issueFixture.createStory(
@@ -178,7 +180,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	void addReviewer_whenNotAssignee_throwsException() {
 		// given
 		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = 3L;
 
 		// when & then
 		assertThatThrownBy(() -> reviewCommandService.addReviewer(
