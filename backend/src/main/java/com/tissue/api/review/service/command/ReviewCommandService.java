@@ -1,4 +1,4 @@
-package com.tissue.api.review.service;
+package com.tissue.api.review.service.command;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

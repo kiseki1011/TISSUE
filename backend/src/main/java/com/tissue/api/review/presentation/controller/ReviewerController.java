@@ -10,7 +10,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
-import com.tissue.api.review.service.ReviewerCommandService;
+import com.tissue.api.review.service.command.ReviewerCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
