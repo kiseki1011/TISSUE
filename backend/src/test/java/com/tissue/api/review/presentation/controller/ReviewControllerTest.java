@@ -16,7 +16,7 @@ import com.tissue.helper.ControllerTestHelper;
 class ReviewControllerTest extends ControllerTestHelper {
 
 	@Test
-	@DisplayName("POST /workspaces/{code}/issues/{issueKey}/reviewers/{reviewerId} - 리뷰어 추가에 성공하면 OK를 응답한다")
+	@DisplayName("POST /workspaces/{code}/issues/{issueKey}/reviewers/{workspaceMemberId} - 리뷰어 추가에 성공하면 OK를 응답한다")
 	void addReviewer_success_statusOk() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
@@ -29,13 +29,13 @@ class ReviewControllerTest extends ControllerTestHelper {
 			.reviewerRole(WorkspaceRole.MEMBER)
 			.build();
 
-		when(reviewCommandService.addReviewer(eq(workspaceCode), eq(issueKey), eq(reviewerWorkspaceMemberId),
+		when(reviewerCommandService.addReviewer(eq(workspaceCode), eq(issueKey), eq(reviewerWorkspaceMemberId),
 			anyLong()))
 			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(
-				post("/api/v1/workspaces/{code}/issues/{issueKey}/reviewers/{reviewerId}", workspaceCode, issueKey,
+				post("/api/v1/workspaces/{code}/issues/{issueKey}/reviewers/{workspaceMemberId}", workspaceCode, issueKey,
 					reviewerWorkspaceMemberId)
 					.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())

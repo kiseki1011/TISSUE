@@ -20,7 +20,8 @@ import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
-import com.tissue.api.review.service.ReviewCommandService;
+import com.tissue.api.review.service.command.ReviewCommandService;
+import com.tissue.api.review.service.command.ReviewerCommandService;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.team.domain.respository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
@@ -106,6 +107,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected ReviewCommandService reviewCommandService;
+	@Autowired
+	protected ReviewerCommandService reviewerCommandService;
 	@Autowired
 	protected AssigneeCommandService assigneeCommandService;
 
