@@ -9,6 +9,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
@@ -44,8 +45,12 @@ public class AssigneeCommandService {
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 		WorkspaceMember assignee = findWorkspaceMember(assigneeWorkspaceMemberId, workspaceCode);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
-		issue.validateIsAssignee(requesterWorkspaceMemberId);
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssignee(requesterWorkspaceMemberId);
+		}
+
 		issue.removeAssignee(assignee);
 
 		return RemoveAssigneeResponse.from(assignee);

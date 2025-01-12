@@ -208,6 +208,14 @@ public class WorkspaceMember extends BaseEntity {
 		}
 	}
 
+	public boolean roleIsHigherThan(WorkspaceRole role) {
+		return this.role.isHigherThan(role);
+	}
+
+	public boolean roleIsLowerThan(WorkspaceRole role) {
+		return this.role.isLowerThan(role);
+	}
+
 	private void validateDuplicateAssignedPosition(Position position) {
 		boolean isAlreadyAssigned = this.workspaceMemberPositions.stream()
 			.anyMatch(wmp -> wmp.getPosition().equals(position));

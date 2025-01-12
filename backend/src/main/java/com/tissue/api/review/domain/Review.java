@@ -74,7 +74,7 @@ public class Review extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	public void validateReviewOwnership(Long workspaceMemberId) {
+	public void validateIsAuthor(Long workspaceMemberId) {
 		if (!this.getIssueReviewer().getReviewer().getId().equals(workspaceMemberId)) {
 			throw new UnauthorizedReviewAccessException(
 				"This review does not belong to the specified reviewer."

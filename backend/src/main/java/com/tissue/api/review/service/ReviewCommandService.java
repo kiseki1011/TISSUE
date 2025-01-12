@@ -24,6 +24,7 @@ import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
@@ -32,11 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Todo
- *  - currentReviewRound가 아닌 리뷰에 대해서는 수정 불가하도록 검증 로직 추가
- *  - 리뷰어 등록/해제는 해당 이슈의 assignees에 포함되어 있어야 가능하도록 검증 로직 추가
- *    - 리뷰어로 등록된 경우, 본인이 리뷰어 해제하는 것도 허용
- *  - 리뷰 업데이트는 해당 리뷰를 작성한 리뷰어만 가능하도록 검증 로직 추가
- *  - 리뷰 삭제는 해당 리뷰를 작성한 리뷰어만 가능하도록 검증 로직 추가
  *  - 알림 서비스 구현 필요
  *    - 리뷰 상태 변경 -> 모든 리뷰가 작성되었고 전부 APPROVED -> 이슈 assignees에게 알림
  */
@@ -59,9 +55,13 @@ public class ReviewCommandService {
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
 		reviewer.validateRoleIsHigherThanViewer();
-		issue.validateIsAssignee(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssignee(requesterWorkspaceMemberId);
+		}
 
 		issue.addReviewer(reviewer);
 
@@ -76,10 +76,13 @@ public class ReviewCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
-
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
-		issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
+		}
+
 		issue.removeReviewer(reviewer);
 
 		return RemoveReviewerResponse.from(reviewer, issue);
@@ -133,7 +136,7 @@ public class ReviewCommandService {
 		UpdateReviewRequest request
 	) {
 		Review review = findReview(reviewId);
-		review.validateReviewOwnership(reviewerWorkspaceMemberId);
+		review.validateIsAuthor(reviewerWorkspaceMemberId);
 
 		review.updateTitle(request.title());
 		review.updateContent(request.content());
@@ -150,9 +153,12 @@ public class ReviewCommandService {
 		UpdateReviewStatusRequest request
 	) {
 		Issue issue = findIssue(workspaceCode, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 		Review review = findReview(reviewId);
 
-		review.validateReviewOwnership(requesterWorkspaceMemberId);
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			review.validateIsAuthor(requesterWorkspaceMemberId);
+		}
 
 		review.updateStatus(request.status());
 		updateIssueStatusBasedOnReview(issue, request.status());
