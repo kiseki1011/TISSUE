@@ -65,7 +65,7 @@ public class ReviewCommandService {
 
 		Review savedReview = reviewRepository.save(review);
 
-		updateIssueStatusBasedOnReview(issue, request.status());
+		updateIssueStatusBasedOnReviewStatus(issue, request.status());
 
 		return CreateReviewResponse.from(savedReview);
 	}
@@ -102,7 +102,7 @@ public class ReviewCommandService {
 		}
 
 		review.updateStatus(request.status());
-		updateIssueStatusBasedOnReview(issue, request.status());
+		updateIssueStatusBasedOnReviewStatus(issue, request.status());
 
 		return UpdateReviewStatusResponse.from(review);
 	}
@@ -127,7 +127,7 @@ public class ReviewCommandService {
 			.orElseThrow(ReviewNotFoundException::new);
 	}
 
-	private void updateIssueStatusBasedOnReview(Issue issue, ReviewStatus reviewStatus) {
+	private void updateIssueStatusBasedOnReviewStatus(Issue issue, ReviewStatus reviewStatus) {
 		// CHANGES_REQUESTED의 경우 자동 상태 변경
 		if (reviewStatus == ReviewStatus.CHANGES_REQUESTED) {
 			issue.updateStatus(IssueStatus.CHANGES_REQUESTED);

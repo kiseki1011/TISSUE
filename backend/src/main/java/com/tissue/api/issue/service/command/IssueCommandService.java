@@ -50,8 +50,7 @@ public class IssueCommandService {
 		String code,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
+		Workspace workspace = findWorkspace(code);
 
 		Issue issue = request.to(
 			workspace,
@@ -70,6 +69,7 @@ public class IssueCommandService {
 	) {
 		Issue issue = findIssue(code, issueKey);
 
+		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateIssueTypeMatch(issue, request);
 
 		request.update(issue);
@@ -126,6 +126,7 @@ public class IssueCommandService {
 	) {
 		Issue issue = findIssue(code, issueKey);
 
+		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateNotParentOfSubTask(issue);
 
 		Long issueId = issue.getId();
@@ -133,6 +134,11 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
+	}
+
+	private Workspace findWorkspace(String code) {
+		return workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
 	}
 
 	/**
