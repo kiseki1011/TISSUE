@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.review.exception.DuplicateReviewInRoundException;
@@ -110,6 +111,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
+		);
+
 		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
@@ -145,6 +153,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
+		);
+
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
 		);
 
 		reviewerCommandService.requestReview(
@@ -190,6 +205,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
+		);
+
 		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
@@ -232,6 +254,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
+		);
+
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
 		);
 
 		reviewerCommandService.requestReview(
@@ -290,6 +319,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			requesterWorkspaceMemberId
 		);
 
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
+		);
+
 		reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
@@ -325,6 +361,13 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
+		);
+
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
 		);
 
 		reviewerCommandService.requestReview(
