@@ -24,6 +24,10 @@ import com.tissue.api.issue.validator.IssueValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ public class IssueCommandService {
 
 	private final IssueRepository issueRepository;
 	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueValidator issueValidator;
 
 	/*
@@ -81,9 +86,15 @@ public class IssueCommandService {
 	public UpdateIssueStatusResponse updateIssueStatus(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		UpdateIssueStatusRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		issue.updateStatus(request.status());
 
@@ -139,6 +150,11 @@ public class IssueCommandService {
 	private Workspace findWorkspace(String code) {
 		return workspaceRepository.findByCode(code)
 			.orElseThrow(WorkspaceNotFoundException::new);
+	}
+
+	private WorkspaceMember findWorkspaceMember(Long id) {
+		return workspaceMemberRepository.findById(id)
+			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
 
 	/**
