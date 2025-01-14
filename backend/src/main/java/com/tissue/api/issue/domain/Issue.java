@@ -84,6 +84,9 @@ import lombok.NoArgsConstructor;
  * <br>
  * Todo 6
  *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
+ * <br>
+ * Todo 7
+ *  - difficulty를 Issue로 이동
  */
 @Entity
 @Getter
@@ -421,6 +424,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return this.getCurrentReviewRound() != 0;
 	}
 
+	// Todo: 횡단 관심사(cross cutting concern)는 AOP로 구현하는걸 고려하자
 	private void updateTimestamps(IssueStatus newStatus) {
 		if (newStatus == IN_PROGRESS && this.startedAt == null) {
 			this.startedAt = LocalDateTime.now();
@@ -435,6 +439,12 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	/**
+	 * Todo
+	 *  - 설정 엔티티를 구현하면, forceReviewEnabled=true인 경우 다음 구현
+	 *   - 리뷰가 강제되는 리뷰의 difficulty 수준을 설정 할 수 있도록 구현
+	 *   - 리뷰를 하지 않아도 되는 priority 수준을 설정 할 수 있도록 구현
+	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		// 기본 상태 전이 검증
 		validateBasicTransition(newStatus);

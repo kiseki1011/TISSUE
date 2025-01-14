@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
@@ -23,6 +25,7 @@ import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,28 +89,40 @@ public class IssueController {
 	 *  - Issue 상태 변경 -> review 제출이 필요 없는 경우에만 가능(설정으로 규칙 설정 가능하도록)
 	 *  -> 모든 review가 APPROVED인 경우 상태를 DONE으로 변경 가능
 	 */
+	@LoginRequired
+	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}/status")
+	public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@RequestBody @Valid UpdateIssueStatusRequest request
+	) {
+		UpdateIssueStatusResponse response = issueCommandService.updateIssueStatus(
+			code,
+			issueKey,
+			currentWorkspaceMemberId,
+			request
+		);
 
-	// @LoginRequired
-	// @RoleRequired(roles = WorkspaceRole.COLLABORATOR)
-	// @PatchMapping("/{issueKey}/status")
-	// public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
-	// 	@PathVariable String code,
-	// 	@PathVariable String issueKey,
-	// 	@RequestBody @Valid UpdateIssueStatusRequest request
-	// ) {
-	// 	UpdateIssueStatusResponse response = issueCommandService.updateIssueStatus(code, issueKey, request);
-	//
-	// 	return ApiResponse.ok("Issue status updated.", response);
-	// }
+		return ApiResponse.ok("Issue status updated.", response);
+	}
+
 	@LoginRequired
 	@RoleRequired(roles = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
 		@PathVariable String code,
 		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid UpdateIssueRequest request
 	) {
-		UpdateIssueResponse response = issueCommandService.updateIssue(code, issueKey, request);
+		UpdateIssueResponse response = issueCommandService.updateIssue(
+			code,
+			issueKey,
+			currentWorkspaceMemberId,
+			request
+		);
 
 		return ApiResponse.ok("Issue details updated.", response);
 	}
@@ -118,9 +133,15 @@ public class IssueController {
 	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
 		@PathVariable String code,
 		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid AssignParentIssueRequest request
 	) {
-		AssignParentIssueResponse response = issueCommandService.assignParentIssue(code, issueKey, request);
+		AssignParentIssueResponse response = issueCommandService.assignParentIssue(
+			code,
+			issueKey,
+			currentWorkspaceMemberId,
+			request
+		);
 
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
@@ -130,9 +151,14 @@ public class IssueController {
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
 		@PathVariable String code,
-		@PathVariable String issueKey
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
-		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(code, issueKey);
+		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
 	}
@@ -142,9 +168,14 @@ public class IssueController {
 	@DeleteMapping("/{issueKey}")
 	public ApiResponse<DeleteIssueResponse> deleteIssue(
 		@PathVariable String code,
-		@PathVariable String issueKey
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
-		DeleteIssueResponse response = issueCommandService.deleteIssue(code, issueKey);
+		DeleteIssueResponse response = issueCommandService.deleteIssue(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
 
 		return ApiResponse.ok("Parent issue deleted.", response);
 	}

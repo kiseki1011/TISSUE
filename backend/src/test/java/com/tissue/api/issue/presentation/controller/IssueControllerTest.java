@@ -127,7 +127,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
 
-		when(issueCommandService.updateIssue(workspaceCode, issueKey, request))
+		when(issueCommandService.updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
 			.thenReturn(response);
 
 		// when & then
@@ -149,7 +149,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.acceptanceCriteria").value("Updated Acceptance Criteria"))
 			.andDo(print());
 
-		verify(issueCommandService).updateIssue(workspaceCode, issueKey, request);
+		verify(issueCommandService).updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request));
 	}
 
 	@Test
@@ -167,7 +167,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
 
-		when(issueCommandService.updateIssue(any(), any(), any()))
+		when(issueCommandService.updateIssue(any(), any(), any(), any()))
 			.thenThrow(new IssueTypeMismatchException());
 
 		// when & then
@@ -182,7 +182,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 등록에 성공하면 OK를 응답한다")
 	void assignParentIssue() throws Exception {
 		// given
-		String code = "WORKSPACE";
+		String workspaceCode = "WORKSPACE";
 		String issueKey = "ISSUE-1";
 		String parentIssueKey = "ISSUE-999";
 		AssignParentIssueRequest request = new AssignParentIssueRequest(parentIssueKey);
@@ -195,11 +195,11 @@ class IssueControllerTest extends ControllerTestHelper {
 			.assignedAt(LocalDateTime.now())
 			.build();
 
-		when(issueCommandService.assignParentIssue(code, issueKey, request))
+		when(issueCommandService.assignParentIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}/parent", code, issueKey)
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/parent", workspaceCode, issueKey)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -215,7 +215,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	@DisplayName("DELETE /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 해제에 성공하면 OK를 응답한다")
 	void removeParentIssue_fromStory() throws Exception {
 		// given
-		String code = "WORKSPACE";
+		String workspaceCode = "WORKSPACE";
 		String issueKey = "ISSUE-1";
 
 		RemoveParentIssueResponse response = RemoveParentIssueResponse.builder()
@@ -224,11 +224,11 @@ class IssueControllerTest extends ControllerTestHelper {
 			.removedAt(LocalDateTime.now())
 			.build();
 
-		when(issueCommandService.removeParentIssue(code, issueKey))
+		when(issueCommandService.removeParentIssue(eq(workspaceCode), eq(issueKey), anyLong()))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{code}/issues/{issueKey}/parent", code, issueKey)
+		mockMvc.perform(delete("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/parent", workspaceCode, issueKey)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Parent issue relationship removed."))

@@ -70,9 +70,15 @@ public class IssueCommandService {
 	public UpdateIssueResponse updateIssue(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		UpdateIssueRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateIssueTypeMatch(issue, request);
@@ -105,10 +111,16 @@ public class IssueCommandService {
 	public AssignParentIssueResponse assignParentIssue(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
 		Issue parentIssue = findIssue(code, request.parentIssueKey());
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		issue.setParentIssue(parentIssue);
 
@@ -118,10 +130,18 @@ public class IssueCommandService {
 	@Transactional
 	public RemoveParentIssueResponse removeParentIssue(
 		String code,
-		String issueKey
+		String issueKey,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(code, issueKey);
 
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
+
+		// Todo: Issue에 validateCanRemoveParentIssue 형태로 리팩토링
 		if (cannotRemoveParent(issue)) {
 			throw new CannotRemoveParentException();
 		}
@@ -133,9 +153,15 @@ public class IssueCommandService {
 	@Transactional
 	public DeleteIssueResponse deleteIssue(
 		String code,
-		String issueKey
+		String issueKey,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateNotParentOfSubTask(issue);
