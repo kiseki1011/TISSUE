@@ -112,6 +112,7 @@ public class ReviewCommandService {
 			.orElseThrow(IssueNotFoundException::new);
 	}
 
+	// Todo: 굳이 workspaceCode 까지 활용 해야 함? 이미 인터셉터에서 해당 워크스페이스에 속하는지 검사 중.
 	private WorkspaceMember findWorkspaceMember(Long id, String workspaceCode) {
 		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, workspaceCode)
 			.orElseThrow(WorkspaceMemberNotFoundException::new);
@@ -139,6 +140,7 @@ public class ReviewCommandService {
 		 *  - 모든 리뷰어가 승인한 경우, 작업자에게 알림
 		 *  - 알림 서비스 구현 필요
 		 *  - 자동으로 이슈 상태 DONE으로 변경 X
+		 *  - 알림은 이벤트 리스너로 구현하는 것이 좋을 듯
 		 */
 		boolean allApproved = issue.getReviewers().stream()
 			.allMatch(reviewer ->

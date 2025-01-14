@@ -64,11 +64,11 @@ public class Review extends WorkspaceContextBaseEntity {
 	}
 
 	public void updateStatus(ReviewStatus status) {
-		validateIsPendingStatus();
+		validateCanUpdateStatus();
 		this.status = status;
 	}
 
-	private void validateIsPendingStatus() {
+	private void validateCanUpdateStatus() {
 		if (this.status != ReviewStatus.PENDING) {
 			throw new CannotChangeReviewStatusException();
 		}
