@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.review.exception.DuplicateReviewerException;
@@ -197,6 +198,13 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
+		);
+
+		issueCommandService.updateIssueStatus(
+			workspaceCode,
+			issueKey,
+			requesterWorkspaceMemberId,
+			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
 		);
 
 		// when

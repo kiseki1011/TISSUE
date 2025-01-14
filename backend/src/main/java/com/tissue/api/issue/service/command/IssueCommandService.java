@@ -24,6 +24,10 @@ import com.tissue.api.issue.validator.IssueValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ public class IssueCommandService {
 
 	private final IssueRepository issueRepository;
 	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueValidator issueValidator;
 
 	/*
@@ -50,8 +55,7 @@ public class IssueCommandService {
 		String code,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
+		Workspace workspace = findWorkspace(code);
 
 		Issue issue = request.to(
 			workspace,
@@ -66,10 +70,17 @@ public class IssueCommandService {
 	public UpdateIssueResponse updateIssue(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		UpdateIssueRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
+
+		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateIssueTypeMatch(issue, request);
 
 		request.update(issue);
@@ -81,9 +92,15 @@ public class IssueCommandService {
 	public UpdateIssueStatusResponse updateIssueStatus(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		UpdateIssueStatusRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		issue.updateStatus(request.status());
 
@@ -94,10 +111,16 @@ public class IssueCommandService {
 	public AssignParentIssueResponse assignParentIssue(
 		String code,
 		String issueKey,
+		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
 		Issue issue = findIssue(code, issueKey);
 		Issue parentIssue = findIssue(code, request.parentIssueKey());
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
 
 		issue.setParentIssue(parentIssue);
 
@@ -107,10 +130,18 @@ public class IssueCommandService {
 	@Transactional
 	public RemoveParentIssueResponse removeParentIssue(
 		String code,
-		String issueKey
+		String issueKey,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(code, issueKey);
 
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
+
+		// Todo: Issue에 validateCanRemoveParentIssue 형태로 리팩토링
 		if (cannotRemoveParent(issue)) {
 			throw new CannotRemoveParentException();
 		}
@@ -122,10 +153,17 @@ public class IssueCommandService {
 	@Transactional
 	public DeleteIssueResponse deleteIssue(
 		String code,
-		String issueKey
+		String issueKey,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(code, issueKey);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
+		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+		}
+
+		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
 		issueValidator.validateNotParentOfSubTask(issue);
 
 		Long issueId = issue.getId();
@@ -133,6 +171,16 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
+	}
+
+	private Workspace findWorkspace(String code) {
+		return workspaceRepository.findByCode(code)
+			.orElseThrow(WorkspaceNotFoundException::new);
+	}
+
+	private WorkspaceMember findWorkspaceMember(Long id) {
+		return workspaceMemberRepository.findById(id)
+			.orElseThrow(WorkspaceMemberNotFoundException::new);
 	}
 
 	/**

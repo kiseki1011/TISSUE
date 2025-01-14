@@ -1,9 +1,12 @@
 package com.tissue.api.issue.domain;
 
+import static com.tissue.api.issue.domain.enums.IssueStatus.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.assignee.exception.AssigneeNotFoundException;
@@ -15,9 +18,10 @@ import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.exception.UpdateIssueInReviewStatusException;
-import com.tissue.api.issue.exception.UpdateStatusToInReviewException;
+import com.tissue.api.issue.exception.InvalidStatusTransitionException;
+import com.tissue.api.issue.exception.UnauthorizedIssueModifyException;
 import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.review.exception.CannotRemoveReviewerException;
 import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.exception.IncompleteReviewRoundException;
@@ -25,6 +29,8 @@ import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
 import com.tissue.api.review.exception.IssueStatusNotInReviewException;
 import com.tissue.api.review.exception.MaxReviewersExceededException;
 import com.tissue.api.review.exception.NoReviewersAddedException;
+import com.tissue.api.review.exception.PendingReviewExistsException;
+import com.tissue.api.review.exception.ReviewRequiredException;
 import com.tissue.api.review.exception.ReviewerNotFoundException;
 import com.tissue.api.review.exception.UnauthorizedReviewerModificationException;
 import com.tissue.api.workspace.domain.Workspace;
@@ -78,6 +84,9 @@ import lombok.NoArgsConstructor;
  * <br>
  * Todo 6
  *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
+ * <br>
+ * Todo 7
+ *  - difficulty를 Issue로 이동
  */
 @Entity
 @Getter
@@ -183,9 +192,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 
 		// 작업자인 경우도 통과
-		boolean isAssignee = assignees.stream()
-			.anyMatch(issueAssignee ->
-				issueAssignee.getAssignee().getId().equals(requesterWorkspaceMemberId));
+		boolean isAssignee = isAssignee(requesterWorkspaceMemberId);
 
 		if (!isAssignee) {
 			throw new UnauthorizedReviewerModificationException(
@@ -288,14 +295,29 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void validateIsAssignee(Long workspaceMemberId) {
-		boolean isAssignee = assignees.stream()
-			.anyMatch(issueAssignee ->
-				issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+		boolean isAssignee = isAssignee(workspaceMemberId);
 
 		if (!isAssignee) {
 			throw new UnauthorizedAssigneeModificationException(
 				"You must be an assignee of the Issue.");
 		}
+	}
+
+	public void validateIsAssigneeOrAuthor(Long workspaceMemberId) {
+		if (isAssignee(workspaceMemberId) || isAuthor(workspaceMemberId)) {
+			return;
+		}
+		throw new UnauthorizedIssueModifyException("Must be the author or a assignee of this issue.");
+	}
+
+	private boolean isAssignee(Long workspaceMemberId) {
+		return assignees.stream()
+			.anyMatch(issueAssignee ->
+				issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+	}
+
+	private boolean isAuthor(Long workspaceMemberId) {
+		return this.getCreatedByWorkspaceMember().equals(workspaceMemberId);
 	}
 
 	private void validateAssigneeLimit() {
@@ -313,8 +335,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	private void validateNotAlreadyAssigned(WorkspaceMember assignee) {
-		boolean isAlreadyAssigned = this.assignees.stream()
-			.anyMatch(ia -> ia.getAssignee().getId().equals(assignee.getId()));
+		boolean isAlreadyAssigned = isAssignee(assignee.getId());
 
 		if (isAlreadyAssigned) {
 			throw new DuplicateAssigneeException(
@@ -365,7 +386,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void updateStatus(IssueStatus newStatus) {
-		// validateStatusTransition(newStatus);
+		validateStatusTransition(newStatus);
 		this.status = newStatus;
 		updateTimestamps(newStatus);
 	}
@@ -403,8 +424,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return this.getCurrentReviewRound() != 0;
 	}
 
+	// Todo: 횡단 관심사(cross cutting concern)는 AOP로 구현하는걸 고려하자
 	private void updateTimestamps(IssueStatus newStatus) {
-		if (newStatus == IssueStatus.IN_PROGRESS && this.startedAt == null) {
+		if (newStatus == IN_PROGRESS && this.startedAt == null) {
 			this.startedAt = LocalDateTime.now();
 			return;
 		}
@@ -417,13 +439,67 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	/**
+	 * Todo
+	 *  - 설정 엔티티를 구현하면, forceReviewEnabled=true인 경우 다음 구현
+	 *   - 리뷰가 강제되는 리뷰의 difficulty 수준을 설정 할 수 있도록 구현
+	 *   - 리뷰를 하지 않아도 되는 priority 수준을 설정 할 수 있도록 구현
+	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
-		if (this.status == IssueStatus.IN_REVIEW) {
-			throw new UpdateIssueInReviewStatusException();
+		// 기본 상태 전이 검증
+		validateBasicTransition(newStatus);
+
+		// 특수한 상태 전이 검증
+		if (newStatus == IssueStatus.DONE) {
+			validateTransitionToDone();
 		}
-		if (newStatus == IssueStatus.IN_REVIEW) {
-			throw new UpdateStatusToInReviewException();
+	}
+
+	private void validateTransitionToDone() {
+		/*
+		 * Todo: 워크스페이스 마다 가지는 설정을 관리하는 엔티티를 만들자.
+		 *  - isForceReviewEnabled==true: DONE으로 변경하기 위해서는 리뷰어 등록, 모든 리뷰가 APPROVED이어야 함
+		 */
+		// if (!isForceReviewEnabled) {
+		// 	return;
+		// }
+
+		if (reviewers.isEmpty()) {
+			throw new ReviewRequiredException("Review is required to complete this issue.");
 		}
+
+		if (isAllReviewsNotApproved()) {
+			throw new PendingReviewExistsException("All reviews must be approved.");
+		}
+	}
+
+	private boolean isAllReviewsNotApproved() {
+		return !reviewers.stream()
+			.allMatch(reviewer ->
+				reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED
+			);
+	}
+
+	private void validateBasicTransition(IssueStatus newStatus) {
+		Set<IssueStatus> allowedStatuses = getAllowedNextStatuses();
+
+		if (!allowedStatuses.contains(newStatus)) {
+			throw new InvalidStatusTransitionException(
+				String.format("Cannot transition from %s to %s.", this.status, newStatus)
+			);
+		}
+	}
+
+	private Set<IssueStatus> getAllowedNextStatuses() {
+		return switch (this.status) {
+			case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
+			case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
+			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
+			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
+			case DONE -> Set.of();
+			case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
+			case CLOSED -> Set.of();
+		};
 	}
 
 	protected abstract void validateParentIssue(Issue parentIssue);

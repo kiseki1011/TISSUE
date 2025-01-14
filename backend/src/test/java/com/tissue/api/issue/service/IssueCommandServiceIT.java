@@ -34,7 +34,9 @@ import com.tissue.api.issue.presentation.dto.response.create.CreateSubTaskRespon
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
+import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,15 +44,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
+	String workspaceCode;
+
 	@BeforeEach
 	void setUp() {
-		// 테스트용 워크스페이스 생성
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test workspace",
-			"This is a test workspace.",
-			"TESTCODE",
-			null
-		);
+		// 테스트 멤버 testUser, testUser2, testUser3 생성
+		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
+		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
+		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
+
+		// testuser가 테스트 워크스페이스 생성
+		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
+
+		workspaceCode = createWorkspace.code();
+
+		// testUser2, testUser3 테스트 워크스페이스에 참가
+		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
+		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
+
 	}
 
 	@AfterEach
@@ -74,7 +85,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			request
 		);
 
@@ -83,7 +94,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.title()).isEqualTo("Test Issue");
 
 		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
+		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo(workspaceCode);
 	}
 
 	@Transactional
@@ -91,7 +102,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("특정 이슈를 부모로 지정하여 이슈를 생성하는 것이 가능하다")
 	void createIssue_WithParent() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow();
 
 		Issue parentIssue = Epic.builder()
@@ -116,7 +127,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			request
 		);
 
@@ -141,7 +152,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			parentCreateRequest
 		);
 
@@ -158,7 +169,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
 			.isInstanceOf(ParentMustBeEpicException.class);
 	}
 
@@ -167,7 +178,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이슈 생성 시, EPIC 타입 이슈를 SUB_TASK 타입의 부모로 지정하면 예외가 발생한다")
 	void createIssue_WithParent_Fails_ifParentIsEpic_whenChildIsSubTask() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow();
 
 		Issue parentIssue = Epic.builder()
@@ -189,7 +200,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
 			.isInstanceOf(SubTaskWrongParentTypeException.class);
 	}
 
@@ -198,7 +209,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이슈 생성 시, 같은 위계의 타입을 가진 이슈를 부모로 지정하면 예외가 발생한다")
 	void createIssue_WithParent_Fails_ifParentIsSameHierarchy() {
 		// given
-		Workspace workspace = workspaceRepository.findByCode("TESTCODE")
+		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow();
 
 		Issue parentIssue = Task.builder()
@@ -219,7 +230,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue("TESTCODE", request))
+		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
 			.isInstanceOf(ParentMustBeEpicException.class);
 	}
 
@@ -239,7 +250,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			request
 		);
 
@@ -248,7 +259,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.title()).isEqualTo("Test Task Title");
 
 		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo("TESTCODE");
+		assertThat(savedIssue.getWorkspace().getCode()).isEqualTo(workspaceCode);
 		assertThat(savedIssue.getIssueKey()).isEqualTo("ISSUE-1");
 	}
 
@@ -276,13 +287,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			request1
 		);
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			request2
 		);
 
@@ -310,8 +321,16 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			createStoryRequest
+		);
+
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			createResponse.issueKey(),
+			workspaceMemberId
 		);
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
@@ -327,8 +346,9 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
-			"TESTCODE",
+			workspaceCode,
 			createResponse.issueKey(),
+			workspaceMemberId,
 			request
 		);
 
@@ -351,8 +371,16 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		CreateTaskResponse createResponse = (CreateTaskResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			createTaskRequest
+		);
+
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			createResponse.issueKey(),
+			workspaceMemberId
 		);
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
@@ -367,7 +395,8 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.updateIssue("TESTCODE", createResponse.issueKey(), request))
+		assertThatThrownBy(
+			() -> issueCommandService.updateIssue(workspaceCode, createResponse.issueKey(), workspaceMemberId, request))
 			.isInstanceOf(IssueTypeMismatchException.class);
 	}
 
@@ -387,12 +416,24 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			createStoryRequest
 		);
 
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			createResponse.issueKey(),
+			workspaceMemberId
+		);
+
 		// when
-		DeleteIssueResponse response = issueCommandService.deleteIssue("TESTCODE", createResponse.issueKey());
+		DeleteIssueResponse response = issueCommandService.deleteIssue(
+			workspaceCode,
+			createResponse.issueKey(),
+			workspaceMemberId
+		);
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(createResponse.issueKey());
@@ -415,7 +456,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		CreateStoryResponse createResponse = (CreateStoryResponse)issueCommandService.createIssue(
-			"TESTCODE",
+			workspaceCode,
 			createStoryRequest
 		);
 
@@ -425,10 +466,19 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.parentIssueKey(createResponse.issueKey())
 			.build();
 
-		issueCommandService.createIssue("TESTCODE", createSubTaskRequest);
+		issueCommandService.createIssue(workspaceCode, createSubTaskRequest);
+
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			createResponse.issueKey(),
+			workspaceMemberId
+		);
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.deleteIssue("TESTCODE", createResponse.issueKey()))
+		assertThatThrownBy(
+			() -> issueCommandService.deleteIssue(workspaceCode, createResponse.issueKey(), workspaceMemberId))
 			.isInstanceOf(CannotDeleteParentOfSubTaskException.class);
 	}
 
@@ -438,18 +488,29 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void assignParentIssue_StoryToEpic() {
 		// given
 		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
-			"TESTCODE",
-			"Test Epic");
+			workspaceCode,
+			"Test Epic"
+		);
 
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"Test Story",
-			null);
+			null
+		);
+
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			storyResponse.issueKey(),
+			workspaceMemberId
+		);
 
 		// when
 		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
-			"TESTCODE",
+			workspaceCode,
 			storyResponse.issueKey(),
+			workspaceMemberId,
 			new AssignParentIssueRequest(epicResponse.issueKey())
 		);
 
@@ -464,19 +525,30 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void assignParentIssue_StoryToStory_throwsException() {
 		// given
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"Story 1",
-			null);
+			null
+		);
 
 		CreateStoryResponse parentStoryResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"(Parent) Story 2",
-			null);
+			null
+		);
+
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			storyResponse.issueKey(),
+			workspaceMemberId
+		);
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.assignParentIssue(
-			"TESTCODE",
+			workspaceCode,
 			storyResponse.issueKey(),
+			workspaceMemberId,
 			new AssignParentIssueRequest(parentStoryResponse.issueKey()))
 		).isInstanceOf(ParentMustBeEpicException.class);
 	}
@@ -487,32 +559,42 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void assignParentIssue_toIssueThatAlreadyHasParent() {
 		// given
 		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
-			"TESTCODE",
+			workspaceCode,
 			"Test Epic"
 		);
 
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"Test Story",
 			null
 		);
 
-		issueCommandService.assignParentIssue(
-			"TESTCODE",
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
 			storyResponse.issueKey(),
+			workspaceMemberId
+		);
+
+		issueCommandService.assignParentIssue(
+			workspaceCode,
+			storyResponse.issueKey(),
+			workspaceMemberId,
 			new AssignParentIssueRequest(epicResponse.issueKey())
 		);
 
 		// 변경할 부모 이슈
 		CreateEpicResponse newParentEpicResponse = (CreateEpicResponse)issueFixture.createEpic(
-			"TESTCODE",
+			workspaceCode,
 			"New Parent Epic"
 		);
 
 		// when
 		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
-			"TESTCODE",
+			workspaceCode,
 			storyResponse.issueKey(),
+			workspaceMemberId,
 			new AssignParentIssueRequest(newParentEpicResponse.issueKey())
 		);
 
@@ -527,20 +609,29 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void storyHasParent_canRemoveParentRelationship() {
 		// given
 		CreateEpicResponse epicResponse = (CreateEpicResponse)issueFixture.createEpic(
-			"TESTCODE",
+			workspaceCode,
 			"Test Epic"
 		);
 
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"Test Story",
 			epicResponse.issueKey()
 		);
 
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			storyResponse.issueKey(),
+			workspaceMemberId
+		);
+
 		// when
 		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
-			"TESTCODE",
-			storyResponse.issueKey()
+			workspaceCode,
+			storyResponse.issueKey(),
+			workspaceMemberId
 		);
 
 		// then
@@ -555,21 +646,30 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void removeSubTaskParent_throwsException() {
 		// given
 		CreateStoryResponse storyResponse = (CreateStoryResponse)issueFixture.createStory(
-			"TESTCODE",
+			workspaceCode,
 			"Test Story",
 			null
 		);
 
 		CreateSubTaskResponse subTaskResponse = (CreateSubTaskResponse)issueFixture.createSubTask(
-			"TESTCODE",
+			workspaceCode,
 			"Test Story",
 			storyResponse.issueKey()
 		);
 
+		Long workspaceMemberId = 2L;
+
+		assigneeCommandService.addAssignee(
+			workspaceCode,
+			subTaskResponse.issueKey(),
+			workspaceMemberId
+		);
+
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.removeParentIssue(
-			"TESTCODE",
-			subTaskResponse.issueKey()
+			workspaceCode,
+			subTaskResponse.issueKey(),
+			workspaceMemberId
 		)).isInstanceOf(CannotRemoveParentException.class);
 
 	}
@@ -587,12 +687,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 		LocalDate.now(),
 	// 		null
 	// 	);
-	// 	issueCommandService.createIssue("TESTCODE", createRequest);
+	// 	issueCommandService.createIssue(workspaceCode, createRequest);
 	//
 	// 	UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_PROGRESS);
 	//
 	// 	// when
-	// 	UpdateStatusResponse response = issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+	// 	UpdateStatusResponse response = issueCommandService.updateIssueStatus(1L, workspaceCode, updateStatusRequest);
 	//
 	// 	// then
 	// 	assertThat(response.issueId()).isEqualTo(1L);
@@ -611,12 +711,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 		LocalDate.now(),
 	// 		null
 	// 	);
-	// 	issueCommandService.createIssue("TESTCODE", createRequest);
+	// 	issueCommandService.createIssue(workspaceCode, createRequest);
 	//
 	// 	UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_REVIEW);
 	//
 	// 	// when & then
-	// 	assertThatThrownBy(() -> issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest))
+	// 	assertThatThrownBy(() -> issueCommandService.updateIssueStatus(1L, workspaceCode, updateStatusRequest))
 	// 		.isInstanceOf(DirectUpdateToInReviewException.class);
 	// }
 	//
@@ -632,13 +732,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 		LocalDate.now(),
 	// 		null
 	// 	);
-	// 	issueCommandService.createIssue("TESTCODE", createRequest);
+	// 	issueCommandService.createIssue(workspaceCode, createRequest);
 	//
 	// 	UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.IN_PROGRESS);
 	//
 	// 	// when
 	// 	LocalDateTime timeBeforeUpdate = LocalDateTime.now();
-	// 	issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+	// 	issueCommandService.updateIssueStatus(1L, workspaceCode, updateStatusRequest);
 	//
 	// 	// then
 	// 	Issue issue = issueRepository.findById(1L).orElseThrow();
@@ -659,13 +759,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 		LocalDate.now(),
 	// 		null
 	// 	);
-	// 	issueCommandService.createIssue("TESTCODE", createRequest);
+	// 	issueCommandService.createIssue(workspaceCode, createRequest);
 	//
 	// 	UpdateStatusRequest updateStatusRequest = new UpdateStatusRequest(IssueStatus.DONE);
 	//
 	// 	// when
 	// 	LocalDateTime timeBeforeUpdate = LocalDateTime.now();
-	// 	issueCommandService.updateIssueStatus(1L, "TESTCODE", updateStatusRequest);
+	// 	issueCommandService.updateIssueStatus(1L, workspaceCode, updateStatusRequest);
 	//
 	// 	// then
 	// 	Issue issue = issueRepository.findById(1L).orElseThrow();
