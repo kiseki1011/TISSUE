@@ -1,7 +1,11 @@
 package com.tissue.api.issue.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.exception.CircularDependencyException;
 import com.tissue.api.issue.exception.DuplicateIssueRelationException;
 import com.tissue.api.issue.exception.SelfReferenceNotAllowedException;
 
@@ -48,17 +52,15 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 
 	// 정적 팩토리 메서드
 	public static void createRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
-		validateRelation(sourceIssue, targetIssue);
+		validateRelation(sourceIssue, targetIssue, type);
 
 		// 정방향 관계 생성
 		IssueRelation relation = new IssueRelation(sourceIssue, targetIssue, type);
-		sourceIssue.getOutgoingRelations()
-			.add(relation);
+		sourceIssue.getOutgoingRelations().add(relation);
 
 		// 역방향 관계 생성
 		IssueRelation oppositeRelation = new IssueRelation(targetIssue, sourceIssue, type.getOpposite());
-		targetIssue.getOutgoingRelations()
-			.add(oppositeRelation);
+		targetIssue.getOutgoingRelations().add(oppositeRelation);
 	}
 
 	public static void removeRelation(Issue sourceIssue, Issue targetIssue) {
@@ -71,7 +73,13 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 			.removeIf(relation -> relation.getTargetIssue().equals(sourceIssue));
 	}
 
-	private static void validateRelation(Issue sourceIssue, Issue targetIssue) {
+	/**
+	 * Todo
+	 *  - 순환 참조를 방지할 필요가 있음
+	 *    - 자기 참조 불가
+	 *    - A BLOCKS B, B BLOCKS C -> A BLOCKS C 불가, C BLOCKS A 불가 (CyclicReferenceException 만들기)
+	 */
+	private static void validateRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
 		if (sourceIssue.equals(targetIssue)) {
 			throw new SelfReferenceNotAllowedException();
 		}
@@ -83,8 +91,51 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 			throw new DuplicateIssueRelationException();
 		}
 
+		// BLOCKS 관계에 대해서만 순환 참조 검증
+		if (type == IssueRelationType.BLOCKS) {
+			validateNoCircularDependency(sourceIssue, targetIssue);
+		}
 	}
-	
+
+	private static void validateNoCircularDependency(Issue sourceIssue, Issue targetIssue) {
+		// 직접적인 순환 참조 검증 (A->B->A)
+		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
+			.anyMatch(relation ->
+				relation.getTargetIssue().equals(sourceIssue) &&
+					relation.getRelationType() == IssueRelationType.BLOCKS
+			);
+
+		if (isDirectCircular) {
+			throw new CircularDependencyException(
+				String.format("Circular dependency detected: %s is already blocking %s",
+					targetIssue.getIssueKey(), sourceIssue.getIssueKey())
+			);
+		}
+
+		// 간접적인 순환 참조 검증 (A->B->C->A)
+		Set<Issue> visited = new HashSet<>();
+		visited.add(sourceIssue);
+		validateIndirectCircularDependency(targetIssue, visited);
+	}
+
+	private static void validateIndirectCircularDependency(Issue current, Set<Issue> visited) {
+		for (IssueRelation relation : current.getOutgoingRelations()) {
+			if (relation.getRelationType() != IssueRelationType.BLOCKS) {
+				continue;
+			}
+
+			Issue nextIssue = relation.getTargetIssue();
+			if (!visited.add(nextIssue)) {
+				throw new CircularDependencyException(
+					"Circular dependency detected in blocking chain"
+				);
+			}
+
+			validateIndirectCircularDependency(nextIssue, visited);
+			visited.remove(nextIssue);
+		}
+	}
+
 	public String getWorkspaceCode() {
 		return sourceIssue.getWorkspaceCode();
 	}
