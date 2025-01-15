@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.assignee.exception.AssigneeNotFoundException;
@@ -16,8 +17,10 @@ import com.tissue.api.assignee.exception.MaxAssigneesExceededException;
 import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.exception.BlockingIssuesNotCompletedException;
 import com.tissue.api.issue.exception.InvalidStatusTransitionException;
 import com.tissue.api.issue.exception.UnauthorizedIssueModifyException;
 import com.tissue.api.review.domain.IssueReviewer;
@@ -144,6 +147,22 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();
+
+	// -- Issue Relation 관련 --
+	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<IssueRelation> outgoingRelations = new ArrayList<>();
+
+	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private final List<IssueRelation> incomingRelations = new ArrayList<>();
+
+	public boolean isBlockedBy(Issue issue) {
+		return incomingRelations.stream()
+			.anyMatch(relation ->
+				relation.getSourceIssue().equals(issue) && relation.getRelationType() == IssueRelationType.BLOCKS
+			);
+	}
+
+	// -------------------------
 
 	// ---Review 도메인 관련 코드---
 	private static final int MAX_REVIEWERS = 10;
@@ -444,6 +463,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	 *  - 설정 엔티티를 구현하면, forceReviewEnabled=true인 경우 다음 구현
 	 *   - 리뷰가 강제되는 리뷰의 difficulty 수준을 설정 할 수 있도록 구현
 	 *   - 리뷰를 하지 않아도 되는 priority 수준을 설정 할 수 있도록 구현
+	 *   - 자식 이슈가 무조건 DONE이어야지 부모 이슈를 DONE으로 변경 가능하도록 만들기? -> 설정으로 제공할 수 있게 ㄱㄱ
+	 *     - 구현한다면, "부모-자식"을 "BLOCKED_BY 자식-BLOCKS 부모" 관계가 자동으로 설정되도록 관계 설정 서비스도 같이 호출
 	 */
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		// 기본 상태 전이 검증
@@ -471,6 +492,27 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		if (isAllReviewsNotApproved()) {
 			throw new PendingReviewExistsException("All reviews must be approved.");
 		}
+
+		validateBlockingIssuesAreDone();
+	}
+
+	private void validateBlockingIssuesAreDone() {
+		List<Issue> blockingIssues = incomingRelations.stream()
+			.filter(relation -> relation.getRelationType() == IssueRelationType.BLOCKED_BY)
+			.map(IssueRelation::getSourceIssue)
+			.filter(issue -> issue.getStatus() != IssueStatus.DONE)
+			.toList();
+
+		if (!blockingIssues.isEmpty()) {
+			String blockingIssueKeys = blockingIssues.stream()
+				.map(Issue::getIssueKey)
+				.collect(Collectors.joining(", "));
+
+			throw new BlockingIssuesNotCompletedException(
+				String.format("Cannot complete this issue. Blocking issues must be completed first: %s",
+					blockingIssueKeys)
+			);
+		}
 	}
 
 	private boolean isAllReviewsNotApproved() {
@@ -496,8 +538,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
 			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
 			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
-			case DONE -> Set.of();
 			case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
+			case DONE -> Set.of();
 			case CLOSED -> Set.of();
 		};
 	}
