@@ -11,6 +11,7 @@ import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.service.command.IssueCommandService;
+import com.tissue.api.issue.service.command.IssueRelationCommandService;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
@@ -105,6 +106,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected TeamQueryService teamQueryService;
 	@Autowired
 	protected IssueCommandService issueCommandService;
+	@Autowired
+	protected IssueRelationCommandService issueRelationCommandService;
 	@Autowired
 	protected ReviewCommandService reviewCommandService;
 	@Autowired
