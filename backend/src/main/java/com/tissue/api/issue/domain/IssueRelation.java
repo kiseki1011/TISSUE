@@ -57,10 +57,12 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 		// 정방향 관계 생성
 		IssueRelation relation = new IssueRelation(sourceIssue, targetIssue, type);
 		sourceIssue.getOutgoingRelations().add(relation);
+		targetIssue.getIncomingRelations().add(relation);
 
 		// 역방향 관계 생성
 		IssueRelation oppositeRelation = new IssueRelation(targetIssue, sourceIssue, type.getOpposite());
 		targetIssue.getOutgoingRelations().add(oppositeRelation);
+		sourceIssue.getIncomingRelations().add(oppositeRelation);
 	}
 
 	public static void removeRelation(Issue sourceIssue, Issue targetIssue) {
@@ -101,8 +103,7 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 		// 직접적인 순환 참조 검증 (A->B->A)
 		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
 			.anyMatch(relation ->
-				relation.getTargetIssue().equals(sourceIssue) &&
-					relation.getRelationType() == IssueRelationType.BLOCKS
+				relation.getTargetIssue().equals(sourceIssue) && relation.getRelationType() == IssueRelationType.BLOCKS
 			);
 
 		if (isDirectCircular) {
