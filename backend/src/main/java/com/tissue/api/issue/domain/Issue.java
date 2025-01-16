@@ -323,7 +323,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void validateIsAssigneeOrAuthor(Long workspaceMemberId) {
-		if (isAssignee(workspaceMemberId) || isAuthor(workspaceMemberId)) {
+		if (isAssignee(workspaceMemberId)) {
+			return;
+		}
+		if (isAuthor(workspaceMemberId)) {
 			return;
 		}
 		throw new UnauthorizedIssueModifyException("Must be the author or a assignee of this issue.");
