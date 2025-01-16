@@ -1,4 +1,4 @@
-package com.tissue.api.issue.service;
+package com.tissue.api.issue.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
