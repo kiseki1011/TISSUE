@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.FieldErrorDto;
+import com.tissue.api.common.exception.TissueException;
 import com.tissue.api.common.exception.domain.AuthenticationException;
 import com.tissue.api.common.exception.domain.AuthorizationException;
 import com.tissue.api.common.exception.domain.InvitationException;
@@ -23,7 +24,9 @@ import com.tissue.api.common.exception.domain.IssueException;
 import com.tissue.api.common.exception.domain.MemberException;
 import com.tissue.api.common.exception.domain.WorkspaceException;
 import com.tissue.api.common.exception.domain.WorkspaceMemberException;
+import com.tissue.api.util.MessageProvider;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,8 +35,11 @@ import lombok.extern.slf4j.Slf4j;
  *  - 중복 로직 제거: CommonException을 처리하는 핸들러로 수정
  */
 @Slf4j
+@RequiredArgsConstructor
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+	private final MessageProvider messageProvider;
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
@@ -95,6 +101,16 @@ public class GlobalExceptionHandler {
 			"Invalid request body",
 			null
 		);
+	}
+
+	@ExceptionHandler(TissueException.class)
+	public ResponseEntity<ApiResponse<?>> handleTissueException(TissueException exception) {
+
+		String message = exception.getMessage();
+
+		return ResponseEntity
+			.status(exception.getHttpStatus())
+			.body(ApiResponse.fail(exception.getHttpStatus(), message, null));
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
