@@ -1,14 +1,13 @@
 package com.tissue.api.issue.service.command;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.CannotRemoveParentException;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
@@ -30,11 +29,9 @@ import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepositor
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class IssueCommandService {
 
 	private final IssueRepository issueRepository;
@@ -57,10 +54,11 @@ public class IssueCommandService {
 	) {
 		Workspace workspace = findWorkspace(code);
 
-		Issue issue = request.to(
-			workspace,
-			findParentIssue(request.parentIssueKey(), code).orElse(null)
-		);
+		// Todo: Optional 사용을 고려
+		Issue parentIssue = request.parentIssueKey() != null
+			? findIssue(code, request.parentIssueKey()) : null;
+
+		Issue issue = request.to(workspace, parentIssue);
 
 		Issue savedIssue = issueRepository.save(issue);
 		return CreateIssueResponse.from(savedIssue);
@@ -142,8 +140,9 @@ public class IssueCommandService {
 		}
 
 		// Todo: Issue에 validateCanRemoveParentIssue 형태로 리팩토링
+		// sub-task의 부모 제거 방지용 로직
 		if (cannotRemoveParent(issue)) {
-			throw new CannotRemoveParentException();
+			throw new InvalidOperationException("Cannot remove the parent of this issue");
 		}
 		issue.removeParentRelationship();
 
@@ -175,33 +174,20 @@ public class IssueCommandService {
 
 	private Workspace findWorkspace(String code) {
 		return workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
 	private WorkspaceMember findWorkspaceMember(Long id) {
 		return workspaceMemberRepository.findById(id)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
-	}
-
-	/**
-	 * Todo
-	 *  - 기존에는 issueId로 찾던것을 issueKey로 찾도록 변경했음
-	 *  - 로직을 변경해야 함 -> 왜냐하면 code + issueKey로 찾기 때문에 해당 워크스페이스에 존재할 수 밖에 없음
-	 *  - 기존 id로 찾는 방식은 다른 워크스페이스에 존재하는 이슈를 조회가 가능했기 때문에 아래 처럼 사용
-	 *  - 그러나 지금은 그럴 필요가 없고 그냥 findIssue()를 사용하면 될 듯
-	 */
-	private Optional<Issue> findParentIssue(String parentIssueKey, String workspaceCode) {
-		return Optional.ofNullable(parentIssueKey)
-			.map(issueKey -> issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-				.orElseThrow(() -> new IssueNotFoundException("Issue does not exist in this workspace.")));
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
 	private Issue findIssue(String code, String issueKey) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(IssueNotFoundException::new);
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
 	private boolean cannotRemoveParent(Issue issue) {
-		return !issue.canRemoveParentRelationship();
+		return !issue.validateCanRemoveParent();
 	}
 }

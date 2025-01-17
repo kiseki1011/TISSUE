@@ -2,6 +2,7 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
@@ -50,13 +51,15 @@ public class SubTask extends Issue {
 	}
 
 	@Override
-	public boolean canRemoveParentRelationship() {
-		return false;
+	public boolean validateCanRemoveParent() {
+		throw new InvalidOperationException(
+			String.format("Cannot remove the parent of this issue: issueKey=%s, issueType=SUB_TASK", getIssueKey())
+		);
 	}
 
+	// SubTask는 반드시 부모 이슈가 있어야 함, 그리고 반드시 Task/Story/Bug의 자식 이슈
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
-		// SubTask는 반드시 부모 이슈가 있어야 함, 그리고 반드시 Task/Story/Bug의 자식 이슈
 		if (parentIssue == null) {
 			throw new SubTaskMustHaveParentException();
 		}
