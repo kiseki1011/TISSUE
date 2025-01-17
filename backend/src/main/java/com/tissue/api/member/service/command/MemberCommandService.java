@@ -37,9 +37,12 @@ public class MemberCommandService {
 	public SignupMemberResponse signup(
 		SignupMemberRequest request
 	) {
-		memberValidator.validateSignup(request);
+		memberValidator.validateLoginIdIsUnique(request.getLoginId());
+		memberValidator.validateEmailIsUnique(request.getEmail());
 
-		Member member = createMember(request);
+		String encodedPassword = passwordEncoder.encode(request.getPassword());
+		Member member = request.toEntity(encodedPassword);
+
 		Member savedMember = memberRepository.save(member);
 
 		return SignupMemberResponse.from(savedMember);
@@ -80,7 +83,7 @@ public class MemberCommandService {
 		Member member = findMemberById(memberId);
 
 		String newEmail = request.newEmail();
-		memberValidator.validateUpdateEmail(newEmail);
+		memberValidator.validateEmailIsUnique(newEmail);
 
 		member.updateEmail(newEmail);
 
@@ -105,7 +108,7 @@ public class MemberCommandService {
 	) {
 		Member member = findMemberById(memberId);
 
-		memberValidator.validateWithdraw(memberId);
+		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 
 		memberRepository.delete(member);
 	}
@@ -136,17 +139,8 @@ public class MemberCommandService {
 		}
 	}
 
-	private Member findMemberById(
-		Long memberId
-	) {
+	private Member findMemberById(Long memberId) {
 		return memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
-	}
-
-	private Member createMember(
-		SignupMemberRequest request
-	) {
-		String encodedPassword = passwordEncoder.encode(request.getPassword());
-		return request.toEntity(encodedPassword);
+			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 }
