@@ -1,19 +1,18 @@
 package com.tissue.api.member.exception;
 
-import org.springframework.http.HttpStatus;
+import com.tissue.api.common.exception.ResourceNotFoundException;
 
-import com.tissue.api.common.exception.domain.MemberException;
+public class MemberNotFoundException extends ResourceNotFoundException {
 
-public class MemberNotFoundException extends MemberException {
+	private static final String ID_MESSAGE = "Member not found with ID: %d";
+	private static final String EMAIL_MESSAGE = "Member not found with email: %s";
+	private static final String LOGIN_ID_MESSAGE = "Member not found with login ID: %s";
 
-	private static final String MESSAGE = "Member was not found";
-	private static final HttpStatus HTTP_STATUS = HttpStatus.NOT_FOUND;
-
-	public MemberNotFoundException() {
-		super(MESSAGE, HTTP_STATUS);
+	public MemberNotFoundException(Long id) {
+		super(String.format(ID_MESSAGE, id));
 	}
 
-	public MemberNotFoundException(Throwable cause) {
-		super(MESSAGE, HTTP_STATUS, cause);
+	public MemberNotFoundException(String identifier, boolean isEmail) {
+		super(String.format(isEmail ? EMAIL_MESSAGE : LOGIN_ID_MESSAGE, identifier));
 	}
 }
