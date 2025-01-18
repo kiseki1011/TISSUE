@@ -79,13 +79,13 @@ public class ReviewerCommandService {
 		return RequestReviewResponse.from(issue);
 	}
 
-	private Issue findIssue(String workspaceCode, String issueKey) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow(IssueNotFoundException::new);
+	private Issue findIssue(String code, String issueKey) {
+		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
-	private WorkspaceMember findWorkspaceMember(Long id, String workspaceCode) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, workspaceCode)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+	private WorkspaceMember findWorkspaceMember(Long id, String code) {
+		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
 	}
 }
