@@ -45,7 +45,7 @@ public class ReviewController {
 	 */
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateReviewResponse> createReview(
@@ -65,7 +65,7 @@ public class ReviewController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{reviewId}")
 	public ApiResponse<UpdateReviewResponse> updateReview(
 		@PathVariable Long reviewId,
@@ -82,7 +82,7 @@ public class ReviewController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{reviewId}/status")
 	public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
 		@PathVariable String code,

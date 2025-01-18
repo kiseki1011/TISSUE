@@ -26,7 +26,7 @@ public class ReviewerController {
 	private final ReviewerCommandService reviewerCommandService;
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{workspaceMemberId}")
 	public ApiResponse<AddReviewerResponse> addReviewer(
 		@PathVariable String code,
@@ -45,7 +45,7 @@ public class ReviewerController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{workspaceMemberId}")
 	public ApiResponse<RemoveReviewerResponse> removeReviewer(
 		@PathVariable String code,
@@ -64,7 +64,7 @@ public class ReviewerController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ApiResponse<RequestReviewResponse> requestReview(
 		@PathVariable String code,
