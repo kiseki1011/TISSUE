@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.common.exception.AccessDeniedException;
+import com.tissue.api.common.exception.ForbiddenOperationException;
 import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
@@ -41,6 +41,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -78,6 +79,7 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Getter
+@EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -185,10 +187,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(requesterWorkspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new AccessDeniedException(
+			throw new ForbiddenOperationException(
 				String.format(
-					"Must be the reviewer or be a assignee to remove the reviewer:"
-						+ " requesterWorkspaceMemberId=%d, reviewerWorkspaceMemberId=%d",
+					"Must be the reviewer or be a assignee to remove the reviewer."
+						+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
 					requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
 			);
 		}
@@ -213,7 +215,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.findFirst()
 			.orElseThrow(() -> new ReviewerNotFoundException(
 					String.format(
-						"Is not a reviewer assigned to this issue: workspaceMemberId=%d, nickName=%s",
+						"Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
 						workspaceMember.getId(), workspaceMember.getNickname()
 					)
 				)
@@ -289,6 +291,19 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	public void validateIssueTypeMatch(IssueType type) {
+		boolean typeNotMatch = this.type != type;
+
+		if (typeNotMatch) {
+			throw new InvalidOperationException(
+				String.format(
+					"Issue type does not match the needed type. Issue type: %s, Required type: %s",
+					this.type, type
+				)
+			);
+		}
+	}
+
 	public boolean isBlockedBy(Issue issue) {
 		return incomingRelations.stream()
 			.anyMatch(relation ->
@@ -314,8 +329,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(workspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new AccessDeniedException(
-				String.format("Must be an assignee of this issue: issueKey=%s", issueKey)
+			throw new ForbiddenOperationException(
+				String.format("Must be an assignee of this issue. issueKey: %s", issueKey)
 			);
 		}
 	}
@@ -327,8 +342,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		if (isAuthor(workspaceMemberId)) {
 			return;
 		}
-		throw new AccessDeniedException(
-			String.format("Must be the author or an assignee of this issue: issueKey=%s", issueKey)
+		throw new ForbiddenOperationException(
+			String.format("Must be the author or an assignee of this issue. issueKey: %s", issueKey)
 		);
 	}
 
@@ -338,7 +353,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.findFirst()
 			.orElseThrow(() -> new InvalidOperationException(
 					String.format(
-						"Is not a assignee assigned to this issue: workspaceMemberId=%d, nickName=%s",
+						"Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
 						assignee.getId(), assignee.getNickname()
 					)
 				)
@@ -372,7 +387,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		if (hasDifferentWorkspaceCode) {
 			throw new InvalidOperationException(
 				String.format(
-					"Assignee must belong to this workspace: expected=%s , actual=%s",
+					"Assignee must belong to this workspace. expected: %s , actual: %s",
 					workspaceMember.getWorkspaceCode(), workspaceCode
 				)
 			);
@@ -462,12 +477,21 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	public boolean validateCanRemoveParent() {
-		return true;
+	public void validateCanRemoveParent() {
 	}
 
 	public boolean isNotFirstReviewRound() {
 		return currentReviewRound != 0;
+	}
+
+	public void validateHasChildIssues() {
+		boolean hasChildIssues = !childIssues.isEmpty();
+
+		if (hasChildIssues) {
+			throw new InvalidOperationException(
+				String.format("Cannot delete issue with child issues. issueKey: %s", issueKey)
+			);
+		}
 	}
 
 	// Todo: 횡단 관심사(cross cutting concern)는 AOP로 구현하는걸 고려하자
