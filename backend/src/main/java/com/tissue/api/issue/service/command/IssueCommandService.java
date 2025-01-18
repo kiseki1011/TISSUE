@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
@@ -19,7 +19,6 @@ import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
-import com.tissue.api.issue.validator.IssueValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
@@ -37,7 +36,6 @@ public class IssueCommandService {
 	private final IssueRepository issueRepository;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final IssueValidator issueValidator;
 
 	/*
 	 * Todo
@@ -49,14 +47,14 @@ public class IssueCommandService {
 	 */
 	@Transactional
 	public CreateIssueResponse createIssue(
-		String code,
+		String workspaceCode,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = findWorkspace(code);
+		Workspace workspace = findWorkspace(workspaceCode);
 
 		// Todo: Optional 사용을 고려
 		Issue parentIssue = request.parentIssueKey() != null
-			? findIssue(code, request.parentIssueKey()) : null;
+			? findIssue(request.parentIssueKey(), workspaceCode) : null;
 
 		Issue issue = request.to(workspace, parentIssue);
 
@@ -66,20 +64,19 @@ public class IssueCommandService {
 
 	@Transactional
 	public UpdateIssueResponse updateIssue(
-		String code,
+		String workspaceCode,
 		String issueKey,
 		Long requesterWorkspaceMemberId,
 		UpdateIssueRequest request
 	) {
-		Issue issue = findIssue(code, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		issue.validateIssueTypeMatch(request.getType());
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
-
-		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
-		issueValidator.validateIssueTypeMatch(issue, request);
 
 		request.update(issue);
 
@@ -88,12 +85,12 @@ public class IssueCommandService {
 
 	@Transactional
 	public UpdateIssueStatusResponse updateIssueStatus(
-		String code,
+		String workspaceCode,
 		String issueKey,
 		Long requesterWorkspaceMemberId,
 		UpdateIssueStatusRequest request
 	) {
-		Issue issue = findIssue(code, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -107,13 +104,13 @@ public class IssueCommandService {
 
 	@Transactional
 	public AssignParentIssueResponse assignParentIssue(
-		String code,
+		String workspaceCode,
 		String issueKey,
 		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
-		Issue issue = findIssue(code, issueKey);
-		Issue parentIssue = findIssue(code, request.parentIssueKey());
+		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue parentIssue = findIssue(workspaceCode, request.parentIssueKey());
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -127,11 +124,11 @@ public class IssueCommandService {
 
 	@Transactional
 	public RemoveParentIssueResponse removeParentIssue(
-		String code,
+		String workspaceCode,
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(code, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
@@ -139,11 +136,9 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// Todo: Issue에 validateCanRemoveParentIssue 형태로 리팩토링
 		// sub-task의 부모 제거 방지용 로직
-		if (cannotRemoveParent(issue)) {
-			throw new InvalidOperationException("Cannot remove the parent of this issue");
-		}
+		issue.validateCanRemoveParent();
+
 		issue.removeParentRelationship();
 
 		return RemoveParentIssueResponse.from(issue);
@@ -151,19 +146,20 @@ public class IssueCommandService {
 
 	@Transactional
 	public DeleteIssueResponse deleteIssue(
-		String code,
+		String workspaceCode,
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(code, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// Todo: Issue에서 검증 메서드 정의해서 사용하도록 리팩토링
-		issueValidator.validateNotParentOfSubTask(issue);
+		if (issue.getType() != IssueType.EPIC) {
+			issue.validateHasChildIssues();
+		}
 
 		Long issueId = issue.getId();
 
@@ -182,12 +178,8 @@ public class IssueCommandService {
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
-	private Issue findIssue(String code, String issueKey) {
+	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private boolean cannotRemoveParent(Issue issue) {
-		return !issue.validateCanRemoveParent();
 	}
 }

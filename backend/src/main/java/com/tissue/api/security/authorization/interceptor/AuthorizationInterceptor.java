@@ -80,11 +80,8 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
 		if (isLowerThanRequiredRole) {
 			throw new ForbiddenOperationException(
-				String.format(
-					"Workspace role must be at least %s. Current role: %s",
-					roleRequired.role(),
-					workspaceMember.getRole()
-				)
+				String.format("Workspace role must be at least %s. Current role: %s",
+					roleRequired.role(), workspaceMember.getRole())
 			);
 		}
 	}

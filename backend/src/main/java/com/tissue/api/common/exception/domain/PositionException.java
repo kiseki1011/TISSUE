@@ -10,7 +10,7 @@ public abstract class PositionException extends TissueException {
 		super(message, httpStatus);
 	}
 
-	public PositionException(String message, HttpStatus httpStatus, Throwable cause) {
-		super(message, httpStatus, cause);
+	public PositionException(String messageCode, Object... args) {
+		super(messageCode, args, HttpStatus.BAD_REQUEST);
 	}
 }

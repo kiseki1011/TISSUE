@@ -30,7 +30,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
@@ -52,7 +52,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
@@ -71,7 +71,7 @@ public class ReviewerCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
@@ -79,7 +79,7 @@ public class ReviewerCommandService {
 		return RequestReviewResponse.from(issue);
 	}
 
-	private Issue findIssue(String code, String issueKey) {
+	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}

@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.dto.PermissionContext;
 import com.tissue.api.common.enums.PermissionType;
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
-import com.tissue.api.security.authorization.exception.InvalidPermissionException;
-import com.tissue.api.security.authorization.exception.PermissionMismatchException;
+import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +26,7 @@ public class SessionValidator {
 	public void validateLoginStatus(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
 		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
-			throw new UserNotLoggedInException();
+			throw new UnauthorizedException("Login is required to access.");
 		}
 	}
 
@@ -36,7 +36,12 @@ public class SessionValidator {
 
 		if (isInvalidPermission(permissionContext)) {
 			sessionManager.clearPermission(session);
-			throw new InvalidPermissionException();
+			throw new ForbiddenOperationException(
+				String.format(
+					"You do not have permission or the permission has expired. permissionType: %s",
+					permissionType
+				)
+			);
 		}
 	}
 
@@ -46,7 +51,13 @@ public class SessionValidator {
 		LocalDateTime expiresAt = (LocalDateTime)session.getAttribute(SessionAttributes.PERMISSION_EXPIRES_AT);
 
 		if (storedPermissionType != permissionType) {
-			throw new PermissionMismatchException();
+			throw new InvalidOperationException(
+				String.format(
+					"Permission type of request does not match with current permission type."
+						+ " Requested permission: %s, Current permission: %s",
+					permissionType, storedPermissionType
+				)
+			);
 		}
 
 		return new PermissionContext(storedPermissionType, permissionExists, expiresAt);

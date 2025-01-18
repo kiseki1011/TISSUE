@@ -3,6 +3,7 @@ package com.tissue.api.review.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.repository.IssueRepository;
@@ -12,8 +13,6 @@ import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
-import com.tissue.api.review.exception.NotIssueReviewerException;
-import com.tissue.api.review.exception.ReviewNotFoundException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
@@ -50,7 +49,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		CreateReviewRequest request
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 
 		IssueReviewer issueReviewer = findIssueReviewer(issueKey, reviewerWorkspaceMemberId);
 
@@ -93,8 +92,8 @@ public class ReviewCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateReviewStatusRequest request
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
+		Issue issue = findIssue(issueKey, workspaceCode);
+		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 		Review review = findReview(reviewId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -107,25 +106,32 @@ public class ReviewCommandService {
 		return UpdateReviewStatusResponse.from(review);
 	}
 
-	private Issue findIssue(String workspaceCode, String issueKey) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow(IssueNotFoundException::new);
+	private Issue findIssue(String issueKey, String code) {
+		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
-	// Todo: 굳이 workspaceCode 까지 활용 해야 함? 이미 인터셉터에서 해당 워크스페이스에 속하는지 검사 중.
-	private WorkspaceMember findWorkspaceMember(Long id, String workspaceCode) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, workspaceCode)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+	private WorkspaceMember findWorkspaceMember(Long id) {
+		return workspaceMemberRepository.findById(id)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {
 		return issueReviewerRepository.findByIssueKeyAndReviewerId(issueKey, reviewerWorkspaceMemberId)
-			.orElseThrow(NotIssueReviewerException::new);
+			.orElseThrow(() -> new ResourceNotFoundException(
+					String.format(
+						"Issue reviewer was not found with issueKey: %s, workspaceMemberId: %d",
+						issueKey, reviewerWorkspaceMemberId
+					)
+				)
+			);
 	}
 
 	private Review findReview(Long id) {
 		return reviewRepository.findById(id)
-			.orElseThrow(ReviewNotFoundException::new);
+			.orElseThrow(
+				() -> new ResourceNotFoundException(String.format("Review was not found with reviewId: %d", id))
+			);
 	}
 
 	private void updateIssueStatusBasedOnReviewStatus(Issue issue, ReviewStatus reviewStatus) {

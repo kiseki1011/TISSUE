@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
-import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
@@ -36,7 +36,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		Workspace workspace = findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
@@ -51,7 +51,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = findPosition(workspaceCode, positionId);
+		Position position = findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -65,10 +65,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = findPosition(
-			workspaceCode,
-			positionId
-		);
+		Position position = findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -80,11 +77,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-
-		Position position = findPosition(
-			workspaceCode,
-			positionId
-		);
+		Position position = findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 
@@ -108,16 +101,19 @@ public class PositionCommandService {
 		return positionRepository.save(position);
 	}
 
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+	private Workspace findWorkspace(String code) {
+		return workspaceRepository.findByCode(code)
+			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
-	private Position findPosition(
-		String workspaceCode,
-		Long positionId
-	) {
+	private Position findPosition(Long positionId, String workspaceCode) {
 		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(PositionNotFoundException::new);
+			.orElseThrow(() -> new ResourceNotFoundException(
+					String.format(
+						"Position was not found with positionId: %d, workspaceCode: %s",
+						positionId, workspaceCode
+					)
+				)
+			);
 	}
 }

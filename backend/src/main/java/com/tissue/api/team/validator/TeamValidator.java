@@ -2,7 +2,7 @@ package com.tissue.api.team.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.position.exception.PositionInUseException;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.respository.TeamRepository;
 
@@ -16,7 +16,12 @@ public class TeamValidator {
 
 	public void validateTeamIsUsed(Team team) {
 		if (teamRepository.existsByWorkspaceMembers(team)) {
-			throw new PositionInUseException();
+			throw new InvalidOperationException(
+				String.format(
+					"There is a workspace member that belongs to this team. teamId: %d, name: %s",
+					team.getId(), team.getName()
+				)
+			);
 		}
 	}
 }

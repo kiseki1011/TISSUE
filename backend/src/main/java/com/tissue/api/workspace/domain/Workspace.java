@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 
 import com.tissue.api.common.entity.WorkspaceBaseEntity;
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.team.domain.Team;
-import com.tissue.api.workspace.exception.InvalidMemberCountException;
-import com.tissue.api.workspace.exception.WorkspaceMemberLimitExceededException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -160,14 +159,19 @@ public class Workspace extends WorkspaceBaseEntity {
 	}
 
 	private void validateMemberLimit() {
-		if (this.memberCount >= MAX_MEMBER_COUNT) {
-			throw new WorkspaceMemberLimitExceededException();
+		if (memberCount >= MAX_MEMBER_COUNT) {
+			throw new InvalidOperationException(
+				String.format(
+					"Maximum number of workspace members reached. Workspace member limit: %d",
+					MAX_MEMBER_COUNT
+				)
+			);
 		}
 	}
 
 	private void validatePositiveMemberCount() {
-		if (this.memberCount <= 0) {
-			throw new InvalidMemberCountException();
+		if (memberCount <= 0) {
+			throw new InvalidOperationException("Number of workspace members cannot go below 1.");
 		}
 	}
 }

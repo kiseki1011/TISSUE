@@ -30,7 +30,7 @@ public class WorkspaceMemberInviteService {
 	@Transactional
 	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request) {
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		// 1. 초대 가능한 멤버 필터링
 		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.memberIdentifiers());

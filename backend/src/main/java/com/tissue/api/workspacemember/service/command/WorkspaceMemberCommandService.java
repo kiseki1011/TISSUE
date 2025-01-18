@@ -5,12 +5,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
-import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.respository.TeamRepository;
-import com.tissue.api.team.exception.TeamNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
@@ -52,7 +51,7 @@ public class WorkspaceMemberCommandService {
 			return UpdateNicknameResponse.from(workspaceMember);
 
 		} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-			log.error("Exception: ", e);
+			log.error("Duplicate nickname: ", e);
 			throw new DuplicateNicknameException(e);
 		}
 	}
@@ -155,20 +154,24 @@ public class WorkspaceMemberCommandService {
 		return RemoveWorkspaceMemberResponse.from(target);
 	}
 
-	private WorkspaceMember findWorkspaceMember(Long workspaceMemberId) {
-		return workspaceMemberRepository.findById(workspaceMemberId)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+	private WorkspaceMember findWorkspaceMember(Long id) {
+		return workspaceMemberRepository.findById(id)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
 	private Position findPosition(Long positionId, String workspaceCode) {
 		return positionRepository
 			.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(PositionNotFoundException::new);
+			.orElseThrow(() -> new ResourceNotFoundException(
+				String.format("Position was not found with positionId: %d, workspaceCode: %s",
+					positionId, workspaceCode)));
 	}
 
-	private Team findTeam(Long positionId, String workspaceCode) {
+	private Team findTeam(Long teamId, String workspaceCode) {
 		return teamRepository
-			.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(TeamNotFoundException::new);
+			.findByIdAndWorkspaceCode(teamId, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException(
+				String.format("Team was not found with teamId: %d, workspaceCode: %s",
+					teamId, workspaceCode)));
 	}
 }

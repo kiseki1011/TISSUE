@@ -10,7 +10,7 @@ public abstract class WorkspaceMemberException extends TissueException {
 		super(message, httpStatus);
 	}
 
-	public WorkspaceMemberException(String message, HttpStatus httpStatus, Throwable cause) {
-		super(message, httpStatus, cause);
+	public WorkspaceMemberException(String messageCode, Object... args) {
+		super(messageCode, args, HttpStatus.BAD_REQUEST);
 	}
 }

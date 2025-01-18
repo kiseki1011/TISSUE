@@ -10,7 +10,8 @@ public abstract class AuthenticationException extends TissueException {
 		super(message, httpStatus);
 	}
 
-	public AuthenticationException(String message, HttpStatus httpStatus, Throwable cause) {
-		super(message, httpStatus, cause);
+	public AuthenticationException(String messageCode, Object... args) {
+		super(messageCode, args, HttpStatus.UNAUTHORIZED);
 	}
+
 }

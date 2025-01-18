@@ -4,20 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.WorkspaceMemberPosition;
-import com.tissue.api.position.exception.DuplicatePositionAssignmentException;
-import com.tissue.api.position.exception.PositionNotAssignedException;
 import com.tissue.api.position.exception.PositionNotFoundException;
-import com.tissue.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.WorkspaceMemberTeam;
-import com.tissue.api.team.exception.DuplicateTeamAssignmentException;
-import com.tissue.api.team.exception.TeamNotAssignedException;
-import com.tissue.api.team.exception.TeamNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -148,8 +143,10 @@ public class WorkspaceMember extends BaseEntity {
 		WorkspaceMemberPosition workspaceMemberPosition = workspaceMemberPositions.stream()
 			.filter(wmp -> wmp.getPosition().equals(position))
 			.findFirst()
-			.orElseThrow(() -> new PositionNotAssignedException(
-				String.format("Position '%s' is not assigned to this workspace member", position.getName())
+			.orElseThrow(() -> new InvalidOperationException(
+				String.format(
+					"Position '%s' is not assigned to this workspace member. workspaceMemberId: %d, positionId: %d",
+					position.getName(), id, position.getId())
 			));
 
 		workspaceMemberPositions.remove(workspaceMemberPosition);
@@ -169,8 +166,9 @@ public class WorkspaceMember extends BaseEntity {
 		WorkspaceMemberTeam workspaceMemberTeam = workspaceMemberTeams.stream()
 			.filter(wmp -> wmp.getTeam().equals(team))
 			.findFirst()
-			.orElseThrow(() -> new TeamNotAssignedException(
-				String.format("Team '%s' is not assigned to this workspace member", team.getName())
+			.orElseThrow(() -> new InvalidOperationException(
+				String.format("Team '%s' is not assigned to this workspace member. workspaceMemberId: %d, teamId: %d",
+					team.getName(), id, team.getId())
 			));
 
 		workspaceMemberTeams.remove(workspaceMemberTeam);
@@ -198,12 +196,9 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	public void validateRoleIsHigherThanViewer() {
-		if (this.getRole().isLowerThan(WorkspaceRole.MEMBER)) {
-			throw new InsufficientWorkspaceRoleException(
-				String.format(
-					"Must have a workspace role higher than VIEWER. Current workspace role: %s",
-					this.getRole()
-				)
+		if (role.isLowerThan(WorkspaceRole.MEMBER)) {
+			throw new ForbiddenOperationException(
+				String.format("Must have a workspace role higher than VIEWER. Current role: %s", role)
 			);
 		}
 	}
@@ -217,12 +212,14 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	private void validateDuplicateAssignedPosition(Position position) {
-		boolean isAlreadyAssigned = this.workspaceMemberPositions.stream()
+		boolean isAlreadyAssigned = workspaceMemberPositions.stream()
 			.anyMatch(wmp -> wmp.getPosition().equals(position));
 
 		if (isAlreadyAssigned) {
-			throw new DuplicatePositionAssignmentException(
-				String.format("Position '%s' is already assigned to this workspace member", position.getName())
+			throw new InvalidOperationException(
+				String.format(
+					"Position '%s' is already assigned to this workspace member. workspaceMemberId: %d, positionId: %d",
+					position.getName(), id, position.getId())
 			);
 		}
 	}
@@ -234,38 +231,43 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	private void validateDuplicateAssignedTeam(Team team) {
-		boolean isAlreadyAssigned = this.workspaceMemberTeams.stream()
+		boolean isAlreadyAssigned = workspaceMemberTeams.stream()
 			.anyMatch(wmt -> wmt.getTeam().equals(team));
 
 		if (isAlreadyAssigned) {
-			throw new DuplicateTeamAssignmentException(
-				String.format("Team '%s' is already assigned to this workspace member", team.getName())
-			);
+			throw new InvalidOperationException(
+				String.format(
+					"Team '%s' is already assigned to this workspace member. workspaceMemberId: %d, teamId: %d",
+					team.getName(), id, team.getId()));
 		}
 	}
 
 	private void validateTeamBelongsToWorkspace(Team team) {
-		if (!team.getWorkspaceCode().equals(this.workspaceCode)) {
-			throw new TeamNotFoundException();
+		boolean teamWorkspaceCodeNotMatch = !team.getWorkspaceCode().equals(workspaceCode);
+
+		if (teamWorkspaceCodeNotMatch) {
+			throw new InvalidOperationException(
+				String.format("Team does not belong to this workspace. teamWorkspaceCode: %s, currentWorkspaceCode: %s",
+					team.getWorkspaceCode(), workspace));
 		}
 	}
 
 	private void validateCannotUpdateToOwnerRole(WorkspaceRole newRole) {
 		if (newRole == WorkspaceRole.OWNER) {
-			throw new InvalidRoleUpdateException(
-				"You cannot directly change to OWNER role. Use ownership transfer instead.");
+			throw new InvalidOperationException(
+				"Cannot directly change to OWNER role. Use ownership transfer instead.");
 		}
 	}
 
 	private void validateCurrentRoleIsOwner() {
 		if (this.role != WorkspaceRole.OWNER) {
-			throw new InvalidRoleUpdateException("Current role must be OWNER.");
+			throw new InvalidOperationException("Current role must be OWNER.");
 		}
 	}
 
 	private void validateCurrentRoleIsNotOwner() {
 		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidRoleUpdateException("Current role cannot be OWNER.");
+			throw new InvalidOperationException("Current role cannot be OWNER.");
 		}
 	}
 }

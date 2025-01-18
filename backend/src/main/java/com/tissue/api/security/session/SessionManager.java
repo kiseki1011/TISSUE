@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
-import com.tissue.api.security.authorization.exception.UnknownPermissionTypeException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -34,17 +34,17 @@ public class SessionManager {
 		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.getMemberId());
 		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
 		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
-		log.info("Login session created for member ID: {}", loginResponse.getMemberId());
+		log.info("Login session created for MEMBER_ID: {}", loginResponse.getMemberId());
 	}
 
 	public Member getLoginMember(HttpSession session) {
-		return getLoginMemberId(session)
+		return getOptionalLoginMemberId(session)
 			.map(id -> memberRepository.findById(id)
-				.orElseThrow(MemberNotFoundException::new))
-			.orElseThrow(UserNotLoggedInException::new);
+				.orElseThrow(() -> new MemberNotFoundException(id)))
+			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
 	}
 
-	public Optional<Long> getLoginMemberId(HttpSession session) {
+	public Optional<Long> getOptionalLoginMemberId(HttpSession session) {
 		return Optional.ofNullable(session)
 			.map(s -> (Long)s.getAttribute(LOGIN_MEMBER_ID));
 	}
@@ -55,7 +55,7 @@ public class SessionManager {
 		expiresAt = switch (permissionType) {
 			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE -> expiresAt.plusMinutes(UPDATE_PERMISSION_MINUTES);
 			case MEMBER_DELETE, WORKSPACE_DELETE -> expiresAt.plusMinutes(DELETE_PERMISSION_MINUTES);
-			default -> throw new UnknownPermissionTypeException();
+			default -> throw new InvalidOperationException("Permission type does not exist.");
 		};
 
 		session.setAttribute(SessionAttributes.PERMISSION_TYPE, permissionType);
@@ -74,7 +74,6 @@ public class SessionManager {
 
 	public void updateSessionEmail(HttpSession session, String newEmail) {
 		session.setAttribute(LOGIN_MEMBER_EMAIL, newEmail);
-		log.info("Session email updated to: {}", newEmail);
 	}
 
 	public void invalidateSession(HttpServletRequest request) {
@@ -89,6 +88,6 @@ public class SessionManager {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 
 		return Optional.ofNullable(request.getSession(false))
-			.orElseThrow(UserNotLoggedInException::new);
+			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
 	}
 }

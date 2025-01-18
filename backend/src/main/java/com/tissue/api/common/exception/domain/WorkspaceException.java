@@ -9,7 +9,7 @@ public abstract class WorkspaceException extends TissueException {
 		super(message, httpStatus);
 	}
 
-	public WorkspaceException(String message, HttpStatus httpStatus, Throwable cause) {
-		super(message, httpStatus, cause);
+	public WorkspaceException(String messageCode, Object... args) {
+		super(messageCode, args, HttpStatus.BAD_REQUEST);
 	}
 }

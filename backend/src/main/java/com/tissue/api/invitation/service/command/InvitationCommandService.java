@@ -26,8 +26,10 @@ public class InvitationCommandService {
 	private final InvitationValidator invitationValidator;
 
 	@Transactional
-	public AcceptInvitationResponse acceptInvitation(Long memberId, Long invitationId) {
-
+	public AcceptInvitationResponse acceptInvitation(
+		Long memberId,
+		Long invitationId
+	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		WorkspaceMember workspaceMember = invitation.accept();
 
@@ -37,8 +39,10 @@ public class InvitationCommandService {
 	}
 
 	@Transactional
-	public RejectInvitationResponse rejectInvitation(Long memberId, Long invitationId) {
-
+	public RejectInvitationResponse rejectInvitation(
+		Long memberId,
+		Long invitationId
+	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.reject();
 
@@ -46,16 +50,19 @@ public class InvitationCommandService {
 	}
 
 	@Transactional
-	public void deleteInvitations(Long memberId) {
-
+	public void deleteInvitations(
+		Long memberId
+	) {
 		invitationRepository.deleteAllByMemberIdAndStatusIn(
 			memberId,
 			List.of(InvitationStatus.ACCEPTED, InvitationStatus.REJECTED)
 		);
 	}
 
-	private Invitation getPendingInvitation(Long memberId, Long invitationId) {
-
+	private Invitation getPendingInvitation(
+		Long memberId,
+		Long invitationId
+	) {
 		Invitation invitation = findInvitation(invitationId);
 
 		String workspaceCode = invitation.getWorkspaceCode();
@@ -65,10 +72,8 @@ public class InvitationCommandService {
 	}
 
 	private Invitation findInvitation(Long invitationId) {
-
 		return invitationRepository.findById(invitationId)
-			.orElseThrow(
-				() -> new ResourceNotFoundException(String.format("Invitation not found with id: %d", invitationId))
-			);
+			.orElseThrow(() ->
+				new ResourceNotFoundException(String.format("Invitation not found with id: %d", invitationId)));
 	}
 }

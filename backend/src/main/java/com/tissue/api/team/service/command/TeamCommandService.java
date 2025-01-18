@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.respository.TeamRepository;
-import com.tissue.api.team.exception.TeamNotFoundException;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
@@ -36,7 +36,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		Workspace workspace = findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedTeamColors());
 
@@ -51,7 +51,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamRequest request
 	) {
-		Team team = findTeam(workspaceCode, teamId);
+		Team team = findTeam(teamId, workspaceCode);
 
 		team.updateName(request.name());
 		team.updateDescription(request.description());
@@ -65,7 +65,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamColorRequest request
 	) {
-		Team team = findTeam(workspaceCode, teamId);
+		Team team = findTeam(teamId, workspaceCode);
 
 		team.updateColor(request.colorType());
 
@@ -77,8 +77,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		Long teamId
 	) {
-
-		Team team = findTeam(workspaceCode, teamId);
+		Team team = findTeam(teamId, workspaceCode);
 
 		teamValidator.validateTeamIsUsed(team);
 
@@ -102,16 +101,19 @@ public class TeamCommandService {
 		return teamRepository.save(team);
 	}
 
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+	private Workspace findWorkspace(String code) {
+		return workspaceRepository.findByCode(code)
+			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
-	private Team findTeam(
-		String workspaceCode,
-		Long teamId
-	) {
-		return teamRepository.findByIdAndWorkspaceCode(teamId, workspaceCode)
-			.orElseThrow(TeamNotFoundException::new);
+	private Team findTeam(Long teamId, String code) {
+		return teamRepository.findByIdAndWorkspaceCode(teamId, code)
+			.orElseThrow(() -> new ResourceNotFoundException(
+					String.format(
+						"Team was not found with teamId: %d, workspaceCode: %s",
+						teamId, code
+					)
+				)
+			);
 	}
 }

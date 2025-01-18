@@ -9,7 +9,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.workspacemember.exception.WorkspaceMemberAttributeNotFoundException;
+import com.tissue.api.common.exception.InternalServerException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,8 @@ public class CurrentWorkspaceMemberArgumentResolver implements HandlerMethodArgu
 		Long workspaceMemberId = (Long)request.getAttribute(CURRENT_WORKSPACE_MEMBER_ID);
 
 		if (workspaceMemberId == null) {
-			throw new WorkspaceMemberAttributeNotFoundException();
+			log.error("CURRENT_WORKSPACE_MEMBER_ID attribute not found in request context.");
+			throw new InternalServerException("Failed to retrieve workspace member id.");
 		}
 
 		return workspaceMemberId;

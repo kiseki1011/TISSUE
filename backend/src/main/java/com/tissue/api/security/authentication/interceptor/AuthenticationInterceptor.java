@@ -30,8 +30,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		log.info("[AuthenticationInterceptor Invoked]");
-
 		HandlerMethod method = (HandlerMethod)handler;
 		if (isLoginRequired(method)) {
 			sessionValidator.validateLoginStatus(request);
@@ -49,5 +47,4 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 			method.getMethodAnnotation(LoginRequired.class));
 		return optionalAnnotation.isPresent();
 	}
-
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.InternalServerException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -12,7 +13,6 @@ import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
@@ -52,11 +52,12 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request,
-		Long memberId) {
-
+	public CreateWorkspaceResponse createWorkspace(
+		CreateWorkspaceRequest request,
+		Long memberId
+	) {
 		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+			.orElseThrow(() -> new MemberNotFoundException(memberId));
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
 		setUniqueWorkspaceCode(workspace);
@@ -73,7 +74,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			String code = workspaceCodeGenerator.generateWorkspaceCode();
 
-			if (workspaceValidator.validateWorkspaceCodeIsUnique(code)) {
+			if (isWorkspaceCodeUnique(code)) {
 				return Optional.of(code);
 			}
 			log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
@@ -87,7 +88,10 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 
 	private void setUniqueWorkspaceCode(Workspace workspace) {
 		String code = generateUniqueWorkspaceCode()
-			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
+			.orElseThrow(() -> new InternalServerException(
+					String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)
+				)
+			);
 		workspace.setCode(code);
 	}
 
@@ -102,5 +106,9 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
 
 		workspaceMemberRepository.save(workspaceMember);
+	}
+
+	public boolean isWorkspaceCodeUnique(String code) {
+		return !workspaceRepository.existsByCode(code);
 	}
 }

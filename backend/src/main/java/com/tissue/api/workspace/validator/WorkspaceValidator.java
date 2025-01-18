@@ -2,10 +2,10 @@ package com.tissue.api.workspace.validator;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.common.exception.InvalidCredentialsException;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -19,20 +19,16 @@ public class WorkspaceValidator {
 
 	public void validateWorkspacePassword(String inputPassword, String workspaceCode) {
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		if (workspace.getPassword() == null) {
 			return;
 		}
 		if (inputPassword == null) {
-			throw new InvalidWorkspacePasswordException();
+			throw new InvalidCredentialsException("Workspace password is invalid.");
 		}
 		if (!passwordEncoder.matches(inputPassword, workspace.getPassword())) {
-			throw new InvalidWorkspacePasswordException();
+			throw new InvalidCredentialsException("Workspace password is invalid.");
 		}
-	}
-
-	public boolean validateWorkspaceCodeIsUnique(String code) {
-		return !workspaceRepository.existsByCode(code);
 	}
 }

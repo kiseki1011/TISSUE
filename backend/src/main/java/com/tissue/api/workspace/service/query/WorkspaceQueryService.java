@@ -24,7 +24,7 @@ public class WorkspaceQueryService {
 	public WorkspaceDetail getWorkspaceDetail(String workspaceCode) {
 
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		return WorkspaceDetail.from(workspace);
 	}

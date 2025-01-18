@@ -48,9 +48,12 @@ public class SubTask extends Issue {
 	}
 
 	@Override
-	public boolean validateCanRemoveParent() {
+	public void validateCanRemoveParent() {
 		throw new InvalidOperationException(
-			String.format("Cannot remove the parent of this issue: issueKey=%s, issueType=SUB_TASK", getIssueKey())
+			String.format(
+				"Cannot remove the parent of this issue: issueKey=%s, issueType=%s",
+				getIssueKey(), getType()
+			)
 		);
 	}
 

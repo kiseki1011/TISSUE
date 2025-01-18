@@ -12,7 +12,7 @@ public class WorkspaceCodeCollisionHandleException extends WorkspaceException {
 	public WorkspaceCodeCollisionHandleException() {
 		super(MESSAGE, HTTP_STATUS);
 	}
-
+	
 	public WorkspaceCodeCollisionHandleException(Throwable cause) {
 		super(MESSAGE, HTTP_STATUS, cause);
 	}

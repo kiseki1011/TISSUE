@@ -6,8 +6,6 @@ import java.util.Set;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.exception.DuplicateIssueRelationException;
-import com.tissue.api.issue.exception.SelfReferenceNotAllowedException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -82,14 +80,19 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 	 */
 	private static void validateRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new SelfReferenceNotAllowedException();
+			throw new InvalidOperationException("Self reference is not allowed.");
 		}
 
 		boolean hasRelation = sourceIssue.getOutgoingRelations().stream()
 			.anyMatch(relation -> relation.getTargetIssue().equals(targetIssue));
 
 		if (hasRelation) {
-			throw new DuplicateIssueRelationException();
+			throw new InvalidOperationException(
+				String.format(
+					"Identical issue relation already exists. sourceIssueKey: %s, targetIssueKey: %s, relationType: %s",
+					sourceIssue.getIssueKey(), targetIssue.getIssueKey(), type
+				)
+			);
 		}
 
 		// BLOCKS 관계에 대해서만 순환 참조 검증
@@ -102,13 +105,16 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 		// 직접적인 순환 참조 검증 (A->B->A)
 		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
 			.anyMatch(relation ->
-				relation.getTargetIssue().equals(sourceIssue) && relation.getRelationType() == IssueRelationType.BLOCKS
+				relation.getTargetIssue().equals(sourceIssue)
+					&& relation.getRelationType() == IssueRelationType.BLOCKS
 			);
 
 		if (isDirectCircular) {
 			throw new InvalidOperationException(
-				String.format("Circular dependency detected. Target issue(%s) is already blocking source issue(%s).",
-					targetIssue.getIssueKey(), sourceIssue.getIssueKey())
+				String.format(
+					"Circular dependency detected. Target issue(%s) is already blocking source issue(%s).",
+					targetIssue.getIssueKey(), sourceIssue.getIssueKey()
+				)
 			);
 		}
 

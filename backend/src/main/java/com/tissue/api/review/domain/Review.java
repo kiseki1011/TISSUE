@@ -1,9 +1,10 @@
 package com.tissue.api.review.domain;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.review.domain.enums.ReviewStatus;
-import com.tissue.api.review.exception.CannotChangeReviewStatusException;
-import com.tissue.api.review.exception.UnauthorizedReviewAccessException;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -68,16 +69,16 @@ public class Review extends WorkspaceContextBaseEntity {
 		this.status = status;
 	}
 
-	private void validateCanUpdateStatus() {
-		if (this.status != ReviewStatus.PENDING) {
-			throw new CannotChangeReviewStatusException();
-		}
-	}
-
 	public void validateIsAuthor(Long workspaceMemberId) {
-		if (!this.getIssueReviewer().getReviewer().getId().equals(workspaceMemberId)) {
-			throw new UnauthorizedReviewAccessException(
-				"This review does not belong to the specified reviewer."
+		WorkspaceMember author = issueReviewer.getReviewer();
+
+		if (!author.getId().equals(workspaceMemberId)) {
+			throw new ForbiddenOperationException(
+				String.format(
+					"This review does not belong to the specified reviewer."
+						+ " reviewId: %d, authorWorkspaceMemberId: %d, authorNickname: %s",
+					id, author.getId(), author.getNickname()
+				)
 			);
 		}
 	}
@@ -92,5 +93,18 @@ public class Review extends WorkspaceContextBaseEntity {
 
 	public String getWorkspaceCode() {
 		return issueReviewer.getReviewer().getWorkspaceCode();
+	}
+
+	private void validateCanUpdateStatus() {
+		boolean statusIsNotPending = status != ReviewStatus.PENDING;
+
+		if (statusIsNotPending) {
+			throw new InvalidOperationException(
+				String.format(
+					"Current review status must PENDING to update the review status. Current status: %s",
+					status
+				)
+			);
+		}
 	}
 }

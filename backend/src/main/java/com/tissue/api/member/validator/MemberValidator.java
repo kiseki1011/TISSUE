@@ -31,14 +31,14 @@ public class MemberValidator {
 
 	public void validatePasswordMatch(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new InvalidCredentialsException("Password is invalid");
+			throw new InvalidCredentialsException("Password is invalid.");
 		}
 	}
 
 	public void validateLoginIdIsUnique(String loginId) {
 		if (memberRepository.existsByLoginId(loginId)) {
 			throw new DuplicateResourceException(
-				String.format("Login ID already exists: %s", loginId)
+				String.format("Login ID already exists. loginId: %s", loginId)
 			);
 		}
 	}
@@ -46,7 +46,7 @@ public class MemberValidator {
 	public void validateEmailIsUnique(String email) {
 		if (memberRepository.existsByEmail(email)) {
 			throw new DuplicateResourceException(
-				String.format("Email already exists: %s", email)
+				String.format("Email already exists. email: %s", email)
 			);
 		}
 	}
@@ -54,7 +54,7 @@ public class MemberValidator {
 	public void validateMemberHasNoOwnedWorkspaces(Long memberId) {
 		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberIdAndRole(memberId, WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {
-			throw new InvalidOperationException("You currently have one or more owned workspaces");
+			throw new InvalidOperationException("You currently have one or more owned workspaces.");
 		}
 	}
 }
