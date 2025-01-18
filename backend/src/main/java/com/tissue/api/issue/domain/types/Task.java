@@ -2,11 +2,11 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.DiscriminatorValue;
@@ -55,7 +55,7 @@ public class Task extends Issue {
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
-			throw new ParentMustBeEpicException();
+			throw new InvalidOperationException("TASK type issues can only have an EPIC as their parent issue.");
 		}
 	}
 
