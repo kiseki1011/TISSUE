@@ -44,7 +44,7 @@ public class WorkspaceMemberInviteService {
 			.toList();
 
 		if (invitedMembers.isEmpty()) {
-			throw new InvalidOperationException("No avaliable members were found for invitation.");
+			throw new InvalidOperationException("No members were available for invitation.");
 		}
 
 		return InviteMembersResponse.of(workspaceCode, invitedMembers);

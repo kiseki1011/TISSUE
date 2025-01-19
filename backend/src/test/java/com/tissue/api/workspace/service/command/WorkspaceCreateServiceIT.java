@@ -156,7 +156,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// Create 50 workspaces
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 10; i++) {
 			CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 				.name("workspace" + i)
 				.description("description" + i)

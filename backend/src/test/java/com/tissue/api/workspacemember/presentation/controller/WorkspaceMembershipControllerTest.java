@@ -250,13 +250,13 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
 
 		when(workspaceMemberInviteService.inviteMembers(workspaceCode, request))
-			.thenThrow(new InvalidOperationException("No avaliable members were found for invitation."));
+			.thenThrow(new InvalidOperationException("No members were available for invitation."));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.message").value("No avaliable members were found for invitation."));
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("No members were available for invitation."));
 	}
 }

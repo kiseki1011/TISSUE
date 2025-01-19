@@ -168,7 +168,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.build();
 
 		when(issueCommandService.updateIssue(any(), any(), any(), any()))
-			.thenThrow(new InvalidOperationException(anyString()));
+			.thenThrow(new InvalidOperationException("Issue type mismatch"));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}", "TESTCODE", "TEST-123")
