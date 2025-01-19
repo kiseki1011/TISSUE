@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.DuplicateResourceException;
 import com.tissue.api.common.exception.ForbiddenOperationException;
 import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.common.exception.ResourceNotFoundException;
@@ -15,7 +16,6 @@ import com.tissue.api.position.domain.Position;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -517,7 +517,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(testerWorkspaceMember.getId(), request))
-			.isInstanceOfAny(DuplicateNicknameException.class);
+			.isInstanceOfAny(DuplicateResourceException.class);
 	}
 
 	@Transactional

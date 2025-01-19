@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseDateEntity;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.exception.InvalidWorkspaceCountException;
-import com.tissue.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,7 +38,7 @@ public class Member extends BaseDateEntity {
 	 *  - 그래서 결국 엔티티에 정의해서 사용
 	 *  - 더 좋은 설계가 있는지 한번 고민 필요
 	 */
-	private static final int MAX_MY_WORKSPACE_COUNT = 50;
+	private static final int MAX_MY_WORKSPACE_COUNT = 10;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -128,13 +127,14 @@ public class Member extends BaseDateEntity {
 
 	private void validateWorkspaceLimit() {
 		if (this.myWorkspaceCount >= MAX_MY_WORKSPACE_COUNT) {
-			throw new WorkspaceCreationLimitExceededException();
+			throw new InvalidOperationException(
+				String.format("Max number of workspaces you can own is %d.", MAX_MY_WORKSPACE_COUNT));
 		}
 	}
 
 	private void validatePositiveMyWorkspaceCount() {
 		if (this.myWorkspaceCount <= 0) {
-			throw new InvalidWorkspaceCountException();
+			throw new InvalidOperationException("Number of workspaces you can own cannot go below 0.");
 		}
 	}
 }

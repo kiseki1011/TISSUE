@@ -9,7 +9,6 @@ import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.WorkspaceMemberPosition;
-import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.WorkspaceMemberTeam;
 import com.tissue.api.workspace.domain.Workspace;
@@ -225,8 +224,10 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	private void validatePositionBelongsToWorkspace(Position position) {
-		if (!position.getWorkspaceCode().equals(this.workspaceCode)) {
-			throw new PositionNotFoundException();
+		if (!position.getWorkspaceCode().equals(workspaceCode)) {
+			throw new InvalidOperationException(String.format(
+				"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
+				position.getWorkspaceCode(), workspaceCode));
 		}
 	}
 
@@ -237,7 +238,7 @@ public class WorkspaceMember extends BaseEntity {
 		if (isAlreadyAssigned) {
 			throw new InvalidOperationException(
 				String.format(
-					"Team '%s' is already assigned to this workspace member. workspaceMemberId: %d, teamId: %d",
+					"Team '%s' is already assigned to this workspace member. workspace member id: %d, team id: %d",
 					team.getName(), id, team.getId()));
 		}
 	}
@@ -247,7 +248,8 @@ public class WorkspaceMember extends BaseEntity {
 
 		if (teamWorkspaceCodeNotMatch) {
 			throw new InvalidOperationException(
-				String.format("Team does not belong to this workspace. teamWorkspaceCode: %s, currentWorkspaceCode: %s",
+				String.format(
+					"Team does not belong to this workspace. team workspace code: %s, current workspace code: %s",
 					team.getWorkspaceCode(), workspace));
 		}
 	}

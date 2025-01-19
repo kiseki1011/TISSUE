@@ -19,7 +19,6 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.enums.ReviewStatus;
-import com.tissue.api.review.exception.NoReviewersAddedException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -223,7 +222,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateReviewersExist() {
 		if (reviewers.isEmpty()) {
-			throw new NoReviewersAddedException();
+			throw new InvalidOperationException("Cannot request review if there are no assigned reviewers.");
 		}
 	}
 

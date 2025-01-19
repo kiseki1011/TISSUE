@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.DuplicateResourceException;
 import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
@@ -12,7 +13,6 @@ import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.respository.TeamRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -52,7 +52,9 @@ public class WorkspaceMemberCommandService {
 
 		} catch (DataIntegrityViolationException | ConstraintViolationException e) {
 			log.error("Duplicate nickname: ", e);
-			throw new DuplicateNicknameException(e);
+
+			throw new DuplicateResourceException(
+				String.format("Nickname already exists for this workspace. nickname: %s", request.nickname()), e);
 		}
 	}
 

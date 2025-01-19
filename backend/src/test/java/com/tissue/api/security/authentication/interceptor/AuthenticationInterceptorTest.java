@@ -12,7 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
+import com.tissue.api.common.exception.UnauthorizedException;
 import com.tissue.api.security.session.SessionValidator;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,12 +80,12 @@ class AuthenticationInterceptorTest {
 	void preHandle_WhenLoginRequiredAndInvalid_ThrowException() {
 		// given
 		when(handlerMethod.getMethodAnnotation(LoginRequired.class)).thenReturn(Mockito.mock(LoginRequired.class));
-		doThrow(UserNotLoggedInException.class)
+		doThrow(UnauthorizedException.class)
 			.when(sessionValidator).validateLoginStatus(request);
 
 		// when & then
 		assertThatThrownBy(() -> authenticationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 		verify(sessionValidator).validateLoginStatus(request);
 	}
 }

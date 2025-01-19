@@ -77,7 +77,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("로그인 시 로그인ID 또는 이메일을 조회할 수 없으면 InvalidLoginIdentityException 발생")
+	@DisplayName("로그인 시 로그인ID 또는 이메일을 조회할 수 없으면 예외 발생")
 	void test3() {
 		// given
 		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
@@ -98,7 +98,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("로그인 시 패스워드가 일치하지 않으면 InvalidLoginPasswordException 발생")
+	@DisplayName("로그인 시 패스워드가 일치하지 않으면 예외 발생")
 	void test4() {
 		// given
 		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(

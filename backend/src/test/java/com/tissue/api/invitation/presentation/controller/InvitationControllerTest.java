@@ -22,15 +22,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.invitation.exception.InvitationNotFoundException;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
-import com.tissue.fixture.entity.MemberEntityFixture;
-import com.tissue.helper.ControllerTestHelper;
 import com.tissue.api.security.session.SessionAttributes;
+import com.tissue.fixture.entity.MemberEntityFixture;
 import com.tissue.fixture.entity.WorkspaceEntityFixture;
+import com.tissue.helper.ControllerTestHelper;
 
 class InvitationControllerTest extends ControllerTestHelper {
 
@@ -76,7 +76,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(invitationCommandService.acceptInvitation(1L, invalidInvitationId))
-			.thenThrow(new InvitationNotFoundException());
+			.thenThrow(new ResourceNotFoundException("Invitation was not found for the given code"));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{invalidInvitationId}/accept", invalidInvitationId)

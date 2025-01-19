@@ -28,14 +28,4 @@ public class WorkspaceQueryService {
 
 		return WorkspaceDetail.from(workspace);
 	}
-
-	// @Transactional(readOnly = true)
-	// public Long getWorkspaceMemberId(String code, Long id) {
-	//
-	// 	WorkspaceMember workspaceMember = workspaceMemberRepository
-	// 		.findByMemberIdAndWorkspaceCode(id, code)
-	// 		.orElseThrow(MemberNotInWorkspaceException::new);
-	//
-	// 	return workspaceMember.getId();
-	// }
 }

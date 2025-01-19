@@ -24,6 +24,13 @@ public class TissueException extends RuntimeException {
 		this.args = null;
 	}
 
+	protected TissueException(String message, HttpStatus status, Throwable cause) {
+		super(message, cause);
+		this.httpStatus = status;
+		this.messageCode = null;
+		this.args = null;
+	}
+
 	public boolean hasMessageCode() {
 		return messageCode != null;
 	}

@@ -18,10 +18,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
@@ -83,14 +83,14 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(invalidPassword);
 
 		when(workspaceParticipationCommandService.joinWorkspace(eq("TESTCODE"), anyLong()))
-			.thenThrow(new InvalidWorkspacePasswordException());
+			.thenThrow(new AuthenticationFailedException("Workspace password is invalid."));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
-			.andExpect(jsonPath("$.message").value("The given workspace password is invalid"))
+			.andExpect(jsonPath("$.message").value("Workspace password is invalid."))
 			.andDo(print());
 	}
 
