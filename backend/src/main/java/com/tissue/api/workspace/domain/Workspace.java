@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.tissue.api.common.entity.WorkspaceBaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 
 import lombok.extern.slf4j.Slf4j;
 

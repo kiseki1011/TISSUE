@@ -2,7 +2,7 @@ package com.tissue.mock;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

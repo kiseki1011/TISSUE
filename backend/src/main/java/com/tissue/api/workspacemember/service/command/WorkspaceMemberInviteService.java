@@ -6,7 +6,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.member.domain.Member;

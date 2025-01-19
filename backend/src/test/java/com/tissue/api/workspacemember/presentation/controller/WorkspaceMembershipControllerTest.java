@@ -16,7 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;

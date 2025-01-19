@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.enums.PermissionType;
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;

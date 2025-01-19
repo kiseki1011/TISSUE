@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;

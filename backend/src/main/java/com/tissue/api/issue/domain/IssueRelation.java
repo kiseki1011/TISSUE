@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
 import jakarta.persistence.Column;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 

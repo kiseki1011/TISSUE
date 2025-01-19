@@ -3,8 +3,8 @@ package com.tissue.api.review.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.repository.IssueRepository;

@@ -2,7 +2,7 @@ package com.tissue.api.workspace.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.AuthenticationFailedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.common.exception.AuthenticationFailedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 

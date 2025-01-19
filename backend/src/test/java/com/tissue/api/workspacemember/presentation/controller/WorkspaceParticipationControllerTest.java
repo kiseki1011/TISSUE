@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.exception.AuthenticationFailedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.workspace.domain.Workspace;

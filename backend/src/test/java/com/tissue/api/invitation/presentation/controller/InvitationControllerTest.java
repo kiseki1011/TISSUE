@@ -22,7 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;

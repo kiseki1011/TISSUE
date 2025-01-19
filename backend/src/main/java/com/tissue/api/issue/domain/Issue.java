@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.IssueStatus;

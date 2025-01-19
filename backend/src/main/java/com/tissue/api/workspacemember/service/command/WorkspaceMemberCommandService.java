@@ -5,8 +5,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.DuplicateResourceException;
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.team.domain.Team;

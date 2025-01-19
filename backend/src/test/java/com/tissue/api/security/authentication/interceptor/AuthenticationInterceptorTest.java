@@ -12,7 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionValidator;
 
 import jakarta.servlet.http.HttpServletRequest;

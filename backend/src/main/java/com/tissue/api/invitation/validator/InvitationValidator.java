@@ -2,7 +2,7 @@ package com.tissue.api.invitation.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;

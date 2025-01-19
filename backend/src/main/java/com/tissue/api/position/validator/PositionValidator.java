@@ -2,7 +2,7 @@ package com.tissue.api.position.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
 

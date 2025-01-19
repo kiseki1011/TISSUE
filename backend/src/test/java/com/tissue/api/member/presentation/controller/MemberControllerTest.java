@@ -20,7 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
-import com.tissue.api.common.exception.AuthenticationFailedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;

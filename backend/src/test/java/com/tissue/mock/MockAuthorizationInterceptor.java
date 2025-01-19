@@ -2,7 +2,7 @@ package com.tissue.mock;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

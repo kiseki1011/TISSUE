@@ -1,6 +1,6 @@
 package com.tissue.api.member.exception;
 
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 
 public class MemberNotFoundException extends ResourceNotFoundException {
 

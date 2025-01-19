@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.util.WorkspaceCodeParser;

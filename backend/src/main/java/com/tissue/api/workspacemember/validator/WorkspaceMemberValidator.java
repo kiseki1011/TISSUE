@@ -2,8 +2,8 @@ package com.tissue.api.workspacemember.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;

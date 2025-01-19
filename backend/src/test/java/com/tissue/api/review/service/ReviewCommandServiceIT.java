@@ -9,8 +9,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.domain.respository.TeamRepository;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;

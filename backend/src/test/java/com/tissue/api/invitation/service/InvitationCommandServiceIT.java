@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.ResourceNotFoundException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;

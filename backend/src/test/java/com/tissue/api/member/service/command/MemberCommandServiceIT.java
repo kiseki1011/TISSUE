@@ -9,8 +9,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.common.exception.DuplicateResourceException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;

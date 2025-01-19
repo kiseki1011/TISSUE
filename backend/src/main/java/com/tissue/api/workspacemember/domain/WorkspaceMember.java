@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.WorkspaceMemberPosition;

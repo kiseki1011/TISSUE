@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;

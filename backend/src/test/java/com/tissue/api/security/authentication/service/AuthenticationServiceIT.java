@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.tissue.api.common.exception.AuthenticationFailedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.service.command.MemberCommandService;

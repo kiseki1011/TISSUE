@@ -7,7 +7,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.common.exception.UnauthorizedException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;

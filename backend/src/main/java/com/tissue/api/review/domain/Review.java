@@ -1,8 +1,8 @@
 package com.tissue.api.review.domain;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
-import com.tissue.api.common.exception.ForbiddenOperationException;
-import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
