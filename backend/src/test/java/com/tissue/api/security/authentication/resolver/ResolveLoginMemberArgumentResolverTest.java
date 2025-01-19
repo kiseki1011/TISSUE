@@ -92,7 +92,7 @@ class ResolveLoginMemberArgumentResolverTest {
 		// given
 		Long loginMemberId = 1L;
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
+		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
 
 		// when
 		Long result = (Long)resolver.resolveArgument(null, null, webRequest, null);
@@ -102,7 +102,7 @@ class ResolveLoginMemberArgumentResolverTest {
 			.isInstanceOf(Long.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMemberId(session);
+		verify(sessionManager).getOptionalLoginMemberId(session);
 	}
 
 	@Test
@@ -124,14 +124,14 @@ class ResolveLoginMemberArgumentResolverTest {
 	void resolveArgument_WhenMemberNotFound_ThrowMemberNotFoundException() {
 		// given
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(session)).thenThrow(new UserNotLoggedInException());
+		when(sessionManager.getOptionalLoginMemberId(session)).thenThrow(new UserNotLoggedInException());
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
 			.isInstanceOf(UserNotLoggedInException.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMemberId(session);
+		verify(sessionManager).getOptionalLoginMemberId(session);
 	}
 
 }

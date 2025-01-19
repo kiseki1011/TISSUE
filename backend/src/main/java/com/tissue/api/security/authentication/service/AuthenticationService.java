@@ -3,7 +3,7 @@ package com.tissue.api.security.authentication.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.InvalidCredentialsException;
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.validator.MemberValidator;
@@ -31,7 +31,7 @@ public class AuthenticationService {
 
 	private Member findMember(String identifier) {
 		return memberRepository.findByIdentifier(identifier)
-			.orElseThrow(() -> new InvalidCredentialsException(
+			.orElseThrow(() -> new AuthenticationFailedException(
 					String.format("Member not found with login ID or email. identifier: %s", identifier)
 				)
 			);

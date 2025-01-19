@@ -24,7 +24,6 @@ import com.tissue.api.common.exception.domain.IssueException;
 import com.tissue.api.common.exception.domain.MemberException;
 import com.tissue.api.common.exception.domain.WorkspaceException;
 import com.tissue.api.common.exception.domain.WorkspaceMemberException;
-import com.tissue.api.util.MessageProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-	private final MessageProvider messageProvider;
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)

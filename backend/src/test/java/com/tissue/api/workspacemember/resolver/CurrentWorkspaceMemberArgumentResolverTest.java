@@ -15,7 +15,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.workspacemember.exception.WorkspaceMemberAttributeNotFoundException;
+import com.tissue.api.common.exception.InternalServerException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -113,6 +113,6 @@ class CurrentWorkspaceMemberArgumentResolverTest {
 		// when & then
 		assertThatThrownBy(() ->
 			resolver.resolveArgument(methodParameter, mavContainer, webRequest, binderFactory))
-			.isInstanceOf(WorkspaceMemberAttributeNotFoundException.class);
+			.isInstanceOf(InternalServerException.class);
 	}
 }

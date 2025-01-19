@@ -3,6 +3,7 @@ package com.tissue.api.review.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.ForbiddenOperationException;
 import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
@@ -118,13 +119,9 @@ public class ReviewCommandService {
 
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {
 		return issueReviewerRepository.findByIssueKeyAndReviewerId(issueKey, reviewerWorkspaceMemberId)
-			.orElseThrow(() -> new ResourceNotFoundException(
-					String.format(
-						"Issue reviewer was not found with issueKey: %s, workspaceMemberId: %d",
-						issueKey, reviewerWorkspaceMemberId
-					)
-				)
-			);
+			.orElseThrow(() -> new ForbiddenOperationException(
+				String.format("Must be a reviewer to create a review. issueKey: %s, workspaceMemberId: %d",
+					issueKey, reviewerWorkspaceMemberId)));
 	}
 
 	private Review findReview(Long id) {

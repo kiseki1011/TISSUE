@@ -18,7 +18,7 @@ public class PositionValidator {
 		if (positionRepository.existsByWorkspaceMembers(position)) {
 			throw new InvalidOperationException(
 				String.format(
-					"There is a workspace member that is using this position. positionId: %d, name: %s",
+					"There is a workspace member that is using this position. position id: %d, position name: %s",
 					position.getId(), position.getName()
 				)
 			);

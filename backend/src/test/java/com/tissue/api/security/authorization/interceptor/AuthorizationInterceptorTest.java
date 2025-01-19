@@ -14,18 +14,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
 
+import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
-import com.tissue.api.security.authorization.exception.InsufficientWorkspaceRoleException;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
+import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.fixture.entity.MemberEntityFixture;
 import com.tissue.fixture.entity.WorkspaceEntityFixture;
 import com.tissue.fixture.entity.WorkspaceMemberEntityFixture;
@@ -109,42 +108,17 @@ class AuthorizationInterceptorTest {
 
 		// when & then
 		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(UserNotLoggedInException.class);
-	}
-
-	@Test
-	@DisplayName("워크스페이스 코드에 대한 워크스페이스가 존재하지 않는 경우 예외가 발생한다")
-	void shouldThrow_WorkspaceNotFoundException_ifWorkspaceNotFound() {
-		// given
-		when(handlerMethod.getMethodAnnotation(RoleRequired.class))
-			.thenReturn(mock(RoleRequired.class));
-		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(any(HttpSession.class)))
-			.thenReturn(Optional.of(1L));
-		when(workspaceRepository.findByCode(TEST_WORKSPACE_CODE))
-			.thenReturn(Optional.empty());
-
-		when(request.getRequestURI())
-			.thenReturn(TEST_URI);
-		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))
-			.thenReturn(TEST_WORKSPACE_CODE);
-
-		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(WorkspaceNotFoundException.class);
+			.isInstanceOf(UnauthorizedException.class);
 	}
 
 	@Test
 	@DisplayName("멤버가 워크스페이스에 속해있지 않을 경우 예외가 발생한다")
 	void shouldThrow_MemberNotInWorkspaceException_ifMemberDidNotJoinWorkspace() {
 		// given
-		Workspace workspace = workspaceEntityFixture.createWorkspace(TEST_WORKSPACE_CODE);
-
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceRepository.findByCode(TEST_WORKSPACE_CODE)).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
+		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(Optional.empty());
 
 		when(request.getRequestURI()).thenReturn(TEST_URI);
@@ -153,7 +127,7 @@ class AuthorizationInterceptorTest {
 
 		// when & then
 		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(MemberNotInWorkspaceException.class);
+			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
 	@Test
@@ -165,7 +139,7 @@ class AuthorizationInterceptorTest {
 			TEST_LOGIN_ID,
 			TEST_EMAIL
 		);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(
 			member,
 			workspace
 		);
@@ -174,11 +148,10 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceRepository.findByCode(TEST_WORKSPACE_CODE)).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
+		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(Optional.of(workspaceMember));
-		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.MANAGER});
+		when(roleRequired.role()).thenReturn(WorkspaceRole.MANAGER);
 
 		when(request.getRequestURI()).thenReturn(TEST_URI);
 		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))
@@ -186,7 +159,7 @@ class AuthorizationInterceptorTest {
 
 		// when & then
 		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(InsufficientWorkspaceRoleException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
@@ -198,7 +171,7 @@ class AuthorizationInterceptorTest {
 			TEST_LOGIN_ID,
 			TEST_EMAIL
 		);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(
 			member,
 			workspace
 		);
@@ -207,11 +180,10 @@ class AuthorizationInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceRepository.findByCode(TEST_WORKSPACE_CODE)).thenReturn(Optional.of(workspace));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceId(1L, null))
+		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(Optional.of(workspaceMember));
-		when(roleRequired.roles()).thenReturn(new WorkspaceRole[] {WorkspaceRole.MEMBER});
+		when(roleRequired.role()).thenReturn(WorkspaceRole.MEMBER);
 
 		when(request.getRequestURI()).thenReturn(TEST_URI);
 		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))

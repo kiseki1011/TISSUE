@@ -81,7 +81,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 
 		if (hasReviewInRound) {
 			throw new InvalidOperationException(
-				String.format("Reviewer already has a review for this round: %d", reviewRound)
+				String.format("Reviewer already has a review for this round. review round: %d", reviewRound)
 			);
 		}
 	}

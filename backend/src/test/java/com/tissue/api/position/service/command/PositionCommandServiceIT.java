@@ -8,9 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.position.exception.PositionInUseException;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
@@ -164,7 +164,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When & Then
 		assertThatThrownBy(() -> positionCommandService.deletePosition("TESTCODE", position.getId()))
-			.isInstanceOf(PositionInUseException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test

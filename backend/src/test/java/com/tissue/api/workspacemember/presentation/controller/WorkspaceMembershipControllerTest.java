@@ -57,7 +57,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("TESTCODE");
 
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(
 			member,
 			workspace
 		);

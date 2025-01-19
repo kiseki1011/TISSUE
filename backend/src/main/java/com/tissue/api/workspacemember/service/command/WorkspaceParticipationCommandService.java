@@ -3,7 +3,7 @@ package com.tissue.api.workspacemember.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.DuplicateResourceException;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -45,7 +45,7 @@ public class WorkspaceParticipationCommandService {
 			.orElseThrow(() -> new MemberNotFoundException(memberId));
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {
-			throw new DuplicateResourceException(
+			throw new InvalidOperationException(
 				String.format("Member already joined this workspace. memberId: %d, workspaceCode: %s",
 					memberId, workspaceCode));
 		}

@@ -2,8 +2,8 @@ package com.tissue.api.member.validator;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.common.exception.DuplicateResourceException;
-import com.tissue.api.common.exception.InvalidCredentialsException;
 import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
@@ -31,7 +31,7 @@ public class MemberValidator {
 
 	public void validatePasswordMatch(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new InvalidCredentialsException("Password is invalid.");
+			throw new AuthenticationFailedException("Password is invalid.");
 		}
 	}
 

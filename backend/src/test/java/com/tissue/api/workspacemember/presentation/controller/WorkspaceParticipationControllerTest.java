@@ -55,7 +55,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
 		Member member = memberEntityFixture.createMember(loginId, email);
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(member,
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(member,
 			workspace);
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 

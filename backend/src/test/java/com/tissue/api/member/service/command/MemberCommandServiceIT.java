@@ -9,11 +9,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.common.exception.DuplicateResourceException;
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
-import com.tissue.api.member.exception.DuplicateEmailException;
-import com.tissue.api.member.exception.OwnedWorkspaceExistsException;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
@@ -127,7 +127,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> memberCommandService.updateEmail(request, existingMember.getId()))
-			.isInstanceOf(DuplicateEmailException.class);
+			.isInstanceOf(DuplicateResourceException.class);
 	}
 
 	@Test
@@ -188,7 +188,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> memberCommandService.withdraw(member.getId()))
-			.isInstanceOf(OwnedWorkspaceExistsException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test

@@ -110,7 +110,7 @@ public class IssueCommandService {
 		AssignParentIssueRequest request
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		Issue parentIssue = findIssue(workspaceCode, request.parentIssueKey());
+		Issue parentIssue = findIssue(request.parentIssueKey(), workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {

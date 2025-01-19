@@ -2,11 +2,10 @@ package com.tissue.api.util;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+// @Component
 @RequiredArgsConstructor
 public class MessageProvider {
 

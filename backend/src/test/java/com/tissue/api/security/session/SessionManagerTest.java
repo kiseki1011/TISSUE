@@ -14,10 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,7 +57,7 @@ class SessionManagerTest {
 		when(session.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).thenReturn(1L);
 
 		// when
-		Optional<Long> result = sessionManager.getLoginMemberId(session);
+		Optional<Long> result = sessionManager.getOptionalLoginMemberId(session);
 
 		// then
 		assertThat(result).isPresent()
@@ -68,7 +68,7 @@ class SessionManagerTest {
 	@DisplayName("세션이 null이면 빈 Optional이 반환된다")
 	void getLoginMemberId_WhenSessionIsNull() {
 		// when
-		Optional<Long> result = sessionManager.getLoginMemberId(null);
+		Optional<Long> result = sessionManager.getOptionalLoginMemberId(null);
 
 		// then
 		assertThat(result).isEmpty();
@@ -104,7 +104,7 @@ class SessionManagerTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionManager.getLoginMember(session))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 	}
 
 	@Test

@@ -8,11 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.exception.CircularDependencyException;
-import com.tissue.api.issue.exception.DuplicateIssueRelationException;
-import com.tissue.api.issue.exception.SelfReferenceNotAllowedException;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
@@ -130,7 +128,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("타겟 이슈에서 반대로 소스 이슈에 대한 관계를 설정하려고 하면 예외가 발생한다(A -> B -> A)")
+	@DisplayName("이미 관계가 존재하는 상태에서 역방향으로 관계를 설정하려고 하면 예외가 발생한다(A -> B -> A)")
 	void createIssueRelation_sourceToTargetToSource_circularDependency() {
 		// given
 		Long requesterWorkspaceMemberId = 2L;
@@ -158,7 +156,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			sourceIssueKey,
 			requesterWorkspaceMemberId,
 			request
-		)).isInstanceOf(DuplicateIssueRelationException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
@@ -176,7 +174,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			sourceIssueKey,
 			requesterWorkspaceMemberId,
 			request
-		)).isInstanceOf(SelfReferenceNotAllowedException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
@@ -235,7 +233,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			sourceIssueKey,
 			requesterWorkspaceMemberId,
 			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
-		)).isInstanceOf(CircularDependencyException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test

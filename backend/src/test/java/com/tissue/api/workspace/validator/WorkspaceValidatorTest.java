@@ -6,7 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.workspace.exception.InvalidWorkspacePasswordException;
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
@@ -15,24 +15,6 @@ class WorkspaceValidatorTest extends ServiceIntegrationTestHelper {
 	@AfterEach
 	void tearDown() {
 		databaseCleaner.execute();
-	}
-
-	@Test
-	@DisplayName("검증하는 워크스페이스 코드를 이미 사용중이면 false를 반환한다")
-	void validateWorkspaceCodeIsUnique_returnsFalse_ifCodeIsNotUnique() {
-		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Workspace",
-			"TESTCODE",
-			null
-		);
-
-		// when
-		boolean result = workspaceValidator.validateWorkspaceCodeIsUnique("TESTCODE");
-
-		// then
-		assertThat(result).isFalse();
 	}
 
 	@Test
@@ -48,7 +30,7 @@ class WorkspaceValidatorTest extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceValidator.validateWorkspacePassword("invalidPassword", "TESTCODE"))
-			.isInstanceOf(InvalidWorkspacePasswordException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test

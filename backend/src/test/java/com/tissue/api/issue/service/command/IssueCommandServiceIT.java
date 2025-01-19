@@ -10,17 +10,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.issue.domain.types.Task;
-import com.tissue.api.issue.exception.CannotDeleteParentOfSubTaskException;
-import com.tissue.api.issue.exception.CannotRemoveParentException;
-import com.tissue.api.issue.exception.IssueTypeMismatchException;
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
-import com.tissue.api.issue.exception.SubTaskWrongParentTypeException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
@@ -170,7 +166,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
-			.isInstanceOf(ParentMustBeEpicException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -201,7 +197,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
-			.isInstanceOf(SubTaskWrongParentTypeException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -231,7 +227,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommandService.createIssue(workspaceCode, request))
-			.isInstanceOf(ParentMustBeEpicException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -397,7 +393,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(
 			() -> issueCommandService.updateIssue(workspaceCode, createResponse.issueKey(), workspaceMemberId, request))
-			.isInstanceOf(IssueTypeMismatchException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
@@ -479,7 +475,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(
 			() -> issueCommandService.deleteIssue(workspaceCode, createResponse.issueKey(), workspaceMemberId))
-			.isInstanceOf(CannotDeleteParentOfSubTaskException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -545,12 +541,10 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when & then
-		assertThatThrownBy(() -> issueCommandService.assignParentIssue(
-			workspaceCode,
-			storyResponse.issueKey(),
-			workspaceMemberId,
-			new AssignParentIssueRequest(parentStoryResponse.issueKey()))
-		).isInstanceOf(ParentMustBeEpicException.class);
+		assertThatThrownBy(
+			() -> issueCommandService.assignParentIssue(workspaceCode, storyResponse.issueKey(), workspaceMemberId,
+				new AssignParentIssueRequest(parentStoryResponse.issueKey())))
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -585,10 +579,8 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// 변경할 부모 이슈
-		CreateEpicResponse newParentEpicResponse = (CreateEpicResponse)issueFixture.createEpic(
-			workspaceCode,
-			"New Parent Epic"
-		);
+		CreateEpicResponse newParentEpicResponse = (CreateEpicResponse)issueFixture.createEpic(workspaceCode,
+			"New Parent Epic");
 
 		// when
 		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
@@ -670,7 +662,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspaceCode,
 			subTaskResponse.issueKey(),
 			workspaceMemberId
-		)).isInstanceOf(CannotRemoveParentException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 
 	}
 

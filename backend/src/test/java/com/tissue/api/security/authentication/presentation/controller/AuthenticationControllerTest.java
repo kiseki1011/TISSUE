@@ -12,9 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
-import com.tissue.helper.ControllerTestHelper;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.api.security.session.SessionAttributes;
+import com.tissue.helper.ControllerTestHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -25,8 +25,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	void test1() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("user123")
-			.email("test@gmail.com")
+			.identifier("user123")
 			.password("password123!")
 			.build();
 		LoginResponse loginResponse = LoginResponse.builder()
@@ -45,7 +44,6 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest))))
 			.andExpect(jsonPath("$.data.loginId").value("user123"))
-			.andExpect(jsonPath("$.data.email").value("test@gmail.com"))
 			.andExpect(status().isOk())
 			.andDo(print());
 
@@ -57,7 +55,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	void test2() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("user123")
+			.identifier("user123")
 			.password("")
 			.build();
 
@@ -66,7 +64,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.data..message").value("Password must not be blank"))
+			.andExpect(jsonPath("$.data..message").value("Must input password."))
 			.andDo(print());
 	}
 

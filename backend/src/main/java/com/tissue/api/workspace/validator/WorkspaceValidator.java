@@ -2,7 +2,7 @@ package com.tissue.api.workspace.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.InvalidCredentialsException;
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -25,10 +25,10 @@ public class WorkspaceValidator {
 			return;
 		}
 		if (inputPassword == null) {
-			throw new InvalidCredentialsException("Workspace password is invalid.");
+			throw new AuthenticationFailedException("Workspace password is invalid.");
 		}
 		if (!passwordEncoder.matches(inputPassword, workspace.getPassword())) {
-			throw new InvalidCredentialsException("Workspace password is invalid.");
+			throw new AuthenticationFailedException("Workspace password is invalid.");
 		}
 	}
 }

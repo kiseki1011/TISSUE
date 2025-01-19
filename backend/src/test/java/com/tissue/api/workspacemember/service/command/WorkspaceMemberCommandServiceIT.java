@@ -7,14 +7,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.ForbiddenOperationException;
+import com.tissue.api.common.exception.InvalidOperationException;
+import com.tissue.api.common.exception.ResourceNotFoundException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
-import com.tissue.api.workspacemember.exception.InvalidRoleUpdateException;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -230,12 +231,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
 
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			requester.getId(),
-			requester.getId(),
-			request
-		))
-			.isInstanceOf(InvalidRoleUpdateException.class);
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(requester.getId(), requester.getId(),
+				request))
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -283,13 +282,9 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
 
-		assertThatThrownBy(() ->
-			workspaceMemberCommandService.updateWorkspaceMemberRole(
-				target.getId(),
-				requester.getId(),
-				request
-			))
-			.isInstanceOf(InvalidRoleUpdateException.class);
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -339,7 +334,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		assertThatThrownBy(
 			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
-			.isInstanceOf(InvalidRoleUpdateException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Transactional
@@ -389,7 +384,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		assertThatThrownBy(
 			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
-			.isInstanceOf(InvalidRoleUpdateException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
@@ -620,6 +615,6 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// When & Then
 		assertThatThrownBy(
 			() -> workspaceMemberCommandService.assignPosition("TESTCODE", 999L, workspaceMember.getId()))
-			.isInstanceOf(PositionNotFoundException.class);
+			.isInstanceOf(ResourceNotFoundException.class);
 	}
 }

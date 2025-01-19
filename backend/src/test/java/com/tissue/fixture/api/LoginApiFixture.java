@@ -12,9 +12,9 @@ import io.restassured.response.Response;
 @Component
 public class LoginApiFixture {
 
-	public String loginWithIdApi(String loginId, String password) {
+	public String loginWithIdApi(String identifier, String password) {
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId(loginId)
+			.identifier(identifier)
 			.password(password)
 			.build();
 
@@ -30,9 +30,9 @@ public class LoginApiFixture {
 		return response.cookie("JSESSIONID");
 	}
 
-	public String loginWithEmailApi(String email, String password) {
+	public String loginWithEmailApi(String identifier, String password) {
 		LoginRequest loginRequest = LoginRequest.builder()
-			.email(email)
+			.identifier(identifier)
 			.password(password)
 			.build();
 

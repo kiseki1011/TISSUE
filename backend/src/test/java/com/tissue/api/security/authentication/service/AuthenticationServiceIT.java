@@ -7,14 +7,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.tissue.api.common.exception.AuthenticationFailedException;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.service.command.MemberCommandService;
-import com.tissue.api.security.authentication.exception.InvalidLoginIdentityException;
-import com.tissue.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
-import com.tissue.helper.ServiceIntegrationTestHelper;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	@Autowired
@@ -42,7 +41,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("testuser")
+			.identifier("testuser")
 			.password("password123!")
 			.build();
 		// when
@@ -66,7 +65,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.email("testuser@test.com")
+			.identifier("testuser@test.com")
 			.password("password123!")
 			.build();
 		// when
@@ -89,13 +88,13 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("badtestuser")
+			.identifier("badtestuser")
 			.password("password123!")
 			.build();
 
 		// when & then
 		assertThatThrownBy(() -> authenticationService.login(loginRequest))
-			.isInstanceOf(InvalidLoginIdentityException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test
@@ -110,12 +109,12 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		memberCommandService.signup(signupMemberRequest);
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.loginId("testuser")
+			.identifier("testuser")
 			.password("wrongpassword123!")
 			.build();
 
 		// when & then
 		assertThatThrownBy(() -> authenticationService.login(loginRequest))
-			.isInstanceOf(InvalidLoginPasswordException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 }
