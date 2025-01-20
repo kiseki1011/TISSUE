@@ -32,8 +32,8 @@ public class IssueRelationCommandService {
 		Long requesterWorkspaceMemberId,
 		CreateIssueRelationRequest request
 	) {
-		Issue sourceIssue = findIssue(workspaceCode, sourceIssueKey);
-		Issue targetIssue = findIssue(workspaceCode, targetIssueKey);
+		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -52,8 +52,8 @@ public class IssueRelationCommandService {
 		String targetIssueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue sourceIssue = findIssue(workspaceCode, sourceIssueKey);
-		Issue targetIssue = findIssue(workspaceCode, targetIssueKey);
+		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -65,13 +65,13 @@ public class IssueRelationCommandService {
 		return RemoveIssueRelationResponse.from(sourceIssue, targetIssue);
 	}
 
-	private Issue findIssue(String code, String issueKey) {
+	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(IssueNotFoundException::new);
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
 	private WorkspaceMember findWorkspaceMember(Long id) {
 		return workspaceMemberRepository.findById(id)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 }

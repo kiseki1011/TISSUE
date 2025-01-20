@@ -20,10 +20,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
-import com.tissue.api.member.exception.InvalidMemberPasswordException;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -32,7 +32,6 @@ import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
-import com.tissue.api.security.authentication.exception.InvalidLoginPasswordException;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.helper.ControllerTestHelper;
 
@@ -228,7 +227,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
 
-		doThrow(new InvalidMemberPasswordException())
+		doThrow(new AuthenticationFailedException("Password is invalid."))
 			.when(memberValidator)
 			.validateMemberPassword(anyString(), anyLong());
 
@@ -237,7 +236,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
-			.andExpect(jsonPath("$.message").value("The given password is invalid"))
+			.andExpect(jsonPath("$.message").value("Password is invalid."))
 			.andDo(print());
 	}
 
@@ -352,7 +351,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
-		doThrow(new InvalidLoginPasswordException())
+		doThrow(new AuthenticationFailedException("Login password is invalid."))
 			.when(memberValidator)
 			.validateMemberPassword(eq("password1234!"), anyLong());
 
@@ -362,7 +361,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.message").value(
-				"The given login password is invalid"))
+				"Login password is invalid."))
 			.andDo(print());
 	}
 

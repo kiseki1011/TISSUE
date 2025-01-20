@@ -12,9 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.exception.IssueTypeMismatchException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
@@ -168,7 +168,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.build();
 
 		when(issueCommandService.updateIssue(any(), any(), any(), any()))
-			.thenThrow(new IssueTypeMismatchException());
+			.thenThrow(new InvalidOperationException("Issue type mismatch"));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}", "TESTCODE", "TEST-123")

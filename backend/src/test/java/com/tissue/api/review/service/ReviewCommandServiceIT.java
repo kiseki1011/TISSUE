@@ -9,14 +9,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.review.exception.DuplicateReviewInRoundException;
-import com.tissue.api.review.exception.IssueStatusNotInReviewException;
-import com.tissue.api.review.exception.NotIssueReviewerException;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
@@ -88,7 +87,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(
 			() -> reviewCommandService.createReview(workspaceCode, issueKey, reviewerWorkspaceMemberId, request))
-			.isInstanceOf(IssueStatusNotInReviewException.class);
+			.isInstanceOf(InvalidOperationException.class);
 
 	}
 
@@ -340,7 +339,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			requesterWorkspaceMemberId, // 리뷰어가 아닌 자가 리뷰 생성 시도
 			createReviewRequest
-		)).isInstanceOf(NotIssueReviewerException.class);
+		)).isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
@@ -391,6 +390,6 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			createReviewRequest
-		)).isInstanceOf(DuplicateReviewInRoundException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 }

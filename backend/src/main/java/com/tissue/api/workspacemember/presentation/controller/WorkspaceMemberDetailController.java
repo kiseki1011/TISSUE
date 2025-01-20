@@ -40,7 +40,7 @@ public class WorkspaceMemberDetailController {
 	 */
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PatchMapping("/nickname")
 	public ApiResponse<UpdateNicknameResponse> updateMyNickname(
 		@CurrentWorkspaceMember Long workspaceMemberId,
@@ -55,7 +55,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PatchMapping("/positions/{positionId}")
 	public ApiResponse<AssignPositionResponse> assignMyPosition(
 		@PathVariable String code,
@@ -72,7 +72,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("/positions/{positionId}")
 	public ApiResponse<Void> removeMyPosition(
 		@PathVariable String code,
@@ -89,7 +89,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{workspaceMemberId}/positions/{positionId}")
 	public ApiResponse<AssignPositionResponse> assignPosition(
 		@PathVariable String code,
@@ -106,7 +106,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{workspaceMemberId}/positions")
 	public ApiResponse<Void> removePosition(
 		@PathVariable String code,
@@ -123,7 +123,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PatchMapping("/teams/{teamId}")
 	public ApiResponse<AssignTeamResponse> assignMyTeam(
 		@PathVariable String code,
@@ -140,7 +140,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("/teams/{teamId}")
 	public ApiResponse<Void> removeMyTeam(
 		@PathVariable String code,
@@ -157,7 +157,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{workspaceMemberId}/teams/{teamId}")
 	public ApiResponse<AssignTeamResponse> assignTeam(
 		@PathVariable String code,
@@ -174,7 +174,7 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{workspaceMemberId}/teams")
 	public ApiResponse<Void> removeTeam(
 		@PathVariable String code,

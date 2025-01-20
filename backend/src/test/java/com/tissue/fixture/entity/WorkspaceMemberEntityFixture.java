@@ -16,7 +16,7 @@ public class WorkspaceMemberEntityFixture {
 			member.getEmail());
 	}
 
-	public WorkspaceMember createCollaboratorWorkspaceMember(Member member, Workspace workspace) {
+	public WorkspaceMember createMemberWorkspaceMember(Member member, Workspace workspace) {
 		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER,
 			member.getEmail());
 	}

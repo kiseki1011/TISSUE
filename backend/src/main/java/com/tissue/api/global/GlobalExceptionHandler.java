@@ -16,14 +16,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.FieldErrorDto;
-import com.tissue.api.common.exception.domain.AuthenticationException;
-import com.tissue.api.common.exception.domain.AuthorizationException;
-import com.tissue.api.common.exception.domain.InvitationException;
-import com.tissue.api.common.exception.domain.IssueException;
-import com.tissue.api.common.exception.domain.MemberException;
-import com.tissue.api.common.exception.domain.WorkspaceException;
-import com.tissue.api.common.exception.domain.WorkspaceMemberException;
+import com.tissue.api.common.exception.TissueException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  *  - 중복 로직 제거: CommonException을 처리하는 핸들러로 수정
  */
 @Slf4j
+@RequiredArgsConstructor
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -97,68 +93,14 @@ public class GlobalExceptionHandler {
 		);
 	}
 
-	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ApiResponse<?>> handleAuthenticationException(AuthenticationException exception) {
-		log.error("Authentication Related Exception: ", exception);
+	@ExceptionHandler(TissueException.class)
+	public ResponseEntity<ApiResponse<Void>> handleTissueException(TissueException exception) {
+		log.error("Tissue Exception: ", exception);
 
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-		// Todo: AuthenticationException을 상속받은 예외 클래스에 잘못된 필드를 넘기는 것을 고려(ApiResponse의 data에 넘기기)
+		String message = exception.getMessage();
+
+		return ResponseEntity
+			.status(exception.getHttpStatus())
+			.body(ApiResponse.fail(exception.getHttpStatus(), message, null));
 	}
-
-	@ExceptionHandler(MemberException.class)
-	public ResponseEntity<ApiResponse<?>> handleMemberException(MemberException exception) {
-		log.error("Member Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
-	@ExceptionHandler(WorkspaceException.class)
-	public ResponseEntity<ApiResponse<?>> handleWorkspaceException(WorkspaceException exception) {
-		log.error("Workspace Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
-	@ExceptionHandler(WorkspaceMemberException.class)
-	public ResponseEntity<ApiResponse<?>> handleWorkspaceMemberException(WorkspaceMemberException exception) {
-		log.error("WorkspaceMember Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
-	@ExceptionHandler(InvitationException.class)
-	public ResponseEntity<ApiResponse<?>> handleInvitationException(InvitationException exception) {
-		log.error("Invitation Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
-	@ExceptionHandler(IssueException.class)
-	public ResponseEntity<ApiResponse<?>> handleIssueException(IssueException exception) {
-		log.error("Issue Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
-	@ExceptionHandler(AuthorizationException.class)
-	public ResponseEntity<ApiResponse<?>> handleAuthorizationException(AuthorizationException exception) {
-		log.error("Authorization Related Exception: ", exception);
-
-		HttpStatus httpStatus = exception.getHttpStatus();
-		return ResponseEntity.status(httpStatus)
-			.body(ApiResponse.fail(httpStatus, exception.getMessage(), null));
-	}
-
 }

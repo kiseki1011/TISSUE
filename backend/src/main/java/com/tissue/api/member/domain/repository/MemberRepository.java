@@ -13,13 +13,8 @@ import com.tissue.api.member.domain.Member;
 public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByLoginId(String username);
 
-	Optional<Member> findByLoginIdOrEmail(String email, String loginId);
-
-	@Query("SELECT m FROM Member m "
-		+ "WHERE (m.loginId = :identifier OR m.email = :identifier)")
-	Optional<Member> findByMemberIdentifier(
-		@Param("identifier") String identifier
-	);
+	@Query("SELECT m FROM Member m WHERE m.email = :identifier OR m.loginId = :identifier")
+	Optional<Member> findByIdentifier(@Param("identifier") String identifier);
 
 	@Query("SELECT m FROM Member m "
 		+ "WHERE m.email IN :identifiers OR m.loginId IN :identifiers")

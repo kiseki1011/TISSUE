@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -17,8 +18,6 @@ import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePassword
 import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
-import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,14 +28,13 @@ public class WorkspaceCommandService {
 	private final WorkspaceRepository workspaceRepository;
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public UpdateWorkspaceInfoResponse updateWorkspaceInfo(
 		UpdateWorkspaceInfoRequest request,
 		String code
 	) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = findWorkspace(code);
 
 		updateWorkspaceInfoIfPresent(request, workspace);
 
@@ -48,7 +46,7 @@ public class WorkspaceCommandService {
 		UpdateWorkspacePasswordRequest request,
 		String code
 	) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = findWorkspace(code);
 
 		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
 		workspace.updatePassword(encodedUpdatePassword);
@@ -59,9 +57,9 @@ public class WorkspaceCommandService {
 		String code,
 		Long memberId
 	) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = findWorkspace(code);
 
-		Member member = findMemberById(memberId);
+		Member member = findMember(memberId);
 		member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);
@@ -74,21 +72,21 @@ public class WorkspaceCommandService {
 		String code,
 		UpdateIssueKeyRequest request
 	) {
-		Workspace workspace = findWorkspaceByCode(code);
+		Workspace workspace = findWorkspace(code);
 
 		workspace.updateKeyPrefix(request.issueKeyPrefix());
 
 		return UpdateIssueKeyResponse.from(workspace);
 	}
 
-	private Workspace findWorkspaceByCode(String code) {
+	private Workspace findWorkspace(String code) {
 		return workspaceRepository.findByCode(code)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
-	private Member findMemberById(Long memberId) {
+	private Member findMember(Long memberId) {
 		return memberRepository.findById(memberId)
-			.orElseThrow(MemberNotInWorkspaceException::new);
+			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 
 	private void updateWorkspaceInfoIfPresent(UpdateWorkspaceInfoRequest request, Workspace workspace) {

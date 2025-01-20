@@ -10,15 +10,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.invitation.domain.Invitation;
+import com.tissue.api.invitation.domain.InvitationStatus;
+import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.helper.ServiceIntegrationTestHelper;
-import com.tissue.api.invitation.domain.Invitation;
-import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.invitation.exception.InvitationNotFoundException;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
+import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 
@@ -139,8 +139,8 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers("TESTCODE", InviteMembersRequest.of(Set.of("invitedMember")));
 
 		// when & then
-		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
-			InvitationNotFoundException.class);
+		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L))
+			.isInstanceOf(ResourceNotFoundException.class);
 	}
 
 	@Test
@@ -168,8 +168,8 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		invitationCommandService.rejectInvitation(invitedMember.getId(), 1L);
 
 		// when & then
-		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L)).isInstanceOf(
-			InvitationNotFoundException.class);
+		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(invitedMember.getId(), 2L))
+			.isInstanceOf(ResourceNotFoundException.class);
 	}
 
 	@Test

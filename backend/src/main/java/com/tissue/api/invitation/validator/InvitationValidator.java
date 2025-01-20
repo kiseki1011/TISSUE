@@ -2,8 +2,8 @@ package com.tissue.api.invitation.validator;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.AlreadyJoinedWorkspaceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,12 +14,14 @@ public class InvitationValidator {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	public void validateInvitation(Long memberId, String workspaceCode) {
-		if (isAlreadyWorkspaceMember(memberId, workspaceCode)) {
-			throw new AlreadyJoinedWorkspaceException();
+		if (hasWorkspaceMember(memberId, workspaceCode)) {
+			throw new InvalidOperationException(
+				String.format("Member with id %d already joined workspace %s", memberId, workspaceCode)
+			);
 		}
 	}
 
-	private boolean isAlreadyWorkspaceMember(Long memberId, String workspaceCode) {
+	private boolean hasWorkspaceMember(Long memberId, String workspaceCode) {
 		return workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode);
 	}
 

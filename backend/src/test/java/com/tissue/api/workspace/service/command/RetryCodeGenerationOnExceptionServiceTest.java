@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
 import com.tissue.fixture.repository.MemberRepositoryFixture;
@@ -75,10 +75,8 @@ class RetryCodeGenerationOnExceptionServiceTest {
 			.build());
 
 		// when & then
-		assertThatThrownBy(() ->
-			workspaceCreateService.createWorkspace(request, member.getId())
-		)
-			.isInstanceOf(WorkspaceCodeCollisionHandleException.class);
+		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, member.getId()))
+			.isInstanceOf(InternalServerException.class);
 
 		verify(workspaceCodeGenerator, times(5)).generateWorkspaceCode();
 	}

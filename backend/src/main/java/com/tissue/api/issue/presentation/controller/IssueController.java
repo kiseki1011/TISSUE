@@ -64,7 +64,7 @@ public class IssueController {
 	private final IssueCommandService issueCommandService;
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
@@ -90,7 +90,7 @@ public class IssueController {
 	 *  -> 모든 review가 APPROVED인 경우 상태를 DONE으로 변경 가능
 	 */
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/status")
 	public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
 		@PathVariable String code,
@@ -109,7 +109,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
 		@PathVariable String code,
@@ -128,7 +128,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
 		@PathVariable String code,
@@ -147,7 +147,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
 		@PathVariable String code,
@@ -164,7 +164,7 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@DeleteMapping("/{issueKey}")
 	public ApiResponse<DeleteIssueResponse> deleteIssue(
 		@PathVariable String code,

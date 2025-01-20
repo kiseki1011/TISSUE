@@ -38,7 +38,7 @@ public class TeamController {
 	private final TeamQueryService teamQueryService;
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateTeamResponse> createTeam(
@@ -50,7 +50,7 @@ public class TeamController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}")
 	public ApiResponse<UpdateTeamResponse> updateTeam(
 		@PathVariable String code,
@@ -62,7 +62,7 @@ public class TeamController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}/color")
 	public ApiResponse<UpdateTeamColorResponse> updateTeamColor(
 		@PathVariable String code,
@@ -74,7 +74,7 @@ public class TeamController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@DeleteMapping("/{teamId}")
 	public ApiResponse<DeleteTeamResponse> deleteTeam(
 		@PathVariable String code,
@@ -85,7 +85,7 @@ public class TeamController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping
 	public ApiResponse<GetTeamsResponse> getTeams(
 		@PathVariable String code

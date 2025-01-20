@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.enums.PermissionType;
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
-import com.tissue.api.security.authorization.exception.InvalidPermissionException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -40,7 +40,7 @@ class SessionValidatorTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionValidator.validateLoginStatus(request))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 	}
 
 	@Test
@@ -52,7 +52,7 @@ class SessionValidatorTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionValidator.validateLoginStatus(request))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 	}
 
 	@Test
@@ -77,7 +77,7 @@ class SessionValidatorTest {
 		// when & then
 		assertThatThrownBy(
 			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
-			.isInstanceOf(InvalidPermissionException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
@@ -90,7 +90,7 @@ class SessionValidatorTest {
 		// when & then
 		assertThatThrownBy(
 			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
-			.isInstanceOf(InvalidPermissionException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
@@ -104,7 +104,7 @@ class SessionValidatorTest {
 		// when & then
 		assertThatThrownBy(
 			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
-			.isInstanceOf(InvalidPermissionException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
@@ -119,7 +119,7 @@ class SessionValidatorTest {
 		// when & then
 		assertThatThrownBy(
 			() -> sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE))
-			.isInstanceOf(InvalidPermissionException.class);
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test

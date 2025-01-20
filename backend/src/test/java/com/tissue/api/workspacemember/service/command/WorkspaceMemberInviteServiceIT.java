@@ -8,12 +8,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.tissue.helper.ServiceIntegrationTestHelper;
@@ -172,7 +172,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersRequest request = InviteMembersRequest.of(Set.of("member1"));
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMembers("TESTCODE", request)).isInstanceOf(
-			NoValidMembersToInviteException.class);
+		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMembers("TESTCODE", request))
+			.isInstanceOf(InvalidOperationException.class);
 	}
 }

@@ -62,7 +62,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/info")
 	public ApiResponse<UpdateWorkspaceInfoResponse> updateWorkspaceInfo(
 		@PathVariable String code,
@@ -77,7 +77,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
 	public ApiResponse<Void> updateWorkspacePassword(
 		@PathVariable String code,
@@ -90,7 +90,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.OWNER)
+	@RoleRequired(role = WorkspaceRole.OWNER)
 	@DeleteMapping("/{code}")
 	public ApiResponse<DeleteWorkspaceResponse> deleteWorkspace(
 		@PathVariable String code,
@@ -104,7 +104,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.VIEWER)
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{code}")
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(
 		@PathVariable String code
@@ -115,7 +115,7 @@ public class WorkspaceController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.ADMIN)
+	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/key")
 	public ApiResponse<UpdateIssueKeyResponse> updateIssueKey(
 		@PathVariable String code,

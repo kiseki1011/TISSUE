@@ -10,32 +10,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
-import com.tissue.api.assignee.exception.AssigneeNotFoundException;
-import com.tissue.api.assignee.exception.DuplicateAssigneeException;
-import com.tissue.api.assignee.exception.InvalidAssigneeException;
-import com.tissue.api.assignee.exception.MaxAssigneesExceededException;
-import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.exception.BlockingIssuesNotCompletedException;
-import com.tissue.api.issue.exception.InvalidStatusTransitionException;
-import com.tissue.api.issue.exception.UnauthorizedIssueModifyException;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.enums.ReviewStatus;
-import com.tissue.api.review.exception.CannotRemoveReviewerException;
-import com.tissue.api.review.exception.DuplicateReviewerException;
-import com.tissue.api.review.exception.IncompleteReviewRoundException;
-import com.tissue.api.review.exception.IssueStatusNotChangesRequestedException;
-import com.tissue.api.review.exception.IssueStatusNotInReviewException;
-import com.tissue.api.review.exception.MaxReviewersExceededException;
-import com.tissue.api.review.exception.NoReviewersAddedException;
-import com.tissue.api.review.exception.PendingReviewExistsException;
-import com.tissue.api.review.exception.ReviewRequiredException;
-import com.tissue.api.review.exception.ReviewerNotFoundException;
-import com.tissue.api.review.exception.UnauthorizedReviewerModificationException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -56,6 +39,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -93,10 +77,14 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Getter
+@EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Issue extends WorkspaceContextBaseEntity {
+
+	private static final int MAX_REVIEWERS = 10;
+	private static final int MAX_ASSIGNEES = 50;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -148,31 +136,22 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@OneToMany(mappedBy = "parentIssue")
 	private final List<Issue> childIssues = new ArrayList<>();
 
-	// -- Issue Relation 관련 --
 	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<IssueRelation> outgoingRelations = new ArrayList<>();
 
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<IssueRelation> incomingRelations = new ArrayList<>();
 
-	public boolean isBlockedBy(Issue issue) {
-		return incomingRelations.stream()
-			.anyMatch(relation ->
-				relation.getSourceIssue().equals(issue) && relation.getRelationType() == IssueRelationType.BLOCKS
-			);
-	}
-
-	// -------------------------
-
-	// ---Review 도메인 관련 코드---
-	private static final int MAX_REVIEWERS = 10;
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "ISSUE_ID")
+	private List<IssueReviewer> reviewers = new ArrayList<>();
 
 	@Column(nullable = false)
 	private int currentReviewRound = 0;
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "ISSUE_ID")
-	private List<IssueReviewer> reviewers = new ArrayList<>();
+	private final List<IssueAssignee> assignees = new ArrayList<>();
 
 	public void requestReview() {
 		validateReviewersExist();
@@ -186,73 +165,100 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	public void addReviewer(WorkspaceMember reviewer) {
 		validateReviewerLimit();
-		validateNotAlreadyReviewer(reviewer);
+		validateIsReviewer(reviewer);
 
 		reviewers.add(new IssueReviewer(reviewer));
 	}
 
-	public void removeReviewer(WorkspaceMember reviewer) {
-		// 해당 reviewer의 IssueReviewer를 찾아 제거
-		IssueReviewer issueReviewer = reviewers.stream()
-			.filter(r -> r.getReviewer().getId().equals(reviewer.getId()))
-			.findFirst()
-			.orElseThrow(ReviewerNotFoundException::new);
-
-		// 리뷰어가 이미 리뷰를 작성했는지 검증
+	public void removeReviewer(WorkspaceMember workspaceMember) {
+		IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
 		validateHasReviewForCurrentRound(issueReviewer);
 
 		reviewers.remove(issueReviewer);
 	}
 
 	public void validateCanRemoveReviewer(Long requesterWorkspaceMemberId, Long reviewerWorkspaceMemberId) {
-		// 자기 자신을 제거하는 경우는 바로 통과
 		if (requesterWorkspaceMemberId.equals(reviewerWorkspaceMemberId)) {
 			return;
 		}
 
-		// 작업자인 경우도 통과
-		boolean isAssignee = isAssignee(requesterWorkspaceMemberId);
+		boolean isNotAssignee = !isAssignee(requesterWorkspaceMemberId);
 
-		if (!isAssignee) {
-			throw new UnauthorizedReviewerModificationException(
-				"Only the reviewer themselves or issue assignees can remove reviewers.");
+		if (isNotAssignee) {
+			throw new ForbiddenOperationException(
+				String.format(
+					"Must be the reviewer or be a assignee to remove the reviewer."
+						+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
+					requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
+			);
 		}
 	}
 
-	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
-		if (issueReviewer.hasReviewForRound(this.currentReviewRound)) {
-			throw new CannotRemoveReviewerException(
-				"Cannot remove reviewer who already wrote a review for current round.");
+	public void validateReviewIsCreateable() {
+		boolean isStatusNotInReview = status != IssueStatus.IN_REVIEW;
+
+		if (isStatusNotInReview) {
+			throw new InvalidOperationException(
+				String.format(
+					"Issue status must be IN_REVIEW to create a review. Current status: %s",
+					status
+				)
+			);
 		}
+	}
+
+	private IssueReviewer findIssueReviewer(WorkspaceMember workspaceMember) {
+		return reviewers.stream()
+			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
+			.findFirst()
+			.orElseThrow(() -> new ForbiddenOperationException(
+					String.format(
+						"Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
+						workspaceMember.getId(), workspaceMember.getNickname()
+					)
+				)
+			);
 	}
 
 	private void validateReviewersExist() {
 		if (reviewers.isEmpty()) {
-			throw new NoReviewersAddedException();
+			throw new InvalidOperationException("Cannot request review if there are no assigned reviewers.");
+		}
+	}
+
+	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
+		if (issueReviewer.hasReviewForRound(currentReviewRound)) {
+			throw new InvalidOperationException(
+				String.format(
+					"Cannot remove reviewer that already has a review for the current round. Current round: %d",
+					currentReviewRound
+				)
+			);
 		}
 	}
 
 	private void validateCanStartNewReviewRound() {
 		// 현재 상태 검증
-		if (this.status != IssueStatus.CHANGES_REQUESTED) {
-			// Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
-			throw new IssueStatusNotChangesRequestedException(
+		boolean isStatusNotChangesRequested = status != IssueStatus.CHANGES_REQUESTED;
+
+		if (isStatusNotChangesRequested) {
+			throw new InvalidOperationException(
 				String.format(
-					"The issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
-					this.status
+					"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+					status
 				)
 			);
 		}
 
 		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
-		boolean allReviewersSubmitted = reviewers.stream()
-			.allMatch(reviewer -> reviewer.hasReviewForRound(this.currentReviewRound));
+		boolean hasIncompleteReviews = reviewers.stream()
+			.noneMatch(reviewer -> reviewer.hasReviewForRound(currentReviewRound));
 
-		if (!allReviewersSubmitted) {
-			throw new IncompleteReviewRoundException(
+		if (hasIncompleteReviews) {
+			throw new InvalidOperationException(
 				String.format(
-					"There are reviewers that have not completed their review for this round. Current round: (%d)",
-					this.currentReviewRound
+					"Reviewers that have not completed their review for this round exist. Current round: %d",
+					currentReviewRound
 				)
 			);
 		}
@@ -260,7 +266,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateReviewerLimit() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
-			throw new MaxReviewersExceededException(
+			throw new InvalidOperationException(
 				String.format(
 					"The max number of reviewers for a single issue is %d.",
 					MAX_REVIEWERS
@@ -269,56 +275,61 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	private void validateNotAlreadyReviewer(WorkspaceMember reviewer) {
+	private void validateIsReviewer(WorkspaceMember workspaceMember) {
 		boolean isAlreadyReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().getId().equals(reviewer.getId()));
+			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
 
 		if (isAlreadyReviewer) {
-			throw new DuplicateReviewerException();
+			throw new InvalidOperationException(
+				String.format(
+					"Workspace member is already a reviewer. workspaceMemberId: %d",
+					workspaceMember.getId()
+				)
+			);
 		}
 	}
 
-	public void validateReviewIsCreateable() {
-		if (this.getStatus() != IssueStatus.IN_REVIEW) {
-			throw new IssueStatusNotInReviewException(); // Todo: InvalidIssueStatusException로 변경(메세지로 세부 사항 전달)
+	public void validateIssueTypeMatch(IssueType type) {
+		boolean typeNotMatch = this.type != type;
+
+		if (typeNotMatch) {
+			throw new InvalidOperationException(
+				String.format(
+					"Issue type does not match the needed type. Issue type: %s, Required type: %s",
+					this.type, type
+				)
+			);
 		}
 	}
 
-	// -----------------------------
-
-	// --assignee 도메인 관련 코드--
-
-	private static final int MAX_ASSIGNEES = 10;
-
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ISSUE_ID")
-	private final List<IssueAssignee> assignees = new ArrayList<>();
+	public boolean isBlockedBy(Issue issue) {
+		return incomingRelations.stream()
+			.anyMatch(relation ->
+				relation.getSourceIssue().equals(issue)
+					&& relation.getRelationType() == IssueRelationType.BLOCKS
+			);
+	}
 
 	public void addAssignee(WorkspaceMember assignee) {
 		validateAssigneeLimit();
-		validateAssigneeBelongsToWorkspace(assignee);
+		validateBelongsToWorkspace(assignee);
 		validateNotAlreadyAssigned(assignee);
 
 		assignees.add(new IssueAssignee(assignee));
 	}
 
 	public void removeAssignee(WorkspaceMember assignee) {
-		IssueAssignee issueAssignee = assignees.stream()
-			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
-			.findFirst()
-			.orElseThrow(() -> new AssigneeNotFoundException(
-				String.format("Assignee '%s' is not assigned to this issue", assignee.getNickname())
-			));
-
+		IssueAssignee issueAssignee = findIssueAssignee(assignee);
 		assignees.remove(issueAssignee);
 	}
 
 	public void validateIsAssignee(Long workspaceMemberId) {
-		boolean isAssignee = isAssignee(workspaceMemberId);
+		boolean isNotAssignee = !isAssignee(workspaceMemberId);
 
-		if (!isAssignee) {
-			throw new UnauthorizedAssigneeModificationException(
-				"You must be an assignee of the Issue.");
+		if (isNotAssignee) {
+			throw new ForbiddenOperationException(
+				String.format("Must be an assignee of this issue. issueKey: %s", issueKey)
+			);
 		}
 	}
 
@@ -329,7 +340,22 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		if (isAuthor(workspaceMemberId)) {
 			return;
 		}
-		throw new UnauthorizedIssueModifyException("Must be the author or a assignee of this issue.");
+		throw new ForbiddenOperationException(
+			String.format("Must be the author or an assignee of this issue. issueKey: %s", issueKey)
+		);
+	}
+
+	private IssueAssignee findIssueAssignee(WorkspaceMember assignee) {
+		return assignees.stream()
+			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
+			.findFirst()
+			.orElseThrow(() -> new InvalidOperationException(
+					String.format(
+						"Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
+						assignee.getId(), assignee.getNickname()
+					)
+				)
+			);
 	}
 
 	private boolean isAssignee(Long workspaceMemberId) {
@@ -344,15 +370,25 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateAssigneeLimit() {
 		if (assignees.size() >= MAX_ASSIGNEES) {
-			throw new MaxAssigneesExceededException(
-				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES)
+			throw new InvalidOperationException(
+				String.format(
+					"The maximum number of assignees for a single issue is %d",
+					MAX_ASSIGNEES
+				)
 			);
 		}
 	}
 
-	private void validateAssigneeBelongsToWorkspace(WorkspaceMember assignee) {
-		if (!assignee.getWorkspaceCode().equals(this.workspaceCode)) {
-			throw new InvalidAssigneeException("Assignee must belong to the same workspace");
+	private void validateBelongsToWorkspace(WorkspaceMember workspaceMember) {
+		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceCode().equals(workspaceCode);
+
+		if (hasDifferentWorkspaceCode) {
+			throw new InvalidOperationException(
+				String.format(
+					"Assignee must belong to this workspace. expected: %s , actual: %s",
+					workspaceMember.getWorkspaceCode(), workspaceCode
+				)
+			);
 		}
 	}
 
@@ -360,13 +396,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isAlreadyAssigned = isAssignee(assignee.getId());
 
 		if (isAlreadyAssigned) {
-			throw new DuplicateAssigneeException(
-				String.format("Member '%s' is already assigned to this issue", assignee.getNickname())
+			throw new InvalidOperationException(
+				String.format(
+					"Workspace member is already assigned to this issue. workspaceMemberId: %d, nickname: %s",
+					assignee.getId(), assignee.getNickname()
+				)
 			);
 		}
 	}
-
-	// -----------------------------
 
 	protected Issue(
 		Workspace workspace,
@@ -432,32 +469,41 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void removeParentRelationship() {
-		if (this.parentIssue != null) {
-			this.parentIssue.getChildIssues().remove(this);
-			this.parentIssue = null;
+		if (parentIssue != null) {
+			parentIssue.getChildIssues().remove(this);
+			parentIssue = null;
 		}
 	}
 
-	public boolean canRemoveParentRelationship() {
-		return true;
+	public void validateCanRemoveParent() {
 	}
 
 	public boolean isNotFirstReviewRound() {
-		return this.getCurrentReviewRound() != 0;
+		return currentReviewRound != 0;
+	}
+
+	public void validateHasChildIssues() {
+		boolean hasChildIssues = !childIssues.isEmpty();
+
+		if (hasChildIssues) {
+			throw new InvalidOperationException(
+				String.format("Cannot delete issue with child issues. issueKey: %s", issueKey)
+			);
+		}
 	}
 
 	// Todo: 횡단 관심사(cross cutting concern)는 AOP로 구현하는걸 고려하자
 	private void updateTimestamps(IssueStatus newStatus) {
-		if (newStatus == IN_PROGRESS && this.startedAt == null) {
-			this.startedAt = LocalDateTime.now();
+		if (newStatus == IN_PROGRESS && startedAt == null) {
+			startedAt = LocalDateTime.now();
 			return;
 		}
 		if (newStatus == IssueStatus.IN_REVIEW) {
-			this.reviewRequestedAt = LocalDateTime.now();
+			reviewRequestedAt = LocalDateTime.now();
 			return;
 		}
 		if (newStatus == IssueStatus.DONE) {
-			this.finishedAt = LocalDateTime.now();
+			finishedAt = LocalDateTime.now();
 		}
 	}
 
@@ -479,6 +525,18 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	private void validateBasicTransition(IssueStatus newStatus) {
+		Set<IssueStatus> allowedStatuses = getAllowedNextStatuses();
+
+		boolean statusNotAllowed = !allowedStatuses.contains(newStatus);
+
+		if (statusNotAllowed) {
+			throw new InvalidOperationException(
+				String.format("Cannot transition status from %s to %s.", status, newStatus)
+			);
+		}
+	}
+
 	private void validateTransitionToDone() {
 		/*
 		 * Todo: 워크스페이스 마다 가지는 설정을 관리하는 엔티티를 만들자.
@@ -489,14 +547,20 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		// }
 
 		if (reviewers.isEmpty()) {
-			throw new ReviewRequiredException("Review is required to complete this issue.");
+			throw new InvalidOperationException("Review is required to complete this issue.");
 		}
-
 		if (isAllReviewsNotApproved()) {
-			throw new PendingReviewExistsException("All reviews must be approved.");
+			throw new InvalidOperationException("All reviews must be approved to complete this issue.");
 		}
 
 		validateBlockingIssuesAreDone();
+	}
+
+	private boolean isAllReviewsNotApproved() {
+		return !reviewers.stream()
+			.allMatch(reviewer ->
+				reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED
+			);
 	}
 
 	private void validateBlockingIssuesAreDone() {
@@ -511,32 +575,17 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 				.map(Issue::getIssueKey)
 				.collect(Collectors.joining(", "));
 
-			throw new BlockingIssuesNotCompletedException(
-				String.format("Cannot complete this issue. Blocking issues must be completed first: %s",
-					blockingIssueKeys)
-			);
-		}
-	}
-
-	private boolean isAllReviewsNotApproved() {
-		return !reviewers.stream()
-			.allMatch(reviewer ->
-				reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED
-			);
-	}
-
-	private void validateBasicTransition(IssueStatus newStatus) {
-		Set<IssueStatus> allowedStatuses = getAllowedNextStatuses();
-
-		if (!allowedStatuses.contains(newStatus)) {
-			throw new InvalidStatusTransitionException(
-				String.format("Cannot transition from %s to %s.", this.status, newStatus)
+			throw new InvalidOperationException(
+				String.format(
+					"Cannot complete this issue. Blocking issues must be completed first: %s",
+					blockingIssueKeys
+				)
 			);
 		}
 	}
 
 	private Set<IssueStatus> getAllowedNextStatuses() {
-		return switch (this.status) {
+		return switch (status) {
 			case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
 			case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
 			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);

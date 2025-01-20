@@ -4,10 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.exception.CircularDependencyException;
-import com.tissue.api.issue.exception.DuplicateIssueRelationException;
-import com.tissue.api.issue.exception.SelfReferenceNotAllowedException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,21 +74,25 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 	}
 
 	/**
-	 * Todo
 	 *  - 순환 참조를 방지할 필요가 있음
 	 *    - 자기 참조 불가
 	 *    - A BLOCKS B, B BLOCKS C -> A BLOCKS C 불가, C BLOCKS A 불가 (CyclicReferenceException 만들기)
 	 */
 	private static void validateRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new SelfReferenceNotAllowedException();
+			throw new InvalidOperationException("Self reference is not allowed.");
 		}
 
 		boolean hasRelation = sourceIssue.getOutgoingRelations().stream()
 			.anyMatch(relation -> relation.getTargetIssue().equals(targetIssue));
 
 		if (hasRelation) {
-			throw new DuplicateIssueRelationException();
+			throw new InvalidOperationException(
+				String.format(
+					"Identical issue relation already exists. sourceIssueKey: %s, targetIssueKey: %s, relationType: %s",
+					sourceIssue.getIssueKey(), targetIssue.getIssueKey(), type
+				)
+			);
 		}
 
 		// BLOCKS 관계에 대해서만 순환 참조 검증
@@ -103,13 +105,16 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 		// 직접적인 순환 참조 검증 (A->B->A)
 		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
 			.anyMatch(relation ->
-				relation.getTargetIssue().equals(sourceIssue) && relation.getRelationType() == IssueRelationType.BLOCKS
+				relation.getTargetIssue().equals(sourceIssue)
+					&& relation.getRelationType() == IssueRelationType.BLOCKS
 			);
 
 		if (isDirectCircular) {
-			throw new CircularDependencyException(
-				String.format("Circular dependency detected: %s is already blocking %s",
-					targetIssue.getIssueKey(), sourceIssue.getIssueKey())
+			throw new InvalidOperationException(
+				String.format(
+					"Circular dependency detected. Target issue(%s) is already blocking source issue(%s).",
+					targetIssue.getIssueKey(), sourceIssue.getIssueKey()
+				)
 			);
 		}
 
@@ -127,9 +132,7 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 
 			Issue nextIssue = relation.getTargetIssue();
 			if (!visited.add(nextIssue)) {
-				throw new CircularDependencyException(
-					"Circular dependency detected in blocking chain"
-				);
+				throw new InvalidOperationException("Circular dependency detected in blocking chain.");
 			}
 
 			validateIndirectCircularDependency(nextIssue, visited);

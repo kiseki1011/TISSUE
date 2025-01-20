@@ -38,7 +38,7 @@ public class PositionController {
 	private final PositionQueryService positionQueryService;
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreatePositionResponse> createPosition(
@@ -50,7 +50,7 @@ public class PositionController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}")
 	public ApiResponse<UpdatePositionResponse> updatePosition(
 		@PathVariable String code,
@@ -62,7 +62,7 @@ public class PositionController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}/color")
 	public ApiResponse<UpdatePositionColorResponse> updatePositionColor(
 		@PathVariable String code,
@@ -74,7 +74,7 @@ public class PositionController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.MANAGER})
+	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@DeleteMapping("/{positionId}")
 	public ApiResponse<DeletePositionResponse> deletePosition(
 		@PathVariable String code,
@@ -85,7 +85,7 @@ public class PositionController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = {WorkspaceRole.VIEWER})
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping
 	public ApiResponse<GetPositionsResponse> getPositions(
 		@PathVariable String code

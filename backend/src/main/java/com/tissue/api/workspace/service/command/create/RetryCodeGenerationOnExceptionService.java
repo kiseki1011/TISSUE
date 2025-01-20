@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -14,7 +15,6 @@ import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -40,10 +40,13 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 
 	@Override
 	@Transactional
-	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request, Long memberId) {
+	public CreateWorkspaceResponse createWorkspace(
+		CreateWorkspaceRequest request,
+		Long memberId
+	) {
 
 		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+			.orElseThrow(() -> new MemberNotFoundException(memberId));
 
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
@@ -62,7 +65,9 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 				log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
 			}
 		}
-		throw new WorkspaceCodeCollisionHandleException();
+		throw new InternalServerException(
+			String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)
+		);
 	}
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {

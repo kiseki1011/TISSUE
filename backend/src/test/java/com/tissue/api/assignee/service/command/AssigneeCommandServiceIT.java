@@ -7,9 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
@@ -121,6 +121,6 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			2L,
 			requesterWorkspaceMemberId
-		)).isInstanceOf(UnauthorizedAssigneeModificationException.class);
+		)).isInstanceOf(ForbiddenOperationException.class);
 	}
 }

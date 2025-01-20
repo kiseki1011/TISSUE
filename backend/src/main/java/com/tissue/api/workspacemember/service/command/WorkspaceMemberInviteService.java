@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.member.domain.Member;
@@ -13,7 +14,6 @@ import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 
@@ -30,7 +30,7 @@ public class WorkspaceMemberInviteService {
 	@Transactional
 	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request) {
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		// 1. 초대 가능한 멤버 필터링
 		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.memberIdentifiers());
@@ -44,7 +44,7 @@ public class WorkspaceMemberInviteService {
 			.toList();
 
 		if (invitedMembers.isEmpty()) {
-			throw new NoValidMembersToInviteException();
+			throw new InvalidOperationException("No members were available for invitation.");
 		}
 
 		return InviteMembersResponse.of(workspaceCode, invitedMembers);

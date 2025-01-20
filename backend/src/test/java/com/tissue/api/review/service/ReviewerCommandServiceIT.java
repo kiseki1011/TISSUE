@@ -7,13 +7,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.assignee.exception.UnauthorizedAssigneeModificationException;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.review.exception.DuplicateReviewerException;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
@@ -129,7 +129,7 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
-		)).isInstanceOf(DuplicateReviewerException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
@@ -177,7 +177,7 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 			issueKey,
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
-		)).isInstanceOf(UnauthorizedAssigneeModificationException.class);
+		)).isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test

@@ -4,14 +4,13 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.exception.CannotPauseCriticalBugException;
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CollectionTable;
@@ -107,20 +106,20 @@ public class Bug extends Issue {
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
-			throw new ParentMustBeEpicException();
+			throw new InvalidOperationException("BUG type issues can only have an EPIC as their parent issue.");
 		}
 	}
 
 	@Override
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		super.validateStatusTransition(newStatus);
-		if (needsImmediateAttention() && newStatus == IssueStatus.PAUSED) {
-			throw new CannotPauseCriticalBugException();
-		}
-	}
 
-	public boolean needsImmediateAttention() {
-		return severity.getLevel() >= CRITICAL_BUG_LEVEL;
+		boolean needsImmediateAttention = severity.getLevel() >= CRITICAL_BUG_LEVEL;
+
+		if (needsImmediateAttention && newStatus == IssueStatus.PAUSED) {
+			throw new InvalidOperationException(
+				"BUG severity must be lower than CRITICAL to change status to PAUSED.");
+		}
 	}
 
 	public void updatePriorityByBugSeverity() {

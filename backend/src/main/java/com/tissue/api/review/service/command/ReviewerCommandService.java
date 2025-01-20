@@ -30,7 +30,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
@@ -52,7 +52,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
@@ -71,7 +71,7 @@ public class ReviewerCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
@@ -79,13 +79,13 @@ public class ReviewerCommandService {
 		return RequestReviewResponse.from(issue);
 	}
 
-	private Issue findIssue(String workspaceCode, String issueKey) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow(IssueNotFoundException::new);
+	private Issue findIssue(String issueKey, String code) {
+		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
-	private WorkspaceMember findWorkspaceMember(Long id, String workspaceCode) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, workspaceCode)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+	private WorkspaceMember findWorkspaceMember(Long id, String code) {
+		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
 	}
 }

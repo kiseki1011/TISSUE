@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.review.domain.enums.ReviewStatus;
-import com.tissue.api.review.exception.DuplicateReviewInRoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -41,9 +41,14 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 		this.reviewer = reviewer;
 	}
 
-	public Review addReview(ReviewStatus status, String title, String content, int reviewRound) {
+	public Review addReview(
+		ReviewStatus status,
+		String title,
+		String content,
+		int reviewRound
+	) {
 		// 해당 라운드에 이미 리뷰가 있는지 확인
-		validateNoExistingReviewInRound(reviewRound);
+		validateNoReviewInRound(reviewRound);
 
 		Review review = Review.builder()
 			.issueReviewer(this)
@@ -52,7 +57,6 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 			.content(content)
 			.reviewRound(reviewRound)
 			.build();
-
 		this.reviews.add(review);
 
 		return review;
@@ -63,20 +67,22 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 			.anyMatch(review -> review.getReviewRound() == reviewRound);
 	}
 
-	private void validateNoExistingReviewInRound(int reviewRound) {
-		boolean hasReviewInRound = reviews.stream()
-			.anyMatch(review -> review.getReviewRound() == reviewRound);
-
-		if (hasReviewInRound) {
-			throw new DuplicateReviewInRoundException();
-		}
-	}
-
 	public ReviewStatus getCurrentReviewStatus(int reviewRound) {
 		return reviews.stream()
 			.filter(review -> review.getReviewRound() == reviewRound)
 			.map(Review::getStatus)
 			.findFirst()
 			.orElse(ReviewStatus.PENDING);
+	}
+
+	private void validateNoReviewInRound(int reviewRound) {
+		boolean hasReviewInRound = reviews.stream()
+			.anyMatch(review -> review.getReviewRound() == reviewRound);
+
+		if (hasReviewInRound) {
+			throw new InvalidOperationException(
+				String.format("Reviewer already has a review for this round. review round: %d", reviewRound)
+			);
+		}
 	}
 }

@@ -1,19 +1,21 @@
 package com.tissue.api.workspacemember.exception;
 
-import org.springframework.http.HttpStatus;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 
-import com.tissue.api.common.exception.domain.WorkspaceMemberException;
+public class WorkspaceMemberNotFoundException extends ResourceNotFoundException {
 
-public class WorkspaceMemberNotFoundException extends WorkspaceMemberException {
+	private static final String ID_MESSAGE = "Workspace member not found with id: %d";
+	private static final String ID_CODE_MESSAGE = "Workspace member with id %d was not found in workspace %s";
 
-	private static final String MESSAGE = "WorkspaceMember was not found.";
-	private static final HttpStatus HTTP_STATUS = HttpStatus.NOT_FOUND;
-
-	public WorkspaceMemberNotFoundException() {
-		super(MESSAGE, HTTP_STATUS);
+	public WorkspaceMemberNotFoundException(String message) {
+		super(message);
 	}
 
-	public WorkspaceMemberNotFoundException(Throwable cause) {
-		super(MESSAGE, HTTP_STATUS, cause);
+	public WorkspaceMemberNotFoundException(Long id) {
+		super(String.format(ID_MESSAGE, id));
+	}
+
+	public WorkspaceMemberNotFoundException(Long id, String workspaceCode) {
+		super(String.format(ID_CODE_MESSAGE, id, workspaceCode));
 	}
 }

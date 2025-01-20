@@ -28,7 +28,7 @@ public class AssigneeCommandService {
 		String issueKey,
 		Long assigneeWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember assignee = findWorkspaceMember(assigneeWorkspaceMemberId, workspaceCode);
 
 		issue.addAssignee(assignee);
@@ -43,7 +43,7 @@ public class AssigneeCommandService {
 		Long assigneeWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(workspaceCode, issueKey);
+		Issue issue = findIssue(issueKey, workspaceCode);
 		WorkspaceMember assignee = findWorkspaceMember(assigneeWorkspaceMemberId, workspaceCode);
 		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
 
@@ -56,14 +56,14 @@ public class AssigneeCommandService {
 		return RemoveAssigneeResponse.from(assignee);
 	}
 
-	private Issue findIssue(String code, String issueKey) {
+	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(IssueNotFoundException::new);
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
 	private WorkspaceMember findWorkspaceMember(Long id, String code) {
 		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
-			.orElseThrow(WorkspaceMemberNotFoundException::new);
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
 	}
 
 }

@@ -6,13 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
@@ -156,7 +156,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// Create 50 workspaces
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 10; i++) {
 			CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 				.name("workspace" + i)
 				.description("description" + i)
@@ -171,7 +171,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request51, member.getId()))
-			.isInstanceOf(WorkspaceCreationLimitExceededException.class);
+			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test

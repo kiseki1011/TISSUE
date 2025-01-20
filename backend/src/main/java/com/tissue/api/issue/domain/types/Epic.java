@@ -2,10 +2,10 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.exception.EpicCannotHaveParentException;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
@@ -60,6 +60,6 @@ public class Epic extends Issue {
 
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
-		throw new EpicCannotHaveParentException();
+		throw new InvalidOperationException("Epic type issues cannot have a parent issue.");
 	}
 }

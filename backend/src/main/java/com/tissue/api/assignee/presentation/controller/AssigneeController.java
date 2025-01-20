@@ -25,7 +25,7 @@ public class AssigneeController {
 	private final AssigneeCommandService assigneeCommandService;
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{workspaceMemberId}")
 	public ApiResponse<AddAssigneeResponse> addAssignee(
 		@PathVariable String code,
@@ -42,7 +42,7 @@ public class AssigneeController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{workspaceMemberId}")
 	public ApiResponse<RemoveAssigneeResponse> removeAssignee(
 		@PathVariable String code,

@@ -16,11 +16,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.exception.NoValidMembersToInviteException;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -57,7 +57,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		Workspace workspace = workspaceEntityFixture.createWorkspace("TESTCODE");
 
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createCollaboratorWorkspaceMember(
+		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(
 			member,
 			workspace
 		);
@@ -250,13 +250,13 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
 
 		when(workspaceMemberInviteService.inviteMembers(workspaceCode, request))
-			.thenThrow(new NoValidMembersToInviteException());
+			.thenThrow(new InvalidOperationException("No members were available for invitation."));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.message").value("No avaliable members were found for invitation."));
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.message").value("No members were available for invitation."));
 	}
 }

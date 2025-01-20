@@ -28,7 +28,7 @@ public class IssueRelationController {
 	private final IssueRelationCommandService issueRelationCommandService;
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{targetIssueKey}")
 	public ApiResponse<CreateIssueRelationResponse> createRelation(
 		@PathVariable String code,
@@ -49,7 +49,7 @@ public class IssueRelationController {
 	}
 
 	@LoginRequired
-	@RoleRequired(roles = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{targetIssueKey}")
 	public ApiResponse<RemoveIssueRelationResponse> removeRelation(
 		@PathVariable String code,

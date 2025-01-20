@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
@@ -92,7 +92,7 @@ class ResolveLoginMemberArgumentResolverTest {
 		// given
 		Long loginMemberId = 1L;
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
+		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
 
 		// when
 		Long result = (Long)resolver.resolveArgument(null, null, webRequest, null);
@@ -102,18 +102,18 @@ class ResolveLoginMemberArgumentResolverTest {
 			.isInstanceOf(Long.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMemberId(session);
+		verify(sessionManager).getOptionalLoginMemberId(session);
 	}
 
 	@Test
 	@DisplayName("세션이 없으면 예외가 발생한다")
 	void resolveArgument_WhenNoSession_ThrowUserNotLoggedInException() {
 		// given
-		when(sessionManager.getSession(webRequest)).thenThrow(UserNotLoggedInException.class);
+		when(sessionManager.getSession(webRequest)).thenThrow(new UnauthorizedException("User not logged in."));
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 
 		verify(sessionManager).getSession(webRequest);
 		verifyNoMoreInteractions(sessionManager);
@@ -124,14 +124,15 @@ class ResolveLoginMemberArgumentResolverTest {
 	void resolveArgument_WhenMemberNotFound_ThrowMemberNotFoundException() {
 		// given
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
-		when(sessionManager.getLoginMemberId(session)).thenThrow(new UserNotLoggedInException());
+		when(sessionManager.getOptionalLoginMemberId(session)).thenThrow(
+			new UnauthorizedException("User not logged in."));
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
-			.isInstanceOf(UserNotLoggedInException.class);
+			.isInstanceOf(UnauthorizedException.class);
 
 		verify(sessionManager).getSession(webRequest);
-		verify(sessionManager).getLoginMemberId(session);
+		verify(sessionManager).getOptionalLoginMemberId(session);
 	}
 
 }
