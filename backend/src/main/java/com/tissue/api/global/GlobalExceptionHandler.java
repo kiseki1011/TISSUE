@@ -94,7 +94,8 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(TissueException.class)
-	public ResponseEntity<ApiResponse<?>> handleTissueException(TissueException exception) {
+	public ResponseEntity<ApiResponse<Void>> handleTissueException(TissueException exception) {
+		log.error("Tissue Exception: ", exception);
 
 		String message = exception.getMessage();
 
