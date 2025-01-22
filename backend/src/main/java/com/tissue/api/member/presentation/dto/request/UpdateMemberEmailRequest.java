@@ -1,15 +1,17 @@
 package com.tissue.api.member.presentation.dto.request;
 
+import com.tissue.api.common.validator.annotation.size.EmailSize;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public record UpdateMemberEmailRequest(
+	@NotBlank(message = "{valid.notblank}")
 	String password,
 
-	@NotBlank(message = "Email must not be blank")
-	@Size(min = 5, max = 254, message = "Email must be between 5 and 254 characters")
-	@Email(message = "Email should be in a valid format")
+	@EmailSize
+	@Email(message = "{valid.pattern.email}")
+	@NotBlank(message = "{valid.notblank}")
 	String newEmail
 ) {
 }

@@ -2,22 +2,30 @@ package com.tissue.api.member.presentation.dto.request;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.validator.annotation.pattern.NamePattern;
+import com.tissue.api.common.validator.annotation.size.NameSize;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.member.domain.JobType;
 
 import jakarta.validation.constraints.Past;
 import lombok.Builder;
 
-/**
- * Todo
- *  - size 검증 필요
- */
 @Builder
 public record UpdateMemberInfoRequest(
+	@NameSize
+	@NamePattern
 	String firstName,
+
+	@NameSize
+	@NamePattern
 	String lastName,
-	@Past(message = "Birth date must be in the past")
+
+	@Past(message = "{valid.birthdate}")
 	LocalDate birthDate,
+
 	JobType jobType,
+
+	@StandardText
 	String biography
 ) {
 	public boolean hasName() {

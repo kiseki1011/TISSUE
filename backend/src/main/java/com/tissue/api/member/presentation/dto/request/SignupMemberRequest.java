@@ -14,8 +14,6 @@ import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
@@ -49,7 +47,6 @@ public record SignupMemberRequest(
 	@Past(message = "{valid.birthdate}")
 	LocalDate birthDate,
 
-	@Enumerated(EnumType.STRING)
 	JobType jobType,
 
 	@StandardText

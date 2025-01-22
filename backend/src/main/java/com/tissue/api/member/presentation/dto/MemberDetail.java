@@ -7,47 +7,20 @@ import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
-public class MemberDetail {
-
-	private String loginId;
-	private String email;
-	private String lastName;
-	private String firstName;
-	private LocalDate birthDate;
-	private JobType jobType;
-	private String biography;
-	private int ownedWorkspaceCount;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
-
-	@Builder
-	public MemberDetail(
-		String loginId,
-		String email,
-		String lastName,
-		String firstName,
-		LocalDate birthDate,
-		JobType jobType,
-		String biography,
-		int ownedWorkspaceCount,
-		LocalDateTime createdAt,
-		LocalDateTime updatedAt
-	) {
-		this.loginId = loginId;
-		this.email = email;
-		this.lastName = lastName;
-		this.firstName = firstName;
-		this.birthDate = birthDate;
-		this.jobType = jobType;
-		this.biography = biography;
-		this.ownedWorkspaceCount = ownedWorkspaceCount;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-	}
-
+@Builder
+public record MemberDetail(
+	String loginId,
+	String email,
+	String lastName,
+	String firstName,
+	LocalDate birthDate,
+	JobType jobType,
+	String biography,
+	int ownedWorkspaceCount,
+	LocalDateTime createdAt,
+	LocalDateTime updatedAt
+) {
 	public static MemberDetail from(Member member) {
 		return MemberDetail.builder()
 			.loginId(member.getLoginId())
