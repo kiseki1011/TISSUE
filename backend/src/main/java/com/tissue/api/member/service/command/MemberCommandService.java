@@ -37,10 +37,10 @@ public class MemberCommandService {
 	public SignupMemberResponse signup(
 		SignupMemberRequest request
 	) {
-		memberValidator.validateLoginIdIsUnique(request.getLoginId());
-		memberValidator.validateEmailIsUnique(request.getEmail());
+		memberValidator.validateLoginIdIsUnique(request.loginId());
+		memberValidator.validateEmailIsUnique(request.email());
 
-		String encodedPassword = passwordEncoder.encode(request.getPassword());
+		String encodedPassword = passwordEncoder.encode(request.password());
 		Member member = request.toEntity(encodedPassword);
 
 		Member savedMember = memberRepository.save(member);
