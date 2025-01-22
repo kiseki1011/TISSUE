@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -37,16 +38,8 @@ import com.tissue.helper.ControllerTestHelper;
 
 class MemberControllerTest extends ControllerTestHelper {
 
-	static Stream<Arguments> provideInvalidInputs() {
-		return Stream.of(
-			arguments(null, null, null), // null
-			arguments("", "", ""), // 빈 문자열
-			arguments(" ", " ", " ") // 공백
-		);
-	}
-
 	@Test
-	@DisplayName("GET /members - 멤버 프로필(상세 정보) 조회에 성공하면 OK를 기대한다")
+	@DisplayName("GET /members - 멤버 프로필(상세 정보) 조회에 성공하면 OK")
 	void getMyProfile_success_OK() throws Exception {
 		// given
 		MockHttpSession session = new MockHttpSession();
@@ -62,8 +55,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("GET /members - 멤버 프로필 조회에 성공하면 멤버의 상세 정보를 응답 데이터로 받는다")
-	void getMyProfile_success_responeDataIsMemberDetail() throws Exception {
+	@DisplayName("GET /members - 멤버 프로필 조회에 성공하면 응답 데이터는 멤버의 상세 정보이다")
+	void getMyProfile_success_returnMemberDetail() throws Exception {
 		// given
 		Member member = Member.builder()
 			.loginId("tester")
@@ -74,7 +67,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.build())
 			.birthDate(LocalDate.of(1990, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer.")
+			.biography("Im a backend developer")
 			.build();
 
 		when(memberQueryService.getMyProfile(anyLong())).thenReturn(MyProfileResponse.from(member));
@@ -90,46 +83,17 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members - 회원 가입에 검증을 통과하면 CREATED를 기대한다")
-	void test1() throws Exception {
-		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
-			.loginId("testuser1234")
-			.email("testemail@gmail.com")
-			.password("Testpassword1234!")
-			.firstName("Gildong")
-			.lastName("Hong")
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
-			.jobType(JobType.DEVELOPER)
-			.build();
-		String requestBody = objectMapper.writeValueAsString(signupMemberRequest);
-
-		mockMvc.perform(post("/api/v1/members")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andExpect(status().isCreated())
-			.andDo(print());
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-		"'testtesttesttesttest1', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'1', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test!!', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'한글아이디', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
-		"'test1한글', 'Login ID must be alphanumeric and must be between 2 and 20 characters'",
-	})
-	@DisplayName("POST /members - 회원 가입에 loginId는 영문과 숫자 조합에 2~20자를 지켜야한다")
-	void test2(String loginId, String loginIdValidMsg) throws Exception {
+	@DisplayName("POST /members - 회원 가입에 성공하면 CREATED")
+	void signup_success_CREATED() throws Exception {
 		// given
 		SignupMemberRequest request = SignupMemberRequest.builder()
-			.loginId(loginId)
-			.email("testemail@gmail.com")
-			.password("Testpassword1234!")
+			.loginId("testuser")
+			.email("test@test.com")
+			.password("test1234!")
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
+			.biography("Im a backend engineer")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -137,24 +101,49 @@ class MemberControllerTest extends ControllerTestHelper {
 		mockMvc.perform(post("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.data..message").value(loginIdValidMsg))
+			.andExpect(status().isCreated())
 			.andDo(print());
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-		"'test', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'Test1234', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'한글패스워드', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
-		"'Test1234!한글', 'The password must be alphanumeric "
-			+ "including at least one special character and must be between 8 and 30 characters'",
+		"test!!",
+		"한글아이디",
+		"test한글",
 	})
-	@DisplayName("POST /members - 회원 가입에 password는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합에 8~30자를 지켜야한다")
-	void test3(String password, String passwordValidMsg) throws Exception {
+	@DisplayName("POST /members - 회원 가입에 로그인 아이디는 영문 소문자로 시작하고 영문 소문자와 숫자만 포함해야 한다")
+	void signup_loginIdPattern_mustBeLowercaseWithNumbers(String loginId) throws Exception {
+		// given
+		SignupMemberRequest request = SignupMemberRequest.builder()
+			.loginId(loginId)
+			.email("test@test.com")
+			.password("test1234!")
+			.firstName("Gildong")
+			.lastName("Hong")
+			.birthDate(LocalDate.of(1995, 1, 1))
+			.biography("Im a backend engineer")
+			.jobType(JobType.DEVELOPER)
+			.build();
+
+		// when & then
+		mockMvc.perform(post("/api/v1/members")
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Accept-Language", "en")
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.data..message")
+				.value(messageSource.getMessage("valid.pattern.id", null, Locale.ENGLISH)))
+			.andDo(print());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"Test1234",
+		"패스워드검증실패",
+		"Test1234!한글"
+	})
+	@DisplayName("POST /members - 회원 가입 시 패스워드는 하나 이상의 영문자, 숫자와 특수문자를 포함한 조합이어야 한다")
+	void signup_passwordPattern_mustBeAlphaNumericWithSpecialCharacter(String password) throws Exception {
 
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
@@ -171,14 +160,23 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signupMemberRequest)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.data..message").value(passwordValidMsg))
+			.andExpect(jsonPath("$.data..message")
+				.value(messageSource.getMessage("valid.pattern.password", null, Locale.ENGLISH)))
 			.andDo(print());
+	}
+
+	static Stream<Arguments> provideInvalidInputs() {
+		return Stream.of(
+			arguments(null, null, null), // null
+			arguments("", "", ""), // 빈 문자열
+			arguments(" ", " ", " ") // 공백
+		);
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /members - 회원 가입에 loginId, email, password는 null, 공백, 빈 문자이면 안된다")
-	void test4(String loginId, String email, String password) throws Exception {
+	@DisplayName("POST /members - 회원 가입에 로그인 아이디, 이메일, 패스워드는 null, 공백, 빈 문자이면 안된다")
+	void signUp_loginId_email_password_mustNotBeBlank(String loginId, String email, String password) throws Exception {
 		// given
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
@@ -203,7 +201,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청에 성공하면 OK를 응답한다")
+	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청에 성공하면 OK")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
@@ -222,8 +220,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 패스워드 검증에 실패하면 업데이트 권한 요청에 대해 UNAUTHORIZED를 응답한다")
-	void getUpdateAuthorization_returnsUnauthorized_whenInvalidMemberPasswordException() throws Exception {
+	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
+	void getUpdateAuthorization_failPasswordValid_UNAUTHORIZED() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
 
@@ -241,7 +239,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK를 응답한다")
+	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
 	void updateMemberInfo_success_OK() throws Exception {
 		// given
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
@@ -276,7 +274,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
+	@DisplayName("PATCH /members - 멤버 프로필 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
 	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
 		// given
 		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
@@ -309,7 +307,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK를 응답한다")
+	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK")
 	void updateEmail_success_OK() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
@@ -324,8 +322,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 이메일 업데이트 응답을 데이터로 받는다")
-	void updateEmail_success_returnsMemberEmailUpdateResponse() throws Exception {
+	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 업데이트 된 이메일이 포함된다")
+	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
@@ -342,12 +340,13 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member email updated."))
+			//.andExpect(jsonPath("$.data.email").value("newemail@test.com")) // 요청을 레코드로 변경 후 적용
 			.andDo(print());
 	}
 
 	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 패스워드 검증을 실패하면 UNAUTHORIZED을 응답한다")
-	void updateEmail_forbidden_ifUpdateAuthIsInvalid() throws Exception {
+	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 패스워드 검증을 실패하면 UNAUTHORIZED")
+	void updateEmail_failPasswordValid_UNAUTHORIZED() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
 
@@ -366,8 +365,8 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK를 응답받는다")
-	void withdrawMember_shouldReturn200_ifSuccess() throws Exception {
+	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
+	void withdrawMember_success_OK() throws Exception {
 		// given
 		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
 
