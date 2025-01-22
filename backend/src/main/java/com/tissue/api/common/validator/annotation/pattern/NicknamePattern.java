@@ -16,7 +16,10 @@ import jakarta.validation.constraints.Pattern;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Pattern(regexp = "^[\\p{L}][\\p{L}\\p{N}]*$")
+@Pattern(
+	regexp = "^\\p{L}[\\p{L}\\p{N}]*$",
+	message = "{valid.pattern.nickname}"
+)
 public @interface NicknamePattern {
 	String message() default "{valid.pattern.nickname}";
 

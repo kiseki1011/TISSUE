@@ -16,7 +16,10 @@ import jakarta.validation.constraints.Pattern;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Pattern(regexp = "^\\p{L}+$")
+@Pattern(
+	regexp = "^\\p{L}+$",
+	message = "{valid.pattern.name}"
+)
 public @interface NamePattern {
 	String message() default "{valid.pattern.name}";
 

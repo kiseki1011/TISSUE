@@ -18,7 +18,10 @@ import jakarta.validation.constraints.Pattern;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Pattern(regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$)[a-zA-Z0-9!@#$%^&*(),.?\":{}|<>]*$")
+@Pattern(
+	regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$)[a-zA-Z0-9!@#$%^&*(),.?\":{}|<>]*$",
+	message = "{valid.pattern.simple.password}"
+)
 public @interface SimplePasswordPattern {
 	String message() default "{valid.pattern.simple.password}";
 

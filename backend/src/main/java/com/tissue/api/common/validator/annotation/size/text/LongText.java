@@ -12,7 +12,10 @@ import jakarta.validation.constraints.Size;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Size(max = 5000)
+@Size(
+	max = 5000,
+	message = "{valid.size.long}"
+)
 public @interface LongText {
 	String message() default "{valid.size.long}";
 

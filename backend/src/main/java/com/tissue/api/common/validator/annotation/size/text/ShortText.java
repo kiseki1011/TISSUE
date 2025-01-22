@@ -12,7 +12,10 @@ import jakarta.validation.constraints.Size;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Size(max = 50)
+@Size(
+	max = 50,
+	message = "{valid.size.short}"
+)
 public @interface ShortText {
 	String message() default "{valid.size.short}";
 

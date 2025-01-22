@@ -12,7 +12,10 @@ import jakarta.validation.constraints.Size;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Size(min = 8, max = 50)
+@Size(
+	min = 8, max = 50,
+	message = "{valid.size.password}"
+)
 public @interface PasswordSize {
 	String message() default "{valid.size.password}";
 

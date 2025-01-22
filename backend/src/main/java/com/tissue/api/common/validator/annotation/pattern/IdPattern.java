@@ -12,7 +12,10 @@ import jakarta.validation.constraints.Pattern;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Pattern(regexp = "^[a-z][a-z0-9]+$")
+@Pattern(
+	regexp = "^[a-z][a-z0-9]+$",
+	message = "{valid.pattern.id}"
+)
 public @interface IdPattern {
 	String message() default "{valid.pattern.id}";
 

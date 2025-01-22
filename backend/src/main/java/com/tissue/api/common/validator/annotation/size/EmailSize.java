@@ -12,7 +12,10 @@ import jakarta.validation.constraints.Size;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
-@Size(max = 254)  // RFC 5321
+@Size(
+	max = 254, // RFC 5321
+	message = "{valid.size.email}"
+)
 public @interface EmailSize {
 	String message() default "{valid.size.email}";
 
