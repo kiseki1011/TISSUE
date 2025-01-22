@@ -302,7 +302,8 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
-			.andExpect(jsonPath("$.data..message").value("Birth date must be in the past"))
+			.andExpect(
+				jsonPath("$.data..message").value(messageSource.getMessage("valid.birthdate", null, Locale.ENGLISH)))
 			.andDo(print());
 	}
 
