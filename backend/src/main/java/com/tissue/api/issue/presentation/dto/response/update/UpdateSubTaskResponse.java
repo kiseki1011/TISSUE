@@ -15,14 +15,17 @@ public record UpdateSubTaskResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long updaterId,
 	LocalDateTime updatedAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateSubTaskResponse from(SubTask subTask) {

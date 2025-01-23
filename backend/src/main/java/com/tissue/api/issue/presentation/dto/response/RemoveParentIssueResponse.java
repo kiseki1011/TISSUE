@@ -12,7 +12,6 @@ public record RemoveParentIssueResponse(
 	String issueKey,
 	LocalDateTime removedAt
 ) {
-
 	public static RemoveParentIssueResponse from(Issue issue) {
 		return RemoveParentIssueResponse.builder()
 			.issueId(issue.getId())

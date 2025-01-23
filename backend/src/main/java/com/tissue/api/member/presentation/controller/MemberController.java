@@ -83,22 +83,6 @@ public class MemberController {
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	// @LoginRequired
-	// @PatchMapping("/name")
-	// public ApiResponse<UpdateMemberNameResponse> updateMemberName(
-	// 	@RequestBody @Valid UpdateMemberNameRequest request,
-	// 	@ResolveLoginMember Long loginMemberId,
-	// 	HttpSession session
-	// ) {
-	// 	sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-	// 	UpdateMemberNameResponse response = memberCommandService.updateName(
-	// 		request,
-	// 		loginMemberId
-	// 	);
-	//
-	// 	return ApiResponse.ok("Member name updated.", response);
-	// }
-
 	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<UpdateMemberEmailResponse> updateMemberEmail(
@@ -133,7 +117,7 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.getPassword(), loginMemberId);
+		memberValidator.validateMemberPassword(request.password(), loginMemberId);
 		memberCommandService.withdraw(loginMemberId);
 		session.invalidate();
 
@@ -147,10 +131,9 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.getPassword(), loginMemberId);
+		memberValidator.validateMemberPassword(request.password(), loginMemberId);
 		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
 
 		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
-
 }

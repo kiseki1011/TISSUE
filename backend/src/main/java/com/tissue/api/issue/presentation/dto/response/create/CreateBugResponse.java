@@ -20,19 +20,24 @@ public record CreateBugResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long createrId,
 	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
+
 	String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions,
 	Difficulty difficulty,
 	IssueStatus status,
+
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateBugResponse from(Bug bug) {

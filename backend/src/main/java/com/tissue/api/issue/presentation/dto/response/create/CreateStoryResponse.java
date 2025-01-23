@@ -17,17 +17,22 @@ public record CreateStoryResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long createrId,
 	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
+
 	String userStory,
 	String acceptanceCriteria,
 	Difficulty difficulty,
+
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateStoryResponse from(Story story) {

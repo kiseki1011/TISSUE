@@ -1,15 +1,10 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.tissue.api.common.validator.annotation.size.text.ShortText;
 
-@Getter
-@NoArgsConstructor
-public class DeleteWorkspaceRequest {
+public record DeleteWorkspaceRequest(
 
-	private String password;
-
-	public DeleteWorkspaceRequest(String password) {
-		this.password = password;
-	}
+	@ShortText
+	String password
+) {
 }

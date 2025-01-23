@@ -9,8 +9,10 @@ import lombok.Builder;
 public record CreateIssueRelationResponse(
 	String sourceIssueKey,
 	String sourceIssueTitle,
+
 	String targetIssueKey,
 	String targetIssueTitle,
+
 	IssueRelationType relationType,
 	IssueRelationType oppositeRelationType
 ) {

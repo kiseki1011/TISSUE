@@ -11,14 +11,16 @@ import lombok.Builder;
 @Builder
 public record SignupMemberResponse(
 	Long memberId,
+
 	String loginId,
 	String email,
+
 	String biography,
 	String name,
 	LocalDate birthDate,
+
 	LocalDateTime createdAt
 ) {
-
 	public static SignupMemberResponse from(Member member) {
 		return SignupMemberResponse.builder()
 			.memberId(member.getId())

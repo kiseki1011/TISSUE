@@ -39,14 +39,18 @@ class SessionManagerTest {
 	@DisplayName("로그인 응답 정보가 주어지면 세션에 해당 정보가 저장된다")
 	void createLoginSession() {
 		// given
-		LoginResponse loginResponse = new LoginResponse(1L, "test", "test@test.com");
+		LoginResponse loginResponse = LoginResponse.builder()
+			.memberId(1L)
+			.loginId("tester")
+			.email("test@test.com")
+			.build();
 
 		// when
 		sessionManager.createLoginSession(session, loginResponse);
 
 		// then
 		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
-		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, "test");
+		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID, "tester");
 		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, "test@test.com");
 	}
 

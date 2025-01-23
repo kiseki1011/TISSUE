@@ -7,7 +7,6 @@ public record DeleteIssueResponse(
 	String issueKey,
 	LocalDateTime deletedAt
 ) {
-
 	public static DeleteIssueResponse from(
 		Long issueId,
 		String issueKey,

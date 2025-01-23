@@ -49,7 +49,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.getLoginId()).isEqualTo("testuser");
+		assertThat(loginResponse.loginId()).isEqualTo("testuser");
 	}
 
 	@Test
@@ -73,7 +73,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.getEmail()).isEqualTo("testuser@test.com");
+		assertThat(loginResponse.email()).isEqualTo("testuser@test.com");
 	}
 
 	@Test

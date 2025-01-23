@@ -17,15 +17,19 @@ public record CreateSubTaskResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long createrId,
 	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
+
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateSubTaskResponse from(SubTask subTask) {

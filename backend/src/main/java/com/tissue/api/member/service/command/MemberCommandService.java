@@ -10,12 +10,10 @@ import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberNameRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberNameResponse;
 import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
 
@@ -37,10 +35,10 @@ public class MemberCommandService {
 	public SignupMemberResponse signup(
 		SignupMemberRequest request
 	) {
-		memberValidator.validateLoginIdIsUnique(request.getLoginId());
-		memberValidator.validateEmailIsUnique(request.getEmail());
+		memberValidator.validateLoginIdIsUnique(request.loginId());
+		memberValidator.validateEmailIsUnique(request.email());
 
-		String encodedPassword = passwordEncoder.encode(request.getPassword());
+		String encodedPassword = passwordEncoder.encode(request.password());
 		Member member = request.toEntity(encodedPassword);
 
 		Member savedMember = memberRepository.save(member);
@@ -58,21 +56,6 @@ public class MemberCommandService {
 		updateMemberInfoIfPresent(request, member);
 
 		return UpdateMemberInfoResponse.from(member);
-	}
-
-	@Transactional
-	public UpdateMemberNameResponse updateName(
-		UpdateMemberNameRequest request,
-		Long memberId
-	) {
-		Member member = findMemberById(memberId);
-
-		member.updateName(Name.builder()
-			.firstName(request.firstName())
-			.lastName(request.lastName())
-			.build());
-
-		return UpdateMemberNameResponse.from(member);
 	}
 
 	@Transactional
@@ -113,11 +96,6 @@ public class MemberCommandService {
 		memberRepository.delete(member);
 	}
 
-	/**
-	 * Todo
-	 *  - MemberProfile이라는 VO를 만들어서 사용 고려
-	 *  - or 요청 DTO에 검증 로직을 포함시키거나
-	 */
 	private void updateMemberInfoIfPresent(
 		UpdateMemberInfoRequest request,
 		Member member

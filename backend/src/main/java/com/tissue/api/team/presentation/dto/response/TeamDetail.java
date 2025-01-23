@@ -10,9 +10,11 @@ import lombok.Builder;
 @Builder
 public record TeamDetail(
 	Long teamId,
+
 	String name,
 	String description,
 	ColorType color,
+
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt
 ) {

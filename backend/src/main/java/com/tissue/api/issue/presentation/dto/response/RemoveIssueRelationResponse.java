@@ -8,6 +8,7 @@ import lombok.Builder;
 public record RemoveIssueRelationResponse(
 	String sourceIssueKey,
 	String sourceIssueTitle,
+
 	String targetIssueKey,
 	String targetIssueTitle
 ) {

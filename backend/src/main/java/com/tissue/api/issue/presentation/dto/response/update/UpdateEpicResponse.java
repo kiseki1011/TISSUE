@@ -14,16 +14,20 @@ public record UpdateEpicResponse(
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long updaterId,
 	LocalDateTime updatedAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
+
 	String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateEpicResponse from(Epic epic) {

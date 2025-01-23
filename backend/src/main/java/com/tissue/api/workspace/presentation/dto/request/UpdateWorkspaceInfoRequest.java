@@ -1,13 +1,20 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import jakarta.validation.constraints.Size;
+import com.tissue.api.common.validator.annotation.size.NameSize;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
+
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
 @Builder
 public record UpdateWorkspaceInfoRequest(
-	@Size(min = 2, max = 50, message = "Workspace name must be 2 ~ 50 characters long")
+
+	@NameSize
+	@NotBlank(message = "{valid.notblank}")
 	String name,
-	@Size(min = 1, max = 255, message = "Workspace description must be 1 ~ 255 characters long")
+
+	@StandardText
+	@NotBlank(message = "{valid.notblank}")
 	String description
 ) {
 	public boolean hasName() {
