@@ -15,6 +15,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateBugResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -30,6 +31,7 @@ public record UpdateBugResponse(
 	BugSeverity severity,
 	Set<String> affectedVersions,
 	IssueStatus status
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateBugResponse from(Bug bug) {

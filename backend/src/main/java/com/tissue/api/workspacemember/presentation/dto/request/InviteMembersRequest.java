@@ -5,7 +5,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 public record InviteMembersRequest(
-	@NotEmpty(message = "Member identifiers must not be empty")
+	@NotEmpty(message = "{valid.notempty.memberidentifiers}")
 	Set<String> memberIdentifiers
 ) {
 	public static InviteMembersRequest of(Set<String> memberIdentifiers) {

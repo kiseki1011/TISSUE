@@ -1,13 +1,13 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import jakarta.validation.constraints.Pattern;
+import com.tissue.api.common.validator.annotation.pattern.SimplePasswordPattern;
+import com.tissue.api.common.validator.annotation.size.password.SimplePasswordSize;
 
 public record UpdateWorkspacePasswordRequest(
 	String originalPassword,
-	@Pattern(
-		regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$).{8,30}",
-		message = "The password must be alphanumeric and must be between 4 and 30 characters"
-	)
+
+	@SimplePasswordSize
+	@SimplePasswordPattern
 	String newPassword
 ) {
 }

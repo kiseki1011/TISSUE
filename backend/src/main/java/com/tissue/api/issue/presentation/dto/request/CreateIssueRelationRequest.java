@@ -5,7 +5,7 @@ import com.tissue.api.issue.domain.enums.IssueRelationType;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateIssueRelationRequest(
-	@NotNull(message = "Relation type is required.")
+	@NotNull(message = "{valid.notnull}")
 	IssueRelationType relationType
 ) {
 }

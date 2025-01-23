@@ -9,11 +9,14 @@ import lombok.Builder;
 
 @Builder
 public record UpdateIssueStatusResponse(
+
 	Long issueId,
 	String issueKey,
 	IssueStatus status,
 	LocalDateTime updatedAt
+
 ) {
+
 	public static UpdateIssueStatusResponse from(Issue issue) {
 		return UpdateIssueStatusResponse.builder()
 			.issueId(issue.getId())

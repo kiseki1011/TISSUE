@@ -12,6 +12,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateStoryResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -25,6 +26,7 @@ public record UpdateStoryResponse(
 	Difficulty difficulty,
 	String userStory,
 	String acceptanceCriteria
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateStoryResponse from(Story story) {

@@ -8,9 +8,11 @@ import lombok.Builder;
 
 @Builder
 public record RemoveParentIssueResponse(
+
 	Long issueId,
 	String issueKey,
 	LocalDateTime removedAt
+
 ) {
 
 	public static RemoveParentIssueResponse from(Issue issue) {

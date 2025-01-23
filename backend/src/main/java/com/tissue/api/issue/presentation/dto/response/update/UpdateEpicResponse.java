@@ -11,6 +11,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateEpicResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -24,6 +25,7 @@ public record UpdateEpicResponse(
 	String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateEpicResponse from(Epic epic) {

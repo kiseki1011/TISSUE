@@ -1,15 +1,17 @@
 package com.tissue.api.team.presentation.dto.request;
 
+import com.tissue.api.common.validator.annotation.size.NameSize;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public record UpdateTeamRequest(
-	@NotBlank(message = "Team name is required")
-	@Size(max = 50, message = "Team name must be at most 50 characters")
+	@NameSize
+	@NotBlank(message = "{valid.notblank}")
 	String name,
 
-	@NotBlank(message = "Team description is required")
-	@Size(max = 200, message = "Team description must be at most 200 characters")
+	@StandardText
+	@NotBlank(message = "{valid.notblank}")
 	String description
 ) {
 }

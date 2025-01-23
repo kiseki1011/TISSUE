@@ -14,6 +14,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateSubTaskResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -26,6 +27,7 @@ public record CreateSubTaskResponse(
 	LocalDate dueDate,
 	Difficulty difficulty,
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateSubTaskResponse from(SubTask subTask) {

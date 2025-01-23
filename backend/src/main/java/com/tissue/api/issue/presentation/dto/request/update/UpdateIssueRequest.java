@@ -21,7 +21,7 @@ import com.tissue.api.issue.domain.enums.IssueType;
 	@JsonSubTypes.Type(value = UpdateSubTaskRequest.class, name = "SUB_TASK")
 })
 public interface UpdateIssueRequest {
-	// 모든 이슈 타입이 공통으로 가지는 필드들
+
 	String title();
 
 	String content();
@@ -32,9 +32,7 @@ public interface UpdateIssueRequest {
 
 	LocalDate dueDate();
 
-	// 이슈의 타입
 	IssueType getType();
 
-	// 실제 업데이트를 수행하는 메서드
 	void update(Issue issue);
 }

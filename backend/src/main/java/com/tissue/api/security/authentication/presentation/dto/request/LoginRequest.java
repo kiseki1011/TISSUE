@@ -9,10 +9,10 @@ import lombok.Builder;
  */
 @Builder
 public record LoginRequest(
-	@NotBlank(message = "Must input login ID or email.")
+	@NotBlank(message = "{valid.notblank}")
 	String identifier,
 
-	@NotBlank(message = "Must input password.")
+	@NotBlank(message = "{valid.notblank}")
 	String password
 ) {
 }

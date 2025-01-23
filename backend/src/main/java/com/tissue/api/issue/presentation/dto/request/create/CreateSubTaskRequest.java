@@ -2,6 +2,9 @@ package com.tissue.api.issue.presentation.dto.request.create;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.validator.annotation.size.text.ContentText;
+import com.tissue.api.common.validator.annotation.size.text.ShortText;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
@@ -14,12 +17,24 @@ import lombok.Builder;
 
 @Builder
 public record CreateSubTaskRequest(
-	@NotBlank String title,
-	@NotBlank String content,
+
+	@ShortText
+	@NotBlank(message = "{valid.notblank}")
+	String title,
+
+	@ContentText
+	@NotBlank(message = "{valid.notblank}")
+	String content,
+
+	@StandardText
 	String summary,
+
 	IssuePriority priority,
+
 	LocalDate dueDate,
+
 	Difficulty difficulty,
+
 	String parentIssueKey
 
 ) implements CreateIssueRequest {

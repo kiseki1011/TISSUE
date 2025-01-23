@@ -1,15 +1,9 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
 
-@Getter
-@NoArgsConstructor
-public class DeleteWorkspaceRequest {
-
-	private String password;
-
-	public DeleteWorkspaceRequest(String password) {
-		this.password = password;
-	}
+public record DeleteWorkspaceRequest(
+	@NotBlank(message = "{valid.notblank}")
+	String password
+) {
 }

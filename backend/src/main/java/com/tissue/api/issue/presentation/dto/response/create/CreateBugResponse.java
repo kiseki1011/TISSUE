@@ -17,6 +17,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateBugResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -33,6 +34,7 @@ public record CreateBugResponse(
 	Difficulty difficulty,
 	IssueStatus status,
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateBugResponse from(Bug bug) {

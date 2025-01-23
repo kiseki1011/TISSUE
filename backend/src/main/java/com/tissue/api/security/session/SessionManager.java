@@ -31,10 +31,10 @@ public class SessionManager {
 	private final MemberRepository memberRepository;
 
 	public void createLoginSession(HttpSession session, LoginResponse loginResponse) {
-		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.getMemberId());
-		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.getLoginId());
-		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.getEmail());
-		log.info("Login session created for MEMBER_ID: {}", loginResponse.getMemberId());
+		session.setAttribute(LOGIN_MEMBER_ID, loginResponse.memberId());
+		session.setAttribute(LOGIN_MEMBER_LOGIN_ID, loginResponse.loginId());
+		session.setAttribute(LOGIN_MEMBER_EMAIL, loginResponse.email());
+		log.info("Login session created for MEMBER_ID: {}", loginResponse.memberId());
 	}
 
 	public Member getLoginMember(HttpSession session) {

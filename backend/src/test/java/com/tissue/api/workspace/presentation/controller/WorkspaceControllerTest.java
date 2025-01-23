@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -32,13 +33,6 @@ import com.tissue.helper.ControllerTestHelper;
 
 class WorkspaceControllerTest extends ControllerTestHelper {
 
-	/**
-	 * Todo
-	 *  - 필드 검증에 대한 단위 테스트 작성법 찾아보기
-	 *  - Q1: 같은 필드에 대해서 동일한 항목에 대해 검증 애노테이션이 겹치는 경우 어떻게 검증?
-	 *    - 예시: @NotBlank와 @Size(min = 2, max = 50)을 적용한 필드에 " "(공백)가 들어가는 경우
-	 *  - Q2: 검증 메세지 자체를 검증하는 것은 과연 효율적인가? 애노테이션 종류를 검증하는 것이 더 좋을지도?
-	 */
 	static Stream<Arguments> provideInvalidInputs() {
 		return Stream.of(
 			arguments(null, null), // null
@@ -48,8 +42,8 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 CREATED를 응답한다")
-	void test1() throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성을 성공하면 CREATED")
+	void createWorkspace_success_CREATED() throws Exception {
 		// given
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("Test Workspace")
@@ -66,8 +60,8 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 
 	@ParameterizedTest
 	@MethodSource("provideInvalidInputs")
-	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름과 설명은 null, 빈 문자열 또는 공백이면 검증 오류가 발생한다")
-	void test2(String name, String description) throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름 또는 설명이 널(null), 빈 문자열(''), 공백(' ')이면 검증을 실패한다")
+	void createWorkspace_fail_nameAndDescription_notBlankValidation(String name, String description) throws Exception {
 		// given
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name(name)
@@ -88,13 +82,14 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지키지 않으면 BAD_REQUEST 응답한다")
-	void test3() throws Exception {
+	@DisplayName("POST /workspaces - 워크스페이스 생성 요청에서 이름의 범위는 2~50자, 설명은 1~255자를 지켜야 한다")
+	void createWorkspace_fail_nameAndDescription_sizeValidation() throws Exception {
 		// given
 		String longName = createLongString(51);
 		String longDescription = createLongString(256);
-		String nameValidMsg = "Workspace name must be 2 ~ 50 characters long";
-		String descriptionValidMsg = "Workspace description must be 1 ~ 255 characters long";
+
+		String nameValidMsg = messageSource.getMessage("valid.size.name", null, Locale.ENGLISH);
+		String descriptionValidMsg = messageSource.getMessage("valid.size.standard", null, Locale.ENGLISH);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name(longName)
@@ -104,6 +99,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		// when & then
 		mockMvc.perform(post("/api/v1/workspaces")
 				.contentType(MediaType.APPLICATION_JSON)
+				.header("Accept-Language", "en")
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.data[*].message").value(hasItem(nameValidMsg)))
@@ -144,7 +140,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 OK를 응답한다")
+	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 OK")
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
@@ -169,7 +165,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("GET /workspaces/{code} - 워크스페이스 상세 정보 조회를 성공하면 OK를 응답한다")
+	@DisplayName("GET /workspaces/{code} - 워크스페이스 상세 정보 조회를 성공하면 OK")
 	void test5() throws Exception {
 		// given
 		String code = "ABCD1234";
@@ -198,7 +194,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/key - key prefix 수정에 성공하면 OK를 응답한다")
+	@DisplayName("PATCH /workspaces/{code}/key - 이슈 키 접두사(issue key prefix) 수정에 성공하면 OK")
 	void updateWorkspaceIssueKeyPrefix_shouldReturnOK() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("TESTPREFIX");
@@ -227,7 +223,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/key - key prefix 수정 요청에 영문자 외 사용하면 검증을 실패한다")
+	@DisplayName("PATCH /workspaces/{code}/key - 이슈 키 접두사(issue key prefix) 수정 요청에 영문자를 사용하지 않으면 검증을 실패한다")
 	void updateWorkspaceIssueKeyPrefix_failsRequestValidation() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("잘못된접두사");

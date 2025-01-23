@@ -11,6 +11,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateEpicResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -24,6 +25,7 @@ public record CreateEpicResponse(
 	String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
+
 ) implements CreateIssueResponse {
 
 	public static CreateEpicResponse from(Epic epic) {

@@ -12,6 +12,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateTaskResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -23,6 +24,7 @@ public record UpdateTaskResponse(
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty
+
 ) implements UpdateIssueResponse {
 
 	public static UpdateTaskResponse from(Task task) {

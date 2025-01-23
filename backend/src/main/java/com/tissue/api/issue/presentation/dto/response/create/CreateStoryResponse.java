@@ -14,6 +14,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateStoryResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
@@ -28,6 +29,7 @@ public record CreateStoryResponse(
 	String acceptanceCriteria,
 	Difficulty difficulty,
 	String parentIssueKey
+
 ) implements CreateIssueResponse {
 
 	public static CreateStoryResponse from(Story story) {

@@ -97,7 +97,7 @@ public class WorkspaceController {
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
-		workspaceValidator.validateWorkspacePassword(request.getPassword(), code);
+		workspaceValidator.validateWorkspacePassword(request.password(), code);
 		DeleteWorkspaceResponse response = workspaceCommandService.deleteWorkspace(code, loginMemberId);
 
 		return ApiResponse.ok("Workspace deleted.", response);

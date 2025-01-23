@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Locale;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -47,11 +49,11 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 			.andExpect(status().isOk())
 			.andDo(print());
 
-		assertThat(session.getAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID)).isEqualTo(loginResponse.getLoginId());
+		assertThat(session.getAttribute(SessionAttributes.LOGIN_MEMBER_LOGIN_ID)).isEqualTo(loginResponse.loginId());
 	}
 
 	@Test
-	@DisplayName("POST /auth/login - 로그인 시 비밀번호 필드의 빈 검증이 실패하면 BAD_REQUEST를 기대한다")
+	@DisplayName("POST /auth/login - 로그인 시 비밀번호 필드가 비어있으면 검증에 실패한다")
 	void test2() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
@@ -62,9 +64,11 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 		// when & then
 		mockMvc.perform(post("/api/v1/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
+				.header("Accept-Language", "en")
 				.content(objectMapper.writeValueAsString(loginRequest)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.data..message").value("Must input password."))
+			.andExpect(
+				jsonPath("$.data..message").value(messageSource.getMessage("valid.notblank", null, Locale.ENGLISH)))
 			.andDo(print());
 	}
 
