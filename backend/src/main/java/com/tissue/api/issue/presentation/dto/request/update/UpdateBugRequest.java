@@ -31,9 +31,7 @@ public record UpdateBugRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	Difficulty difficulty,
 
 	@ContentText
@@ -41,7 +39,6 @@ public record UpdateBugRequest(
 	String reproducingSteps,
 
 	BugSeverity severity,
-
 	Set<String> affectedVersions
 
 ) implements UpdateIssueRequest {

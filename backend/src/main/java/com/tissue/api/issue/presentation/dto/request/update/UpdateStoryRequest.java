@@ -30,7 +30,7 @@ public record UpdateStoryRequest(
 	String summary,
 
 	IssuePriority priority,
-
+	
 	LocalDate dueDate,
 
 	Difficulty difficulty,

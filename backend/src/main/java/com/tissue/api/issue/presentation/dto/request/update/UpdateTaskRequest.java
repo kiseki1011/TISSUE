@@ -29,9 +29,7 @@ public record UpdateTaskRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	Difficulty difficulty
 
 ) implements UpdateIssueRequest {

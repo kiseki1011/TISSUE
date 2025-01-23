@@ -10,11 +10,14 @@ import lombok.Builder;
 @Builder
 public record CreateReviewResponse(
 	Long reviewId,
+
 	ReviewStatus status,
 	String content,
 	int reviewRound,
+
 	Long reviewerId,
 	String reviewerNickName,
+
 	LocalDateTime createdAt
 ) {
 

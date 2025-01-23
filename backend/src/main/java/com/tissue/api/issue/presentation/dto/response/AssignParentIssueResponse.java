@@ -8,15 +8,14 @@ import lombok.Builder;
 
 @Builder
 public record AssignParentIssueResponse(
-
 	Long issueId,
 	String issueKey,
+
 	Long parentIssueId,
 	String parentIssueKey,
+
 	LocalDateTime assignedAt
-
 ) {
-
 	public static AssignParentIssueResponse from(Issue issue) {
 		return AssignParentIssueResponse.builder()
 			.issueId(issue.getId())

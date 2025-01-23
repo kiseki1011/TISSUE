@@ -9,10 +9,12 @@ import lombok.Builder;
 @Builder
 public record CreateWorkspaceResponse(
 	Long id,
+
 	String code,
 	String name,
 	String description,
 	String keyPrefix,
+
 	LocalDateTime createdAt,
 	Long createdBy
 ) {

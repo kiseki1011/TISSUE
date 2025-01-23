@@ -13,6 +13,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateWorkspaceRequest(
+
 	@NameSize
 	@NotBlank(message = "{valid.notblank}")
 	String name,

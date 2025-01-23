@@ -9,8 +9,10 @@ import lombok.Builder;
 @Builder
 public record UpdateTeamResponse(
 	Long teamId,
+
 	String name,
 	String description,
+
 	LocalDateTime updatedAt
 ) {
 	public static UpdateTeamResponse from(Team team) {

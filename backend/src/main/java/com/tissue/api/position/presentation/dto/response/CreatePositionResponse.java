@@ -10,9 +10,11 @@ import lombok.Builder;
 @Builder
 public record CreatePositionResponse(
 	Long positionId,
+
 	String name,
 	String description,
 	ColorType color,
+
 	LocalDateTime createdAt
 ) {
 	public static CreatePositionResponse from(Position position) {

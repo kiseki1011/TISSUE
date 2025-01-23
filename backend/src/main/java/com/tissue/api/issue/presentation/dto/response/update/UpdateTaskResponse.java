@@ -12,12 +12,13 @@ import lombok.Builder;
 
 @Builder
 public record UpdateTaskResponse(
-
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long updaterId,
 	LocalDateTime updatedAt,
+
 	String title,
 	String content,
 	String summary,

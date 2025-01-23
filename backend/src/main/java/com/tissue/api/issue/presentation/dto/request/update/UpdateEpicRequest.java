@@ -28,7 +28,6 @@ public record UpdateEpicRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
 
 	@LongText
@@ -36,7 +35,6 @@ public record UpdateEpicRequest(
 	String businessGoal,
 
 	LocalDate targetReleaseDate,
-
 	LocalDate hardDeadLine
 
 ) implements UpdateIssueRequest {

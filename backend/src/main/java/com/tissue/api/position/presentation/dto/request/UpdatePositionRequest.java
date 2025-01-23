@@ -6,6 +6,7 @@ import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import jakarta.validation.constraints.NotBlank;
 
 public record UpdatePositionRequest(
+
 	@NameSize
 	@NotBlank(message = "{valid.notblank}")
 	String name,

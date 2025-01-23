@@ -9,8 +9,10 @@ import lombok.Builder;
 @Builder
 public record UpdateReviewResponse(
 	Long reviewId,
+
 	String title,
 	String content,
+
 	Long updatedBy,
 	LocalDateTime updatedAt
 ) {

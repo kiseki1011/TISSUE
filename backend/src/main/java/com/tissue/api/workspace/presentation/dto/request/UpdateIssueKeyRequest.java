@@ -6,9 +6,10 @@ import com.tissue.api.common.validator.annotation.size.IssueKeyPrefixSize;
 import jakarta.validation.constraints.NotBlank;
 
 public record UpdateIssueKeyRequest(
-	@NotBlank(message = "{valid.notblank}")
+
 	@IssueKeyPrefixSize
 	@IssueKeyPrefixPattern
+	@NotBlank(message = "{valid.notblank}")
 	String issueKeyPrefix
 ) {
 }

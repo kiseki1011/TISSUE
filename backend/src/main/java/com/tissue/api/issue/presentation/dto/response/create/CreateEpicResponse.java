@@ -11,17 +11,19 @@ import lombok.Builder;
 
 @Builder
 public record CreateEpicResponse(
-
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long createrId,
 	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
+
 	String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine

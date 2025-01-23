@@ -6,14 +6,12 @@ import lombok.Builder;
 
 @Builder
 public record RemoveIssueRelationResponse(
-
 	String sourceIssueKey,
 	String sourceIssueTitle,
+
 	String targetIssueKey,
 	String targetIssueTitle
-
 ) {
-
 	public static RemoveIssueRelationResponse from(Issue sourceIssue, Issue targetIssue) {
 		return RemoveIssueRelationResponse.builder()
 			.sourceIssueKey(sourceIssue.getIssueKey())

@@ -8,6 +8,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateWorkspaceInfoRequest(
+
 	@NameSize
 	@NotBlank(message = "{valid.notblank}")
 	String name,

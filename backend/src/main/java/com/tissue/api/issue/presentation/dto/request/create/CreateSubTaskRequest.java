@@ -30,11 +30,8 @@ public record CreateSubTaskRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	Difficulty difficulty,
-
 	String parentIssueKey
 
 ) implements CreateIssueRequest {

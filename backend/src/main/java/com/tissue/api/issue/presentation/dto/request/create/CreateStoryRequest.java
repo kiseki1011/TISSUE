@@ -31,11 +31,8 @@ public record CreateStoryRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	Difficulty difficulty,
-
 	String parentIssueKey,
 
 	@LongText

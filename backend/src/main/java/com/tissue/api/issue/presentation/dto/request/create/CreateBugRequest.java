@@ -32,11 +32,8 @@ public record CreateBugRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	Difficulty difficulty,
-
 	String parentIssueKey,
 
 	@ContentText
@@ -44,7 +41,6 @@ public record CreateBugRequest(
 	String reproducingSteps,
 
 	BugSeverity severity,
-
 	Set<String> affectedVersions
 
 ) implements CreateIssueRequest {

@@ -15,18 +15,20 @@ import lombok.Builder;
 
 @Builder
 public record UpdateBugResponse(
-
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
+
 	Long updaterId,
 	LocalDateTime updatedAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
+
 	String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions,

@@ -34,9 +34,7 @@ public record CreateEpicRequest(
 	String summary,
 
 	IssuePriority priority,
-
 	LocalDate dueDate,
-
 	String parentIssueKey,
 
 	@LongText
@@ -44,7 +42,6 @@ public record CreateEpicRequest(
 	String businessGoal,
 
 	LocalDate targetReleaseDate,
-
 	LocalDate hardDeadLine
 
 ) implements CreateIssueRequest {

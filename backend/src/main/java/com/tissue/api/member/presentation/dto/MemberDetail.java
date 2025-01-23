@@ -12,12 +12,15 @@ import lombok.Builder;
 public record MemberDetail(
 	String loginId,
 	String email,
+
 	String lastName,
 	String firstName,
 	LocalDate birthDate,
 	JobType jobType,
 	String biography,
+
 	int ownedWorkspaceCount,
+
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt
 ) {

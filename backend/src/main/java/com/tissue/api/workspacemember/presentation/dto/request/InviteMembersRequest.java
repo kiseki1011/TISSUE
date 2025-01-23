@@ -5,6 +5,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 public record InviteMembersRequest(
+
 	@NotEmpty(message = "{valid.notempty.memberidentifiers}")
 	Set<String> memberIdentifiers
 ) {

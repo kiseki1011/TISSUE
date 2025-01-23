@@ -10,9 +10,11 @@ import lombok.Builder;
 @Builder
 public record CreateTeamResponse(
 	Long teamId,
+
 	String name,
 	String description,
 	ColorType color,
+
 	LocalDateTime createdAt
 ) {
 	public static CreateTeamResponse from(Team team) {

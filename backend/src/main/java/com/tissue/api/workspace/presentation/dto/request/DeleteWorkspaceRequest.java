@@ -1,9 +1,10 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.tissue.api.common.validator.annotation.size.text.ShortText;
 
 public record DeleteWorkspaceRequest(
-	@NotBlank(message = "{valid.notblank}")
+
+	@ShortText
 	String password
 ) {
 }

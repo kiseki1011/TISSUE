@@ -9,15 +9,16 @@ import lombok.Builder;
 @Builder
 public record LoginResponse(
 	Long memberId,
-	LocalDateTime loginAt,
 	String loginId,
-	String email
+	String email,
+	LocalDateTime loginAt
 ) {
 	public static LoginResponse from(Member member) {
 		return LoginResponse.builder()
 			.memberId(member.getId())
 			.loginId(member.getLoginId())
 			.email(member.getEmail())
+			.loginAt(LocalDateTime.now())
 			.build();
 	}
 }
