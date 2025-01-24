@@ -1,4 +1,4 @@
-package com.tissue.api.team.domain.respository;
+package com.tissue.api.team.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
