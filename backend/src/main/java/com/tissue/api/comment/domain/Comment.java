@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends WorkspaceContextBaseEntity {
+public abstract class Comment extends WorkspaceContextBaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +46,8 @@ public class Comment extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "AUTHOR_ID", nullable = false)
 	private WorkspaceMember author;
 
-	// 대댓글 구조를 위한 self-referencing 관계
+	private boolean isEdited;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_COMMENT_ID")
 	private Comment parentComment;
@@ -54,28 +55,51 @@ public class Comment extends WorkspaceContextBaseEntity {
 	@OneToMany(mappedBy = "parentComment")
 	private final List<Comment> childComments = new ArrayList<>();
 
-	// 댓글의 상태 관리
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private CommentStatus status = CommentStatus.ACTIVE;
 
-	// soft delete를 위한 필드들
 	private LocalDateTime deletedAt;
 	private Long deletedBy;
 
-	public void delete(Long deletedBy) {
+	public Comment(String content, WorkspaceMember author) {
+		this.content = content;
+		this.author = author;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
+		this.isEdited = true;
+	}
+
+	public boolean isWrittenBy(WorkspaceMember member) {
+		return author.equals(member);
+	}
+
+	public boolean canEdit(WorkspaceMember workspaceMember) {
+		return author.equals(workspaceMember) || workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER);
+	}
+
+	public void softDelete(Long deletedBy) {
 		this.status = CommentStatus.DELETED;
 		this.deletedAt = LocalDateTime.now();
 		this.deletedBy = deletedBy;
 	}
 
-	public boolean isAuthoredBy(WorkspaceMember member) {
-		return author.equals(member);
+	public void addChildComment(Comment child) {
+		child.validateParentComment();
+		child.parentComment = this;
+		this.childComments.add(child);
 	}
 
-	// 바로 검증하는 것 고려
-	public boolean canEdit(WorkspaceMember member) {
-		return author.equals(member) || member.roleIsHigherThan(WorkspaceRole.MANAGER);
+	public void validateCanEdit(WorkspaceMember workspaceMember) {
+		if (author.equals(workspaceMember)) {
+			return;
+		}
+		if (workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER)) {
+			return;
+		}
+		throw new InvalidOperationException("Needs to be the author or role higher than MANAGER.");
 	}
 
 	// 대댓글 추가 시 1-depth 제한과 타입 검증
@@ -95,11 +119,5 @@ public class Comment extends WorkspaceContextBaseEntity {
 					this.getClass().getSimpleName())
 			);
 		}
-	}
-
-	public void addChildComment(Comment child) {
-		child.validateParentComment();
-		child.parentComment = this;
-		this.childComments.add(child);
 	}
 }

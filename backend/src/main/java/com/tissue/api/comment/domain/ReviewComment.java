@@ -1,6 +1,7 @@
 package com.tissue.api.comment.domain;
 
 import com.tissue.api.review.domain.Review;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -8,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @DiscriminatorValue("REVIEW_COMMENT")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewComment {
+public class ReviewComment extends Comment {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "REVIEW_ID", nullable = false)
@@ -26,4 +28,20 @@ public class ReviewComment {
 	 *  - 깃허브 API 연동
 	 *  - line number, PR number, github comment id, 등을 추가
 	 */
+
+	@Builder
+	private ReviewComment(
+		String content,
+		WorkspaceMember author,
+		Review review,
+		Comment parentComment
+	) {
+		super(content, author);
+		this.review = review;
+
+		if (parentComment != null) {
+			validateParentComment();
+			parentComment.addChildComment(this);
+		}
+	}
 }
