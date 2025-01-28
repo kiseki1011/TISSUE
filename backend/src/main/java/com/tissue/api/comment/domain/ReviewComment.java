@@ -36,12 +36,7 @@ public class ReviewComment extends Comment {
 		Review review,
 		Comment parentComment
 	) {
-		super(content, author);
+		super(content, author, parentComment);
 		this.review = review;
-
-		if (parentComment != null) {
-			validateParentComment();
-			parentComment.addChildComment(this);
-		}
 	}
 }

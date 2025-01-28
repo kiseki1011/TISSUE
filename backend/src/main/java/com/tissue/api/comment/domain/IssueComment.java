@@ -32,10 +32,5 @@ public class IssueComment extends Comment {
 	) {
 		super(content, author, parentComment);
 		this.issue = issue;
-
-		if (parentComment != null) {
-			validateParentComment();
-			parentComment.addChildComment(this);
-		}
 	}
 }

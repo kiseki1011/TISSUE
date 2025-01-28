@@ -67,6 +67,11 @@ public abstract class Comment extends WorkspaceContextBaseEntity {
 		this.content = content;
 		this.author = author;
 		this.parentComment = parentComment;
+
+		if (parentComment != null) {
+			validateParentComment();
+			parentComment.addChildComment(this);
+		}
 	}
 
 	public void updateContent(String content) {
