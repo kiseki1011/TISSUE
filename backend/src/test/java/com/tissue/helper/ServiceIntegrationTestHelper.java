@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.tissue.api.assignee.service.command.AssigneeCommandService;
+import com.tissue.api.comment.domain.repository.CommentRepository;
+import com.tissue.api.comment.service.command.IssueCommentCommandService;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
@@ -114,6 +116,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected ReviewerCommandService reviewerCommandService;
 	@Autowired
 	protected AssigneeCommandService assigneeCommandService;
+	@Autowired
+	protected IssueCommentCommandService issueCommentCommandService;
 
 	/**
 	 * Validator
@@ -144,6 +148,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected ReviewRepository reviewRepository;
 	@Autowired
 	protected IssueReviewerRepository issueReviewerRepository;
+	@Autowired
+	protected CommentRepository commentRepository;
 
 	/**
 	 * Fixture
