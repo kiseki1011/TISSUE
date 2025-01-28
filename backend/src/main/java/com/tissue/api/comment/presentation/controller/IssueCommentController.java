@@ -45,6 +45,7 @@ public class IssueCommentController {
 	private final IssueCommentCommandService issueCommentCommandService;
 
 	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueCommentResponse> createComment(
 		@PathVariable String workspaceCode,
@@ -82,8 +83,8 @@ public class IssueCommentController {
 		return ApiResponse.created("Comment updated.", response);
 	}
 
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{commentId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> deleteComment(
 		@PathVariable String workspaceCode,
