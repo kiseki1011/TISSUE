@@ -30,7 +30,7 @@ public class IssueComment extends Comment {
 		Issue issue,
 		Comment parentComment
 	) {
-		super(content, author);
+		super(content, author, parentComment);
 		this.issue = issue;
 
 		if (parentComment != null) {

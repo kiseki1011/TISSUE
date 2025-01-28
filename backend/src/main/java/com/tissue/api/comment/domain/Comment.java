@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -60,11 +61,12 @@ public abstract class Comment extends WorkspaceContextBaseEntity {
 	private CommentStatus status = CommentStatus.ACTIVE;
 
 	private LocalDateTime deletedAt;
-	private Long deletedBy;
+	private Long deletedByWorkspaceMemberId;
 
-	public Comment(String content, WorkspaceMember author) {
+	public Comment(String content, WorkspaceMember author, Comment parentComment) {
 		this.content = content;
 		this.author = author;
+		this.parentComment = parentComment;
 	}
 
 	public void updateContent(String content) {
@@ -80,14 +82,13 @@ public abstract class Comment extends WorkspaceContextBaseEntity {
 		return author.equals(workspaceMember) || workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER);
 	}
 
-	public void softDelete(Long deletedBy) {
+	public void softDelete(Long deletedByWorkspaceMemberId) {
 		this.status = CommentStatus.DELETED;
 		this.deletedAt = LocalDateTime.now();
-		this.deletedBy = deletedBy;
+		this.deletedByWorkspaceMemberId = deletedByWorkspaceMemberId;
 	}
 
 	public void addChildComment(Comment child) {
-		child.validateParentComment();
 		child.parentComment = this;
 		this.childComments.add(child);
 	}
@@ -99,7 +100,7 @@ public abstract class Comment extends WorkspaceContextBaseEntity {
 		if (workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER)) {
 			return;
 		}
-		throw new InvalidOperationException("Needs to be the author or role higher than MANAGER.");
+		throw new ForbiddenOperationException("Must either be the author or hold a workspace role of ADMIN or higher.");
 	}
 
 	// 대댓글 추가 시 1-depth 제한과 타입 검증
