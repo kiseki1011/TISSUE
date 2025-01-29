@@ -134,16 +134,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private Issue parentIssue;
 
 	@OneToMany(mappedBy = "parentIssue")
-	private final List<Issue> childIssues = new ArrayList<>();
+	private List<Issue> childIssues = new ArrayList<>();
 
 	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private final List<IssueRelation> outgoingRelations = new ArrayList<>();
+	private List<IssueRelation> outgoingRelations = new ArrayList<>();
 
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private final List<IssueRelation> incomingRelations = new ArrayList<>();
+	private List<IssueRelation> incomingRelations = new ArrayList<>();
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "ISSUE_ID")
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
 	@Column(nullable = false)
@@ -151,7 +150,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "ISSUE_ID")
-	private final List<IssueAssignee> assignees = new ArrayList<>();
+	private List<IssueAssignee> assignees = new ArrayList<>();
 
 	public void requestReview() {
 		validateReviewersExist();
@@ -167,7 +166,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateReviewerLimit();
 		validateIsReviewer(reviewer);
 
-		reviewers.add(new IssueReviewer(reviewer));
+		reviewers.add(new IssueReviewer(reviewer, this));
 	}
 
 	public void removeReviewer(WorkspaceMember workspaceMember) {

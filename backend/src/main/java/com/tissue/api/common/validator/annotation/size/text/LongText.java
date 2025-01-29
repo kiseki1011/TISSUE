@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Size(
-	max = 5000,
+	max = 2000,
 	message = "{valid.size.long}"
 )
 public @interface LongText {

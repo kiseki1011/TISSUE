@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.team.domain.Team;
-import com.tissue.api.team.domain.respository.TeamRepository;
+import com.tissue.api.team.domain.repository.TeamRepository;
 
 import lombok.RequiredArgsConstructor;
 

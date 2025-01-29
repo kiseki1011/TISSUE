@@ -6,6 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.tissue.api.assignee.service.command.AssigneeCommandService;
+import com.tissue.api.comment.domain.repository.CommentRepository;
+import com.tissue.api.comment.service.command.IssueCommentCommandService;
+import com.tissue.api.comment.service.command.ReviewCommentCommandService;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
@@ -24,7 +27,7 @@ import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.command.ReviewCommandService;
 import com.tissue.api.review.service.command.ReviewerCommandService;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.team.domain.respository.TeamRepository;
+import com.tissue.api.team.domain.repository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
 import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.util.WorkspaceCodeParser;
@@ -114,6 +117,10 @@ public abstract class ServiceIntegrationTestHelper {
 	protected ReviewerCommandService reviewerCommandService;
 	@Autowired
 	protected AssigneeCommandService assigneeCommandService;
+	@Autowired
+	protected IssueCommentCommandService issueCommentCommandService;
+	@Autowired
+	protected ReviewCommentCommandService reviewCommentCommandService;
 
 	/**
 	 * Validator
@@ -144,6 +151,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected ReviewRepository reviewRepository;
 	@Autowired
 	protected IssueReviewerRepository issueReviewerRepository;
+	@Autowired
+	protected CommentRepository commentRepository;
 
 	/**
 	 * Fixture

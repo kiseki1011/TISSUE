@@ -59,8 +59,7 @@ public class ReviewCommandService {
 		Review review = issueReviewer.addReview(
 			request.status(),
 			request.title(),
-			request.content(),
-			issue.getCurrentReviewRound()
+			request.content()
 		);
 
 		Review savedReview = reviewRepository.save(review);
@@ -127,8 +126,7 @@ public class ReviewCommandService {
 	private Review findReview(Long id) {
 		return reviewRepository.findById(id)
 			.orElseThrow(
-				() -> new ResourceNotFoundException(String.format("Review was not found with reviewId: %d", id))
-			);
+				() -> new ResourceNotFoundException(String.format("Review was not found with reviewId: %d", id)));
 	}
 
 	private void updateIssueStatusBasedOnReviewStatus(Issue issue, ReviewStatus reviewStatus) {

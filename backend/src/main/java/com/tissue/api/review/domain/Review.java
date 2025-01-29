@@ -49,6 +49,12 @@ public class Review extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private int reviewRound;
 
+	@Column(nullable = false)
+	private String workspaceCode;
+
+	@Column
+	private String issueKey;
+
 	@Builder
 	public Review(
 		IssueReviewer issueReviewer,
@@ -62,11 +68,21 @@ public class Review extends WorkspaceContextBaseEntity {
 		this.title = title;
 		this.content = content;
 		this.reviewRound = reviewRound;
+		this.workspaceCode = issueReviewer.getIssue().getWorkspaceCode();
+		this.issueKey = issueReviewer.getIssue().getIssueKey();
 	}
 
 	public void updateStatus(ReviewStatus status) {
 		validateCanUpdateStatus();
 		this.status = status;
+	}
+
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
 	}
 
 	public void validateIsAuthor(Long workspaceMemberId) {
@@ -81,18 +97,6 @@ public class Review extends WorkspaceContextBaseEntity {
 				)
 			);
 		}
-	}
-
-	public void updateTitle(String title) {
-		this.title = title;
-	}
-
-	public void updateContent(String content) {
-		this.content = content;
-	}
-
-	public String getWorkspaceCode() {
-		return issueReviewer.getReviewer().getWorkspaceCode();
 	}
 
 	private void validateCanUpdateStatus() {
