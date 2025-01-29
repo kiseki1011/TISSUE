@@ -86,7 +86,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("댓글에 대한 대댓글 작성에 성공한다")
+	@DisplayName("이슈 댓글에 대한 대댓글 작성에 성공한다")
 	void createIssueReplyComment_success() {
 		// given
 		Long currentWorkspaceMemberId = 1L;
