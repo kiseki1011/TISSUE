@@ -6,12 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.tissue.api.comment.domain.Comment;
 import com.tissue.api.comment.domain.IssueComment;
+import com.tissue.api.comment.domain.ReviewComment;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
 	Optional<IssueComment> findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
 		Long id,
 		String issueKey,
+		String workspaceCode
+	);
+
+	Optional<ReviewComment> findByIdAndReview_IdAndReview_WorkspaceCode(
+		Long commentId,
+		Long reviewId,
 		String workspaceCode
 	);
 }
