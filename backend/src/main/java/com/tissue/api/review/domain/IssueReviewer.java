@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -31,31 +32,35 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ISSUE_ID", nullable = false)
+	private Issue issue;
+
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "REVIEWER_ID", nullable = false)
 	private WorkspaceMember reviewer;
 
 	@OneToMany(mappedBy = "issueReviewer", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<Review> reviews = new ArrayList<>();
 
-	public IssueReviewer(WorkspaceMember reviewer) {
+	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
 		this.reviewer = reviewer;
+		this.issue = issue;
 	}
 
 	public Review addReview(
 		ReviewStatus status,
 		String title,
-		String content,
-		int reviewRound
+		String content
 	) {
 		// 해당 라운드에 이미 리뷰가 있는지 확인
-		validateNoReviewInRound(reviewRound);
+		validateNoReviewInRound(issue.getCurrentReviewRound());
 
 		Review review = Review.builder()
 			.issueReviewer(this)
 			.status(status)
 			.title(title)
 			.content(content)
-			.reviewRound(reviewRound)
+			.reviewRound(issue.getCurrentReviewRound())
 			.build();
 		this.reviews.add(review);
 
