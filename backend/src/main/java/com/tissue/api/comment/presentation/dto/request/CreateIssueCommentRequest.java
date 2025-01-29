@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 public record CreateIssueCommentRequest(
 	@NotBlank @LongText
 	String content,
+
 	Long parentCommentId
 ) {
-
 	public boolean hasParentComment() {
 		return parentCommentId != null;
 	}
