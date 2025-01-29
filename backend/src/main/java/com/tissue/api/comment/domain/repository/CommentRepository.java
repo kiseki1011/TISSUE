@@ -16,9 +16,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 		String workspaceCode
 	);
 
-	Optional<ReviewComment> findByIdAndReview_IdAndReview_WorkspaceCode(
+	Optional<ReviewComment> findByIdAndReview_IdAndReview_IssueKey(
 		Long commentId,
 		Long reviewId,
-		String workspaceCode
+		String issueKey
 	);
 }
