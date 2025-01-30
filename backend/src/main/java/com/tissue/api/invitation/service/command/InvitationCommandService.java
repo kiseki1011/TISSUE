@@ -31,6 +31,8 @@ public class InvitationCommandService {
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
+
+		// Todo: accept()에서 addCollaboratorWorkspaceMember의 책임은 누가?
 		WorkspaceMember workspaceMember = invitation.accept();
 
 		workspaceMemberRepository.save(workspaceMember);

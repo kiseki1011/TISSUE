@@ -11,8 +11,7 @@ import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewerCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
 	public AddReviewerResponse addReviewer(
@@ -31,8 +30,15 @@ public class ReviewerCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
+
+		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+			reviewerWorkspaceMemberId,
+			workspaceCode
+		);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+			requesterWorkspaceMemberId,
+			workspaceCode
+		);
 
 		reviewer.validateRoleIsHigherThanViewer();
 
@@ -53,8 +59,15 @@ public class ReviewerCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember reviewer = findWorkspaceMember(reviewerWorkspaceMemberId, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
+
+		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+			reviewerWorkspaceMemberId,
+			workspaceCode
+		);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+			requesterWorkspaceMemberId,
+			workspaceCode
+		);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
@@ -82,10 +95,5 @@ public class ReviewerCommandService {
 	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id, String code) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
 	}
 }

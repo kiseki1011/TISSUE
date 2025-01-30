@@ -22,8 +22,7 @@ import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ReviewCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final ReviewRepository reviewRepository;
 	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
 	@Transactional
@@ -93,7 +92,8 @@ public class ReviewCommandService {
 		UpdateReviewStatusRequest request
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 		Review review = findReview(reviewId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -109,11 +109,6 @@ public class ReviewCommandService {
 	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {

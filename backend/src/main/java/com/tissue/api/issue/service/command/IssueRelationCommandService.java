@@ -12,8 +12,7 @@ import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationRespons
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,8 +20,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueRelationCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
 	public CreateIssueRelationResponse createRelation(
@@ -34,7 +33,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -54,7 +53,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -68,10 +67,5 @@ public class IssueRelationCommandService {
 	private Issue findIssue(String issueKey, String code) {
 		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 }

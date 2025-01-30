@@ -13,8 +13,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,9 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommentCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final CommentRepository commentRepository;
 	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
 	public IssueCommentResponse createComment(
@@ -37,8 +36,8 @@ public class IssueCommentCommandService {
 		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, workspaceCode));
 
-		WorkspaceMember author = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		IssueComment parentComment = null;
 		if (request.hasParentComment()) {
@@ -55,7 +54,7 @@ public class IssueCommentCommandService {
 			.content(request.content())
 			.issue(issue)
 			.parentComment(parentComment)
-			.author(author)
+			.author(currentWorkspaceMember)
 			.build();
 
 		commentRepository.save(comment);
@@ -71,8 +70,8 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
 				workspaceCode)
@@ -91,8 +90,8 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
 				workspaceCode)

@@ -23,8 +23,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,9 +31,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final WorkspaceQueryService workspaceQueryService;
 	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	/*
 	 * Todo
@@ -69,7 +68,8 @@ public class IssueCommandService {
 		UpdateIssueRequest request
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		issue.validateIssueTypeMatch(request.getType());
 
@@ -90,7 +90,7 @@ public class IssueCommandService {
 		UpdateIssueStatusRequest request
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -110,7 +110,7 @@ public class IssueCommandService {
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
 		Issue parentIssue = findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -128,8 +128,7 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -137,7 +136,6 @@ public class IssueCommandService {
 
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
-
 		issue.removeParentRelationship();
 
 		return RemoveParentIssueResponse.from(issue);
@@ -150,7 +148,7 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -165,11 +163,6 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
 	}
 
 	private Issue findIssue(String issueKey, String code) {
