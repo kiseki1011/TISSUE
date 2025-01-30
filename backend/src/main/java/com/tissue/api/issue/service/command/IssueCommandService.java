@@ -20,8 +20,7 @@ import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -33,8 +32,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandService {
 
+	private final WorkspaceQueryService workspaceQueryService;
 	private final IssueRepository issueRepository;
-	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	/*
@@ -50,7 +49,7 @@ public class IssueCommandService {
 		String workspaceCode,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = findWorkspace(workspaceCode);
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		// Todo: Optional 사용을 고려
 		Issue parentIssue = request.parentIssueKey() != null
@@ -166,11 +165,6 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
-	}
-
-	private Workspace findWorkspace(String code) {
-		return workspaceRepository.findByCode(code)
-			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
 	private WorkspaceMember findWorkspaceMember(Long id) {

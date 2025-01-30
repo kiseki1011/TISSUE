@@ -7,7 +7,6 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceQueryService {
 
 	private final WorkspaceRepository workspaceRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional(readOnly = true)
 	public WorkspaceDetail getWorkspaceDetail(String workspaceCode) {
@@ -27,5 +25,11 @@ public class WorkspaceQueryService {
 			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		return WorkspaceDetail.from(workspace);
+	}
+
+	@Transactional(readOnly = true)
+	public Workspace findWorkspace(String workspaceCode) {
+		return workspaceRepository.findByCode(workspaceCode)
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 	}
 }

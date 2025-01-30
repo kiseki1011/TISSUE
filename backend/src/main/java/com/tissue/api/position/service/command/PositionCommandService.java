@@ -16,8 +16,7 @@ import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResp
 import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
-	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceQueryService workspaceQueryService;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
@@ -36,7 +35,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = findWorkspace(workspaceCode);
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
@@ -99,11 +98,6 @@ public class PositionCommandService {
 			.build();
 
 		return positionRepository.save(position);
-	}
-
-	private Workspace findWorkspace(String code) {
-		return workspaceRepository.findByCode(code)
-			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
 	private Position findPosition(Long positionId, String workspaceCode) {

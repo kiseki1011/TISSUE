@@ -16,8 +16,7 @@ import com.tissue.api.team.presentation.dto.response.UpdateTeamColorResponse;
 import com.tissue.api.team.presentation.dto.response.UpdateTeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TeamCommandService {
 
-	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceQueryService workspaceQueryService;
 	private final TeamRepository teamRepository;
 	private final TeamValidator teamValidator;
 
@@ -36,7 +35,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = findWorkspace(workspaceCode);
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedTeamColors());
 
@@ -99,11 +98,6 @@ public class TeamCommandService {
 			.build();
 
 		return teamRepository.save(team);
-	}
-
-	private Workspace findWorkspace(String code) {
-		return workspaceRepository.findByCode(code)
-			.orElseThrow(() -> new WorkspaceNotFoundException(code));
 	}
 
 	private Team findTeam(Long teamId, String code) {
