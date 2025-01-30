@@ -18,12 +18,20 @@ public class MemberQueryService {
 
 	@Transactional(readOnly = true)
 	public MyProfileResponse getMyProfile(Long memberId) {
-		Member member = findMemberById(memberId);
+		Member member = findMember(memberId);
 		return MyProfileResponse.from(member);
 	}
 
-	private Member findMemberById(Long memberId) {
+	@Transactional(readOnly = true)
+	public Member findMember(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberNotFoundException(memberId));
+	}
+
+	@Transactional(readOnly = true)
+	public Member findMember(String identifier) {
+		return memberRepository.findByIdentifier(identifier)
+			.orElseThrow(() -> new MemberNotFoundException(
+				String.format("Member not found with login ID or email. identifier: %s", identifier)));
 	}
 }

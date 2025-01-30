@@ -5,8 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
-import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -23,7 +22,7 @@ public class WorkspaceParticipationCommandService {
 	 *  - leaveWorkspace: 워크스페이스 떠나기(현재 OWNER 상태면 불가능)
 	 */
 	private final WorkspaceQueryService workspaceQueryService;
-	private final MemberRepository memberRepository;
+	private final MemberQueryService memberQueryService;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	/**
@@ -38,9 +37,7 @@ public class WorkspaceParticipationCommandService {
 	public JoinWorkspaceResponse joinWorkspace(String workspaceCode, Long memberId) {
 
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
-
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberNotFoundException(memberId));
+		Member member = memberQueryService.findMember(memberId);
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {
 			throw new InvalidOperationException(
