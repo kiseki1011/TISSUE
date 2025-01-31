@@ -6,11 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.position.domain.repository.PositionRepository;
+import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.team.domain.Team;
-import com.tissue.api.team.domain.repository.TeamRepository;
+import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
@@ -33,10 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceMemberCommandService {
 
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final PositionQueryService positionQueryService;
+	private final TeamQueryService teamQueryService;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
-	private final PositionRepository positionRepository;
-	private final TeamRepository teamRepository;
 
 	@Transactional
 	public UpdateNicknameResponse updateNickname(
@@ -81,7 +80,7 @@ public class WorkspaceMemberCommandService {
 		Long positionId,
 		Long workspaceMemberId
 	) {
-		Position position = findPosition(positionId, workspaceCode);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addPosition(position);
@@ -95,7 +94,7 @@ public class WorkspaceMemberCommandService {
 		Long positionId,
 		Long workspaceMemberId
 	) {
-		Position position = findPosition(positionId, workspaceCode);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removePosition(position);
@@ -107,7 +106,7 @@ public class WorkspaceMemberCommandService {
 		Long teamId,
 		Long workspaceMemberId
 	) {
-		Team team = findTeam(teamId, workspaceCode);
+		Team team = teamQueryService.findTeam(teamId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addTeam(team);
@@ -121,7 +120,7 @@ public class WorkspaceMemberCommandService {
 		Long teamId,
 		Long workspaceMemberId
 	) {
-		Team team = findTeam(teamId, workspaceCode);
+		Team team = teamQueryService.findTeam(teamId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removeTeam(team);
@@ -155,21 +154,5 @@ public class WorkspaceMemberCommandService {
 		workspaceMemberRepository.delete(target);
 
 		return RemoveWorkspaceMemberResponse.from(target);
-	}
-
-	private Position findPosition(Long positionId, String workspaceCode) {
-		return positionRepository
-			.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Position was not found with positionId: %d, workspaceCode: %s",
-					positionId, workspaceCode)));
-	}
-
-	private Team findTeam(Long teamId, String workspaceCode) {
-		return teamRepository
-			.findByIdAndWorkspaceCode(teamId, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Team was not found with teamId: %d, workspaceCode: %s",
-					teamId, workspaceCode)));
 	}
 }
