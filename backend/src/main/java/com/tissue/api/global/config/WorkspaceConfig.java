@@ -3,7 +3,7 @@ package com.tissue.api.global.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -20,8 +20,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceConfig {
 
+	private final MemberQueryService memberQueryService;
 	private final WorkspaceRepository workspaceRepository;
-	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final PasswordEncoder passwordEncoder;
@@ -32,10 +32,12 @@ public class WorkspaceConfig {
 	 */
 	@Bean
 	public WorkspaceCreateService workspaceCreateService() {
-		return new RetryCodeGenerationOnExceptionService(workspaceRepository,
-			memberRepository,
+		return new RetryCodeGenerationOnExceptionService(
+			memberQueryService,
+			workspaceRepository,
 			workspaceMemberRepository,
 			workspaceCodeGenerator,
-			passwordEncoder);
+			passwordEncoder
+		);
 	}
 }

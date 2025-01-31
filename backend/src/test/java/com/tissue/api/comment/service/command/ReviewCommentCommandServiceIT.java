@@ -192,7 +192,6 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateReviewCommentRequest updateRequest = new UpdateReviewCommentRequest("Update Comment");
 
 		ReviewCommentResponse updateResponse = reviewCommentCommandService.updateComment(
-			workspaceCode,
 			issueKey,
 			reviewId,
 			createResponse.id(),

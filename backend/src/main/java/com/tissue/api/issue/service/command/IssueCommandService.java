@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
@@ -19,13 +18,12 @@ import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,9 +31,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandService {
 
+	private final IssueQueryService issueQueryService;
+	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
-	private final WorkspaceRepository workspaceRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	/*
 	 * Todo
@@ -50,11 +49,11 @@ public class IssueCommandService {
 		String workspaceCode,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = findWorkspace(workspaceCode);
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		// Todo: Optional 사용을 고려
 		Issue parentIssue = request.parentIssueKey() != null
-			? findIssue(request.parentIssueKey(), workspaceCode) : null;
+			? issueQueryService.findIssue(request.parentIssueKey(), workspaceCode) : null;
 
 		Issue issue = request.to(workspace, parentIssue);
 
@@ -69,8 +68,8 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateIssueRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		issue.validateIssueTypeMatch(request.getType());
 
@@ -90,8 +89,8 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateIssueStatusRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -109,9 +108,9 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		Issue parentIssue = findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue parentIssue = issueQueryService.findIssue(request.parentIssueKey(), workspaceCode);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -128,9 +127,8 @@ public class IssueCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -138,7 +136,6 @@ public class IssueCommandService {
 
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
-
 		issue.removeParentRelationship();
 
 		return RemoveParentIssueResponse.from(issue);
@@ -150,8 +147,8 @@ public class IssueCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -166,20 +163,5 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
-	}
-
-	private Workspace findWorkspace(String code) {
-		return workspaceRepository.findByCode(code)
-			.orElseThrow(() -> new WorkspaceNotFoundException(code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 }

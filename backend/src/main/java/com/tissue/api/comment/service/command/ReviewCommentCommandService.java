@@ -13,8 +13,7 @@ import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,9 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewCommentCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional
 	public ReviewCommentResponse createComment(
@@ -42,8 +41,8 @@ public class ReviewCommentCommandService {
 					"Review was not found with review id: %d, issue key: %s, workspace code: %s",
 					reviewId, issueKey, workspaceCode)));
 
-		WorkspaceMember author = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		ReviewComment parentComment = null;
 		if (request.hasParentComment()) {
@@ -60,7 +59,7 @@ public class ReviewCommentCommandService {
 			.content(request.content())
 			.review(review)
 			.parentComment(parentComment)
-			.author(author)
+			.author(currentWorkspaceMember)
 			.build();
 
 		commentRepository.save(comment);
@@ -70,15 +69,14 @@ public class ReviewCommentCommandService {
 
 	@Transactional
 	public ReviewCommentResponse updateComment(
-		String workspaceCode,
 		String issueKey,
 		Long reviewId,
 		Long commentId,
 		UpdateReviewCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -91,14 +89,13 @@ public class ReviewCommentCommandService {
 
 	@Transactional
 	public void deleteComment(
-		String workspaceCode,
 		String issueKey,
 		Long reviewId,
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberRepository.findById(currentWorkspaceMemberId)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(currentWorkspaceMemberId, workspaceCode));
+		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));

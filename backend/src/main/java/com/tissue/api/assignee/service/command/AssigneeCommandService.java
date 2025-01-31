@@ -6,12 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AssigneeCommandService {
 
-	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final IssueQueryService issueQueryService;
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 
 	@Transactional
 	public AddAssigneeResponse addAssignee(
@@ -28,8 +26,12 @@ public class AssigneeCommandService {
 		String issueKey,
 		Long assigneeWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember assignee = findWorkspaceMember(assigneeWorkspaceMemberId, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+
+		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
+			assigneeWorkspaceMemberId,
+			workspaceCode
+		);
 
 		issue.addAssignee(assignee);
 
@@ -43,9 +45,16 @@ public class AssigneeCommandService {
 		Long assigneeWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember assignee = findWorkspaceMember(assigneeWorkspaceMemberId, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+
+		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
+			assigneeWorkspaceMemberId,
+			workspaceCode
+		);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+			requesterWorkspaceMemberId,
+			workspaceCode
+		);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssignee(requesterWorkspaceMemberId);
@@ -55,15 +64,4 @@ public class AssigneeCommandService {
 
 		return RemoveAssigneeResponse.from(assignee);
 	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id, String code) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
-	}
-
 }

@@ -18,6 +18,7 @@ public class WorkspaceValidator {
 	private final PasswordEncoder passwordEncoder;
 
 	public void validateWorkspacePassword(String inputPassword, String workspaceCode) {
+
 		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
 			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 

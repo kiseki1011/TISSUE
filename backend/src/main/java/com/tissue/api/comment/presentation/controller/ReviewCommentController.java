@@ -62,7 +62,6 @@ public class ReviewCommentController {
 	@PatchMapping("/{commentId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<ReviewCommentResponse> updateComment(
-		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
@@ -70,7 +69,6 @@ public class ReviewCommentController {
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.updateComment(
-			workspaceCode,
 			issueKey,
 			reviewId,
 			commentId,
@@ -90,14 +88,12 @@ public class ReviewCommentController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> deleteComment(
-		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		reviewCommentCommandService.deleteComment(
-			workspaceCode,
 			issueKey,
 			reviewId,
 			commentId,

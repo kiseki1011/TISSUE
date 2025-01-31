@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
@@ -25,5 +26,13 @@ public class PositionQueryService {
 		List<Position> positions = positionRepository.findAllByWorkspaceCodeOrderByCreatedDateAsc(workspaceCode);
 
 		return GetPositionsResponse.from(positions);
+	}
+
+	@Transactional(readOnly = true)
+	public Position findPosition(Long positionId, String workspaceCode) {
+		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException(String.format(
+				"Position was not found with positionId: %d, workspaceCode: %s",
+				positionId, workspaceCode)));
 	}
 }

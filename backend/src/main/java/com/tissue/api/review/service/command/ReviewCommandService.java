@@ -4,11 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
@@ -20,27 +18,26 @@ import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
+import com.tissue.api.review.service.query.ReviewQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Todo
  *  - 알림 서비스 구현 필요
  *    - 리뷰 상태 변경 -> 모든 리뷰가 작성되었고 전부 APPROVED -> 이슈 assignees에게 알림
  */
-@Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ReviewCommandService {
 
+	private final ReviewQueryService reviewQueryService;
+	private final IssueQueryService issueQueryService;
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final ReviewRepository reviewRepository;
-	private final IssueRepository issueRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
 	@Transactional
@@ -50,7 +47,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		CreateReviewRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		IssueReviewer issueReviewer = findIssueReviewer(issueKey, reviewerWorkspaceMemberId);
 
@@ -75,7 +72,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		UpdateReviewRequest request
 	) {
-		Review review = findReview(reviewId);
+		Review review = reviewQueryService.findReview(reviewId);
 		review.validateIsAuthor(reviewerWorkspaceMemberId);
 
 		review.updateTitle(request.title());
@@ -92,9 +89,10 @@ public class ReviewCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateReviewStatusRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = findWorkspaceMember(requesterWorkspaceMemberId);
-		Review review = findReview(reviewId);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		Review review = reviewQueryService.findReview(reviewId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			review.validateIsAuthor(requesterWorkspaceMemberId);
@@ -106,27 +104,11 @@ public class ReviewCommandService {
 		return UpdateReviewStatusResponse.from(review);
 	}
 
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
-	}
-
-	private WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
-	}
-
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {
 		return issueReviewerRepository.findByIssueKeyAndReviewerId(issueKey, reviewerWorkspaceMemberId)
-			.orElseThrow(() -> new ForbiddenOperationException(
-				String.format("Must be a reviewer to create a review. issueKey: %s, workspaceMemberId: %d",
-					issueKey, reviewerWorkspaceMemberId)));
-	}
-
-	private Review findReview(Long id) {
-		return reviewRepository.findById(id)
-			.orElseThrow(
-				() -> new ResourceNotFoundException(String.format("Review was not found with reviewId: %d", id)));
+			.orElseThrow(() -> new ForbiddenOperationException(String.format(
+				"Must be a reviewer to create a review. issueKey: %s, workspaceMemberId: %d",
+				issueKey, reviewerWorkspaceMemberId)));
 	}
 
 	private void updateIssueStatusBasedOnReviewStatus(Issue issue, ReviewStatus reviewStatus) {

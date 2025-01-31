@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
@@ -94,7 +95,7 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> authenticationService.login(loginRequest))
-			.isInstanceOf(AuthenticationFailedException.class);
+			.isInstanceOf(MemberNotFoundException.class);
 	}
 
 	@Test
