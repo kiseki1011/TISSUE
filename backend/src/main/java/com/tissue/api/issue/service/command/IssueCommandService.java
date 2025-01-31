@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
@@ -19,6 +18,7 @@ import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -31,8 +31,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandService {
 
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
 
 	/*
@@ -52,7 +53,7 @@ public class IssueCommandService {
 
 		// Todo: Optional 사용을 고려
 		Issue parentIssue = request.parentIssueKey() != null
-			? findIssue(request.parentIssueKey(), workspaceCode) : null;
+			? issueQueryService.findIssue(request.parentIssueKey(), workspaceCode) : null;
 
 		Issue issue = request.to(workspace, parentIssue);
 
@@ -67,8 +68,7 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateIssueRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		issue.validateIssueTypeMatch(request.getType());
@@ -89,7 +89,7 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateIssueStatusRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -108,8 +108,8 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
-		Issue parentIssue = findIssue(request.parentIssueKey(), workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue parentIssue = issueQueryService.findIssue(request.parentIssueKey(), workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -127,7 +127,7 @@ public class IssueCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -147,7 +147,7 @@ public class IssueCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -163,10 +163,5 @@ public class IssueCommandService {
 		issueRepository.delete(issue);
 
 		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 }

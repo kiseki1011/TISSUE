@@ -4,8 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
@@ -19,8 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewerCommandService {
 
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
-	private final IssueRepository issueRepository;
 
 	@Transactional
 	public AddReviewerResponse addReviewer(
@@ -29,7 +28,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
@@ -58,7 +57,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
@@ -84,16 +83,11 @@ public class ReviewerCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
 
 		return RequestReviewResponse.from(issue);
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 }

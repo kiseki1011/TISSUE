@@ -10,8 +10,7 @@ import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 
@@ -21,9 +20,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommentCommandService {
 
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final CommentRepository commentRepository;
-	private final IssueRepository issueRepository;
 
 	@Transactional
 	public IssueCommentResponse createComment(
@@ -32,9 +31,7 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		// Todo: IssueQueryService 구현 후 재사용하는 방식으로 리팩토링
-		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, workspaceCode));
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
 			currentWorkspaceMemberId);

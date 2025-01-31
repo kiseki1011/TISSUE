@@ -7,8 +7,7 @@ import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
@@ -37,9 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ReviewCommandService {
 
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final ReviewRepository reviewRepository;
-	private final IssueRepository issueRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
 	@Transactional
@@ -49,7 +48,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		CreateReviewRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		IssueReviewer issueReviewer = findIssueReviewer(issueKey, reviewerWorkspaceMemberId);
 
@@ -91,7 +90,7 @@ public class ReviewCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateReviewStatusRequest request
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 		Review review = findReview(reviewId);
@@ -104,11 +103,6 @@ public class ReviewCommandService {
 		updateIssueStatusBasedOnReviewStatus(issue, request.status());
 
 		return UpdateReviewStatusResponse.from(review);
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {

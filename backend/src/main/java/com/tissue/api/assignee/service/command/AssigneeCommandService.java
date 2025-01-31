@@ -6,8 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
@@ -18,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AssigneeCommandService {
 
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
-	private final IssueRepository issueRepository;
 
 	@Transactional
 	public AddAssigneeResponse addAssignee(
@@ -27,7 +26,8 @@ public class AssigneeCommandService {
 		String issueKey,
 		Long assigneeWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+
 		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
 			assigneeWorkspaceMemberId,
 			workspaceCode
@@ -45,7 +45,8 @@ public class AssigneeCommandService {
 		Long assigneeWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = findIssue(issueKey, workspaceCode);
+		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+
 		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
 			assigneeWorkspaceMemberId,
 			workspaceCode
@@ -62,10 +63,5 @@ public class AssigneeCommandService {
 		issue.removeAssignee(assignee);
 
 		return RemoveAssigneeResponse.from(assignee);
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 }

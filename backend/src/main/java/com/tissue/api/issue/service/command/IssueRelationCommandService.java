@@ -5,11 +5,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
+import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
@@ -20,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueRelationCommandService {
 
+	private final IssueQueryService issueQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
-	private final IssueRepository issueRepository;
 
 	@Transactional
 	public CreateIssueRelationResponse createRelation(
@@ -31,8 +30,8 @@ public class IssueRelationCommandService {
 		Long requesterWorkspaceMemberId,
 		CreateIssueRelationRequest request
 	) {
-		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueQueryService.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueQueryService.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -51,8 +50,8 @@ public class IssueRelationCommandService {
 		String targetIssueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue sourceIssue = findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueQueryService.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueQueryService.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
@@ -62,10 +61,5 @@ public class IssueRelationCommandService {
 		IssueRelation.removeRelation(sourceIssue, targetIssue);
 
 		return RemoveIssueRelationResponse.from(sourceIssue, targetIssue);
-	}
-
-	private Issue findIssue(String issueKey, String code) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, code)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, code));
 	}
 }
