@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
@@ -14,6 +13,7 @@ import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
 import com.tissue.api.position.presentation.dto.response.DeletePositionResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
+	private final PositionQueryService positionQueryService;
 	private final WorkspaceQueryService workspaceQueryService;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
@@ -39,9 +40,15 @@ public class PositionCommandService {
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
-		Position savedPosition = createPosition(request, workspace, randomColor);
+		Position position = Position.builder()
+			.name(request.name())
+			.description(request.description())
+			.color(randomColor)
+			.workspace(workspace)
+			.build();
+		;
 
-		return CreatePositionResponse.from(savedPosition);
+		return CreatePositionResponse.from(positionRepository.save(position));
 	}
 
 	@Transactional
@@ -50,7 +57,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = findPosition(positionId, workspaceCode);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -64,7 +71,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = findPosition(positionId, workspaceCode);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -76,38 +83,12 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-		Position position = findPosition(positionId, workspaceCode);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 
 		positionRepository.delete(position);
 
 		return DeletePositionResponse.from(position);
-	}
-
-	private Position createPosition(
-		CreatePositionRequest request,
-		Workspace workspace,
-		ColorType color
-	) {
-		Position position = Position.builder()
-			.name(request.name())
-			.description(request.description())
-			.color(color)
-			.workspace(workspace)
-			.build();
-
-		return positionRepository.save(position);
-	}
-
-	private Position findPosition(Long positionId, String workspaceCode) {
-		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-					String.format(
-						"Position was not found with positionId: %d, workspaceCode: %s",
-						positionId, workspaceCode
-					)
-				)
-			);
 	}
 }
