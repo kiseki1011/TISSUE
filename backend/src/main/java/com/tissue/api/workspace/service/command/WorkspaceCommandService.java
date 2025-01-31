@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
-import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -25,9 +24,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class WorkspaceCommandService {
 
+	private final MemberQueryService memberQueryService;
 	private final WorkspaceQueryService workspaceQueryService;
 	private final WorkspaceRepository workspaceRepository;
-	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
@@ -60,7 +59,7 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
-		Member member = findMember(memberId);
+		Member member = memberQueryService.findMember(memberId);
 		member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);
@@ -78,11 +77,6 @@ public class WorkspaceCommandService {
 		workspace.updateKeyPrefix(request.issueKeyPrefix());
 
 		return UpdateIssueKeyResponse.from(workspace);
-	}
-
-	private Member findMember(Long memberId) {
-		return memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 
 	private void updateWorkspaceInfoIfPresent(UpdateWorkspaceInfoRequest request, Workspace workspace) {
