@@ -27,10 +27,10 @@ public class TeamQueryService {
 	}
 
 	@Transactional(readOnly = true)
-	public Team findTeam(Long teamId, String code) {
-		return teamRepository.findByIdAndWorkspaceCode(teamId, code)
+	public Team findTeam(Long teamId, String workspaceCode) {
+		return teamRepository.findByIdAndWorkspaceCode(teamId, workspaceCode)
 			.orElseThrow(() -> new ResourceNotFoundException(String.format(
 				"Team was not found with teamId: %d, workspaceCode: %s",
-				teamId, code)));
+				teamId, workspaceCode)));
 	}
 }
