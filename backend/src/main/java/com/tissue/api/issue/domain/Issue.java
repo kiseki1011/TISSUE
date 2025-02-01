@@ -112,7 +112,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private String content;
 
 	@Lob
-	@Column
 	private String summary;
 
 	@Enumerated(EnumType.STRING)
@@ -148,9 +147,31 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private int currentReviewRound = 0;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ISSUE_ID")
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueAssignee> assignees = new ArrayList<>();
+
+	protected Issue(
+		Workspace workspace,
+		IssueType type,
+		String title,
+		String content,
+		String summary,
+		IssuePriority priority,
+		LocalDate dueDate
+	) {
+		this.issueKey = workspace.getIssueKey();
+		workspace.increaseNextIssueNumber();
+
+		addToWorkspace(workspace);
+
+		this.type = type;
+		this.title = title;
+		this.content = content;
+		this.summary = summary;
+		this.status = IssueStatus.TODO;
+		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
+		this.dueDate = dueDate;
+	}
 
 	public void requestReview() {
 		validateReviewersExist();
@@ -314,7 +335,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateBelongsToWorkspace(assignee);
 		validateNotAlreadyAssigned(assignee);
 
-		assignees.add(new IssueAssignee(assignee));
+		assignees.add(new IssueAssignee(this, assignee));
 	}
 
 	public void removeAssignee(WorkspaceMember assignee) {
@@ -402,29 +423,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 				)
 			);
 		}
-	}
-
-	protected Issue(
-		Workspace workspace,
-		IssueType type,
-		String title,
-		String content,
-		String summary,
-		IssuePriority priority,
-		LocalDate dueDate
-	) {
-		this.issueKey = workspace.getIssueKey();
-		workspace.increaseNextIssueNumber();
-
-		addToWorkspace(workspace);
-
-		this.type = type;
-		this.title = title;
-		this.content = content;
-		this.summary = summary;
-		this.status = IssueStatus.TODO;
-		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
-		this.dueDate = dueDate;
 	}
 
 	public void updateTitle(String title) {
