@@ -9,7 +9,6 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
@@ -24,10 +23,7 @@ import lombok.NoArgsConstructor;
 public class Story extends Issue {
 
 	private Difficulty difficulty;
-
-	@Column(name = "USER_STORY", nullable = false)
 	private String userStory;
-
 	private String acceptanceCriteria;
 
 	@Builder

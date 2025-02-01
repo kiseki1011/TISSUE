@@ -14,7 +14,6 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -44,7 +43,6 @@ public class Bug extends Issue {
 	private Difficulty difficulty;
 
 	@Lob
-	@Column(nullable = false)
 	private String reproducingSteps;
 
 	@Enumerated(EnumType.STRING)
