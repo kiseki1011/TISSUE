@@ -60,7 +60,6 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 			.status(status)
 			.title(title)
 			.content(content)
-			.reviewRound(issue.getCurrentReviewRound())
 			.build();
 		this.reviews.add(review);
 
