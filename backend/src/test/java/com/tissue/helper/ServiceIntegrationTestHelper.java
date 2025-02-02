@@ -42,6 +42,7 @@ import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteServi
 import com.tissue.api.workspacemember.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspacemember.service.query.WorkspaceParticipationQueryService;
+import com.tissue.fixture.TestDataFixture;
 import com.tissue.fixture.dto.SignupRequestDtoFixture;
 import com.tissue.fixture.repository.InvitationRepositoryFixture;
 import com.tissue.fixture.repository.MemberRepositoryFixture;
@@ -157,6 +158,8 @@ public abstract class ServiceIntegrationTestHelper {
 	/**
 	 * Fixture
 	 */
+	@Autowired
+	protected TestDataFixture testDataFixture;
 	@Autowired
 	protected WorkspaceRepositoryFixture workspaceRepositoryFixture;
 	@Autowired
