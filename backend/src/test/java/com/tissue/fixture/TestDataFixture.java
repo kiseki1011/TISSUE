@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.assignee.domain.repository.IssueAssigneeRepository;
@@ -38,6 +39,7 @@ import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepositor
 
 import lombok.RequiredArgsConstructor;
 
+@Component
 @RequiredArgsConstructor
 public class TestDataFixture {
 
@@ -65,15 +67,16 @@ public class TestDataFixture {
 	 * @param numberOfMembers The number of members to be added to the workspace.
 	 * @param workspacePassword The password for the workspace.
 	 * @param keyPrefix The prefix for generating issue keys.
+	 * @return The created workspace.
 	 */
-	public void createWorkspaceWithMembers(
+	public Workspace createWorkspaceWithMembers(
 		int numberOfMembers,
 		String workspacePassword,
 		String keyPrefix
 	) {
 		Member owner = createMember("owner");
 
-		Workspace workspace = createWorkspace("Test Workspace", workspacePassword, keyPrefix);
+		Workspace workspace = createWorkspace("test workspace", workspacePassword, keyPrefix);
 
 		createWorkspaceMember(owner, workspace, WorkspaceRole.OWNER);
 
@@ -81,6 +84,8 @@ public class TestDataFixture {
 			Member member = createMember("member" + i);
 			createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 		}
+
+		return workspace;
 	}
 
 	public Member createMember(String loginId) {
@@ -133,7 +138,7 @@ public class TestDataFixture {
 	 * @param priority The priority level of the issue.
 	 * @param dueDate The due date for the issue.
 	 * @param workspaceMembers A list of workspace members to be assigned to the issue.
-	 * @return The saved issue that was created.
+	 * @return The created issue.
 	 */
 	public Issue createIssueWithAssignees(
 		IssueType type,
