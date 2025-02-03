@@ -183,11 +183,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.updateStatus(IssueStatus.IN_REVIEW);
 	}
 
-	public void addReviewer(WorkspaceMember reviewer) {
+	public IssueReviewer addReviewer(WorkspaceMember workspaceMember) {
 		validateReviewerLimit();
-		validateIsReviewer(reviewer);
+		validateIsReviewer(workspaceMember);
 
-		reviewers.add(new IssueReviewer(reviewer, this));
+		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
+		reviewers.add(reviewer);
+
+		return reviewer;
 	}
 
 	public void removeReviewer(WorkspaceMember workspaceMember) {

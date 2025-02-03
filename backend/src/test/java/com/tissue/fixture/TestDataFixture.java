@@ -268,6 +268,14 @@ public class TestDataFixture {
 		return issueAssignees;
 	}
 
+	public IssueAssignee addIssueAssignee(
+		Issue issue,
+		WorkspaceMember workspaceMember
+	) {
+		IssueAssignee assignee = new IssueAssignee(issue, workspaceMember);
+		return issueAssigneeRepository.save(assignee);
+	}
+
 	public List<IssueReviewer> addIssueReviewers(
 		Issue issue,
 		List<WorkspaceMember> workspaceMembers
@@ -279,6 +287,14 @@ public class TestDataFixture {
 		issueReviewerRepository.saveAll(issueReviewers);
 
 		return issueReviewers;
+	}
+
+	public IssueReviewer addIssueReviewer(
+		Issue issue,
+		WorkspaceMember workspaceMember
+	) {
+		IssueReviewer reviewer = issue.addReviewer(workspaceMember);
+		return issueReviewerRepository.save(reviewer);
 	}
 
 	public Review createReview(
