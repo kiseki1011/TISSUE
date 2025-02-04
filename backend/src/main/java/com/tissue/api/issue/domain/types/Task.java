@@ -44,7 +44,7 @@ public class Task extends Issue {
 		this.difficulty = difficulty;
 
 		if (parentIssue != null) {
-			setParentIssue(parentIssue);
+			updateParentIssue(parentIssue);
 		}
 	}
 

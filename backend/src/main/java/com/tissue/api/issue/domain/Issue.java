@@ -454,7 +454,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.priority = priority;
 	}
 
-	public void setParentIssue(Issue parentIssue) {
+	public void updateParentIssue(Issue parentIssue) {
 		validateParentIssue(parentIssue);
 		removeParentRelationship();
 

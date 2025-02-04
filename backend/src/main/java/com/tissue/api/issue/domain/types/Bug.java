@@ -81,7 +81,7 @@ public class Bug extends Issue {
 		}
 
 		if (parentIssue != null) {
-			setParentIssue(parentIssue);
+			updateParentIssue(parentIssue);
 		}
 	}
 
