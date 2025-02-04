@@ -7,96 +7,110 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.comment.domain.ReviewComment;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
+import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.review.domain.IssueReviewer;
+import com.tissue.api.review.domain.Review;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	String workspaceCode;
-	String issueKey;
+	Workspace workspace;
+	Story issue;
+	Review review;
+	WorkspaceMember owner;
+	WorkspaceMember workspaceMember1;
+	WorkspaceMember workspaceMember2;
 
+	@Transactional
 	@BeforeEach
 	void setUp() {
-		// 멤버 생성
-		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
-		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
-		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
+		workspace = testDataFixture.createWorkspace("test workspace", null, null);
 
-		Long requesterWorkspaceMemberId = 1L; // testUser
-		Long reviewerWorkspaceMemberId = 2L; // testUser2
+		Member ownerMember = testDataFixture.createMember("owner");
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
 
-		// 워크스페이스 생성
-		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
-
-		workspaceCode = createWorkspace.code();
-
-		// 멤버가 워크스페이스에 참가
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
-
-		// Story 타입 이슈 생성
-		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
-			.title("Test Story")
-			.content("Test Story")
-			.userStory("Test Story User Story")
-			.build();
-
-		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
-			workspaceCode,
-			createStoryRequest
+		owner = testDataFixture.createWorkspaceMember(
+			ownerMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
+		workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+		workspaceMember2 = testDataFixture.createWorkspaceMember(
+			member2,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
 
-		issueKey = response.issueKey();
+		issue = testDataFixture.createStory(
+			workspace,
+			"story issue",
+			IssuePriority.MEDIUM,
+			null
+		);
 
 		// 작업자 등록
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		// assigneeCommandService.addAssignee(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	requesterWorkspaceMemberId
+		// );
+		// workspaceMember1을 IssueAssignee로 등록
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
 
 		// 리뷰어 등록
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId, // testUser2를 리뷰어로 등록
-			requesterWorkspaceMemberId // testUser는 요청자
-		);
+		// reviewerCommandService.addReviewer(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	reviewerWorkspaceMemberId, // testUser2를 리뷰어로 등록
+		// 	requesterWorkspaceMemberId // testUser는 요청자
+		// );
+		// workspaceMember2를 IssueReviewer로 등록
+		IssueReviewer reviewer = testDataFixture.addIssueReviewer(issue, workspaceMember2);
 
 		// 이슈 상태를 IN_PROGRESS로 변경
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
+		// issueCommandService.updateIssueStatus(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	requesterWorkspaceMemberId,
+		// 	new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
+		// );
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
 
 		// 리뷰 요청
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		// reviewerCommandService.requestReview(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	requesterWorkspaceMemberId
+		// );
+		issue.requestReview();
 
 		// 리뷰 등록
-		CreateReviewRequest createReviewRequest = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
-
-		reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			createReviewRequest
-		);
+		// CreateReviewRequest createReviewRequest = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
+		//
+		// reviewCommandService.createReview(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	reviewerWorkspaceMemberId,
+		// 	createReviewRequest
+		// );
+		review = testDataFixture.createReview(reviewer, "test review", APPROVED);
 	}
 
 	@AfterEach
@@ -105,12 +119,10 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@Transactional
 	@DisplayName("특정 리뷰에 댓글 작성을 성공한다")
 	void createReviewComment_success() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-		Long reviewId = 1L;
-
 		CreateReviewCommentRequest request = new CreateReviewCommentRequest(
 			"Test Comment",
 			null
@@ -118,88 +130,101 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		ReviewCommentResponse response = reviewCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			reviewId,
+			workspace.getCode(),
+			issue.getIssueKey(),
+			review.getId(),
 			request,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(currentWorkspaceMemberId);
+		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
 		assertThat(response.content()).isEqualTo("Test Comment");
 	}
 
 	@Test
+	@Transactional
 	@DisplayName("리뷰 댓글에 대한 대댓글 작성에 성공한다")
 	void createReviewReplyComment_success() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-		Long reviewId = 1L;
+		// CreateReviewCommentRequest parentCommentRequest = new CreateReviewCommentRequest(
+		// 	"Test Comment",
+		// 	null
+		// );
+		//
+		// ReviewCommentResponse parentCommentResponse = reviewCommentCommandService.createComment(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	reviewId,
+		// 	parentCommentRequest,
+		// 	currentWorkspaceMemberId
+		// );
 
-		CreateReviewCommentRequest parentCommentRequest = new CreateReviewCommentRequest(
-			"Test Comment",
+		ReviewComment parentComment = testDataFixture.createReviewComment(
+			review,
+			"original comment",
+			workspaceMember1,
 			null
 		);
 
-		ReviewCommentResponse parentCommentResponse = reviewCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			reviewId,
-			parentCommentRequest,
-			currentWorkspaceMemberId
-		);
-
 		CreateReviewCommentRequest replyCommentRequest = new CreateReviewCommentRequest(
-			"Reply Comment",
-			parentCommentResponse.id()
+			"reply comment",
+			parentComment.getId()
 		);
 
 		// when
 		ReviewCommentResponse response = reviewCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			reviewId,
+			workspace.getCode(),
+			issue.getIssueKey(),
+			review.getId(),
 			replyCommentRequest,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.content()).isEqualTo("Reply Comment");
-		assertThat(response.author().workspaceMemberId()).isEqualTo(currentWorkspaceMemberId);
+		assertThat(response.content()).isEqualTo("reply comment");
+		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
 	}
 
 	@Test
+	@Transactional
 	@DisplayName("댓글 작성자는 자신의 댓글을 수정할 수 있다")
 	void updateReviewComment_byAuthor_success() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-		Long reviewId = 1L;
-
-		CreateReviewCommentRequest createRequest = new CreateReviewCommentRequest(
-			"Test Comment",
+		// Long currentWorkspaceMemberId = 1L;
+		// Long reviewId = 1L;
+		//
+		// CreateReviewCommentRequest createRequest = new CreateReviewCommentRequest(
+		// 	"Test Comment",
+		// 	null
+		// );
+		//
+		// ReviewCommentResponse createResponse = reviewCommentCommandService.createComment(
+		// 	workspaceCode,
+		// 	issueKey,
+		// 	reviewId,
+		// 	createRequest,
+		// 	currentWorkspaceMemberId
+		// );
+		ReviewComment comment = testDataFixture.createReviewComment(
+			review,
+			"test comment",
+			workspaceMember1,
 			null
 		);
 
-		ReviewCommentResponse createResponse = reviewCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			reviewId,
-			createRequest,
-			currentWorkspaceMemberId
-		);
+		UpdateReviewCommentRequest updateRequest = new UpdateReviewCommentRequest("update comment");
 
-		UpdateReviewCommentRequest updateRequest = new UpdateReviewCommentRequest("Update Comment");
-
+		// when
 		ReviewCommentResponse updateResponse = reviewCommentCommandService.updateComment(
-			issueKey,
-			reviewId,
-			createResponse.id(),
+			issue.getIssueKey(),
+			review.getId(),
+			comment.getId(),
 			updateRequest,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(updateResponse.content()).isEqualTo("Update Comment");
+		assertThat(updateResponse.content()).isEqualTo("update comment");
 	}
 }

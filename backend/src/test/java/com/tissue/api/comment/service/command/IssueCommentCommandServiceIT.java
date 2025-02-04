@@ -8,52 +8,64 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.comment.domain.Comment;
+import com.tissue.api.comment.domain.IssueComment;
 import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	String workspaceCode;
-	String issueKey;
+	Workspace workspace;
+	Story issue;
+	WorkspaceMember owner;
+	WorkspaceMember workspaceMember1;
+	WorkspaceMember workspaceMember2;
 
 	@BeforeEach
 	void setUp() {
-		// 멤버 생성
-		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
-		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
-		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
 
-		// 워크스페이스 생성
-		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
-
-		workspaceCode = createWorkspace.code();
-
-		// 멤버가 워크스페이스에 참가
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
-
-		// Story 타입 이슈 생성
-		CreateStoryRequest createStoryRequest = CreateStoryRequest.builder()
-			.title("Test Story")
-			.content("Test Story")
-			.userStory("Test Story User Story")
-			.build();
-
-		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
-			workspaceCode,
-			createStoryRequest
+		workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
+			null
 		);
 
-		issueKey = response.issueKey();
+		Member ownerMember = testDataFixture.createMember("owner");
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
+
+		owner = testDataFixture.createWorkspaceMember(
+			ownerMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
+		workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+		workspaceMember2 = testDataFixture.createWorkspaceMember(
+			member2,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+
+		issue = testDataFixture.createStory(
+			workspace,
+			"story issue",
+			IssuePriority.MEDIUM,
+			null
+		);
 	}
 
 	@AfterEach
@@ -62,202 +74,159 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("특정 이슈에 댓글 작성을 성공한다")
-	void createIssueComment_success() {
+	@DisplayName("워크스페이스 멤버는 이슈에 댓글을 작성할 수 있다")
+	void workspaceMemberShouldBeAbleToCreateComment() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-
 		CreateIssueCommentRequest request = new CreateIssueCommentRequest(
-			"Test Comment",
+			"test comment",
 			null
 		);
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			request,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(currentWorkspaceMemberId);
-		assertThat(response.content()).isEqualTo("Test Comment");
+		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		assertThat(response.content()).isEqualTo("test comment");
 	}
 
 	@Test
-	@DisplayName("이슈 댓글에 대한 대댓글 작성에 성공한다")
-	void createIssueReplyComment_success() {
+	@DisplayName("이슈 댓글에 대한 대댓글을 작성할 수 있다")
+	void canCreateReplyCommentUpToOneDepth() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-
-		CreateIssueCommentRequest firstCommentRequest = new CreateIssueCommentRequest(
-			"Test Comment",
+		IssueComment parentComment = testDataFixture.createIssueComment(
+			issue,
+			"original comment",
+			workspaceMember1,
 			null
 		);
 
-		IssueCommentResponse firstCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			firstCommentRequest,
-			currentWorkspaceMemberId
-		);
-
 		CreateIssueCommentRequest replyCommentRequest = new CreateIssueCommentRequest(
-			"Reply Comment",
-			firstCommentResponse.id()
+			"reply comment",
+			parentComment.getId()
 		);
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			replyCommentRequest,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.content()).isEqualTo("Reply Comment");
-		assertThat(response.author().workspaceMemberId()).isEqualTo(currentWorkspaceMemberId);
+		assertThat(response.content()).isEqualTo("reply comment");
+		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
 	}
 
 	@Test
 	@DisplayName("대댓글에 대한 대댓글 작성을 시도하면 예외가 발생한다")
-	void createReplyComment_ofReplyComment_throwsException() {
+	void shouldNotAllowCommentDepthExceedingOneLevel() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-
-		CreateIssueCommentRequest parentCommentRequest = new CreateIssueCommentRequest(
-			"Test Comment",
+		IssueComment parentComment = testDataFixture.createIssueComment(
+			issue,
+			"original comment",
+			workspaceMember1,
 			null
 		);
 
-		IssueCommentResponse parentCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			parentCommentRequest,
-			currentWorkspaceMemberId
-		);
-
-		CreateIssueCommentRequest childCommentRequest = new CreateIssueCommentRequest(
-			"Reply Comment",
-			parentCommentResponse.id()
-		);
-
-		IssueCommentResponse childCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			childCommentRequest,
-			currentWorkspaceMemberId
+		IssueComment childComment = testDataFixture.createIssueComment(
+			issue,
+			"reply comment",
+			workspaceMember1,
+			parentComment
 		);
 
 		// when & then
 		CreateIssueCommentRequest request = new CreateIssueCommentRequest(
-			"Reply comment of reply comment",
-			childCommentResponse.id()
+			"reply comment of reply comment",
+			childComment.getId()
 		);
 
 		assertThatThrownBy(() -> issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			request,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
 	@DisplayName("댓글 작성자는 자신의 댓글을 수정할 수 있다")
-	void updateComment_byAuthor_success() {
+	void commentAuthorCanEditOwnComment() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-
-		CreateIssueCommentRequest createCommentRequest = new CreateIssueCommentRequest(
-			"Test Comment",
+		IssueComment comment = testDataFixture.createIssueComment(
+			issue,
+			"test comment",
+			workspaceMember1,
 			null
 		);
 
-		IssueCommentResponse createCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			createCommentRequest,
-			currentWorkspaceMemberId
-		);
-
-		UpdateIssueCommentRequest request = new UpdateIssueCommentRequest("Update Comment");
+		UpdateIssueCommentRequest request = new UpdateIssueCommentRequest("update comment");
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.updateComment(
-			workspaceCode,
-			issueKey,
-			createCommentResponse.id(),
+			workspace.getCode(),
+			issue.getIssueKey(),
+			comment.getId(),
 			request,
-			currentWorkspaceMemberId
+			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(currentWorkspaceMemberId);
-		assertThat(response.content()).isEqualTo("Update Comment");
+		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		assertThat(response.content()).isEqualTo("update comment");
 	}
 
 	@Test
 	@DisplayName("댓글 작성자가 아니지만 댓글 수정을 시도하는 경우 예외가 발생한다")
-	void updateComment_notAuthor_throwsException() {
+	void ifNotAuthorCannotEditComment() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-		Long notAuthorWorkspaceMemberId = 2L;
-
-		CreateIssueCommentRequest createCommentRequest = new CreateIssueCommentRequest(
-			"Test Comment",
+		IssueComment comment = testDataFixture.createIssueComment(
+			issue,
+			"test comment",
+			workspaceMember1,
 			null
 		);
 
-		IssueCommentResponse createCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			createCommentRequest,
-			currentWorkspaceMemberId
-		);
-
-		UpdateIssueCommentRequest request = new UpdateIssueCommentRequest("Update Comment");
+		UpdateIssueCommentRequest request = new UpdateIssueCommentRequest("update comment");
 
 		// when & then
 		assertThatThrownBy(() -> issueCommentCommandService.updateComment(
-			workspaceCode,
-			issueKey,
-			createCommentResponse.id(),
+			workspace.getCode(),
+			issue.getIssueKey(),
+			comment.getId(),
 			request,
-			notAuthorWorkspaceMemberId
+			workspaceMember2.getId() // not author of the comment
 		)).isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
 	@DisplayName("댓글을 삭제하면 삭제된 댓글의 상태는 DELETED로 변한다")
-	void deleteComment_success_commentStatusBecomesDELETED() {
+	void ifCommentIsDeletedCommentStatusChangedToDeleted() {
 		// given
-		Long currentWorkspaceMemberId = 1L;
-
-		CreateIssueCommentRequest createCommentRequest = new CreateIssueCommentRequest(
-			"Test Comment",
+		IssueComment comment = testDataFixture.createIssueComment(
+			issue,
+			"test comment",
+			workspaceMember1,
 			null
-		);
-
-		IssueCommentResponse createCommentResponse = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			createCommentRequest,
-			currentWorkspaceMemberId
 		);
 
 		// when
 		issueCommentCommandService.deleteComment(
-			workspaceCode,
-			issueKey,
-			createCommentResponse.id(),
-			currentWorkspaceMemberId
+			workspace.getCode(),
+			issue.getIssueKey(),
+			comment.getId(),
+			workspaceMember1.getId()
 		);
 
 		// then
-		Comment comment = commentRepository.findById(createCommentResponse.id()).get();
-		assertThat(comment.getStatus()).isEqualTo(CommentStatus.DELETED);
+		Comment findComment = commentRepository.findById(comment.getId()).get();
+		assertThat(findComment.getStatus()).isEqualTo(CommentStatus.DELETED);
 	}
 }
