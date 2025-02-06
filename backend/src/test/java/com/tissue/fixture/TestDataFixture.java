@@ -13,6 +13,9 @@ import com.tissue.api.comment.domain.Comment;
 import com.tissue.api.comment.domain.IssueComment;
 import com.tissue.api.comment.domain.ReviewComment;
 import com.tissue.api.comment.domain.repository.CommentRepository;
+import com.tissue.api.invitation.domain.Invitation;
+import com.tissue.api.invitation.domain.InvitationStatus;
+import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
 import com.tissue.api.issue.domain.enums.Difficulty;
@@ -59,6 +62,8 @@ public class TestDataFixture {
 	private final WorkspaceRepository workspaceRepository;
 	@Autowired
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+	@Autowired
+	private final InvitationRepository invitationRepository;
 
 	/**
 	 * Creates a workspace with a specified number of members.
@@ -272,7 +277,7 @@ public class TestDataFixture {
 		Issue issue,
 		WorkspaceMember workspaceMember
 	) {
-		IssueAssignee assignee = new IssueAssignee(issue, workspaceMember);
+		IssueAssignee assignee = issue.addAssignee(workspaceMember);
 		return issueAssigneeRepository.save(assignee);
 	}
 
@@ -336,5 +341,19 @@ public class TestDataFixture {
 			.author(author)
 			.parentComment(parentComment)
 			.build());
+	}
+
+	public Invitation createInvitation(
+		Workspace workspace,
+		Member member,
+		InvitationStatus status
+	) {
+		Invitation invitation = Invitation.builder()
+			.workspace(workspace)
+			.member(member)
+			.status(status)
+			.build();
+
+		return invitationRepository.save(invitation);
 	}
 }

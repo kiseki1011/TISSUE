@@ -333,12 +333,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			);
 	}
 
-	public void addAssignee(WorkspaceMember assignee) {
+	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
 		validateAssigneeLimit();
-		validateBelongsToWorkspace(assignee);
-		validateNotAlreadyAssigned(assignee);
+		validateBelongsToWorkspace(workspaceMember);
+		validateNotAlreadyAssigned(workspaceMember);
 
-		assignees.add(new IssueAssignee(this, assignee));
+		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
+
+		assignees.add(assignee);
+		return assignee;
 	}
 
 	public void removeAssignee(WorkspaceMember assignee) {
@@ -351,7 +354,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 		if (isNotAssignee) {
 			throw new ForbiddenOperationException(
-				String.format("Must be an assignee of this issue. issueKey: %s", issueKey)
+				String.format("Must be an assignee of this issue. issue key: %s, workspace member id: %d",
+					issueKey, workspaceMemberId)
 			);
 		}
 	}
