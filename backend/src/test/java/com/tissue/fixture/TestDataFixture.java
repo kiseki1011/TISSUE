@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
 import com.tissue.api.assignee.domain.repository.IssueAssigneeRepository;
@@ -34,6 +35,7 @@ import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
+import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -43,6 +45,7 @@ import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepositor
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Transactional
 @RequiredArgsConstructor
 public class TestDataFixture {
 
@@ -64,6 +67,8 @@ public class TestDataFixture {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	@Autowired
 	private final InvitationRepository invitationRepository;
+	@Autowired
+	private final PasswordEncoder passwordEncoder;
 
 	/**
 	 * Creates a workspace with a specified number of members.
@@ -98,7 +103,7 @@ public class TestDataFixture {
 			Member.builder()
 				.loginId(loginId)
 				.email(loginId + "@test.com")
-				.password("test1234!")
+				.password(passwordEncoder.encode("test1234!"))
 				.build()
 		);
 	}
@@ -112,7 +117,7 @@ public class TestDataFixture {
 			Workspace.builder()
 				.name(name)
 				.description("description")
-				.password(password)
+				.password(passwordEncoder.encode(password))
 				.code(RandomStringUtils.randomAlphanumeric(8))
 				.keyPrefix(keyPrefix)
 				.build()
