@@ -16,29 +16,12 @@ import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	private Member member;
+	Workspace workspace;
 
 	@BeforeEach
 	void setUp() {
-
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
-			member,
-			workspace,
-			WorkspaceRole.MEMBER
-		);
+		// create workspace
+		workspace = testDataFixture.createWorkspace("test workspace", null, null);
 	}
 
 	@AfterEach
@@ -47,19 +30,15 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 	}
 
 	@Test
-	@DisplayName("워크스페이스 참여가 성공하는 경우 워크스페이스 참여 응답을 정상적으로 반환한다")
-	void testJoinWorkspace_Success() {
+	@DisplayName("유효한 워크스페이스 코드를 통해 워크스페이스에 참여할 수 있다")
+	void canJoinWorkspaceWithValidWorkspaceCode() {
 		// given
-		Member member2 = memberRepositoryFixture.createAndSaveMember(
-			"member2",
-			"member2@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("tester");
 
 		// when
 		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(
-			"TESTCODE",
-			member2.getId()
+			workspace.getCode(),
+			member.getId()
 		);
 
 		// then
@@ -67,13 +46,17 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 	}
 
 	@Test
-	@DisplayName("이미 워크스페이스에 참여하는 멤버가 참여를 시도하는 경우 예외가 발생한다")
+	@DisplayName("이미 워크스페이스에 참여한 멤버는 다시 참여하는 것이 불가능")
 	void testJoinWorkspace_isAlreadyMemberTrue() {
 		// given
-		String workspaceCode = "TESTCODE";
+		Member member = testDataFixture.createMember("tester");
+
+		// assume member already joined the workspace
+		testDataFixture.createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceParticipationCommandService.joinWorkspace(workspaceCode, member.getId()))
+		assertThatThrownBy(
+			() -> workspaceParticipationCommandService.joinWorkspace(workspace.getCode(), member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 

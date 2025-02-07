@@ -8,15 +8,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
+
 	@Autowired
 	private AuthenticationService authenticationService;
 	@Autowired
@@ -31,66 +32,51 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@DisplayName("가입된 멤버의 로그인ID로 로그인이 가능하다")
-	void testLoginWithLoginId_success() {
+	void canLoginWithLoginId() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"testuser",
-			"testuser@test.com",
-			"password123!"
-		);
-
-		memberCommandService.signup(signupMemberRequest);
+		Member member = testDataFixture.createMember("tester"); // password: test1234!
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("testuser")
-			.password("password123!")
+			.identifier(member.getLoginId())
+			.password("test1234!")
 			.build();
+
 		// when
 		LoginResponse loginResponse = authenticationService.login(loginRequest);
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.loginId()).isEqualTo("testuser");
+		assertThat(loginResponse.loginId()).isEqualTo(member.getLoginId());
 	}
 
 	@Test
 	@DisplayName("가입된 멤버의 이메일로 로그인할 수 있다")
-	void testLoginWithEmail_success() {
+	void canLoginWithEmail() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"testuser",
-			"testuser@test.com",
-			"password123!"
-		);
-
-		memberCommandService.signup(signupMemberRequest);
+		Member member = testDataFixture.createMember("tester"); // password: test1234!
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("testuser@test.com")
-			.password("password123!")
+			.identifier(member.getEmail())
+			.password("test1234!")
 			.build();
+
 		// when
 		LoginResponse loginResponse = authenticationService.login(loginRequest);
 
 		// then
 		assertThat(loginResponse).isNotNull();
-		assertThat(loginResponse.email()).isEqualTo("testuser@test.com");
+		assertThat(loginResponse.email()).isEqualTo(member.getEmail());
 	}
 
 	@Test
-	@DisplayName("로그인 시 로그인ID 또는 이메일을 조회할 수 없으면 예외 발생")
-	void test3() {
+	@DisplayName("유효하지 않은 로그인ID 또는 이메일로 로그인할 수 없다")
+	void cannotLoginWithInvalidLoginIdOrEmail() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"testuser",
-			"testuser@test.com",
-			"password123!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		Member member = testDataFixture.createMember("tester");
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("badtestuser")
-			.password("password123!")
+			.identifier("nottester")
+			.password("test1234!")
 			.build();
 
 		// when & then
@@ -99,18 +85,13 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("로그인 시 패스워드가 일치하지 않으면 예외 발생")
-	void test4() {
+	@DisplayName("유효하지 않은 패스워드로 로그인할 수 없다")
+	void cannotLoginWithInvalidPassword() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"testuser",
-			"testuser@test.com",
-			"password123!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		Member member = testDataFixture.createMember("tester"); // password: test1234!
 
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("testuser")
+			.identifier("tester")
 			.password("wrongpassword123!")
 			.build();
 

@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -24,33 +23,22 @@ import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper {
 
+	Member member1;
+	Workspace workspace1;
+	Workspace workspace2;
+
 	@BeforeEach
 	void setup() {
-		// member1 회원가입
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member1",
-			"member1@test.com",
-			"member1password!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		// create member1
+		member1 = testDataFixture.createMember("member1");
 
-		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			null
-		);
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace2",
-			"description2",
-			"TEST2222",
-			null
-		);
+		// create workspace1, workspace2
+		workspace1 = testDataFixture.createWorkspace("workspace1", null, null);
+		workspace2 = testDataFixture.createWorkspace("workspace2", null, null);
 
-		// member1은 workspace1,2에 참여
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", 1L);
-		workspaceParticipationCommandService.joinWorkspace("TEST2222", 1L);
+		// member1 joined workspace1, workspace2
+		testDataFixture.createWorkspaceMember(member1, workspace1, WorkspaceRole.MEMBER);
+		testDataFixture.createWorkspaceMember(member1, workspace2, WorkspaceRole.MEMBER);
 	}
 
 	@AfterEach
@@ -58,61 +46,28 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		databaseCleaner.execute();
 	}
 
-	@Transactional
 	@Test
+	@Transactional
 	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다")
-	void test1() {
+	void memberCanQueryAllJoinedWorkspaces() {
 		// given
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(1L, pageable);
+		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(member1.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("멤버는 자기가 참여한 모든 워크스페이스를 조회할 수 있다(자기가 생성하지 않은 워크스페이스)")
-	void test2() {
-		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member2",
-			"member2@test.com",
-			"member2password!!"
-		);
-		memberCommandService.signup(signupMemberRequest);
-
-		workspaceParticipationCommandService.joinWorkspace(
-			"TEST1111",
-			2L
-		);
-
-		Pageable pageable = PageRequest.of(0, 20);
-
-		// when
-		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(2L, pageable);
-
-		// then
-		assertThat(response.getTotalElements()).isEqualTo(1);
-	}
-
 	@Transactional
-	@Test
-	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬을 적용하면, 역정렬된 결과로 조회할 수 있다")
-	void test6() {
+	@DisplayName("워크스페이스 전체 조회에서 이름에 대한 역정렬된 결과로 조회할 수 있다")
+	void memberCanQueryAllJoinedWorkspacesByNameInDescendingOrder() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member2",
-			"member2@test.com",
-			"member2password!!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		Member member2 = testDataFixture.createMember("member2");
 
-		Member member2 = memberRepository.findByLoginId("member2").get();
-
-		// workspace3 ~ 7 이라는 이름으로 워크스페이스 5개 생성
+		// create 5 workspaces (workspace3 ~ 7)
 		for (int i = 3; i <= 7; i++) {
 			Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
 				"workspace" + i,
@@ -123,7 +78,7 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 			workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
 		}
 
-		// 워크스페이스 name 기준 역정렬을 하기 위한 PageRequest
+		// PageRequest for descending order by name
 		Pageable pageable = PageRequest.of(
 			0,
 			20,
@@ -136,7 +91,7 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);
 
-		// 역정렬 되었는지 검증
+		// verify if sorted by descending order
 		List<WorkspaceDetail> workspaces = response.getWorkspaces();
 		List<String> expectedOrder = Arrays.asList(
 			"workspace7",

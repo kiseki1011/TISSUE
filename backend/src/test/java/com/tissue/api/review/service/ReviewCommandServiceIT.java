@@ -12,15 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
+import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,33 +30,50 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	String workspaceCode;
-	String issueKey;
+	Workspace workspace;
+	WorkspaceMember owner;
+	WorkspaceMember workspaceMember1;
+	WorkspaceMember workspaceMember2;
+	Story issue;
 
 	@BeforeEach
 	public void setUp() {
-		// 테스트 멤버 testUser, testUser2, testUser3 생성
-		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
-		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
-		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
-
-		// testuser가 테스트 워크스페이스 생성
-		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
-
-		workspaceCode = createWorkspace.code();
-
-		// testUser2, testUser3 테스트 워크스페이스에 참가
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
-
-		// 테스트 워크스페이스에 Story 추가
-		CreateStoryResponse createdStory = (CreateStoryResponse)issueFixture.createStory(
-			workspaceCode,
-			"Test Story",
+		// create workspace
+		workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
 		);
 
-		issueKey = createdStory.issueKey();
+		// create member
+		Member ownerMember = testDataFixture.createMember("owner");
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
+
+		// add workspace members
+		owner = testDataFixture.createWorkspaceMember(
+			ownerMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
+		workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+		workspaceMember2 = testDataFixture.createWorkspaceMember(
+			member2,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+
+		// create issue
+		issue = testDataFixture.createStory(
+			workspace,
+			"test issue(STORY type)",
+			IssuePriority.MEDIUM,
+			null
+		);
 	}
 
 	@AfterEach
@@ -63,71 +82,60 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("이슈가 IN_REVIEW 상태가 아닐때 리뷰 작성을 시도하면 예외가 발생한다")
-	void createReview_whenIssueIsNotInReview_throwsException() {
+	@DisplayName("리뷰를 작성하기 위해서는 해당 이슈가 IN_REVIEW 상태이어야 한다")
+	void toCreateReviewIssueStatusMustBe_InReview() {
 		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
 		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			requesterWorkspaceMemberId
 		);
 
 		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
-		CreateReviewRequest request = new CreateReviewRequest(APPROVED, "Title", "Content");
+		CreateReviewRequest request = new CreateReviewRequest(APPROVED, "test review", "test review");
 
 		// when & then
 		assertThatThrownBy(
-			() -> reviewCommandService.createReview(workspaceCode, issueKey, reviewerWorkspaceMemberId, request))
-			.isInstanceOf(InvalidOperationException.class);
+			() -> reviewCommandService.createReview(
+				workspace.getCode(),
+				issue.getIssueKey(),
+				reviewerWorkspaceMemberId,
+				new CreateReviewRequest(APPROVED, "test review", "test review")
+			)
+		).isInstanceOf(InvalidOperationException.class);
 
 	}
 
 	@Test
-	@DisplayName("이슈에 대해 리뷰 신청을 통해 IN_REVIEW 상태로 전환되어야 리뷰 작성을 할 수 있다")
-	void test() {
+	@Transactional
+	@DisplayName("이슈가 IN_REVIEW 상태이면, 리뷰어는 리뷰 작성을 시작할 수 있다")
+	void reviewerCanCreateReviewIfIssueStatusIs_InReview() {
 		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
 
-		reviewerCommandService.addReviewer(
-			workspaceCode, issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
-
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		CreateReviewRequest request = new CreateReviewRequest(APPROVED, "Title", "Content");
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview();
 
 		// when
-		CreateReviewResponse response = reviewCommandService.createReview(workspaceCode, issueKey,
-			reviewerWorkspaceMemberId, request);
+		CreateReviewResponse response = reviewCommandService.createReview(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			reviewerWorkspaceMemberId,
+			new CreateReviewRequest(APPROVED, "test review", "test review")
+		);
 
 		// then
 		assertThat(response.reviewerId()).isEqualTo(reviewerWorkspaceMemberId);
@@ -135,261 +143,155 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("리뷰 상태를 CHANGES_REQUESTED로 설정해서 리뷰 작성에 성공하면, 이슈의 상태도 CHANGES_REQUESTED로 변한다")
-	void createReview_success_ifReviewStatusIsChangesRequested_issueStatusUpdatedToChangesRequested() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
-
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		CreateReviewRequest request = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
-
-		// when
-		reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			request
-		);
-
-		// then
-		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow();
-
-		assertThat(issue.getStatus()).isEqualTo(IssueStatus.CHANGES_REQUESTED);
-	}
-
-	@Test
-	@DisplayName("이슈의 최초 리뷰 요청이 성공하면 이슈의 currentReviewRound는 1이어야 한다")
-	void firstReviewRequest_currentReviewRound_shouldBeOne() {
-		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
-
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
-
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		CreateReviewRequest request = new CreateReviewRequest(CHANGES_REQUESTED, "Title", "Content");
-
-		// when
-		reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			request
-		);
-
-		// then
-		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
-			.orElseThrow();
-
-		assertThat(issue.getCurrentReviewRound()).isEqualTo(1);
-	}
-
 	@Transactional
-	@Test
-	@DisplayName("특정 이슈의 리뷰 재요청이 성공하면 이슈의 currentReviewRound가 1 증가해야 한다")
-	void secondReviewRequest_currentReviewRound_increaseByOne() {
+	@DisplayName("리뷰 상태 CHANGES_REQUESTED로 리뷰 작성에 성공하면, 이슈의 상태도 CHANGES_REQUESTED로 변한다")
+	void creatingReviewWithReviewStatusChangesRequested_ThenIssueStatusIsUpdatedToChangesRequested() {
 		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
 
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview();
+
+		// when
+		reviewCommandService.createReview(
+			workspace.getCode(),
+			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
+			new CreateReviewRequest(CHANGES_REQUESTED, "test review", "test review")
 		);
 
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
+		// then
+		Issue foundIssue = issueRepository.findByIssueKeyAndWorkspaceCode(issue.getIssueKey(), workspace.getCode())
+			.get();
 
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		assertThat(foundIssue.getStatus()).isEqualTo(IssueStatus.CHANGES_REQUESTED);
+	}
 
-		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
+	@Test
+	@Transactional
+	@DisplayName("이슈의 최초 리뷰 요청이 성공하면 이슈의 현재 리뷰 라운드(currentReviewRound)는 1이어야 한다")
+	void forFirstReviewRequest_CurrentReviewRoundShouldBeOne() {
+		// given
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
-		CreateReviewResponse createReview = reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
+
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview();
+
+		// when
+		reviewCommandService.createReview(
+			workspace.getCode(),
+			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			createReviewRequest
+			new CreateReviewRequest(CHANGES_REQUESTED, "test review", "test review")
 		);
 
-		UpdateReviewStatusRequest updateReviewStatusRequest = new UpdateReviewStatusRequest(CHANGES_REQUESTED);
+		// then
+		Issue foundIssue = issueRepository.findByIssueKeyAndWorkspaceCode(issue.getIssueKey(), workspace.getCode())
+			.get();
 
+		assertThat(foundIssue.getCurrentReviewRound()).isEqualTo(1);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("리뷰 재요청이 성공하면 해당 이슈의 현재 리뷰 라운드(currentReviewRound)는 1 증가해야 한다")
+	void forSecondReviewRequest_CurrentReviewRound_ShouldBeTwo() {
+		// given
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
+
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
+
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview(); // first review request
+
+		CreateReviewResponse createReviewResponse = reviewCommandService.createReview(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			reviewerWorkspaceMemberId,
+			new CreateReviewRequest(PENDING, "test review", "test review")
+		);
+
+		// change review status to CHANGES_REQUESTED
 		reviewCommandService.updateReviewStatus(
-			workspaceCode,
-			issueKey,
-			createReview.reviewId(),
+			workspace.getCode(),
+			issue.getIssueKey(),
+			createReviewResponse.reviewId(),
 			reviewerWorkspaceMemberId,
-			updateReviewStatusRequest
+			new UpdateReviewStatusRequest(CHANGES_REQUESTED)
 		);
 
 		// when
 		RequestReviewResponse response = reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			requesterWorkspaceMemberId
 		);
 
-		// then
+		// then - issue's current review round should increase by 1
 		assertThat(response.currentReviewRound()).isEqualTo(2);
 	}
 
 	@Test
-	@DisplayName("리뷰어가 아닌데 해당 이슈의 리뷰 작성을 시도하면 예외가 발생한다")
-	void createReview_whenNotReviewer_throwsException() {
+	@Transactional
+	@DisplayName("리뷰어가 아닌자는 해당 이슈에 대해 리뷰 작성을 하지 못한다")
+	void cannotCreateReviewIfNotReviewer() {
 		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long notReviewerWorkspaceMemberId = 999L;
 
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
 
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
-
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
-
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview();
 
 		// when & then
 		assertThatThrownBy(() -> reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId, // 리뷰어가 아닌 자가 리뷰 생성 시도
-			createReviewRequest
+			workspace.getCode(),
+			issue.getIssueKey(),
+			notReviewerWorkspaceMemberId, // workspace member that is not a reviewer
+			new CreateReviewRequest(PENDING, "test review", "test review")
 		)).isInstanceOf(ForbiddenOperationException.class);
 	}
 
 	@Test
-	@DisplayName("리뷰 작성을 시도할 때, 해당 리뷰 라운드에 이미 작성한 리뷰가 존재하면 예외가 발생한다")
-	void createReview_ifReviewExistsForCurrentRound_throwsException() {
+	@Transactional
+	@DisplayName("해당 리뷰 라운드에 이미 작성한 리뷰가 존재하면 리뷰를 작성할 수 없다")
+	void cannotCreateReviewIfReviewExistsForCurrentReviewRound() {
 		// given
-		Long reviewerWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
+		testDataFixture.addIssueAssignee(issue, workspaceMember1);
+		testDataFixture.addIssueReviewer(issue, workspaceMember2);
 
-		reviewerCommandService.addReviewer(
-			workspaceCode,
-			issueKey,
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
-		);
+		issue.updateStatus(IssueStatus.IN_PROGRESS);
+		issue.requestReview();
 
-		issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId,
-			new UpdateIssueStatusRequest(IssueStatus.IN_PROGRESS)
-		);
-
-		reviewerCommandService.requestReview(
-			workspaceCode,
-			issueKey,
-			requesterWorkspaceMemberId
-		);
-
-		CreateReviewRequest createReviewRequest = new CreateReviewRequest(PENDING, "Title", "Content");
-
+		// create review for current round
 		reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			createReviewRequest
+			new CreateReviewRequest(PENDING, "test review", "test review")
 		);
 
 		// when & then
 		assertThatThrownBy(() -> reviewCommandService.createReview(
-			workspaceCode,
-			issueKey,
+			workspace.getCode(),
+			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			createReviewRequest
+			new CreateReviewRequest(PENDING, "test review", "test review")
 		)).isInstanceOf(InvalidOperationException.class);
 	}
 }

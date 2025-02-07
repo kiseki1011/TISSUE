@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
@@ -29,13 +30,8 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	void setUp() {
-		// 테스트용 워크스페이스 생성
-		workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		// create workspace
+		workspace = testDataFixture.createWorkspace("test workspace", null, null);
 	}
 
 	@AfterEach
@@ -44,8 +40,8 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("포지션을 생성에 성공하면 반환하는 응답에는 포지션의 이름, 설명, 색이 포함된다")
-	void createPosition() {
+	@DisplayName("특정 워크스페이스에 대해 포지션을 생성할 수 있다")
+	void canCreatePosition() {
 		// Given
 		CreatePositionRequest request = new CreatePositionRequest(
 			"Developer",
@@ -53,7 +49,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		CreatePositionResponse createResponse = positionCommandService.createPosition("TESTCODE", request);
+		CreatePositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
 
 		// Then
 		assertThat(createResponse.name()).isEqualTo("Developer");
@@ -63,7 +59,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@DisplayName("포지션을 생성하면 포지션이 사용하지 않은 색상 중 랜덤한 색을 배정받는다")
-	void createPosition_assignedRandomColor() {
+	void createPosition_RandomColorAssigned() {
 		// Given
 		CreatePositionRequest request = new CreatePositionRequest(
 			"Developer",
@@ -71,7 +67,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		CreatePositionResponse createResponse = positionCommandService.createPosition("TESTCODE", request);
+		CreatePositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
 
 		// Then
 		Position findPosition = positionRepository.findById(createResponse.positionId()).orElseThrow();
@@ -81,16 +77,16 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("포지션 수정에 성공하면 반환하는 응답에는 변경된 포지션의 이름, 설명이 포함된다")
-	void updatePosition() {
+	@DisplayName("포지션의 이름과 설명을 수정할 수 있다")
+	void canUpdatePositionNameAndDescription() {
 		// Given
-		Position position = Position.builder()
+		Position position = positionRepository.save(Position.builder()
 			.name("Developer")
 			.description("Backend Developer")
 			.color(ColorType.BLACK)
 			.workspace(workspace)
-			.build();
-		positionRepository.save(position);
+			.build()
+		);
 
 		UpdatePositionRequest request = new UpdatePositionRequest(
 			"Senior Developer",
@@ -99,7 +95,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When
 		UpdatePositionResponse response = positionCommandService.updatePosition(
-			"TESTCODE",
+			workspace.getCode(),
 			position.getId(),
 			request
 		);
@@ -110,22 +106,22 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("포지션의 색 수정에 성공하면 반환하는 응답에는 변경된 색이 포함된다")
-	void updatePositionColor() {
+	@DisplayName("포지션의 색을 제공하는 색상 중 하나로 수정할 수 있다")
+	void canUpdatePositionColor() {
 		// given
-		Position position = Position.builder()
+		Position position = positionRepository.save(Position.builder()
 			.name("Developer")
 			.description("Backend Developer")
 			.color(ColorType.BLACK)
 			.workspace(workspace)
-			.build();
-		positionRepository.save(position);
+			.build()
+		);
 
 		UpdatePositionColorRequest request = new UpdatePositionColorRequest(ColorType.GREEN);
 
 		// when
 		UpdatePositionColorResponse response = positionCommandService.updatePositionColor(
-			"TESTCODE",
+			workspace.getCode(),
 			position.getId(),
 			request
 		);
@@ -135,41 +131,36 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("단 한명이라도 해당 워크스페이스에서 사용 중인 포지션의 삭제를 시도하면 예외 발생")
-	void deletePosition_WhenInUse_ThrowsException() {
+	@Transactional
+	@DisplayName("사용중인 포지션은 삭제할 수 없다")
+	void cannotDeletePositionInUse() {
 		// Given
-		Position position = Position.builder()
+		Position position = positionRepository.save(Position.builder()
 			.name("Developer")
 			.description("Backend Developer")
 			.color(ColorType.BLACK)
 			.workspace(workspace)
-			.build();
-		positionRepository.save(position);
-
-		// WorkspaceMember 생성 및 Position 할당
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"testuser",
-			"test@test.com",
-			"test1234!"
+			.build()
 		);
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
+		Member member = testDataFixture.createMember("testuser");
+
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
 			member,
 			workspace,
-			WorkspaceRole.MEMBER,
-			"nickname"
+			WorkspaceRole.MEMBER
 		);
+
 		workspaceMember.addPosition(position);
-		workspaceMemberRepository.save(workspaceMember);
 
 		// When & Then
-		assertThatThrownBy(() -> positionCommandService.deletePosition("TESTCODE", position.getId()))
+		assertThatThrownBy(() -> positionCommandService.deletePosition(workspace.getCode(), position.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 워크스페이스에 대한 포지션 생성을 시도하면 예외 발생")
-	void createPosition_WithNonExistentWorkspace_ThrowsException() {
+	@DisplayName("존재하지 않는 워크스페이스에 대해 포지션을 생성할 수 없다")
+	void cannotCreatePositionWithNonExistingWorkspace() {
 		// Given
 		String nonExistentCode = "INVALID";
 		CreatePositionRequest request = new CreatePositionRequest("Developer", "Backend Developer");

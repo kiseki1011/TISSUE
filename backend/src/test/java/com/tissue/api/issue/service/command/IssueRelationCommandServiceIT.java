@@ -10,63 +10,73 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	String workspaceCode;
-	String sourceIssueKey;
-	String targetIssueKey;
+	Workspace workspace;
+	Story sourceIssue;
+	Story targetIssue;
+	WorkspaceMember owner;
+	WorkspaceMember workspaceMember1;
+	WorkspaceMember workspaceMember2;
 
 	@BeforeEach
 	void setUp() {
-		// 테스트 멤버 testUser, testUser2, testUser3 생성
-		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
-		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
-		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
+		// create workspace
+		workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
+			null
+		);
 
-		// testUser가 Workspace 생성
-		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
+		// create member
+		Member ownerMember = testDataFixture.createMember("owner");
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
 
-		workspaceCode = createWorkspace.code();
+		// add workspace members
+		owner = testDataFixture.createWorkspaceMember(
+			ownerMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
+		workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+		workspaceMember2 = testDataFixture.createWorkspaceMember(
+			member2,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
 
-		// testUser2, testUser3가 생성한 Workspace에 참가
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
+		// create source issue
+		sourceIssue = testDataFixture.createStory(
+			workspace,
+			"source issue",
+			IssuePriority.MEDIUM,
+			null
+		);
 
-		// Source Issue 생성
-		CreateStoryRequest createSourceStory = CreateStoryRequest.builder()
-			.title("Source Story Issue")
-			.content("Source Story Issue")
-			.userStory("Source Story Issue")
-			.build();
-
-		CreateStoryResponse sourceIssue = (CreateStoryResponse)issueCommandService.createIssue(workspaceCode,
-			createSourceStory);
-
-		// testUser2가 Source Issue에 작업자로 참여
-		assigneeCommandService.addAssignee(workspaceCode, sourceIssue.issueKey(), 2L);
-
-		// Target Issue 생성
-		CreateStoryRequest createTargetStory = CreateStoryRequest.builder()
-			.title("Target Story Issue")
-			.content("Target Story Issue")
-			.userStory("Target Story Issue")
-			.build();
-
-		CreateStoryResponse targetIssue = (CreateStoryResponse)issueCommandService.createIssue(workspaceCode,
-			createTargetStory);
-
-		sourceIssueKey = sourceIssue.issueKey();
-		targetIssueKey = targetIssue.issueKey();
+		// create target issue
+		targetIssue = testDataFixture.createStory(
+			workspace,
+			"target issue",
+			IssuePriority.MEDIUM,
+			null
+		);
 	}
 
 	@AfterEach
@@ -76,84 +86,88 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("이슈 간 관계 설정을 성공하면 성공 응답을 반환 한다")
-	void createIssueRelation_success_returnsCreateIssueRelationResponse() {
+	@DisplayName("이슈 간 관계를 설정할 수 있다(BLOCKS 관계 설정)")
+	void canCreateIssueRelationBetweenIssues() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
 
-		// when - 소스 이슈가 타겟 이슈를 BLOCKS
+		// set requester as author of source issue
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+
+		// when - source issue BLOCKS target issue
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			request
 		);
 
 		// then
 		assertThat(response.relationType()).isEqualTo(IssueRelationType.BLOCKS);
-		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssueKey);
+		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssue.getIssueKey());
 	}
 
 	@Test
 	@Transactional
-	@DisplayName("이슈 간 관계 설정을 성공하면 소스 이슈와 타겟 이슈의 각 정방향, 역방향 관계의 수는 1개 이어야 한다")
-	void createIssueRelation_success_outgoingRelationSize1_incomingRelationsSize1() {
+	@DisplayName("이슈 관계 설정 후 소스와 타겟 이슈의 정방향, 역방향 관계의 개수는 각각 1개여야 한다")
+	void issueRelationCreation_UpdatesRelationCountCorrectly() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			request
 		);
 
 		// then
 		assertThat(response.relationType()).isEqualTo(IssueRelationType.BLOCKS);
-		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssueKey);
+		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssue.getIssueKey());
 
-		Issue sourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(sourceIssueKey, workspaceCode).orElseThrow();
-		Issue targetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(targetIssueKey, workspaceCode).orElseThrow();
+		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(sourceIssue.getIssueKey(),
+			workspace.getCode()).orElseThrow();
 
-		assertThat(sourceIssue.getOutgoingRelations()).hasSize(1);
-		assertThat(sourceIssue.getIncomingRelations()).hasSize(1);
-		assertThat(targetIssue.getOutgoingRelations()).hasSize(1);
-		assertThat(targetIssue.getIncomingRelations()).hasSize(1);
+		Issue findTargetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(targetIssue.getIssueKey(),
+			workspace.getCode()).orElseThrow();
+
+		assertThat(findSourceIssue.getOutgoingRelations()).hasSize(1);
+		assertThat(findSourceIssue.getIncomingRelations()).hasSize(1);
+		assertThat(findTargetIssue.getOutgoingRelations()).hasSize(1);
+		assertThat(findTargetIssue.getIncomingRelations()).hasSize(1);
 	}
 
 	@Test
 	@Transactional
-	@DisplayName("이미 관계가 존재하는 상태에서 역방향으로 관계를 설정하려고 하면 예외가 발생한다(A -> B -> A)")
-	void createIssueRelation_sourceToTargetToSource_circularDependency() {
+	@DisplayName("이미 관계가 존재하는 상태에서 역방향으로 관계를 설정할 수 없다(A -> B -> A)")
+	void whenCreatingIssueRelation_CircularDependencyIsNotAllowed() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		issueRelationCommandService.createRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			request
 		);
 
-		// 타겟 이슈에 작업자로 참여
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			targetIssueKey,
-			2L
-		);
+		// set requester as author of target issue
+		targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationCommandService.createRelation(
-			workspaceCode,
-			targetIssueKey,
-			sourceIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			request
 		)).isInstanceOf(InvalidOperationException.class);
@@ -161,17 +175,18 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("소스 이슈가 스스로에 대해 관계를 설정하려고 하면 예외가 발생한다(A -> A)")
-	void createIssueRelation_sameIssue_throwsException() {
+	@DisplayName("이슈는 자기 자신에 대한 관계를 설정할 수 없다(A -> A)")
+	void whenCreatingIssueRelation_SelfRelationIsNotAllowed() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationCommandService.createRelation(
-			workspaceCode,
-			sourceIssueKey,
-			sourceIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			sourceIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			request
 		)).isInstanceOf(InvalidOperationException.class);
@@ -179,58 +194,49 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("상위의 타겟 이슈에서 하위의 소스 이슈 간 관계를 설정하려면 예외가 발생한다(A -> B -> C -> A)")
-	void createIssueRelation_sourceToTargetToTargetToSource_circularDependency() {
+	@DisplayName("타겟 이슈가 소스 이슈의 소스 이슈에 대해 관계를 설정하는 것은 불가능 하다(A -> B -> C -> A)")
+	void creatingIssueRelationWithTheSourceIssueOfTheSourceIssueIsNotAllowed_CircularDependency() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
-		// 이슈 A-B 관계 설정
+		// create issue relation between issue A-B
 		issueRelationCommandService.createRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
 		);
 
-		// 이슈 B에 참여
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			targetIssueKey,
-			2L
+		// set requester as author of target issue(issue B)
+		targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+
+		// create target issue(issue C) of issue B
+		Story targetIssueC = testDataFixture.createStory(
+			workspace,
+			"target issue C",
+			IssuePriority.MEDIUM,
+			null
 		);
 
-		// 이슈 B의 타겟 이슈 C 생성
-		CreateStoryRequest createTargetIssueC = CreateStoryRequest.builder()
-			.title("Target Story Issue C")
-			.content("Target Story Issue C")
-			.userStory("Target Story Issue C")
-			.build();
+		// set requester as author of issue C
+		targetIssueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
-		CreateStoryResponse targetIssueC = (CreateStoryResponse)issueCommandService.createIssue(workspaceCode,
-			createTargetIssueC);
-
-		// 이슈 C에 참여
-		assigneeCommandService.addAssignee(
-			workspaceCode,
-			targetIssueC.issueKey(),
-			2L
-		);
-
-		// 이슈 B-C 관계 설정
+		// create issue relation between issue B-C
 		issueRelationCommandService.createRelation(
-			workspaceCode,
-			targetIssueKey,
-			targetIssueC.issueKey(),
+			workspace.getCode(),
+			targetIssue.getIssueKey(),
+			targetIssueC.getIssueKey(),
 			requesterWorkspaceMemberId,
 			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
 		);
 
-		// when & then - C-A 관계 시도
+		// when & then - try to create issue relation between issue C-A
 		assertThatThrownBy(() -> issueRelationCommandService.createRelation(
-			workspaceCode,
-			targetIssueC.issueKey(),
-			sourceIssueKey,
+			workspace.getCode(),
+			targetIssueC.getIssueKey(),
+			sourceIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
 		)).isInstanceOf(InvalidOperationException.class);
@@ -238,48 +244,53 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("이슈 간 관계 제거에 성공하면 성공 응답을 반환한다")
-	void removeIssueRelation_success_returnsRemoveIssueRelationResponse() {
+	@DisplayName("이슈 간 설정된 관계를 제거할 수 있다")
+	void canRemoveIssueRelation() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId
 		);
 
 		// then
-		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssueKey);
-		assertThat(response.targetIssueKey()).isEqualTo(targetIssueKey);
+		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssue.getIssueKey());
+		assertThat(response.targetIssueKey()).isEqualTo(targetIssue.getIssueKey());
 	}
 
 	@Test
 	@Transactional
 	@DisplayName("이슈 간 관계 제거에 성공하면 소스 이슈와 타겟 이슈의 각 정방향, 역방향 관계는 비어있어야 한다")
-	void createIssueRelation_success_outgoingRelationEmpty_incomingRelationsEmpty() {
+	void afterRemovingIssueRelation_OutgoingRelationsAndIncomingRelationsMustBeEmpty() {
 		// given
-		Long requesterWorkspaceMemberId = 2L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
-			workspaceCode,
-			sourceIssueKey,
-			targetIssueKey,
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId
 		);
 
 		// then
-		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssueKey);
-		assertThat(response.targetIssueKey()).isEqualTo(targetIssueKey);
+		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssue.getIssueKey());
+		assertThat(response.targetIssueKey()).isEqualTo(targetIssue.getIssueKey());
 
-		Issue sourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(sourceIssueKey, workspaceCode).orElseThrow();
-		Issue targetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(targetIssueKey, workspaceCode).orElseThrow();
-		assertThat(sourceIssue.getOutgoingRelations()).isEmpty();
-		assertThat(sourceIssue.getIncomingRelations()).isEmpty();
-		assertThat(targetIssue.getOutgoingRelations()).isEmpty();
-		assertThat(targetIssue.getIncomingRelations()).isEmpty();
+		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(sourceIssue.getIssueKey(),
+			workspace.getCode()).orElseThrow();
+		Issue findTargetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(targetIssue.getIssueKey(),
+			workspace.getCode()).orElseThrow();
+
+		assertThat(findSourceIssue.getOutgoingRelations()).isEmpty();
+		assertThat(findSourceIssue.getIncomingRelations()).isEmpty();
+		assertThat(findTargetIssue.getOutgoingRelations()).isEmpty();
+		assertThat(findTargetIssue.getIncomingRelations()).isEmpty();
 	}
 }

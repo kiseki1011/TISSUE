@@ -3,10 +3,12 @@ package com.tissue.api.workspacemember.service.command;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
@@ -27,6 +29,14 @@ import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
+	Workspace workspace;
+
+	@BeforeEach
+	void setUp() {
+		// create workspace
+		workspace = testDataFixture.createWorkspace("test workspace", null, null);
+	}
+
 	@AfterEach
 	void tearDown() {
 		databaseCleaner.execute();
@@ -35,397 +45,171 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	/**
 	 * 트랜잭션 애노테이션 제거 시 LazyInitializationException 발생
 	 * <p>
-	 * 원인:
-	 * - Hibernate 세션이 닫힌 상태에서 지연 로딩된 속성에 접근하려 할 때 발생합니다.
-	 * - 현재 테스트의 경우, Workspace 엔티티의 workspaceMembers 컬렉션을 액세스하려고 할 때
-	 * 세션이 종료되어 이 오류가 발생합니다.
+	 * Hibernate 세션이 닫힌 상태에서 지연 로딩된 속성에 접근하려 할 때 발생
+	 * 현재 테스트의 경우, Workspace 엔티티의 workspaceMembers 컬렉션을 액세스하려고 할 때 세션이 종료되어 발생
 	 */
-	@Transactional
 	@Test
-	@DisplayName("멤버가 워크스페이스에서 성공적으로 추방되면 응답이 반환되어야 한다")
-	void kickWorkspaceMember_Success() {
+	@Transactional
+	@DisplayName("멤버를 워크스페이스에서 추방할 수 있다")
+	void canRemoveMemberFromWorkspace() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
+		Member requesterMember = testDataFixture.createMember("requester");
 		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"member2",
-			"member2@test.com",
-			"password1234!"
-		);
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
 
-		WorkspaceMember target = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
-			targetMember,
-			workspace,
-			WorkspaceRole.MEMBER
-		);
 		entityManager.flush();
 
 		// when
-		workspaceMemberCommandService.removeWorkspaceMember(
-			target.getId(),
-			requester.getId()
-		);
+		workspaceMemberCommandService.removeWorkspaceMember(target.getId(), requester.getId());
 
 		// then
 		assertThat(workspaceMemberRepository.findById(target.getId())).isEmpty();
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 멤버를 추방하려고 하면 예외가 발생한다")
-	void kickWorkspaceMember_MemberNotFoundException() {
-		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
-			requesterMember,
-			workspace,
-			WorkspaceRole.OWNER
-		);
-
-		Long nonExistMemberId = 999L;
-
-		// when & then
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember(nonExistMemberId, requester.getId()))
-			.isInstanceOf(WorkspaceMemberNotFoundException.class);
-	}
-
-	@Test
-	@DisplayName("워크스페이스에 소속되지 않은 멤버를 추방하려는 경우 예외가 발생 한다")
-	void kickWorkspaceMember_MemberNotInWorkspaceException() {
-		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = workspaceRepositoryFixture.addAndSaveMemberToWorkspace(
-			requesterMember,
-			workspace,
-			WorkspaceRole.OWNER
-		);
-
-		Long nonExistingWorkspaceMemberId = 999L;
-
-		// when & then
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember(nonExistingWorkspaceMemberId,
-				requester.getId()))
-			.isInstanceOf(WorkspaceMemberNotFoundException.class);
-	}
-
 	@Transactional
-	@Test
-	@DisplayName("특정 워크스페이스의 멤버의 권한을 변경에 성공하면 변경된 멤버의 정보를 응답으로 반환한다")
-	void updateWorkspaceMember_success_returnsUpdateWorkspaceMemberRoleResponse() {
+	@DisplayName("유효하지 않은 식별자(id)를 통해 멤버를 워크스페이스에서 추방할 수 없다")
+	void cannotKickMemberFromWorkspaceWithInvalidMemberId() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
+		Long invalidMemberId = 999L;
 
-		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
-			requesterMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			requesterMember.getEmail()
-		);
+		entityManager.flush();
 
-		requester = workspaceMemberRepository.save(requester);
+		// when & then
+		assertThatThrownBy(
+			() -> workspaceMemberCommandService.removeWorkspaceMember(invalidMemberId, requester.getId()))
+			.isInstanceOf(WorkspaceMemberNotFoundException.class);
+	}
 
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"target",
-			"target123@test.com",
-			"password1234!"
-		);
+	@Test
+	@Transactional
+	@DisplayName("특정 워크스페이스 멤버(WorkspaceMember)의 권한(WorkspaceRole)을 변경할 수 있다")
+	void canUpdateWorkspaceRoleOfWorkspaceMember() {
+		// given
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
-		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
-			targetMember,
-			workspace,
-			WorkspaceRole.VIEWER,
-			targetMember.getEmail()
-		);
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
 
-		target = workspaceMemberRepository.save(target);
-
-		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
+		entityManager.flush();
 
 		// when
 		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
 			target.getId(),
 			requester.getId(),
-			request
+			new UpdateRoleRequest(WorkspaceRole.MANAGER)
 		);
 
 		// then
 		assertThat(response.updatedRole()).isEqualTo(WorkspaceRole.MANAGER);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("자기 자신의 워크스페이스 멤버 권한을 변경하려고 하면 예외가 발생한다")
-	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateItself() {
+	@Transactional
+	@DisplayName("자기 자신의 워크스페이스 권한(WorkspaceRole)을 변경할 수 없다")
+	void cannotUpdateOwnWorkspaceRole() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		Member requesterMember = testDataFixture.createMember("requester");
 
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
-			requesterMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			requesterMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(requester);
+		WorkspaceMember requester = testDataFixture.createWorkspaceMember(requesterMember, workspace,
+			WorkspaceRole.OWNER);
 
 		// when & then
-		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
+			requester.getId(),
+			requester.getId(),
+			new UpdateRoleRequest(WorkspaceRole.MANAGER)
+		))
+			.isInstanceOf(InvalidOperationException.class);
+	}
 
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(requester.getId(), requester.getId(),
-				request))
+	/**
+	 * WorkspaceRole을 OWNER로 변경하기 위해서는 소유권 이전 서비스(transferWorkspaceOwnership)를 호출해야 한다
+	 */
+	@Test
+	@Transactional
+	@DisplayName("워크스페이스 멤버의 권한을 OWNER로 변경할 수 없다")
+	void cannotUpdateWorkspaceRoleToOwner() {
+		// given
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
+
+		entityManager.flush();
+
+		// when & then
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
+			target.getId(),
+			requester.getId(),
+			new UpdateRoleRequest(WorkspaceRole.OWNER)
+		))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Transactional
 	@Test
-	@DisplayName("워크스페이스 멤버의 권한을 OWNER로 변경하려고 하면 예외가 발생한다")
-	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateToOwner() {
+	@DisplayName("자신보다 높은 권한을 가진 워크스페이스 멤버의 권한을 업데이트할 수 없다")
+	void cannotUpdateWorkspaceRoleOfWorkspaceMemberThatHasHigherRole() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		// requester's role is MANAGER
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = testDataFixture.createWorkspaceMember(requesterMember, workspace,
+			WorkspaceRole.MANAGER);
 
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
-			requesterMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			requesterMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(requester);
-
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"target",
-			"target123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
-			targetMember,
-			workspace,
-			WorkspaceRole.VIEWER,
-			targetMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(target);
+		// target's role is OWNER (higher than requester)
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.OWNER);
 
 		// when & then
-		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
-
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Transactional
-	@Test
-	@DisplayName("자기 자신보다 높은 권한을 가진 멤버를 업데이트하려고 하면 예외가 발생한다")
-	void updateWorkspaceMember_fail_ifRequesterTrysToUpdateHigherRoleWorkspaceMember() {
-		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
-			requesterMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			requesterMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(requester);
-
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"target",
-			"target123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
-			targetMember,
-			workspace,
-			WorkspaceRole.OWNER,
-			targetMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(target);
-
-		// when & then
-		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.MANAGER);
-
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
+			target.getId(),
+			requester.getId(),
+			new UpdateRoleRequest(WorkspaceRole.MANAGER)
+		))
 			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버를 OWNER 권한으로 업데이트하려고 하면 예외가 발생한다")
-	void updateWorkspaceMember_fail_ifOwnerTrysToUpdateWorkspaceMemberToOwner() {
+	@Transactional
+	@DisplayName("OWNER 권한을 가져도 다른 워크스페이스 멤버를 OWNER 권한으로 변경할 수 없다")
+	void cannotUpdateWorkspaceRoleToOwnerEvenWithOwner() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = testDataFixture.createWorkspaceMember(requesterMember, workspace,
+			WorkspaceRole.OWNER);
 
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = WorkspaceMember.addWorkspaceMember(
-			requesterMember,
-			workspace,
-			WorkspaceRole.OWNER,
-			requesterMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(requester);
-
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"target",
-			"target123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
-			targetMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			targetMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(target);
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
-		UpdateRoleRequest request = new UpdateRoleRequest(WorkspaceRole.OWNER);
-
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.updateWorkspaceMemberRole(target.getId(), requester.getId(), request))
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
+			target.getId(),
+			requester.getId(),
+			new UpdateRoleRequest(WorkspaceRole.OWNER)
+		))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("OWNER 권한을 가진 멤버가 다른 멤버로 워크스페이스 소유권 이전을 성공하면 응답이 반환된다")
-	void testTransferWorkspaceOwnership_ifSuccess_returnTransferWorkspaceOwnershipResponse() {
+	@Transactional
+	@DisplayName("소유권 이전을 통해 OWNER 권한을 가진 멤버가 다른 멤버에게 OWNER 권한을 넘길 수 있다(기존 OWNER는 MANAGER로 변경)")
+	void ownerCanTransferOwnership() {
 		// given
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		Member requesterMember = testDataFixture.createMember("requester");
+		WorkspaceMember requester = testDataFixture.createWorkspaceMember(requesterMember, workspace,
+			WorkspaceRole.OWNER);
+		requesterMember.increaseMyWorkspaceCount(); // increase workspace count to avoid going below 0
 
-		Member requesterMember = memberRepositoryFixture.createAndSaveMember(
-			"requester",
-			"requester123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(
-			requesterMember,
-			workspace
-		);
-
-		workspaceMemberRepository.save(requester);
-
-		Member targetMember = memberRepositoryFixture.createAndSaveMember(
-			"target",
-			"target123@test.com",
-			"password1234!"
-		);
-
-		WorkspaceMember target = WorkspaceMember.addWorkspaceMember(
-			targetMember,
-			workspace,
-			WorkspaceRole.MANAGER,
-			targetMember.getEmail()
-		);
-
-		workspaceMemberRepository.save(target);
+		Member targetMember = testDataFixture.createMember("target");
+		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MANAGER);
 
 		// when
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
@@ -438,114 +222,85 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 멤버의 별칭을 성공적으로 변경하면 응답으로 상세 정보를 반환한다")
-	void updateNickname_Success() {
+	@DisplayName("워크스페이스 멤버의 별칭(nickname)을 업데이트 할 수 있다")
+	void canUpdateWorkspaceMemberNickname() {
 		// given
-		Member tester = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"password1234!"
-		);
-
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		WorkspaceMember workspaceMember = workspaceMemberRepository.save(
-			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
-		);
-
-		String newNickname = "newNickname";
-		UpdateNicknameRequest request = new UpdateNicknameRequest(newNickname);
+		Member member = testDataFixture.createMember("tester");
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(member, workspace,
+			WorkspaceRole.MEMBER);
 
 		// when
 		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
 			workspaceMember.getId(),
-			request
+			new UpdateNicknameRequest("newNickname")
 		);
 
 		// then
-		assertThat(response.updatedNickname()).isEqualTo(newNickname);
+		assertThat(response.updatedNickname()).isEqualTo("newNickname");
 
 		WorkspaceMember updatedMember = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(tester.getId(), workspace.getCode())
-			.orElseThrow();
-		assertThat(updatedMember.getNickname()).isEqualTo(newNickname);
+			.findByMemberIdAndWorkspaceCode(member.getId(), workspace.getCode())
+			.get();
+
+		assertThat(updatedMember.getNickname()).isEqualTo("newNickname");
 	}
 
 	@Test
-	@DisplayName("이미 사용 중인 별칭으로 변경 시 예외가 발생한다")
-	void updateNickname_Failed_DuplicateNickname() {
+	@DisplayName("같은 워크스페이스 내에서 별칭(nickname)은 중복되면 안된다")
+	void cannotUpdateNicknameToDuplicateNickname() {
 		// given
-		Member tester = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"password1234!"
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
+
+		WorkspaceMember workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
 
-		Member existingMember = memberRepositoryFixture.createAndSaveMember(
-			"existingMember",
-			"existingMember@test.com",
-			"password1234!"
-		);
-
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		WorkspaceMember testerWorkspaceMember = workspaceMemberRepository.save(
-			WorkspaceMember.addCollaboratorWorkspaceMember(tester, workspace)
-		);
-
-		workspaceMemberRepository.save(
+		// workspaceMember2 nickname is "testnickname"
+		WorkspaceMember workspaceMember2 = workspaceMemberRepository.save(
 			WorkspaceMember.addWorkspaceMember(
-				existingMember,
+				member2,
 				workspace,
 				WorkspaceRole.MEMBER,
-				"existingNickname"
+				"testnickname"
 			)
 		);
 
-		String existingNickname = "existingNickname";
-		UpdateNicknameRequest request = new UpdateNicknameRequest(existingNickname);
-
-		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(testerWorkspaceMember.getId(), request))
+		// when & then - try to update workspaceMember1 nickname to "testnickname"
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
+			workspaceMember1.getId(),
+			new UpdateNicknameRequest("testnickname")
+		))
 			.isInstanceOfAny(DuplicateResourceException.class);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("포지션 할당에 성공하면 반환하는 응답에는 할당된 포지션의 이름이 포함된다")
-	void assignPosition_Success() {
+	@Transactional
+	@DisplayName("워크스페이스 멤버에게 포지션(Position)을 할당할 수 있다")
+	void canAssignPositionToWorkspaceMember() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"password1234!"
+		Member member = testDataFixture.createMember("tester");
+
+		Position position = positionRepository.save(Position.builder()
+			.workspace(workspace)
+			.color(ColorType.BLACK)
+			.name("BACKEND")
+			.description("backend developer")
+			.build());
+
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
 
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-
-		Position position = positionRepositoryFixture.createAndSavePosition("BACKEND-DEV", workspace);
-
-		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
 		entityManager.flush();
 
 		// When
 		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
-			"TESTCODE",
+			workspace.getCode(),
 			position.getId(),
 			workspaceMember.getId()
 		);
@@ -558,63 +313,72 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(updatedMember.getWorkspaceMemberPositions().get(0).getPosition()).isEqualTo(position);
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("하나의 워크스페이스 멤버에게 여러가지 포지션의 할당이 가능하다")
-	void assignMultiplePositions() {
+	@Transactional
+	@DisplayName("하나의 워크스페이스 멤버에게 다수의 포지션(Position)을 할당할 수 있다")
+	void canAssignMultiplePositions() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"password1234!"
+		Member member = testDataFixture.createMember("tester");
+
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
 
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
+		Position position1 = positionRepository.save(Position.builder()
+			.workspace(workspace)
+			.color(ColorType.BLACK)
+			.name("BACKEND")
+			.description("backend developer")
+			.build());
 
-		Position position1 = positionRepositoryFixture.createAndSavePosition("BACKEND-DEV", workspace);
-		Position position2 = positionRepositoryFixture.createAndSavePosition("FRONTEND-DEV", workspace);
+		Position position2 = positionRepository.save(Position.builder()
+			.workspace(workspace)
+			.color(ColorType.BLACK)
+			.name("FRONTEND")
+			.description("frontend developer")
+			.build());
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
 		entityManager.flush();
 
-		workspaceMemberCommandService.assignPosition("TESTCODE", position1.getId(), workspaceMember.getId());
+		// assign position1 to workspace member
+		workspaceMemberCommandService.assignPosition(
+			workspace.getCode(),
+			position1.getId(),
+			workspaceMember.getId()
+		);
 
-		// when
-		AssignPositionResponse response = workspaceMemberCommandService.assignPosition("TESTCODE", position2.getId(),
-			workspaceMember.getId());
+		// when - assign another position(position2) to workspace member
+		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+			workspace.getCode(),
+			position2.getId(),
+			workspaceMember.getId()
+		);
 
 		// then
-		assertThat(response.assignedPositions().get(0).name()).isEqualTo("BACKEND-DEV");
-		assertThat(response.assignedPositions().get(1).name()).isEqualTo("FRONTEND-DEV");
+		assertThat(response.assignedPositions().get(0).name()).isEqualTo("BACKEND");
+		assertThat(response.assignedPositions().get(1).name()).isEqualTo("FRONTEND");
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 포지션으로 할당 시도하면 예외 발생")
-	void assignPosition_WithNonExistentPosition_ThrowsException() {
+	@DisplayName("존재하지 않는 포지션(Position)을 할당할 수 없다")
+	void cannotAssignInvalidPosition() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("tester");
 
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
-
-		WorkspaceMember workspaceMember = WorkspaceMember.addCollaboratorWorkspaceMember(member, workspace);
 
 		// When & Then
-		assertThatThrownBy(
-			() -> workspaceMemberCommandService.assignPosition("TESTCODE", 999L, workspaceMember.getId()))
+		assertThatThrownBy(() -> workspaceMemberCommandService.assignPosition(
+			workspace.getCode(),
+			999L, // invalid position id
+			workspaceMember.getId()
+		))
 			.isInstanceOf(ResourceNotFoundException.class);
 	}
 }

@@ -10,14 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -28,45 +25,30 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@Transactional
 	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 삭제할 수 있다")
-	void test1() {
+	void canDeleteWorkspaceWithValidWorkspaceCode() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"member1password!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.build(), member.getId());
+		// Todo: mocking 고려
+		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
+		member.increaseMyWorkspaceCount(); // increase workspace count of member
 
 		// when
-		workspaceCommandService.deleteWorkspace(response.code(), member.getId());
+		workspaceCommandService.deleteWorkspace(workspace.getCode(), member.getId());
 
 		// then
-		assertThat(workspaceRepository.findByCode(response.code())).isEmpty();
+		assertThat(workspaceRepository.findByCode(workspace.getCode())).isEmpty();
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("워크스페이스 삭제 시도 시 코드가 유효하지 않으면 예외가 발생한다")
-	void test3() {
+	@Transactional
+	@DisplayName("유효하지 않은 코드로 워크스페이스를 삭제할 수 없다")
+	void cannotDeleteWorkspaceWithInvalidWorkspaceCode() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"member1password!"
-		);
-
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			"password1234!"
-		);
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MANAGER);
+		Member member = testDataFixture.createMember("member1");
+		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 
 		// when & then
 		assertThatThrownBy(() -> workspaceCommandService.deleteWorkspace("INVALIDCODE", member.getId()))
@@ -74,159 +56,141 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("유효한 워크스페이스 코드로 워크스페이스의 이름과 설명을 수정할 수 있다")
-	void test4() {
+	@Transactional
+	@DisplayName("유효한 워크스페이스 코드로 워크스페이스의 이름과 설명을 업데이트할 수 있다")
+	void canUpdateWorkspaceNameAndDescriptionWithValidWorkspaceCode() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
 		);
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
-			.name("Updated Name")
-			.description("Updated Description")
+			.name("updated workspace name")
+			.description("updated workspace description")
 			.build();
 
 		// when
-		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
+		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(
+			request,
+			workspace.getCode()
+		);
 
 		// then
-		assertThat(response.code()).isEqualTo("TEST1111");
-
-		assertThat(workspaceRepository.findByCode("TEST1111")
-			.orElseThrow()
-			.getName()
-		)
-			.isEqualTo("Updated Name");
+		assertThat(response.code()).isEqualTo(workspace.getCode());
+		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getName())
+			.isEqualTo("updated workspace name");
 	}
 
-	@Transactional
 	@Test
+	@Transactional
 	@DisplayName("워크스페이스의 이름만 수정하면 해당 필드만 업데이트된다")
-	void test5() {
+	void onlyWorkspaceNameIsUpdatedIfOnlyNameWasProvided() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
-		);
+		); // description: "description"
 
 		UpdateWorkspaceInfoRequest request = UpdateWorkspaceInfoRequest.builder()
-			.name("Updated Name")
+			.name("updated workspace name")
 			.build();
 
 		// when
-		workspaceCommandService.updateWorkspaceInfo(request, "TEST1111");
+		workspaceCommandService.updateWorkspaceInfo(request, workspace.getCode());
 
 		// then
-		assertThat(workspaceRepository.findByCode("TEST1111")
-			.orElseThrow()
-			.getName()
-		)
-			.isEqualTo("Updated Name");
+		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getName())
+			.isEqualTo("updated workspace name");
 
-		assertThat(workspaceRepository.findByCode("TEST1111")
-			.orElseThrow()
-			.getDescription()
-		)
-			.isEqualTo("description1");
+		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getDescription())
+			.isEqualTo("description");
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("비밀번호 수정 요청의 원본 비밀번호가 유효하면 요청의 수정 비밀번호로 업데이트된다")
-	void test7() {
+	@Transactional
+	@DisplayName("유효한 원본 패스워드로 워크스페이스의 패스워드를 업데이트할 수 있다")
+	void canUpdateWorkspacePasswordIfOriginalPasswordIsValid() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			"password1234!"
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			"password1234!",
+			null
 		);
 
-		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("password1234!", "updated1234!");
+		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("test1234!", "updated1234!");
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
+
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("워크스페이스의 비밀번호가 null이면 비밀번호 수정 요청의 수정 비밀번호로 업데이트된다")
-	void test8() {
+	@Transactional
+	@DisplayName("워크스페이스의 패스워드를 설정하지 않은 경우 패스워드 제공 없이 패스워드 업데이트가 가능하다")
+	void canUpdateWorkspacePasswordWithoutOriginalPasswordIfWorkspaceDidNotHavePassword() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
 		);
 
 		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null, "updated1234!");
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
+
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
 	}
 
-	@Transactional
 	@Test
-	@DisplayName("비밀번호 수정 요청의 수정 비밀번호를 null로 제공하면 비밀번호는 null로 업데이트 된다")
-	void test11() {
+	@Transactional
+	@DisplayName("워크스페이스 패스워드를 null로 업데이트 할 수 있다")
+	void canUpdateWorkspaceToNotHavePassword() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			"password1234!"
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
+			null
 		);
 
 		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("password1234!", null);
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, "TEST1111");
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode("TEST1111").get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
 		assertThat(updatedPassword).isNull();
 	}
 
 	@Test
-	@DisplayName("key prefix를 요청을 통해 제공한 key prefix로 업데이트 할 수 있다")
-	void testUpdateKeyPrefix() {
+	@Transactional
+	@DisplayName("워크스페이스 마다 관리하는 이슈 키 접두사(issueKeyPrefix)를 업데이트 할 수 있다")
+	void canUpdateIssueKeyPrefix() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
-		CreateWorkspaceRequest createRequest = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.build();
-
-		workspaceCreateService.createWorkspace(createRequest, member.getId());
+		// default prefix: "ISSUE"
+		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("UPDATEPREFIX");
 
 		// when
-		Workspace workspace = workspaceRepository.findById(1L).orElseThrow();
 		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKey(workspace.getCode(), request);
 
 		// then
@@ -234,26 +198,24 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 삭제 시 멤버의 워크스페이스 카운트가 감소한다")
-	void deleteWorkspace_decreasesWorkspaceCount() {
+	@Transactional
+	@DisplayName("워크스페이스 삭제 시 해당 워크스페이스의 OWNER의 워크스페이스 카운트가 감소한다")
+	void deleteWorkspaceDecreasesOwnersWorkspaceCount() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
-		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.build();
+		// Todo: mocking 고려
+		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
+		member.increaseMyWorkspaceCount();
 
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		int memberWorkspaceCount = member.getMyWorkspaceCount();
 
 		// when
-		workspaceCommandService.deleteWorkspace(response.code(), member.getId());
+		workspaceCommandService.deleteWorkspace(workspace.getCode(), member.getId());
 
 		// then
+		assertThat(memberWorkspaceCount).isEqualTo(1);
+
 		Member updatedMember = memberRepository.findById(member.getId()).get();
 		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(0);
 	}

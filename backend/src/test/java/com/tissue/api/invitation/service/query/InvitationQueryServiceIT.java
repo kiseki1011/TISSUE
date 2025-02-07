@@ -1,4 +1,4 @@
-package com.tissue.api.invitation.service;
+package com.tissue.api.invitation.service.query;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -13,13 +13,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.helper.ServiceIntegrationTestHelper;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class InvitationQueryServiceIT extends ServiceIntegrationTestHelper {
 
@@ -29,41 +29,17 @@ class InvitationQueryServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("사용자의 초대 목록을 상태로 필터링하여 조회할 수 있다")
 	@Transactional
-	void getInvitations() {
+	@DisplayName("멤버가 받은 초대(Invitation) 목록을 상태(InvitationStatus)를 조건으로 조회할 수 있다")
+	void canQueryInvitationsByStatus() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"test1234!"
-		);
+		Member member = testDataFixture.createMember("tester");
 
-		Workspace workspace1 = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Workspace1",
-			"Description1",
-			"TESTCODE1",
-			null
-		);
+		Workspace workspace1 = testDataFixture.createWorkspace("workspace 1", null, null);
+		Workspace workspace2 = testDataFixture.createWorkspace("workspace 2", null, null);
 
-		Workspace workspace2 = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Workspace2",
-			"Description2",
-			"TESTCODE2",
-			null
-		);
-
-		Invitation pendingInvitation = invitationRepositoryFixture.createAndSaveInvitation(
-			workspace1,
-			member,
-			InvitationStatus.PENDING
-		);
-
-		Invitation acceptedInvitation = invitationRepositoryFixture.createAndSaveInvitation(
-			workspace2,
-			member,
-			InvitationStatus.ACCEPTED
-		);
+		Invitation pendingInvitation = testDataFixture.createInvitation(workspace1, member, InvitationStatus.PENDING);
+		Invitation acceptedInvitation = testDataFixture.createInvitation(workspace2, member, InvitationStatus.ACCEPTED);
 
 		InvitationSearchCondition searchCondition = new InvitationSearchCondition(
 			List.of(InvitationStatus.PENDING, InvitationStatus.ACCEPTED)
@@ -92,41 +68,17 @@ class InvitationQueryServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("상태를 지정하지 않으면 PENDING 상태의 초대만 조회된다")
 	@Transactional
-	void getInvitationsDefaultStatus() {
+	@DisplayName("초대 조회 시, 상태를 지정하지 않으면 PENDING 상태의 초대만 조회된다")
+	void whenQueryInvitations_IfNoStatusIsProvided_DefaultStatusConditionIsPending() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"tester",
-			"test@test.com",
-			"test1234!"
-		);
+		Member member = testDataFixture.createMember("tester");
 
-		Workspace workspace1 = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Workspace1",
-			"Description1",
-			"TESTCODE1",
-			null
-		);
+		Workspace workspace1 = testDataFixture.createWorkspace("workspace 1", null, null);
+		Workspace workspace2 = testDataFixture.createWorkspace("workspace 2", null, null);
 
-		Workspace workspace2 = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Workspace2",
-			"Description2",
-			"TESTCODE2",
-			null
-		);
-
-		Invitation pendingInvitation = invitationRepositoryFixture.createAndSaveInvitation(
-			workspace1,
-			member,
-			InvitationStatus.PENDING
-		);
-
-		invitationRepositoryFixture.createAndSaveInvitation(
-			workspace2,
-			member,
-			InvitationStatus.ACCEPTED
-		);
+		Invitation pendingInvitation = testDataFixture.createInvitation(workspace1, member, InvitationStatus.PENDING);
+		Invitation acceptedInvitation = testDataFixture.createInvitation(workspace2, member, InvitationStatus.ACCEPTED);
 
 		InvitationSearchCondition searchCondition = new InvitationSearchCondition();
 		Pageable pageable = PageRequest.of(

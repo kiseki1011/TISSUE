@@ -9,42 +9,35 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 
+	Member member1;
+	Workspace workspace1;
+	Workspace workspace2;
+	WorkspaceMember workspaceOneMember;
+	WorkspaceMember workspaceTwoMember;
+
 	@BeforeEach
 	void setup() {
-		// member1 회원가입
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member1",
-			"member1@test.com",
-			"member1password!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		// create member
+		member1 = testDataFixture.createMember("member1");
 
-		// workspace1, workspace2 생성
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace1",
-			"description1",
-			"TEST1111",
-			null
-		);
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"workspace2",
-			"description2",
-			"TEST2222",
-			null
-		);
+		// create workspace 1
+		workspace1 = testDataFixture.createWorkspace("workspace1", null, null);
 
-		// member1은 workspace1,2에 참여
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", 1L);
-		workspaceParticipationCommandService.joinWorkspace("TEST2222", 1L);
+		// create workspace 2
+		workspace2 = testDataFixture.createWorkspace("workspace2", null, null);
+
+		// member joins workspace1, workspace2
+		workspaceOneMember = testDataFixture.createWorkspaceMember(member1, workspace1, WorkspaceRole.MEMBER);
+		workspaceTwoMember = testDataFixture.createWorkspaceMember(member1, workspace2, WorkspaceRole.MEMBER);
 	}
 
 	@AfterEach
@@ -52,94 +45,39 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		databaseCleaner.execute();
 	}
 
+	@Test
 	@Transactional
-	@Test
-	@DisplayName("해당 워크스페이스에 참여하고 있으면, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
-	void test3() {
+	@DisplayName("해당 워크스페이스에 참여하고 있는 멤버는, 워크스페이스의 코드로 상세 정보를 조회할 수 있다")
+	void canGetWorkspaceDetailWithValidWorkspaceCode() {
 		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member2",
-			"member2@test.com",
-			"member2password!"
-		);
-		memberCommandService.signup(signupMemberRequest);
+		Member member = testDataFixture.createMember("tester");
 
-		workspaceParticipationCommandService.joinWorkspace("TEST1111", 2L);
-
-		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail("TEST1111");
-
-		// then
-		assertThat(response.getCode()).isEqualTo("TEST1111");
-		assertThat(response.getName()).isEqualTo("workspace1");
-	}
-
-	@Transactional
-	@Test
-	@DisplayName("유효하지 않은 코드로 워크스페이스를 조회하면 예외가 발생한다")
-	void test5() {
-		// given
-		SignupMemberRequest signupMemberRequest = signupRequestDtoFixture.createSignupRequest(
-			"member2",
-			"member2@test.com",
-			"member2password!"
-		);
-		memberCommandService.signup(signupMemberRequest);
-
-		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("BADCODE1"))
-			.isInstanceOf(WorkspaceNotFoundException.class);
-	}
-
-	@Test
-	@DisplayName("유효한 워크스페이스 코드로 워크스페이스를 조회하면, 워크스페이스를 반환한다")
-	void testGetWorkspaceDetail_Success() {
-		// given
-		String workspaceCode = "TESTCODE";
-
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
+		Workspace workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
 		);
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member3",
-			"member3@test.com",
-			"password1234!"
+
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
+			workspace,
+			WorkspaceRole.MEMBER
 		);
 
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
-
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspaceCode);
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspace.getCode());
 
 		// then
-		assertThat(response).isNotNull();
-		assertThat(response.getCode()).isEqualTo(workspaceCode);
+		assertThat(response.getCode()).isEqualTo(workspace.getCode());
+		assertThat(response.getName()).isEqualTo("test workspace");
 	}
 
 	@Test
-	@DisplayName("유효하지 않은 워크스페이스 코드로 워크스페이스를 조회하면, 예외가 발생한다")
-	void testGetWorkspaceDetail_WorkspaceNotFoundException() {
-		// given
-		String invalidCode = "INVALIDCODE";
-		Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Description",
-			"TESTCODE",
-			null
-		);
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member3",
-			"member3@test.com",
-			"password1234!"
-		);
-
-		workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member, workspace, WorkspaceRole.MEMBER);
-
+	@Transactional
+	@DisplayName("유효하지 않은 코드로 조회할 수 없다")
+	void cannotGetWorkspaceDetailWithInvalidCode() {
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail(invalidCode))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("INVALIDCODE"))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 }

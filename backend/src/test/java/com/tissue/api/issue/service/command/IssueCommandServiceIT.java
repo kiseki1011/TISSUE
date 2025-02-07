@@ -44,19 +44,19 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@BeforeEach
 	void setUp() {
-		// 워크스페이스 생성
+		// create workspace
 		workspace = testDataFixture.createWorkspace(
 			"test workspace",
 			null,
 			null
 		);
 
-		// 멤버 생성
+		// create member
 		Member ownerMember = testDataFixture.createMember("owner");
 		Member member1 = testDataFixture.createMember("member1");
 		Member member2 = testDataFixture.createMember("member2");
 
-		// 워크스페이스 멤버 등록
+		// add workspace members
 		owner = testDataFixture.createWorkspaceMember(
 			ownerMember,
 			workspace,

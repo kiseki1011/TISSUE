@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
@@ -23,89 +24,100 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성을 성공하면 워크스페이스 생성 응답을 반환한다")
-	void createWorkspace_returnsWorkspaceCreateResponse() {
+	@DisplayName("워크스페이스를 생성할 수 있다")
+	void canCreateWorkspace() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
+			.name("test workspace")
+			.description("test workspace")
 			.build();
 
 		// when
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id())
-			.orElseThrow();
+		Workspace workspace = workspaceRepository.findById(response.id()).get();
 
 		assertThat(response.code()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시 OWNER 권한의 WorkspaceMember도 생성되고 저장된다")
-	void workspaceCreate_ownerWorkspaceMemberIsSaved() {
+	@DisplayName("생성된 워크스페이스는 8자리 BASE62 문자열로 이루어진 워크스페이스 코드를 가진다")
+	void createdWorkspaceHasWorkspaceCode_Base62StringLength8() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
+			.name("test workspace")
+			.description("test workspace")
 			.build();
 
 		// when
-		workspaceCreateService.createWorkspace(request, member.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
+		assertThat(response.code().length()).isEqualTo(8);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("워크스페이스를 생성한 멤버는 OWNER 권한의 워크스페이스 멤버(WorkspaceMember)로 등록된다")
+	void memberThatCreatedWorkspaceIsAddedAsOwnerWorkspaceMember() {
+		// given
+		Member member = testDataFixture.createMember("member1");
+
+		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
+			.name("test workspace")
+			.description("test workspace")
+			.build();
+
+		// when
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+
+		// then
+		Workspace workspace = workspaceRepository.findByCode(response.code()).get();
+		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getRole()).isEqualTo(WorkspaceRole.OWNER);
+
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
 		assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.OWNER);
 	}
 
+	// Todo: 워크스페이스 멤버 별칭 방식 변경 후 수정(이메일 -> 로그인 id)
 	@Test
-	@DisplayName("워크스페이스 생성 시 WorkspaceMember의 별칭은 생성자의 이메일로 설정된다")
-	void workspaceCreate_workspaceMemberNicknameMustBeEmail() {
+	@Transactional
+	@DisplayName("워크스페이스 생성 시 워크스페이스 멤버(WorkspaceMember)의 별칭(nickname)은 기본적으로 이메일로 설정된다")
+	void workspaceCreate_WorkspaceMemberDefaultNicknameIsEmail() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
+			.name("test workspace")
+			.description("test workspace")
 			.build();
 
 		// when
-		workspaceCreateService.createWorkspace(request, member.getId());
+		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
+		Workspace workspace = workspaceRepository.findByCode(response.code()).get();
+		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getNickname())
+			.isEqualTo(member.getEmail());
+
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
 		assertThat(workspaceMember.getNickname()).isEqualTo(member.getEmail());
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다")
-	void createWorkspace_increasesWorkspaceCount() {
+	@DisplayName("워크스페이스 생성 시, 생성한 멤버의 워크스페이스 카운트(myWorkspaceCount)가 증가한다")
+	void memberThatCreatedWorkspace_GetsWorkspaceCountIncreased() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
+			.name("test workspace")
+			.description("test workspace")
 			.build();
 
 		// when
@@ -117,45 +129,12 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시 멤버의 워크스페이스 카운트가 증가한다(워크스페이스 2개 생성)")
-	void createTwoWorkspaces_increasesWorkspaceCount() {
+	@DisplayName("하나의 멤버가 OWNER로 가질수 있는 워크스페이스의 개수는 최대 10개이다")
+	void maxNumberOfWorkspaces_MemberCanHaveIs_10() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
-		CreateWorkspaceRequest request1 = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.build();
-
-		CreateWorkspaceRequest request2 = CreateWorkspaceRequest.builder()
-			.name("workspace2")
-			.description("description2")
-			.build();
-
-		// when
-		workspaceCreateService.createWorkspace(request1, member.getId());
-		workspaceCreateService.createWorkspace(request2, member.getId());
-
-		// then
-		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(2);
-	}
-
-	@Test
-	@DisplayName("워크스페이스 50개 생성 후 추가 생성 시 예외가 발생한다")
-	void createWorkspace_throwsException_whenLimitReached() {
-		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
-
-		// Create 50 workspaces
+		// create 10 workspaces
 		for (int i = 0; i < 10; i++) {
 			CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 				.name("workspace" + i)
@@ -164,63 +143,53 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			workspaceCreateService.createWorkspace(request, member.getId());
 		}
 
-		// when & then
-		CreateWorkspaceRequest request51 = CreateWorkspaceRequest.builder()
-			.name("workspace51")
-			.description("description51")
+		CreateWorkspaceRequest request11 = CreateWorkspaceRequest.builder()
+			.name("workspace11")
+			.description("description11")
 			.build();
 
-		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request51, member.getId()))
+		// when & then - try 11th workspace create request
+		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request11, member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시, key prefix의 값을 제공하지 않으면 기본적으로 'ISSUE'로 설정된다")
-	void workspaceCreate_ifNoKeyPrefixProvided_setToDefaultPrefix() {
+	@DisplayName("워크스페이스 생성 시, 이슈 키 접두사(issueKeyPrefix)의 값을 제공하지 않으면 기본적으로 'ISSUE'로 설정된다")
+	void whenCreatingWorkspace_IfNoIssueKeyPrefixProvided_SetToDefaultPrefix_ISSUE() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
+			.name("test workspace")
+			.description("test workspace")
 			.build();
 
 		// when
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id())
-			.orElseThrow();
+		Workspace workspace = workspaceRepository.findById(response.id()).get();
 
 		assertThat(workspace.getKeyPrefix()).isEqualTo("ISSUE");
 	}
 
 	@Test
-	@DisplayName("워크스페이스 생성 시, 제공한 key prefix의 값으로 keyPrefix가 설정된다")
-	void workspaceCreate_ifKeyPrefixProvided_setToGivenPrefix() {
+	@DisplayName("워크스페이스 생성 시, 제공한 이슈 키 접두사(issueKeyPrefix)의 값으로 설정된다")
+	void whenCreatingWorkspace_IfKeyPrefixProvided_SetToProvidedPrefix() {
 		// given
-		Member member = memberRepositoryFixture.createAndSaveMember(
-			"member1",
-			"member1@test.com",
-			"password1234!"
-		);
+		Member member = testDataFixture.createMember("member1");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
-			.name("workspace1")
-			.description("description1")
-			.keyPrefix("TESTPREFIX")
+			.name("test workspace")
+			.description("test workspace")
+			.keyPrefix("TESTPREFIX") // provide prefix as "TESTPREFIX"
 			.build();
 
 		// when
 		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id())
-			.orElseThrow();
+		Workspace workspace = workspaceRepository.findById(response.id()).get();
 
 		assertThat(workspace.getKeyPrefix()).isEqualTo("TESTPREFIX");
 	}
