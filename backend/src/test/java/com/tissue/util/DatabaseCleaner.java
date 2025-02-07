@@ -35,13 +35,34 @@ public class DatabaseCleaner {
 			while (rs.next()) {
 				tableNames.add(rs.getString("TABLE_NAME"));
 			}
-			// log.info("tableNames = {}", tableNames);
+			log.info("tableNames = {}", tableNames);
 		});
 	}
 
-	private List<String> getIdColumnNamesForTable(String tableName) {
-		List<String> idColumns = new ArrayList<>();
+	@Transactional
+	public void execute() {
+		entityManager.flush();
+		entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
 
+		for (String tableName : tableNames) {
+			log.info("TRUNCATE TABLE {}", tableName);
+			entityManager.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate();
+
+			List<String> idColumnNames = getIdColumnNamesForTable(tableName);
+			for (String idColumnName : idColumnNames) {
+				log.info("ALTER TABLE {} ALTER COLUMN {} RESTART WITH 1", tableName, idColumnName);
+				entityManager.createNativeQuery(
+						"ALTER TABLE " + tableName + " ALTER COLUMN " + idColumnName + " RESTART WITH 1")
+					.executeUpdate();
+			}
+		}
+
+		entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+	}
+
+	private List<String> getIdColumnNamesForTable(String tableName) {
+
+		List<String> idColumns = new ArrayList<>();
 		Session session = entityManager.unwrap(Session.class);
 
 		session.doWork(connection -> {
@@ -58,25 +79,5 @@ public class DatabaseCleaner {
 		});
 
 		return idColumns;
-	}
-
-	@Transactional
-	public void execute() {
-		entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
-
-		for (String tableName : tableNames) {
-			// log.info("TRUNCATE TABLE {}", tableName);
-			entityManager.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate();
-
-			List<String> idColumnNames = getIdColumnNamesForTable(tableName);
-			for (String idColumnName : idColumnNames) {
-				// log.info("ALTER TABLE {} ALTER COLUMN {} RESTART WITH 1", tableName, idColumnName);
-				entityManager.createNativeQuery(
-						"ALTER TABLE " + tableName + " ALTER COLUMN " + idColumnName + " RESTART WITH 1")
-					.executeUpdate();
-			}
-		}
-
-		entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
 	}
 }
