@@ -43,14 +43,6 @@ import com.tissue.api.workspacemember.service.command.WorkspaceParticipationComm
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 import com.tissue.fixture.TestDataFixture;
-import com.tissue.fixture.dto.SignupRequestDtoFixture;
-import com.tissue.fixture.repository.InvitationRepositoryFixture;
-import com.tissue.fixture.repository.MemberRepositoryFixture;
-import com.tissue.fixture.repository.PositionRepositoryFixture;
-import com.tissue.fixture.repository.WorkspaceRepositoryFixture;
-import com.tissue.fixture.service.IssueFixture;
-import com.tissue.fixture.service.MemberFixture;
-import com.tissue.fixture.service.WorkspaceFixture;
 import com.tissue.util.DatabaseCleaner;
 
 import jakarta.persistence.EntityManager;
@@ -160,20 +152,4 @@ public abstract class ServiceIntegrationTestHelper {
 	 */
 	@Autowired
 	protected TestDataFixture testDataFixture;
-	@Autowired
-	protected WorkspaceRepositoryFixture workspaceRepositoryFixture;
-	@Autowired
-	protected MemberRepositoryFixture memberRepositoryFixture;
-	@Autowired
-	protected InvitationRepositoryFixture invitationRepositoryFixture;
-	@Autowired
-	protected SignupRequestDtoFixture signupRequestDtoFixture;
-	@Autowired
-	protected PositionRepositoryFixture positionRepositoryFixture;
-	@Autowired
-	protected IssueFixture issueFixture;
-	@Autowired
-	protected MemberFixture memberFixture;
-	@Autowired
-	protected WorkspaceFixture workspaceFixture;
 }
