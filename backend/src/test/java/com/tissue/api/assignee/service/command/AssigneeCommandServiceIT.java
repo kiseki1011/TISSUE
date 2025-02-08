@@ -10,41 +10,61 @@ import org.junit.jupiter.api.Test;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.issue.exception.IssueNotFoundException;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 
-	String workspaceCode;
-	String issueKey;
+	Workspace workspace;
+	WorkspaceMember owner;
+	WorkspaceMember workspaceMember1;
+	WorkspaceMember workspaceMember2;
+	Story issue;
 
 	@BeforeEach
 	public void setUp() {
-		// 테스트 멤버 testUser, testUser2, testUser3 생성
-		SignupMemberResponse testUser = memberFixture.createMember("testuser", "test@test.com");
-		SignupMemberResponse testUser2 = memberFixture.createMember("testuser2", "test2@test.com");
-		SignupMemberResponse testUser3 = memberFixture.createMember("testuser3", "test3@test.com");
-
-		// testuser가 테스트 워크스페이스 생성
-		CreateWorkspaceResponse createWorkspace = workspaceFixture.createWorkspace(testUser.memberId());
-
-		workspaceCode = createWorkspace.code();
-
-		// testUser2, testUser3 테스트 워크스페이스에 참가
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser2.memberId());
-		workspaceParticipationCommandService.joinWorkspace(workspaceCode, testUser3.memberId());
-
-		// 테스트 워크스페이스에 Story 추가
-		CreateStoryResponse createdStory = (CreateStoryResponse)issueFixture.createStory(
-			workspaceCode,
-			"Test Story",
+		// create workspace
+		workspace = testDataFixture.createWorkspace(
+			"test workspace",
+			null,
 			null
 		);
 
-		issueKey = createdStory.issueKey();
+		// create member
+		Member ownerMember = testDataFixture.createMember("owner");
+		Member member1 = testDataFixture.createMember("member1");
+		Member member2 = testDataFixture.createMember("member2");
+
+		// add workspace members
+		owner = testDataFixture.createWorkspaceMember(
+			ownerMember,
+			workspace,
+			WorkspaceRole.OWNER
+		);
+		workspaceMember1 = testDataFixture.createWorkspaceMember(
+			member1,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+		workspaceMember2 = testDataFixture.createWorkspaceMember(
+			member2,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+
+		// create issue
+		issue = testDataFixture.createStory(
+			workspace,
+			"test issue(STORY type)",
+			IssuePriority.MEDIUM,
+			null
+		);
 	}
 
 	@AfterEach
@@ -53,74 +73,88 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("이슈의 작업자 추가에 성공하면 추가된 작업자의 WORKSPACE_MEMBER_ID가 반환 응답에 포함된다")
-	void addAssignee_success_returnsAddAssigneeResponse() {
+	@DisplayName("이슈에 다수의 이슈 작업자(IssueAssignee)를 등록할 수 있다")
+	void canAddMultipleAssigneesToIssue() {
 		// given
-		Long assigneeWorkspaceMemberId = 2L;
 
 		// when
-		AddAssigneeResponse response = assigneeCommandService.addAssignee(
-			workspaceCode,
-			issueKey,
-			assigneeWorkspaceMemberId
+		AddAssigneeResponse response1 = assigneeCommandService.addAssignee(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember1.getId()
+		);
+
+		AddAssigneeResponse response2 = assigneeCommandService.addAssignee(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember2.getId()
 		);
 
 		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(2L);
+		assertThat(response1.workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		assertThat(response2.workspaceMemberId()).isEqualTo(workspaceMember2.getId());
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 이슈에 작업자 추가를 시도하면 예외가 발생한다")
-	void addAssignee_toNotExistingIssue_throwsException() {
+	@DisplayName("유효하지 않은 이슈 키에 대해 작업자(IssueAssignee)를 추가할 수 없다")
+	void cannotAddAssigneeWithInvalidIssueKey() {
 		// given
-		Long assigneeWorkspaceMemberId = 2L;
 
 		// then & when
 		assertThatThrownBy(() -> assigneeCommandService.addAssignee(
-			workspaceCode,
-			"INVALID-ISSUE",
-			assigneeWorkspaceMemberId
-		)).isInstanceOf(IssueNotFoundException.class);
+			workspace.getCode(),
+			"INVALIDKEY", // invalid issue key
+			workspaceMember1.getId()
+		))
+			.isInstanceOf(IssueNotFoundException.class);
 	}
 
 	@Test
-	@DisplayName("등록된 작업자 해제에 성공하면 해제된 작업자의 WORKSPACE_MEMBER_ID가 반환 응답에 포함된다")
-	void removeAssignee_success_returnsRemoveAssigneeResponse() {
+	@DisplayName("이슈에 등록된 작업자(IssueAssignee)를 해제할 수 있다")
+	void canRemoveAssigneeFromIssueIfAssignee() {
 		// given
-		Long assigneeWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 1L;
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long assigneeWorkspaceMemberId = workspaceMember2.getId();
 
-		// 작업자(assignee) 해제의 요청자도 assignees에 포함되어 있어야 성공한다
-		assigneeCommandService.addAssignee(workspaceCode, issueKey, requesterWorkspaceMemberId);
-		assigneeCommandService.addAssignee(workspaceCode, issueKey, assigneeWorkspaceMemberId);
+		// requester of assignee removal must be an assignee
+		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), requesterWorkspaceMemberId);
+		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId);
 
 		// when
 		RemoveAssigneeResponse response = assigneeCommandService.removeAssignee(
-			workspaceCode,
-			issueKey,
-			2L,
+			workspace.getCode(),
+			issue.getIssueKey(),
+			assigneeWorkspaceMemberId,
 			requesterWorkspaceMemberId
 		);
 
 		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(2L);
+		assertThat(response.workspaceMemberId()).isEqualTo(assigneeWorkspaceMemberId);
 	}
 
 	@Test
-	@DisplayName("이슈의 작업자에 포함되어 있지 않으면서 해당 이슈의 작업자 해제를 시도하면 예외가 발생한다")
-	void test() {
+	@DisplayName("이슈의 작업자(IssueAssignee)에 포함되어 있지 않으면 해당 이슈에 대해 작업자를 해제할 수 없다")
+	void cannotRemoveAssigneeFromIssueIfNotAssigneeOfIssue() {
 		// given
-		Long assigneeWorkspaceMemberId = 2L;
-		Long requesterWorkspaceMemberId = 3L;
+		Member member3 = testDataFixture.createMember("member3");
+		WorkspaceMember workspaceMember3 = testDataFixture.createWorkspaceMember(
+			member3,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
 
-		assigneeCommandService.addAssignee(workspaceCode, issueKey, assigneeWorkspaceMemberId);
+		Long assigneeWorkspaceMemberId = workspaceMember2.getId();
+		Long requesterWorkspaceMemberId = workspaceMember3.getId();
+
+		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId);
 
 		// when & then
 		assertThatThrownBy(() -> assigneeCommandService.removeAssignee(
-			workspaceCode,
-			issueKey,
-			2L,
-			requesterWorkspaceMemberId
-		)).isInstanceOf(ForbiddenOperationException.class);
+			workspace.getCode(),
+			issue.getIssueKey(),
+			assigneeWorkspaceMemberId,
+			requesterWorkspaceMemberId // requester is not assignee
+		))
+			.isInstanceOf(ForbiddenOperationException.class);
 	}
 }

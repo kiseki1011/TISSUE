@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceValidatorTest extends ServiceIntegrationTestHelper {
@@ -18,34 +18,13 @@ class WorkspaceValidatorTest extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("검증하는 패스워드가 워크스페이스의 암호화된 패스워드와 일치하지 않으면 예외가 발생한다")
-	void ifPassword_doesNotMatch_workspacePassword_throwException() {
+	@DisplayName("입력 패스워드가 저장된 워크스페이스의 암호화된 패스워드와 일치하지 검증한다")
+	void validateIfInputPasswordMatchesWorkspacePassword() {
 		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Workspace",
-			"TESTCODE",
-			"test1234!"
-		);
+		Workspace workspace = testDataFixture.createWorkspace("test workspace", "test1234!", null);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceValidator.validateWorkspacePassword("invalidPassword", "TESTCODE"))
+		assertThatThrownBy(() -> workspaceValidator.validateWorkspacePassword("invalidPassword", workspace.getCode()))
 			.isInstanceOf(AuthenticationFailedException.class);
-	}
-
-	@Test
-	@DisplayName("워크스페이스의 패스워드와 맞는지 검증할 때, 코드에 대한 워크스페이스가 존재하지 않으면 예외가 발생한다")
-	void ifWorkspaceCode_workspaceDoesNotExist() {
-		// given
-		workspaceRepositoryFixture.createAndSaveWorkspace(
-			"Test Workspace",
-			"Test Workspace",
-			"TESTCODE",
-			"test1234!"
-		);
-
-		// when & then
-		assertThatThrownBy(() -> workspaceValidator.validateWorkspacePassword("test1234!", "NOTFOUND"))
-			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 }

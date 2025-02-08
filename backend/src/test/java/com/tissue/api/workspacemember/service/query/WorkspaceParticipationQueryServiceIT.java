@@ -69,13 +69,8 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 
 		// create 5 workspaces (workspace3 ~ 7)
 		for (int i = 3; i <= 7; i++) {
-			Workspace workspace = workspaceRepositoryFixture.createAndSaveWorkspace(
-				"workspace" + i,
-				"description" + i,
-				"TEST" + i,
-				null
-			);
-			workspaceRepositoryFixture.addAndSaveMemberToWorkspace(member2, workspace, WorkspaceRole.MANAGER);
+			Workspace workspace = testDataFixture.createWorkspace("workspace" + i, null, null);
+			testDataFixture.createWorkspaceMember(member2, workspace, WorkspaceRole.MANAGER);
 		}
 
 		// PageRequest for descending order by name
