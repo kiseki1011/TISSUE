@@ -30,6 +30,7 @@ import com.tissue.api.issue.domain.types.SubTask;
 import com.tissue.api.issue.domain.types.Task;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
@@ -71,13 +72,13 @@ public class TestDataFixture {
 	private final PasswordEncoder passwordEncoder;
 
 	/**
-	 * Creates a workspace with a specified number of members.
-	 * The specified number does not include the OWNER.
+	 * Creates a workspace with a specified number of members
+	 * The specified number does not include the OWNER
 	 *
-	 * @param numberOfMembers The number of members to be added to the workspace.
-	 * @param workspacePassword The password for the workspace.
-	 * @param keyPrefix The prefix for generating issue keys.
-	 * @return The created workspace.
+	 * @param numberOfMembers The number of members to be added to the workspace
+	 * @param workspacePassword The password for the workspace
+	 * @param keyPrefix The prefix for generating issue keys
+	 * @return The created Workspace
 	 */
 	public Workspace createWorkspaceWithMembers(
 		int numberOfMembers,
@@ -104,10 +105,19 @@ public class TestDataFixture {
 				.loginId(loginId)
 				.email(loginId + "@test.com")
 				.password(passwordEncoder.encode("test1234!"))
+				.name(new Name("Gildong", "Hong"))
 				.build()
 		);
 	}
 
+	/**
+	 * Creates and saves a workspace
+	 *
+	 * @param name The name of the workspace
+	 * @param password The password of the workspace (null is allowed, pass null if not exist, encrypt if exist)
+	 * @param keyPrefix The prefix for generating issue keys
+	 * @return The created Workspace
+	 */
 	public Workspace createWorkspace(
 		String name,
 		String password,
@@ -118,12 +128,20 @@ public class TestDataFixture {
 				.name(name)
 				.description("description")
 				.password(passwordEncoder.encode(password))
-				.code(RandomStringUtils.randomAlphanumeric(8))
+				.code(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
 				.keyPrefix(keyPrefix)
 				.build()
 		);
 	}
 
+	/**
+	 * Creates and saves a WorkspaceMember
+	 *
+	 * @param member Member
+	 * @param workspace Workspace
+	 * @param role The WorkspaceRole of the member
+	 * @return The created WorkspaceMember
+	 */
 	public WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -140,15 +158,15 @@ public class TestDataFixture {
 	}
 
 	/**
-	 * Creates a new issue of the specified type and assigns members to it.
+	 * Creates a new issue of the specified type and assigns members to it
 	 *
-	 * @param type The type of the issue (e.g., EPIC, STORY, BUG, TASK, SUB_TASK).
-	 * @param workspace The workspace in which the issue will be created.
-	 * @param title The title of the issue.
-	 * @param priority The priority level of the issue.
-	 * @param dueDate The due date for the issue.
-	 * @param workspaceMembers A list of workspace members to be assigned to the issue.
-	 * @return The created issue.
+	 * @param type The type of the issue (e.g., EPIC, STORY, BUG, TASK, SUB_TASK)
+	 * @param workspace The workspace in which the issue will be created
+	 * @param title The title of the issue
+	 * @param priority The priority level of the issue
+	 * @param dueDate The due date for the issue
+	 * @param workspaceMembers A list of workspace members to be assigned to the issue
+	 * @return The created issue
 	 */
 	public Issue createIssueWithAssignees(
 		IssueType type,
