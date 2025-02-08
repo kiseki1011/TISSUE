@@ -21,6 +21,11 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 		Long memberId
 	);
 
+	Optional<Invitation> findByIdAndStatus(
+		Long id,
+		InvitationStatus status
+	);
+
 	List<Invitation> findAllByMemberId(Long id);
 
 	@Query("SELECT i FROM Invitation i "

@@ -60,14 +60,13 @@ public class Review extends WorkspaceContextBaseEntity {
 		IssueReviewer issueReviewer,
 		ReviewStatus status,
 		String title,
-		String content,
-		int reviewRound
+		String content
 	) {
 		this.issueReviewer = issueReviewer;
 		this.status = status;
 		this.title = title;
 		this.content = content;
-		this.reviewRound = reviewRound;
+		this.reviewRound = issueReviewer.getIssue().getCurrentReviewRound();
 		this.workspaceCode = issueReviewer.getIssue().getWorkspaceCode();
 		this.issueKey = issueReviewer.getIssue().getIssueKey();
 	}

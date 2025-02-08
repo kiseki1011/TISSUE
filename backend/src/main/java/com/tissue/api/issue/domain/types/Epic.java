@@ -8,7 +8,6 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
@@ -22,9 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Epic extends Issue {
 
-	@Column(nullable = false)
 	private String businessGoal;
-
 	private LocalDate targetReleaseDate;
 	private LocalDate hardDeadLine;
 

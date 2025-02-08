@@ -112,7 +112,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private String content;
 
 	@Lob
-	@Column
 	private String summary;
 
 	@Enumerated(EnumType.STRING)
@@ -148,9 +147,31 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private int currentReviewRound = 0;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ISSUE_ID")
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueAssignee> assignees = new ArrayList<>();
+
+	protected Issue(
+		Workspace workspace,
+		IssueType type,
+		String title,
+		String content,
+		String summary,
+		IssuePriority priority,
+		LocalDate dueDate
+	) {
+		this.issueKey = workspace.getIssueKey();
+		workspace.increaseNextIssueNumber();
+
+		addToWorkspace(workspace);
+
+		this.type = type;
+		this.title = title;
+		this.content = content;
+		this.summary = summary;
+		this.status = IssueStatus.TODO;
+		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
+		this.dueDate = dueDate;
+	}
 
 	public void requestReview() {
 		validateReviewersExist();
@@ -162,11 +183,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.updateStatus(IssueStatus.IN_REVIEW);
 	}
 
-	public void addReviewer(WorkspaceMember reviewer) {
+	public IssueReviewer addReviewer(WorkspaceMember workspaceMember) {
 		validateReviewerLimit();
-		validateIsReviewer(reviewer);
+		validateIsReviewer(workspaceMember);
 
-		reviewers.add(new IssueReviewer(reviewer, this));
+		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
+		reviewers.add(reviewer);
+
+		return reviewer;
 	}
 
 	public void removeReviewer(WorkspaceMember workspaceMember) {
@@ -309,12 +333,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			);
 	}
 
-	public void addAssignee(WorkspaceMember assignee) {
+	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
 		validateAssigneeLimit();
-		validateBelongsToWorkspace(assignee);
-		validateNotAlreadyAssigned(assignee);
+		validateBelongsToWorkspace(workspaceMember);
+		validateNotAlreadyAssigned(workspaceMember);
 
-		assignees.add(new IssueAssignee(assignee));
+		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
+
+		assignees.add(assignee);
+		return assignee;
 	}
 
 	public void removeAssignee(WorkspaceMember assignee) {
@@ -327,7 +354,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 		if (isNotAssignee) {
 			throw new ForbiddenOperationException(
-				String.format("Must be an assignee of this issue. issueKey: %s", issueKey)
+				String.format("Must be an assignee of this issue. issue key: %s, workspace member id: %d",
+					issueKey, workspaceMemberId)
 			);
 		}
 	}
@@ -404,29 +432,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	protected Issue(
-		Workspace workspace,
-		IssueType type,
-		String title,
-		String content,
-		String summary,
-		IssuePriority priority,
-		LocalDate dueDate
-	) {
-		this.issueKey = workspace.getIssueKey();
-		workspace.increaseNextIssueNumber();
-
-		addToWorkspace(workspace);
-
-		this.type = type;
-		this.title = title;
-		this.content = content;
-		this.summary = summary;
-		this.status = IssueStatus.TODO;
-		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
-		this.dueDate = dueDate;
-	}
-
 	public void updateTitle(String title) {
 		this.title = title;
 	}
@@ -453,7 +458,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.priority = priority;
 	}
 
-	public void setParentIssue(Issue parentIssue) {
+	public void updateParentIssue(Issue parentIssue) {
 		validateParentIssue(parentIssue);
 		removeParentRelationship();
 

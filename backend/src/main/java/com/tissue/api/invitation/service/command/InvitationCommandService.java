@@ -66,7 +66,7 @@ public class InvitationCommandService {
 		Long memberId,
 		Long invitationId
 	) {
-		Invitation invitation = invitationQueryService.findInvitation(invitationId);
+		Invitation invitation = invitationQueryService.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
 		invitationValidator.validateInvitation(memberId, workspaceCode);

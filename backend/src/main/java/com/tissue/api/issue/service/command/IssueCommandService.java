@@ -116,7 +116,7 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		issue.setParentIssue(parentIssue);
+		issue.updateParentIssue(parentIssue);
 
 		return AssignParentIssueResponse.from(issue);
 	}
