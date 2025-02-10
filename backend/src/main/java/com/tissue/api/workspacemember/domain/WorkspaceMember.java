@@ -86,6 +86,13 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspaceCode = workspace.getCode();
 	}
 
+	/**
+	 * Todo
+	 *  - addOwnerWorkspaceMember, addMemberWorkspaceMember 등을 만들어서 사용하지 않고
+	 *  그냥 addWorkspaceMember 사용하기?
+	 *  - 권한에 따른 로직 전개는 분기문을 사용해도 괜찮을듯?
+	 *  - if OWNER -> increaseMyWorkspaceCount() 까지 포함
+	 */
 	public static WorkspaceMember addWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -107,19 +114,21 @@ public class WorkspaceMember extends BaseEntity {
 
 	public static WorkspaceMember addOwnerWorkspaceMember(
 		Member member,
-		Workspace workspace
+		Workspace workspace,
+		String nickname
 	) {
 		member.increaseMyWorkspaceCount();
 		workspace.increaseMemberCount();
-		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, member.getEmail());
+		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, nickname);
 	}
 
-	public static WorkspaceMember addCollaboratorWorkspaceMember(
+	public static WorkspaceMember addMemberWorkspaceMember(
 		Member member,
-		Workspace workspace
+		Workspace workspace,
+		String nickname
 	) {
 		workspace.increaseMemberCount();
-		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, member.getEmail());
+		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, nickname);
 	}
 
 	public void remove() {
