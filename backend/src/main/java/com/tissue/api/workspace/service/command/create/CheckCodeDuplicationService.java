@@ -9,6 +9,7 @@ import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -33,6 +34,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
+	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
 
 	/**
@@ -60,7 +62,13 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		setKeyPrefix(request, workspace);
 
 		Workspace savedWorkspace = workspaceRepository.save(workspace);
-		addOwnerMemberToWorkspace(member, savedWorkspace);
+
+		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+			member,
+			savedWorkspace,
+			randomNicknameGenerator.generateNickname()
+		);
+		workspaceMemberRepository.save(workspaceMember);
 
 		return CreateWorkspaceResponse.from(savedWorkspace);
 	}
@@ -95,13 +103,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			.orElse(null);
 		workspace.updatePassword(encodedPassword);
 	}
-
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
-
-		workspaceMemberRepository.save(workspaceMember);
-	}
-
+	
 	public boolean isWorkspaceCodeUnique(String code) {
 		return !workspaceRepository.existsByCode(code);
 	}

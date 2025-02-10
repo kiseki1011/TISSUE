@@ -54,7 +54,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canRemoveMemberFromWorkspace() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
@@ -74,7 +74,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void cannotKickMemberFromWorkspaceWithInvalidMemberId() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
 
 		Long invalidMemberId = 999L;
 
@@ -92,7 +92,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canUpdateWorkspaceRoleOfWorkspaceMember() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
@@ -138,7 +138,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void cannotUpdateWorkspaceRoleToOwner() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);

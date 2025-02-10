@@ -3,7 +3,6 @@ package com.tissue.api.invitation.domain;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -69,16 +68,7 @@ public class Invitation extends BaseEntity {
 		return addInvitation(member, workspace, InvitationStatus.PENDING);
 	}
 
-	public WorkspaceMember accept() {
-		changeStatus(InvitationStatus.ACCEPTED);
-		return WorkspaceMember.addCollaboratorWorkspaceMember(this.member, this.workspace);
-	}
-
-	public void reject() {
-		changeStatus(InvitationStatus.REJECTED);
-	}
-
-	private void changeStatus(InvitationStatus status) {
+	public void updateStatus(InvitationStatus status) {
 		this.status = status;
 	}
 }
