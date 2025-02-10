@@ -84,10 +84,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.OWNER);
 	}
 
-	// Todo: 워크스페이스 멤버 별칭 방식 변경 후 수정(이메일 -> 로그인 id)
+	// Todo: 워크스페이스 멤버 별칭 방식 변경 후 수정
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 생성 시 워크스페이스 멤버(WorkspaceMember)의 별칭(nickname)은 기본적으로 이메일로 설정된다")
+	@DisplayName("워크스페이스 생성 시 생성자인 워크스페이스 멤버(WorkspaceMember)의 별칭(nickname)이 기본적으로 설정된다")
 	void workspaceCreate_WorkspaceMemberDefaultNicknameIsEmail() {
 		// given
 		Member member = testDataFixture.createMember("member1");
@@ -103,10 +103,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Workspace workspace = workspaceRepository.findByCode(response.code()).get();
 		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getNickname())
-			.isEqualTo(member.getEmail());
+			.isNotNull();
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
-		assertThat(workspaceMember.getNickname()).isEqualTo(member.getEmail());
+		assertThat(workspaceMember.getNickname()).isNotNull();
 	}
 
 	@Test

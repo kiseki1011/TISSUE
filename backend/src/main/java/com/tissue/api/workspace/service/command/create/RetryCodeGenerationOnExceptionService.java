@@ -11,6 +11,7 @@ import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -35,6 +36,7 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
+	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
@@ -53,7 +55,13 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 				setKeyPrefix(request, workspace);
 
 				Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
-				addOwnerMemberToWorkspace(member, savedWorkspace);
+
+				WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+					member,
+					savedWorkspace,
+					randomNicknameGenerator.generateNickname()
+				);
+				workspaceMemberRepository.save(workspaceMember);
 
 				return CreateWorkspaceResponse.from(savedWorkspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
@@ -69,11 +77,6 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
 		workspace.updateKeyPrefix(request.keyPrefix());
-	}
-
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
-		workspaceMemberRepository.save(workspaceMember);
 	}
 
 	private void setWorkspaceCode(Workspace workspace) {

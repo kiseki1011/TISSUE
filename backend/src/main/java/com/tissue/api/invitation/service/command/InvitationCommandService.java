@@ -12,7 +12,9 @@ import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationRespo
 import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
 import com.tissue.api.invitation.validator.InvitationValidator;
+import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class InvitationCommandService {
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
+	private final RandomNicknameGenerator randomNicknameGenerator;
 
 	@Transactional
 	public AcceptInvitationResponse acceptInvitation(
@@ -32,9 +35,15 @@ public class InvitationCommandService {
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
+		invitation.updateStatus(InvitationStatus.ACCEPTED);
 
-		// Todo: accept()에서 addCollaboratorWorkspaceMember의 책임은 누가?
-		WorkspaceMember workspaceMember = invitation.accept();
+		// Todo: nickname 유일성을 위한 처리 필요(동시성, 유일성 처리)
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
+			invitation.getMember(),
+			invitation.getWorkspace(),
+			WorkspaceRole.MEMBER,
+			randomNicknameGenerator.generateNickname()
+		);
 
 		workspaceMemberRepository.save(workspaceMember);
 
@@ -47,7 +56,7 @@ public class InvitationCommandService {
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
-		invitation.reject();
+		invitation.updateStatus(InvitationStatus.REJECTED);
 
 		return RejectInvitationResponse.from(invitation);
 	}
