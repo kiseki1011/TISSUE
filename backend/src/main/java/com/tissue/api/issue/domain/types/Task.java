@@ -22,11 +22,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task extends Issue {
 
-	/**
-	 * Todo
-	 *  - TechStack이라는 엔티티를 만들어서, 기술 스택을 관리
-	 */
-
 	private Difficulty difficulty;
 
 	@Builder

@@ -32,12 +32,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bug extends Issue {
 
-	/**
-	 * Todo
-	 *  - 버그 발생 환경에 대한 태그 Enviroment를 만들기
-	 *    - ex. chrome-browser, python3.11, java8-jetbrains...
-	 */
-
 	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
 
 	private Difficulty difficulty;

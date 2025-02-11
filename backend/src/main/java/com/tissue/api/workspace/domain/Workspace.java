@@ -43,13 +43,6 @@ public class Workspace extends WorkspaceBaseEntity {
 	private static final int MAX_MEMBER_COUNT = 500;
 	private static final String DEFAULT_KEY_PREFIX = "ISSUE";
 
-	/**
-	 * Todo
-	 *  - memberCount에 캐시 적용 고려
-	 *  -> memberCount 증가/감소가 들어가는 로직은 동시성 이슈를 고려해야 함
-	 *    -> 원자적 연산으로 해결하는 것이 더 좋을지도?
-	 *  -> spring-retry 사용(AOP로 직접 구현해도 되지만 귀찮음)
-	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "WORKSPACE_ID")

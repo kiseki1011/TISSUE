@@ -31,13 +31,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
-	/**
-	 * Todo
-	 *  - 상수는 원래 @ConfigurationProperties를 통해 관리하려고 했음
-	 *  - 그러나 엔티티의 상수를 위해 스프링 의존성을 사용하고 싶지는 않음
-	 *  - 그래서 결국 엔티티에 정의해서 사용
-	 *  - 더 좋은 설계가 있는지 한번 고민 필요
-	 */
 	private static final int MAX_MY_WORKSPACE_COUNT = 10;
 
 	@Id
