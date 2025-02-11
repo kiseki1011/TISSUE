@@ -92,18 +92,13 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 
 		// BLOCKS 관계에 대해서만 순환 참조 검증
 		if (type == IssueRelationType.BLOCKS) {
-			validateNoCircularDependency(sourceIssue, targetIssue);
+			Set<Issue> visited = new HashSet<>();
+			visited.add(sourceIssue);
+			validateCircularDependency(targetIssue, visited);
 		}
 	}
 
-	private static void validateNoCircularDependency(Issue sourceIssue, Issue targetIssue) {
-		// 직접적인 순환 참조 검증 (A->B->A) & 간접적인 순환 참조 검증 (A->B->C->A)
-		Set<Issue> visited = new HashSet<>();
-		visited.add(sourceIssue);
-		validateIndirectCircularDependency(targetIssue, visited);
-	}
-
-	private static void validateIndirectCircularDependency(Issue current, Set<Issue> visited) {
+	private static void validateCircularDependency(Issue current, Set<Issue> visited) {
 		for (IssueRelation relation : current.getOutgoingRelations()) {
 			if (relation.getRelationType() != IssueRelationType.BLOCKS) {
 				continue;
@@ -114,7 +109,7 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 				throw new InvalidOperationException("Circular dependency detected in blocking chain.");
 			}
 
-			validateIndirectCircularDependency(nextIssue, visited);
+			validateCircularDependency(nextIssue, visited);
 			visited.remove(nextIssue);
 		}
 	}
