@@ -73,11 +73,6 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 			.removeIf(relation -> relation.getTargetIssue().equals(sourceIssue));
 	}
 
-	/**
-	 *  - 순환 참조를 방지할 필요가 있음
-	 *    - 자기 참조 불가
-	 *    - A BLOCKS B, B BLOCKS C -> A BLOCKS C 불가, C BLOCKS A 불가 (CyclicReferenceException 만들기)
-	 */
 	private static void validateRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
 		if (sourceIssue.equals(targetIssue)) {
 			throw new InvalidOperationException("Self reference is not allowed.");
@@ -102,23 +97,7 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 	}
 
 	private static void validateNoCircularDependency(Issue sourceIssue, Issue targetIssue) {
-		// 직접적인 순환 참조 검증 (A->B->A)
-		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
-			.anyMatch(relation ->
-				relation.getTargetIssue().equals(sourceIssue)
-					&& relation.getRelationType() == IssueRelationType.BLOCKS
-			);
-
-		if (isDirectCircular) {
-			throw new InvalidOperationException(
-				String.format(
-					"Circular dependency detected. Target issue(%s) is already blocking source issue(%s).",
-					targetIssue.getIssueKey(), sourceIssue.getIssueKey()
-				)
-			);
-		}
-
-		// 간접적인 순환 참조 검증 (A->B->C->A)
+		// 직접적인 순환 참조 검증 (A->B->A) & 간접적인 순환 참조 검증 (A->B->C->A)
 		Set<Issue> visited = new HashSet<>();
 		visited.add(sourceIssue);
 		validateIndirectCircularDependency(targetIssue, visited);
