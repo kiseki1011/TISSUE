@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.stereotype.Component;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.tissue.api.common.exception.type.InvalidOperationException;
@@ -13,15 +11,14 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
-@Component
 public class CachedDfsCircularDependencyChecker implements CircularDependencyChecker {
 
 	private final Cache<String, Set<String>> dependencyCache;
 
-	public CachedDfsCircularDependencyChecker() {
+	public CachedDfsCircularDependencyChecker(int cacheSize, int cacheDuration) {
 		this.dependencyCache = Caffeine.newBuilder()
-			.maximumSize(10000)
-			.expireAfterWrite(1, TimeUnit.HOURS)
+			.maximumSize(cacheSize)
+			.expireAfterWrite(cacheDuration, TimeUnit.HOURS)
 			.build();
 	}
 

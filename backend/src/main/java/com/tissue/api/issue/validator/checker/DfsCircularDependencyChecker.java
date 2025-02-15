@@ -3,14 +3,11 @@ package com.tissue.api.issue.validator.checker;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
-
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
-@Component
 public class DfsCircularDependencyChecker implements CircularDependencyChecker {
 
 	@Override
