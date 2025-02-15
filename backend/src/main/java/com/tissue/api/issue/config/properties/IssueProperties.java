@@ -2,8 +2,6 @@ package com.tissue.api.issue.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import com.tissue.api.issue.config.CircularDependencyCheckerType;
-
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
