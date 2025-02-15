@@ -1,4 +1,4 @@
-package com.tissue.api.issue.domain.validator.checker;
+package com.tissue.api.issue.validator.checker;
 
 import java.util.HashSet;
 import java.util.Set;

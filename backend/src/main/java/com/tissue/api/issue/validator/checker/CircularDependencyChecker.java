@@ -1,4 +1,4 @@
-package com.tissue.api.issue.domain.validator.checker;
+package com.tissue.api.issue.validator.checker;
 
 import com.tissue.api.issue.domain.Issue;
 
