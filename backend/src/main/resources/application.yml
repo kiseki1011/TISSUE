@@ -37,6 +37,14 @@ spring:
     fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
     cache-duration: 0  # 캐시 저장 안함
 
+api:
+  issue:
+    circular-dependency-checker:
+      type: CACHED_DFS
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
+
 ---
 # Development
 spring:
@@ -52,6 +60,14 @@ spring:
 
   messages:
     cache-duration: 0
+
+api:
+  issue:
+    circular-dependency-checker:
+      type: CACHED_DFS
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
 
 ---
 # Production
@@ -81,3 +97,11 @@ logging.level:
   org.hibernate.type.descriptor.sql.BasicBinder: off
   org.hibernate.orm.jdbc.bind: off
   org.hibernate.stat: off
+
+api:
+  issue:
+    circular-dependency-checker:
+      type: CACHED_DFS
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
