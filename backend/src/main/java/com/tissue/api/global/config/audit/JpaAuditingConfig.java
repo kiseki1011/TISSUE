@@ -1,4 +1,4 @@
-package com.tissue.api.global.config;
+package com.tissue.api.global.config.audit;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
