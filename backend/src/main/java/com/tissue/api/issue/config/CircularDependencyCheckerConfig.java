@@ -1,4 +1,4 @@
-package com.tissue.api.global.config.checker;
+package com.tissue.api.issue.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
