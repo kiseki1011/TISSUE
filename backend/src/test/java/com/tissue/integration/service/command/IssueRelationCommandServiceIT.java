@@ -293,4 +293,72 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(findTargetIssue.getOutgoingRelations()).isEmpty();
 		assertThat(findTargetIssue.getIncomingRelations()).isEmpty();
 	}
+
+	@Test
+	@Transactional
+	@DisplayName("직접적인 순환 참조가 있는 경우 순환 참조 검증기에서 예외를 던진다(A -> B -> A)")
+	void circularDependencyCheckerThrowsException_IfDirectCircularDependencyExists() {
+		// given
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+
+		// set requester as author of source issue
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+
+		// source issue BLOCKS target issue (A -> B)
+		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
+			requesterWorkspaceMemberId,
+			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
+		);
+
+		// when & then - validate circular dependency (B -> A)
+		assertThatThrownBy(
+			() -> circularDependencyChecker.validateNoCircularDependency(targetIssue, sourceIssue))
+			.isInstanceOf(InvalidOperationException.class);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("간접적인 순환 참조가 있는 경우 순환 참조 검증기에서 예외를 던진다(given A -> B, C -> A when B -> C)")
+	void circularDependencyCheckerThrowsException_IfInDirectCircularDependencyExists() {
+		// given
+		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+
+		// set requester as author of source issue
+		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+
+		// source issue BLOCKS target issue (A -> B)
+		issueRelationCommandService.createRelation(
+			workspace.getCode(),
+			sourceIssue.getIssueKey(),
+			targetIssue.getIssueKey(),
+			requesterWorkspaceMemberId,
+			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
+		);
+
+		Issue issueC = testDataFixture.createStory(
+			workspace,
+			"issue C",
+			IssuePriority.MEDIUM,
+			null
+		);
+
+		issueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+
+		// issue C BLOCKS source issue (C -> A)
+		issueRelationCommandService.createRelation(
+			workspace.getCode(),
+			issueC.getIssueKey(),
+			sourceIssue.getIssueKey(),
+			requesterWorkspaceMemberId,
+			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)
+		);
+
+		// when & then - validate circular dependency (B -> C)
+		assertThatThrownBy(
+			() -> circularDependencyChecker.validateNoCircularDependency(targetIssue, issueC))
+			.isInstanceOf(InvalidOperationException.class);
+	}
 }
