@@ -39,8 +39,6 @@ spring:
 
 api:
   issue:
-    circular-dependency-checker:
-      type: CACHED_DFS
     circular-dependency-cache:
       size: 1000
       duration: 1
@@ -63,8 +61,6 @@ spring:
 
 api:
   issue:
-    circular-dependency-checker:
-      type: CACHED_DFS
     circular-dependency-cache:
       size: 1000
       duration: 1
@@ -100,8 +96,6 @@ logging.level:
 
 api:
   issue:
-    circular-dependency-checker:
-      type: CACHED_DFS
     circular-dependency-cache:
       size: 1000
       duration: 1
