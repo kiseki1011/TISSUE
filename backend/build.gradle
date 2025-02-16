@@ -70,7 +70,8 @@ jacocoTestReport {
                             "**/CheckCodeDuplicationService",
                             "**/*Controller*",
                             "**/Team*",
-                            "**/Message*"
+                            "**/Message*",
+                            "**/*Checker*"
                     ])
                 })
         )
@@ -103,7 +104,8 @@ jacocoTestReport {
                         "**.CheckCodeDuplicationService",
                         "**.*Controller*",
                         "**.Team*",
-                        "**.Message*"
+                        "**.Message*",
+                        "**.*Checker*"
                 ]
             }
         }
