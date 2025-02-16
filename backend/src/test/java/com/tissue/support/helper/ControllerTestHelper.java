@@ -12,7 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.api.global.config.WebMvcConfig;
+import com.tissue.api.global.config.webmvc.WebMvcConfig;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.InvitationController;
 import com.tissue.api.invitation.service.command.InvitationCommandService;

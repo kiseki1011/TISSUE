@@ -1,8 +1,5 @@
 package com.tissue.api.issue.domain;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
@@ -42,16 +39,25 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private IssueRelationType relationType;
 
-	private IssueRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType relationType) {
+	private IssueRelation(
+		Issue sourceIssue,
+		Issue targetIssue,
+		IssueRelationType relationType
+	) {
+		validateSelfReference(sourceIssue, targetIssue);
+		validateDuplicateRelation(sourceIssue, targetIssue);
+
 		this.sourceIssue = sourceIssue;
 		this.targetIssue = targetIssue;
 		this.relationType = relationType != null ? relationType : IssueRelationType.RELEVANT;
 	}
 
 	// 정적 팩토리 메서드
-	public static void createRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
-		validateRelation(sourceIssue, targetIssue, type);
-
+	public static void createRelation(
+		Issue sourceIssue,
+		Issue targetIssue,
+		IssueRelationType type
+	) {
 		// 정방향 관계 생성
 		IssueRelation relation = new IssueRelation(sourceIssue, targetIssue, type);
 		sourceIssue.getOutgoingRelations().add(relation);
@@ -73,70 +79,20 @@ public class IssueRelation extends WorkspaceContextBaseEntity {
 			.removeIf(relation -> relation.getTargetIssue().equals(sourceIssue));
 	}
 
-	/**
-	 *  - 순환 참조를 방지할 필요가 있음
-	 *    - 자기 참조 불가
-	 *    - A BLOCKS B, B BLOCKS C -> A BLOCKS C 불가, C BLOCKS A 불가 (CyclicReferenceException 만들기)
-	 */
-	private static void validateRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
+	private void validateSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
 			throw new InvalidOperationException("Self reference is not allowed.");
 		}
+	}
 
+	private void validateDuplicateRelation(Issue sourceIssue, Issue targetIssue) {
 		boolean hasRelation = sourceIssue.getOutgoingRelations().stream()
 			.anyMatch(relation -> relation.getTargetIssue().equals(targetIssue));
 
 		if (hasRelation) {
-			throw new InvalidOperationException(
-				String.format(
-					"Identical issue relation already exists. sourceIssueKey: %s, targetIssueKey: %s, relationType: %s",
-					sourceIssue.getIssueKey(), targetIssue.getIssueKey(), type
-				)
-			);
-		}
-
-		// BLOCKS 관계에 대해서만 순환 참조 검증
-		if (type == IssueRelationType.BLOCKS) {
-			validateNoCircularDependency(sourceIssue, targetIssue);
-		}
-	}
-
-	private static void validateNoCircularDependency(Issue sourceIssue, Issue targetIssue) {
-		// 직접적인 순환 참조 검증 (A->B->A)
-		boolean isDirectCircular = targetIssue.getOutgoingRelations().stream()
-			.anyMatch(relation ->
-				relation.getTargetIssue().equals(sourceIssue)
-					&& relation.getRelationType() == IssueRelationType.BLOCKS
-			);
-
-		if (isDirectCircular) {
-			throw new InvalidOperationException(
-				String.format(
-					"Circular dependency detected. Target issue(%s) is already blocking source issue(%s).",
-					targetIssue.getIssueKey(), sourceIssue.getIssueKey()
-				)
-			);
-		}
-
-		// 간접적인 순환 참조 검증 (A->B->C->A)
-		Set<Issue> visited = new HashSet<>();
-		visited.add(sourceIssue);
-		validateIndirectCircularDependency(targetIssue, visited);
-	}
-
-	private static void validateIndirectCircularDependency(Issue current, Set<Issue> visited) {
-		for (IssueRelation relation : current.getOutgoingRelations()) {
-			if (relation.getRelationType() != IssueRelationType.BLOCKS) {
-				continue;
-			}
-
-			Issue nextIssue = relation.getTargetIssue();
-			if (!visited.add(nextIssue)) {
-				throw new InvalidOperationException("Circular dependency detected in blocking chain.");
-			}
-
-			validateIndirectCircularDependency(nextIssue, visited);
-			visited.remove(nextIssue);
+			throw new InvalidOperationException(String.format(
+				"Duplicate relation is not allowed. sourceIssueKey: %s, targetIssueKey: %s",
+				sourceIssue.getIssueKey(), targetIssue.getIssueKey()));
 		}
 	}
 

@@ -22,3 +22,11 @@ spring:
       hibernate:
         SQL: DEBUG
         orm.jdbc.bind: TRACE
+
+api:
+  issue:
+    circular-dependency-checker:
+      type: CACHED_DFS
+    circular-dependency-cache:
+      size: 1000
+      duration: 1

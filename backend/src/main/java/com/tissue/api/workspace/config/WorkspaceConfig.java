@@ -1,4 +1,4 @@
-package com.tissue.api.global.config;
+package com.tissue.api.workspace.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

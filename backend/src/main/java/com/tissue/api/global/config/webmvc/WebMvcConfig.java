@@ -1,4 +1,4 @@
-package com.tissue.api.global.config;
+package com.tissue.api.global.config.webmvc;
 
 import java.util.List;
 
