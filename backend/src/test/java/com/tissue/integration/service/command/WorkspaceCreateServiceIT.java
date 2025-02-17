@@ -182,7 +182,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("test workspace")
 			.description("test workspace")
-			.keyPrefix("TESTPREFIX") // provide prefix as "TESTPREFIX"
+			.issueKeyPrefix("TESTPREFIX") // provide prefix as "TESTPREFIX"
 			.build();
 
 		// when

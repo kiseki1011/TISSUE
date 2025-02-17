@@ -86,7 +86,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	}
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspace.updateIssueKeyPrefix(request.keyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
 	private void setUniqueWorkspaceCode(Workspace workspace) {

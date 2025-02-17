@@ -17,6 +17,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -38,6 +39,7 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	@Override
 	@Transactional
@@ -76,7 +78,8 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	}
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspace.updateIssueKeyPrefix(request.keyPrefix());
+		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
 	private void setWorkspaceCode(Workspace workspace) {
