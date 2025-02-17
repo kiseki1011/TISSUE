@@ -37,7 +37,7 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	private Long id;
 
 	@Column(nullable = false)
-	private String name;
+	private String title;
 
 	@Column(nullable = false)
 	private String goal;
@@ -70,7 +70,7 @@ public class Sprint extends WorkspaceContextBaseEntity {
 
 	@Builder
 	public Sprint(
-		String name,
+		String title,
 		String goal,
 		LocalDate startDate,
 		LocalDate endDate,
@@ -82,7 +82,7 @@ public class Sprint extends WorkspaceContextBaseEntity {
 		this.sprintKey = String.format("SPRINT-%d", this.number);
 		workspace.increaseNextSprintNumber();
 
-		this.name = name;
+		this.title = title;
 		this.goal = goal;
 		this.startDate = startDate;
 		this.endDate = endDate;
