@@ -28,7 +28,7 @@ public record CreateWorkspaceRequest(
 
 	@IssueKeyPrefixSize
 	@IssueKeyPrefixPattern
-	String keyPrefix
+	String issueKeyPrefix
 ) {
 	public static Workspace to(CreateWorkspaceRequest request) {
 		return Workspace.builder()
