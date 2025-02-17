@@ -67,6 +67,9 @@ public class Workspace extends WorkspaceBaseEntity {
 	@Column(nullable = false)
 	private Integer nextIssueNumber = 1;
 
+	@Column(nullable = false)
+	private Integer nextSprintNumber = 1;
+
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Position> positions = new ArrayList<>();
 
@@ -129,12 +132,21 @@ public class Workspace extends WorkspaceBaseEntity {
 			.collect(Collectors.toSet());
 	}
 
+	/*
+	 * Todo
+	 *  - Workspace의 책임인가?
+	 *  - 그냥 Issue에서 workspace.getKeyPrefix + workspace.getNextIssueNumber로 처리하면 안되나?
+	 */
 	public String getIssueKey() {
 		return String.format("%s-%d", keyPrefix, nextIssueNumber);
 	}
 
 	public void increaseNextIssueNumber() {
 		this.nextIssueNumber++;
+	}
+
+	public void increaseNextSprintNumber() {
+		this.nextSprintNumber++;
 	}
 
 	public void increaseMemberCount() {

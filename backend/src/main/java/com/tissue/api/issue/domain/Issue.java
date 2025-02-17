@@ -90,6 +90,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	/*
+	 * Todo
+	 *  - "SPRINT", "WORKSPACE"가 prefix가 될 수 없도록 검증하는 로직 구현
+	 */
 	@Column(nullable = false, unique = true)
 	private String issueKey;
 
