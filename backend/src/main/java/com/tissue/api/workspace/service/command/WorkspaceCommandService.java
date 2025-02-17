@@ -68,13 +68,13 @@ public class WorkspaceCommandService {
 	}
 
 	@Transactional
-	public UpdateIssueKeyResponse updateIssueKey(
+	public UpdateIssueKeyResponse updateIssueKeyPrefix(
 		String workspaceCode,
 		UpdateIssueKeyRequest request
 	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
-		workspace.updateKeyPrefix(request.issueKeyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		return UpdateIssueKeyResponse.from(workspace);
 	}

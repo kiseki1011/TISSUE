@@ -83,11 +83,11 @@ public class TestDataFixture {
 	public Workspace createWorkspaceWithMembers(
 		int numberOfMembers,
 		String workspacePassword,
-		String keyPrefix
+		String issueKeyPrefix
 	) {
 		Member owner = createMember("owner");
 
-		Workspace workspace = createWorkspace("test workspace", workspacePassword, keyPrefix);
+		Workspace workspace = createWorkspace("test workspace", workspacePassword, issueKeyPrefix);
 
 		createWorkspaceMember(owner, workspace, WorkspaceRole.OWNER);
 
@@ -121,7 +121,7 @@ public class TestDataFixture {
 	public Workspace createWorkspace(
 		String name,
 		String password,
-		String keyPrefix
+		String issueKeyPrefix
 	) {
 		return workspaceRepository.save(
 			Workspace.builder()
@@ -129,7 +129,7 @@ public class TestDataFixture {
 				.description("description")
 				.password(passwordEncoder.encode(password))
 				.code(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
-				.keyPrefix(keyPrefix)
+				.issueKeyPrefix(issueKeyPrefix)
 				.build()
 		);
 	}

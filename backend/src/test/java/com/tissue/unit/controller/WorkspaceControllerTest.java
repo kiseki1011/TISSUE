@@ -202,10 +202,10 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		UpdateIssueKeyResponse response = UpdateIssueKeyResponse.builder()
 			.workspaceId(1L)
 			.workspaceCode("TESTCODE")
-			.keyPrefix("TESTPREFIX")
+			.issueKeyPrefix("TESTPREFIX")
 			.build();
 
-		when(workspaceCommandService.updateIssueKey("TESTCODE", request))
+		when(workspaceCommandService.updateIssueKeyPrefix("TESTCODE", request))
 			.thenReturn(response);
 
 		// when & then
@@ -215,11 +215,11 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Issue key prefix updated."))
 			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.keyPrefix").value("TESTPREFIX"))
+			.andExpect(jsonPath("$.data.issueKeyPrefix").value("TESTPREFIX"))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
-			.updateIssueKey("TESTCODE", request);
+			.updateIssueKeyPrefix("TESTCODE", request);
 	}
 
 	@Test

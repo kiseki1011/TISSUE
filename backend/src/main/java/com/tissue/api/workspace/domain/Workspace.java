@@ -62,7 +62,7 @@ public class Workspace extends WorkspaceBaseEntity {
 	private int memberCount = 0;
 
 	@Column(nullable = false)
-	private String keyPrefix;
+	private String issueKeyPrefix;
 
 	@Column(nullable = false)
 	private Integer nextIssueNumber = 1;
@@ -91,21 +91,21 @@ public class Workspace extends WorkspaceBaseEntity {
 		String name,
 		String description,
 		String password,
-		String keyPrefix
+		String issueKeyPrefix
 	) {
 		this.code = code;
 		this.name = name;
 		this.description = description;
 		this.password = password;
-		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
+		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
 	}
 
 	public void setCode(String code) {
 		this.code = code;
 	}
 
-	public void updateKeyPrefix(String keyPrefix) {
-		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
+	public void updateIssueKeyPrefix(String issueKeyPrefix) {
+		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
 	}
 
 	public void updatePassword(String password) {
@@ -138,7 +138,7 @@ public class Workspace extends WorkspaceBaseEntity {
 	 *  - 그냥 Issue에서 workspace.getKeyPrefix + workspace.getNextIssueNumber로 처리하면 안되나?
 	 */
 	public String getIssueKey() {
-		return String.format("%s-%d", keyPrefix, nextIssueNumber);
+		return String.format("%s-%d", issueKeyPrefix, nextIssueNumber);
 	}
 
 	public void increaseNextIssueNumber() {

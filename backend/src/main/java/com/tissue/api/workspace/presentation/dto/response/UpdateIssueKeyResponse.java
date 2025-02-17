@@ -8,13 +8,13 @@ import lombok.Builder;
 public record UpdateIssueKeyResponse(
 	Long workspaceId,
 	String workspaceCode,
-	String keyPrefix
+	String issueKeyPrefix
 ) {
 	public static UpdateIssueKeyResponse from(Workspace workspace) {
 		return UpdateIssueKeyResponse.builder()
 			.workspaceId(workspace.getId())
 			.workspaceCode(workspace.getCode())
-			.keyPrefix(workspace.getKeyPrefix())
+			.issueKeyPrefix(workspace.getIssueKeyPrefix())
 			.build();
 	}
 }

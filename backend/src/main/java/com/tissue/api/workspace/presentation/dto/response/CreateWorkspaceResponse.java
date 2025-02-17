@@ -24,7 +24,7 @@ public record CreateWorkspaceResponse(
 			.code(workspace.getCode())
 			.name(workspace.getName())
 			.description(workspace.getDescription())
-			.keyPrefix(workspace.getKeyPrefix())
+			.keyPrefix(workspace.getIssueKeyPrefix())
 			.createdAt(workspace.getCreatedDate())
 			.createdBy(workspace.getCreatedByMember())
 			.build();

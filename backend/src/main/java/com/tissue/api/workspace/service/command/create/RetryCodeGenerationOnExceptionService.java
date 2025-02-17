@@ -76,7 +76,7 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	}
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspace.updateKeyPrefix(request.keyPrefix());
+		workspace.updateIssueKeyPrefix(request.keyPrefix());
 	}
 
 	private void setWorkspaceCode(Workspace workspace) {

@@ -121,7 +121,7 @@ public class WorkspaceController {
 		@PathVariable String code,
 		@RequestBody @Valid UpdateIssueKeyRequest request
 	) {
-		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKey(
+		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKeyPrefix(
 			code,
 			request
 		);
