@@ -114,13 +114,10 @@ public class Sprint extends WorkspaceContextBaseEntity {
 
 	public void updateStatus(SprintStatus newStatus) {
 		validateStatusTransition(newStatus);
+		validateNoOtherActiveSprintExists(newStatus);
 		this.status = newStatus;
 	}
 
-	/**
-	 * Todo
-	 *  - specification 패턴 고려
-	 */
 	private void validateStatusTransition(SprintStatus newStatus) {
 		if (this.status == newStatus) {
 			throw new InvalidOperationException(
@@ -149,6 +146,16 @@ public class Sprint extends WorkspaceContextBaseEntity {
 			case COMPLETED, CANCELLED -> throw new InvalidOperationException(
 				"Cannot change status of COMPLETED or CANCELLED sprint"
 			);
+		}
+	}
+
+	private void validateNoOtherActiveSprintExists(SprintStatus newStatus) {
+		if (newStatus == SprintStatus.ACTIVE) {
+			boolean hasActiveSprintInWorkspace = workspace.hasActiveSprintExcept(this);
+			if (hasActiveSprintInWorkspace) {
+				throw new InvalidOperationException(
+					"Cannot start sprint. A sprint is already active in this workspace.");
+			}
 		}
 	}
 
