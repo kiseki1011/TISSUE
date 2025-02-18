@@ -28,6 +28,9 @@ import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.service.command.ReviewCommandService;
 import com.tissue.api.review.service.command.ReviewerCommandService;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.sprint.domain.repository.SprintRepository;
+import com.tissue.api.sprint.service.command.SprintCommandService;
+import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.team.domain.repository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
 import com.tissue.api.team.service.query.TeamQueryService;
@@ -115,6 +118,10 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommentCommandService issueCommentCommandService;
 	@Autowired
 	protected ReviewCommentCommandService reviewCommentCommandService;
+	@Autowired
+	protected SprintCommandService sprintCommandService;
+	@Autowired
+	protected SprintQueryService sprintQueryService;
 
 	/**
 	 * Validator
@@ -149,6 +156,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueReviewerRepository issueReviewerRepository;
 	@Autowired
 	protected CommentRepository commentRepository;
+	@Autowired
+	protected SprintRepository sprintRepository;
 
 	/**
 	 * Fixture
