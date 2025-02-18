@@ -1,6 +1,7 @@
 package com.tissue.api.sprint.presentation.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +14,9 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.service.SprintCommandService;
+import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.service.command.SprintCommandService;
+import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -25,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class SprintController {
 
 	private final SprintCommandService sprintCommandService;
-	// private final SprintQueryService sprintQueryService;
+	private final SprintQueryService sprintQueryService;
 
 	/*
 	 * Todo
@@ -38,10 +41,10 @@ public class SprintController {
 	 *  - 스프린트 이슈 해제
 	 */
 
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
+	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<CreateSprintResponse> createSprint(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid CreateSprintRequest request
@@ -50,17 +53,17 @@ public class SprintController {
 		return ApiResponse.ok("Sprint created.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @GetMapping("/{sprintKey}")
-	// public ApiResponse<SprintDetailResponse> getSprint(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String sprintKey
-	// ) {
-	// 	SprintDetailResponse response = sprintQueryService.getSprint(workspaceCode, sprintKey);
-	// 	return ApiResponse.ok(response);
-	// }
-	//
+	@GetMapping("/{sprintKey}")
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	public ApiResponse<SprintDetailResponse> getSprintDetail(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey
+	) {
+		SprintDetailResponse response = sprintQueryService.getSprintDetail(workspaceCode, sprintKey);
+		return ApiResponse.ok("Found sprint.", response);
+	}
+
 	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PostMapping("/{sprintKey}/issues")
