@@ -12,6 +12,8 @@ import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -84,6 +86,9 @@ public class Workspace extends WorkspaceBaseEntity {
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Issue> issues = new ArrayList<>();
+
+	@OneToMany(mappedBy = "workspace")
+	private List<Sprint> sprints = new ArrayList<>();
 
 	@Builder
 	public Workspace(
@@ -161,6 +166,12 @@ public class Workspace extends WorkspaceBaseEntity {
 
 	private String toUpperCaseOrDefault(String keyPrefix) {
 		return keyPrefix != null ? keyPrefix.toUpperCase() : DEFAULT_KEY_PREFIX;
+	}
+
+	public boolean hasActiveSprintExcept(Sprint excludedSprint) {
+		return sprints.stream()
+			.filter(sprint -> !sprint.equals(excludedSprint))
+			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
 	private void validateMemberLimit() {
