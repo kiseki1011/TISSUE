@@ -24,7 +24,8 @@ public class SprintQueryService {
 		return sprintRepository.findBySprintKeyAndWorkspaceCode(sprintKey, workspaceCode)
 			.orElseThrow(() -> new ResourceNotFoundException(
 				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
-					sprintKey, workspaceCode)));
+					sprintKey, workspaceCode))
+			);
 	}
 
 	@Transactional(readOnly = true)
@@ -32,7 +33,12 @@ public class SprintQueryService {
 		String workspaceCode,
 		String sprintKey
 	) {
-		Sprint sprint = findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintRepository.findBySprintKeyAndWorkspaceCodeWithIssues(sprintKey, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException(
+				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
+					sprintKey, workspaceCode))
+			);
+
 		return SprintDetailResponse.from(sprint);
 	}
 }
