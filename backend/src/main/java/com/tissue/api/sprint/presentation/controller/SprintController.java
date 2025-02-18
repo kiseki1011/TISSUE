@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
@@ -41,10 +43,10 @@ public class SprintController {
 	 *  - 스프린트 이슈 해제
 	 */
 
-	@PostMapping
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PostMapping
 	public ApiResponse<CreateSprintResponse> createSprint(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid CreateSprintRequest request
@@ -53,9 +55,9 @@ public class SprintController {
 		return ApiResponse.ok("Sprint created.", response);
 	}
 
-	@GetMapping("/{sprintKey}")
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@GetMapping("/{sprintKey}")
 	public ApiResponse<SprintDetailResponse> getSprintDetail(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey
@@ -64,24 +66,21 @@ public class SprintController {
 		return ApiResponse.ok("Found sprint.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PostMapping("/{sprintKey}/issues")
-	// public ApiResponse<AddSprintIssueResponse> addIssue(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String sprintKey,
-	// 	@CurrentWorkspaceMember Long currentWorkspaceMemberId,
-	// 	@RequestBody @Valid AddSprintIssueRequest request
-	// ) {
-	// 	AddSprintIssueResponse response = sprintCommandService.addIssue(
-	// 		code,
-	// 		id,
-	// 		currentWorkspaceMemberId,
-	// 		request
-	// 	);
-	//
-	// 	return ApiResponse.ok("Issue added to sprint.", response);
-	// }
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PostMapping("/{sprintKey}/issues")
+	public ApiResponse<AddSprintIssuesResponse> addIssues(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		@RequestBody @Valid AddSprintIssuesRequest request
+	) {
+		AddSprintIssuesResponse response = sprintCommandService.addIssues(
+			workspaceCode,
+			sprintKey,
+			request
+		);
+		return ApiResponse.ok("Issues added to sprint.", response);
+	}
 	//
 	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)

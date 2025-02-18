@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -26,6 +28,8 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 		@Param("workspaceCode") String workspaceCode,
 		@Param("issueId") Long issueId
 	);
+
+	List<Issue> findByIssueKeyInAndWorkspaceCode(Collection<String> issueKeys, String workspaceCode);
 
 	/**
 	 * 워크스페이스의 이슈들을 페이징하여 조회합니다.
