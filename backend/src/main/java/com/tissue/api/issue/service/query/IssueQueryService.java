@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
@@ -30,7 +29,7 @@ public class IssueQueryService {
 		List<Issue> issues = issueRepository.findByIssueKeyInAndWorkspaceCode(issueKeys, workspaceCode);
 
 		if (issues.size() != issueKeys.size()) {
-			throw new InvalidOperationException("Some issues do not exist.");
+			throw new IssueNotFoundException("Some issues do not exist.");
 		}
 
 		return issues;
