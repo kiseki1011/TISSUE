@@ -17,11 +17,13 @@ import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -126,21 +128,19 @@ public class SprintController {
 		return ApiResponse.ok("Issues added to sprint.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{sprintKey}/status")
-	// public ApiResponse<UpdateSprintStatusResponse> updateSprintStatus(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String sprintKey,
-	// 	@CurrentWorkspaceMember Long currentWorkspaceMemberId,
-	// 	@RequestBody @Valid UpdateSprintStatusRequest request
-	// ) {
-	// 	UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
-	// 		code,
-	// 		id,
-	// 		currentWorkspaceMemberId,
-	// 		request
-	// 	);
-	// 	return ApiResponse.ok("Sprint status updated successfully.", response);
-	// }
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{sprintKey}/status")
+	public ApiResponse<UpdateSprintStatusResponse> updateSprintStatus(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		@RequestBody @Valid UpdateSprintStatusRequest request
+	) {
+		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
+			workspaceCode,
+			sprintKey,
+			request
+		);
+		return ApiResponse.ok("Sprint status updated.", response);
+	}
 }

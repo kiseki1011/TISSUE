@@ -14,10 +14,12 @@ import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -88,6 +90,13 @@ public class SprintCommandService {
 	) {
 		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
 
+		/*
+		 * Todo
+		 *  - NotNull 검증을 컨트롤러단에서 처리하는데, 굳이 null에 대한 처리는 하지 않아도 되나?
+		 *  - 그런데 또 나중에 API 계약이 변경되는 경우를 생각해서 null에 관한 처리를 하도록 구현하는게 좋을까?
+		 *  - 서비스 재사용 그리고 변경 최소화의 관점에서는 null 처리하는게 좋을 것 같기도 하고...
+		 *  - 그런데 null인 경우는 업데이트하지 않도록 구현해버리면, 의도된 null인지, 문제가 있어서 null이 들어온건지 판단은 어떻게 하지?
+		 */
 		LocalDate startDate = request.startDate() != null ? request.startDate() : sprint.getStartDate();
 		LocalDate endDate = request.endDate() != null ? request.endDate() : sprint.getEndDate();
 
@@ -96,5 +105,18 @@ public class SprintCommandService {
 		}
 
 		return UpdateSprintDateResponse.from(sprint);
+	}
+
+	@Transactional
+	public UpdateSprintStatusResponse updateSprintStatus(
+		String workspaceCode,
+		String sprintKey,
+		UpdateSprintStatusRequest request
+	) {
+		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+
+		sprint.updateStatus(request.newStatus());
+
+		return UpdateSprintStatusResponse.from(sprint);
 	}
 }
