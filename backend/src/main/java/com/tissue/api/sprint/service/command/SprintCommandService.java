@@ -11,8 +11,10 @@ import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -59,5 +61,19 @@ public class SprintCommandService {
 		}
 
 		return AddSprintIssuesResponse.of(sprint, request.issueKeys());
+	}
+
+	@Transactional
+	public UpdateSprintContentResponse updateSprintContent(
+		String workspaceCode,
+		String sprintKey,
+		UpdateSprintContentRequest request
+	) {
+		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+
+		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
+		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
+
+		return UpdateSprintContentResponse.from(sprint);
 	}
 }

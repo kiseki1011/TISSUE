@@ -91,6 +91,22 @@ public class Sprint extends WorkspaceContextBaseEntity {
 		this.workspaceCode = workspace.getCode();
 	}
 
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateGoal(String goal) {
+		this.goal = goal;
+	}
+
+	public void updateStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+
+	public void updateEndDate(LocalDate endDate) {
+		this.endDate = endDate;
+	}
+
 	private void validateDates(LocalDate startDate, LocalDate endDate) {
 		if (endDate.isBefore(startDate)) {
 			throw new InvalidOperationException("Sprint end date cannot be before start date.");

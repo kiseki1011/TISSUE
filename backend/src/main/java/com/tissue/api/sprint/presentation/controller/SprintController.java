@@ -2,6 +2,7 @@ package com.tissue.api.sprint.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,9 +15,11 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -36,6 +39,7 @@ public class SprintController {
 	 * Todo
 	 *  - 스프린트 생성
 	 *  - 스프린트 수정(이름, 목표, 종료일)
+	 *   - PLANNING 상태인 스프린트만 변경 가능
 	 *  - 스프린트 상태 변경
 	 *   - 기본 상태: PLANNING
 	 *   - ACTIVE, COMPLETED, CANCELLED(hard delete 대신)
@@ -54,6 +58,31 @@ public class SprintController {
 		CreateSprintResponse response = sprintCommandService.createSprint(workspaceCode, request);
 		return ApiResponse.ok("Sprint created.", response);
 	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping
+	public ApiResponse<UpdateSprintContentResponse> updateSprintContent(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		@RequestBody @Valid UpdateSprintContentRequest request
+	) {
+		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(workspaceCode, sprintKey,
+			request);
+		return ApiResponse.ok("Sprint content updated", response);
+	}
+
+	// @LoginRequired
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping
+	// public ApiResponse<UpdateSprintDateResponse> updateSprintDate(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String sprintKey,
+	// 	@RequestBody @Valid UpdateSprintDateRequest request
+	// ) {
+	// 	UpdateSprintDateResponse response = sprintCommandService.updateSprintContent(workspaceCode, sprintKey, request);
+	// 	return ApiResponse.ok("Sprint date updated", response);
+	// }
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
@@ -81,7 +110,7 @@ public class SprintController {
 		);
 		return ApiResponse.ok("Issues added to sprint.", response);
 	}
-	//
+
 	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PatchMapping("/{sprintKey}/status")
