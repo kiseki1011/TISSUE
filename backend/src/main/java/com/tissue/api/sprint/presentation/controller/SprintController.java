@@ -16,10 +16,12 @@ import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -55,34 +57,44 @@ public class SprintController {
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid CreateSprintRequest request
 	) {
-		CreateSprintResponse response = sprintCommandService.createSprint(workspaceCode, request);
+		CreateSprintResponse response = sprintCommandService.createSprint(
+			workspaceCode,
+			request
+		);
 		return ApiResponse.ok("Sprint created.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping
+	@PatchMapping("/{sprintKey}")
 	public ApiResponse<UpdateSprintContentResponse> updateSprintContent(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid UpdateSprintContentRequest request
 	) {
-		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(workspaceCode, sprintKey,
-			request);
-		return ApiResponse.ok("Sprint content updated", response);
+		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(
+			workspaceCode,
+			sprintKey,
+			request
+		);
+		return ApiResponse.ok("Sprint content updated.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping
-	// public ApiResponse<UpdateSprintDateResponse> updateSprintDate(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String sprintKey,
-	// 	@RequestBody @Valid UpdateSprintDateRequest request
-	// ) {
-	// 	UpdateSprintDateResponse response = sprintCommandService.updateSprintContent(workspaceCode, sprintKey, request);
-	// 	return ApiResponse.ok("Sprint date updated", response);
-	// }
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{sprintKey}/date")
+	public ApiResponse<UpdateSprintDateResponse> updateSprintDate(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		@RequestBody @Valid UpdateSprintDateRequest request
+	) {
+		UpdateSprintDateResponse response = sprintCommandService.updateSprintDate(
+			workspaceCode,
+			sprintKey,
+			request
+		);
+		return ApiResponse.ok("Sprint date updated.", response);
+	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
@@ -91,7 +103,10 @@ public class SprintController {
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey
 	) {
-		SprintDetailResponse response = sprintQueryService.getSprintDetail(workspaceCode, sprintKey);
+		SprintDetailResponse response = sprintQueryService.getSprintDetail(
+			workspaceCode,
+			sprintKey
+		);
 		return ApiResponse.ok("Found sprint.", response);
 	}
 

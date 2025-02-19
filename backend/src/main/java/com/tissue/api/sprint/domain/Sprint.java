@@ -113,6 +113,12 @@ public class Sprint extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	public void updateDates(LocalDate startDate, LocalDate endDate) {
+		validateDates(startDate, endDate);
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
+
 	public void updateStatus(SprintStatus newStatus) {
 		validateStatusTransition(newStatus);
 		validateActiveSprintNotExists(newStatus);
@@ -151,12 +157,14 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	}
 
 	private void validateActiveSprintNotExists(SprintStatus newStatus) {
-		if (newStatus == SprintStatus.ACTIVE) {
-			boolean hasActiveSprintInWorkspace = workspace.hasActiveSprintExcept(this);
-			if (hasActiveSprintInWorkspace) {
-				throw new InvalidOperationException(
-					"Cannot start sprint. A sprint is already active in this workspace.");
-			}
+		boolean newStatusNotActive = newStatus != SprintStatus.ACTIVE;
+		if (newStatusNotActive) {
+			return;
+		}
+
+		boolean hasActiveSprintInWorkspace = workspace.hasActiveSprintExcept(this);
+		if (hasActiveSprintInWorkspace) {
+			throw new InvalidOperationException("Cannot start sprint. A sprint is already active in this workspace.");
 		}
 	}
 
@@ -172,28 +180,31 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	}
 
 	private void validateCanAddIssue(Issue issue) {
-		if (status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE) {
+		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
+		if (notRequiredStatus) {
 			throw new InvalidOperationException("Can only add issues to PLANNING or ACTIVE sprint.");
 		}
-		if (!issue.getWorkspaceCode().equals(this.workspaceCode)) {
+
+		boolean notEqualWorkspaceCode = !issue.getWorkspaceCode().equals(this.workspaceCode);
+		if (notEqualWorkspaceCode) {
 			throw new InvalidOperationException("Cannot add issue from different workspace to sprint.");
 		}
 
-		boolean alreadyInSprint = sprintIssues.stream()
-			.anyMatch(si -> si.getIssue().equals(issue));
+		boolean alreadyInSprint = sprintIssues.stream().anyMatch(si -> si.getIssue().equals(issue));
 		if (alreadyInSprint) {
-			throw new InvalidOperationException("Issue is already in this sprint.");
+			throw new InvalidOperationException("Issue already exists in this sprint.");
 		}
 	}
 
 	private void validateCanRemoveIssue(Issue issue) {
-		if (status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE) {
+		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
+		if (notRequiredStatus) {
 			throw new InvalidOperationException("Can only remove issues from PLANNING or ACTIVE sprint.");
 		}
-		boolean issueNotInSprint = sprintIssues.stream()
-			.noneMatch(si -> si.getIssue().equals(issue));
+
+		boolean issueNotInSprint = sprintIssues.stream().noneMatch(si -> si.getIssue().equals(issue));
 		if (issueNotInSprint) {
-			throw new InvalidOperationException("Issue is not in this sprint");
+			throw new InvalidOperationException("Issue does not exist in this sprint.");
 		}
 	}
 }

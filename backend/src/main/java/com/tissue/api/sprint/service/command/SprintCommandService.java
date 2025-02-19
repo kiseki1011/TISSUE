@@ -1,5 +1,6 @@
 package com.tissue.api.sprint.service.command;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,9 +13,11 @@ import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -75,5 +78,23 @@ public class SprintCommandService {
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
 		return UpdateSprintContentResponse.from(sprint);
+	}
+
+	@Transactional
+	public UpdateSprintDateResponse updateSprintDate(
+		String workspaceCode,
+		String sprintKey,
+		UpdateSprintDateRequest request
+	) {
+		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+
+		LocalDate startDate = request.startDate() != null ? request.startDate() : sprint.getStartDate();
+		LocalDate endDate = request.endDate() != null ? request.endDate() : sprint.getEndDate();
+
+		if (request.startDate() != null || request.endDate() != null) {
+			sprint.updateDates(startDate, endDate);
+		}
+
+		return UpdateSprintDateResponse.from(sprint);
 	}
 }
