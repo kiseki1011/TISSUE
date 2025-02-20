@@ -29,6 +29,18 @@ public class SprintQueryService {
 	}
 
 	@Transactional(readOnly = true)
+	public Sprint findSprintWithIssues(
+		String sprintKey,
+		String workspaceCode
+	) {
+		return sprintRepository.findBySprintKeyAndWorkspaceCodeWithIssues(sprintKey, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException(
+				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
+					sprintKey, workspaceCode))
+			);
+	}
+
+	@Transactional(readOnly = true)
 	public SprintDetailResponse getSprintDetail(
 		String workspaceCode,
 		String sprintKey

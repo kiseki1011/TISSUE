@@ -19,6 +19,7 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.enums.ReviewStatus;
+import com.tissue.api.sprint.domain.SprintIssue;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -153,6 +154,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueAssignee> assignees = new ArrayList<>();
+
+	@OneToMany(mappedBy = "issue")
+	private List<SprintIssue> sprintIssues = new ArrayList<>();
 
 	protected Issue(
 		Workspace workspace,

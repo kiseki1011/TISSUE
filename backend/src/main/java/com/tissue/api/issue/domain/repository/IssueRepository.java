@@ -29,6 +29,18 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 		@Param("issueId") Long issueId
 	);
 
+	@Query("SELECT i FROM Issue i "
+		+ "JOIN FETCH i.sprintIssues si "
+		+ "JOIN FETCH si.sprint s "
+		+ "WHERE s.sprintKey = :sprintKey "
+		+ "AND s.workspaceCode = :workspaceCode "
+		+ "AND i.issueKey = :issueKey")
+	Optional<Issue> findIssueInSprint(
+		@Param("sprintKey") String sprintKey,
+		@Param("issueKey") String issueKey,
+		@Param("workspaceCode") String workspaceCode
+	);
+
 	List<Issue> findByIssueKeyInAndWorkspaceCode(Collection<String> issueKeys, String workspaceCode);
 
 	/**

@@ -12,8 +12,17 @@ public interface SprintRepository extends JpaRepository<Sprint, Long> {
 
 	Optional<Sprint> findBySprintKeyAndWorkspaceCode(String sprintKey, String workspaceCode);
 
+	// @Query("SELECT s FROM Sprint s "
+	// 	+ "LEFT JOIN FETCH s.sprintIssues "
+	// 	+ "WHERE s.sprintKey = :sprintKey AND s.workspaceCode = :workspaceCode")
+	// Optional<Sprint> findBySprintKeyAndWorkspaceCodeWithIssues(
+	// 	@Param("sprintKey") String sprintKey,
+	// 	@Param("workspaceCode") String workspaceCode
+	// );
+
 	@Query("SELECT s FROM Sprint s "
-		+ "LEFT JOIN FETCH s.sprintIssues "
+		+ "LEFT JOIN FETCH s.sprintIssues si "
+		+ "LEFT JOIN FETCH si.issue "
 		+ "WHERE s.sprintKey = :sprintKey AND s.workspaceCode = :workspaceCode")
 	Optional<Sprint> findBySprintKeyAndWorkspaceCodeWithIssues(
 		@Param("sprintKey") String sprintKey,

@@ -1,6 +1,7 @@
 package com.tissue.api.sprint.presentation.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
@@ -38,18 +40,6 @@ public class SprintController {
 
 	private final SprintCommandService sprintCommandService;
 	private final SprintQueryService sprintQueryService;
-
-	/*
-	 * Todo
-	 *  - 스프린트 생성
-	 *  - 스프린트 수정(이름, 목표, 종료일)
-	 *   - PLANNING 상태인 스프린트만 변경 가능
-	 *  - 스프린트 상태 변경
-	 *   - 기본 상태: PLANNING
-	 *   - ACTIVE, COMPLETED, CANCELLED(hard delete 대신)
-	 *  - 스프린트 이슈 등록(다중 등록)
-	 *  - 스프린트 이슈 해제
-	 */
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -126,6 +116,23 @@ public class SprintController {
 			request
 		);
 		return ApiResponse.ok("Issues added to sprint.", response);
+	}
+
+	@LoginRequired
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@DeleteMapping("/{sprintKey}/issues")
+	public ApiResponse<Void> removeIssue(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		@RequestBody @Valid RemoveSprintIssueRequest request
+	) {
+		sprintCommandService.removeIssue(
+			workspaceCode,
+			sprintKey,
+			request
+		);
+		return ApiResponse.okWithNoContent("Issue removed from sprint.");
 	}
 
 	@LoginRequired

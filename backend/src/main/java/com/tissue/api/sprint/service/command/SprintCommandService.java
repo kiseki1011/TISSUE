@@ -12,6 +12,7 @@ import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
@@ -36,7 +37,10 @@ public class SprintCommandService {
 	private final IssueQueryService issueQueryService;
 
 	@Transactional
-	public CreateSprintResponse createSprint(String workspaceCode, CreateSprintRequest request) {
+	public CreateSprintResponse createSprint(
+		String workspaceCode,
+		CreateSprintRequest request
+	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		Sprint sprint = Sprint.builder()
@@ -118,5 +122,27 @@ public class SprintCommandService {
 		sprint.updateStatus(request.newStatus());
 
 		return UpdateSprintStatusResponse.from(sprint);
+	}
+
+	@Transactional
+	public void removeIssue(
+		String workspaceCode,
+		String sprintKey,
+		RemoveSprintIssueRequest request
+	) {
+		Issue issue = issueQueryService.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
+		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+
+		/*
+		 * Todo: 성능 측정
+		 *  - stream을 통해 메모리에 올려서 조회 vs 레포지토리 메서드(N+1 해결) vs 레포지토리 메서드
+		 */
+		// Issue issue = sprint.getSprintIssues().stream()
+		// 	.filter(i -> request.issueKey().equals(i.getIssue().getIssueKey()))
+		// 	.findFirst()
+		// 	.orElseThrow(() -> new IssueNotFoundException(request.issueKey()))
+		// 	.getIssue();
+
+		sprint.removeIssue(issue);
 	}
 }
