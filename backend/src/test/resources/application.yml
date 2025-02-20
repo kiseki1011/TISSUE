@@ -11,17 +11,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    show-sql: true
     properties.hibernate:
       format_sql: true
       show-sql: true
       highlight_sql: true
 
-  logging.level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        orm.jdbc.bind: TRACE
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
 
 api:
   issue:
