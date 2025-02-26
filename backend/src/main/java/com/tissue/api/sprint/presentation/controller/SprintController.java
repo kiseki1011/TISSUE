@@ -34,8 +34,8 @@ import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentRespon
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
+import com.tissue.api.sprint.service.command.SprintReader;
 import com.tissue.api.sprint.service.query.SprintQueryService;
-import com.tissue.api.sprint.service.query.SprintReader;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;

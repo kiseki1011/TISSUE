@@ -21,7 +21,6 @@ import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
-import com.tissue.api.sprint.service.query.SprintReader;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 
