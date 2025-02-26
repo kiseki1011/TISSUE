@@ -8,7 +8,9 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record SprintIssueSearchCondition(
 	List<IssueStatus> statuses,
 	List<IssueType> types,
