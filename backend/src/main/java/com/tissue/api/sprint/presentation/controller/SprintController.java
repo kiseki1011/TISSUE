@@ -1,5 +1,9 @@
 package com.tissue.api.sprint.presentation.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +16,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.common.dto.PageResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
@@ -23,11 +29,13 @@ import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
+import com.tissue.api.sprint.service.query.SprintReader;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -40,6 +48,7 @@ public class SprintController {
 
 	private final SprintCommandService sprintCommandService;
 	private final SprintQueryService sprintQueryService;
+	private final SprintReader sprintReader;
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -56,6 +65,11 @@ public class SprintController {
 		return ApiResponse.ok("Sprint created.", response);
 	}
 
+	/**
+	 * Todo
+	 *  - updateSprintContent과 updateSprintDate 통합하기
+	 *  - 굳이 분리하지 않아도 될듯
+	 */
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{sprintKey}")
@@ -86,20 +100,6 @@ public class SprintController {
 			request
 		);
 		return ApiResponse.ok("Sprint date updated.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@GetMapping("/{sprintKey}")
-	public ApiResponse<SprintDetailResponse> getSprintDetail(
-		@PathVariable String workspaceCode,
-		@PathVariable String sprintKey
-	) {
-		SprintDetailResponse response = sprintQueryService.getSprintDetail(
-			workspaceCode,
-			sprintKey
-		);
-		return ApiResponse.ok("Found sprint.", response);
 	}
 
 	@LoginRequired
@@ -149,5 +149,42 @@ public class SprintController {
 			request
 		);
 		return ApiResponse.ok("Sprint status updated.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@GetMapping("/{sprintKey}")
+	public ApiResponse<SprintDetailResponse> getSprintDetail(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey
+	) {
+		SprintDetailResponse response = sprintReader.getSprintDetail(
+			workspaceCode,
+			sprintKey
+		);
+		return ApiResponse.ok("Found sprint.", response);
+	}
+
+	/*
+	 * Todo
+	 *  - 특정 스프린트에 등록된 이슈들 조회(paging api)
+	 *  - 특정 워크스페이스에 존재하는 스프린트들 조회(paging api)
+	 */
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@GetMapping("/{sprintKey}/issues")
+	public ApiResponse<PageResponse<SprintIssueDetail>> getSprintIssues(
+		@PathVariable String workspaceCode,
+		@PathVariable String sprintKey,
+		SprintIssueSearchCondition searchCondition,
+		@PageableDefault(sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		Page<SprintIssueDetail> page = sprintQueryService.getSprintIssues(
+			workspaceCode,
+			sprintKey,
+			searchCondition,
+			pageable
+		);
+		return ApiResponse.ok("Found issues in sprint.", PageResponse.of(page));
 	}
 }

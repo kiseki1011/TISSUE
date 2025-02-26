@@ -1,12 +1,13 @@
 package com.tissue.api.sprint.service.query;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.sprint.domain.Sprint;
-import com.tissue.api.sprint.domain.repository.SprintRepository;
-import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.domain.repository.SprintQueryRepository;
+import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
+import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,43 +15,27 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SprintQueryService {
 
-	private final SprintRepository sprintRepository;
+	// Todo: SprintQueryRepository를 만들어야 하나?
+	private final SprintQueryRepository sprintQueryRepository;
 
 	@Transactional(readOnly = true)
-	public Sprint findSprint(
-		String sprintKey,
-		String workspaceCode
-	) {
-		return sprintRepository.findBySprintKeyAndWorkspaceCode(sprintKey, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
-					sprintKey, workspaceCode))
-			);
-	}
-
-	@Transactional(readOnly = true)
-	public Sprint findSprintWithIssues(
-		String sprintKey,
-		String workspaceCode
-	) {
-		return sprintRepository.findBySprintKeyAndWorkspaceCodeWithIssues(sprintKey, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
-					sprintKey, workspaceCode))
-			);
-	}
-
-	@Transactional(readOnly = true)
-	public SprintDetailResponse getSprintDetail(
+	public Page<SprintIssueDetail> getSprintIssues(
 		String workspaceCode,
-		String sprintKey
+		String sprintKey,
+		SprintIssueSearchCondition searchCondition,
+		Pageable pageable
 	) {
-		Sprint sprint = sprintRepository.findBySprintKeyAndWorkspaceCodeWithIssues(sprintKey, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
-					sprintKey, workspaceCode))
-			);
+		// Todo
+		//  - existsBy로 바꾸자
+		//  - 굳이 스프린트의 유효성을 검증해야 하나? 어차피 클라이언트에서 제대로 된 sprintKey를 보낸다고 가정하면 안되나?
+		//  - workspaceCode는 어차피 컨트롤러단에서 유효성이 입증됨
+		// sprintRepository.findBySprintKeyAndWorkspaceCode(sprintKey, workspaceCode)
+		// 	.orElseThrow(() -> new ResourceNotFoundException(
+		// 		String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
+		// 			sprintKey, workspaceCode))
+		// 	);
 
-		return SprintDetailResponse.from(sprint);
+		return sprintQueryRepository.findIssuesInSprint(sprintKey, workspaceCode, searchCondition, pageable)
+			.map(SprintIssueDetail::from);
 	}
 }
