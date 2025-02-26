@@ -1,5 +1,7 @@
 package com.tissue.api.sprint.domain.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +13,15 @@ import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 
 public interface SprintQueryRepository extends JpaRepository<Sprint, Long> {
+
+	@Query("SELECT s FROM Sprint s "
+		+ "LEFT JOIN FETCH s.sprintIssues si "
+		+ "LEFT JOIN FETCH si.issue "
+		+ "WHERE s.sprintKey = :sprintKey AND s.workspaceCode = :workspaceCode")
+	Optional<Sprint> findBySprintKeyAndWorkspaceCodeWithIssues(
+		@Param("sprintKey") String sprintKey,
+		@Param("workspaceCode") String workspaceCode
+	);
 
 	@Query("SELECT si.issue FROM Sprint s "
 		+ "JOIN s.sprintIssues si " // 조인을 통해 Sprint에 속함 Issue들을 가져옴

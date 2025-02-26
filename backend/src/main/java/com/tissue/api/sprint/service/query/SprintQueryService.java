@@ -5,8 +5,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintQueryRepository;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
+import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 
 import lombok.RequiredArgsConstructor;
@@ -15,8 +18,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SprintQueryService {
 
-	// Todo: SprintQueryRepository를 만들어야 하나?
 	private final SprintQueryRepository sprintQueryRepository;
+
+	@Transactional(readOnly = true)
+	public SprintDetailResponse getSprintDetail(
+		String workspaceCode,
+		String sprintKey
+	) {
+		Sprint sprint = sprintQueryRepository.findBySprintKeyAndWorkspaceCodeWithIssues(sprintKey, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException(
+				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
+					sprintKey, workspaceCode))
+			);
+
+		return SprintDetailResponse.from(sprint);
+	}
 
 	@Transactional(readOnly = true)
 	public Page<SprintIssueDetail> getSprintIssues(

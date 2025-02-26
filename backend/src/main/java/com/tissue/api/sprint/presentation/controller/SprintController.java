@@ -158,7 +158,7 @@ public class SprintController {
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey
 	) {
-		SprintDetailResponse response = sprintReader.getSprintDetail(
+		SprintDetailResponse response = sprintQueryService.getSprintDetail(
 			workspaceCode,
 			sprintKey
 		);
