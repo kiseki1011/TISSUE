@@ -21,7 +21,7 @@ import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
-import com.tissue.api.sprint.service.query.SprintQueryService;
+import com.tissue.api.sprint.service.query.SprintReader;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SprintCommandService {
 
-	private final SprintQueryService sprintQueryService;
+	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceQueryService workspaceQueryService;
 	private final IssueQueryService issueQueryService;
@@ -61,7 +61,7 @@ public class SprintCommandService {
 		String sprintKey,
 		AddSprintIssuesRequest request
 	) {
-		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		List<Issue> issues = issueQueryService.findIssues(request.issueKeys(), workspaceCode);
 
@@ -78,7 +78,7 @@ public class SprintCommandService {
 		String sprintKey,
 		UpdateSprintContentRequest request
 	) {
-		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
@@ -92,7 +92,7 @@ public class SprintCommandService {
 		String sprintKey,
 		UpdateSprintDateRequest request
 	) {
-		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		/*
 		 * Todo
@@ -117,7 +117,7 @@ public class SprintCommandService {
 		String sprintKey,
 		UpdateSprintStatusRequest request
 	) {
-		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateStatus(request.newStatus());
 
@@ -131,7 +131,7 @@ public class SprintCommandService {
 		RemoveSprintIssueRequest request
 	) {
 		Issue issue = issueQueryService.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
-		Sprint sprint = sprintQueryService.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		/*
 		 * Todo: 성능 측정
