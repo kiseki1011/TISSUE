@@ -10,7 +10,7 @@ import com.tissue.api.sprint.domain.enums.SprintStatus;
 import lombok.Builder;
 
 @Builder
-public record SprintDetailResponse(
+public record SprintDetail(
 	Long id,
 	String sprintKey,
 	String title,
@@ -22,8 +22,8 @@ public record SprintDetailResponse(
 	LocalDateTime createdAt,
 	Long createdBy
 ) {
-	public static SprintDetailResponse from(Sprint sprint) {
-		return SprintDetailResponse.builder()
+	public static SprintDetail from(Sprint sprint) {
+		return SprintDetail.builder()
 			.id(sprint.getId())
 			.sprintKey(sprint.getSprintKey())
 			.title(sprint.getTitle())

@@ -9,7 +9,8 @@ import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintQueryRepository;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
-import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
+import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class SprintQueryService {
 	private final SprintQueryRepository sprintQueryRepository;
 
 	@Transactional(readOnly = true)
-	public SprintDetailResponse getSprintDetail(
+	public SprintDetail getSprintDetail(
 		String workspaceCode,
 		String sprintKey
 	) {
@@ -31,7 +32,7 @@ public class SprintQueryService {
 					sprintKey, workspaceCode))
 			);
 
-		return SprintDetailResponse.from(sprint);
+		return SprintDetail.from(sprint);
 	}
 
 	@Transactional(readOnly = true)
@@ -53,5 +54,15 @@ public class SprintQueryService {
 
 		return sprintQueryRepository.findIssuesInSprint(sprintKey, workspaceCode, searchCondition, pageable)
 			.map(SprintIssueDetail::from);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<SprintDetail> getSprints(
+		String workspaceCode,
+		SprintSearchCondition searchCondition,
+		Pageable pageable
+	) {
+		return sprintQueryRepository.findSprintPageByWorkspaceCode(workspaceCode, searchCondition, pageable)
+			.map(SprintDetail::from);
 	}
 }

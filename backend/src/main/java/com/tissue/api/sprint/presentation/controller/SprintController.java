@@ -20,6 +20,7 @@ import com.tissue.api.common.dto.PageResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
+import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
@@ -28,13 +29,12 @@ import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
-import com.tissue.api.sprint.service.command.SprintReader;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
@@ -48,7 +48,6 @@ public class SprintController {
 
 	private final SprintCommandService sprintCommandService;
 	private final SprintQueryService sprintQueryService;
-	private final SprintReader sprintReader;
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -152,24 +151,35 @@ public class SprintController {
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@GetMapping
+	public ApiResponse<PageResponse<SprintDetail>> getSprints(
+		@PathVariable String workspaceCode,
+		SprintSearchCondition sprintSearchCondition,
+		@PageableDefault(sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
+	) {
+		Page<SprintDetail> page = sprintQueryService.getSprints(
+			workspaceCode,
+			sprintSearchCondition,
+			pageable
+		);
+		return ApiResponse.ok("Found sprints.", PageResponse.of(page));
+	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{sprintKey}")
-	public ApiResponse<SprintDetailResponse> getSprintDetail(
+	public ApiResponse<SprintDetail> getSprintDetail(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey
 	) {
-		SprintDetailResponse response = sprintQueryService.getSprintDetail(
+		SprintDetail response = sprintQueryService.getSprintDetail(
 			workspaceCode,
 			sprintKey
 		);
 		return ApiResponse.ok("Found sprint.", response);
 	}
 
-	/*
-	 * Todo
-	 *  - 특정 스프린트에 등록된 이슈들 조회(paging api)
-	 *  - 특정 워크스페이스에 존재하는 스프린트들 조회(paging api)
-	 */
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{sprintKey}/issues")
