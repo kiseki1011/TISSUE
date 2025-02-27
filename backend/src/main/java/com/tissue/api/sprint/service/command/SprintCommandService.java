@@ -13,13 +13,11 @@ import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -72,34 +70,16 @@ public class SprintCommandService {
 	}
 
 	@Transactional
-	public UpdateSprintContentResponse updateSprintContent(
+	public UpdateSprintResponse updateSprint(
 		String workspaceCode,
 		String sprintKey,
-		UpdateSprintContentRequest request
+		UpdateSprintRequest request
 	) {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
-		return UpdateSprintContentResponse.from(sprint);
-	}
-
-	@Transactional
-	public UpdateSprintDateResponse updateSprintDate(
-		String workspaceCode,
-		String sprintKey,
-		UpdateSprintDateRequest request
-	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
-
-		/*
-		 * Todo
-		 *  - NotNull 검증을 컨트롤러단에서 처리하는데, 굳이 null에 대한 처리는 하지 않아도 되나?
-		 *  - 그런데 또 나중에 API 계약이 변경되는 경우를 생각해서 null에 관한 처리를 하도록 구현하는게 좋을까?
-		 *  - 서비스 재사용 그리고 변경 최소화의 관점에서는 null 처리하는게 좋을 것 같기도 하고...
-		 *  - 그런데 null인 경우는 업데이트하지 않도록 구현해버리면, 의도된 null인지, 문제가 있어서 null이 들어온건지 판단은 어떻게 하지?
-		 */
 		LocalDate startDate = request.startDate() != null ? request.startDate() : sprint.getStartDate();
 		LocalDate endDate = request.endDate() != null ? request.endDate() : sprint.getEndDate();
 
@@ -107,7 +87,7 @@ public class SprintCommandService {
 			sprint.updateDates(startDate, endDate);
 		}
 
-		return UpdateSprintDateResponse.from(sprint);
+		return UpdateSprintResponse.from(sprint);
 	}
 
 	@Transactional
@@ -129,6 +109,7 @@ public class SprintCommandService {
 		String sprintKey,
 		RemoveSprintIssueRequest request
 	) {
+		// Todo: 쿼리 서비스 대신 IssueReader에서 도메인 객체 조회로 변경
 		Issue issue = issueQueryService.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 

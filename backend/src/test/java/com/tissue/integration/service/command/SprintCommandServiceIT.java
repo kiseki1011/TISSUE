@@ -23,13 +23,11 @@ import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -265,13 +263,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.workspace(workspace)
 			.build());
 
-		UpdateSprintContentRequest request = UpdateSprintContentRequest.builder()
+		UpdateSprintRequest request = UpdateSprintRequest.builder()
 			.title("updated title")
 			.goal("updated goal")
 			.build();
 
 		// when
-		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(
+		UpdateSprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -296,12 +294,12 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build());
 
 		// leave out value of goal
-		UpdateSprintContentRequest request = UpdateSprintContentRequest.builder()
+		UpdateSprintRequest request = UpdateSprintRequest.builder()
 			.title("updated title")
 			.build();
 
 		// when
-		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(
+		UpdateSprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -325,13 +323,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.workspace(workspace)
 			.build());
 
-		UpdateSprintDateRequest request = new UpdateSprintDateRequest(
-			LocalDate.now().plusDays(7),
-			LocalDate.now().plusDays(14)
-		);
+		UpdateSprintRequest request = UpdateSprintRequest.builder()
+			.startDate(LocalDate.now().plusDays(7))
+			.endDate(LocalDate.now().plusDays(14))
+			.build();
 
 		// when
-		UpdateSprintDateResponse response = sprintCommandService.updateSprintDate(
+		UpdateSprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -356,13 +354,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build());
 
 		// endDate is 7 days before startDate
-		UpdateSprintDateRequest request = new UpdateSprintDateRequest(
-			LocalDate.now().plusDays(14),
-			LocalDate.now().plusDays(7)
-		);
+		UpdateSprintRequest request = UpdateSprintRequest.builder()
+			.startDate(LocalDate.now().plusDays(14))
+			.endDate(LocalDate.now().plusDays(7))
+			.build();
 
 		// when & then
-		assertThatThrownBy(() -> sprintCommandService.updateSprintDate(
+		assertThatThrownBy(() -> sprintCommandService.updateSprint(
 				workspace.getCode(),
 				sprint.getSprintKey(),
 				request

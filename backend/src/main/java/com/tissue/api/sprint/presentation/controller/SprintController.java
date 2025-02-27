@@ -24,15 +24,13 @@ import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintContentRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintDateRequest;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
 import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintContentResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintDateResponse;
+import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
@@ -72,33 +70,17 @@ public class SprintController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{sprintKey}")
-	public ApiResponse<UpdateSprintContentResponse> updateSprintContent(
+	public ApiResponse<UpdateSprintResponse> updateSprint(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
-		@RequestBody @Valid UpdateSprintContentRequest request
+		@RequestBody @Valid UpdateSprintRequest request
 	) {
-		UpdateSprintContentResponse response = sprintCommandService.updateSprintContent(
+		UpdateSprintResponse response = sprintCommandService.updateSprint(
 			workspaceCode,
 			sprintKey,
 			request
 		);
-		return ApiResponse.ok("Sprint content updated.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping("/{sprintKey}/date")
-	public ApiResponse<UpdateSprintDateResponse> updateSprintDate(
-		@PathVariable String workspaceCode,
-		@PathVariable String sprintKey,
-		@RequestBody @Valid UpdateSprintDateRequest request
-	) {
-		UpdateSprintDateResponse response = sprintCommandService.updateSprintDate(
-			workspaceCode,
-			sprintKey,
-			request
-		);
-		return ApiResponse.ok("Sprint date updated.", response);
+		return ApiResponse.ok("Sprint updated.", response);
 	}
 
 	@LoginRequired
