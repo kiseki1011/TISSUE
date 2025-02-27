@@ -91,10 +91,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/*
-	 * Todo
-	 *  - "SPRINT", "WORKSPACE"가 prefix가 될 수 없도록 검증하는 로직 구현
-	 */
 	@Column(nullable = false, unique = true)
 	private String issueKey;
 
@@ -216,12 +212,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(requesterWorkspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new ForbiddenOperationException(
-				String.format(
-					"Must be the reviewer or be a assignee to remove the reviewer."
-						+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
-					requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
-			);
+			throw new ForbiddenOperationException(String.format(
+				"Must be the reviewer or be a assignee to remove the reviewer."
+					+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
+				requesterWorkspaceMemberId, reviewerWorkspaceMemberId));
 		}
 	}
 
@@ -229,12 +223,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isStatusNotInReview = status != IssueStatus.IN_REVIEW;
 
 		if (isStatusNotInReview) {
-			throw new InvalidOperationException(
-				String.format(
-					"Issue status must be IN_REVIEW to create a review. Current status: %s",
-					status
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Issue status must be IN_REVIEW to create a review. Current status: %s",
+				status));
 		}
 	}
 
@@ -242,12 +233,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return reviewers.stream()
 			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
 			.findFirst()
-			.orElseThrow(() -> new ForbiddenOperationException(
-					String.format(
-						"Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
-						workspaceMember.getId(), workspaceMember.getNickname()
-					)
-				)
+			.orElseThrow(() -> new ForbiddenOperationException(String.format(
+				"Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
+				workspaceMember.getId(), workspaceMember.getNickname()))
 			);
 	}
 
@@ -259,12 +247,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
 		if (issueReviewer.hasReviewForRound(currentReviewRound)) {
-			throw new InvalidOperationException(
-				String.format(
-					"Cannot remove reviewer that already has a review for the current round. Current round: %d",
-					currentReviewRound
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Cannot remove reviewer that already has a review for the current round. Current round: %d",
+				currentReviewRound));
 		}
 	}
 
@@ -273,12 +258,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isStatusNotChangesRequested = status != IssueStatus.CHANGES_REQUESTED;
 
 		if (isStatusNotChangesRequested) {
-			throw new InvalidOperationException(
-				String.format(
-					"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
-					status
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+				status));
 		}
 
 		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
@@ -286,23 +268,16 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.noneMatch(reviewer -> reviewer.hasReviewForRound(currentReviewRound));
 
 		if (hasIncompleteReviews) {
-			throw new InvalidOperationException(
-				String.format(
-					"Reviewers that have not completed their review for this round exist. Current round: %d",
-					currentReviewRound
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Reviewers that have not completed their review for this round exist. Current round: %d",
+				currentReviewRound));
 		}
 	}
 
 	private void validateReviewerLimit() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
 			throw new InvalidOperationException(
-				String.format(
-					"The max number of reviewers for a single issue is %d.",
-					MAX_REVIEWERS
-				)
-			);
+				String.format("The max number of reviewers for a single issue is %d.", MAX_REVIEWERS));
 		}
 	}
 
@@ -311,12 +286,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
 
 		if (isAlreadyReviewer) {
-			throw new InvalidOperationException(
-				String.format(
-					"Workspace member is already a reviewer. workspaceMemberId: %d",
-					workspaceMember.getId()
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Workspace member is already a reviewer. workspaceMemberId: %d",
+				workspaceMember.getId()));
 		}
 	}
 
@@ -324,12 +296,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean typeNotMatch = this.type != type;
 
 		if (typeNotMatch) {
-			throw new InvalidOperationException(
-				String.format(
-					"Issue type does not match the needed type. Issue type: %s, Required type: %s",
-					this.type, type
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Issue type does not match the needed type. Issue type: %s, Required type: %s",
+				this.type, type));
 		}
 	}
 
@@ -361,10 +330,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(workspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new ForbiddenOperationException(
-				String.format("Must be an assignee of this issue. issue key: %s, workspace member id: %d",
-					issueKey, workspaceMemberId)
-			);
+			throw new ForbiddenOperationException(String.format(
+				"Must be an assignee of this issue. issue key: %s, workspace member id: %d",
+				issueKey, workspaceMemberId));
 		}
 	}
 
@@ -384,19 +352,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return assignees.stream()
 			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
 			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException(
-					String.format(
-						"Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
-						assignee.getId(), assignee.getNickname()
-					)
-				)
+			.orElseThrow(() -> new InvalidOperationException(String.format(
+				"Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
+				assignee.getId(), assignee.getNickname()))
 			);
 	}
 
 	private boolean isAssignee(Long workspaceMemberId) {
 		return assignees.stream()
-			.anyMatch(issueAssignee ->
-				issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+			.anyMatch(issueAssignee -> issueAssignee.getAssignee().getId().equals(workspaceMemberId));
 	}
 
 	private boolean isAuthor(Long workspaceMemberId) {
@@ -406,11 +370,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private void validateAssigneeLimit() {
 		if (assignees.size() >= MAX_ASSIGNEES) {
 			throw new InvalidOperationException(
-				String.format(
-					"The maximum number of assignees for a single issue is %d",
-					MAX_ASSIGNEES
-				)
-			);
+				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES));
 		}
 	}
 
@@ -418,12 +378,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceCode().equals(workspaceCode);
 
 		if (hasDifferentWorkspaceCode) {
-			throw new InvalidOperationException(
-				String.format(
-					"Assignee must belong to this workspace. expected: %s , actual: %s",
-					workspaceMember.getWorkspaceCode(), workspaceCode
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Assignee must belong to this workspace. expected: %s , actual: %s",
+				workspaceMember.getWorkspaceCode(), workspaceCode));
 		}
 	}
 
@@ -431,12 +388,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isAlreadyAssigned = isAssignee(assignee.getId());
 
 		if (isAlreadyAssigned) {
-			throw new InvalidOperationException(
-				String.format(
-					"Workspace member is already assigned to this issue. workspaceMemberId: %d, nickname: %s",
-					assignee.getId(), assignee.getNickname()
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Workspace member is already assigned to this issue. workspaceMemberId: %d, nickname: %s",
+				assignee.getId(), assignee.getNickname()));
 		}
 	}
 
@@ -504,7 +458,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	// Todo: 횡단 관심사(cross cutting concern)는 AOP로 구현하는걸 고려하자
 	private void updateTimestamps(IssueStatus newStatus) {
 		if (newStatus == IN_PROGRESS && startedAt == null) {
 			startedAt = LocalDateTime.now();
