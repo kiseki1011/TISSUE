@@ -22,8 +22,11 @@ import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.issue.domain.types.Task;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
-import com.tissue.api.sprint.presentation.dto.response.SprintDetailResponse;
+import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
+import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
+import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -118,13 +121,65 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		SprintDetailResponse response = sprintQueryService.getSprintDetail(workspace.getCode(), sprint.getSprintKey());
+		SprintDetail response = sprintQueryService.getSprintDetail(workspace.getCode(), sprint.getSprintKey());
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
 		assertThat(response.title()).isEqualTo(sprint.getTitle());
 		assertThat(response.goal()).isEqualTo(sprint.getGoal());
 		assertThat(response.issueKeys()).isEmpty();
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("특정 워크스페이스의 스프린트들을 페이징으로 조회할 수 있다(기본 조건 조회)")
+	void getSprints_Page_DefaultCondition() {
+		// given
+		Sprint sprint1 = sprintRepository.save(Sprint.builder()
+			.title("sprint 1")
+			.goal("sprint 1")
+			.startDate(LocalDate.of(2025, 1, 1))
+			.endDate(LocalDate.now().plusDays(1))
+			.workspace(workspace)
+			.build()
+		);
+
+		Sprint sprint2 = sprintRepository.save(Sprint.builder()
+			.title("sprint 2")
+			.goal("sprint 2")
+			.startDate(LocalDate.of(2025, 1, 1))
+			.endDate(LocalDate.now().plusDays(2))
+			.workspace(workspace)
+			.build()
+		);
+
+		Sprint sprint3 = sprintRepository.save(Sprint.builder()
+			.title("sprint 3")
+			.goal("sprint 3")
+			.startDate(LocalDate.of(2025, 1, 1))
+			.endDate(LocalDate.now().plusDays(3))
+			.workspace(workspace)
+			.build()
+		);
+
+		sprintCommandService.updateSprintStatus(
+			workspace.getCode(),
+			sprint1.getSprintKey(),
+			new UpdateSprintStatusRequest(SprintStatus.ACTIVE)
+		);
+
+		Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate").descending());
+		SprintSearchCondition searchCondition = new SprintSearchCondition(); // default condition
+
+		// when
+		Page<SprintDetail> result = sprintQueryService.getSprints(workspace.getCode(), searchCondition, pageable);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getTotalElements()).isEqualTo(3); // total elements of paging result
+		assertThat(result.getContent().size()).isEqualTo(3); // content size of current page, cannot exceed page size
+		assertThat(result.getNumber()).isEqualTo(0); // current page
+		assertThat(result.getTotalPages()).isEqualTo(1);
 	}
 
 	@Test
@@ -145,7 +200,7 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		sprint.addIssue(issue2);
 
 		// when
-		SprintDetailResponse response = sprintQueryService.getSprintDetail(workspace.getCode(), sprint.getSprintKey());
+		SprintDetail response = sprintQueryService.getSprintDetail(workspace.getCode(), sprint.getSprintKey());
 
 		// then
 		assertThat(response.issueKeys()).contains(issue1.getIssueKey(), issue2.getIssueKey());
@@ -154,7 +209,7 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 	@Test
 	@Transactional
 	@DisplayName("스프린트에 등록된 이슈들을 페이징으로 조회할 수 있다(기본 조건 조회)")
-	void getSprintIssues_DefaultCondition() {
+	void getSprintIssues_Page_DefaultCondition() {
 		// given
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
