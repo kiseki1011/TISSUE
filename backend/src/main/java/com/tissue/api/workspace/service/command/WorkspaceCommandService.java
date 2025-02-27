@@ -17,6 +17,7 @@ import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceRespons
 import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class WorkspaceCommandService {
 	private final WorkspaceQueryService workspaceQueryService;
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public UpdateWorkspaceInfoResponse updateWorkspaceInfo(
@@ -68,13 +70,14 @@ public class WorkspaceCommandService {
 	}
 
 	@Transactional
-	public UpdateIssueKeyResponse updateIssueKey(
+	public UpdateIssueKeyResponse updateIssueKeyPrefix(
 		String workspaceCode,
 		UpdateIssueKeyRequest request
 	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
-		workspace.updateKeyPrefix(request.issueKeyPrefix());
+		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		return UpdateIssueKeyResponse.from(workspace);
 	}

@@ -10,6 +10,7 @@ import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class WorkspaceConfig {
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	/**
 	 * RetryCodeGenerationOnExceptionService: DB에서 올라오는 DataIntegrityViolationException을 잡아서 핸들링(워크스페이스 코드 재생성)
@@ -40,7 +42,8 @@ public class WorkspaceConfig {
 			workspaceMemberRepository,
 			workspaceCodeGenerator,
 			randomNicknameGenerator,
-			passwordEncoder
+			passwordEncoder,
+			workspaceValidator
 		);
 	}
 }

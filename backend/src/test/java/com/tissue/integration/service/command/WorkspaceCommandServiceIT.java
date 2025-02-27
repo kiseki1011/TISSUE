@@ -191,10 +191,10 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("UPDATEPREFIX");
 
 		// when
-		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKey(workspace.getCode(), request);
+		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getCode(), request);
 
 		// then
-		assertThat(response.keyPrefix()).isEqualTo("UPDATEPREFIX");
+		assertThat(response.issueKeyPrefix()).isEqualTo("UPDATEPREFIX");
 	}
 
 	@Test

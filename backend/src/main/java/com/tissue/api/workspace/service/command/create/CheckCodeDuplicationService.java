@@ -86,7 +86,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	}
 
 	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspace.updateKeyPrefix(request.keyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
 	private void setUniqueWorkspaceCode(Workspace workspace) {
@@ -103,7 +103,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 			.orElse(null);
 		workspace.updatePassword(encodedPassword);
 	}
-	
+
 	public boolean isWorkspaceCodeUnique(String code) {
 		return !workspaceRepository.existsByCode(code);
 	}

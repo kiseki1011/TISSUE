@@ -12,6 +12,8 @@ import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -62,10 +64,13 @@ public class Workspace extends WorkspaceBaseEntity {
 	private int memberCount = 0;
 
 	@Column(nullable = false)
-	private String keyPrefix;
+	private String issueKeyPrefix;
 
 	@Column(nullable = false)
 	private Integer nextIssueNumber = 1;
+
+	@Column(nullable = false)
+	private Integer nextSprintNumber = 1;
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Position> positions = new ArrayList<>();
@@ -82,27 +87,30 @@ public class Workspace extends WorkspaceBaseEntity {
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Issue> issues = new ArrayList<>();
 
+	@OneToMany(mappedBy = "workspace")
+	private List<Sprint> sprints = new ArrayList<>();
+
 	@Builder
 	public Workspace(
 		String code,
 		String name,
 		String description,
 		String password,
-		String keyPrefix
+		String issueKeyPrefix
 	) {
 		this.code = code;
 		this.name = name;
 		this.description = description;
 		this.password = password;
-		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
+		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
 	}
 
 	public void setCode(String code) {
 		this.code = code;
 	}
 
-	public void updateKeyPrefix(String keyPrefix) {
-		this.keyPrefix = toUpperCaseOrDefault(keyPrefix);
+	public void updateIssueKeyPrefix(String issueKeyPrefix) {
+		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
 	}
 
 	public void updatePassword(String password) {
@@ -129,12 +137,21 @@ public class Workspace extends WorkspaceBaseEntity {
 			.collect(Collectors.toSet());
 	}
 
+	/*
+	 * Todo
+	 *  - Workspace의 책임인가?
+	 *  - 그냥 Issue에서 workspace.getKeyPrefix + workspace.getNextIssueNumber로 처리하면 안되나?
+	 */
 	public String getIssueKey() {
-		return String.format("%s-%d", keyPrefix, nextIssueNumber);
+		return String.format("%s-%d", issueKeyPrefix, nextIssueNumber);
 	}
 
 	public void increaseNextIssueNumber() {
 		this.nextIssueNumber++;
+	}
+
+	public void increaseNextSprintNumber() {
+		this.nextSprintNumber++;
 	}
 
 	public void increaseMemberCount() {
@@ -149,6 +166,12 @@ public class Workspace extends WorkspaceBaseEntity {
 
 	private String toUpperCaseOrDefault(String keyPrefix) {
 		return keyPrefix != null ? keyPrefix.toUpperCase() : DEFAULT_KEY_PREFIX;
+	}
+
+	public boolean hasActiveSprintExcept(Sprint excludedSprint) {
+		return sprints.stream()
+			.filter(sprint -> !sprint.equals(excludedSprint))
+			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
 	private void validateMemberLimit() {

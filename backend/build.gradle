@@ -71,7 +71,8 @@ jacocoTestReport {
                             "**/*Controller*",
                             "**/Team*",
                             "**/Message*",
-                            "**/*Checker*"
+                            "**/*Checker*",
+                            "**/*Condition"
                     ])
                 })
         )
@@ -105,7 +106,8 @@ jacocoTestReport {
                         "**.*Controller*",
                         "**.Team*",
                         "**.Message*",
-                        "**.*Checker*"
+                        "**.*Checker*",
+                        "**.*Condition"
                 ]
             }
         }

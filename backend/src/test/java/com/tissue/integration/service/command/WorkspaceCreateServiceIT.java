@@ -170,7 +170,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Workspace workspace = workspaceRepository.findById(response.id()).get();
 
-		assertThat(workspace.getKeyPrefix()).isEqualTo("ISSUE");
+		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("ISSUE");
 	}
 
 	@Test
@@ -182,7 +182,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
 			.name("test workspace")
 			.description("test workspace")
-			.keyPrefix("TESTPREFIX") // provide prefix as "TESTPREFIX"
+			.issueKeyPrefix("TESTPREFIX") // provide prefix as "TESTPREFIX"
 			.build();
 
 		// when
@@ -191,6 +191,6 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Workspace workspace = workspaceRepository.findById(response.id()).get();
 
-		assertThat(workspace.getKeyPrefix()).isEqualTo("TESTPREFIX");
+		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("TESTPREFIX");
 	}
 }
