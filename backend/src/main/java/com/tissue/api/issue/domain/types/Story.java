@@ -2,14 +2,13 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.workspace.domain.Workspace;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
@@ -23,12 +22,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends Issue {
 
-	@Column(name = "USER_STORY", nullable = false)
-	private String userStory;
-
-	private String acceptanceCriteria;
-
 	private Difficulty difficulty;
+	private String userStory;
+	private String acceptanceCriteria;
 
 	@Builder
 	public Story(
@@ -49,15 +45,26 @@ public class Story extends Issue {
 		this.acceptanceCriteria = acceptanceCriteria;
 
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
-			setParentIssue(parentIssue);
+			updateParentIssue(parentIssue);
 		}
+	}
+
+	public void updateUserStory(String userStory) {
+		this.userStory = userStory;
+	}
+
+	public void updateAcceptanceCriteria(String acceptanceCriteria) {
+		this.acceptanceCriteria = acceptanceCriteria;
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
 	}
 
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
-			throw new ParentMustBeEpicException();
+			throw new InvalidOperationException("STORY type issues can only have an EPIC as their parent issue.");
 		}
 	}
 }

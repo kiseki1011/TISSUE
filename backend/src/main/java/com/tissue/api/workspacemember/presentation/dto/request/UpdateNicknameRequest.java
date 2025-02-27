@@ -1,20 +1,15 @@
 package com.tissue.api.workspacemember.presentation.dto.request;
 
+import com.tissue.api.common.validator.annotation.pattern.NicknamePattern;
+import com.tissue.api.common.validator.annotation.size.NicknameSize;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UpdateNicknameRequest {
+public record UpdateNicknameRequest(
 
-	@NotBlank(message = "Nickname must not be blank.")
-	@Size(min = 2, max = 30, message = "Nickname must be between 2 and 30 characters.")
-	private String nickname;
-
-	public UpdateNicknameRequest(String nickname) {
-		this.nickname = nickname;
-	}
+	@NicknameSize
+	@NicknamePattern
+	@NotBlank(message = "{valid.notblank}")
+	String nickname
+) {
 }

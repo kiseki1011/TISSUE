@@ -1,15 +1,11 @@
 package com.tissue.api.position.service.command;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.ColorType;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.domain.repository.PositionRepository;
-import com.tissue.api.position.exception.PositionNotFoundException;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
@@ -17,10 +13,10 @@ import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
 import com.tissue.api.position.presentation.dto.response.DeletePositionResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
-	private final WorkspaceRepository workspaceRepository;
+	private final PositionQueryService positionQueryService;
+	private final WorkspaceQueryService workspaceQueryService;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
@@ -39,35 +36,19 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
-		Workspace workspace = findWorkspaceByCode(workspaceCode);
+		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
-		positionValidator.validateDuplicatePositionName(
-			workspaceCode,
-			request.name()
-		);
+		Position position = Position.builder()
+			.name(request.name())
+			.description(request.description())
+			.color(randomColor)
+			.workspace(workspace)
+			.build();
+		;
 
-		// 현재 워크스페이스에서 사용 중인 색상들을 Set으로 추출
-		Set<ColorType> usedColors = workspace.getPositions().stream()
-			.map(Position::getColor)
-			.collect(Collectors.toSet());
-
-		// 사용되지 않은 색상 중에서 랜덤으로 선택
-		ColorType randomColor = ColorType.getRandomUnusedColor(usedColors);
-
-		Position savedPosition = createPosition(
-			request,
-			workspace,
-			randomColor
-		);
-
-		log.debug("Position {} created with color: {} ({})",
-			request.name(),
-			randomColor.getDisplayName(),
-			randomColor.getHexCode()
-		);
-
-		return CreatePositionResponse.from(savedPosition);
+		return CreatePositionResponse.from(positionRepository.save(position));
 	}
 
 	@Transactional
@@ -76,16 +57,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-
-		positionValidator.validateDuplicatePositionName(
-			workspaceCode,
-			request.name()
-		);
-
-		Position position = findPositionByIdAndWorkspaceCode(
-			workspaceCode,
-			positionId
-		);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -99,11 +71,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-
-		Position position = findPositionByIdAndWorkspaceCode(
-			workspaceCode,
-			positionId
-		);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -115,31 +83,12 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-
-		Position position = findPositionByIdAndWorkspaceCode(
-			workspaceCode,
-			positionId
-		);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 
 		positionRepository.delete(position);
 
 		return DeletePositionResponse.from(position);
-	}
-
-	private Position createPosition(CreatePositionRequest request, Workspace workspace, ColorType color) {
-		Position position = workspace.createPosition(request.name(), request.description(), color);
-		return positionRepository.save(position);
-	}
-
-	private Workspace findWorkspaceByCode(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
-	}
-
-	private Position findPositionByIdAndWorkspaceCode(String workspaceCode, Long positionId) {
-		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
-			.orElseThrow(PositionNotFoundException::new);
 	}
 }

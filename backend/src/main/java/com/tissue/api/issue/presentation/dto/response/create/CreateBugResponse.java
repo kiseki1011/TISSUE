@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,31 +18,35 @@ import lombok.Builder;
 @Builder
 public record CreateBugResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
-	Long reporterId, // Todo: workspaceMemberDetail 사용 고려, SessionAuditorAware에서 workspaceMemberId 반환하는 형태로 변경
+
+	Long createrId,
+	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
+
 	String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions,
 	Difficulty difficulty,
 	IssueStatus status,
-	Long parentIssueId
-) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.BUG;
-	}
+	String parentIssueKey
+
+) implements CreateIssueResponse {
 
 	public static CreateBugResponse from(Bug bug) {
 		return CreateBugResponse.builder()
 			.issueId(bug.getId())
+			.issueKey(bug.getIssueKey())
 			.workspaceCode(bug.getWorkspaceCode())
-			.reporterId(bug.getCreatedBy())
+			.createrId(bug.getCreatedByWorkspaceMember())
+			.createdAt(bug.getCreatedDate())
 			.title(bug.getTitle())
 			.content(bug.getContent())
 			.summary(bug.getSummary())
@@ -52,9 +57,14 @@ public record CreateBugResponse(
 			.affectedVersions(bug.getAffectedVersions())
 			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
-			.parentIssueId(Optional.ofNullable(bug.getParentIssue())
-				.map(Issue::getId)
+			.parentIssueKey(Optional.ofNullable(bug.getParentIssue())
+				.map(Issue::getIssueKey)
 				.orElse(null))
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.BUG;
 	}
 }

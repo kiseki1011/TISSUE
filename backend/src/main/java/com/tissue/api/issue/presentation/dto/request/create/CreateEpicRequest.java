@@ -2,24 +2,48 @@ package com.tissue.api.issue.presentation.dto.request.create;
 
 import java.time.LocalDate;
 
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.common.validator.annotation.size.text.ContentText;
+import com.tissue.api.common.validator.annotation.size.text.LongText;
+import com.tissue.api.common.validator.annotation.size.text.ShortText;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
+/**
+ * Todo
+ *  - add difficulty
+ */
+@Builder
 public record CreateEpicRequest(
-	@NotBlank String title,
-	@NotBlank String content,
+
+	@ShortText
+	@NotBlank(message = "{valid.notblank}")
+	String title,
+
+	@ContentText
+	@NotBlank(message = "{valid.notblank}")
+	String content,
+
+	@StandardText
 	String summary,
+
 	IssuePriority priority,
 	LocalDate dueDate,
-	Long parentIssueId,
-	@NotBlank String businessGoal,
+	String parentIssueKey,
+
+	@LongText
+	@NotBlank(message = "{valid.notblank}")
+	String businessGoal,
+
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
+
 ) implements CreateIssueRequest {
 
 	@Override

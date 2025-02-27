@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -12,10 +14,7 @@ import com.tissue.api.issue.domain.Issue;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
-	@Query("SELECT i FROM Issue i JOIN FETCH i.workspace WHERE i.id = :id")
-	Optional<Issue> findByIdWithWorkspace(@Param("id") Long id);
-
-	Optional<Issue> findByIdAndWorkspaceCode(Long id, String workspaceCode);
+	Optional<Issue> findByIssueKeyAndWorkspaceCode(String issueKey, String workspaceCode);
 
 	/**
 	 * 워크스페이스 코드와 이슈 ID로 이슈와 그 하위 이슈들을 함께 조회합니다.
@@ -29,6 +28,20 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 		@Param("workspaceCode") String workspaceCode,
 		@Param("issueId") Long issueId
 	);
+
+	@Query("SELECT i FROM Issue i "
+		+ "JOIN FETCH i.sprintIssues si "
+		+ "JOIN FETCH si.sprint s "
+		+ "WHERE s.sprintKey = :sprintKey "
+		+ "AND s.workspaceCode = :workspaceCode "
+		+ "AND i.issueKey = :issueKey")
+	Optional<Issue> findIssueInSprint(
+		@Param("sprintKey") String sprintKey,
+		@Param("issueKey") String issueKey,
+		@Param("workspaceCode") String workspaceCode
+	);
+
+	List<Issue> findByIssueKeyInAndWorkspaceCode(Collection<String> issueKeys, String workspaceCode);
 
 	/**
 	 * 워크스페이스의 이슈들을 페이징하여 조회합니다.

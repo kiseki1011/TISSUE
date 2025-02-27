@@ -2,12 +2,12 @@ package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDate;
 
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -21,11 +21,6 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("TASK")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task extends Issue {
-
-	/**
-	 * Todo
-	 *  - TechStack이라는 엔티티를 만들어서, 기술 스택을 관리
-	 */
 
 	private Difficulty difficulty;
 
@@ -44,15 +39,18 @@ public class Task extends Issue {
 		this.difficulty = difficulty;
 
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
-			setParentIssue(parentIssue);
+			updateParentIssue(parentIssue);
 		}
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
 	}
 
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
-			throw new ParentMustBeEpicException();
+			throw new InvalidOperationException("TASK type issues can only have an EPIC as their parent issue.");
 		}
 	}
 

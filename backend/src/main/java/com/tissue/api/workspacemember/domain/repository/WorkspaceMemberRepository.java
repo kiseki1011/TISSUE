@@ -1,5 +1,6 @@
 package com.tissue.api.workspacemember.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -13,17 +14,19 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
 
-	Page<WorkspaceMember> findByMemberId(Long id, Pageable pageable);
+	Page<WorkspaceMember> findByMemberId(Long memberId, Pageable pageable);
 
-	Optional<WorkspaceMember> findByMemberLoginIdAndWorkspaceCode(String loginId, String workspaceCode);
-
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long memberId, String workspaceCode);
 
 	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
+
+	Optional<WorkspaceMember> findByIdAndWorkspaceCode(Long workspaceMemberId, String workspaceCode);
 
 	boolean existsByMemberIdAndRole(Long id, WorkspaceRole role);
 
 	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+
+	List<WorkspaceMember> findAllByIdIn(List<Long> idList);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

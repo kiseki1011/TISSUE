@@ -6,14 +6,13 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspacemember.exception.NoValidMembersToInviteException;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 
@@ -23,17 +22,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceMemberInviteService {
 
-	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceQueryService workspaceQueryService;
 	private final MemberRepository memberRepository;
 	private final InvitationRepository invitationRepository;
 
 	@Transactional
 	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request) {
-		Workspace workspace = workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(WorkspaceNotFoundException::new);
+
+		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		// 1. 초대 가능한 멤버 필터링
-		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.getMemberIdentifiers());
+		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.memberIdentifiers());
 
 		// 2. 초대장 생성 및 초대된 멤버 정보 수집
 		List<InviteMembersResponse.InvitedMember> invitedMembers = membersToInvite.stream()
@@ -44,7 +43,7 @@ public class WorkspaceMemberInviteService {
 			.toList();
 
 		if (invitedMembers.isEmpty()) {
-			throw new NoValidMembersToInviteException();
+			throw new InvalidOperationException("No members were available for invitation.");
 		}
 
 		return InviteMembersResponse.of(workspaceCode, invitedMembers);

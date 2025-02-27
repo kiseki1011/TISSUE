@@ -1,19 +1,23 @@
 package com.tissue.api.issue.exception;
 
-import org.springframework.http.HttpStatus;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 
-import com.tissue.api.common.exception.domain.IssueException;
+public class IssueNotFoundException extends ResourceNotFoundException {
 
-public class IssueNotFoundException extends IssueException {
+	private static final String ISSUE_KEY_MESSAGE = "Issue(%s) not found.";
+	private static final String ISSUE_KEY_CODE_MESSAGE = "Issue(%s) not found in workspace(%s).";
+	private static final String ISSUE_KEY_SPRINT_KEY_CODE_MESSAGE = "Issue(%s) not found in sprint(%s)"
+		+ " in workspace(%s).";
 
-	private static final String MESSAGE = "Issue was not found.";
-	private static final HttpStatus HTTP_STATUS = HttpStatus.NOT_FOUND;
-
-	public IssueNotFoundException() {
-		super(MESSAGE, HTTP_STATUS);
+	public IssueNotFoundException(String issueKey) {
+		super(String.format(ISSUE_KEY_MESSAGE, issueKey));
 	}
 
-	public IssueNotFoundException(String message) {
-		super(message, HTTP_STATUS);
+	public IssueNotFoundException(String issueKey, String workspaceCode) {
+		super(String.format(ISSUE_KEY_CODE_MESSAGE, issueKey, workspaceCode));
+	}
+
+	public IssueNotFoundException(String issueKey, String sprintKey, String workspaceCode) {
+		super(String.format(ISSUE_KEY_SPRINT_KEY_CODE_MESSAGE, issueKey, sprintKey, workspaceCode));
 	}
 }

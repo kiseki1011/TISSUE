@@ -7,7 +7,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 public record UpdateRoleResponse(
 	Long workspaceMemberId,
-	WorkspaceRole role,
+	WorkspaceRole updatedRole,
 	LocalDateTime updatedAt
 ) {
 	public static UpdateRoleResponse from(WorkspaceMember workspaceMember) {

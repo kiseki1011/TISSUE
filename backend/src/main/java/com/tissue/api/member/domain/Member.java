@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseDateEntity;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.exception.InvalidWorkspaceCountException;
-import com.tissue.api.workspacemember.exception.WorkspaceCreationLimitExceededException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,14 +31,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
-	/**
-	 * Todo
-	 *  - 상수는 원래 @ConfigurationProperties를 통해 관리하려고 했음
-	 *  - 그러나 엔티티의 상수를 위해 스프링 의존성을 사용하고 싶지는 않음
-	 *  - 그래서 결국 엔티티에 정의해서 사용
-	 *  - 더 좋은 설계가 있는지 한번 고민 필요
-	 */
-	private static final int MAX_MY_WORKSPACE_COUNT = 50;
+	private static final int MAX_MY_WORKSPACE_COUNT = 10;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,17 +46,14 @@ public class Member extends BaseDateEntity {
 	private String password;
 
 	@Embedded
-	@Column(nullable = false)
 	private Name name;
 
 	@Lob
-	private String introduction;
+	private String biography;
 
-	@Column(nullable = false)
 	private LocalDate birthDate;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private JobType jobType;
 
 	@Column(nullable = false)
@@ -81,7 +70,7 @@ public class Member extends BaseDateEntity {
 		String loginId,
 		String email,
 		String password,
-		String introduction,
+		String biography,
 		JobType jobType,
 		Name name,
 		LocalDate birthDate
@@ -89,7 +78,7 @@ public class Member extends BaseDateEntity {
 		this.loginId = loginId;
 		this.email = email;
 		this.password = password;
-		this.introduction = introduction;
+		this.biography = biography;
 		this.jobType = jobType;
 		this.name = name;
 		this.birthDate = birthDate;
@@ -117,8 +106,8 @@ public class Member extends BaseDateEntity {
 		this.name = name;
 	}
 
-	public void updateIntroduction(String introduction) {
-		this.introduction = introduction;
+	public void updateBiography(String biography) {
+		this.biography = biography;
 	}
 
 	public void updateBirthDate(LocalDate birthDate) {
@@ -131,13 +120,14 @@ public class Member extends BaseDateEntity {
 
 	private void validateWorkspaceLimit() {
 		if (this.myWorkspaceCount >= MAX_MY_WORKSPACE_COUNT) {
-			throw new WorkspaceCreationLimitExceededException();
+			throw new InvalidOperationException(
+				String.format("Max number of workspaces you can own is %d.", MAX_MY_WORKSPACE_COUNT));
 		}
 	}
 
 	private void validatePositiveMyWorkspaceCount() {
 		if (this.myWorkspaceCount <= 0) {
-			throw new InvalidWorkspaceCountException();
+			throw new InvalidOperationException("Number of workspaces you can own cannot go below 0.");
 		}
 	}
 }

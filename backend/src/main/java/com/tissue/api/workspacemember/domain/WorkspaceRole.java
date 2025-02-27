@@ -9,8 +9,16 @@ public enum WorkspaceRole {
 	OWNER(5),
 	ADMIN(4),
 	MANAGER(3),
-	COLLABORATOR(2),
+	MEMBER(2),
 	VIEWER(1);
 
 	private final int level;
+
+	public boolean isLowerThan(WorkspaceRole role) {
+		return level < role.getLevel();
+	}
+
+	public boolean isHigherThan(WorkspaceRole role) {
+		return level > role.getLevel();
+	}
 }

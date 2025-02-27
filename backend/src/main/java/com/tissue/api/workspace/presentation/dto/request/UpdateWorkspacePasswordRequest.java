@@ -1,25 +1,16 @@
 package com.tissue.api.workspace.presentation.dto.request;
 
-import jakarta.validation.constraints.Pattern;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.tissue.api.common.validator.annotation.pattern.SimplePasswordPattern;
+import com.tissue.api.common.validator.annotation.size.password.SimplePasswordSize;
+import com.tissue.api.common.validator.annotation.size.text.ShortText;
 
-@Getter
-@NoArgsConstructor
-public class UpdateWorkspacePasswordRequest {
+public record UpdateWorkspacePasswordRequest(
 
-	private String originalPassword;
+	@ShortText
+	String originalPassword,
 
-	@Pattern(
-		regexp = "^(?!.*[가-힣])(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$).{8,30}",
-		message = "The password must be alphanumeric and must be between 4 and 30 characters"
-	)
-	private String updatePassword;
-
-	@Builder
-	public UpdateWorkspacePasswordRequest(String originalPassword, String updatePassword) {
-		this.originalPassword = originalPassword;
-		this.updatePassword = updatePassword;
-	}
+	@SimplePasswordSize
+	@SimplePasswordPattern
+	String newPassword
+) {
 }

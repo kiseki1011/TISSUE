@@ -4,18 +4,16 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.exception.CannotPauseCriticalBugException;
-import com.tissue.api.issue.exception.ParentMustBeEpicException;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
 import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -34,20 +32,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bug extends Issue {
 
-	/**
-	 * Todo
-	 *  - 버그 발생 환경에 대한 태그 Enviroment를 만들기
-	 *    - ex. chrome-browser, python3.11, java8-jetbrains...
-	 */
-
 	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
 
+	private Difficulty difficulty;
+
 	@Lob
-	@Column(nullable = false)
 	private String reproducingSteps;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private BugSeverity severity;
 
 	@ElementCollection
@@ -57,8 +49,6 @@ public class Bug extends Issue {
 	)
 	private Set<String> affectedVersions = new HashSet<>();
 
-	private Difficulty difficulty;
-
 	@Builder
 	public Bug(
 		Workspace workspace,
@@ -67,15 +57,16 @@ public class Bug extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
+		Difficulty difficulty,
 		Issue parentIssue,
 		String reproducingSteps,
 		BugSeverity severity,
-		Set<String> affectedVersions,
-		Difficulty difficulty
+		Set<String> affectedVersions
 	) {
 		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate);
+		this.difficulty = difficulty;
 		this.reproducingSteps = reproducingSteps;
-		this.severity = severity != null ? severity : BugSeverity.MINOR;
+		this.severity = severity;
 
 		updatePriorityByBugSeverity();
 
@@ -83,31 +74,44 @@ public class Bug extends Issue {
 			this.affectedVersions.addAll(affectedVersions);
 		}
 
-		this.difficulty = difficulty;
-
 		if (parentIssue != null) {
-			validateParentIssue(parentIssue);
-			setParentIssue(parentIssue);
+			updateParentIssue(parentIssue);
 		}
+	}
+
+	public void updateDifficulty(Difficulty difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	public void updateReproducingSteps(String reproducingSteps) {
+		this.reproducingSteps = reproducingSteps;
+	}
+
+	public void updateSeverity(BugSeverity severity) {
+		this.severity = severity;
+	}
+
+	public void updateAffectedVersions(Set<String> affectedVersions) {
+		this.affectedVersions = affectedVersions;
 	}
 
 	@Override
 	protected void validateParentIssue(Issue parentIssue) {
 		if (!(parentIssue instanceof Epic)) {
-			throw new ParentMustBeEpicException();
+			throw new InvalidOperationException("BUG type issues can only have an EPIC as their parent issue.");
 		}
 	}
 
 	@Override
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		super.validateStatusTransition(newStatus);
-		if (needsImmediateAttention() && newStatus == IssueStatus.PAUSED) {
-			throw new CannotPauseCriticalBugException();
-		}
-	}
 
-	public boolean needsImmediateAttention() {
-		return severity.getLevel() >= CRITICAL_BUG_LEVEL;
+		boolean needsImmediateAttention = severity.getLevel() >= CRITICAL_BUG_LEVEL;
+
+		if (needsImmediateAttention && newStatus == IssueStatus.PAUSED) {
+			throw new InvalidOperationException(
+				"BUG severity must be lower than CRITICAL to change status to PAUSED.");
+		}
 	}
 
 	public void updatePriorityByBugSeverity() {

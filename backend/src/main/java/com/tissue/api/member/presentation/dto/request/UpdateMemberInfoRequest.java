@@ -2,36 +2,34 @@ package com.tissue.api.member.presentation.dto.request;
 
 import java.time.LocalDate;
 
+import com.tissue.api.common.validator.annotation.pattern.NamePattern;
+import com.tissue.api.common.validator.annotation.size.NameSize;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.member.domain.JobType;
 
 import jakarta.validation.constraints.Past;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UpdateMemberInfoRequest {
+@Builder
+public record UpdateMemberInfoRequest(
+	@NameSize
+	@NamePattern
+	String firstName,
 
-	/**
-	 * Todo
-	 *  - size 검증 필요
-	 */
-	@Past(message = "Birth date must be in the past")
-	private LocalDate birthDate;
-	private JobType jobType;
-	private String introduction;
+	@NameSize
+	@NamePattern
+	String lastName,
 
-	@Builder
-	public UpdateMemberInfoRequest(
-		LocalDate birthDate,
-		JobType jobType,
-		String introduction
-	) {
-		this.birthDate = birthDate;
-		this.jobType = jobType;
-		this.introduction = introduction;
+	@Past(message = "{valid.birthdate}")
+	LocalDate birthDate,
+
+	JobType jobType,
+
+	@StandardText
+	String biography
+) {
+	public boolean hasName() {
+		return isNotBlank(firstName) && isNotBlank(lastName);
 	}
 
 	public boolean hasBirthDate() {
@@ -42,8 +40,8 @@ public class UpdateMemberInfoRequest {
 		return jobType != null;
 	}
 
-	public boolean hasIntroduction() {
-		return isNotBlank(introduction);
+	public boolean hasBiography() {
+		return isNotBlank(biography);
 	}
 
 	private boolean isNotBlank(String value) {

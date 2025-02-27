@@ -1,6 +1,7 @@
 package com.tissue.api.security.session;
 
 public final class SessionAttributes {
+
 	/**
 	 * Login related
 	 */
@@ -9,16 +10,23 @@ public final class SessionAttributes {
 	public static final String LOGIN_MEMBER_EMAIL = "email";
 
 	/**
-	 * Update authorization related
+	 * Member Update authorization related
 	 */
-	public static final String UPDATE_AUTH = "UPDATE_AUTH";
-	public static final String UPDATE_AUTH_EXPIRES_AT = "UPDATE_AUTH_EXPIRES_AT";
+	public static final String MEMBER_UPDATE_AUTH = "MEMBER_UPDATE_AUTH";
+	public static final String MEMBER_UPDATE_AUTH_EXPIRES_AT = "MEMBER_UPDATE_AUTH_EXPIRES_AT";
 
 	/**
-	 * Session Audit related
+	 * Member Delete authorization related
 	 */
-	public static final String CURRENT_WORKSPACE_CODE = "CURRENT_WORKSPACE_CODE";
-	public static final String CURRENT_WORKSPACE_MEMBER_ID = "CURRENT_WORKSPACE_MEMBER_ID";
+	public static final String MEMBER_DELETE_AUTH = "MEMBER_DELETE_AUTH";
+	public static final String MEMBER_DELETE_AUTH_EXPIRES_AT = "MEMBER_DELETE_AUTH_EXPIRES_AT";
+
+	/**
+	 * Permission related
+	 */
+	public static final String PERMISSION_TYPE = "PERMISSION_TYPE";
+	public static final String PERMISSION_EXISTS = "PERMISSION_EXISTS";
+	public static final String PERMISSION_EXPIRES_AT = "PERMISSION_EXPIRES_AT";
 
 	private SessionAttributes() {
 	}

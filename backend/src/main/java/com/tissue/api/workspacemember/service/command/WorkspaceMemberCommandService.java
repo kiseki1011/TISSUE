@@ -5,20 +5,22 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.position.domain.repository.PositionRepository;
-import com.tissue.api.position.exception.PositionNotFoundException;
+import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.MemberNotInWorkspaceException;
-import com.tissue.api.workspacemember.exception.DuplicateNicknameException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -29,78 +31,108 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkspaceMemberCommandService {
 
+	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final PositionQueryService positionQueryService;
+	private final TeamQueryService teamQueryService;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
-	private final PositionRepository positionRepository;
 
 	@Transactional
 	public UpdateNicknameResponse updateNickname(
-		String code,
-		Long memberId,
+		Long workspaceMemberId,
 		UpdateNicknameRequest request
 	) {
 		try {
-			WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
+			WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
-			workspaceMember.updateNickname(request.getNickname());
+			workspaceMember.updateNickname(request.nickname());
 			workspaceMemberRepository.saveAndFlush(workspaceMember);
 
 			return UpdateNicknameResponse.from(workspaceMember);
 
 		} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-			log.error("Exception: ", e);
-			throw new DuplicateNicknameException(e);
+			log.error("Duplicate nickname: ", e);
+
+			throw new DuplicateResourceException(
+				String.format("Nickname already exists for this workspace. nickname: %s", request.nickname()), e);
 		}
 	}
 
 	@Transactional
 	public UpdateRoleResponse updateWorkspaceMemberRole(
-		String code,
-		Long targetId,
-		Long requesterId,
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId,
 		UpdateRoleRequest request
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
-		target.updateRole(request.getUpdateWorkspaceRole());
+		target.updateRole(request.updateWorkspaceRole());
 
 		return UpdateRoleResponse.from(target);
 	}
 
 	@Transactional
 	public AssignPositionResponse assignPosition(
-		String code,
+		String workspaceCode,
 		Long positionId,
-		Long memberId
+		Long workspaceMemberId
 	) {
-		Position position = findPosition(positionId);
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
 
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
-		workspaceMember.changePosition(position);
+		workspaceMember.addPosition(position);
 
 		return AssignPositionResponse.from(workspaceMember);
 	}
 
 	@Transactional
 	public void removePosition(
-		String code,
-		Long memberId
+		String workspaceCode,
+		Long positionId,
+		Long workspaceMemberId
 	) {
-		WorkspaceMember workspaceMember = findWorkspaceMember(code, memberId);
-		workspaceMember.removePosition();
+		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+
+		workspaceMember.removePosition(position);
+	}
+
+	@Transactional
+	public AssignTeamResponse assignTeam(
+		String workspaceCode,
+		Long teamId,
+		Long workspaceMemberId
+	) {
+		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+
+		workspaceMember.addTeam(team);
+
+		return AssignTeamResponse.from(workspaceMember);
+	}
+
+	@Transactional
+	public void removeTeam(
+		String workspaceCode,
+		Long teamId,
+		Long workspaceMemberId
+	) {
+		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+
+		workspaceMember.removeTeam(team);
 	}
 
 	@Transactional
 	public TransferOwnershipResponse transferWorkspaceOwnership(
-		String code,
-		Long targetId,
-		Long requesterId
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
 
 		requester.updateRoleFromOwnerToAdmin();
 		target.updateRoleToOwner();
@@ -110,30 +142,17 @@ public class WorkspaceMemberCommandService {
 
 	@Transactional
 	public RemoveWorkspaceMemberResponse removeWorkspaceMember(
-		String code,
-		Long targetId,
-		Long requesterId
+		Long targetWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = findWorkspaceMember(code, requesterId);
-		WorkspaceMember target = findWorkspaceMember(code, targetId);
+		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRemoveMember(requester, target);
 
 		target.remove();
 		workspaceMemberRepository.delete(target);
 
-		return RemoveWorkspaceMemberResponse.from(targetId, target);
-	}
-
-	private WorkspaceMember findWorkspaceMember(String code, Long memberId) {
-		return workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(memberId, code)
-			.orElseThrow(MemberNotInWorkspaceException::new);
-	}
-
-	private Position findPosition(Long positionId) {
-		return positionRepository
-			.findById(positionId)
-			.orElseThrow(PositionNotFoundException::new);
+		return RemoveWorkspaceMemberResponse.from(target);
 	}
 }

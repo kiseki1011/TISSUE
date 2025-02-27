@@ -17,6 +17,7 @@ public abstract class BaseEntity extends BaseDateEntity {
 	@CreatedBy
 	@Column(updatable = false)
 	private Long createdBy;
+
 	@LastModifiedBy
 	private Long lastModifiedBy;
 }

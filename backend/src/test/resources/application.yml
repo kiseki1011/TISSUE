@@ -11,14 +11,20 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    show-sql: true
     properties.hibernate:
       format_sql: true
       show-sql: true
       highlight_sql: true
+      default_batch_fetch_size: 100
 
-  logging.level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        orm.jdbc.bind: TRACE
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
+
+api:
+  issue:
+    circular-dependency-cache:
+      size: 1000
+      duration: 1

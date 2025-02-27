@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.workspace.domain.Workspace;
 
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
@@ -33,7 +33,7 @@ public interface CreateIssueRequest {
 
 	LocalDate dueDate();
 
-	Long parentIssueId();
+	String parentIssueKey();
 
 	IssueType getType();
 

@@ -7,18 +7,19 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
+import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
+import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.validator.WorkspaceValidator;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,54 +33,64 @@ import lombok.extern.slf4j.Slf4j;
 public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
+	private final MemberQueryService memberQueryService;
 	private final WorkspaceRepository workspaceRepository;
-	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
+	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceValidator workspaceValidator;
 
 	@Override
 	@Transactional
-	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request, Long memberId) {
-
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+	public CreateWorkspaceResponse createWorkspace(
+		CreateWorkspaceRequest request,
+		Long memberId
+	) {
+		Member member = memberQueryService.findMember(memberId);
 
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			try {
-				setWorkspaceCode(request);
-				setEncodedPasswordIfPresent(request);
+				Workspace workspace = CreateWorkspaceRequest.to(request);
+				setWorkspaceCode(workspace);
+				setEncodedPasswordIfPresent(request, workspace);
+				setKeyPrefix(request, workspace);
 
-				/*
-				 * 테스트 용이성을 위해서 saveWithNewTransaction의 사용을 고려하자
-				 */
-				Workspace workspace = workspaceRepository.saveAndFlush(CreateWorkspaceRequest.to(request));
-				addOwnerMemberToWorkspace(member, workspace);
+				Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
-				return CreateWorkspaceResponse.from(workspace);
+				WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+					member,
+					savedWorkspace,
+					randomNicknameGenerator.generateNickname()
+				);
+				workspaceMemberRepository.save(workspaceMember);
+
+				return CreateWorkspaceResponse.from(savedWorkspace);
 			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
 				log.error("Catched exception for workspace code collision.");
 				log.error("Exception: ", e);
 				log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
 			}
 		}
-		throw new WorkspaceCodeCollisionHandleException();
+		throw new InternalServerException(
+			String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)
+		);
 	}
 
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
-		workspaceMemberRepository.save(workspaceMember);
+	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
+		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
-	private void setWorkspaceCode(CreateWorkspaceRequest request) {
+	private void setWorkspaceCode(Workspace workspace) {
 		String generatedCode = workspaceCodeGenerator.generateWorkspaceCode();
-		request.setCode(generatedCode);
+		workspace.setCode(generatedCode);
 	}
 
-	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request) {
-		String encodedPassword = Optional.ofNullable(request.getPassword())
+	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request, Workspace workspace) {
+		String encodedPassword = Optional.ofNullable(request.password())
 			.map(passwordEncoder::encode)
 			.orElse(null);
-		request.setPassword(encodedPassword);
+		workspace.updatePassword(encodedPassword);
 	}
 }

@@ -5,19 +5,18 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.workspace.exception.WorkspaceCodeCollisionHandleException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class CheckCodeDuplicationService implements WorkspaceCreateService {
-
 	private static final int MAX_RETRIES = 5;
 
+	private final MemberQueryService memberQueryService;
 	private final WorkspaceRepository workspaceRepository;
-	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
+	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
 
 	/**
 	 * 로그인 정보를 사용해서 멤버의 존재 유무를 검증한다
@@ -53,26 +50,34 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	 */
 	@Override
 	@Transactional
-	public CreateWorkspaceResponse createWorkspace(CreateWorkspaceRequest request,
-		Long memberId) {
+	public CreateWorkspaceResponse createWorkspace(
+		CreateWorkspaceRequest request,
+		Long memberId
+	) {
+		Member member = memberQueryService.findMember(memberId);
 
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(MemberNotFoundException::new);
+		Workspace workspace = CreateWorkspaceRequest.to(request);
+		setUniqueWorkspaceCode(workspace);
+		setEncodedPasswordIfPresent(request, workspace);
+		setKeyPrefix(request, workspace);
 
-		setUniqueWorkspaceCode(request);
-		setEncodedPasswordIfPresent(request);
+		Workspace savedWorkspace = workspaceRepository.save(workspace);
 
-		Workspace workspace = workspaceRepository.save(CreateWorkspaceRequest.to(request));
-		addOwnerMemberToWorkspace(member, workspace);
+		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+			member,
+			savedWorkspace,
+			randomNicknameGenerator.generateNickname()
+		);
+		workspaceMemberRepository.save(workspaceMember);
 
-		return CreateWorkspaceResponse.from(workspace);
+		return CreateWorkspaceResponse.from(savedWorkspace);
 	}
 
 	private Optional<String> generateUniqueWorkspaceCode() {
 		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 			String code = workspaceCodeGenerator.generateWorkspaceCode();
 
-			if (workspaceValidator.validateWorkspaceCodeIsUnique(code)) {
+			if (isWorkspaceCodeUnique(code)) {
 				return Optional.of(code);
 			}
 			log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
@@ -80,22 +85,26 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		return Optional.empty();
 	}
 
-	private void setUniqueWorkspaceCode(CreateWorkspaceRequest createWorkspaceRequest) {
-		String code = generateUniqueWorkspaceCode()
-			.orElseThrow(WorkspaceCodeCollisionHandleException::new);
-		createWorkspaceRequest.setCode(code);
+	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
-	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request) {
-		String encodedPassword = Optional.ofNullable(request.getPassword())
+	private void setUniqueWorkspaceCode(Workspace workspace) {
+		String code = generateUniqueWorkspaceCode()
+			.orElseThrow(() -> new InternalServerException(
+				String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)));
+
+		workspace.setCode(code);
+	}
+
+	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request, Workspace workspace) {
+		String encodedPassword = Optional.ofNullable(request.password())
 			.map(passwordEncoder::encode)
 			.orElse(null);
-		request.setPassword(encodedPassword);
+		workspace.updatePassword(encodedPassword);
 	}
 
-	private void addOwnerMemberToWorkspace(Member member, Workspace workspace) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(member, workspace);
-
-		workspaceMemberRepository.save(workspaceMember);
+	public boolean isWorkspaceCodeUnique(String code) {
+		return !workspaceRepository.existsByCode(code);
 	}
 }

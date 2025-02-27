@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.tissue.api.issue.domain.Issue;
@@ -14,36 +15,44 @@ import lombok.Builder;
 @Builder
 public record CreateSubTaskResponse(
 	Long issueId,
+	String issueKey,
 	String workspaceCode,
-	Long reporterId,
+
+	Long createrId,
+	LocalDateTime createdAt,
+
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDate dueDate,
 	Difficulty difficulty,
-	Long parentIssueId
-) implements CreateIssueResponse {
 
-	@Override
-	public IssueType getType() {
-		return IssueType.SUB_TASK;
-	}
+	String parentIssueKey
+
+) implements CreateIssueResponse {
 
 	public static CreateSubTaskResponse from(SubTask subTask) {
 		return CreateSubTaskResponse.builder()
 			.issueId(subTask.getId())
+			.issueKey(subTask.getIssueKey())
 			.workspaceCode(subTask.getWorkspaceCode())
-			.reporterId(subTask.getCreatedBy())
+			.createrId(subTask.getCreatedByWorkspaceMember())
+			.createdAt(subTask.getCreatedDate())
 			.title(subTask.getTitle())
 			.content(subTask.getContent())
 			.summary(subTask.getSummary())
 			.priority(subTask.getPriority())
 			.dueDate(subTask.getDueDate())
 			.difficulty(subTask.getDifficulty())
-			.parentIssueId(Optional.ofNullable(subTask.getParentIssue())
-				.map(Issue::getId)
+			.parentIssueKey(Optional.ofNullable(subTask.getParentIssue())
+				.map(Issue::getIssueKey)
 				.orElse(null))
 			.build();
+	}
+
+	@Override
+	public IssueType getType() {
+		return IssueType.SUB_TASK;
 	}
 }

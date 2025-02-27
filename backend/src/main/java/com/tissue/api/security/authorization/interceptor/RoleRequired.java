@@ -10,5 +10,5 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RoleRequired {
-	WorkspaceRole[] roles();
+	WorkspaceRole role();
 }

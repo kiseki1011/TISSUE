@@ -19,17 +19,29 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    show-sql: true
     properties.hibernate:
       format_sql: true
       show-sql: true
       highlight_sql: true
+      default_batch_fetch_size: 100
 
-  logging.level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        orm.jdbc.bind: TRACE
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
+
+  messages:
+    basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
+    encoding: UTF-8    # 인코딩 설정
+    fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
+    cache-duration: 0  # 캐시 저장 안함
+
+api:
+  issue:
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
 
 ---
 # Development
@@ -43,6 +55,15 @@ spring:
     username: root
     password: rootpassword
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  messages:
+    cache-duration: 0
+
+api:
+  issue:
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
 
 ---
 # Production
@@ -64,8 +85,17 @@ spring:
       hibernate:
         format_sql: false
 
+  messages:
+    cache-duration: -1 # 캐시 영구 저장
+
 logging.level:
   org.hibernate.SQL: off
   org.hibernate.type.descriptor.sql.BasicBinder: off
   org.hibernate.orm.jdbc.bind: off
   org.hibernate.stat: off
+
+api:
+  issue:
+    circular-dependency-cache:
+      size: 1000
+      duration: 1

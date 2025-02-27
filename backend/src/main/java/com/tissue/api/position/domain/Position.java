@@ -3,11 +3,11 @@ package com.tissue.api.position.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.ColorType;
+import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,8 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,14 +26,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(
-		name = "UK_WORKSPACE_POSITION_NAME",
-		columnNames = {"workspace_code", "name"}
-	)
-})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Position extends BaseEntity {
+public class Position extends WorkspaceContextBaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "POSITION_ID")
@@ -44,7 +36,6 @@ public class Position extends BaseEntity {
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false)
 	private String description;
 
 	@Enumerated(EnumType.STRING)
@@ -58,8 +49,8 @@ public class Position extends BaseEntity {
 	@Column(name = "WORKSPACE_CODE", nullable = false)
 	private String workspaceCode;
 
-	@OneToMany(mappedBy = "position")
-	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
 	@Builder
 	public Position(
@@ -69,7 +60,7 @@ public class Position extends BaseEntity {
 		ColorType color
 	) {
 		this.name = name;
-		this.description = description;
+		this.description = description != null ? description : "";
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		this.color = color;

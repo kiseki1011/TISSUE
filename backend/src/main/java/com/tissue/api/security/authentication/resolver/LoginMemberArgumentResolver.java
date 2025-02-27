@@ -7,7 +7,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.security.authentication.exception.UserNotLoggedInException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
+
 	private final SessionManager sessionManager;
 
 	/**
@@ -42,21 +43,22 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	 * @return LoginMemberDto
 	 */
 	@Override
-	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-		NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-
+	public Object resolveArgument(
+		MethodParameter parameter,
+		ModelAndViewContainer mavContainer,
+		NativeWebRequest webRequest,
+		WebDataBinderFactory binderFactory
+	) {
 		HttpSession session = sessionManager.getSession(webRequest);
-		return sessionManager.getLoginMemberId(session)
-			.orElseThrow(UserNotLoggedInException::new);
+		return sessionManager.getOptionalLoginMemberId(session)
+			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
 	}
 
 	private boolean hasResolveLoginMemberAnnotation(MethodParameter parameter) {
-
 		return parameter.hasParameterAnnotation(ResolveLoginMember.class);
 	}
 
 	private boolean isLongType(MethodParameter parameter) {
-
 		return parameter.getParameterType().equals(Long.class);
 	}
 }
