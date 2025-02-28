@@ -1,4 +1,4 @@
-package com.tissue.api.issue.service.query;
+package com.tissue.api.issue.service.command;
 
 import java.util.Collection;
 import java.util.List;

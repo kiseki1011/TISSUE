@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueReader;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;

@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.service.query.IssueReader;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;

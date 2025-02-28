@@ -10,7 +10,7 @@ import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueReader;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 

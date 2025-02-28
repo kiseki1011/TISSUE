@@ -18,7 +18,6 @@ import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
-import com.tissue.api.issue.service.query.IssueReader;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;

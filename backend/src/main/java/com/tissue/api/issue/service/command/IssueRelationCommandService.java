@@ -9,7 +9,6 @@ import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
-import com.tissue.api.issue.service.query.IssueReader;
 import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
