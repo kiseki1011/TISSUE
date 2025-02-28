@@ -41,11 +41,6 @@ public class IssueRelationCommandService {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		/*
-		 * Todo
-		 *  -서비스 계층에서 순환 참조 검사를 하는 것이 좋을까?
-		 *  -IssueRelation 엔티티의 createRelation에서 검사하는 것이 좋을까?
-		 */
 		if (request.relationType() == IssueRelationType.BLOCKS) {
 			circularDependencyChecker.validateNoCircularDependency(sourceIssue, targetIssue);
 		}
