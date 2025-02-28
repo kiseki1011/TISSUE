@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.query.IssueReader;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
@@ -31,7 +31,7 @@ public class SprintCommandService {
 	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceQueryService workspaceQueryService;
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 
 	@Transactional
 	public CreateSprintResponse createSprint(
@@ -60,7 +60,7 @@ public class SprintCommandService {
 	) {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
-		List<Issue> issues = issueQueryService.findIssues(request.issueKeys(), workspaceCode);
+		List<Issue> issues = issueReader.findIssues(request.issueKeys(), workspaceCode);
 
 		for (Issue issue : issues) {
 			sprint.addIssue(issue);
@@ -110,7 +110,7 @@ public class SprintCommandService {
 		RemoveSprintIssueRequest request
 	) {
 		// Todo: 쿼리 서비스 대신 IssueReader에서 도메인 객체 조회로 변경
-		Issue issue = issueQueryService.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
+		Issue issue = issueReader.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		/*
