@@ -45,34 +45,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Todo 1
- *  - workspaceCode + issueKey 복합 인덱스를 위한 필드 고려?
- *  - 모든 이슈의 조회를 workspaceCode + issueKey를 사용 중
- * <br>
  * Todo 2
  *  - dueDate가 null인 경우의 처리가 필요
- * 	  - 예시: null이면 1주일 후의 날짜를 dueDate로 설정(생성자에서)
- *  - parentIssue 추가하는 경우 해당 parentIssue에는 현재의 이슈가 childIssue로 추가
- *    - 만약 Issue를 처음으로 생성하는 경우라면, 해당 Issue의 id는 어떻게 처리되더라?
- *    - IDENTITY의 경우 DB에서 조회가 필요했던 것 같은데... 한번 찾아보자
- *  - 리뷰어 신청을 해서 리뷰 상태 중 하나라도 PENDING이라면 이슈 status는 IN_REVIEW
- * <br>
+ *  - dueDate를 강제할까?
  * Todo 3
  *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
  *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
  *  Workspace에 Optimistic locking을 적용한다
- * <br>
  * Todo 4
  *  - 상태 업데이트는 도메인 이벤트(Domain Event) 발행으로 구현하는 것을 고려
  *  - 상태 변경과 관련된 부가 작업들(알림 발송, 감사 로그 기록 등)을 이벤트 핸들러에서 처리할 수 있어 확장성이 좋아짐
- * <br>
  * Todo 5
  *  - 상태 패턴(State, State Machine Pattern)의 사용 고려
  *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
- * <br>
  * Todo 6
  *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
- * <br>
  * Todo 7
  *  - difficulty를 Issue로 이동
  */
@@ -212,10 +199,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(requesterWorkspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new ForbiddenOperationException(String.format(
-				"Must be the reviewer or be a assignee to remove the reviewer."
-					+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
-				requesterWorkspaceMemberId, reviewerWorkspaceMemberId));
+			throw new ForbiddenOperationException(
+				String.format("Must be the reviewer or be a assignee to remove the reviewer."
+						+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
+					requesterWorkspaceMemberId, reviewerWorkspaceMemberId));
 		}
 	}
 
@@ -223,9 +210,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isStatusNotInReview = status != IssueStatus.IN_REVIEW;
 
 		if (isStatusNotInReview) {
-			throw new InvalidOperationException(String.format(
-				"Issue status must be IN_REVIEW to create a review. Current status: %s",
-				status));
+			throw new InvalidOperationException(
+				String.format("Issue status must be IN_REVIEW to create a review. Current status: %s",
+					status));
 		}
 	}
 
@@ -233,9 +220,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return reviewers.stream()
 			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
 			.findFirst()
-			.orElseThrow(() -> new ForbiddenOperationException(String.format(
-				"Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
-				workspaceMember.getId(), workspaceMember.getNickname()))
+			.orElseThrow(() -> new ForbiddenOperationException(
+				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
+					workspaceMember.getId(), workspaceMember.getNickname()))
 			);
 	}
 
@@ -247,9 +234,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateHasReviewForCurrentRound(IssueReviewer issueReviewer) {
 		if (issueReviewer.hasReviewForRound(currentReviewRound)) {
-			throw new InvalidOperationException(String.format(
-				"Cannot remove reviewer that already has a review for the current round. Current round: %d",
-				currentReviewRound));
+			throw new InvalidOperationException(
+				String.format(
+					"Cannot remove reviewer that already has a review for the current round. Current round: %d",
+					currentReviewRound));
 		}
 	}
 
@@ -258,9 +246,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isStatusNotChangesRequested = status != IssueStatus.CHANGES_REQUESTED;
 
 		if (isStatusNotChangesRequested) {
-			throw new InvalidOperationException(String.format(
-				"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
-				status));
+			throw new InvalidOperationException(
+				String.format(
+					"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+					status));
 		}
 
 		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
@@ -268,9 +257,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.noneMatch(reviewer -> reviewer.hasReviewForRound(currentReviewRound));
 
 		if (hasIncompleteReviews) {
-			throw new InvalidOperationException(String.format(
-				"Reviewers that have not completed their review for this round exist. Current round: %d",
-				currentReviewRound));
+			throw new InvalidOperationException(
+				String.format("Reviewers that have not completed their review for this round exist. Current round: %d",
+					currentReviewRound));
 		}
 	}
 
@@ -286,9 +275,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
 
 		if (isAlreadyReviewer) {
-			throw new InvalidOperationException(String.format(
-				"Workspace member is already a reviewer. workspaceMemberId: %d",
-				workspaceMember.getId()));
+			throw new InvalidOperationException(
+				String.format("Workspace member is already a reviewer. workspaceMemberId: %d",
+					workspaceMember.getId()));
 		}
 	}
 
@@ -296,18 +285,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean typeNotMatch = this.type != type;
 
 		if (typeNotMatch) {
-			throw new InvalidOperationException(String.format(
-				"Issue type does not match the needed type. Issue type: %s, Required type: %s",
-				this.type, type));
+			throw new InvalidOperationException(
+				String.format("Issue type does not match the needed type. Issue type: %s, Required type: %s",
+					this.type, type));
 		}
-	}
-
-	public boolean isBlockedBy(Issue issue) {
-		return incomingRelations.stream()
-			.anyMatch(relation ->
-				relation.getSourceIssue().equals(issue)
-					&& relation.getRelationType() == IssueRelationType.BLOCKS
-			);
 	}
 
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
@@ -330,9 +311,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		boolean isNotAssignee = !isAssignee(workspaceMemberId);
 
 		if (isNotAssignee) {
-			throw new ForbiddenOperationException(String.format(
-				"Must be an assignee of this issue. issue key: %s, workspace member id: %d",
-				issueKey, workspaceMemberId));
+			throw new ForbiddenOperationException(
+				String.format("Must be an assignee of this issue. issue key: %s, workspace member id: %d",
+					issueKey, workspaceMemberId));
 		}
 	}
 
@@ -352,9 +333,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return assignees.stream()
 			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
 			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException(String.format(
-				"Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
-				assignee.getId(), assignee.getNickname()))
+			.orElseThrow(() -> new InvalidOperationException(
+				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
+					assignee.getId(), assignee.getNickname()))
 			);
 	}
 
@@ -413,6 +394,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	public void updateStatus(IssueStatus newStatus) {
 		validateStatusTransition(newStatus);
 		this.status = newStatus;
+
 		updateTimestamps(newStatus);
 	}
 
@@ -511,6 +493,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		// 	return;
 		// }
 
+		// Todo: review는 전부 APPROVED 인 상태에서, 리뷰어를 해제하면?
 		if (reviewers.isEmpty()) {
 			throw new InvalidOperationException("Review is required to complete this issue.");
 		}
@@ -523,9 +506,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private boolean isAllReviewsNotApproved() {
 		return !reviewers.stream()
-			.allMatch(reviewer ->
-				reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED
-			);
+			.allMatch(reviewer -> reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED);
 	}
 
 	private void validateBlockingIssuesAreDone() {
@@ -541,11 +522,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 				.collect(Collectors.joining(", "));
 
 			throw new InvalidOperationException(
-				String.format(
-					"Cannot complete this issue. Blocking issues must be completed first: %s",
-					blockingIssueKeys
-				)
-			);
+				String.format("Cannot complete this issue. Blocking issues must be completed first: %s",
+					blockingIssueKeys));
 		}
 	}
 
