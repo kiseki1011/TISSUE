@@ -7,7 +7,6 @@ import java.util.Set;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -34,8 +33,6 @@ public class Bug extends Issue {
 
 	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
 
-	private Difficulty difficulty;
-
 	@Lob
 	private String reproducingSteps;
 
@@ -57,14 +54,12 @@ public class Bug extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
-		Difficulty difficulty,
 		Issue parentIssue,
 		String reproducingSteps,
 		BugSeverity severity,
 		Set<String> affectedVersions
 	) {
 		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate);
-		this.difficulty = difficulty;
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity;
 
@@ -77,10 +72,6 @@ public class Bug extends Issue {
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
-	}
-
-	public void updateDifficulty(Difficulty difficulty) {
-		this.difficulty = difficulty;
 	}
 
 	public void updateReproducingSteps(String reproducingSteps) {

@@ -44,7 +44,6 @@ public record CreateTaskResponse(
 			.summary(task.getSummary())
 			.priority(task.getPriority())
 			.dueDate(task.getDueDate())
-			.difficulty(task.getDifficulty())
 			.parentIssueKey(Optional.ofNullable(task.getParentIssue())
 				.map(Issue::getIssueKey)
 				.orElse(null))

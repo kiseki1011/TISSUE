@@ -51,7 +51,6 @@ public record UpdateBugResponse(
 			.reproducingSteps(bug.getReproducingSteps())
 			.severity(bug.getSeverity())
 			.affectedVersions(bug.getAffectedVersions())
-			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
 			.build();
 	}

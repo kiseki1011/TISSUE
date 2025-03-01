@@ -40,7 +40,6 @@ public record UpdateTaskResponse(
 			.summary(task.getSummary())
 			.priority(task.getPriority())
 			.dueDate(task.getDueDate())
-			.difficulty(task.getDifficulty())
 			.build();
 	}
 

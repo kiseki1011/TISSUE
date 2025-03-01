@@ -50,7 +50,6 @@ public record CreateSubTaskRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueDate(dueDate)
-			.difficulty(difficulty)
 			.parentIssue(parentIssue) // 서비스 계층의 parentIssue 찾는 로직 변경
 			.build();
 	}

@@ -43,8 +43,6 @@ public record CreateEpicResponse(
 			.priority(epic.getPriority())
 			.dueDate(epic.getDueDate())
 			.businessGoal(epic.getBusinessGoal())
-			.targetReleaseDate(epic.getTargetReleaseDate())
-			.hardDeadLine(epic.getHardDeadLine())
 			.build();
 	}
 

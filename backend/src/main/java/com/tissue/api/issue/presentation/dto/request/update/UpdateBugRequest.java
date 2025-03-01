@@ -57,7 +57,6 @@ public record UpdateBugRequest(
 		bug.updateSummary(summary);
 		bug.updatePriority(priority);
 		bug.updateDueDate(dueDate);
-		bug.updateDifficulty(difficulty);
 		bug.updateReproducingSteps(reproducingSteps);
 		bug.updateSeverity(severity);
 		bug.updateAffectedVersions(affectedVersions);

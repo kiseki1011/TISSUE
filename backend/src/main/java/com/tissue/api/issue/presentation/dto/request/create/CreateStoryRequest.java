@@ -58,7 +58,6 @@ public record CreateStoryRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueDate(dueDate)
-			.difficulty(difficulty)
 			.userStory(userStory)
 			.acceptanceCriteria(acceptanceCriteria)
 			.parentIssue(parentIssue)

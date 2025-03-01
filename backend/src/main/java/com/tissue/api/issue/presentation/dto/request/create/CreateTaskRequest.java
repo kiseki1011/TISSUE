@@ -50,7 +50,6 @@ public record CreateTaskRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueDate(dueDate)
-			.difficulty(difficulty)
 			.parentIssue(parentIssue)
 			.build();
 	}

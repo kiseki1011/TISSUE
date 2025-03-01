@@ -55,7 +55,6 @@ public record CreateBugResponse(
 			.reproducingSteps(bug.getReproducingSteps())
 			.severity(bug.getSeverity())
 			.affectedVersions(bug.getAffectedVersions())
-			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
 			.parentIssueKey(Optional.ofNullable(bug.getParentIssue())
 				.map(Issue::getIssueKey)

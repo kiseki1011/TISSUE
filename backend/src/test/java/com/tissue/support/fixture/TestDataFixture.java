@@ -19,7 +19,6 @@ import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.repository.IssueRepository;
@@ -77,7 +76,7 @@ public class TestDataFixture {
 	 *
 	 * @param numberOfMembers The number of members to be added to the workspace
 	 * @param workspacePassword The password for the workspace
-	 * @param keyPrefix The prefix for generating issue keys
+	 * @param issueKeyPrefix The prefix for generating issue keys
 	 * @return The created Workspace
 	 */
 	public Workspace createWorkspaceWithMembers(
@@ -115,7 +114,7 @@ public class TestDataFixture {
 	 *
 	 * @param name The name of the workspace
 	 * @param password The password of the workspace (null is allowed, pass null if not exist, encrypt if exist)
-	 * @param keyPrefix The prefix for generating issue keys
+	 * @param issueKeyPrefix The prefix for generating issue keys
 	 * @return The created Workspace
 	 */
 	public Workspace createWorkspace(
@@ -218,7 +217,6 @@ public class TestDataFixture {
 			.title(title)
 			.content("story content")
 			.priority(priority)
-			.difficulty(Difficulty.NORMAL)
 			.dueDate(dueDate)
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
@@ -238,7 +236,6 @@ public class TestDataFixture {
 			.title(title)
 			.content("bug content")
 			.priority(priority)
-			.difficulty(Difficulty.NORMAL)
 			.dueDate(dueDate)
 			.reproducingSteps("bug reproduce steps")
 			.severity(BugSeverity.MAJOR)
@@ -258,7 +255,6 @@ public class TestDataFixture {
 			.title(title)
 			.content("task content")
 			.priority(priority)
-			.difficulty(Difficulty.NORMAL)
 			.dueDate(dueDate)
 			.build();
 
@@ -276,7 +272,6 @@ public class TestDataFixture {
 			.title(title)
 			.content("sub task content")
 			.priority(priority)
-			.difficulty(Difficulty.NORMAL)
 			.dueDate(dueDate)
 			.build();
 

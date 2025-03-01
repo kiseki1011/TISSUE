@@ -48,6 +48,5 @@ public record UpdateSubTaskRequest(
 		subTask.updateSummary(summary);
 		subTask.updatePriority(priority);
 		subTask.updateDueDate(dueDate);
-		subTask.updateDifficulty(difficulty);
 	}
 }

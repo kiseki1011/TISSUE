@@ -61,8 +61,6 @@ public record CreateEpicRequest(
 			.priority(priority)
 			.dueDate(dueDate)
 			.businessGoal(businessGoal)
-			.targetReleaseDate(targetReleaseDate)
-			.hardDeadLine(hardDeadLine)
 			.build();
 	}
 }

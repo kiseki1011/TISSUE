@@ -59,7 +59,6 @@ public record CreateBugRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueDate(dueDate)
-			.difficulty(difficulty)
 			.parentIssue(parentIssue)
 			.reproducingSteps(reproducingSteps)
 			.severity(severity)

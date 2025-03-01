@@ -43,7 +43,6 @@ public record UpdateStoryResponse(
 			.summary(story.getSummary())
 			.priority(story.getPriority())
 			.dueDate(story.getDueDate())
-			.difficulty(story.getDifficulty())
 			.userStory(story.getUserStory())
 			.acceptanceCriteria(story.getAcceptanceCriteria())
 			.build();

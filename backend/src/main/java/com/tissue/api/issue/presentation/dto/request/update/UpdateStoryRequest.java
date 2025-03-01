@@ -30,7 +30,7 @@ public record UpdateStoryRequest(
 	String summary,
 
 	IssuePriority priority,
-	
+
 	LocalDate dueDate,
 
 	Difficulty difficulty,
@@ -58,7 +58,6 @@ public record UpdateStoryRequest(
 		story.updateSummary(summary);
 		story.updatePriority(priority);
 		story.updateDueDate(dueDate);
-		story.updateDifficulty(difficulty);
 		story.updateUserStory(userStory);
 		story.updateAcceptanceCriteria(acceptanceCriteria);
 	}

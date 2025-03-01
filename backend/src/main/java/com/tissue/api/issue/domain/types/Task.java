@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
@@ -22,8 +21,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task extends Issue {
 
-	private Difficulty difficulty;
-
 	@Builder
 	public Task(
 		Workspace workspace,
@@ -32,19 +29,13 @@ public class Task extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
-		Issue parentIssue,
-		Difficulty difficulty
+		Issue parentIssue
 	) {
 		super(workspace, IssueType.TASK, title, content, summary, priority, dueDate);
-		this.difficulty = difficulty;
 
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
-	}
-
-	public void updateDifficulty(Difficulty difficulty) {
-		this.difficulty = difficulty;
 	}
 
 	@Override

@@ -22,8 +22,6 @@ import lombok.NoArgsConstructor;
 public class Epic extends Issue {
 
 	private String businessGoal;
-	private LocalDate targetReleaseDate;
-	private LocalDate hardDeadLine;
 
 	@Builder
 	public Epic(
@@ -33,26 +31,14 @@ public class Epic extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDate dueDate,
-		String businessGoal,
-		LocalDate targetReleaseDate,
-		LocalDate hardDeadLine
+		String businessGoal
 	) {
 		super(workspace, IssueType.EPIC, title, content, summary, priority, dueDate);
 		this.businessGoal = businessGoal;
-		this.targetReleaseDate = targetReleaseDate;
-		this.hardDeadLine = hardDeadLine;
 	}
 
 	public void updateBusinessGoal(String businessGoal) {
 		this.businessGoal = businessGoal;
-	}
-
-	public void updateTargetReleaseDate(LocalDate targetReleaseDate) {
-		this.targetReleaseDate = targetReleaseDate;
-	}
-
-	public void updateHardDeadLine(LocalDate hardDeadLine) {
-		this.hardDeadLine = hardDeadLine;
 	}
 
 	@Override

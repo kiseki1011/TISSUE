@@ -49,7 +49,6 @@ public record CreateStoryResponse(
 			.dueDate(story.getDueDate())
 			.userStory(story.getUserStory())
 			.acceptanceCriteria(story.getAcceptanceCriteria())
-			.difficulty(story.getDifficulty())
 			.parentIssueKey(Optional.ofNullable(story.getParentIssue())
 				.map(Issue::getIssueKey)
 				.orElse(null))

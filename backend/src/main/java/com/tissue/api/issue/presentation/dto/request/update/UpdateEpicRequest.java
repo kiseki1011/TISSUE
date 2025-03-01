@@ -54,7 +54,5 @@ public record UpdateEpicRequest(
 		epic.updatePriority(priority);
 		epic.updateDueDate(dueDate);
 		epic.updateBusinessGoal(businessGoal);
-		epic.updateTargetReleaseDate(targetReleaseDate);
-		epic.updateHardDeadLine(hardDeadLine);
 	}
 }
