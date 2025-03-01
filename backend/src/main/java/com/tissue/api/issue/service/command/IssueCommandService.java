@@ -35,6 +35,10 @@ public class IssueCommandService {
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
 
+	/**
+	 * Todo
+	 *  - 이슈 생성에서 부모 이슈 설정하지 않고, assignParent를 통해서만 부모 이슈를 설정?
+	 */
 	@Transactional
 	public CreateIssueResponse createIssue(
 		String workspaceCode,
