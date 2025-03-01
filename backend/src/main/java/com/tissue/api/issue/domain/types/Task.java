@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.types;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
@@ -28,10 +28,10 @@ public class Task extends Issue {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
+		LocalDateTime dueAt,
 		Issue parentIssue
 	) {
-		super(workspace, IssueType.TASK, title, content, summary, priority, dueDate);
+		super(workspace, IssueType.TASK, title, content, summary, priority, dueAt);
 
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);

@@ -1,12 +1,11 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.ShortText;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Task;
@@ -29,8 +28,7 @@ public record UpdateTaskRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty
+	LocalDateTime dueAt
 
 ) implements UpdateIssueRequest {
 
@@ -47,6 +45,6 @@ public record UpdateTaskRequest(
 		task.updateContent(content);
 		task.updateSummary(summary);
 		task.updatePriority(priority);
-		task.updateDueDate(dueDate);
+		task.updateDueAt(dueAt);
 	}
 }

@@ -2,7 +2,7 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
@@ -88,8 +87,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("test issue")
 			.content("test content")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.build();
 
 		// when
@@ -122,8 +120,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("child story")
 			.content("child story")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.parentIssueKey(parentIssue.getIssueKey())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
@@ -158,8 +155,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("child story")
 			.content("child story")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.parentIssueKey(parentIssue.getIssueKey())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
@@ -186,8 +182,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("child subtask")
 			.content("child subtask")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
@@ -212,8 +207,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("child task")
 			.content("child task")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
@@ -231,8 +225,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("task issue")
 			.content("task issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.build();
 
 		// when
@@ -263,8 +256,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("second issue (TASK type)")
 			.content("second issue (TASK type)")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now())
 			.build();
 
 		// when
@@ -300,8 +292,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("updated issue")
 			.content("updated issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.dueAt(LocalDateTime.now())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -337,8 +328,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("updated issue")
 			.content("updated issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.dueAt(LocalDateTime.now())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();

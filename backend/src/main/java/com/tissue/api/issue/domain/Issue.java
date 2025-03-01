@@ -2,7 +2,6 @@ package com.tissue.api.issue.domain;
 
 import static com.tissue.api.issue.domain.enums.IssueStatus.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +59,6 @@ import lombok.NoArgsConstructor;
  *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
  * Todo 6
  *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
- * Todo 7
- *  - difficulty를 Issue로 이동
  */
 @Entity
 @Getter
@@ -110,11 +107,12 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
+	// Todo
+	//  - embeddeble 사용 고려?
 	private LocalDateTime startedAt;
-	private LocalDateTime finishedAt;
+	private LocalDateTime resolvedAt;
 	private LocalDateTime reviewRequestedAt;
-
-	private LocalDate dueDate;
+	private LocalDateTime dueAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
@@ -148,7 +146,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
@@ -161,7 +159,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.summary = summary;
 		this.status = IssueStatus.TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
-		this.dueDate = dueDate;
+		this.dueAt = dueAt;
 	}
 
 	public void requestReview() {
@@ -387,8 +385,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.summary = summary;
 	}
 
-	public void updateDueDate(LocalDate dueDate) {
-		this.dueDate = dueDate;
+	public void updateDueAt(LocalDateTime dueAt) {
+		this.dueAt = dueAt;
 	}
 
 	public void updateStatus(IssueStatus newStatus) {
@@ -450,7 +448,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			return;
 		}
 		if (newStatus == IssueStatus.DONE) {
-			finishedAt = LocalDateTime.now();
+			resolvedAt = LocalDateTime.now();
 		}
 	}
 

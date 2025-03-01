@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.LongText;
@@ -34,15 +34,12 @@ public record CreateEpicRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
+	LocalDateTime dueAt,
 	String parentIssueKey,
 
 	@LongText
 	@NotBlank(message = "{valid.notblank}")
-	String businessGoal,
-
-	LocalDate targetReleaseDate,
-	LocalDate hardDeadLine
+	String businessGoal
 
 ) implements CreateIssueRequest {
 
@@ -59,7 +56,7 @@ public record CreateEpicRequest(
 			.content(content)
 			.summary(summary)
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.businessGoal(businessGoal)
 			.build();
 	}

@@ -11,19 +11,17 @@ import lombok.Builder;
 
 @Builder
 public record UpdateEpicResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-
 	Long updaterId,
 	LocalDateTime updatedAt,
-
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDate dueDate,
-
+	LocalDateTime dueAt,
 	String businessGoal,
 	LocalDate targetReleaseDate,
 	LocalDate hardDeadLine
@@ -41,7 +39,7 @@ public record UpdateEpicResponse(
 			.content(epic.getContent())
 			.summary(epic.getSummary())
 			.priority(epic.getPriority())
-			.dueDate(epic.getDueDate())
+			.dueAt(epic.getDueAt())
 			.businessGoal(epic.getBusinessGoal())
 			.build();
 	}

@@ -1,13 +1,12 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.LongText;
 import com.tissue.api.common.validator.annotation.size.text.ShortText;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Story;
@@ -31,8 +30,7 @@ public record CreateStoryRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
+	LocalDateTime dueAt,
 	String parentIssueKey,
 
 	@LongText
@@ -57,7 +55,7 @@ public record CreateStoryRequest(
 			.content(content)
 			.summary(summary)
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.userStory(userStory)
 			.acceptanceCriteria(acceptanceCriteria)
 			.parentIssue(parentIssue)

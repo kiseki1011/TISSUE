@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.types;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,13 +53,13 @@ public class Bug extends Issue {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
+		LocalDateTime dueAt,
 		Issue parentIssue,
 		String reproducingSteps,
 		BugSeverity severity,
 		Set<String> affectedVersions
 	) {
-		super(workspace, IssueType.BUG, title, content, summary, priority, dueDate);
+		super(workspace, IssueType.BUG, title, content, summary, priority, dueAt);
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity;
 

@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
@@ -8,7 +8,6 @@ import com.tissue.api.common.validator.annotation.size.text.ShortText;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
@@ -31,8 +30,7 @@ public record UpdateBugRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
+	LocalDateTime dueAt,
 
 	@ContentText
 	@NotBlank(message = "{valid.notblank}")
@@ -56,7 +54,7 @@ public record UpdateBugRequest(
 		bug.updateContent(content);
 		bug.updateSummary(summary);
 		bug.updatePriority(priority);
-		bug.updateDueDate(dueDate);
+		bug.updateDueAt(dueAt);
 		bug.updateReproducingSteps(reproducingSteps);
 		bug.updateSeverity(severity);
 		bug.updateAffectedVersions(affectedVersions);

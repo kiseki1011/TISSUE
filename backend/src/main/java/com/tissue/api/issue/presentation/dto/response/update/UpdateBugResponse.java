@@ -1,11 +1,9 @@
 package com.tissue.api.issue.presentation.dto.response.update;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -15,20 +13,17 @@ import lombok.Builder;
 
 @Builder
 public record UpdateBugResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-
 	Long updaterId,
 	LocalDateTime updatedAt,
-
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
-
+	LocalDateTime dueAt,
 	String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions,
@@ -47,7 +42,7 @@ public record UpdateBugResponse(
 			.content(bug.getContent())
 			.summary(bug.getSummary())
 			.priority(bug.getPriority())
-			.dueDate(bug.getDueDate())
+			.dueAt(bug.getDueAt())
 			.reproducingSteps(bug.getReproducingSteps())
 			.severity(bug.getSeverity())
 			.affectedVersions(bug.getAffectedVersions())

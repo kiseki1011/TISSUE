@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.types;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
@@ -30,10 +30,10 @@ public class Epic extends Issue {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
+		LocalDateTime dueAt,
 		String businessGoal
 	) {
-		super(workspace, IssueType.EPIC, title, content, summary, priority, dueDate);
+		super(workspace, IssueType.EPIC, title, content, summary, priority, dueAt);
 		this.businessGoal = businessGoal;
 	}
 

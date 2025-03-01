@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.types;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
@@ -31,12 +31,12 @@ public class Story extends Issue {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
+		LocalDateTime dueAt,
 		Issue parentIssue,
 		String userStory,
 		String acceptanceCriteria
 	) {
-		super(workspace, IssueType.STORY, title, content, summary, priority, dueDate);
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt);
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 

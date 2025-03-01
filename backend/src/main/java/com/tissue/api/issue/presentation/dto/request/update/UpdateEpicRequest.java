@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.LongText;
@@ -16,6 +16,7 @@ import lombok.Builder;
 
 @Builder
 public record UpdateEpicRequest(
+
 	@ShortText
 	@NotBlank(message = "{valid.notblank}")
 	String title,
@@ -28,14 +29,11 @@ public record UpdateEpicRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
+	LocalDateTime dueAt,
 
 	@LongText
 	@NotBlank(message = "{valid.notblank}")
-	String businessGoal,
-
-	LocalDate targetReleaseDate,
-	LocalDate hardDeadLine
+	String businessGoal
 
 ) implements UpdateIssueRequest {
 
@@ -52,7 +50,7 @@ public record UpdateEpicRequest(
 		epic.updateContent(content);
 		epic.updateSummary(summary);
 		epic.updatePriority(priority);
-		epic.updateDueDate(dueDate);
+		epic.updateDueAt(dueAt);
 		epic.updateBusinessGoal(businessGoal);
 	}
 }

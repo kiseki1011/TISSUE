@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -31,7 +31,7 @@ public interface CreateIssueRequest {
 
 	IssuePriority priority();
 
-	LocalDate dueDate();
+	LocalDateTime dueAt();
 
 	String parentIssueKey();
 

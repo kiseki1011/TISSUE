@@ -1,6 +1,6 @@
 package com.tissue.support.fixture;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -163,7 +163,7 @@ public class TestDataFixture {
 	 * @param workspace The workspace in which the issue will be created
 	 * @param title The title of the issue
 	 * @param priority The priority level of the issue
-	 * @param dueDate The due date for the issue
+	 * @param dueAt The due date and time for the issue
 	 * @param workspaceMembers A list of workspace members to be assigned to the issue
 	 * @return The created issue
 	 */
@@ -172,15 +172,15 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate,
+		LocalDateTime dueAt,
 		List<WorkspaceMember> workspaceMembers
 	) {
 		Issue issue = switch (type) {
-			case EPIC -> createEpic(workspace, title, priority, dueDate);
-			case STORY -> createStory(workspace, title, priority, dueDate);
-			case BUG -> createBug(workspace, title, priority, dueDate);
-			case TASK -> createTask(workspace, title, priority, dueDate);
-			case SUB_TASK -> createSubTask(workspace, title, priority, dueDate);
+			case EPIC -> createEpic(workspace, title, priority, dueAt);
+			case STORY -> createStory(workspace, title, priority, dueAt);
+			case BUG -> createBug(workspace, title, priority, dueAt);
+			case TASK -> createTask(workspace, title, priority, dueAt);
+			case SUB_TASK -> createSubTask(workspace, title, priority, dueAt);
 		};
 
 		addIssueAssignees(issue, workspaceMembers);
@@ -192,14 +192,14 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		Epic epic = Epic.builder()
 			.workspace(workspace)
 			.title(title)
 			.content("epic content")
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.businessGoal("business goal")
 			.build();
 
@@ -210,14 +210,14 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		Story story = Story.builder()
 			.workspace(workspace)
 			.title(title)
 			.content("story content")
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
 			.build();
@@ -229,14 +229,14 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		Bug bug = Bug.builder()
 			.workspace(workspace)
 			.title(title)
 			.content("bug content")
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.reproducingSteps("bug reproduce steps")
 			.severity(BugSeverity.MAJOR)
 			.build();
@@ -248,14 +248,14 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		Task task = Task.builder()
 			.workspace(workspace)
 			.title(title)
 			.content("task content")
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.build();
 
 		return issueRepository.save(task);
@@ -265,14 +265,14 @@ public class TestDataFixture {
 		Workspace workspace,
 		String title,
 		IssuePriority priority,
-		LocalDate dueDate
+		LocalDateTime dueAt
 	) {
 		SubTask subTask = SubTask.builder()
 			.workspace(workspace)
 			.title(title)
 			.content("sub task content")
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.build();
 
 		return issueRepository.save(subTask);
