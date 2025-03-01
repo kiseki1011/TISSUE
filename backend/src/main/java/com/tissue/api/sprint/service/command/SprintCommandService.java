@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.service.command;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -43,8 +43,8 @@ public class SprintCommandService {
 		Sprint sprint = Sprint.builder()
 			.title(request.title())
 			.goal(request.goal())
-			.startDate(request.startDate())
-			.endDate(request.endDate())
+			.plannedStartDate(request.plannedStartDate())
+			.plannedEndDate(request.plannedEndDate())
 			.workspace(workspace)
 			.build();
 
@@ -80,10 +80,12 @@ public class SprintCommandService {
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
-		LocalDate startDate = request.startDate() != null ? request.startDate() : sprint.getStartDate();
-		LocalDate endDate = request.endDate() != null ? request.endDate() : sprint.getEndDate();
+		LocalDateTime startDate =
+			request.plannedStartDate() != null ? request.plannedStartDate() : sprint.getPlannedStartDate();
+		LocalDateTime endDate =
+			request.plannedEndDate() != null ? request.plannedEndDate() : sprint.getPlannedEndDate();
 
-		if (request.startDate() != null || request.endDate() != null) {
+		if (request.plannedStartDate() != null || request.plannedEndDate() != null) {
 			sprint.updateDates(startDate, endDate);
 		}
 

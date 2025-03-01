@@ -174,14 +174,16 @@ public class Workspace extends WorkspaceBaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
+	public boolean hasActiveSprint() {
+		return sprints.stream()
+			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
+	}
+
 	private void validateMemberLimit() {
 		if (memberCount >= MAX_MEMBER_COUNT) {
-			throw new InvalidOperationException(
-				String.format(
-					"Maximum number of workspace members reached. Workspace member limit: %d",
-					MAX_MEMBER_COUNT
-				)
-			);
+			throw new InvalidOperationException(String.format(
+				"Maximum number of workspace members reached. Workspace member limit: %d",
+				MAX_MEMBER_COUNT));
 		}
 	}
 
