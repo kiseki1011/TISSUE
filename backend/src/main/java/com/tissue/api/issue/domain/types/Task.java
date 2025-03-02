@@ -21,6 +21,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Task extends Issue {
 
+	private Integer storyPoint;
+
 	@Builder
 	public Task(
 		Workspace workspace,
@@ -29,13 +31,20 @@ public class Task extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDateTime dueAt,
+		Integer storyPoint,
 		Issue parentIssue
 	) {
 		super(workspace, IssueType.TASK, title, content, summary, priority, dueAt);
 
+		this.storyPoint = storyPoint;
+
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
+	}
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
 	}
 
 	@Override

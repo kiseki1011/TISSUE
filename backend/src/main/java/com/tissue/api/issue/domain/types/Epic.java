@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 public class Epic extends Issue {
 
 	private String businessGoal;
+	private Integer storyPoint;
 
 	@Builder
 	public Epic(
@@ -31,10 +32,17 @@ public class Epic extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDateTime dueAt,
+		Integer storyPoint,
 		String businessGoal
 	) {
 		super(workspace, IssueType.EPIC, title, content, summary, priority, dueAt);
+
+		this.storyPoint = storyPoint;
 		this.businessGoal = businessGoal;
+	}
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
 	}
 
 	public void updateBusinessGoal(String businessGoal) {

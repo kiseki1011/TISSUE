@@ -46,6 +46,8 @@ public class Bug extends Issue {
 	)
 	private Set<String> affectedVersions = new HashSet<>();
 
+	private Integer storyPoint;
+
 	@Builder
 	public Bug(
 		Workspace workspace,
@@ -54,12 +56,15 @@ public class Bug extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDateTime dueAt,
+		Integer storyPoint,
 		Issue parentIssue,
 		String reproducingSteps,
 		BugSeverity severity,
 		Set<String> affectedVersions
 	) {
 		super(workspace, IssueType.BUG, title, content, summary, priority, dueAt);
+
+		this.storyPoint = storyPoint;
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity;
 
@@ -72,6 +77,10 @@ public class Bug extends Issue {
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
+	}
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
 	}
 
 	public void updateReproducingSteps(String reproducingSteps) {
