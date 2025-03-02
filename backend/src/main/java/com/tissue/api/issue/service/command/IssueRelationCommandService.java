@@ -9,7 +9,6 @@ import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
-import com.tissue.api.issue.service.query.IssueQueryService;
 import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueRelationCommandService {
 
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final CircularDependencyChecker circularDependencyChecker;
 
@@ -33,19 +32,14 @@ public class IssueRelationCommandService {
 		Long requesterWorkspaceMemberId,
 		CreateIssueRelationRequest request
 	) {
-		Issue sourceIssue = issueQueryService.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueQueryService.findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		/*
-		 * Todo
-		 *  -서비스 계층에서 순환 참조 검사를 하는 것이 좋을까?
-		 *  -IssueRelation 엔티티의 createRelation에서 검사하는 것이 좋을까?
-		 */
 		if (request.relationType() == IssueRelationType.BLOCKS) {
 			circularDependencyChecker.validateNoCircularDependency(sourceIssue, targetIssue);
 		}
@@ -62,8 +56,8 @@ public class IssueRelationCommandService {
 		String targetIssueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue sourceIssue = issueQueryService.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueQueryService.findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {

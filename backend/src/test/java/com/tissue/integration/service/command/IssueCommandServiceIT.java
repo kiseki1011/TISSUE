@@ -2,7 +2,7 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
@@ -88,8 +87,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("test issue")
 			.content("test content")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.build();
 
 		// when
@@ -115,15 +113,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateStoryRequest request = CreateStoryRequest.builder()
 			.title("child story")
 			.content("child story")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.parentIssueKey(parentIssue.getIssueKey())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
@@ -151,15 +148,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateStoryRequest request = CreateStoryRequest.builder()
 			.title("child story")
 			.content("child story")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.parentIssueKey(parentIssue.getIssueKey())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
@@ -179,15 +175,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
 			.title("child subtask")
 			.content("child subtask")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
@@ -205,15 +200,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
 			.title("child task")
 			.content("child task")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.parentIssueKey(parentIssue.getIssueKey())
 			.build();
 
@@ -231,8 +225,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("task issue")
 			.content("task issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.build();
 
 		// when
@@ -256,15 +249,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"first issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
 			.title("second issue (TASK type)")
 			.content("second issue (TASK type)")
 			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.build();
 
 		// when
@@ -291,7 +283,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -300,8 +292,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("updated issue")
 			.content("updated issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.dueAt(LocalDateTime.now())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -328,7 +319,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -337,8 +328,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.title("updated issue")
 			.content("updated issue")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.dueAt(LocalDateTime.now().plusDays(7))
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -359,7 +349,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -384,7 +374,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -393,7 +383,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (SUBTASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
@@ -414,7 +404,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -422,7 +412,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -448,7 +438,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -456,7 +446,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
@@ -466,7 +456,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"new parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -492,7 +482,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -501,7 +491,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -530,7 +520,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (Task type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -539,7 +529,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (SUB_TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());

@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
@@ -8,13 +8,13 @@ import com.tissue.api.common.validator.annotation.size.text.ShortText;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
@@ -32,8 +32,9 @@ public record CreateBugRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
+
+	@NotNull(message = "{valid.notnull}")
+	LocalDateTime dueAt,
 	String parentIssueKey,
 
 	@ContentText
@@ -58,8 +59,7 @@ public record CreateBugRequest(
 			.content(content)
 			.summary(summary)
 			.priority(priority)
-			.dueDate(dueDate)
-			.difficulty(difficulty)
+			.dueAt(dueAt)
 			.parentIssue(parentIssue)
 			.reproducingSteps(reproducingSteps)
 			.severity(severity)

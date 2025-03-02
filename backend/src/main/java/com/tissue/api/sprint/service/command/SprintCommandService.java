@@ -1,13 +1,13 @@
 package com.tissue.api.sprint.service.command;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
@@ -31,7 +31,7 @@ public class SprintCommandService {
 	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceQueryService workspaceQueryService;
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 
 	@Transactional
 	public CreateSprintResponse createSprint(
@@ -43,8 +43,8 @@ public class SprintCommandService {
 		Sprint sprint = Sprint.builder()
 			.title(request.title())
 			.goal(request.goal())
-			.startDate(request.startDate())
-			.endDate(request.endDate())
+			.plannedStartDate(request.plannedStartDate())
+			.plannedEndDate(request.plannedEndDate())
 			.workspace(workspace)
 			.build();
 
@@ -60,7 +60,7 @@ public class SprintCommandService {
 	) {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
-		List<Issue> issues = issueQueryService.findIssues(request.issueKeys(), workspaceCode);
+		List<Issue> issues = issueReader.findIssues(request.issueKeys(), workspaceCode);
 
 		for (Issue issue : issues) {
 			sprint.addIssue(issue);
@@ -80,10 +80,12 @@ public class SprintCommandService {
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
-		LocalDate startDate = request.startDate() != null ? request.startDate() : sprint.getStartDate();
-		LocalDate endDate = request.endDate() != null ? request.endDate() : sprint.getEndDate();
+		LocalDateTime startDate =
+			request.plannedStartDate() != null ? request.plannedStartDate() : sprint.getPlannedStartDate();
+		LocalDateTime endDate =
+			request.plannedEndDate() != null ? request.plannedEndDate() : sprint.getPlannedEndDate();
 
-		if (request.startDate() != null || request.endDate() != null) {
+		if (request.plannedStartDate() != null || request.plannedEndDate() != null) {
 			sprint.updateDates(startDate, endDate);
 		}
 
@@ -110,7 +112,7 @@ public class SprintCommandService {
 		RemoveSprintIssueRequest request
 	) {
 		// Todo: 쿼리 서비스 대신 IssueReader에서 도메인 객체 조회로 변경
-		Issue issue = issueQueryService.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
+		Issue issue = issueReader.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		/*

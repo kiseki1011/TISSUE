@@ -15,7 +15,7 @@ public record SprintIssueSearchCondition(
 	List<IssueStatus> statuses,
 	List<IssueType> types,
 	List<IssuePriority> priorities,
-	@Size(min = 3, message = "{valid.size.keyword}")
+	@Size(min = 2, message = "{valid.size.keyword}")
 	String keyword
 ) {
 	public SprintIssueSearchCondition {

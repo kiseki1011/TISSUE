@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewerCommandService {
 
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 
 	@Transactional
@@ -28,7 +28,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
@@ -57,7 +57,7 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
@@ -83,7 +83,7 @@ public class ReviewerCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();

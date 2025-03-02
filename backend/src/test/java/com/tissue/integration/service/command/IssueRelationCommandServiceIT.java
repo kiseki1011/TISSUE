@@ -2,6 +2,8 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +69,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"source issue",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		// create target issue
@@ -75,7 +77,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"target issue",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
@@ -217,7 +219,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"target issue C",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		// set requester as author of issue C
@@ -342,7 +344,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue C",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);

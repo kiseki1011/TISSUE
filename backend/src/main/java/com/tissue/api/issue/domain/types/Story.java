@@ -1,10 +1,9 @@
 package com.tissue.api.issue.domain.types;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
@@ -22,7 +21,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Story extends Issue {
 
-	private Difficulty difficulty;
 	private String userStory;
 	private String acceptanceCriteria;
 
@@ -33,14 +31,12 @@ public class Story extends Issue {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDate dueDate,
-		Difficulty difficulty,
+		LocalDateTime dueAt,
 		Issue parentIssue,
 		String userStory,
 		String acceptanceCriteria
 	) {
-		super(workspace, IssueType.STORY, title, content, summary, priority, dueDate);
-		this.difficulty = difficulty;
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt);
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 
@@ -55,10 +51,6 @@ public class Story extends Issue {
 
 	public void updateAcceptanceCriteria(String acceptanceCriteria) {
 		this.acceptanceCriteria = acceptanceCriteria;
-	}
-
-	public void updateDifficulty(Difficulty difficulty) {
-		this.difficulty = difficulty;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.LongText;
@@ -13,6 +13,7 @@ import com.tissue.api.issue.domain.types.Epic;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 /**
@@ -34,15 +35,14 @@ public record CreateEpicRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDate dueDate,
+
+	@NotNull(message = "{valid.notnull}")
+	LocalDateTime dueAt,
 	String parentIssueKey,
 
 	@LongText
 	@NotBlank(message = "{valid.notblank}")
-	String businessGoal,
-
-	LocalDate targetReleaseDate,
-	LocalDate hardDeadLine
+	String businessGoal
 
 ) implements CreateIssueRequest {
 
@@ -59,10 +59,8 @@ public record CreateEpicRequest(
 			.content(content)
 			.summary(summary)
 			.priority(priority)
-			.dueDate(dueDate)
+			.dueAt(dueAt)
 			.businessGoal(businessGoal)
-			.targetReleaseDate(targetReleaseDate)
-			.hardDeadLine(hardDeadLine)
 			.build();
 	}
 }

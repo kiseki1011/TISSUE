@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AssigneeCommandService {
 
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 
 	@Transactional
@@ -26,7 +26,7 @@ public class AssigneeCommandService {
 		String issueKey,
 		Long assigneeWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
 			assigneeWorkspaceMemberId,
@@ -45,7 +45,7 @@ public class AssigneeCommandService {
 		Long assigneeWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
 			assigneeWorkspaceMemberId,

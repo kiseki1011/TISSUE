@@ -1,13 +1,11 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -17,25 +15,21 @@ import lombok.Builder;
 
 @Builder
 public record CreateBugResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-
 	Long createrId,
 	LocalDateTime createdAt,
-
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDate dueDate,
-
+	LocalDateTime dueAt,
 	String reproducingSteps,
 	BugSeverity severity,
 	Set<String> affectedVersions,
-	Difficulty difficulty,
 	IssueStatus status,
-
 	String parentIssueKey
 
 ) implements CreateIssueResponse {
@@ -51,11 +45,10 @@ public record CreateBugResponse(
 			.content(bug.getContent())
 			.summary(bug.getSummary())
 			.priority(bug.getPriority())
-			.dueDate(bug.getDueDate())
+			.dueAt(bug.getDueAt())
 			.reproducingSteps(bug.getReproducingSteps())
 			.severity(bug.getSeverity())
 			.affectedVersions(bug.getAffectedVersions())
-			.difficulty(bug.getDifficulty())
 			.status(bug.getStatus())
 			.parentIssueKey(Optional.ofNullable(bug.getParentIssue())
 				.map(Issue::getIssueKey)

@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
@@ -38,10 +36,8 @@ class IssueControllerTest extends ControllerTestHelper {
 			.content("Epic Content")
 			.summary("Epic Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now().plusDays(10))
+			.dueAt(LocalDateTime.now().plusDays(10))
 			.businessGoal("Business Goal")
-			.targetReleaseDate(LocalDate.now().plusMonths(1))
-			.hardDeadLine(LocalDate.now().plusMonths(2))
 			.build();
 
 		// when & then
@@ -63,10 +59,8 @@ class IssueControllerTest extends ControllerTestHelper {
 			.content("Epic Content")
 			.summary("Epic Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now().plusDays(10))
+			.dueAt(LocalDateTime.now().plusDays(10))
 			.businessGoal("Business Goal")
-			.targetReleaseDate(LocalDate.now().plusMonths(1))
-			.hardDeadLine(LocalDate.now().plusMonths(2))
 			.build();
 
 		CreateEpicResponse response = CreateEpicResponse.builder()
@@ -98,15 +92,14 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 		String issueKey = "TEST-123";
 		LocalDateTime now = LocalDateTime.now();
-		LocalDate dueDate = LocalDate.now();
+		LocalDateTime dueAt = LocalDateTime.now();
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.title("Updated Title")
 			.content("Updated Content")
 			.summary("Updated Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(dueDate)
-			.difficulty(Difficulty.HARD)
+			.dueAt(dueAt)
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -121,8 +114,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.content("Updated Content")
 			.summary("Updated Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(dueDate)
-			.difficulty(Difficulty.HARD)
+			.dueAt(dueAt)
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -144,7 +136,6 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.content").value("Updated Content"))
 			.andExpect(jsonPath("$.data.summary").value("Updated Summary"))
 			.andExpect(jsonPath("$.data.priority").value("HIGH"))
-			.andExpect(jsonPath("$.data.difficulty").value("HARD"))
 			.andExpect(jsonPath("$.data.userStory").value("Updated User Story"))
 			.andExpect(jsonPath("$.data.acceptanceCriteria").value("Updated Acceptance Criteria"))
 			.andDo(print());
@@ -161,8 +152,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.content("Updated Content")
 			.summary("Updated Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.dueAt(LocalDateTime.now())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();

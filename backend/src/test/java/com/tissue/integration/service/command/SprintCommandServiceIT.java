@@ -3,6 +3,7 @@ package com.tissue.integration.service.command;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -81,14 +82,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue 1",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue2 = testDataFixture.createStory(
 			workspace,
 			"issue 2",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
@@ -104,8 +105,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateSprintRequest request = CreateSprintRequest.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.now())
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now())
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.build();
 
 		// when
@@ -126,8 +127,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateSprintRequest request = CreateSprintRequest.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.now())
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now())
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.build();
 
 		// when
@@ -146,16 +147,16 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			CreateSprintRequest.builder()
 				.title("first sprint")
 				.goal("first sprint")
-				.startDate(LocalDate.now())
-				.endDate(LocalDate.now().plusDays(1))
+				.plannedStartDate(LocalDateTime.now())
+				.plannedEndDate(LocalDateTime.now().plusDays(1))
 				.build()
 		);
 
 		CreateSprintRequest request = CreateSprintRequest.builder()
 			.title("second sprint")
 			.goal("second sprint")
-			.startDate(LocalDate.now())
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now())
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.build();
 
 		// when
@@ -173,8 +174,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -201,8 +202,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -227,8 +228,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -258,8 +259,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -288,8 +289,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -312,20 +313,20 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("스프린트의 시작일자, 종료일자(startDate, endDate)를 업데이트할 수 있다")
+	@DisplayName("스프린트의 계획된 시작일자, 종료일자(plannedStartDate, plannedEndDate)를 업데이트할 수 있다")
 	void canUpdateSprintDates() {
 		// given
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
 		UpdateSprintRequest request = UpdateSprintRequest.builder()
-			.startDate(LocalDate.now().plusDays(7))
-			.endDate(LocalDate.now().plusDays(14))
+			.plannedStartDate(LocalDateTime.now().plusDays(7))
+			.plannedEndDate(LocalDateTime.now().plusDays(14))
 			.build();
 
 		// when
@@ -337,8 +338,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
-		assertThat(response.startDate()).isEqualTo(LocalDate.now().plusDays(7));
-		assertThat(response.endDate()).isEqualTo(LocalDate.now().plusDays(14));
+		assertThat(response.plannedStartDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(7));
+		assertThat(response.plannedEndDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(14));
 	}
 
 	@Test
@@ -348,15 +349,15 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
 		// endDate is 7 days before startDate
 		UpdateSprintRequest request = UpdateSprintRequest.builder()
-			.startDate(LocalDate.now().plusDays(14))
-			.endDate(LocalDate.now().plusDays(7))
+			.plannedStartDate(LocalDateTime.now().plusDays(14))
+			.plannedEndDate(LocalDateTime.now().plusDays(7))
 			.build();
 
 		// when & then
@@ -375,8 +376,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -398,8 +399,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -421,8 +422,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().minusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(2))
+			.plannedEndDate(LocalDateTime.now().minusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -442,8 +443,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 
@@ -464,8 +465,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build();
 		sprint.updateStatus(SprintStatus.ACTIVE);
@@ -490,8 +491,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = Sprint.builder()
 			.title("original title")
 			.goal("original goal")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build();
 		sprint.updateStatus(SprintStatus.ACTIVE);
@@ -513,8 +514,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint1 = Sprint.builder()
 			.title("sprint 1")
 			.goal("sprint 1")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build();
 
@@ -524,8 +525,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint2 = sprintRepository.save(Sprint.builder()
 			.title("sprint 2")
 			.goal("sprint 2")
-			.startDate(LocalDate.now().plusDays(2))
-			.endDate(LocalDate.now().plusDays(3))
+			.plannedStartDate(LocalDateTime.now().plusDays(2))
+			.plannedEndDate(LocalDateTime.now().plusDays(3))
 			.workspace(workspace)
 			.build());
 
@@ -547,8 +548,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build());
 

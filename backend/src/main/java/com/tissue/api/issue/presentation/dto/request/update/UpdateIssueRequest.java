@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -30,7 +30,7 @@ public interface UpdateIssueRequest {
 
 	IssuePriority priority();
 
-	LocalDate dueDate();
+	LocalDateTime dueAt();
 
 	IssueType getType();
 

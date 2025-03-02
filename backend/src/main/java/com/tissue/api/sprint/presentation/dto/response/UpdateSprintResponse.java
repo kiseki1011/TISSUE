@@ -1,6 +1,5 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.tissue.api.sprint.domain.Sprint;
@@ -13,8 +12,8 @@ public record UpdateSprintResponse(
 	String sprintKey,
 	String title,
 	String goal,
-	LocalDate startDate,
-	LocalDate endDate,
+	LocalDateTime plannedStartDate,
+	LocalDateTime plannedEndDate,
 	LocalDateTime updatedAt,
 	Long updatedBy
 ) {
@@ -24,8 +23,8 @@ public record UpdateSprintResponse(
 			.sprintKey(sprint.getSprintKey())
 			.title(sprint.getTitle())
 			.goal(sprint.getGoal())
-			.startDate(sprint.getStartDate())
-			.endDate(sprint.getEndDate())
+			.plannedStartDate(sprint.getPlannedStartDate())
+			.plannedEndDate(sprint.getPlannedEndDate())
 			.updatedAt(sprint.getLastModifiedDate())
 			.updatedBy(sprint.getLastModifiedByWorkspaceMember())
 			.build();

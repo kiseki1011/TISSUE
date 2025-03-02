@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.domain;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,10 +43,13 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	private String goal;
 
 	@Column(nullable = false)
-	private LocalDate startDate;
+	private LocalDateTime plannedStartDate;
 
 	@Column(nullable = false)
-	private LocalDate endDate;
+	private LocalDateTime plannedEndDate;
+
+	private LocalDateTime startDate;
+	private LocalDateTime endDate;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -60,7 +63,7 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	private String workspaceCode;
 
 	@Column(nullable = false, unique = true)
-	private String sprintKey;  // "SPRINT-1", "SPRINT-2"
+	private String sprintKey;
 
 	@Column(nullable = false)
 	private Integer number;
@@ -72,11 +75,11 @@ public class Sprint extends WorkspaceContextBaseEntity {
 	public Sprint(
 		String title,
 		String goal,
-		LocalDate startDate,
-		LocalDate endDate,
+		LocalDateTime plannedStartDate,
+		LocalDateTime plannedEndDate,
 		Workspace workspace
 	) {
-		validateDates(startDate, endDate);
+		validateDates(plannedStartDate, plannedEndDate);
 
 		this.number = workspace.getNextSprintNumber();
 		this.sprintKey = String.format("SPRINT-%d", this.number);
@@ -84,8 +87,8 @@ public class Sprint extends WorkspaceContextBaseEntity {
 
 		this.title = title;
 		this.goal = goal;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.plannedStartDate = plannedStartDate;
+		this.plannedEndDate = plannedEndDate;
 		this.status = SprintStatus.PLANNING;
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
@@ -99,72 +102,73 @@ public class Sprint extends WorkspaceContextBaseEntity {
 		this.goal = goal;
 	}
 
-	public void updateStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-	}
-
-	public void updateEndDate(LocalDate endDate) {
-		this.endDate = endDate;
-	}
-
-	private void validateDates(LocalDate startDate, LocalDate endDate) {
+	private void validateDates(LocalDateTime startDate, LocalDateTime endDate) {
 		if (endDate.isBefore(startDate)) {
 			throw new InvalidOperationException("Sprint end date cannot be before start date.");
 		}
 	}
 
-	public void updateDates(LocalDate startDate, LocalDate endDate) {
+	public void updateDates(LocalDateTime startDate, LocalDateTime endDate) {
 		validateDates(startDate, endDate);
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.plannedStartDate = startDate;
+		this.plannedEndDate = endDate;
 	}
 
 	public void updateStatus(SprintStatus newStatus) {
 		validateStatusTransition(newStatus);
-		validateActiveSprintNotExists(newStatus);
 		this.status = newStatus;
+
+		updateTimestamps(newStatus);
+	}
+
+	private void updateTimestamps(SprintStatus newStatus) {
+		if (newStatus == SprintStatus.ACTIVE) {
+			startDate = LocalDateTime.now();
+			return;
+		}
+		if (newStatus == SprintStatus.COMPLETED) {
+			endDate = LocalDateTime.now();
+		}
 	}
 
 	private void validateStatusTransition(SprintStatus newStatus) {
 		if (this.status == newStatus) {
 			throw new InvalidOperationException(
-				String.format("Sprint is already in %s status.", newStatus)
-			);
+				String.format("Sprint is already in %s status.", newStatus));
 		}
 
 		switch (this.status) {
 			case PLANNING -> {
-				if (newStatus != SprintStatus.ACTIVE && newStatus != SprintStatus.CANCELLED) {
+				boolean newStatusIsNotActive = newStatus != SprintStatus.ACTIVE;
+				boolean newStatusIsNotCancelled = newStatus != SprintStatus.CANCELLED;
+				if (newStatusIsNotActive && newStatusIsNotCancelled) {
 					throw new InvalidOperationException(
-						"Sprint in PLANNING status can only be changed to ACTIVE or CANCELLED."
-					);
+						"Sprint in PLANNING status can only be changed to ACTIVE or CANCELLED.");
 				}
-				if (newStatus == SprintStatus.ACTIVE && LocalDate.now().isAfter(endDate)) {
-					throw new InvalidOperationException("Cannot start sprint after end date.");
+
+				boolean newStatusIsActive = newStatus == SprintStatus.ACTIVE;
+				if (newStatusIsActive && LocalDateTime.now().isAfter(plannedEndDate)) {
+					throw new InvalidOperationException("Cannot start sprint after planned end date.");
+				}
+
+				if (newStatusIsActive) {
+					boolean hasActiveSprintInWorkspace = workspace.hasActiveSprint();
+					if (hasActiveSprintInWorkspace) {
+						throw new InvalidOperationException(
+							"Cannot start sprint. A sprint is already active in this workspace.");
+					}
 				}
 			}
 			case ACTIVE -> {
-				if (newStatus != SprintStatus.COMPLETED && newStatus != SprintStatus.CANCELLED) {
+				boolean newStatusIsNotCompleted = newStatus != SprintStatus.COMPLETED;
+				boolean newStatusIsNotCancelled = newStatus != SprintStatus.CANCELLED;
+				if (newStatusIsNotCompleted && newStatusIsNotCancelled) {
 					throw new InvalidOperationException(
-						"Sprint in ACTIVE status can only be changed to COMPLETED or CANCELLED."
-					);
+						"Sprint in ACTIVE status can only be changed to COMPLETED or CANCELLED.");
 				}
 			}
-			case COMPLETED, CANCELLED -> throw new InvalidOperationException(
-				"Cannot change status of COMPLETED or CANCELLED sprint."
-			);
-		}
-	}
-
-	private void validateActiveSprintNotExists(SprintStatus newStatus) {
-		boolean newStatusNotActive = newStatus != SprintStatus.ACTIVE;
-		if (newStatusNotActive) {
-			return;
-		}
-
-		boolean hasActiveSprintInWorkspace = workspace.hasActiveSprintExcept(this);
-		if (hasActiveSprintInWorkspace) {
-			throw new InvalidOperationException("Cannot start sprint. A sprint is already active in this workspace.");
+			case COMPLETED, CANCELLED ->
+				throw new InvalidOperationException("Cannot change status of COMPLETED or CANCELLED sprint.");
 		}
 	}
 

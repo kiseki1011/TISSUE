@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.domain.IssueReviewer;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommandService {
 
 	private final ReviewQueryService reviewQueryService;
-	private final IssueQueryService issueQueryService;
+	private final IssueReader issueReader;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
@@ -47,7 +47,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		CreateReviewRequest request
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		IssueReviewer issueReviewer = findIssueReviewer(issueKey, reviewerWorkspaceMemberId);
 
@@ -89,7 +89,7 @@ public class ReviewCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateReviewStatusRequest request
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 		Review review = reviewQueryService.findReview(reviewId);
