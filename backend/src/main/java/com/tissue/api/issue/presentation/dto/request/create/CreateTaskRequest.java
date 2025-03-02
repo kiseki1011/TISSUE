@@ -12,6 +12,7 @@ import com.tissue.api.issue.domain.types.Task;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
@@ -29,6 +30,8 @@ public record CreateTaskRequest(
 	String summary,
 
 	IssuePriority priority,
+
+	@NotNull(message = "{valid.notnull}")
 	LocalDateTime dueAt,
 	String parentIssueKey
 

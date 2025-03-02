@@ -13,6 +13,7 @@ import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
@@ -30,6 +31,8 @@ public record CreateStoryRequest(
 	String summary,
 
 	IssuePriority priority,
+
+	@NotNull(message = "{valid.notnull}")
 	LocalDateTime dueAt,
 	String parentIssueKey,
 
