@@ -13,6 +13,8 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
 import com.tissue.api.workspace.domain.Workspace;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -35,6 +37,11 @@ public record CreateBugRequest(
 
 	@NotNull(message = "{valid.notnull}")
 	LocalDateTime dueAt,
+
+	@Min(value = 0, message = "{valid.storypoint.min}")
+	@Max(value = 100, message = "{valid.storypoint.max}")
+	Integer storyPoint,
+
 	String parentIssueKey,
 
 	@ContentText
@@ -60,6 +67,7 @@ public record CreateBugRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueAt(dueAt)
+			.storyPoint(storyPoint)
 			.parentIssue(parentIssue)
 			.reproducingSteps(reproducingSteps)
 			.severity(severity)

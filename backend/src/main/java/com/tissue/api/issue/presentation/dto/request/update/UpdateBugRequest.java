@@ -12,6 +12,8 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Bug;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
@@ -31,6 +33,10 @@ public record UpdateBugRequest(
 
 	IssuePriority priority,
 	LocalDateTime dueAt,
+
+	@Min(value = 0, message = "{valid.storypoint.min}")
+	@Max(value = 100, message = "{valid.storypoint.max}")
+	Integer storyPoint,
 
 	@ContentText
 	@NotBlank(message = "{valid.notblank}")
@@ -55,6 +61,7 @@ public record UpdateBugRequest(
 		bug.updateSummary(summary);
 		bug.updatePriority(priority);
 		bug.updateDueAt(dueAt);
+		bug.updateStoryPoint(storyPoint);
 		bug.updateReproducingSteps(reproducingSteps);
 		bug.updateSeverity(severity);
 		bug.updateAffectedVersions(affectedVersions);

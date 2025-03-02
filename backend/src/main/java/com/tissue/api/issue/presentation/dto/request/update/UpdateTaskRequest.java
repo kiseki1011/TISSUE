@@ -10,6 +10,8 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Task;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
@@ -28,7 +30,11 @@ public record UpdateTaskRequest(
 	String summary,
 
 	IssuePriority priority,
-	LocalDateTime dueAt
+	LocalDateTime dueAt,
+
+	@Min(value = 0, message = "{valid.storypoint.min}")
+	@Max(value = 100, message = "{valid.storypoint.max}")
+	Integer storyPoint
 
 ) implements UpdateIssueRequest {
 
@@ -46,5 +52,6 @@ public record UpdateTaskRequest(
 		task.updateSummary(summary);
 		task.updatePriority(priority);
 		task.updateDueAt(dueAt);
+		task.updateStoryPoint(storyPoint);
 	}
 }
