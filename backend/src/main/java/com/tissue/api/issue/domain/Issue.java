@@ -104,13 +104,10 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
-	// Todo
-	//  - embeddeble 사용 고려?
 	private LocalDateTime startedAt;
 	private LocalDateTime resolvedAt;
 	private LocalDateTime reviewRequestedAt;
 
-	// Todo: DTO에서 필수 입력하도록 검증 추가
 	@Column(nullable = false)
 	private LocalDateTime dueAt;
 

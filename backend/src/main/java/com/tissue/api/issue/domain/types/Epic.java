@@ -22,6 +22,8 @@ import lombok.NoArgsConstructor;
 public class Epic extends Issue {
 
 	private String businessGoal;
+
+	// Todo: 에픽의 자식 이슈들의 스토리 포인트 합산을 스토리 포인트로 가지도록 구현 필요!
 	private Integer storyPoint;
 
 	@Builder
