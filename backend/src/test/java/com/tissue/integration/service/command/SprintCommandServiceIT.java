@@ -82,14 +82,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue 1",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue2 = testDataFixture.createStory(
 			workspace,
 			"issue 2",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 

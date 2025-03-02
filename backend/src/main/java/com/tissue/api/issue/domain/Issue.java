@@ -44,9 +44,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Todo 2
- *  - dueDate가 null인 경우의 처리가 필요
- *  - dueDate를 강제할까?
  * Todo 3
  *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
  *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
@@ -112,6 +109,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private LocalDateTime startedAt;
 	private LocalDateTime resolvedAt;
 	private LocalDateTime reviewRequestedAt;
+
+	// Todo: DTO에서 필수 입력하도록 검증 추가
+	@Column(nullable = false)
 	private LocalDateTime dueAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)

@@ -84,21 +84,21 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue 1",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue2 = testDataFixture.createStory(
 			workspace,
 			"issue 2",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue3 = testDataFixture.createTask(
 			workspace,
 			"issue 3",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 

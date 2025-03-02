@@ -3,6 +3,8 @@ package com.tissue.integration.service.command;
 import static com.tissue.api.review.domain.enums.ReviewStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -72,7 +74,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue(STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
