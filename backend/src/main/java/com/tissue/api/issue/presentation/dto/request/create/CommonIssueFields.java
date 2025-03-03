@@ -13,6 +13,7 @@ import lombok.Builder;
 
 @Builder
 public record CommonIssueFields(
+
 	@ShortText
 	@NotBlank(message = "{valid.notblank}")
 	String title,
@@ -27,8 +28,7 @@ public record CommonIssueFields(
 	IssuePriority priority,
 
 	@NotNull(message = "{valid.notnull}")
-	LocalDateTime dueAt,
+	LocalDateTime dueAt
 
-	String parentIssueKey
 ) {
 }

@@ -24,5 +24,5 @@ public interface CreateIssueRequest {
 
 	IssueType getType();
 
-	Issue to(Workspace workspace, Issue parentIssue);
+	Issue toIssue(Workspace workspace);
 }

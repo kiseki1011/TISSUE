@@ -28,7 +28,7 @@ public record CreateEpicRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
+	public Issue toIssue(Workspace workspace) {
 		return Epic.builder()
 			.workspace(workspace)
 			.title(common.title())

@@ -35,10 +35,6 @@ public class IssueCommandService {
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
 
-	/**
-	 * Todo
-	 *  - 이슈 생성에서 부모 이슈 설정하지 않고, assignParent를 통해서만 부모 이슈를 설정?
-	 */
 	@Transactional
 	public CreateIssueResponse createIssue(
 		String workspaceCode,
@@ -46,11 +42,7 @@ public class IssueCommandService {
 	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
-		// Todo: Optional 사용을 고려
-		Issue parentIssue = request.common().parentIssueKey() != null
-			? issueReader.findIssue(request.common().parentIssueKey(), workspaceCode) : null;
-
-		Issue issue = request.to(workspace, parentIssue);
+		Issue issue = request.toIssue(workspace);
 
 		Issue savedIssue = issueRepository.save(issue);
 		return CreateIssueResponse.from(savedIssue);

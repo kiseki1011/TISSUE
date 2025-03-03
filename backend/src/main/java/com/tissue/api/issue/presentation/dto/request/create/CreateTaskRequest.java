@@ -28,7 +28,7 @@ public record CreateTaskRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
+	public Issue toIssue(Workspace workspace) {
 		return Task.builder()
 			.workspace(workspace)
 			.title(common.title())
@@ -37,7 +37,6 @@ public record CreateTaskRequest(
 			.priority(common.priority())
 			.dueAt(common.dueAt())
 			.storyPoint(storyPoint)
-			.parentIssue(parentIssue)
 			.build();
 	}
 }

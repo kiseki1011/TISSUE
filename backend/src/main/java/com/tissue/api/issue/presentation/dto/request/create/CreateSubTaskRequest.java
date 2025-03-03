@@ -22,7 +22,7 @@ public record CreateSubTaskRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
+	public Issue toIssue(Workspace workspace) {
 		return SubTask.builder()
 			.workspace(workspace)
 			.title(common.title())
@@ -30,7 +30,6 @@ public record CreateSubTaskRequest(
 			.summary(common.summary())
 			.priority(common.priority())
 			.dueAt(common.dueAt())
-			.parentIssue(parentIssue)
 			.build();
 	}
 }

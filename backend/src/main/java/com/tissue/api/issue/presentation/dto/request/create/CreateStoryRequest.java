@@ -37,7 +37,7 @@ public record CreateStoryRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
+	public Issue toIssue(Workspace workspace) {
 		return Story.builder()
 			.workspace(workspace)
 			.title(common.title())
@@ -48,7 +48,6 @@ public record CreateStoryRequest(
 			.storyPoint(storyPoint)
 			.userStory(userStory)
 			.acceptanceCriteria(acceptanceCriteria)
-			.parentIssue(parentIssue)
 			.build();
 	}
 }

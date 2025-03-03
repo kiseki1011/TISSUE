@@ -40,7 +40,7 @@ public record CreateBugRequest(
 	}
 
 	@Override
-	public Issue to(Workspace workspace, Issue parentIssue) {
+	public Issue toIssue(Workspace workspace) {
 		return Bug.builder()
 			.workspace(workspace)
 			.title(common.title())
@@ -49,7 +49,6 @@ public record CreateBugRequest(
 			.priority(common.priority())
 			.dueAt(common.dueAt())
 			.storyPoint(storyPoint)
-			.parentIssue(parentIssue)
 			.reproducingSteps(reproducingSteps)
 			.severity(severity)
 			.affectedVersions(affectedVersions)

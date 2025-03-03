@@ -16,13 +16,10 @@ import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CommonIssueFields;
-import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
 import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
@@ -81,7 +78,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 멤버는 TASK 타입 이슈를 생성할 수 있다")
+	@DisplayName("워크스페이스 멤버는 이슈를 생성할 수 있다(Task 생성)")
 	void canCreateTaskIssue() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
@@ -105,126 +102,6 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		Issue findIssue = issueRepository.findById(response.issueId()).orElseThrow();
 		assertThat(findIssue.getWorkspaceCode()).isEqualTo(workspace.getCode());
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("특정 이슈를 부모로 지정하여 이슈를 생성하는 것이 가능하다")
-	void canCreateIssueWithParent() {
-		// given
-		Issue parentIssue = testDataFixture.createEpic(
-			workspace,
-			"parent issue (EPIC type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		CreateStoryRequest request = CreateStoryRequest.builder()
-			.common(CommonIssueFields.builder()
-				.title("child story")
-				.content("child story")
-				.priority(IssuePriority.MEDIUM)
-				.dueAt(LocalDateTime.now().plusDays(7))
-				.parentIssueKey(parentIssue.getIssueKey())
-				.build())
-			.userStory("user story")
-			.acceptanceCriteria("acceptance criteria")
-			.build();
-
-		// when
-		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
-			workspace.getCode(),
-			request
-		);
-
-		// then
-		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-
-		assertThat(response.title()).isEqualTo("child story");
-		assertThat(savedIssue.getParentIssue().getId()).isEqualTo(parentIssue.getId());
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("STORY 타입 이슈 생성 시, TASK 타입 이슈를 부모로 지정할 수 없다")
-	void cannotCreateStoryIfParentIsTask() {
-		// given
-		Issue parentIssue = testDataFixture.createTask(
-			workspace,
-			"parent issue (TASK type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		CreateStoryRequest request = CreateStoryRequest.builder()
-			.common(CommonIssueFields.builder()
-				.title("child story")
-				.content("child story")
-				.priority(IssuePriority.MEDIUM)
-				.dueAt(LocalDateTime.now().plusDays(7))
-				.parentIssueKey(parentIssue.getIssueKey())
-				.build())
-			.userStory("user story")
-			.acceptanceCriteria("acceptance criteria")
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("SUB_TASK 이슈 생성 시, EPIC 타입 이슈를 부모로 지정할 수 없다")
-	void cannotCreateSubTaskWithEpicParent() {
-		// given
-		Issue parentIssue = testDataFixture.createEpic(
-			workspace,
-			"parent issue (EPIC type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
-			.common(CommonIssueFields.builder()
-				.title("child subtask")
-				.content("child subtask")
-				.priority(IssuePriority.MEDIUM)
-				.dueAt(LocalDateTime.now().plusDays(7))
-				.parentIssueKey(parentIssue.getIssueKey())
-				.build())
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("같은 위계의 타입을 가진 이슈를 부모로 지정할 수 없다")
-	void cannotCreateIssueWithParentIfParentIsSameHierarchyAsChild() {
-		// given
-		Issue parentIssue = testDataFixture.createTask(
-			workspace,
-			"parent issue (TASK type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		CreateTaskRequest request = CreateTaskRequest.builder()
-			.common(CommonIssueFields.builder()
-				.title("child task")
-				.content("child task")
-				.priority(IssuePriority.MEDIUM)
-				.dueAt(LocalDateTime.now().plusDays(7))
-				.parentIssueKey(parentIssue.getIssueKey())
-				.build())
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test

@@ -148,7 +148,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
 
-		addToWorkspace(workspace);
+		this.workspace = workspace;
+		this.workspaceCode = workspace.getCode();
+		workspace.getIssues().add(this);
 
 		this.type = type;
 		this.title = title;
@@ -403,12 +405,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 		this.parentIssue = parentIssue;
 		parentIssue.getChildIssues().add(this);
-	}
-
-	public void addToWorkspace(Workspace workspace) {
-		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
-		workspace.getIssues().add(this);
 	}
 
 	public void removeParentRelationship() {
