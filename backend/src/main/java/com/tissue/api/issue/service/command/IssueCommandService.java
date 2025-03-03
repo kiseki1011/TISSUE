@@ -47,8 +47,8 @@ public class IssueCommandService {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		// Todo: Optional 사용을 고려
-		Issue parentIssue = request.parentIssueKey() != null
-			? issueReader.findIssue(request.parentIssueKey(), workspaceCode) : null;
+		Issue parentIssue = request.common().parentIssueKey() != null
+			? issueReader.findIssue(request.common().parentIssueKey(), workspaceCode) : null;
 
 		Issue issue = request.to(workspace, parentIssue);
 

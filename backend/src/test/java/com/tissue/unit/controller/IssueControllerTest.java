@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
@@ -32,11 +33,13 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("") // 검증 실패
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(10))
+			.common(CommonIssueFields.builder()
+				.title("")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
 			.build();
 
@@ -55,19 +58,21 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("Epic Title")
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(10))
+			.common(CommonIssueFields.builder()
+				.title("Epic Title")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
 			.build();
 
 		CreateEpicResponse response = CreateEpicResponse.builder()
 			.issueId(1L)
 			.workspaceCode(workspaceCode)
-			.title(request.title())
-			.content(request.content())
+			.title("Epic Title")
+			.content("Epic Content")
 			.businessGoal(request.businessGoal())
 			.build();
 
@@ -81,7 +86,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.data.issueId").value(1L))
 			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.title").value(request.title()))
+			.andExpect(jsonPath("$.data.title").value("Epic Title"))
 			.andExpect(jsonPath("$.message").value("EPIC issue created."));
 	}
 

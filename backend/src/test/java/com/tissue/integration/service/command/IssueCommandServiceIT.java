@@ -15,6 +15,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
@@ -84,10 +85,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canCreateTaskIssue() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("test issue")
-			.content("test content")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
+			.common(CommonIssueFields.builder()
+				.title("test issue")
+				.content("test content")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
@@ -117,11 +120,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateStoryRequest request = CreateStoryRequest.builder()
-			.title("child story")
-			.content("child story")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
-			.parentIssueKey(parentIssue.getIssueKey())
+			.common(CommonIssueFields.builder()
+				.title("child story")
+				.content("child story")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.parentIssueKey(parentIssue.getIssueKey())
+				.build())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
 			.build();
@@ -152,11 +157,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateStoryRequest request = CreateStoryRequest.builder()
-			.title("child story")
-			.content("child story")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
-			.parentIssueKey(parentIssue.getIssueKey())
+			.common(CommonIssueFields.builder()
+				.title("child story")
+				.content("child story")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.parentIssueKey(parentIssue.getIssueKey())
+				.build())
 			.userStory("user story")
 			.acceptanceCriteria("acceptance criteria")
 			.build();
@@ -179,11 +186,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
-			.title("child subtask")
-			.content("child subtask")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
-			.parentIssueKey(parentIssue.getIssueKey())
+			.common(CommonIssueFields.builder()
+				.title("child subtask")
+				.content("child subtask")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.parentIssueKey(parentIssue.getIssueKey())
+				.build())
 			.build();
 
 		// when & then
@@ -204,11 +213,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("child task")
-			.content("child task")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
-			.parentIssueKey(parentIssue.getIssueKey())
+			.common(CommonIssueFields.builder()
+				.title("child task")
+				.content("child task")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.parentIssueKey(parentIssue.getIssueKey())
+				.build())
 			.build();
 
 		// when & then
@@ -222,10 +233,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void whenFirstIssueIsCreatedIssueKeyMustBe_ISSUE_1() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("task issue")
-			.content("task issue")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(7))
+			.common(CommonIssueFields.builder()
+				.title("task issue")
+				.content("task issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
@@ -253,10 +266,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("second issue (TASK type)")
-			.content("second issue (TASK type)")
-			.priority(IssuePriority.MEDIUM)
-			.dueAt(LocalDateTime.now().plusDays(7))
+			.common(CommonIssueFields.builder()
+				.title("second issue (TASK type)")
+				.content("second issue (TASK type)")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
