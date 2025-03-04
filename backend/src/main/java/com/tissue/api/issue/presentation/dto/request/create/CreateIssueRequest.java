@@ -20,7 +20,7 @@ import com.tissue.api.workspace.domain.Workspace;
 })
 public interface CreateIssueRequest {
 
-	CommonIssueFields common();
+	CommonIssueCreateFields common();
 
 	IssueType getType();
 

@@ -16,7 +16,7 @@ import lombok.Builder;
 public record CreateStoryRequest(
 
 	@Valid
-	CommonIssueFields common,
+	CommonIssueCreateFields common,
 
 	@Min(value = 0, message = "{valid.storypoint.min}")
 	@Max(value = 100, message = "{valid.storypoint.max}")

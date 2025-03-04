@@ -12,7 +12,7 @@ import lombok.Builder;
 public record CreateSubTaskRequest(
 
 	@Valid
-	CommonIssueFields common
+	CommonIssueCreateFields common
 
 ) implements CreateIssueRequest {
 

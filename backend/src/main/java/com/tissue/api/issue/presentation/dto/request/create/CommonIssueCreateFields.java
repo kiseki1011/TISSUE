@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
-public record CommonIssueFields(
+public record CommonIssueCreateFields(
 
 	@ShortText
 	@NotBlank(message = "{valid.notblank}")

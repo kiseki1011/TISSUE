@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CommonIssueFields;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
@@ -33,7 +33,7 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.common(CommonIssueFields.builder()
+			.common(CommonIssueCreateFields.builder()
 				.title("")
 				.content("Epic Content")
 				.summary("Epic Summary")
@@ -58,7 +58,7 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.common(CommonIssueFields.builder()
+			.common(CommonIssueCreateFields.builder()
 				.title("Epic Title")
 				.content("Epic Content")
 				.summary("Epic Summary")

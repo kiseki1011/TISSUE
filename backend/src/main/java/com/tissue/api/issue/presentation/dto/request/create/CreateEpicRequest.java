@@ -14,7 +14,7 @@ import lombok.Builder;
 public record CreateEpicRequest(
 
 	@Valid
-	CommonIssueFields common,
+	CommonIssueCreateFields common,
 
 	@LongText
 	@NotBlank(message = "{valid.notblank}")

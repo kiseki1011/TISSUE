@@ -15,7 +15,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CommonIssueFields;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
@@ -82,7 +82,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canCreateTaskIssue() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.common(CommonIssueFields.builder()
+			.common(CommonIssueCreateFields.builder()
 				.title("test issue")
 				.content("test content")
 				.priority(IssuePriority.MEDIUM)
@@ -110,7 +110,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	void whenFirstIssueIsCreatedIssueKeyMustBe_ISSUE_1() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.common(CommonIssueFields.builder()
+			.common(CommonIssueCreateFields.builder()
 				.title("task issue")
 				.content("task issue")
 				.priority(IssuePriority.HIGH)
@@ -143,7 +143,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.common(CommonIssueFields.builder()
+			.common(CommonIssueCreateFields.builder()
 				.title("second issue (TASK type)")
 				.content("second issue (TASK type)")
 				.priority(IssuePriority.MEDIUM)
