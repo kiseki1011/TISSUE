@@ -19,15 +19,7 @@ import com.tissue.api.issue.domain.enums.IssueType;
 })
 public interface UpdateIssueRequest {
 
-	// String title();
-	//
-	// String content();
-	//
-	// String summary();
-	//
-	// IssuePriority priority();
-	//
-	// LocalDateTime dueAt();
+	CommonIssueUpdateFields common();
 
 	IssueType getType();
 
