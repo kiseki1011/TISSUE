@@ -1,11 +1,8 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 
 @JsonTypeInfo(
@@ -22,17 +19,17 @@ import com.tissue.api.issue.domain.enums.IssueType;
 })
 public interface UpdateIssueRequest {
 
-	String title();
-
-	String content();
-
-	String summary();
-
-	IssuePriority priority();
-
-	LocalDateTime dueAt();
+	// String title();
+	//
+	// String content();
+	//
+	// String summary();
+	//
+	// IssuePriority priority();
+	//
+	// LocalDateTime dueAt();
 
 	IssueType getType();
 
-	void update(Issue issue);
+	void updateNonNullFields(Issue issue);
 }

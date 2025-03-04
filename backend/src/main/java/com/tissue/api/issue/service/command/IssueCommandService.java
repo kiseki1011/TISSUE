@@ -64,7 +64,7 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		request.update(issue);
+		request.updateNonNullFields(issue);
 
 		return UpdateIssueResponse.from(issue);
 	}

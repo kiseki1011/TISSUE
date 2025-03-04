@@ -17,6 +17,7 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
+import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
@@ -168,8 +169,8 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("이슈의 작성자는 본인이 작성한 이슈를 업데이트할 수 있다")
-	void issueAuthorCanEditIssue() {
+	@DisplayName("이슈를 업데이트할 수 있다")
+	void canEditIssue() {
 		// given
 		Issue issue = testDataFixture.createStory(
 			workspace,
@@ -181,10 +182,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("updated issue")
-			.content("updated issue")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now())
+			.common(CommonIssueUpdateFields.builder()
+				.title("updated issue")
+				.content("updated issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now())
+				.build())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -204,6 +207,73 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
+	@DisplayName("이슈 업데이트 시, summary를 null로 업데이트 가능하다")
+	void canUpdateIssueSummaryFieldAsNull() {
+		// given
+		Issue issue = testDataFixture.createStory(
+			workspace,
+			"test issue (STORY type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.summary(null)
+				.build())
+			.build();
+
+		// when
+		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+		assertThat(response.summary()).isNull();
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("이슈를 업데이트 시, nullable=false인 필드에 대해서는 요청 필드가 null인 경우 업데이트 대상에서 제외된다")
+	void forNonNullableFields_IfRequestFieldIsNull_UpdateIsNotApplied() {
+		// given
+		Issue issue = testDataFixture.createStory(
+			workspace,
+			"original title",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		// all fields except for summary is null for request
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.summary("updated summary")
+				.build())
+			.build();
+
+		// when
+		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+		assertThat(response.title()).isEqualTo("original title");
+	}
+
+	@Test
+	@Transactional
 	@DisplayName("요청의 이슈 타입과 업데이트를 위해 조회한 이슈 타입은 일치해야 한다")
 	void updateIssueTypeMismatchIsNotAllowed() {
 		// given
@@ -217,10 +287,12 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("updated issue")
-			.content("updated issue")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(7))
+			.common(CommonIssueUpdateFields.builder()
+				.title("updated issue")
+				.content("updated issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();

@@ -17,6 +17,7 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
@@ -100,11 +101,13 @@ class IssueControllerTest extends ControllerTestHelper {
 		LocalDateTime dueAt = LocalDateTime.now();
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(dueAt)
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(dueAt)
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -153,11 +156,13 @@ class IssueControllerTest extends ControllerTestHelper {
 	void updateIssue_InvalidType_ThrowsException() throws Exception {
 		// given
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now())
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now())
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
