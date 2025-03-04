@@ -1,6 +1,7 @@
 package com.tissue.api.issue.domain.types;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
@@ -43,8 +44,26 @@ public class Epic extends Issue {
 		this.businessGoal = businessGoal;
 	}
 
-	public void updateStoryPoint(Integer storyPoint) {
-		this.storyPoint = storyPoint;
+	public void updateStoryPoint() {
+		this.storyPoint = calculateTotalStoryPoints();
+	}
+
+	public Integer calculateTotalStoryPoints() {
+		return getChildIssues().stream()
+			.map(issue -> {
+				if (issue instanceof Story) {
+					return ((Story)issue).getStoryPoint();
+				}
+				if (issue instanceof Task) {
+					return ((Task)issue).getStoryPoint();
+				}
+				if (issue instanceof Bug) {
+					return ((Bug)issue).getStoryPoint();
+				}
+				return 0;
+			})
+			.filter(Objects::nonNull)
+			.reduce(0, Integer::sum);
 	}
 
 	public void updateBusinessGoal(String businessGoal) {
