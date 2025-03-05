@@ -106,12 +106,12 @@ public class Bug extends Issue {
 	protected void validateStatusTransition(IssueStatus newStatus) {
 		super.validateStatusTransition(newStatus);
 
-		boolean needsImmediateAttention = severity.getLevel() >= CRITICAL_BUG_LEVEL;
-
-		if (needsImmediateAttention && newStatus == IssueStatus.PAUSED) {
-			throw new InvalidOperationException(
-				"BUG severity must be lower than CRITICAL to change status to PAUSED.");
-		}
+		// boolean needsImmediateAttention = severity.getLevel() >= CRITICAL_BUG_LEVEL;
+		//
+		// if (needsImmediateAttention && newStatus == IssueStatus.PAUSED) {
+		// 	throw new InvalidOperationException(
+		// 		"BUG severity must be lower than CRITICAL to change status to PAUSED.");
+		// }
 	}
 
 	public void updatePriorityByBugSeverity() {

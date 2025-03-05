@@ -520,11 +520,13 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private Set<IssueStatus> getAllowedNextStatuses() {
 		return switch (status) {
-			case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
-			case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
+			// case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
+			case TODO -> Set.of(IN_PROGRESS, CLOSED);
+			// case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
+			case IN_PROGRESS -> Set.of(IN_REVIEW, DONE, CLOSED);
 			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
 			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
-			case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
+			// case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
 			case DONE -> Set.of();
 			case CLOSED -> Set.of();
 		};
