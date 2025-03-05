@@ -14,6 +14,7 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
@@ -391,6 +392,68 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(parentIssue.getIssueKey());
 		assertThat(assignParentResponse.parentIssueId()).isEqualTo(parentIssue.getId());
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("EPIC 타입 이슈를 부모로 등록하는 경우 해당 EPIC 이슈의 스토리 포인트(storyPoint)는 자식 이슈들의 포인트 합산으로 계산된다")
+	void epicParentStoryPointIsCalculated_WhenChildAssignsParentIssue() {
+		// given
+		Issue parentIssue = testDataFixture.createEpic(
+			workspace,
+			"parent issue (EPIC type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		Issue childIssue1 = Story.builder()
+			.workspace(workspace)
+			.title("child issue 1 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(1)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.build();
+
+		issueRepository.save(childIssue1);
+		childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		Issue childIssue2 = Story.builder()
+			.workspace(workspace)
+			.title("child issue 2 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(3)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.build();
+
+		issueRepository.save(childIssue2);
+		childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		// when - assign parent to childIssue1, 2
+		issueCommandService.assignParentIssue(
+			workspace.getCode(),
+			childIssue1.getIssueKey(),
+			workspaceMember1.getId(),
+			new AssignParentIssueRequest(parentIssue.getIssueKey())
+		);
+
+		issueCommandService.assignParentIssue(
+			workspace.getCode(),
+			childIssue2.getIssueKey(),
+			workspaceMember1.getId(),
+			new AssignParentIssueRequest(parentIssue.getIssueKey())
+		);
+
+		// then
+		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()).get();
+
+		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(4);
 	}
 
 	@Test
