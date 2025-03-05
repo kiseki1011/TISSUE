@@ -8,7 +8,6 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.BugSeverity;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
@@ -46,8 +45,6 @@ public class Bug extends Issue {
 	)
 	private Set<String> affectedVersions = new HashSet<>();
 
-	private Integer storyPoint;
-
 	@Builder
 	public Bug(
 		Workspace workspace,
@@ -62,9 +59,8 @@ public class Bug extends Issue {
 		BugSeverity severity,
 		Set<String> affectedVersions
 	) {
-		super(workspace, IssueType.BUG, title, content, summary, priority, dueAt);
+		super(workspace, IssueType.BUG, title, content, summary, priority, dueAt, storyPoint);
 
-		this.storyPoint = storyPoint;
 		this.reproducingSteps = reproducingSteps;
 		this.severity = severity;
 
@@ -77,10 +73,6 @@ public class Bug extends Issue {
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
-	}
-
-	public void updateStoryPoint(Integer storyPoint) {
-		this.storyPoint = storyPoint;
 	}
 
 	public void updateReproducingSteps(String reproducingSteps) {
@@ -100,18 +92,6 @@ public class Bug extends Issue {
 		if (!(parentIssue instanceof Epic)) {
 			throw new InvalidOperationException("BUG type issues can only have an EPIC as their parent issue.");
 		}
-	}
-
-	@Override
-	protected void validateStatusTransition(IssueStatus newStatus) {
-		super.validateStatusTransition(newStatus);
-
-		// boolean needsImmediateAttention = severity.getLevel() >= CRITICAL_BUG_LEVEL;
-		//
-		// if (needsImmediateAttention && newStatus == IssueStatus.PAUSED) {
-		// 	throw new InvalidOperationException(
-		// 		"BUG severity must be lower than CRITICAL to change status to PAUSED.");
-		// }
 	}
 
 	public void updatePriorityByBugSeverity() {

@@ -111,6 +111,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private LocalDateTime dueAt;
 
+	private Integer storyPoint;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
@@ -143,7 +145,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDateTime dueAt
+		LocalDateTime dueAt,
+		Integer storyPoint
 	) {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
@@ -159,6 +162,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.status = IssueStatus.TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
 		this.dueAt = dueAt;
+		this.storyPoint = storyPoint;
+	}
+
+	public boolean hasParent() {
+		return parentIssue != null;
+	}
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
 	}
 
 	public void requestReview() {

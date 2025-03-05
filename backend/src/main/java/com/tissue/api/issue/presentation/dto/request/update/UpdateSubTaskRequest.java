@@ -40,4 +40,9 @@ public record UpdateSubTaskRequest(
 			subTask.updateDueAt(common.dueAt());
 		}
 	}
+
+	@Override
+	public boolean hasStoryPointValue() {
+		return false;
+	}
 }

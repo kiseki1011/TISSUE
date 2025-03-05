@@ -47,4 +47,9 @@ public record UpdateEpicRequest(
 			epic.updateBusinessGoal(businessGoal);
 		}
 	}
+
+	@Override
+	public boolean hasStoryPointValue() {
+		return false;
+	}
 }

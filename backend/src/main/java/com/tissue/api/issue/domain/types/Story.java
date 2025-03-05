@@ -23,7 +23,6 @@ public class Story extends Issue {
 
 	private String userStory;
 	private String acceptanceCriteria;
-	private Integer storyPoint;
 
 	@Builder
 	public Story(
@@ -38,19 +37,14 @@ public class Story extends Issue {
 		String userStory,
 		String acceptanceCriteria
 	) {
-		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt);
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt, storyPoint);
 
-		this.storyPoint = storyPoint;
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);
 		}
-	}
-
-	public void updateStoryPoint(Integer storyPoint) {
-		this.storyPoint = storyPoint;
 	}
 
 	public void updateUserStory(String userStory) {

@@ -2,11 +2,16 @@ package com.tissue.api.issue.service.command;
 
 import java.time.LocalDateTime;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
+import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
+import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
@@ -34,6 +39,7 @@ public class IssueCommandService {
 	private final WorkspaceQueryService workspaceQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public CreateIssueResponse createIssue(
@@ -60,11 +66,16 @@ public class IssueCommandService {
 
 		issue.validateIssueTypeMatch(request.getType());
 
+		// Todo: AuthorizationService를 만들어서 권한 검사 로직 분리
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
 		request.updateNonNullFields(issue);
+
+		if (request.hasStoryPointValue() && issue.hasParent()) {
+			eventPublisher.publishEvent(new IssueStoryPointChangedEvent(issue));
+		}
 
 		return UpdateIssueResponse.from(issue);
 	}
@@ -85,6 +96,13 @@ public class IssueCommandService {
 
 		issue.updateStatus(request.status());
 
+		if (request.status() == IssueStatus.CLOSED
+			&& issue.getType() != IssueType.SUB_TASK
+			&& issue.hasParent()
+		) {
+			eventPublisher.publishEvent(new IssueStatusChangedEvent(issue));
+		}
+
 		return UpdateIssueStatusResponse.from(issue);
 	}
 
@@ -95,17 +113,21 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId,
 		AssignParentIssueRequest request
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue childIssue = issueReader.findIssue(issueKey, workspaceCode);
 		Issue parentIssue = issueReader.findIssue(request.parentIssueKey(), workspaceCode);
 		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
+			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		issue.updateParentIssue(parentIssue);
+		childIssue.updateParentIssue(parentIssue);
 
-		return AssignParentIssueResponse.from(issue);
+		if (parentIssue.getType() == IssueType.EPIC) {
+			eventPublisher.publishEvent(new IssueParentChangedEvent(childIssue));
+		}
+
+		return AssignParentIssueResponse.from(childIssue);
 	}
 
 	@Transactional
@@ -124,6 +146,10 @@ public class IssueCommandService {
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
 		issue.removeParentRelationship();
+
+		if (issue.getType() != IssueType.SUB_TASK) {
+			eventPublisher.publishEvent(new IssueParentChangedEvent(issue));
+		}
 
 		return RemoveParentIssueResponse.from(issue);
 	}

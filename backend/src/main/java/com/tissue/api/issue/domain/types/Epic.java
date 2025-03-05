@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
@@ -24,9 +25,6 @@ public class Epic extends Issue {
 
 	private String businessGoal;
 
-	// Todo: 에픽의 자식 이슈들의 스토리 포인트 합산을 스토리 포인트로 가지도록 구현 필요!
-	private Integer storyPoint;
-
 	@Builder
 	public Epic(
 		Workspace workspace,
@@ -38,30 +36,19 @@ public class Epic extends Issue {
 		Integer storyPoint,
 		String businessGoal
 	) {
-		super(workspace, IssueType.EPIC, title, content, summary, priority, dueAt);
+		super(workspace, IssueType.EPIC, title, content, summary, priority, dueAt, storyPoint);
 
-		this.storyPoint = storyPoint;
 		this.businessGoal = businessGoal;
 	}
 
 	public void updateStoryPoint() {
-		this.storyPoint = calculateTotalStoryPoints();
+		super.updateStoryPoint(calculateTotalStoryPoints());
 	}
 
 	public Integer calculateTotalStoryPoints() {
 		return getChildIssues().stream()
-			.map(issue -> {
-				if (issue instanceof Story) {
-					return ((Story)issue).getStoryPoint();
-				}
-				if (issue instanceof Task) {
-					return ((Task)issue).getStoryPoint();
-				}
-				if (issue instanceof Bug) {
-					return ((Bug)issue).getStoryPoint();
-				}
-				return 0;
-			})
+			.filter(issue -> issue.getStatus() != IssueStatus.CLOSED)
+			.map(Issue::getStoryPoint)
 			.filter(Objects::nonNull)
 			.reduce(0, Integer::sum);
 	}

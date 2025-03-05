@@ -74,7 +74,7 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
-	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
+	public ApiResponse<UpdateIssueResponse> updateIssueDetail(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
@@ -89,6 +89,25 @@ public class IssueController {
 
 		return ApiResponse.ok("Issue details updated.", response);
 	}
+
+	// @LoginRequired
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{issueKey}/storypoint")
+	// public ApiResponse<UpdateIssueResponse> updateIssueStoryPoint(
+	// 	@PathVariable String code,
+	// 	@PathVariable String issueKey,
+	// 	@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+	// 	@RequestBody @Valid UpdateStoryPointRequest request
+	// ) {
+	// 	UpdateIssueResponse response = issueCommandService.updateStoryPoint(
+	// 		code,
+	// 		issueKey,
+	// 		currentWorkspaceMemberId,
+	// 		request
+	// 	);
+	//
+	// 	return ApiResponse.ok("Issue details updated.", response);
+	// }
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
@@ -126,6 +145,11 @@ public class IssueController {
 		return ApiResponse.ok("Parent issue relationship removed.", response);
 	}
 
+	/**
+	 * Todo
+	 *  - hard delete을 사용하지 말고, 이슈 상태를 CLOSED로 바꾸는 soft delete 고려
+	 */
+	@Deprecated
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@DeleteMapping("/{issueKey}")
@@ -140,6 +164,6 @@ public class IssueController {
 			currentWorkspaceMemberId
 		);
 
-		return ApiResponse.ok("Parent issue deleted.", response);
+		return ApiResponse.ok("Issue deleted.", response);
 	}
 }
