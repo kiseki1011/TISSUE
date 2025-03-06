@@ -2,16 +2,12 @@ package com.tissue.api.issue.service.command;
 
 import java.time.LocalDateTime;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
-import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
-import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
@@ -39,7 +35,8 @@ public class IssueCommandService {
 	private final WorkspaceQueryService workspaceQueryService;
 	private final WorkspaceMemberQueryService workspaceMemberQueryService;
 	private final IssueRepository issueRepository;
-	private final ApplicationEventPublisher eventPublisher;
+
+	private final IssueEventPublisher eventPublisher;
 
 	@Transactional
 	public CreateIssueResponse createIssue(
@@ -71,10 +68,18 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		// 스토리 포인트 변경 감지를 위해 이전 값 저장
+		Integer oldStoryPoint = issue.getStoryPoint();
+
 		request.updateNonNullFields(issue);
 
-		if (request.hasStoryPointValue() && issue.hasParent()) {
-			eventPublisher.publishEvent(new IssueStoryPointChangedEvent(issue));
+		if (request.hasStoryPointValue()) {
+			eventPublisher.publishStoryPointChanged(
+				issue,
+				oldStoryPoint,
+				issue.getStoryPoint(),
+				requesterWorkspaceMemberId
+			);
 		}
 
 		return UpdateIssueResponse.from(issue);
@@ -94,14 +99,18 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		// 상태 변경 전 이전 상태 저장
+		IssueStatus oldStatus = issue.getStatus();
+
 		issue.updateStatus(request.status());
 
-		if (request.status() == IssueStatus.CLOSED
-			&& issue.getType() != IssueType.SUB_TASK
-			&& issue.hasParent()
-		) {
-			eventPublisher.publishEvent(new IssueStatusChangedEvent(issue));
-		}
+		// 상태 변경 이벤트 발행
+		eventPublisher.publishStatusChanged(
+			issue,
+			oldStatus,
+			request.status(),
+			requesterWorkspaceMemberId
+		);
 
 		return UpdateIssueStatusResponse.from(issue);
 	}
@@ -121,11 +130,18 @@ public class IssueCommandService {
 			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		// 이전 부모 저장
+		Issue oldParent = childIssue.getParentIssue();
+
 		childIssue.updateParentIssue(parentIssue);
 
-		if (parentIssue.getType() == IssueType.EPIC) {
-			eventPublisher.publishEvent(new IssueParentChangedEvent(childIssue));
-		}
+		// 부모 변경 이벤트 발행
+		eventPublisher.publishParentChanged(
+			childIssue,
+			oldParent,
+			parentIssue,
+			requesterWorkspaceMemberId
+		);
 
 		return AssignParentIssueResponse.from(childIssue);
 	}
@@ -143,13 +159,20 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		// 이전 부모 저장
+		Issue oldParent = issue.getParentIssue();
+
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
 		issue.removeParentRelationship();
 
-		if (issue.getType() != IssueType.SUB_TASK) {
-			eventPublisher.publishEvent(new IssueParentChangedEvent(issue));
-		}
+		// 부모 변경 이벤트 발행
+		eventPublisher.publishParentChanged(
+			issue,
+			oldParent,
+			null,
+			requesterWorkspaceMemberId
+		);
 
 		return RemoveParentIssueResponse.from(issue);
 	}

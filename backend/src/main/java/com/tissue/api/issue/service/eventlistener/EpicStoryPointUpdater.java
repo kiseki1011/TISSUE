@@ -1,4 +1,4 @@
-package com.tissue.api.issue.service.event;
+package com.tissue.api.issue.service.eventlistener;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

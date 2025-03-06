@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public abstract class IssueEvent {
-
 	private final Issue issue;
+	private final Long triggeredByWorkspaceMemberId;
 }

@@ -7,7 +7,21 @@ import lombok.Getter;
 @Getter
 public class IssueStoryPointChangedEvent extends IssueEvent {
 
-	public IssueStoryPointChangedEvent(Issue issue) {
-		super(issue);
+	private final Integer oldStoryPoint;
+	private final Integer newStoryPoint;
+
+	public IssueStoryPointChangedEvent(
+		Issue issue,
+		Integer oldStoryPoint,
+		Integer newStoryPoint,
+		Long triggeredByWorkspaceMemberId
+	) {
+		super(issue, triggeredByWorkspaceMemberId);
+		this.oldStoryPoint = oldStoryPoint;
+		this.newStoryPoint = newStoryPoint;
+	}
+
+	public boolean hasStoryPointChanged() {
+		return !newStoryPoint.equals(oldStoryPoint);
 	}
 }
