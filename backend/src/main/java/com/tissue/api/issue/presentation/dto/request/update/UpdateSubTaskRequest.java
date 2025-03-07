@@ -1,34 +1,17 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDateTime;
-
-import com.tissue.api.common.validator.annotation.size.text.ContentText;
-import com.tissue.api.common.validator.annotation.size.text.ShortText;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.SubTask;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import lombok.Builder;
 
 @Builder
 public record UpdateSubTaskRequest(
 
-	@ShortText
-	@NotBlank(message = "{valid.notblank}")
-	String title,
-
-	@ContentText
-	@NotBlank(message = "{valid.notblank}")
-	String content,
-
-	@StandardText
-	String summary,
-
-	IssuePriority priority,
-	LocalDateTime dueAt
+	@Valid
+	CommonIssueUpdateFields common
 
 ) implements UpdateIssueRequest {
 
@@ -38,13 +21,28 @@ public record UpdateSubTaskRequest(
 	}
 
 	@Override
-	public void update(Issue issue) {
+	public void updateNonNullFields(Issue issue) {
 		SubTask subTask = (SubTask)issue;
 
-		subTask.updateTitle(title);
-		subTask.updateContent(content);
-		subTask.updateSummary(summary);
-		subTask.updatePriority(priority);
-		subTask.updateDueAt(dueAt);
+		if (common.title() != null) {
+			subTask.updateTitle(common.title());
+		}
+		if (common.content() != null) {
+			subTask.updateContent(common.content());
+		}
+
+		subTask.updateSummary(common.summary());
+
+		if (common.priority() != null) {
+			subTask.updatePriority(common.priority());
+		}
+		if (common.dueAt() != null) {
+			subTask.updateDueAt(common.dueAt());
+		}
+	}
+
+	@Override
+	public boolean hasStoryPointValue() {
+		return false;
 	}
 }

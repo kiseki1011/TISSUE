@@ -104,15 +104,14 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
-	// Todo
-	//  - embeddeble 사용 고려?
 	private LocalDateTime startedAt;
 	private LocalDateTime resolvedAt;
 	private LocalDateTime reviewRequestedAt;
 
-	// Todo: DTO에서 필수 입력하도록 검증 추가
 	@Column(nullable = false)
 	private LocalDateTime dueAt;
+
+	private Integer storyPoint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
@@ -146,12 +145,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		String content,
 		String summary,
 		IssuePriority priority,
-		LocalDateTime dueAt
+		LocalDateTime dueAt,
+		Integer storyPoint
 	) {
 		this.issueKey = workspace.getIssueKey();
 		workspace.increaseNextIssueNumber();
 
-		addToWorkspace(workspace);
+		this.workspace = workspace;
+		this.workspaceCode = workspace.getCode();
+		workspace.getIssues().add(this);
 
 		this.type = type;
 		this.title = title;
@@ -160,6 +162,15 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.status = IssueStatus.TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
 		this.dueAt = dueAt;
+		this.storyPoint = storyPoint;
+	}
+
+	public boolean hasParent() {
+		return parentIssue != null;
+	}
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
 	}
 
 	public void requestReview() {
@@ -408,12 +419,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		parentIssue.getChildIssues().add(this);
 	}
 
-	public void addToWorkspace(Workspace workspace) {
-		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
-		workspace.getIssues().add(this);
-	}
-
 	public void removeParentRelationship() {
 		if (parentIssue != null) {
 			parentIssue.getChildIssues().remove(this);
@@ -527,11 +532,13 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private Set<IssueStatus> getAllowedNextStatuses() {
 		return switch (status) {
-			case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
-			case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
+			// case TODO -> Set.of(IN_PROGRESS, PAUSED, CLOSED);
+			case TODO -> Set.of(IN_PROGRESS, CLOSED);
+			// case IN_PROGRESS -> Set.of(IN_REVIEW, PAUSED, DONE, CLOSED);
+			case IN_PROGRESS -> Set.of(IN_REVIEW, DONE, CLOSED);
 			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
 			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
-			case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
+			// case PAUSED -> Set.of(IN_PROGRESS, CLOSED);
 			case DONE -> Set.of();
 			case CLOSED -> Set.of();
 		};

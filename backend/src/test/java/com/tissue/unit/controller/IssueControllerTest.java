@@ -14,8 +14,10 @@ import org.springframework.http.MediaType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
@@ -32,11 +34,13 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("") // 검증 실패
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(10))
+			.common(CommonIssueCreateFields.builder()
+				.title("")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
 			.build();
 
@@ -55,19 +59,21 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("Epic Title")
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now().plusDays(10))
+			.common(CommonIssueCreateFields.builder()
+				.title("Epic Title")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
 			.build();
 
 		CreateEpicResponse response = CreateEpicResponse.builder()
 			.issueId(1L)
 			.workspaceCode(workspaceCode)
-			.title(request.title())
-			.content(request.content())
+			.title("Epic Title")
+			.content("Epic Content")
 			.businessGoal(request.businessGoal())
 			.build();
 
@@ -81,7 +87,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.data.issueId").value(1L))
 			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.title").value(request.title()))
+			.andExpect(jsonPath("$.data.title").value("Epic Title"))
 			.andExpect(jsonPath("$.message").value("EPIC issue created."));
 	}
 
@@ -95,11 +101,13 @@ class IssueControllerTest extends ControllerTestHelper {
 		LocalDateTime dueAt = LocalDateTime.now();
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(dueAt)
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(dueAt)
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -148,11 +156,13 @@ class IssueControllerTest extends ControllerTestHelper {
 	void updateIssue_InvalidType_ThrowsException() throws Exception {
 		// given
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(LocalDateTime.now())
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now())
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();

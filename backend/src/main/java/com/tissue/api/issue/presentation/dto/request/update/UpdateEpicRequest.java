@@ -1,38 +1,20 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDateTime;
-
-import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.LongText;
-import com.tissue.api.common.validator.annotation.size.text.ShortText;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Epic;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import lombok.Builder;
 
 @Builder
 public record UpdateEpicRequest(
 
-	@ShortText
-	@NotBlank(message = "{valid.notblank}")
-	String title,
-
-	@ContentText
-	@NotBlank(message = "{valid.notblank}")
-	String content,
-
-	@StandardText
-	String summary,
-
-	IssuePriority priority,
-	LocalDateTime dueAt,
+	@Valid
+	CommonIssueUpdateFields common,
 
 	@LongText
-	@NotBlank(message = "{valid.notblank}")
 	String businessGoal
 
 ) implements UpdateIssueRequest {
@@ -43,14 +25,31 @@ public record UpdateEpicRequest(
 	}
 
 	@Override
-	public void update(Issue issue) {
+	public void updateNonNullFields(Issue issue) {
 		Epic epic = (Epic)issue;
 
-		epic.updateTitle(title);
-		epic.updateContent(content);
-		epic.updateSummary(summary);
-		epic.updatePriority(priority);
-		epic.updateDueAt(dueAt);
-		epic.updateBusinessGoal(businessGoal);
+		if (common.title() != null) {
+			epic.updateTitle(common.title());
+		}
+		if (common.content() != null) {
+			epic.updateContent(common.content());
+		}
+
+		epic.updateSummary(common.summary());
+
+		if (common.priority() != null) {
+			epic.updatePriority(common.priority());
+		}
+		if (common.dueAt() != null) {
+			epic.updateDueAt(common.dueAt());
+		}
+		if (businessGoal != null) {
+			epic.updateBusinessGoal(businessGoal);
+		}
+	}
+
+	@Override
+	public boolean hasStoryPointValue() {
+		return false;
 	}
 }

@@ -32,11 +32,13 @@ public class Story extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDateTime dueAt,
+		Integer storyPoint,
 		Issue parentIssue,
 		String userStory,
 		String acceptanceCriteria
 	) {
-		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt);
+		super(workspace, IssueType.STORY, title, content, summary, priority, dueAt, storyPoint);
+
 		this.userStory = userStory;
 		this.acceptanceCriteria = acceptanceCriteria;
 

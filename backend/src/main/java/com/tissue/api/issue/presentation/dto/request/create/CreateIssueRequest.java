@@ -1,11 +1,8 @@
 package com.tissue.api.issue.presentation.dto.request.create;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.workspace.domain.Workspace;
 
@@ -23,19 +20,9 @@ import com.tissue.api.workspace.domain.Workspace;
 })
 public interface CreateIssueRequest {
 
-	String title();
-
-	String content();
-
-	String summary();
-
-	IssuePriority priority();
-
-	LocalDateTime dueAt();
-
-	String parentIssueKey();
+	CommonIssueCreateFields common();
 
 	IssueType getType();
 
-	Issue to(Workspace workspace, Issue parentIssue);
+	Issue toIssue(Workspace workspace);
 }

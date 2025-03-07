@@ -1,34 +1,23 @@
 package com.tissue.api.issue.presentation.dto.request.update;
 
-import java.time.LocalDateTime;
-
-import com.tissue.api.common.validator.annotation.size.text.ContentText;
-import com.tissue.api.common.validator.annotation.size.text.ShortText;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Task;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Builder;
 
 @Builder
 public record UpdateTaskRequest(
 
-	@ShortText
-	@NotBlank(message = "{valid.notblank}")
-	String title,
+	@Valid
+	CommonIssueUpdateFields common,
 
-	@ContentText
-	@NotBlank(message = "{valid.notblank}")
-	String content,
-
-	@StandardText
-	String summary,
-
-	IssuePriority priority,
-	LocalDateTime dueAt
+	@Min(value = 0, message = "{valid.storypoint.min}")
+	@Max(value = 100, message = "{valid.storypoint.max}")
+	Integer storyPoint
 
 ) implements UpdateIssueRequest {
 
@@ -38,13 +27,29 @@ public record UpdateTaskRequest(
 	}
 
 	@Override
-	public void update(Issue issue) {
+	public void updateNonNullFields(Issue issue) {
 		Task task = (Task)issue;
 
-		task.updateTitle(title);
-		task.updateContent(content);
-		task.updateSummary(summary);
-		task.updatePriority(priority);
-		task.updateDueAt(dueAt);
+		if (common.title() != null) {
+			task.updateTitle(common.title());
+		}
+		if (common.content() != null) {
+			task.updateContent(common.content());
+		}
+
+		task.updateSummary(common.summary());
+
+		if (common.priority() != null) {
+			task.updatePriority(common.priority());
+		}
+		if (common.dueAt() != null) {
+			task.updateDueAt(common.dueAt());
+		}
+
+		task.updateStoryPoint(storyPoint);
+	}
+
+	public boolean hasStoryPointValue() {
+		return storyPoint != null;
 	}
 }

@@ -29,9 +29,10 @@ public class Task extends Issue {
 		String summary,
 		IssuePriority priority,
 		LocalDateTime dueAt,
+		Integer storyPoint,
 		Issue parentIssue
 	) {
-		super(workspace, IssueType.TASK, title, content, summary, priority, dueAt);
+		super(workspace, IssueType.TASK, title, content, summary, priority, dueAt, storyPoint);
 
 		if (parentIssue != null) {
 			updateParentIssue(parentIssue);

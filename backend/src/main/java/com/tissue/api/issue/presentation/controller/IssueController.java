@@ -19,7 +19,6 @@ import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -74,7 +73,7 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
-	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
+	public ApiResponse<UpdateIssueResponse> updateIssueDetail(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
@@ -124,22 +123,5 @@ public class IssueController {
 		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@DeleteMapping("/{issueKey}")
-	public ApiResponse<DeleteIssueResponse> deleteIssue(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
-	) {
-		DeleteIssueResponse response = issueCommandService.deleteIssue(
-			code,
-			issueKey,
-			currentWorkspaceMemberId
-		);
-
-		return ApiResponse.ok("Parent issue deleted.", response);
 	}
 }
