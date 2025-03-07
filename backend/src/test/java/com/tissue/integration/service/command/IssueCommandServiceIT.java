@@ -458,6 +458,54 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
+	@DisplayName("이슈 업데이트에서 스토리 포인트를 업데이트 하는 경우, 해당 이슈의 부모가 Epic이면, Epic의 스토리 포인트를 갱신한다")
+	void whenUpdateStoryPoint_IfParentIsEpic_EpicStoryPointIsRecalculated() {
+		// given
+		Issue parentIssue = testDataFixture.createEpic(
+			workspace,
+			"parent issue (EPIC type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		Issue childIssue = Story.builder()
+			.workspace(workspace)
+			.title("child issue 1 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(1)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.parentIssue(parentIssue)
+			.build();
+		issueRepository.save(childIssue);
+
+		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.build())
+			.storyPoint(10) // update story point to 10
+			.build();
+
+		// when
+		issueCommandService.updateIssue(
+			workspace.getCode(),
+			childIssue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()).get();
+
+		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(10);
+	}
+
+	@Test
+	@Transactional
 	@DisplayName("이슈의 부모를 변경할 수 있다")
 	void canChangeParentIssueOfIssue() {
 		// given
