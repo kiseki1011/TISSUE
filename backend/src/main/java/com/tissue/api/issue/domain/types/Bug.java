@@ -30,8 +30,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bug extends Issue {
 
-	private static final int CRITICAL_BUG_LEVEL = BugSeverity.CRITICAL.getLevel();
-
 	@Lob
 	private String reproducingSteps;
 
