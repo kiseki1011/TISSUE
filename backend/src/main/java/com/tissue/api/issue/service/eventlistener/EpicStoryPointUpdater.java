@@ -2,14 +2,11 @@ package com.tissue.api.issue.service.eventlistener;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
-import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.domain.types.Epic;
 
 import lombok.RequiredArgsConstructor;
@@ -20,17 +17,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EpicStoryPointUpdater {
 
-	private final IssueRepository issueRepository;
-
+	// @Async("epicTaskExecutor")
+	// @Transactional(propagation = Propagation.REQUIRES_NEW)
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@EventListener
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleIssueStoryPointChanged(IssueStoryPointChangedEvent event) {
 		log.debug("Handling story point change for issue: {}", event.getIssue().getIssueKey());
 		updateParentEpicStoryPoint(event.getIssue());
 	}
 
+	// @Async("epicTaskExecutor")
+	// @Transactional(propagation = Propagation.REQUIRES_NEW)
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@EventListener
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleIssueParentChanged(IssueParentChangedEvent event) {
 		log.debug("Handling parent change for issue: {}", event.getIssue().getIssueKey());
 
@@ -44,8 +43,10 @@ public class EpicStoryPointUpdater {
 		updateParentEpicStoryPoint(event.getIssue());
 	}
 
+	// @Async("epicTaskExecutor")
+	// @Transactional(propagation = Propagation.REQUIRES_NEW)
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@EventListener
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handleIssueStatusChanged(IssueStatusChangedEvent event) {
 		log.debug("Handling status change for issue: {} from {} to {}",
 			event.getIssue().getIssueKey(), event.getOldStatus(), event.getNewStatus());
