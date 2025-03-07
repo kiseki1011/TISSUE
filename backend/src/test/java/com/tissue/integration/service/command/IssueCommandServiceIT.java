@@ -23,7 +23,6 @@ import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
@@ -304,62 +303,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 				request))
 			.isInstanceOf(InvalidOperationException.class);
 	}
-
-	@Test
-	@Transactional
-	@DisplayName("이슈 작성자는 이슈를 삭제할 수 있다")
-	void issueAuthorCanDeleteIssue() {
-		// given
-		Issue issue = testDataFixture.createStory(
-			workspace,
-			"test issue (STORY type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-
-		// when
-		DeleteIssueResponse response = issueCommandService.deleteIssue(
-			workspace.getCode(),
-			issue.getIssueKey(),
-			workspaceMember1.getId()
-		);
-
-		// then
-		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("SUB_TASK의 부모 이슈는 삭제할 수 없다")
-	void cannotDeleteParentOfSubTask() {
-		// given
-		Issue parentIssue = testDataFixture.createStory(
-			workspace,
-			"parent issue (STORY type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-
-		Issue childIssue = testDataFixture.createSubTask(
-			workspace,
-			"child issue (SUBTASK type)",
-			IssuePriority.MEDIUM,
-			LocalDateTime.now().plusDays(7)
-		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-		childIssue.updateParentIssue(parentIssue);
-
-		// when & then
-		assertThatThrownBy(
-			() -> issueCommandService.deleteIssue(workspace.getCode(), parentIssue.getIssueKey(),
-				workspaceMember1.getId()))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
+	
 	@Test
 	@Transactional
 	@DisplayName("STORY의 부모로 EPIC을 등록할 수 있다")

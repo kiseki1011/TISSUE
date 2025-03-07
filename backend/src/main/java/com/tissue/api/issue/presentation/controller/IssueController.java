@@ -19,7 +19,6 @@ import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -90,25 +89,6 @@ public class IssueController {
 		return ApiResponse.ok("Issue details updated.", response);
 	}
 
-	// @LoginRequired
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{issueKey}/storypoint")
-	// public ApiResponse<UpdateIssueResponse> updateIssueStoryPoint(
-	// 	@PathVariable String code,
-	// 	@PathVariable String issueKey,
-	// 	@CurrentWorkspaceMember Long currentWorkspaceMemberId,
-	// 	@RequestBody @Valid UpdateStoryPointRequest request
-	// ) {
-	// 	UpdateIssueResponse response = issueCommandService.updateStoryPoint(
-	// 		code,
-	// 		issueKey,
-	// 		currentWorkspaceMemberId,
-	// 		request
-	// 	);
-	//
-	// 	return ApiResponse.ok("Issue details updated.", response);
-	// }
-
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
@@ -143,27 +123,5 @@ public class IssueController {
 		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
-	}
-
-	/**
-	 * Todo
-	 *  - hard delete을 사용하지 말고, 이슈 상태를 CLOSED로 바꾸는 soft delete 고려
-	 */
-	@Deprecated
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@DeleteMapping("/{issueKey}")
-	public ApiResponse<DeleteIssueResponse> deleteIssue(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
-	) {
-		DeleteIssueResponse response = issueCommandService.deleteIssue(
-			code,
-			issueKey,
-			currentWorkspaceMemberId
-		);
-
-		return ApiResponse.ok("Issue deleted.", response);
 	}
 }

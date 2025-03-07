@@ -1,13 +1,10 @@
 package com.tissue.api.issue.service.command;
 
-import java.time.LocalDateTime;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
@@ -17,7 +14,6 @@ import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -175,29 +171,5 @@ public class IssueCommandService {
 		);
 
 		return RemoveParentIssueResponse.from(issue);
-	}
-
-	@Transactional
-	public DeleteIssueResponse deleteIssue(
-		String workspaceCode,
-		String issueKey,
-		Long requesterWorkspaceMemberId
-	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
-
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
-
-		if (issue.getType() != IssueType.EPIC) {
-			issue.validateHasChildIssues();
-		}
-
-		Long issueId = issue.getId();
-
-		issueRepository.delete(issue);
-
-		return DeleteIssueResponse.from(issueId, issueKey, LocalDateTime.now());
 	}
 }
