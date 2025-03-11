@@ -28,7 +28,7 @@ public class NotificationCommandService {
 		String workspaceCode,
 		NotificationType type,
 		NotificationEntityType entityType,
-		String entityId,
+		Long entityId,
 		String title,
 		String message,
 		Long actorWorkspaceMemberId
