@@ -81,6 +81,9 @@ public class IssueCommandService {
 				requesterWorkspaceMemberId
 			);
 		}
+		// Todo: publishStoryPointChanged를 호출하는 로직이 너무 이상함.
+		//  일단 publishIssueUpdated를 통해 이슈를 발행하고, 처리는 리스너에서 하도록 구현하는 것이 맞음
+		// eventPublisher.publishIssueUpdated(issue, creatorWorkspaceMemberId);
 
 		return UpdateIssueResponse.from(issue);
 	}
