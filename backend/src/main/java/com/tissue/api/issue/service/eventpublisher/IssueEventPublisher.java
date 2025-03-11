@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
@@ -19,6 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 public class IssueEventPublisher {
 
 	private final ApplicationEventPublisher eventPublisher;
+
+	public void publishIssueCreated(
+		Issue issue,
+		Long triggeredBy
+	) {
+		IssueCreatedEvent event = new IssueCreatedEvent(issue, triggeredBy);
+		eventPublisher.publishEvent(event);
+	}
 
 	public void publishStatusChanged(
 		Issue issue,
