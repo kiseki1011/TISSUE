@@ -10,6 +10,7 @@ import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
+import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,14 @@ public class IssueEventPublisher {
 		Long triggeredBy
 	) {
 		IssueCreatedEvent event = new IssueCreatedEvent(issue, triggeredBy);
+		eventPublisher.publishEvent(event);
+	}
+
+	public void publishIssueUpdated(
+		Issue issue,
+		Long triggeredBy
+	) {
+		IssueUpdatedEvent event = new IssueUpdatedEvent(issue, triggeredBy);
 		eventPublisher.publishEvent(event);
 	}
 

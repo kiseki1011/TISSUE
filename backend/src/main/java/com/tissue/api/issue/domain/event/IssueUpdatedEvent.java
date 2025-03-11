@@ -5,9 +5,9 @@ import com.tissue.api.issue.domain.Issue;
 import lombok.Getter;
 
 @Getter
-public class IssueCreatedEvent extends IssueEvent {
+public class IssueUpdatedEvent extends IssueEvent {
 
-	public IssueCreatedEvent(
+	public IssueUpdatedEvent(
 		Issue issue,
 		Long triggeredByWorkspaceMemberId
 	) {
