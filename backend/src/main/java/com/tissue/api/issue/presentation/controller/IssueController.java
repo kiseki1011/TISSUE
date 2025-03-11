@@ -44,9 +44,10 @@ public class IssueController {
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
 		@PathVariable String code,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(code, request);
+		CreateIssueResponse response = issueCommandService.createIssue(code, currentWorkspaceMemberId, request);
 
 		return ApiResponse.ok(response.getType() + " issue created.", response);
 	}

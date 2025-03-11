@@ -38,13 +38,16 @@ public class IssueCommandService {
 	@Transactional
 	public CreateIssueResponse createIssue(
 		String workspaceCode,
+		Long currentWorkspaceMemberId,
 		CreateIssueRequest request
 	) {
 		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
 
 		Issue issue = request.toIssue(workspace);
-
 		Issue savedIssue = issueRepository.save(issue);
+
+		eventPublisher.publishIssueCreated(savedIssue, currentWorkspaceMemberId);
+
 		return CreateIssueResponse.from(savedIssue);
 	}
 
