@@ -1,4 +1,4 @@
-package com.tissue.api.issue.service.command;
+package com.tissue.api.issue.service.eventpublisher;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
