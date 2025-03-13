@@ -27,7 +27,7 @@ import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.service.query.WorkspaceReader;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
@@ -43,7 +43,7 @@ public class WorkspaceController {
 
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceCommandService workspaceCommandService;
-	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceReader workspaceReader;
 	private final WorkspaceValidator workspaceValidator;
 
 	@LoginRequired
@@ -109,7 +109,7 @@ public class WorkspaceController {
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(
 		@PathVariable String code
 	) {
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
+		WorkspaceDetail response = workspaceReader.getWorkspaceDetail(code);
 
 		return ApiResponse.ok("Workspace found.", response);
 	}

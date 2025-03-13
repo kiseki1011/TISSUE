@@ -16,7 +16,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
+class WorkspaceReaderIT extends ServiceIntegrationTestHelper {
 
 	Member member1;
 	Workspace workspace1;
@@ -65,7 +65,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspace.getCode());
+		WorkspaceDetail response = workspaceReader.getWorkspaceDetail(workspace.getCode());
 
 		// then
 		assertThat(response.getCode()).isEqualTo(workspace.getCode());
@@ -77,7 +77,7 @@ class WorkspaceQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 코드로 조회할 수 없다")
 	void cannotGetWorkspaceDetailWithInvalidCode() {
 		// when & then
-		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("INVALIDCODE"))
+		assertThatThrownBy(() -> workspaceReader.getWorkspaceDetail("INVALIDCODE"))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 }

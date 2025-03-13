@@ -20,7 +20,7 @@ import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.service.query.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +30,7 @@ public class SprintCommandService {
 
 	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
-	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceReader workspaceReader;
 	private final IssueReader issueReader;
 
 	@Transactional
@@ -38,7 +38,7 @@ public class SprintCommandService {
 		String workspaceCode,
 		CreateSprintRequest request
 	) {
-		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
 		Sprint sprint = Sprint.builder()
 			.title(request.title())

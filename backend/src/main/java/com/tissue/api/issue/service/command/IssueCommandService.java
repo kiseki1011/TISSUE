@@ -17,7 +17,7 @@ import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.eventpublisher.IssueEventPublisher;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.service.query.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueCommandService {
 
 	private final IssueReader issueReader;
-	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceReader workspaceReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRepository issueRepository;
 
@@ -41,7 +41,7 @@ public class IssueCommandService {
 		Long currentWorkspaceMemberId,
 		CreateIssueRequest request
 	) {
-		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);

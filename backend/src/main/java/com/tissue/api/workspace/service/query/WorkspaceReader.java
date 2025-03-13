@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class WorkspaceQueryService {
+public class WorkspaceReader {
 
 	private final WorkspaceRepository workspaceRepository;
 

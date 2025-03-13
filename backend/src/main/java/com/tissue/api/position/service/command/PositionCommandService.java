@@ -16,7 +16,7 @@ import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.service.query.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PositionCommandService {
 
 	private final PositionQueryService positionQueryService;
-	private final WorkspaceQueryService workspaceQueryService;
+	private final WorkspaceReader workspaceReader;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
@@ -36,7 +36,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
 
