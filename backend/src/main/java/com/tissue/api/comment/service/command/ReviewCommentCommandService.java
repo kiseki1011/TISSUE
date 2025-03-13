@@ -13,7 +13,7 @@ import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewCommentCommandService {
 
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
 
@@ -41,7 +41,7 @@ public class ReviewCommentCommandService {
 					"Review was not found with review id: %d, issue key: %s, workspace code: %s",
 					reviewId, issueKey, workspaceCode)));
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		ReviewComment parentComment = null;
@@ -75,7 +75,7 @@ public class ReviewCommentCommandService {
 		UpdateReviewCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
@@ -94,7 +94,7 @@ public class ReviewCommentCommandService {
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)

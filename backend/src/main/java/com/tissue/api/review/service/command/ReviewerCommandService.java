@@ -10,7 +10,7 @@ import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewerCommandService {
 
 	private final IssueReader issueReader;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
 	public AddReviewerResponse addReviewer(
@@ -30,11 +30,11 @@ public class ReviewerCommandService {
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
 			workspaceCode
 		);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 			requesterWorkspaceMemberId,
 			workspaceCode
 		);
@@ -59,11 +59,11 @@ public class ReviewerCommandService {
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
 			workspaceCode
 		);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 			requesterWorkspaceMemberId,
 			workspaceCode
 		);

@@ -11,7 +11,7 @@ import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.repository.NotificationRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationCommandService {
 
 	private final NotificationRepository notificationRepository;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
 	public void createNotification(
@@ -33,7 +33,7 @@ public class NotificationCommandService {
 		String message,
 		Long actorWorkspaceMemberId
 	) {
-		WorkspaceMember actor = workspaceMemberQueryService.findWorkspaceMember(actorWorkspaceMemberId);
+		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(actorWorkspaceMemberId);
 
 		Notification notification = Notification.builder()
 			.receiverWorkspaceMemberId(receiverWorkspaceMemberId)

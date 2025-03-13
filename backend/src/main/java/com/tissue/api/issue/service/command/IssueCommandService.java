@@ -20,7 +20,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +30,7 @@ public class IssueCommandService {
 
 	private final IssueReader issueReader;
 	private final WorkspaceQueryService workspaceQueryService;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRepository issueRepository;
 
 	private final IssueEventPublisher eventPublisher;
@@ -59,7 +59,7 @@ public class IssueCommandService {
 		UpdateIssueRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		issue.validateIssueTypeMatch(request.getType());
 
@@ -96,7 +96,7 @@ public class IssueCommandService {
 		UpdateIssueStatusRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -127,7 +127,7 @@ public class IssueCommandService {
 	) {
 		Issue childIssue = issueReader.findIssue(issueKey, workspaceCode);
 		Issue parentIssue = issueReader.findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -156,7 +156,7 @@ public class IssueCommandService {
 		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);

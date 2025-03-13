@@ -45,8 +45,8 @@ import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.service.command.WorkspaceParticipationCommandService;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 import com.tissue.support.fixture.TestDataFixture;
 import com.tissue.support.util.DatabaseCleaner;
@@ -79,7 +79,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceMemberInviteService workspaceMemberInviteService;
 	@Autowired
-	protected WorkspaceMemberQueryService workspaceMemberQueryService;
+	protected WorkspaceMemberReader workspaceMemberReader;
 	@Autowired
 	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	@Autowired

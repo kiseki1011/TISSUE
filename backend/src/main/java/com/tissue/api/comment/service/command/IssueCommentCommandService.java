@@ -12,7 +12,7 @@ import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueCommentCommandService {
 
 	private final IssueReader issueReader;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CommentRepository commentRepository;
 
 	@Transactional
@@ -33,7 +33,7 @@ public class IssueCommentCommandService {
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment parentComment = null;
@@ -67,7 +67,7 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
@@ -87,7 +87,7 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,

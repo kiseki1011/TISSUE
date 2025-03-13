@@ -20,7 +20,6 @@ import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceM
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkspaceMemberCommandService {
 
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final PositionQueryService positionQueryService;
 	private final TeamQueryService teamQueryService;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -43,7 +42,7 @@ public class WorkspaceMemberCommandService {
 		UpdateNicknameRequest request
 	) {
 		try {
-			WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+			WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 			workspaceMember.updateNickname(request.nickname());
 			workspaceMemberRepository.saveAndFlush(workspaceMember);
@@ -64,8 +63,8 @@ public class WorkspaceMemberCommandService {
 		Long requesterWorkspaceMemberId,
 		UpdateRoleRequest request
 	) {
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
-		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
@@ -81,7 +80,7 @@ public class WorkspaceMemberCommandService {
 		Long workspaceMemberId
 	) {
 		Position position = positionQueryService.findPosition(positionId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addPosition(position);
 
@@ -95,7 +94,7 @@ public class WorkspaceMemberCommandService {
 		Long workspaceMemberId
 	) {
 		Position position = positionQueryService.findPosition(positionId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removePosition(position);
 	}
@@ -107,7 +106,7 @@ public class WorkspaceMemberCommandService {
 		Long workspaceMemberId
 	) {
 		Team team = teamQueryService.findTeam(teamId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addTeam(team);
 
@@ -121,7 +120,7 @@ public class WorkspaceMemberCommandService {
 		Long workspaceMemberId
 	) {
 		Team team = teamQueryService.findTeam(teamId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberQueryService.findWorkspaceMember(workspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removeTeam(team);
 	}
@@ -131,8 +130,8 @@ public class WorkspaceMemberCommandService {
 		Long targetWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
-		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetWorkspaceMemberId);
 
 		requester.updateRoleFromOwnerToAdmin();
 		target.updateRoleToOwner();
@@ -145,8 +144,8 @@ public class WorkspaceMemberCommandService {
 		Long targetWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
-		WorkspaceMember target = workspaceMemberQueryService.findWorkspaceMember(targetWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetWorkspaceMemberId);
 
 		workspaceMemberValidator.validateRemoveMember(requester, target);
 

@@ -9,7 +9,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class AssigneeCommandService {
 
 	private final IssueReader issueReader;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
 	public AddAssigneeResponse addAssignee(
@@ -28,7 +28,7 @@ public class AssigneeCommandService {
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
 			assigneeWorkspaceMemberId,
 			workspaceCode
 		);
@@ -47,11 +47,11 @@ public class AssigneeCommandService {
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember assignee = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
 			assigneeWorkspaceMemberId,
 			workspaceCode
 		);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 			requesterWorkspaceMemberId,
 			workspaceCode
 		);
