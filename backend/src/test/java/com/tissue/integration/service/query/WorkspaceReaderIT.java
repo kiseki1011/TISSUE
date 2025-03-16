@@ -65,7 +65,7 @@ class WorkspaceReaderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		WorkspaceDetail response = workspaceReader.getWorkspaceDetail(workspace.getCode());
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspace.getCode());
 
 		// then
 		assertThat(response.getCode()).isEqualTo(workspace.getCode());
@@ -77,7 +77,7 @@ class WorkspaceReaderIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 코드로 조회할 수 없다")
 	void cannotGetWorkspaceDetailWithInvalidCode() {
 		// when & then
-		assertThatThrownBy(() -> workspaceReader.getWorkspaceDetail("INVALIDCODE"))
+		assertThatThrownBy(() -> workspaceQueryService.getWorkspaceDetail("INVALIDCODE"))
 			.isInstanceOf(WorkspaceNotFoundException.class);
 	}
 }

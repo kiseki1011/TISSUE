@@ -44,6 +44,7 @@ import com.tissue.api.workspace.presentation.controller.WorkspaceController;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspace.service.command.create.CheckCodeDuplicationService;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.controller.WorkspaceMemberDetailController;
@@ -120,6 +121,8 @@ public abstract class ControllerTestHelper {
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@MockBean
 	protected WorkspaceReader workspaceReader;
+	@MockBean
+	protected WorkspaceQueryService workspaceQueryService;
 	@MockBean
 	protected WorkspaceCommandService workspaceCommandService;
 	@MockBean

@@ -41,6 +41,7 @@ import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
@@ -86,6 +87,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@Autowired
 	protected WorkspaceReader workspaceReader;
+	@Autowired
+	protected WorkspaceQueryService workspaceQueryService;
 	@Autowired
 	protected WorkspaceCommandService workspaceCommandService;
 	@Autowired
