@@ -13,7 +13,6 @@ import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
 import com.tissue.api.position.presentation.dto.response.DeletePositionResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
 import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
-import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
-	private final PositionQueryService positionQueryService;
+	private final PositionReader positionReader;
 	private final WorkspaceReader workspaceReader;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
@@ -57,7 +56,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		Position position = positionReader.findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -71,7 +70,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		Position position = positionReader.findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -83,7 +82,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		Position position = positionReader.findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 

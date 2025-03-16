@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.position.domain.Position;
-import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceMemberCommandService {
 
 	private final WorkspaceMemberReader workspaceMemberReader;
-	private final PositionQueryService positionQueryService;
+	private final PositionReader positionReader;
 	private final TeamQueryService teamQueryService;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
@@ -79,7 +79,7 @@ public class WorkspaceMemberCommandService {
 		Long positionId,
 		Long workspaceMemberId
 	) {
-		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		Position position = positionReader.findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addPosition(position);
@@ -93,7 +93,7 @@ public class WorkspaceMemberCommandService {
 		Long positionId,
 		Long workspaceMemberId
 	) {
-		Position position = positionQueryService.findPosition(positionId, workspaceCode);
+		Position position = positionReader.findPosition(positionId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removePosition(position);
