@@ -36,7 +36,7 @@ import com.tissue.api.sprint.service.command.SprintReader;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.team.domain.repository.TeamRepository;
 import com.tissue.api.team.service.command.TeamCommandService;
-import com.tissue.api.team.service.query.TeamQueryService;
+import com.tissue.api.team.service.command.TeamReader;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
@@ -111,7 +111,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected TeamCommandService teamCommandService;
 	@Autowired
-	protected TeamQueryService teamQueryService;
+	protected TeamReader teamReader;
 	// @Autowired
 	// protected TeamQueryService teamQueryService;
 	@Autowired

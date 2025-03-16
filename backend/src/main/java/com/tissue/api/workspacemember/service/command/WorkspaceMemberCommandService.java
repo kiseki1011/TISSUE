@@ -9,7 +9,7 @@ import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.team.domain.Team;
-import com.tissue.api.team.service.query.TeamQueryService;
+import com.tissue.api.team.service.command.TeamReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
@@ -32,7 +32,7 @@ public class WorkspaceMemberCommandService {
 
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final PositionReader positionReader;
-	private final TeamQueryService teamQueryService;
+	private final TeamReader teamReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
 
@@ -105,7 +105,7 @@ public class WorkspaceMemberCommandService {
 		Long teamId,
 		Long workspaceMemberId
 	) {
-		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		Team team = teamReader.findTeam(teamId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.addTeam(team);
@@ -119,7 +119,7 @@ public class WorkspaceMemberCommandService {
 		Long teamId,
 		Long workspaceMemberId
 	) {
-		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		Team team = teamReader.findTeam(teamId, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(workspaceMemberId);
 
 		workspaceMember.removeTeam(team);
