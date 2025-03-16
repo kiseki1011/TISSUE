@@ -16,7 +16,7 @@ import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

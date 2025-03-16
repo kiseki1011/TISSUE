@@ -12,7 +12,7 @@ import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 

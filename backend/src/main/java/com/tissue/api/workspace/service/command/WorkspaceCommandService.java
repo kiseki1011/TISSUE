@@ -16,7 +16,6 @@ import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePassword
 import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 
 import lombok.RequiredArgsConstructor;

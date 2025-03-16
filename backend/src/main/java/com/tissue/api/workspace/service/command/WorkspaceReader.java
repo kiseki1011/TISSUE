@@ -1,4 +1,4 @@
-package com.tissue.api.workspace.service.query;
+package com.tissue.api.workspace.service.command;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

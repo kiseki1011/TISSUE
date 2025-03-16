@@ -20,7 +20,7 @@ import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 

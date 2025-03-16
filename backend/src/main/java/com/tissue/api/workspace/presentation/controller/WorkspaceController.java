@@ -26,8 +26,8 @@ import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceRespons
 import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
 import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 

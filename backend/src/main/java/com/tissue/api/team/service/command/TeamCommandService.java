@@ -16,7 +16,7 @@ import com.tissue.api.team.presentation.dto.response.UpdateTeamResponse;
 import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.team.validator.TeamValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

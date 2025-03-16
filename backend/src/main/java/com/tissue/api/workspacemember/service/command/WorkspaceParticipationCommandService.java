@@ -8,7 +8,7 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceReader;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
