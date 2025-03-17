@@ -18,7 +18,6 @@ import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
 import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
-import com.tissue.api.review.service.query.ReviewQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
@@ -34,9 +33,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewCommandService {
 
-	private final ReviewQueryService reviewQueryService;
+	private final ReviewReader reviewReader;
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
+
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
@@ -72,7 +72,7 @@ public class ReviewCommandService {
 		Long reviewerWorkspaceMemberId,
 		UpdateReviewRequest request
 	) {
-		Review review = reviewQueryService.findReview(reviewId);
+		Review review = reviewReader.findReview(reviewId);
 		review.validateIsAuthor(reviewerWorkspaceMemberId);
 
 		review.updateTitle(request.title());
@@ -92,7 +92,7 @@ public class ReviewCommandService {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
-		Review review = reviewQueryService.findReview(reviewId);
+		Review review = reviewReader.findReview(reviewId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			review.validateIsAuthor(requesterWorkspaceMemberId);
