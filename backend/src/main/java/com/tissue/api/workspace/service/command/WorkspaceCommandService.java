@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class WorkspaceCommandService {
 
-	private final MemberQueryService memberQueryService;
+	private final MemberReader memberReader;
 	private final WorkspaceReader workspaceReader;
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -69,7 +69,7 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		Member member = memberQueryService.findMember(memberId);
+		Member member = memberReader.findMember(memberId);
 		member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);

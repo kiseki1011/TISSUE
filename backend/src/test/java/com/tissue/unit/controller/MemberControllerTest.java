@@ -30,7 +30,7 @@ import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
+import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
 import com.tissue.api.security.session.SessionAttributes;
@@ -50,7 +50,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Found my profile."))
+			.andExpect(jsonPath("$.message").value("Found profile."))
 			.andDo(print());
 	}
 
@@ -70,13 +70,13 @@ class MemberControllerTest extends ControllerTestHelper {
 			.biography("Im a backend developer")
 			.build();
 
-		when(memberQueryService.getMyProfile(anyLong())).thenReturn(MyProfileResponse.from(member));
+		when(memberQueryService.getProfile(anyLong())).thenReturn(GetProfileResponse.from(member));
 
 		// when & then
 		mockMvc.perform(get("/api/v1/members")
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Found my profile."))
+			.andExpect(jsonPath("$.message").value("Found profile."))
 			.andExpect(jsonPath("$.data.firstName").value("Gildong"))
 			.andExpect(jsonPath("$.data.birthDate").value(LocalDate.of(1990, 1, 1).toString()))
 			.andDo(print());

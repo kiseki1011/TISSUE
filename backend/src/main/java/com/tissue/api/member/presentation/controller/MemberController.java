@@ -18,7 +18,7 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
+import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
 import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
 import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
@@ -54,11 +54,11 @@ public class MemberController {
 	private final SessionValidator sessionValidator;
 
 	@GetMapping
-	public ApiResponse<MyProfileResponse> getMyProfile(
+	public ApiResponse<GetProfileResponse> getProfile(
 		@ResolveLoginMember Long loginMemberId
 	) {
-		MyProfileResponse response = memberQueryService.getMyProfile(loginMemberId);
-		return ApiResponse.ok("Found my profile.", response);
+		GetProfileResponse response = memberQueryService.getProfile(loginMemberId);
+		return ApiResponse.ok("Found profile.", response);
 	}
 
 	@ResponseStatus(HttpStatus.CREATED)
@@ -110,6 +110,13 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Member password updated.");
 	}
 
+	/**
+	 * Todo
+	 *  - hard delete X
+	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
+	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
+	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 */
 	@LoginRequired
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(

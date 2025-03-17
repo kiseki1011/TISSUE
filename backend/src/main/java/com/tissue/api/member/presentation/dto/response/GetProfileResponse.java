@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import com.tissue.api.member.domain.JobType;
 import com.tissue.api.member.domain.Member;
 
-public record MyProfileResponse(
+public record GetProfileResponse(
 	String loginId,
 	String email,
 
@@ -22,8 +22,8 @@ public record MyProfileResponse(
 	LocalDateTime updatedAt
 ) {
 
-	public static MyProfileResponse from(Member member) {
-		return new MyProfileResponse(
+	public static GetProfileResponse from(Member member) {
+		return new GetProfileResponse(
 			member.getLoginId(),
 			member.getEmail(),
 			member.getName().getLastName(),

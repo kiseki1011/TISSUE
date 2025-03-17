@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
@@ -23,7 +23,7 @@ public class WorkspaceParticipationCommandService {
 	 *  - leaveWorkspace: 워크스페이스 떠나기(현재 OWNER 상태면 불가능)
 	 */
 	private final WorkspaceReader workspaceReader;
-	private final MemberQueryService memberQueryService;
+	private final MemberReader memberReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final RandomNicknameGenerator randomNicknameGenerator;
 
@@ -39,7 +39,7 @@ public class WorkspaceParticipationCommandService {
 	public JoinWorkspaceResponse joinWorkspace(String workspaceCode, Long memberId) {
 
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
-		Member member = memberQueryService.findMember(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {
 			throw new InvalidOperationException(
