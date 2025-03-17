@@ -10,7 +10,7 @@ import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
-import com.tissue.api.invitation.service.query.InvitationQueryService;
+import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
 import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvitationCommandService {
 
-	private final InvitationQueryService invitationQueryService;
+	private final InvitationReader invitationReader;
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
@@ -75,7 +75,7 @@ public class InvitationCommandService {
 		Long memberId,
 		Long invitationId
 	) {
-		Invitation invitation = invitationQueryService.findPendingInvitation(invitationId);
+		Invitation invitation = invitationReader.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
 		invitationValidator.validateInvitation(memberId, workspaceCode);
