@@ -25,8 +25,8 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
+import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceMemberEntityFixture;
@@ -116,7 +116,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.updatedAt(LocalDateTime.now())
 			.build();
 
-		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+		GetWorkspacesResponse response = GetWorkspacesResponse.builder()
 			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
 			.totalElements(2L)
 			.build();
@@ -124,7 +124,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
-		when(workspaceParticipationQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(workspaceParticipationQueryService.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// 기대하는 JSON 응답 생성
@@ -143,7 +143,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.andDo(print());
 
 		verify(workspaceParticipationQueryService, times(1))
-			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+			.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 	}
 
 	@Test
@@ -171,12 +171,12 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.updatedAt(LocalDateTime.now())
 			.build();
 
-		MyWorkspacesResponse response = MyWorkspacesResponse.builder()
+		GetWorkspacesResponse response = GetWorkspacesResponse.builder()
 			.workspaces(List.of(workspaceDetail1, workspaceDetail2))
 			.totalElements(2L)
 			.build();
 
-		when(workspaceParticipationQueryService.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+		when(workspaceParticipationQueryService.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
 
 		// when & then
@@ -188,7 +188,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.andExpect(status().isOk());
 
 		verify(workspaceParticipationQueryService, times(1))
-			.getMyWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+			.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 
 	}
 
