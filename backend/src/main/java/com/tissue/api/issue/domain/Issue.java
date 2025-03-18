@@ -4,6 +4,7 @@ import static com.tissue.api.issue.domain.enums.IssueStatus.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -113,6 +114,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private Integer storyPoint;
 
+	@Column(nullable = false)
+	private int currentReviewRound = 0;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
@@ -129,11 +133,18 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
-	@Column(nullable = false)
-	private int currentReviewRound = 0;
-
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueAssignee> assignees = new ArrayList<>();
+
+	/**
+	 * Todo
+	 *  - 단방향 관계를 위한 설정
+	 *  - Assignee, Reviewer도 단방향 관계로 리팩토링하는게 좋을 듯
+	 *    - 이유?: 굳이 탐색이 편하자고 양방향으로 만들 필요는 없을 듯
+	 */
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "ISSUE_ID")
+	private List<IssueWatcher> watchers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "issue")
 	private List<SprintIssue> sprintIssues = new ArrayList<>();
@@ -171,6 +182,61 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	public void updateStoryPoint(Integer storyPoint) {
 		this.storyPoint = storyPoint;
+	}
+
+	public IssueWatcher addWatcher(WorkspaceMember workspaceMember) {
+		validateBelongsToWorkspace(workspaceMember);
+		validateNotAlreadyWatching(workspaceMember);
+
+		IssueWatcher watcher = new IssueWatcher(workspaceMember);
+		watchers.add(watcher);
+		return watcher;
+	}
+
+	public void removeWatcher(WorkspaceMember workspaceMember) {
+		watchers.removeIf(watcher -> watcher.getWatcher().equals(workspaceMember));
+	}
+
+	/**
+	 * Todo
+	 *  - 기존 N+1 문제 발생을 IssueXxx 엔티티에 id를 직접 컬럼으로 저장해서, lazy loading 관련 문제 회피
+	 *  - 사용 시점에 Join Fetch 쿼리 사용하는 방식으로 해결할 수도 있음
+	 */
+	public Set<Long> getSubscriberIds() {
+		Set<Long> subscriberIds = new HashSet<>();
+
+		// 작성자 ID 추가
+		if (this.getCreatedByWorkspaceMember() != null) {
+			subscriberIds.add(this.getCreatedByWorkspaceMember());
+		}
+
+		// Assignee IDs 추가
+		assignees.stream()
+			.map(IssueAssignee::getAssigneeId)  // 엔티티 로드 없이 ID 접근
+			.forEach(subscriberIds::add);
+
+		// Reviewer IDs 추가
+		reviewers.stream()
+			.map(IssueReviewer::getReviewerId)  // 엔티티 로드 없이 ID 접근
+			.forEach(subscriberIds::add);
+
+		// Watcher IDs 추가
+		watchers.stream()
+			.map(IssueWatcher::getWatcherId)  // 엔티티 로드 없이 ID 접근
+			.forEach(subscriberIds::add);
+
+		return subscriberIds;
+	}
+
+	private void validateNotAlreadyWatching(WorkspaceMember workspaceMember) {
+		boolean isAlreadyWatching = watchers.stream()
+			.anyMatch(w -> w.getWatcher().getId().equals(workspaceMember.getId()));
+
+		if (isAlreadyWatching) {
+			throw new InvalidOperationException(String.format(
+				"Workspace member is already watching this issue. workspaceMemberId: %d, nickname: %s",
+				workspaceMember.getId(), workspaceMember.getNickname()));
+		}
 	}
 
 	public void requestReview() {

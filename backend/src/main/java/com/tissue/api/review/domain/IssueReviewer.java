@@ -10,6 +10,7 @@ import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -35,8 +36,11 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID", nullable = false)
 	private Issue issue;
 
+	@Column(name = "REVIEWER_ID", nullable = false)
+	private Long reviewerId;  // ID만 직접 저장
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "REVIEWER_ID", nullable = false)
+	@JoinColumn(name = "REVIEWER_ID", insertable = false, updatable = false)
 	private WorkspaceMember reviewer;
 
 	@OneToMany(mappedBy = "issueReviewer", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -31,8 +31,11 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID", nullable = false)
 	private Issue issue;
 
+	@Column(name = "ASSIGNEE_ID", nullable = false)
+	private Long assigneeId;  // ID만 직접 저장
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ASSIGNEE_ID", nullable = false)
+	@JoinColumn(name = "ASSIGNEE_ID", insertable = false, updatable = false)
 	private WorkspaceMember assignee;
 
 	@Column(nullable = false)
