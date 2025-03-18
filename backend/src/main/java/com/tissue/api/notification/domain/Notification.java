@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseDateEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -38,7 +39,8 @@ public class Notification extends BaseDateEntity {
 	@Column(nullable = false)
 	private NotificationEntityType entityType;
 
-	// EntityReference 라는 복합 식별자 클래스를 만들까? -> entityId, entityKey 모두 기록
+	// 처음 표현 계층에서 받은 식별자(예를 들어서 workspaceCode + issueKey)들을 통해서 처음 조회 후,
+	// 이후 부터는 id 조회하도록 리팩토링
 	@Column(nullable = false)
 	private Long entityId;
 
