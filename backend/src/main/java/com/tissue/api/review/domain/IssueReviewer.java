@@ -36,7 +36,8 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID", nullable = false)
 	private Issue issue;
 
-	@Column(name = "REVIEWER_ID", nullable = false)
+	// @Column(name = "REVIEWER_ID", nullable = false)
+	@Column(name = "REVIEWER_ID")
 	private Long reviewerId;  // ID만 직접 저장
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -48,6 +49,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 
 	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
 		this.reviewer = reviewer;
+		this.reviewerId = reviewer.getId();
 		this.issue = issue;
 	}
 
