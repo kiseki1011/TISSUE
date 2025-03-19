@@ -134,7 +134,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<IssueAssignee> assignees = new ArrayList<>();
+	private Set<IssueAssignee> assignees = new HashSet<>();
 
 	/**
 	 * Todo
@@ -144,7 +144,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	 */
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "ISSUE_ID")
-	private List<IssueWatcher> watchers = new ArrayList<>();
+	private Set<IssueWatcher> watchers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue")
 	private List<SprintIssue> sprintIssues = new ArrayList<>();
@@ -186,7 +186,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	public IssueWatcher addWatcher(WorkspaceMember workspaceMember) {
 		validateBelongsToWorkspace(workspaceMember);
-		validateNotAlreadyWatching(workspaceMember);
 
 		IssueWatcher watcher = new IssueWatcher(workspaceMember);
 		watchers.add(watcher);
@@ -226,17 +225,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			.forEach(subscriberIds::add);
 
 		return subscriberIds;
-	}
-
-	private void validateNotAlreadyWatching(WorkspaceMember workspaceMember) {
-		boolean isAlreadyWatching = watchers.stream()
-			.anyMatch(w -> w.getWatcher().getId().equals(workspaceMember.getId()));
-
-		if (isAlreadyWatching) {
-			throw new InvalidOperationException(String.format(
-				"Workspace member is already watching this issue. workspaceMemberId: %d, nickname: %s",
-				workspaceMember.getId(), workspaceMember.getNickname()));
-		}
 	}
 
 	public void requestReview() {
@@ -369,7 +357,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
 		validateAssigneeLimit();
 		validateBelongsToWorkspace(workspaceMember);
-		validateNotAlreadyAssigned(workspaceMember);
+		// validateNotAlreadyAssigned(workspaceMember);
 
 		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
 
