@@ -39,8 +39,10 @@ public class Notification extends BaseDateEntity {
 	@Column(nullable = false)
 	private NotificationEntityType entityType;
 
-	// 처음 표현 계층에서 받은 식별자(예를 들어서 workspaceCode + issueKey)들을 통해서 처음 조회 후,
-	// 이후 부터는 id 조회하도록 리팩토링
+	// Todo
+	//  - 처음 표현 계층에서 받은 식별자(예를 들어서 workspaceCode + issueKey)들을 통해서 처음 조회 후,
+	//  - 이후 부터는 id 조회하도록 리팩토링
+	//  - EntityId라는 VO를 만들어서 안에 workspaceCode, xxxKey 등의 정보를 담는 방식 고려
 	@Column(nullable = false)
 	private Long entityId;
 
