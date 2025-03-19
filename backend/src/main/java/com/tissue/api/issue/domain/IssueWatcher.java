@@ -14,11 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@EqualsAndHashCode(of = "watcherId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueWatcher extends BaseDateEntity {
 
@@ -43,6 +45,7 @@ public class IssueWatcher extends BaseDateEntity {
 
 	public IssueWatcher(WorkspaceMember watcher) {
 		this.watcher = watcher;
+		this.watcherId = watcher.getId();
 		this.watchedAt = LocalDateTime.now();
 	}
 }
