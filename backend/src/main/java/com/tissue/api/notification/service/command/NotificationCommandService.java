@@ -1,6 +1,7 @@
 package com.tissue.api.notification.service.command;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class NotificationCommandService {
 
 	@Transactional
 	public void createNotification(
+		UUID eventId,
 		Long receiverWorkspaceMemberId,
 		String workspaceCode,
 		NotificationType type,
@@ -36,6 +38,7 @@ public class NotificationCommandService {
 		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(actorWorkspaceMemberId);
 
 		Notification notification = Notification.builder()
+			.eventId(eventId)
 			.receiverWorkspaceMemberId(receiverWorkspaceMemberId)
 			.workspaceCode(workspaceCode)
 			.type(type)
