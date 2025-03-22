@@ -1,5 +1,7 @@
 package com.tissue.api.notification.domain;
 
+import java.util.UUID;
+
 import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
@@ -11,6 +13,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,12 +22,22 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "UK_EVENT_RECEIVER",
+			columnNames = {"eventId", "receiverWorkspaceMemberId"})
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseDateEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	@Column(name = "event_id", nullable = false)
+	private UUID eventId;
 
 	@Column(nullable = false)
 	private Long receiverWorkspaceMemberId;
@@ -62,6 +76,7 @@ public class Notification extends BaseDateEntity {
 
 	@Builder
 	public Notification(
+		UUID eventId,
 		Long receiverWorkspaceMemberId,
 		String workspaceCode,
 		NotificationType type,
@@ -72,6 +87,7 @@ public class Notification extends BaseDateEntity {
 		Long actorWorkspaceMemberId,
 		String actorWorkspaceMemberNickname
 	) {
+		this.eventId = eventId;
 		this.receiverWorkspaceMemberId = receiverWorkspaceMemberId;
 		this.workspaceCode = workspaceCode;
 		this.type = type;
