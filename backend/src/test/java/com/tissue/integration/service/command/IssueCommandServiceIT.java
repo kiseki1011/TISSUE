@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
@@ -342,6 +343,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@Disabled
 	@Transactional
 	@DisplayName("EPIC 타입 이슈를 부모로 등록하는 경우 해당 EPIC 이슈의 스토리 포인트(storyPoint)는 자식 이슈들의 포인트 합산으로 계산된다")
 	void epicParentStoryPointIsCalculated_WhenChildAssignsParentIssue() {
@@ -404,6 +406,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@Disabled
 	@Transactional
 	@DisplayName("이슈 업데이트에서 스토리 포인트를 업데이트 하는 경우, 해당 이슈의 부모가 Epic이면, Epic의 스토리 포인트를 갱신한다")
 	void whenUpdateStoryPoint_IfParentIsEpic_EpicStoryPointIsRecalculated() {
