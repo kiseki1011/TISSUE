@@ -1,16 +1,16 @@
 package com.tissue.api.issue.domain.event;
 
-import com.tissue.api.issue.domain.Issue;
-
 import lombok.Getter;
 
 @Getter
 public class IssueCreatedEvent extends IssueEvent {
 
 	public IssueCreatedEvent(
-		Issue issue,
+		Long issueId,
+		String issueKey,
+		String workspaceCode,
 		Long triggeredByWorkspaceMemberId
 	) {
-		super(issue, triggeredByWorkspaceMemberId);
+		super(issueId, issueKey, workspaceCode, triggeredByWorkspaceMemberId);
 	}
 }

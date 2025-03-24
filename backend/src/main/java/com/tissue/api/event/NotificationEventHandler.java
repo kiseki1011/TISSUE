@@ -11,6 +11,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
@@ -29,6 +30,7 @@ public class NotificationEventHandler {
 
 	private final NotificationCommandService notificationService;
 	private final IssueReader issueReader;
+	private final IssueRepository issueRepository;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
@@ -38,14 +40,11 @@ public class NotificationEventHandler {
 	@Async("notificationTaskExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueCreated(IssueCreatedEvent event) {
-		log.debug("Processing issue created event: {}", event.getIssue().getIssueKey());
+		log.debug("Processing issue created event. issue id: {}", event.getIssueId());
 
-		// Todo
-		//  - Issue 엔티티를 넘겨서 사용하는게 아니라 id만 받아와서 조회하고 사용
-		//  - 또는 전용 DTO 만들어서 데이터 전달
-		Issue issue = event.getIssue();
-		String workspaceCode = issue.getWorkspaceCode();
+		Issue issue = issueReader.findIssue(event.getIssueKey(), event.getWorkspaceCode());
 		Long actorId = event.getTriggeredByWorkspaceMemberId();
+		String workspaceCode = issue.getWorkspaceCode();
 
 		// 액터 정보 조회
 		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(actorId);
@@ -66,7 +65,7 @@ public class NotificationEventHandler {
 		/*
 		 * Todo
 		 *  - AsIs: best-effort 방식 사용중. 일부 알림이 실패해도 재처리 로직 없이, 실패한 경우를 로깅정도만 함.
-		 *  - ToBe: Transactional Outbox Pattern 사용
+		 *  - ToBe: 이벤트 저장소 패턴 사용
 		 */
 		for (WorkspaceMember member : members) {
 			try {
