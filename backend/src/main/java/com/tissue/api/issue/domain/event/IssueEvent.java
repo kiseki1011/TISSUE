@@ -19,7 +19,7 @@ public abstract class IssueEvent implements DomainEvent {
 
 	private final UUID eventId = UUID.randomUUID();
 	private final LocalDateTime occurredAt = LocalDateTime.now();
-	// private final Issue issue;
+
 	private final Long issueId;
 	private final String issueKey;
 	private final String workspaceCode;

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
@@ -35,8 +34,6 @@ public class IssueCommandService {
 	private final IssueRepository issueRepository;
 
 	private final ApplicationEventPublisher eventPublisher;
-
-	// private final IssueEventPublisher eventPublisher;
 
 	@Transactional
 	public CreateIssueResponse createIssue(
@@ -76,26 +73,19 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// 스토리 포인트 변경 감지를 위해 이전 값 저장
-		Integer oldStoryPoint = issue.getStoryPoint();
-
 		request.updateNonNullFields(issue);
 
-		// if (request.hasStoryPointValue()) {
-		// 	eventPublisher.publishStoryPointChanged(
-		// 		issue,
-		// 		oldStoryPoint,
-		// 		issue.getStoryPoint(),
-		// 		requesterWorkspaceMemberId
-		// 	);
-		// }
-		// Todo: publishStoryPointChanged를 호출하는 로직이 너무 이상함.
-		//  일단 publishIssueUpdated를 통해 이슈를 발행하고, 처리는 리스너에서 하도록 구현하는 것이 맞음
-		// eventPublisher.publishIssueUpdated(issue, creatorWorkspaceMemberId);
+		// 이슈 업데이트 이슈 발행 필요
 
 		return UpdateIssueResponse.from(issue);
 	}
 
+	/**
+	 * Todo
+	 *  - 추후에 상태 전이와 관련된 규칙이나 워크플로우를 위한 엔진을 만들고(InternalWorkflowEngine -> WorkflowEngine 인터페이스 만들기)
+	 *  - WorkflowService라는 도메인 서비스를 만들어서 WorkflowEngine 호출해서 사용
+	 *  - IssueCommandService는 비즈니스 서비스이기 때문 도메인 서비스인 WorkflowService를 호출하도록 설계 예정
+	 */
 	@Transactional
 	public UpdateIssueStatusResponse updateIssueStatus(
 		String workspaceCode,
@@ -110,18 +100,9 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// 상태 변경 전 이전 상태 저장
-		IssueStatus oldStatus = issue.getStatus();
-
 		issue.updateStatus(request.status());
 
-		// 상태 변경 이벤트 발행
-		// eventPublisher.publishStatusChanged(
-		// 	issue,
-		// 	oldStatus,
-		// 	request.status(),
-		// 	requesterWorkspaceMemberId
-		// );
+		// 이슈 상태 변경 이벤트 발행 필요
 
 		return UpdateIssueStatusResponse.from(issue);
 	}
@@ -141,18 +122,9 @@ public class IssueCommandService {
 			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// 이전 부모 저장
-		Issue oldParent = childIssue.getParentIssue();
-
 		childIssue.updateParentIssue(parentIssue);
 
-		// 부모 변경 이벤트 발행
-		// eventPublisher.publishParentChanged(
-		// 	childIssue,
-		// 	oldParent,
-		// 	parentIssue,
-		// 	requesterWorkspaceMemberId
-		// );
+		// 부모 변경(등록) 이벤트 발행 필요
 
 		return AssignParentIssueResponse.from(childIssue);
 	}
@@ -170,20 +142,11 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
-		// 이전 부모 저장
-		Issue oldParent = issue.getParentIssue();
-
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
 		issue.removeParentRelationship();
 
-		// 부모 변경 이벤트 발행
-		// eventPublisher.publishParentChanged(
-		// 	issue,
-		// 	oldParent,
-		// 	null,
-		// 	requesterWorkspaceMemberId
-		// );
+		// 부모 제거 이벤트 발행 필요
 
 		return RemoveParentIssueResponse.from(issue);
 	}
