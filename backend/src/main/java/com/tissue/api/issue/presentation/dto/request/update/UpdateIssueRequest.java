@@ -24,6 +24,4 @@ public interface UpdateIssueRequest {
 	IssueType getType();
 
 	void updateNonNullFields(Issue issue);
-
-	boolean hasStoryPointValue();
 }

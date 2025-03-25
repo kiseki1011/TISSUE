@@ -62,9 +62,4 @@ public record UpdateStoryRequest(
 			story.updateAcceptanceCriteria(acceptanceCriteria);
 		}
 	}
-
-	@Override
-	public boolean hasStoryPointValue() {
-		return storyPoint != null;
-	}
 }
