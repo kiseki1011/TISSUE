@@ -5,7 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
+import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
+import com.tissue.api.issue.domain.event.IssueStatusUpdatedEvent;
+import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
@@ -46,12 +51,9 @@ public class IssueCommandService {
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);
 
-		eventPublisher.publishEvent(new IssueCreatedEvent(
-			issue.getId(),
-			issue.getIssueKey(),
-			workspaceCode,
-			currentWorkspaceMemberId
-		));
+		eventPublisher.publishEvent(
+			IssueCreatedEvent.createEvent(issue, currentWorkspaceMemberId)
+		);
 
 		return CreateIssueResponse.from(savedIssue);
 	}
@@ -73,9 +75,13 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		Integer oldStoryPoint = issue.getStoryPoint();
+
 		request.updateNonNullFields(issue);
 
-		// 이슈 업데이트 이슈 발행 필요
+		eventPublisher.publishEvent(
+			IssueUpdatedEvent.createEvent(issue, oldStoryPoint, requesterWorkspaceMemberId)
+		);
 
 		return UpdateIssueResponse.from(issue);
 	}
@@ -100,9 +106,13 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		IssueStatus oldStatus = issue.getStatus();
+
 		issue.updateStatus(request.status());
 
-		// 이슈 상태 변경 이벤트 발행 필요
+		eventPublisher.publishEvent(
+			IssueStatusUpdatedEvent.createEvent(issue, oldStatus, requesterWorkspaceMemberId)
+		);
 
 		return UpdateIssueStatusResponse.from(issue);
 	}
@@ -122,9 +132,13 @@ public class IssueCommandService {
 			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		Issue oldParentIssue = childIssue.getParentIssue();
+
 		childIssue.updateParentIssue(parentIssue);
 
-		// 부모 변경(등록) 이벤트 발행 필요
+		eventPublisher.publishEvent(
+			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, requesterWorkspaceMemberId)
+		);
 
 		return AssignParentIssueResponse.from(childIssue);
 	}
@@ -142,11 +156,15 @@ public class IssueCommandService {
 			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
 		}
 
+		Issue oldParentIssue = issue.getParentIssue();
+
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
 		issue.removeParentRelationship();
 
-		// 부모 제거 이벤트 발행 필요
+		eventPublisher.publishEvent(
+			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, requesterWorkspaceMemberId)
+		);
 
 		return RemoveParentIssueResponse.from(issue);
 	}
