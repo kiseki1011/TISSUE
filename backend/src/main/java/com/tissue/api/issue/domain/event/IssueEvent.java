@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.tissue.api.common.event.DomainEvent;
+import com.tissue.api.issue.domain.enums.IssueType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public abstract class IssueEvent implements DomainEvent {
 	private final Long issueId;
 	private final String issueKey;
 	private final String workspaceCode;
+	private final IssueType issueType;
 	private final Long triggeredByWorkspaceMemberId;
 
 	@Override
