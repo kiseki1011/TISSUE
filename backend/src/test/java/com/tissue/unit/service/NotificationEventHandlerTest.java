@@ -49,20 +49,15 @@ class NotificationEventHandlerTest {
 		String workspaceCode = "TESTCODE";
 		Long actorId = 123L;
 
-		// 이벤트 생성
-		IssueCreatedEvent event = new IssueCreatedEvent(
-			issueId,
-			issueKey,
-			workspaceCode,
-			actorId
-		);
-
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
 		when(issue.getId()).thenReturn(issueId);
 		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
 		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+
+		// 이벤트 생성
+		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
 
 		// IssueReader 모의 설정 - issueKey와 workspaceCode로 Issue 조회
 		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
@@ -99,12 +94,12 @@ class NotificationEventHandlerTest {
 		Long actorId = 123L;
 
 		// 이벤트 생성
-		IssueCreatedEvent event = new IssueCreatedEvent(
-			issueId,
-			issueKey,
-			workspaceCode,
-			actorId
-		);
+		// IssueCreatedEvent event = new IssueCreatedEvent(
+		// 	issueId,
+		// 	issueKey,
+		// 	workspaceCode,
+		// 	actorId
+		// );
 
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
@@ -112,6 +107,9 @@ class NotificationEventHandlerTest {
 		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
 		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+
+		// 이벤트 생성
+		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
 
 		// IssueReader 모의 설정
 		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
@@ -153,12 +151,12 @@ class NotificationEventHandlerTest {
 		Long actorId = 123L;
 
 		// 이벤트 생성
-		IssueCreatedEvent event = new IssueCreatedEvent(
-			issueId,
-			issueKey,
-			workspaceCode,
-			actorId
-		);
+		// IssueCreatedEvent event = new IssueCreatedEvent(
+		// 	issueId,
+		// 	issueKey,
+		// 	workspaceCode,
+		// 	actorId
+		// );
 
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
@@ -166,6 +164,9 @@ class NotificationEventHandlerTest {
 		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
 		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+
+		// 이벤트 생성
+		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
 
 		// IssueReader 모의 설정
 		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
