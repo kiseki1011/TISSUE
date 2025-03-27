@@ -2,10 +2,9 @@ package com.tissue.api.event;
 
 import java.util.Objects;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -33,7 +32,8 @@ public class EpicStoryPointEventHandler {
 	 * 이슈 내용 업데이트 이벤트를 처리합니다.
 	 * 자식 이슈의 스토리 포인트가 변경되었을 때 부모 Epic의 스토리 포인트를 재계산합니다.
 	 */
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueContentUpdated(IssueUpdatedEvent event) {
 		// Epic이 아니고, SubTask도 아니며, 스토리 포인트가 변경된 이슈만 처리
 		if (event.getIssueType() == IssueType.SUB_TASK || event.getIssueType() == IssueType.EPIC) {
@@ -58,7 +58,8 @@ public class EpicStoryPointEventHandler {
 	 * 이슈에 부모가 할당되는 이벤트를 처리합니다.
 	 * 이슈가 Epic에 자식으로 추가되거나, 다른 Epic으로 부모가 변경될 때 관련 Epic들의 스토리 포인트를 재계산합니다.
 	 */
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueParentAssigned(IssueParentAssignedEvent event) {
 		// SubTask이거나 스토리 포인트를 가질 수 없는 타입이면 처리하지 않음
 		if (event.getIssueType() == IssueType.SUB_TASK || event.getIssueType() == IssueType.EPIC) {
@@ -84,7 +85,8 @@ public class EpicStoryPointEventHandler {
 	 * 이슈에서 부모가 제거되는 이벤트를 처리합니다.
 	 * 이슈가 Epic에서 제거될 때 해당 Epic의 스토리 포인트를 재계산합니다.
 	 */
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueParentRemoved(IssueParentRemovedEvent event) {
 		// SubTask이거나 스토리 포인트를 가질 수 없는 타입이면 처리하지 않음
 		if (event.getIssueType() == IssueType.SUB_TASK || event.getIssueType() == IssueType.EPIC) {
@@ -103,7 +105,8 @@ public class EpicStoryPointEventHandler {
 	 * 이슈 상태 변경 이벤트를 처리합니다.
 	 * 특히 이슈가 CLOSED 상태로 변경되면 부모 Epic의 스토리 포인트 계산에 영향을 줍니다.
 	 */
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@EventListener
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueStatusUpdated(IssueStatusUpdatedEvent event) {
 		// SubTask이거나 스토리 포인트를 가질 수 없는 타입이면 처리하지 않음 -> 그냥 이슈가 SubTask나 Epic이면 return하는 걸로 리팩토링?
 		// 굳이 notStoryPointChangeable가 필요할까?
