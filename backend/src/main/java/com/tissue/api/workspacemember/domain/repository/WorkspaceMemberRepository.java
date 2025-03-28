@@ -2,6 +2,7 @@ package com.tissue.api.workspacemember.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
 
-	List<WorkspaceMember> findAllByIdIn(List<Long> idList);
+	List<WorkspaceMember> findAllByIdIn(Set<Long> idList);
 
 	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
 
