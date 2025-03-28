@@ -2,6 +2,8 @@ package com.tissue.api.notification.domain.enums;
 
 public enum NotificationType {
 	ISSUE_CREATED,
+	ISSUE_PARENT_ASSIGNED,
+	ISSUE_PARENT_REMOVED,
 	ISSUE_UPDATED,
 	ISSUE_STATUS_CHANGED,
 	ISSUE_COMMENT_ADDED,
