@@ -2,6 +2,8 @@ package com.tissue.api.issue.domain.event;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.notification.domain.enums.NotificationEntityType;
+import com.tissue.api.notification.domain.enums.NotificationType;
 
 import lombok.Getter;
 
@@ -15,7 +17,15 @@ public class IssueCreatedEvent extends IssueEvent {
 		IssueType issueType,
 		Long triggeredByWorkspaceMemberId
 	) {
-		super(issueId, issueKey, workspaceCode, issueType, triggeredByWorkspaceMemberId);
+		super(
+			NotificationType.ISSUE_CREATED,
+			NotificationEntityType.ISSUE,
+			issueId,
+			issueKey,
+			workspaceCode,
+			issueType,
+			triggeredByWorkspaceMemberId
+		);
 	}
 
 	public static IssueCreatedEvent createEvent(

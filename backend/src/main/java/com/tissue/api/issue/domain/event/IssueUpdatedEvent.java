@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.notification.domain.enums.NotificationEntityType;
+import com.tissue.api.notification.domain.enums.NotificationType;
 
 import lombok.Getter;
 
@@ -33,7 +35,15 @@ public class IssueUpdatedEvent extends IssueEvent {
 		Integer oldStoryPoint,
 		Integer newStoryPoint
 	) {
-		super(issueId, issueKey, workspaceCode, issueType, triggeredByWorkspaceMemberId);
+		super(
+			NotificationType.ISSUE_UPDATED,
+			NotificationEntityType.ISSUE,
+			issueId,
+			issueKey,
+			workspaceCode,
+			issueType,
+			triggeredByWorkspaceMemberId
+		);
 		this.title = title;
 		this.storyPointChanged = storyPointChanged;
 		this.oldStoryPoint = oldStoryPoint;
