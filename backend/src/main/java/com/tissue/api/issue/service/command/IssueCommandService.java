@@ -9,7 +9,7 @@ import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.domain.event.IssueStatusUpdatedEvent;
+import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
@@ -111,7 +111,7 @@ public class IssueCommandService {
 		issue.updateStatus(request.status());
 
 		eventPublisher.publishEvent(
-			IssueStatusUpdatedEvent.createEvent(issue, oldStatus, requesterWorkspaceMemberId)
+			IssueStatusChangedEvent.createEvent(issue, oldStatus, requesterWorkspaceMemberId)
 		);
 
 		return UpdateIssueStatusResponse.from(issue);

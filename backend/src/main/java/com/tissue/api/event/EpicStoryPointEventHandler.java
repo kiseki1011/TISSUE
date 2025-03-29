@@ -10,7 +10,7 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.domain.event.IssueStatusUpdatedEvent;
+import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.domain.types.Epic;
@@ -107,7 +107,7 @@ public class EpicStoryPointEventHandler {
 	 */
 	@EventListener
 	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueStatusUpdated(IssueStatusUpdatedEvent event) {
+	public void handleIssueStatusUpdated(IssueStatusChangedEvent event) {
 		// SubTask이거나 스토리 포인트를 가질 수 없는 타입이면 처리하지 않음 -> 그냥 이슈가 SubTask나 Epic이면 return하는 걸로 리팩토링?
 		// 굳이 notStoryPointChangeable가 필요할까?
 		if (event.getIssueType() == IssueType.SUB_TASK || event.getIssueType() == IssueType.EPIC) {

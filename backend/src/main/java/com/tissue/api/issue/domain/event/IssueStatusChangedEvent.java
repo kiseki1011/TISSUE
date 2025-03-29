@@ -13,7 +13,7 @@ import lombok.Getter;
  *  - IssueStatusUpdated -> IssueStatusChanged
  */
 @Getter
-public class IssueStatusUpdatedEvent extends IssueEvent {
+public class IssueStatusChangedEvent extends IssueEvent {
 
 	// 이슈 상태 변경 정보
 	private final IssueStatus oldStatus;
@@ -27,7 +27,7 @@ public class IssueStatusUpdatedEvent extends IssueEvent {
 	// 이슈의 스토리 포인트 (Epic 스토리 포인트 계산용)
 	private final Integer storyPoint;
 
-	private IssueStatusUpdatedEvent(
+	private IssueStatusChangedEvent(
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
@@ -57,14 +57,14 @@ public class IssueStatusUpdatedEvent extends IssueEvent {
 		this.storyPoint = storyPoint;
 	}
 
-	public static IssueStatusUpdatedEvent createEvent(
+	public static IssueStatusChangedEvent createEvent(
 		Issue issue,
 		IssueStatus oldStatus,
 		Long triggeredByWorkspaceMemberId
 	) {
 		Issue parentIssue = issue.hasParent() ? issue.getParentIssue() : null;
 
-		return new IssueStatusUpdatedEvent(
+		return new IssueStatusChangedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
