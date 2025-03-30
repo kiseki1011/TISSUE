@@ -1,5 +1,6 @@
 package com.tissue.unit.service;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -11,12 +12,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import com.tissue.api.event.NotificationEventHandler;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.issue.service.command.IssueReader;
+import com.tissue.api.notification.domain.NotificationMessageFactory;
+import com.tissue.api.notification.domain.NotificationProcessor;
+import com.tissue.api.notification.domain.NotificationTargetResolver;
 import com.tissue.api.notification.service.command.NotificationCommandService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -37,34 +42,37 @@ class NotificationEventHandlerTest {
 	@Mock
 	private WorkspaceMemberRepository workspaceMemberRepository;
 
+	@Mock
+	private NotificationTargetResolver targetResolver;
+
+	@Mock
+	private NotificationProcessor notificationProcessor;
+
+	@Mock
+	private NotificationMessageFactory notificationMessageFactory;
+
 	@InjectMocks
 	private NotificationEventHandler notificationEventHandler;
 
 	@Test
-	@DisplayName("이슈 생성 이벤트 발생 시 모든 워크스페이스 멤버에게 알림이 성공적으로 생성되어야 함")
-	void handleIssueCreated_WhenAllNotificationsCreated_ShouldLogSuccess() {
+	@DisplayName("이슈 생성 이벤트 발생 시 워크스페이스 멤버들에게 알림이 처리되어야 함")
+	void handleIssueCreated_ShouldProcessNotificationForAllWorkspaceMembers() {
 		// given
 		Long issueId = 1L;
 		String issueKey = "ISSUE-1";
 		String workspaceCode = "TESTCODE";
 		Long actorId = 123L;
+		IssueType issueType = IssueType.STORY;
 
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
 		when(issue.getId()).thenReturn(issueId);
-		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
-		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
+		when(issue.getType()).thenReturn(issueType);
 
 		// 이벤트 생성
 		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
-
-		// IssueReader 모의 설정 - issueKey와 workspaceCode로 Issue 조회
-		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
-
-		// Actor 모의 설정
-		WorkspaceMember actor = mock(WorkspaceMember.class);
-		when(actor.getNickname()).thenReturn("testuser");
 
 		// 워크스페이스 멤버 모의 설정
 		List<WorkspaceMember> members = Arrays.asList(
@@ -72,108 +80,76 @@ class NotificationEventHandlerTest {
 			mock(WorkspaceMember.class)
 		);
 
-		when(workspaceMemberReader.findWorkspaceMember(actorId)).thenReturn(actor);
-		when(workspaceMemberRepository.findAllByWorkspaceCode(workspaceCode)).thenReturn(members);
+		// targetResolver가 워크스페이스 멤버 목록을 반환하도록 설정
+		when(targetResolver.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
 
 		// when
 		notificationEventHandler.handleIssueCreated(event);
 
 		// then
-		verify(notificationService, times(2)).createNotification(
-			any(), any(), eq(workspaceCode), any(), any(), eq(issueId), any(), any(), any()
-		);
+		verify(targetResolver).getWorkspaceWideMemberTargets(workspaceCode);
+		verify(notificationProcessor).processNotification(event, members);
 	}
 
 	@Test
-	@DisplayName("일부 알림 생성이 실패해도 다른 멤버에 대한 알림 처리는 계속 진행되어야 한다")
-	void handleIssueCreated_WhenNotificationFails_ShouldLogAndContinue() {
+	@DisplayName("이슈 업데이트 이벤트 발생 시 이슈 구독자에게 알림이 처리되어야 함")
+	void handleIssueUpdated_ShouldProcessNotificationForIssueSubscribers() {
 		// given
 		Long issueId = 1L;
 		String issueKey = "ISSUE-1";
 		String workspaceCode = "TESTCODE";
 		Long actorId = 123L;
-
-		// 이벤트 생성
-		// IssueCreatedEvent event = new IssueCreatedEvent(
-		// 	issueId,
-		// 	issueKey,
-		// 	workspaceCode,
-		// 	actorId
-		// );
+		IssueType issueType = IssueType.STORY;
+		String title = "Test Issue";
 
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
 		when(issue.getId()).thenReturn(issueId);
-		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
-		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
+		when(issue.getType()).thenReturn(issueType);
+		when(issue.getTitle()).thenReturn(title);
+		when(issue.getStoryPoint()).thenReturn(5);
 
 		// 이벤트 생성
-		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
+		IssueUpdatedEvent event = IssueUpdatedEvent.createEvent(issue, null, actorId);
 
-		// IssueReader 모의 설정
-		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
-
-		// Actor 모의 설정
-		WorkspaceMember actor = mock(WorkspaceMember.class);
-		when(actor.getNickname()).thenReturn("testuser");
-
-		// 워크스페이스 멤버 모의 설정
-		List<WorkspaceMember> members = Arrays.asList(
+		// 이슈 구독자 모의 설정
+		List<WorkspaceMember> subscribers = Arrays.asList(
 			mock(WorkspaceMember.class),
 			mock(WorkspaceMember.class)
 		);
 
-		when(workspaceMemberReader.findWorkspaceMember(actorId)).thenReturn(actor);
-		when(workspaceMemberRepository.findAllByWorkspaceCode(workspaceCode)).thenReturn(members);
-
-		// 첫 번째 알림 생성은 예외 발생, 두 번째는 성공하도록 설정
-		doThrow(new RuntimeException("notification for first member failed"))
-			.doNothing()
-			.when(notificationService)
-			.createNotification(any(), any(), any(), any(), any(), any(), any(), any(), any());
+		// targetResolver가 이슈 구독자 목록을 반환하도록 설정
+		when(targetResolver.getIssueSubscriberTargets(issueId)).thenReturn(subscribers);
 
 		// when
-		notificationEventHandler.handleIssueCreated(event);
+		notificationEventHandler.handleIssueUpdated(event);
 
 		// then
-		verify(notificationService, times(2))
-			.createNotification(any(), any(), any(), any(), any(), any(), any(), any(), any());
+		verify(targetResolver).getIssueSubscriberTargets(issueId);
+		verify(notificationProcessor).processNotification(event, subscribers);
 	}
 
 	@Test
-	@DisplayName("중복 알림으로 인한 무결성 위반 예외가 발생해도 처리가 중단되지 않아야 함")
-	void handleIssueCreated_WhenDuplicateNotification_ShouldHandleViolationException() {
+	@DisplayName("NotificationProcessor에서 예외가 발생해도 이벤트 핸들러는 예외를 전파하지 않아야 함")
+	void handleIssueCreated_WhenProcessorThrowsException_ShouldNotPropagateException() {
 		// given
 		Long issueId = 1L;
 		String issueKey = "ISSUE-1";
 		String workspaceCode = "TESTCODE";
 		Long actorId = 123L;
-
-		// 이벤트 생성
-		// IssueCreatedEvent event = new IssueCreatedEvent(
-		// 	issueId,
-		// 	issueKey,
-		// 	workspaceCode,
-		// 	actorId
-		// );
+		IssueType issueType = IssueType.STORY;
 
 		// Issue 모의 설정
 		Issue issue = mock(Issue.class);
 		when(issue.getId()).thenReturn(issueId);
-		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
-		when(issue.getTitle()).thenReturn("test issue");
 		when(issue.getIssueKey()).thenReturn(issueKey);
+		when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
+		when(issue.getType()).thenReturn(issueType);
 
 		// 이벤트 생성
 		IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
-
-		// IssueReader 모의 설정
-		when(issueReader.findIssue(issueKey, workspaceCode)).thenReturn(issue);
-
-		// Actor 모의 설정
-		WorkspaceMember actor = mock(WorkspaceMember.class);
-		when(actor.getNickname()).thenReturn("testuser");
 
 		// 워크스페이스 멤버 모의 설정
 		List<WorkspaceMember> members = Arrays.asList(
@@ -181,22 +157,19 @@ class NotificationEventHandlerTest {
 			mock(WorkspaceMember.class)
 		);
 
-		when(workspaceMemberReader.findWorkspaceMember(actorId)).thenReturn(actor);
-		when(workspaceMemberRepository.findAllByWorkspaceCode(workspaceCode)).thenReturn(members);
+		// targetResolver가 워크스페이스 멤버 목록을 반환하도록 설정
+		when(targetResolver.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
 
-		// 모든 알림 생성 시 데이터 무결성 위반 예외 발생
-		doThrow(new DataIntegrityViolationException("Duplicate notification"))
-			.when(notificationService).createNotification(
-				any(), any(), any(), any(), any(), any(), any(), any(), any()
-			);
+		// processor가 예외를 던지도록 설정
+		doThrow(new RuntimeException("Test exception"))
+			.when(notificationProcessor).processNotification(event, members);
 
-		// when
-		notificationEventHandler.handleIssueCreated(event);
+		// when & then
+		assertThatThrownBy(() -> notificationEventHandler.handleIssueCreated(event))
+			.isInstanceOf(RuntimeException.class);
 
-		// then
-		verify(notificationService, times(2)).createNotification(
-			any(), any(), any(), any(), any(), any(), any(), any(), any()
-		);
+		// 호출 확인
+		verify(targetResolver).getWorkspaceWideMemberTargets(workspaceCode);
+		verify(notificationProcessor).processNotification(event, members);
 	}
-
 }

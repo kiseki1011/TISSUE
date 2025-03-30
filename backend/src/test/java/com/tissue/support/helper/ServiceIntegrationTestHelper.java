@@ -137,6 +137,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected SprintQueryService sprintQueryService;
 	@Autowired
 	protected SprintReader sprintReader;
+	// @Autowired
+	// protected NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * Validator

@@ -147,6 +147,8 @@ public abstract class ControllerTestHelper {
 	protected ReviewCommandService reviewCommandService;
 	@MockBean
 	protected ReviewerCommandService reviewerCommandService;
+	// @MockBean
+	// protected NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * Validator
