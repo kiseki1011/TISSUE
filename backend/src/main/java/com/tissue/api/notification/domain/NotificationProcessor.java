@@ -13,13 +13,13 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class NotificationProcessor {
 
 	private final NotificationCommandService notificationService;
-	private final NotificationMessageFactory messageFactory;
+	private final NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * 알림 처리 메서드 - 외부에서 알림 대상 주입
@@ -28,14 +28,7 @@ public class NotificationProcessor {
 		T event,
 		List<WorkspaceMember> targets
 	) {
-		NotificationMessage message = messageFactory.createMessage(
-			event.getNotificationType(),
-			event.getEntityType(),
-			event.getEntityId(),
-			event.getEntityKey(),
-			event.getTriggeredByWorkspaceMemberId(),
-			event.getWorkspaceCode()
-		);
+		NotificationMessage message = notificationMessageFactory.createMessage(event);
 
 		/*
 		 * Todo: 알림 생성 로직 개선

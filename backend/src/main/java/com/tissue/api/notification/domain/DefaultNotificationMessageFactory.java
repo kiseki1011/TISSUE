@@ -2,10 +2,9 @@ package com.tissue.api.notification.domain;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
-import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
@@ -19,19 +18,15 @@ public class DefaultNotificationMessageFactory implements NotificationMessageFac
 	private final IssueReader issueReader;
 
 	@Override
-	public NotificationMessage createMessage(
-		NotificationType notificationType,
-		NotificationEntityType entityType,
-		Long entityId,
-		String entityKey,
-		Long triggeredByWorkspaceMemberId,
-		String workspaceCode
-	) {
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(triggeredByWorkspaceMemberId);
+	public <T extends DomainEvent> NotificationMessage createMessage(T event) {
+		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(event.getTriggeredByWorkspaceMemberId());
 		String actorNickname = actor.getNickname();
 
+		String entityKey = event.getEntityKey();
+		String workspaceCode = event.getWorkspaceCode();
+
 		// 다른 알림 타입에 대한 처리
-		return switch (notificationType) {
+		return switch (event.getNotificationType()) {
 			case ISSUE_CREATED -> {
 				Issue issue = issueReader.findIssue(entityKey, workspaceCode);
 				yield new NotificationMessage(
