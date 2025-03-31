@@ -43,14 +43,14 @@ public class NotificationProcessor {
 			try {
 				notificationService.createNotification(
 					event.getEventId(),
-					target.getId(),
 					event.getWorkspaceCode(),
 					event.getNotificationType(),
 					event.getEntityType(),
 					event.getEntityId(),
+					event.getTriggeredByWorkspaceMemberId(),
+					target.getId(),
 					message.title(),
-					message.content(),
-					event.getTriggeredByWorkspaceMemberId()
+					message.content()
 				);
 				successCount++;
 			} catch (ResourceNotFoundException e) {

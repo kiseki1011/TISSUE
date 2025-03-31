@@ -26,28 +26,28 @@ public class NotificationCommandService {
 	@Transactional
 	public void createNotification(
 		UUID eventId,
-		Long receiverWorkspaceMemberId,
 		String workspaceCode,
 		NotificationType type,
 		NotificationEntityType entityType,
 		Long entityId,
+		Long actorWorkspaceMemberId,
+		Long receiverWorkspaceMemberId,
 		String title,
-		String message,
-		Long actorWorkspaceMemberId
+		String message
 	) {
 		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(actorWorkspaceMemberId);
 
 		Notification notification = Notification.builder()
 			.eventId(eventId)
-			.receiverWorkspaceMemberId(receiverWorkspaceMemberId)
 			.workspaceCode(workspaceCode)
 			.type(type)
 			.entityType(entityType)
 			.entityId(entityId)
-			.title(title)
-			.message(message)
 			.actorWorkspaceMemberId(actorWorkspaceMemberId)
 			.actorWorkspaceMemberNickname(actor.getNickname())
+			.receiverWorkspaceMemberId(receiverWorkspaceMemberId)
+			.title(title)
+			.message(message)
 			.build();
 
 		notificationRepository.save(notification);

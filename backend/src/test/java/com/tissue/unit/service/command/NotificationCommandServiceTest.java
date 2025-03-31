@@ -58,8 +58,15 @@ class NotificationCommandServiceTest {
 
 		// when
 		notificationCommandService.createNotification(
-			eventId, receiverId, workspaceCode, type, entityType,
-			entityId, title, message, actorId
+			eventId,
+			workspaceCode,
+			type,
+			entityType,
+			entityId,
+			actorId,
+			receiverId,
+			title,
+			message
 		);
 
 		// then

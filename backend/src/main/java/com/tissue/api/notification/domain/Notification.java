@@ -77,26 +77,26 @@ public class Notification extends BaseDateEntity {
 	@Builder
 	public Notification(
 		UUID eventId,
-		Long receiverWorkspaceMemberId,
 		String workspaceCode,
 		NotificationType type,
 		NotificationEntityType entityType,
 		Long entityId,
-		String title,
-		String message,
 		Long actorWorkspaceMemberId,
-		String actorWorkspaceMemberNickname
+		String actorWorkspaceMemberNickname,
+		Long receiverWorkspaceMemberId,
+		String title,
+		String message
 	) {
 		this.eventId = eventId;
-		this.receiverWorkspaceMemberId = receiverWorkspaceMemberId;
 		this.workspaceCode = workspaceCode;
 		this.type = type;
 		this.entityType = entityType;
 		this.entityId = entityId;
-		this.title = title;
-		this.message = message;
 		this.actorWorkspaceMemberId = actorWorkspaceMemberId;
 		this.actorWorkspaceMemberNickname = actorWorkspaceMemberNickname;
+		this.receiverWorkspaceMemberId = receiverWorkspaceMemberId;
+		this.title = title;
+		this.message = message;
 		this.isRead = false;
 	}
 
