@@ -22,7 +22,7 @@ public class IssueUnassignedEvent extends IssueEvent {
 		Long assigneeWorkspaceMemberId
 	) {
 		super(
-			NotificationType.ISSUE_ASSIGNED,
+			NotificationType.ISSUE_UNASSIGNED,
 			NotificationEntityType.ISSUE,
 			issueId, issueKey,
 			workspaceCode,
