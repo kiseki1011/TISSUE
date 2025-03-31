@@ -111,19 +111,8 @@ public class SprintCommandService {
 		String sprintKey,
 		RemoveSprintIssueRequest request
 	) {
-		// Todo: 쿼리 서비스 대신 IssueReader에서 도메인 객체 조회로 변경
 		Issue issue = issueReader.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
-
-		/*
-		 * Todo: 성능 측정
-		 *  - stream을 통해 메모리에 올려서 조회 vs 레포지토리 메서드(N+1 해결) vs 레포지토리 메서드
-		 */
-		// Issue issue = sprint.getSprintIssues().stream()
-		// 	.filter(i -> request.issueKey().equals(i.getIssue().getIssueKey()))
-		// 	.findFirst()
-		// 	.orElseThrow(() -> new IssueNotFoundException(request.issueKey()))
-		// 	.getIssue();
 
 		sprint.removeIssue(issue);
 	}
