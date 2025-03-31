@@ -170,7 +170,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		this.title = title;
 		this.content = content;
 		this.summary = summary;
-		this.status = IssueStatus.TODO;
+		this.status = TODO;
 		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
 		this.dueAt = dueAt;
 		this.storyPoint = storyPoint;
@@ -234,7 +234,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			validateCanStartNewReviewRound();
 		}
 		this.currentReviewRound++;
-		this.updateStatus(IssueStatus.IN_REVIEW);
+		this.updateStatus(IN_REVIEW);
 	}
 
 	public IssueReviewer addReviewer(WorkspaceMember workspaceMember) {
@@ -270,7 +270,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public void validateReviewIsCreateable() {
-		boolean isStatusNotInReview = status != IssueStatus.IN_REVIEW;
+		boolean isStatusNotInReview = status != IN_REVIEW;
 
 		if (isStatusNotInReview) {
 			throw new InvalidOperationException(
@@ -306,7 +306,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateCanStartNewReviewRound() {
 		// 현재 상태 검증
-		boolean isStatusNotChangesRequested = status != IssueStatus.CHANGES_REQUESTED;
+		boolean isStatusNotChangesRequested = status != CHANGES_REQUESTED;
 
 		if (isStatusNotChangesRequested) {
 			throw new InvalidOperationException(
@@ -461,6 +461,11 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		updateTimestamps(newStatus);
 	}
 
+	// public void delete() {
+	// 	validateStatusTransition(DELETED);
+	// 	this.status = DELETED;
+	// }
+
 	public void updatePriority(IssuePriority priority) {
 		this.priority = priority;
 	}
@@ -502,11 +507,11 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			startedAt = LocalDateTime.now();
 			return;
 		}
-		if (newStatus == IssueStatus.IN_REVIEW) {
+		if (newStatus == IN_REVIEW) {
 			reviewRequestedAt = LocalDateTime.now();
 			return;
 		}
-		if (newStatus == IssueStatus.DONE) {
+		if (newStatus == DONE) {
 			resolvedAt = LocalDateTime.now();
 		}
 	}
@@ -524,7 +529,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateBasicTransition(newStatus);
 
 		// 특수한 상태 전이 검증
-		if (newStatus == IssueStatus.DONE) {
+		if (newStatus == DONE) {
 			validateTransitionToDone();
 		}
 	}
@@ -536,7 +541,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 		if (statusNotAllowed) {
 			throw new InvalidOperationException(
-				String.format("Cannot transition status from %s to %s.", status, newStatus)
+				String.format("Cannot change status from %s to %s.", status, newStatus)
 			);
 		}
 	}
@@ -570,7 +575,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		List<Issue> blockingIssues = incomingRelations.stream()
 			.filter(relation -> relation.getRelationType() == IssueRelationType.BLOCKED_BY)
 			.map(IssueRelation::getSourceIssue)
-			.filter(issue -> issue.getStatus() != IssueStatus.DONE)
+			.filter(issue -> issue.getStatus() != DONE)
 			.toList();
 
 		if (!blockingIssues.isEmpty()) {
@@ -586,12 +591,11 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private Set<IssueStatus> getAllowedNextStatuses() {
 		return switch (status) {
-			case TODO -> Set.of(IN_PROGRESS, CLOSED);
-			case IN_PROGRESS -> Set.of(IN_REVIEW, DONE, CLOSED);
+			case TODO -> Set.of(IN_PROGRESS, CLOSED, DELETED);
+			case IN_PROGRESS -> Set.of(IN_REVIEW, DONE, CLOSED, DELETED);
 			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
 			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
-			case DONE -> Set.of();
-			case CLOSED -> Set.of();
+			case DONE, CLOSED, DELETED -> Set.of();
 		};
 	}
 

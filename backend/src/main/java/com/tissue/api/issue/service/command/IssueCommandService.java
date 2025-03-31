@@ -168,4 +168,22 @@ public class IssueCommandService {
 
 		return RemoveParentIssueResponse.from(issue);
 	}
+
+	// @Transactional
+	// public void softDeleteIssue(
+	// 	String workspaceCode,
+	// 	String issueKey,
+	// 	Long requesterWorkspaceMemberId
+	// ) {
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+	//
+	// 	IssueStatus oldStatus = issue.getStatus();
+	//
+	// 	issue.delete();
+	//
+	// 	eventPublisher.publishEvent(
+	// 		IssueStatusChangedEvent.createEvent(issue, oldStatus, requesterWorkspaceMemberId)
+	// 	);
+	// }
 }
