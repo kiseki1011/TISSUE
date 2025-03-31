@@ -30,12 +30,14 @@ public class AssigneeController {
 	public ApiResponse<AddAssigneeResponse> addAssignee(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@PathVariable Long workspaceMemberId
+		@PathVariable Long workspaceMemberId,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		AddAssigneeResponse response = assigneeCommandService.addAssignee(
 			code,
 			issueKey,
-			workspaceMemberId
+			workspaceMemberId,
+			currentWorkspaceMemberId
 		);
 
 		return ApiResponse.ok("Assignee added.", response);

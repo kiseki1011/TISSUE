@@ -1,8 +1,11 @@
 package com.tissue.api.assignee.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.assignee.domain.event.IssueAssignedEvent;
+import com.tissue.api.assignee.domain.event.IssueUnassignedEvent;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.issue.domain.Issue;
@@ -19,12 +22,14 @@ public class AssigneeCommandService {
 
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public AddAssigneeResponse addAssignee(
 		String workspaceCode,
 		String issueKey,
-		Long assigneeWorkspaceMemberId
+		Long assigneeWorkspaceMemberId,
+		Long requesterWorkspaceMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
@@ -34,6 +39,10 @@ public class AssigneeCommandService {
 		);
 
 		issue.addAssignee(assignee);
+
+		eventPublisher.publishEvent(
+			IssueAssignedEvent.createEvent(issue, assigneeWorkspaceMemberId, requesterWorkspaceMemberId)
+		);
 
 		return AddAssigneeResponse.from(assignee);
 	}
@@ -61,6 +70,10 @@ public class AssigneeCommandService {
 		}
 
 		issue.removeAssignee(assignee);
+
+		eventPublisher.publishEvent(
+			IssueUnassignedEvent.createEvent(issue, assigneeWorkspaceMemberId, requesterWorkspaceMemberId)
+		);
 
 		return RemoveAssigneeResponse.from(assignee);
 	}

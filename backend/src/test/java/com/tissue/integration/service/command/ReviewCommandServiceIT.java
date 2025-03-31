@@ -88,12 +88,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	void toCreateReviewIssueStatusMustBe_InReview() {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
+		Long assigneeWorkspaceMemberId = workspaceMember1.getId();
 		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
 		assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			requesterWorkspaceMemberId
+			assigneeWorkspaceMemberId,
+			owner.getId()
 		);
 
 		reviewerCommandService.addReviewer(
