@@ -24,7 +24,6 @@ public class IssueStatusChangedEvent extends IssueEvent {
 	private final String parentIssueKey;
 	private final IssueType parentIssueType;
 
-	// 이슈의 스토리 포인트 (Epic 스토리 포인트 계산용)
 	private final Integer storyPoint;
 
 	private IssueStatusChangedEvent(
