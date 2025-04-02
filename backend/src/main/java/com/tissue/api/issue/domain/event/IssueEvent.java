@@ -26,9 +26,9 @@ public abstract class IssueEvent implements DomainEvent {
 	private final NotificationType notificationType;
 	private final NotificationEntityType entityType;
 
+	private final String workspaceCode;
 	private final Long issueId;
 	private final String issueKey;
-	private final String workspaceCode;
 	private final IssueType issueType;
 	private final Long triggeredByWorkspaceMemberId;
 

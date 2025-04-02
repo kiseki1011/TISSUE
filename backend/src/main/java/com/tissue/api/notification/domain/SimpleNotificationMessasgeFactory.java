@@ -81,9 +81,13 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 				}
 				yield new Object[] {actorNickname, event.getEntityKey()};
 			}
+
 			case ISSUE_PARENT_REMOVED -> new Object[] {actorNickname, event.getEntityKey()};
-			case ISSUE_COMMENT_ADDED -> new Object[] {actorNickname, event.getEntityKey()};
+
+			// case ISSUE_COMMENT_ADDED -> new Object[] {actorNickname, event.getEntityKey()};
+
 			case ISSUE_ASSIGNED -> new Object[] {actorNickname, event.getEntityKey()};
+			
 			// case ISSUE_REVIEWER_ADDED -> {
 			// 	if (event instanceof IssueReviewerAddedEvent issueReviewerAddedEvent) {
 			// 		yield new Object[] {
@@ -94,7 +98,9 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 			// 	}
 			// 	yield new Object[] {actorNickname, event.getEntityKey()};
 			// }
-			case REVIEW_REQUESTED -> new Object[] {actorNickname, event.getEntityKey()};
+
+			// case REVIEW_REQUESTED -> new Object[] {actorNickname, event.getEntityKey()};
+
 			// case REVIEW_SUBMITTED -> {
 			// 	if (event instanceof ReviewSubmittedEvent reviewSubmittedEvent) {
 			// 		yield new Object[] {
@@ -137,7 +143,9 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 			// 	}
 			// 	yield new Object[] {actorNickname, event.getEntityKey()};
 			// }
-			case SPRINT_STARTED -> new Object[] {event.getEntityKey()};
+
+			// case SPRINT_STARTED -> new Object[] {event.getEntityKey()};
+
 			// case SPRINT_ENDED -> {
 			// 	if (event instanceof SprintEndedEvent sprintEndedEvent) {
 			// 		yield new Object[] {

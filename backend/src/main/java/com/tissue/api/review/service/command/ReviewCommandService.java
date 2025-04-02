@@ -40,6 +40,7 @@ public class ReviewCommandService {
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
+	// TODO: createReview -> submitReview
 	@Transactional
 	public CreateReviewResponse createReview(
 		String workspaceCode,
