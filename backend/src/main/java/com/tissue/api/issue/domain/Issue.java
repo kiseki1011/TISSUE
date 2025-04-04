@@ -308,12 +308,12 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	private void validateCanStartNewReviewRound() {
 		// 현재 상태 검증
-		boolean isStatusNotChangesRequested = status != CHANGES_REQUESTED;
+		boolean isStatusNotInReview = status != IN_REVIEW;
 
-		if (isStatusNotChangesRequested) {
+		if (isStatusNotInReview) {
 			throw new InvalidOperationException(
 				String.format(
-					"Issue status must be CHANGES_REQUESTED to start a new review round. Current issue status: %s",
+					"Issue status must be IN_REVIEW to start a new review round. Current issue status: %s",
 					status));
 		}
 
@@ -538,7 +538,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		// 	return;
 		// }
 		if (hasAnyChangesRequested()) {
-			throw new InvalidOperationException("All reviews for current round must not request change.");
+			throw new InvalidOperationException("All reviews for current round must be approved or be a comment.");
 		}
 
 		validateBlockingIssuesAreDone();
@@ -572,8 +572,9 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return switch (status) {
 			case TODO -> Set.of(IN_PROGRESS, CLOSED, DELETED);
 			case IN_PROGRESS -> Set.of(IN_REVIEW, DONE, CLOSED, DELETED);
-			case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
-			case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
+			case IN_REVIEW -> Set.of(DONE);
+			// case IN_REVIEW -> Set.of(CHANGES_REQUESTED, DONE);
+			// case CHANGES_REQUESTED -> Set.of(IN_REVIEW);
 			case DONE, CLOSED, DELETED -> Set.of();
 		};
 	}
