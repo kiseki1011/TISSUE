@@ -24,8 +24,9 @@ public class IssueAssignedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_ASSIGNED,
 			NotificationEntityType.ISSUE,
-			issueId, issueKey,
 			workspaceCode,
+			issueId,
+			issueKey,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

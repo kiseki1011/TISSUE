@@ -24,8 +24,9 @@ public class IssueUnassignedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_UNASSIGNED,
 			NotificationEntityType.ISSUE,
-			issueId, issueKey,
 			workspaceCode,
+			issueId,
+			issueKey,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

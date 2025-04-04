@@ -42,9 +42,9 @@ public class IssueStatusChangedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_STATUS_CHANGED,
 			NotificationEntityType.ISSUE,
+			workspaceCode,
 			issueId,
 			issueKey,
-			workspaceCode,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

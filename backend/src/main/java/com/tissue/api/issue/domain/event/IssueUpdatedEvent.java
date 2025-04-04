@@ -38,9 +38,9 @@ public class IssueUpdatedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_UPDATED,
 			NotificationEntityType.ISSUE,
+			workspaceCode,
 			issueId,
 			issueKey,
-			workspaceCode,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

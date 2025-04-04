@@ -40,9 +40,9 @@ public class IssueParentAssignedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_PARENT_ASSIGNED,
 			NotificationEntityType.ISSUE,
+			workspaceCode,
 			issueId,
 			issueKey,
-			workspaceCode,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

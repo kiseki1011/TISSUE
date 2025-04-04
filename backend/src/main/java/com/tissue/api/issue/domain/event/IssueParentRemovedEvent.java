@@ -32,9 +32,9 @@ public class IssueParentRemovedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_PARENT_REMOVED,
 			NotificationEntityType.ISSUE,
+			workspaceCode,
 			issueId,
 			issueKey,
-			workspaceCode,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);

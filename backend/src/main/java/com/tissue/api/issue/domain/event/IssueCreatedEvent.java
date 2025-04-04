@@ -20,9 +20,9 @@ public class IssueCreatedEvent extends IssueEvent {
 		super(
 			NotificationType.ISSUE_CREATED,
 			NotificationEntityType.ISSUE,
+			workspaceCode,
 			issueId,
 			issueKey,
-			workspaceCode,
 			issueType,
 			triggeredByWorkspaceMemberId
 		);
