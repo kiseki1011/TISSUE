@@ -358,7 +358,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
 		validateAssigneeLimit();
 		validateBelongsToWorkspace(workspaceMember);
-		// validateNotAlreadyAssigned(workspaceMember);
 
 		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
 
@@ -429,16 +428,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	private void validateNotAlreadyAssigned(WorkspaceMember assignee) {
-		boolean isAlreadyAssigned = isAssignee(assignee.getId());
-
-		if (isAlreadyAssigned) {
-			throw new InvalidOperationException(String.format(
-				"Workspace member is already assigned to this issue. workspaceMemberId: %d, nickname: %s",
-				assignee.getId(), assignee.getNickname()));
-		}
-	}
-
 	public void updateTitle(String title) {
 		this.title = title;
 	}
@@ -462,6 +451,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		updateTimestamps(newStatus);
 	}
 
+	// TODO: 삭제 API를 상태 변경 API에서 분리하는 경우 사용
 	// public void delete() {
 	// 	validateStatusTransition(DELETED);
 	// 	this.status = DELETED;
@@ -491,16 +481,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 
 	public boolean isNotFirstReviewRound() {
 		return currentReviewRound != 0;
-	}
-
-	public void validateHasChildIssues() {
-		boolean hasChildIssues = !childIssues.isEmpty();
-
-		if (hasChildIssues) {
-			throw new InvalidOperationException(
-				String.format("Cannot delete issue with child issues. issueKey: %s", issueKey)
-			);
-		}
 	}
 
 	private void updateTimestamps(IssueStatus newStatus) {
