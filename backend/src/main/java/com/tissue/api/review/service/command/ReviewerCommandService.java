@@ -68,6 +68,7 @@ public class ReviewerCommandService {
 			workspaceCode
 		);
 
+		// TODO: 굳이 검사할 필요가 있을까? 그냥 MEMBER 이상이면 해제할 수 있도록 해도 괜찮지 않을까?
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
 		}

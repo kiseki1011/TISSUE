@@ -254,6 +254,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		reviewers.remove(issueReviewer);
 	}
 
+	// TODO: 굳이 검사할 필요가 있을까? 그냥 MEMBER 이상이면 해제할 수 있도록 해도 괜찮지 않을까?
 	public void validateCanRemoveReviewer(Long requesterWorkspaceMemberId, Long reviewerWorkspaceMemberId) {
 		if (requesterWorkspaceMemberId.equals(reviewerWorkspaceMemberId)) {
 			return;
@@ -269,7 +270,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
-	public void validateReviewIsCreateable() {
+	public void validateCanSubmitReview() {
 		boolean isStatusNotInReview = status != IN_REVIEW;
 
 		if (isStatusNotInReview) {
@@ -546,6 +547,7 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		}
 	}
 
+	// TODO: 이슈 상태를 DONE으로 변경하는 로직을 개선할 필요가 있음(리뷰 상태랑 관련된 로직도 개선 필요)
 	private void validateTransitionToDone() {
 		/*
 		 * Todo: 워크스페이스 마다 가지는 설정을 관리하는 엔티티를 만들자.
@@ -554,21 +556,17 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		// if (!isForceReviewEnabled) {
 		// 	return;
 		// }
-
-		// Todo: review는 전부 APPROVED 인 상태에서, 리뷰어를 해제하면?
-		if (reviewers.isEmpty()) {
-			throw new InvalidOperationException("Review is required to complete this issue.");
-		}
-		if (isAllReviewsNotApproved()) {
-			throw new InvalidOperationException("All reviews must be approved to complete this issue.");
+		if (hasAnyChangesRequested()) {
+			throw new InvalidOperationException("All reviews for current round must not request change.");
 		}
 
 		validateBlockingIssuesAreDone();
 	}
 
-	private boolean isAllReviewsNotApproved() {
-		return !reviewers.stream()
-			.allMatch(reviewer -> reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.APPROVED);
+	private boolean hasAnyChangesRequested() {
+		return reviewers.stream()
+			.anyMatch(
+				reviewer -> reviewer.getCurrentReviewStatus(currentReviewRound) == ReviewStatus.CHANGES_REQUESTED);
 	}
 
 	private void validateBlockingIssuesAreDone() {

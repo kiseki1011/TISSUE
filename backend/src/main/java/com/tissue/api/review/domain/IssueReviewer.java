@@ -36,7 +36,6 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID", nullable = false)
 	private Issue issue;
 
-	// @Column(name = "REVIEWER_ID", nullable = false)
 	@Column(name = "REVIEWER_ID")
 	private Long reviewerId;  // ID만 직접 저장
 
@@ -53,7 +52,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 		this.issue = issue;
 	}
 
-	public Review addReview(
+	public Review submitReview(
 		ReviewStatus status,
 		String title,
 		String content
@@ -82,7 +81,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 			.filter(review -> review.getReviewRound() == reviewRound)
 			.map(Review::getStatus)
 			.findFirst()
-			.orElse(ReviewStatus.PENDING);
+			.orElse(ReviewStatus.COMMENT);
 	}
 
 	private void validateNoReviewInRound(int reviewRound) {

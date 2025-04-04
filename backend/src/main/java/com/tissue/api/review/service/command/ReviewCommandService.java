@@ -12,14 +12,10 @@ import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.domain.repository.ReviewRepository;
-import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
+import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
-import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
-import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
-import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
@@ -40,21 +36,20 @@ public class ReviewCommandService {
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 
-	// TODO: createReview -> submitReview
 	@Transactional
-	public CreateReviewResponse createReview(
+	public SubmitReviewResponse submitReview(
 		String workspaceCode,
 		String issueKey,
 		Long reviewerWorkspaceMemberId,
-		CreateReviewRequest request
+		SubmitReviewRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		IssueReviewer issueReviewer = findIssueReviewer(issueKey, reviewerWorkspaceMemberId);
 
-		issue.validateReviewIsCreateable();
+		issue.validateCanSubmitReview();
 
-		Review review = issueReviewer.addReview(
+		Review review = issueReviewer.submitReview(
 			request.status(),
 			request.title(),
 			request.content()
@@ -62,9 +57,10 @@ public class ReviewCommandService {
 
 		Review savedReview = reviewRepository.save(review);
 
+		// Todo: 이슈 상태 변경을 리뷰 제출(생성)안에 캡슐화하는 것이 좋을까?
 		updateIssueStatusBasedOnReviewStatus(issue, request.status());
 
-		return CreateReviewResponse.from(savedReview);
+		return SubmitReviewResponse.from(savedReview);
 	}
 
 	@Transactional
@@ -82,28 +78,28 @@ public class ReviewCommandService {
 		return UpdateReviewResponse.from(review);
 	}
 
-	@Transactional
-	public UpdateReviewStatusResponse updateReviewStatus(
-		String workspaceCode,
-		String issueKey,
-		Long reviewId,
-		Long requesterWorkspaceMemberId,
-		UpdateReviewStatusRequest request
-	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
-		Review review = reviewReader.findReview(reviewId);
-
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			review.validateIsAuthor(requesterWorkspaceMemberId);
-		}
-
-		review.updateStatus(request.status());
-		updateIssueStatusBasedOnReviewStatus(issue, request.status());
-
-		return UpdateReviewStatusResponse.from(review);
-	}
+	// @Transactional
+	// public UpdateReviewStatusResponse updateReviewStatus(
+	// 	String workspaceCode,
+	// 	String issueKey,
+	// 	Long reviewId,
+	// 	Long requesterWorkspaceMemberId,
+	// 	UpdateReviewStatusRequest request
+	// ) {
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+	//
+	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+	// 	Review review = reviewReader.findReview(reviewId);
+	//
+	// 	if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+	// 		review.validateIsAuthor(requesterWorkspaceMemberId);
+	// 	}
+	//
+	// 	review.updateStatus(request.status());
+	// 	updateIssueStatusBasedOnReviewStatus(issue, request.status());
+	//
+	// 	return UpdateReviewStatusResponse.from(review);
+	// }
 
 	private IssueReviewer findIssueReviewer(String issueKey, Long reviewerWorkspaceMemberId) {
 		return issueReviewerRepository.findByIssueKeyAndReviewerId(issueKey, reviewerWorkspaceMemberId)
@@ -126,13 +122,12 @@ public class ReviewCommandService {
 		 *  - 자동으로 이슈 상태 DONE으로 변경 X
 		 *  - 알림은 이벤트 리스너로 구현하는 것이 좋을 듯
 		 */
-		boolean allApproved = issue.getReviewers().stream()
+		boolean isApproved = issue.getReviewers().stream()
 			.allMatch(reviewer ->
-				reviewer.getCurrentReviewStatus(issue.getCurrentReviewRound())
-					== ReviewStatus.APPROVED
+				reviewer.getCurrentReviewStatus(issue.getCurrentReviewRound()) != ReviewStatus.CHANGES_REQUESTED
 			);
 
-		if (allApproved) {
+		if (isApproved) {
 			// Todo: 알림 서비스 구현 후 추가
 		}
 	}

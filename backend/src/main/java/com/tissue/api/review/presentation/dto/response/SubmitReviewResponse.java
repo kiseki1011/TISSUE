@@ -8,7 +8,7 @@ import com.tissue.api.review.domain.enums.ReviewStatus;
 import lombok.Builder;
 
 @Builder
-public record CreateReviewResponse(
+public record SubmitReviewResponse(
 	Long reviewId,
 
 	ReviewStatus status,
@@ -21,8 +21,8 @@ public record CreateReviewResponse(
 	LocalDateTime createdAt
 ) {
 
-	public static CreateReviewResponse from(Review review) {
-		return CreateReviewResponse.builder()
+	public static SubmitReviewResponse from(Review review) {
+		return SubmitReviewResponse.builder()
 			.reviewId(review.getId())
 			.status(review.getStatus())
 			.content(review.getContent())

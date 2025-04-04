@@ -7,7 +7,7 @@ import com.tissue.api.review.domain.enums.ReviewStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record CreateReviewRequest(
+public record SubmitReviewRequest(
 
 	@NotNull(message = "{valid.notnull}")
 	ReviewStatus status,
