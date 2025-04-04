@@ -188,6 +188,22 @@ public class IssueCommandService {
 		return AddWatcherResponse.from(workspaceMember, issue);
 	}
 
+	@Transactional
+	public void removeWatcher(
+		String workspaceCode,
+		String issueKey,
+		Long currentWorkspaceMemberId
+	) {
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(
+			currentWorkspaceMemberId,
+			workspaceCode
+		);
+
+		issue.removeWatcher(workspaceMember);
+	}
+
 	// @Transactional
 	// public void softDeleteIssue(
 	// 	String workspaceCode,

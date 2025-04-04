@@ -143,4 +143,21 @@ public class IssueController {
 
 		return ApiResponse.ok("Watcher added.", response);
 	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@DeleteMapping("{issueKey}/watcher")
+	public ApiResponse<Void> removeWatcher(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+	) {
+		issueCommandService.removeWatcher(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
+
+		return ApiResponse.okWithNoContent("Watcher added.");
+	}
 }
