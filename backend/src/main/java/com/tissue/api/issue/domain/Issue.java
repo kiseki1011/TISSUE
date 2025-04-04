@@ -185,7 +185,8 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public IssueWatcher addWatcher(WorkspaceMember workspaceMember) {
-		validateBelongsToWorkspace(workspaceMember);
+		// TODO: 굳이 필요할까? 어차피 관찰자로 등록하는 사람은 자기 자신(이미 워크스페이스 참여에 대한 검증을 인터셉터에서 진행)
+		// validateBelongsToWorkspace(workspaceMember);
 
 		IssueWatcher watcher = new IssueWatcher(workspaceMember);
 		watchers.add(watcher);

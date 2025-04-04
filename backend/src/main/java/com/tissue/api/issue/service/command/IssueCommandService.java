@@ -16,6 +16,7 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
@@ -167,6 +168,24 @@ public class IssueCommandService {
 		);
 
 		return RemoveParentIssueResponse.from(issue);
+	}
+
+	@Transactional
+	public AddWatcherResponse addWatcher(
+		String workspaceCode,
+		String issueKey,
+		Long currentWorkspaceMemberId
+	) {
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(
+			currentWorkspaceMemberId,
+			workspaceCode
+		);
+
+		issue.addWatcher(workspaceMember);
+
+		return AddWatcherResponse.from(workspaceMember, issue);
 	}
 
 	// @Transactional
