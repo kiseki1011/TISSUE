@@ -60,6 +60,8 @@ public class ReviewCommandService {
 
 		Review savedReview = reviewRepository.save(review);
 
+		// TODO: ReviewSubmittedEvent(이슈의 구독자)
+
 		return SubmitReviewResponse.from(savedReview);
 	}
 

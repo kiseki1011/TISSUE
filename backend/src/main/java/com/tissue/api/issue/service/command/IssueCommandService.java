@@ -52,6 +52,8 @@ public class IssueCommandService {
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);
 
+a		// TODO: author를 watcher로 추가하도록 서비스 호출(addWatcher)
+
 		eventPublisher.publishEvent(
 			IssueCreatedEvent.createEvent(issue, currentWorkspaceMemberId)
 		);

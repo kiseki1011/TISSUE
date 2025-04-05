@@ -47,6 +47,8 @@ public class ReviewerCommandService {
 
 		issue.addReviewer(reviewer);
 
+		// TODO: ReviewerAddedEvent(대상: 이슈의 구독자 -> 이슈의 assignees, reviewers, watchers)
+
 		return AddReviewerResponse.from(reviewer);
 	}
 
@@ -88,6 +90,8 @@ public class ReviewerCommandService {
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
+
+		// TODO: ReviewRequestedEvent(대상: 리뷰어)
 
 		return RequestReviewResponse.from(issue);
 	}
