@@ -29,9 +29,7 @@ public class ReviewCommandService {
 	private final ReviewReader reviewReader;
 	private final ReviewerReader reviewerReader;
 	private final IssueReader issueReader;
-
 	private final ReviewRepository reviewRepository;
-
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional

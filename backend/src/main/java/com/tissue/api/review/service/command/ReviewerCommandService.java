@@ -1,10 +1,13 @@
 package com.tissue.api.review.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
+import com.tissue.api.review.domain.event.ReviewRequestedEvent;
+import com.tissue.api.review.domain.event.ReviewerAddedEvent;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
@@ -20,6 +23,7 @@ public class ReviewerCommandService {
 
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public AddReviewerResponse addReviewer(
@@ -48,6 +52,9 @@ public class ReviewerCommandService {
 		issue.addReviewer(reviewer);
 
 		// TODO: ReviewerAddedEvent(대상: 이슈의 구독자 -> 이슈의 assignees, reviewers, watchers)
+		eventPublisher.publishEvent(
+			ReviewerAddedEvent.createEvent(issue, requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
+		);
 
 		return AddReviewerResponse.from(reviewer);
 	}
@@ -92,6 +99,9 @@ public class ReviewerCommandService {
 		issue.requestReview();
 
 		// TODO: ReviewRequestedEvent(대상: 리뷰어)
+		eventPublisher.publishEvent(
+			ReviewRequestedEvent.createEvent(issue, requesterWorkspaceMemberId)
+		);
 
 		return RequestReviewResponse.from(issue);
 	}

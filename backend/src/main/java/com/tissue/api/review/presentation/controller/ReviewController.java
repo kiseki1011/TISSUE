@@ -49,13 +49,13 @@ public class ReviewController {
 	public ApiResponse<SubmitReviewResponse> createReview(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long requesterId,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid SubmitReviewRequest request
 	) {
 		SubmitReviewResponse response = reviewCommandService.submitReview(
 			code,
 			issueKey,
-			requesterId,
+			currentWorkspaceMemberId,
 			request
 		);
 
