@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
@@ -263,7 +262,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			issue.getIssueKey(),
 			notReviewerWorkspaceMemberId, // workspace member that is not a reviewer
 			new SubmitReviewRequest(COMMENT, "test review", "test review")
-		)).isInstanceOf(ForbiddenOperationException.class);
+		)).isInstanceOf(InvalidOperationException.class);
 	}
 
 	@Test
