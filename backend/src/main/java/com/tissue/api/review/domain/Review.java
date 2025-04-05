@@ -70,11 +70,6 @@ public class Review extends WorkspaceContextBaseEntity {
 		this.issueKey = issueReviewer.getIssue().getIssueKey();
 	}
 
-	// public void updateStatus(ReviewStatus status) {
-	// 	validateCanUpdateStatus();
-	// 	this.status = status;
-	// }
-
 	public void updateTitle(String title) {
 		this.title = title;
 	}
@@ -96,17 +91,4 @@ public class Review extends WorkspaceContextBaseEntity {
 			);
 		}
 	}
-
-	// private void validateCanUpdateStatus() {
-	// 	boolean statusIsNotPending = status != ReviewStatus.COMMENT;
-	//
-	// 	if (statusIsNotPending) {
-	// 		throw new InvalidOperationException(
-	// 			String.format(
-	// 				"Current review status must PENDING to update the review status. Current status: %s",
-	// 				status
-	// 			)
-	// 		);
-	// 	}
-	// }
 }
