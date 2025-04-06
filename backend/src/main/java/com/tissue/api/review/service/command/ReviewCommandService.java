@@ -57,7 +57,6 @@ public class ReviewCommandService {
 		Review savedReview = reviewRepository.save(review);
 
 		// TODO: ReviewSubmittedEvent(이슈의 구독자)
-		// TODO: ReviewSubmittedEvent로 Review를 넘기는게 좋을까? 아니면 그냥 id를 넘기는게 좋을까?
 		eventPublisher.publishEvent(
 			ReviewSubmittedEvent.createEvent(issue, currentWorkspaceMemberId, savedReview.getId())
 		);

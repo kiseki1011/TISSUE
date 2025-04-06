@@ -23,6 +23,10 @@ public class NotificationCommandService {
 	private final NotificationRepository notificationRepository;
 	private final WorkspaceMemberReader workspaceMemberReader;
 
+	// TODO: entityId 대신 entityKey?
+	// TODO: 추가 정보를 보관하기 위해 Map 사용? vs 추가 엔티티 정보를 보관할 DTO 만들기?
+	//  - 예를 들어서 issueKey 외에도 reviewId 또는 commentId를 전달해야 하는 경우 어떻게 처리?
+
 	@Transactional
 	public void createNotification(
 		UUID eventId,

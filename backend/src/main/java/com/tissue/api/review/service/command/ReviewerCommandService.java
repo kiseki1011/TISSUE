@@ -51,7 +51,6 @@ public class ReviewerCommandService {
 
 		issue.addReviewer(reviewer);
 
-		// TODO: ReviewerAddedEvent(대상: 이슈의 구독자 -> 이슈의 assignees, reviewers, watchers)
 		eventPublisher.publishEvent(
 			ReviewerAddedEvent.createEvent(issue, requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
 		);
@@ -98,7 +97,6 @@ public class ReviewerCommandService {
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
 
-		// TODO: ReviewRequestedEvent(대상: 리뷰어)
 		eventPublisher.publishEvent(
 			ReviewRequestedEvent.createEvent(issue, requesterWorkspaceMemberId)
 		);
