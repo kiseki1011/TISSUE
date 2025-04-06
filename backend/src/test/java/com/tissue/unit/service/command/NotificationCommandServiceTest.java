@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.domain.Notification;
 import com.tissue.api.notification.domain.enums.NotificationType;
@@ -44,12 +45,16 @@ class NotificationCommandServiceTest {
 		UUID eventId = UUID.randomUUID();
 		Long receiverId = 100L;
 		String workspaceCode = "WORKSPACE1";
-		NotificationType type = NotificationType.ISSUE_CREATED;
-		ResourceType entityType = ResourceType.ISSUE;
-		Long entityId = 200L;
+		NotificationType notificationType = NotificationType.ISSUE_CREATED;
+		ResourceType resourceType = ResourceType.ISSUE;
 		String title = "Test Title";
 		String message = "Test Message";
 		Long actorId = 300L;
+
+		DomainEvent event = mock(DomainEvent.class);
+		when(event.getEventId()).thenReturn(eventId);
+		when(event.getTriggeredByWorkspaceMemberId()).thenReturn(actorId);
+		when(event.getNotificationType()).thenReturn(notificationType);
 
 		// 액터 모의 설정
 		WorkspaceMember actorMember = mock(WorkspaceMember.class);
@@ -58,12 +63,7 @@ class NotificationCommandServiceTest {
 
 		// when
 		notificationCommandService.createNotification(
-			eventId,
-			workspaceCode,
-			type,
-			entityType,
-			entityId,
-			actorId,
+			event,
 			receiverId,
 			title,
 			message
@@ -78,10 +78,7 @@ class NotificationCommandServiceTest {
 		Notification savedNotification = notificationCaptor.getValue();
 		assertThat(savedNotification.getEventId()).isEqualTo(eventId);
 		assertThat(savedNotification.getReceiverWorkspaceMemberId()).isEqualTo(receiverId);
-		assertThat(savedNotification.getWorkspaceCode()).isEqualTo(workspaceCode);
-		assertThat(savedNotification.getType()).isEqualTo(type);
-		assertThat(savedNotification.getEntityType()).isEqualTo(entityType);
-		assertThat(savedNotification.getEntityId()).isEqualTo(entityId);
+		assertThat(savedNotification.getType()).isEqualTo(notificationType);
 		assertThat(savedNotification.getTitle()).isEqualTo(title);
 		assertThat(savedNotification.getMessage()).isEqualTo(message);
 		assertThat(savedNotification.getActorWorkspaceMemberId()).isEqualTo(actorId);
@@ -138,7 +135,7 @@ class NotificationCommandServiceTest {
 		Notification notification2 = mock(Notification.class);
 		List<Notification> unreadNotifications = Arrays.asList(notification1, notification2);
 
-		when(notificationRepository.findByReceiverWorkspaceMemberIdAndWorkspaceCodeAndIsReadFalse(
+		when(notificationRepository.findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
 			workspaceMemberId, workspaceCode
 		)).thenReturn(unreadNotifications);
 
@@ -163,7 +160,7 @@ class NotificationCommandServiceTest {
 
 		// 빈 알림 목록 모의 설정
 		List<Notification> emptyList = List.of();
-		when(notificationRepository.findByReceiverWorkspaceMemberIdAndWorkspaceCodeAndIsReadFalse(
+		when(notificationRepository.findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
 			workspaceMemberId, workspaceCode
 		)).thenReturn(emptyList);
 
