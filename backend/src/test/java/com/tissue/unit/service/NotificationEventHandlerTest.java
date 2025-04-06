@@ -121,13 +121,13 @@ class NotificationEventHandlerTest {
 		);
 
 		// targetResolver가 이슈 구독자 목록을 반환하도록 설정
-		when(targetResolver.getIssueSubscriberTargets(issueId)).thenReturn(subscribers);
+		when(targetResolver.getIssueSubscriberTargets(issueKey, workspaceCode)).thenReturn(subscribers);
 
 		// when
 		notificationEventHandler.handleIssueUpdated(event);
 
 		// then
-		verify(targetResolver).getIssueSubscriberTargets(issueId);
+		verify(targetResolver).getIssueSubscriberTargets(issueKey, workspaceCode);
 		verify(notificationProcessor).processNotification(event, subscribers);
 	}
 

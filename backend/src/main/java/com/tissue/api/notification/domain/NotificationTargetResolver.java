@@ -5,9 +5,8 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.repository.IssueRepository;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
@@ -18,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationTargetResolver {
 
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final IssueRepository issueRepository;
+	private final IssueReader issueReader;
 
 	/**
 	 * 워크스페이스 전체 멤버를 알림 대상으로 결정
@@ -30,11 +29,19 @@ public class NotificationTargetResolver {
 	/**
 	 * 이슈 구독자(작성자, 담당자, 리뷰어, 워처 등)를 알림 대상으로 결정
 	 */
-	public List<WorkspaceMember> getIssueSubscriberTargets(Long issueId) {
-		Issue issue = issueRepository.findById(issueId)
-			.orElseThrow(() -> new ResourceNotFoundException("Issue not found: " + issueId));
+	public List<WorkspaceMember> getIssueSubscriberTargets(String issueKey, String workspaceCode) {
+
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		Set<Long> subscriberIds = issue.getSubscriberIds();
 		return workspaceMemberRepository.findAllByIdIn(subscriberIds);
+	}
+
+	public List<WorkspaceMember> getIssueReviewerTargets(String issueKey, String workspaceCode) {
+
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+
+		Set<Long> reviewerIds = issue.getReviewerIds();
+		return workspaceMemberRepository.findAllByIdIn(reviewerIds);
 	}
 }
