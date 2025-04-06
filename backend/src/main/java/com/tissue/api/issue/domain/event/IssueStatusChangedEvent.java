@@ -3,8 +3,8 @@ package com.tissue.api.issue.domain.event;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 
 import lombok.Getter;
 
@@ -41,7 +41,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 	) {
 		super(
 			NotificationType.ISSUE_STATUS_CHANGED,
-			NotificationEntityType.ISSUE,
+			ResourceType.ISSUE,
 			workspaceCode,
 			issueId,
 			issueKey,

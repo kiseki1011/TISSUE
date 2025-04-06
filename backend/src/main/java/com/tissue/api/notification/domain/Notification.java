@@ -3,8 +3,8 @@ package com.tissue.api.notification.domain;
 import java.util.UUID;
 
 import com.tissue.api.common.entity.BaseDateEntity;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,7 +51,7 @@ public class Notification extends BaseDateEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private NotificationEntityType entityType;
+	private ResourceType entityType;
 
 	// Todo
 	//  - 처음 표현 계층에서 받은 식별자(예를 들어서 workspaceCode + issueKey)들을 통해서 처음 조회 후,
@@ -79,7 +79,7 @@ public class Notification extends BaseDateEntity {
 		UUID eventId,
 		String workspaceCode,
 		NotificationType type,
-		NotificationEntityType entityType,
+		ResourceType entityType,
 		Long entityId,
 		Long actorWorkspaceMemberId,
 		String actorWorkspaceMemberNickname,

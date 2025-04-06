@@ -18,8 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.domain.Notification;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.repository.NotificationRepository;
 import com.tissue.api.notification.service.command.NotificationCommandService;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -45,7 +45,7 @@ class NotificationCommandServiceTest {
 		Long receiverId = 100L;
 		String workspaceCode = "WORKSPACE1";
 		NotificationType type = NotificationType.ISSUE_CREATED;
-		NotificationEntityType entityType = NotificationEntityType.ISSUE;
+		ResourceType entityType = ResourceType.ISSUE;
 		Long entityId = 200L;
 		String title = "Test Title";
 		String message = "Test Message";

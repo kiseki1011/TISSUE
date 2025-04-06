@@ -5,8 +5,8 @@ import java.util.UUID;
 
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public abstract class IssueEvent implements DomainEvent {
 	private final LocalDateTime occurredAt = LocalDateTime.now();
 
 	private final NotificationType notificationType;
-	private final NotificationEntityType entityType;
+	private final ResourceType entityType;
 
 	private final String workspaceCode;
 	private final Long issueId;

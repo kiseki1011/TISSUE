@@ -1,6 +1,6 @@
 package com.tissue.api.notification.domain.enums;
 
-public enum NotificationEntityType {
+public enum ResourceType {
 	ISSUE,
 	COMMENT,
 	REVIEW,

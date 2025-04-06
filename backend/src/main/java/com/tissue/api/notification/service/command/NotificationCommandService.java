@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.domain.Notification;
-import com.tissue.api.notification.domain.enums.NotificationEntityType;
 import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.repository.NotificationRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
@@ -32,7 +32,7 @@ public class NotificationCommandService {
 		UUID eventId,
 		String workspaceCode,
 		NotificationType type,
-		NotificationEntityType entityType,
+		ResourceType entityType,
 		Long entityId,
 		Long actorWorkspaceMemberId,
 		Long receiverWorkspaceMemberId,
