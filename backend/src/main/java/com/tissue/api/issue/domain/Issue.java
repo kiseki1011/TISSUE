@@ -228,6 +228,16 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		return subscriberIds;
 	}
 
+	public Set<Long> getReviewerIds() {
+		Set<Long> reviewerIds = new HashSet<>();
+
+		reviewers.stream()
+			.map(IssueReviewer::getReviewerId)
+			.forEach(reviewerIds::add);
+
+		return reviewerIds;
+	}
+
 	public void requestReview() {
 		validateReviewersExist();
 
