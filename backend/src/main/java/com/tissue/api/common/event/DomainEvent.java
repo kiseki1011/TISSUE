@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.vo.EntityReference;
 
 public interface DomainEvent {
 
@@ -14,15 +14,11 @@ public interface DomainEvent {
 
 	NotificationType getNotificationType();
 
-	ResourceType getEntityType();
-
-	Long getEntityId();
-
 	String getEntityKey();
 
 	String getWorkspaceCode();
 
 	Long getTriggeredByWorkspaceMemberId();
 
-	String getType();
+	EntityReference createEntityReference();
 }

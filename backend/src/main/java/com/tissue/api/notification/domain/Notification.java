@@ -4,9 +4,10 @@ import java.util.UUID;
 
 import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.vo.EntityReference;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,24 +43,14 @@ public class Notification extends BaseDateEntity {
 	@Column(nullable = false)
 	private Long receiverWorkspaceMemberId;
 
-	@Column(nullable = false)
-	private String workspaceCode;
-
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private NotificationType type;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private ResourceType entityType;
+	@Embedded
+	private EntityReference entityReference;
 
-	// Todo
-	//  - 처음 표현 계층에서 받은 식별자(예를 들어서 workspaceCode + issueKey)들을 통해서 처음 조회 후,
-	//  - 이후 부터는 id 조회하도록 리팩토링
-	//  - EntityId라는 VO를 만들어서 안에 workspaceCode, xxxKey 등의 정보를 담는 방식 고려
-	@Column(nullable = false)
-	private Long entityId;
-
+	// TODO: title, message를 VO로 묶기?
 	@Column(nullable = false)
 	private String title;
 
@@ -77,10 +68,8 @@ public class Notification extends BaseDateEntity {
 	@Builder
 	public Notification(
 		UUID eventId,
-		String workspaceCode,
-		NotificationType type,
-		ResourceType entityType,
-		Long entityId,
+		NotificationType notificationType,
+		EntityReference entityReference,
 		Long actorWorkspaceMemberId,
 		String actorWorkspaceMemberNickname,
 		Long receiverWorkspaceMemberId,
@@ -88,10 +77,8 @@ public class Notification extends BaseDateEntity {
 		String message
 	) {
 		this.eventId = eventId;
-		this.workspaceCode = workspaceCode;
-		this.type = type;
-		this.entityType = entityType;
-		this.entityId = entityId;
+		this.type = notificationType;
+		this.entityReference = entityReference;
 		this.actorWorkspaceMemberId = actorWorkspaceMemberId;
 		this.actorWorkspaceMemberNickname = actorWorkspaceMemberNickname;
 		this.receiverWorkspaceMemberId = receiverWorkspaceMemberId;

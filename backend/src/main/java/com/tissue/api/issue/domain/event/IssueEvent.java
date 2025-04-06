@@ -7,6 +7,7 @@ import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.vo.EntityReference;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,17 +34,12 @@ public abstract class IssueEvent implements DomainEvent {
 	private final Long triggeredByWorkspaceMemberId;
 
 	@Override
-	public String getType() {
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public Long getEntityId() {
-		return issueId;
-	}
-
-	@Override
 	public String getEntityKey() {
 		return issueKey;
+	}
+
+	@Override
+	public EntityReference createEntityReference() {
+		return EntityReference.forIssue(getWorkspaceCode(), getIssueKey());
 	}
 }

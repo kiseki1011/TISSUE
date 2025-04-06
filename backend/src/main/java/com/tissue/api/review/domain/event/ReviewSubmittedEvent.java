@@ -5,6 +5,7 @@ import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueEvent;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.vo.EntityReference;
 
 import lombok.Getter;
 
@@ -47,5 +48,10 @@ public class ReviewSubmittedEvent extends IssueEvent {
 			triggeredByWorkspaceMemberId,
 			reviewId
 		);
+	}
+
+	@Override
+	public EntityReference createEntityReference() {
+		return EntityReference.forReview(getWorkspaceCode(), getIssueKey(), getReviewId());
 	}
 }

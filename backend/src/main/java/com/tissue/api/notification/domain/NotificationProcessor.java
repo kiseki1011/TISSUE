@@ -42,12 +42,7 @@ public class NotificationProcessor {
 		for (WorkspaceMember target : targets) {
 			try {
 				notificationService.createNotification(
-					event.getEventId(),
-					event.getWorkspaceCode(),
-					event.getNotificationType(),
-					event.getEntityType(),
-					event.getEntityId(),
-					event.getTriggeredByWorkspaceMemberId(),
+					event,
 					target.getId(),
 					message.title(),
 					message.content()
