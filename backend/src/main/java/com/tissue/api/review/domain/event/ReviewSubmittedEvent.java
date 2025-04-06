@@ -22,7 +22,7 @@ public class ReviewSubmittedEvent extends IssueEvent {
 		Long reviewId
 	) {
 		super(
-			NotificationType.REVIEW_SUBMITTED,
+			NotificationType.ISSUE_REVIEW_SUBMITTED,
 			NotificationEntityType.ISSUE,
 			workspaceCode,
 			issueId,

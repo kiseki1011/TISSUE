@@ -19,7 +19,7 @@ public class ReviewRequestedEvent extends IssueEvent {
 		Long triggeredByWorkspaceMemberId
 	) {
 		super(
-			NotificationType.REVIEW_REQUESTED,
+			NotificationType.ISSUE_REVIEW_REQUESTED,
 			NotificationEntityType.ISSUE,
 			workspaceCode,
 			issueId,
