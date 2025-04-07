@@ -73,7 +73,8 @@ jacocoTestReport {
                             "**/Message*",
                             "**/*Checker*",
                             "**/*Condition",
-                            "**/*Reader"
+                            "**/*Reader",
+                            "**/*Handler"
                     ])
                 })
         )
@@ -109,7 +110,8 @@ jacocoTestReport {
                         "**.Message*",
                         "**.*Checker*",
                         "**.*Condition",
-                        "**.*Reader"
+                        "**.*Reader",
+                        "**.*Handler"
                 ]
             }
         }
