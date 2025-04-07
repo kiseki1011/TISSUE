@@ -22,6 +22,14 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Todo: 알림 대상 정하기 -> 알림 처리를 하는 일련의 로직이 계속 중복된다. 추상화를 해서 중복 로직 제거?
+ *  - 방법1: IssueEvent를 한번에 처리(IssueCreatedEvent를 중복 처리하지 않을 방법 찾아야 함)
+ *  - 방법2: 전략 패턴 사용
+ *    - 케이스 별로 로깅하는 방법은 이벤트에서 NotificationType을 꺼내서 사용
+ *    - 실제로 달라지는 전략은 이벤트 별로 적용되는 알림 대상들(targets)
+ *  - 방법3: 그냥 지금과 같은 방법 유지. 어차피 NotificationType은 많아봤자 10개를 넘지 않을 예정.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
