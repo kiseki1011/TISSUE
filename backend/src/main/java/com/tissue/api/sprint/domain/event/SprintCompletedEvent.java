@@ -7,16 +7,16 @@ import com.tissue.api.sprint.domain.Sprint;
 import lombok.Getter;
 
 @Getter
-public class SprintStartedEvent extends SprintEvent {
+public class SprintCompletedEvent extends SprintEvent {
 
-	public SprintStartedEvent(
+	public SprintCompletedEvent(
 		Long sprintId,
 		String sprintKey,
 		String workspaceCode,
 		Long triggeredByWorkspaceMemberId
 	) {
 		super(
-			NotificationType.SPRINT_STARTED,
+			NotificationType.SPRINT_COMPLETED,
 			ResourceType.SPRINT,
 			workspaceCode,
 			sprintId,
@@ -25,11 +25,11 @@ public class SprintStartedEvent extends SprintEvent {
 		);
 	}
 
-	public static SprintStartedEvent createEvent(
+	public static SprintCompletedEvent createEvent(
 		Sprint sprint,
 		Long triggeredByWorkspaceMemberId
 	) {
-		return new SprintStartedEvent(
+		return new SprintCompletedEvent(
 			sprint.getId(),
 			sprint.getSprintKey(),
 			sprint.getWorkspaceCode(),

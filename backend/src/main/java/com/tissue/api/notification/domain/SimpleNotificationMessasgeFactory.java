@@ -87,7 +87,7 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 			// case ISSUE_COMMENT_ADDED -> new Object[] {actorNickname, event.getEntityKey()};
 
 			case ISSUE_ASSIGNED -> new Object[] {actorNickname, event.getEntityKey()};
-			
+
 			// case ISSUE_REVIEWER_ADDED -> {
 			// 	if (event instanceof IssueReviewerAddedEvent issueReviewerAddedEvent) {
 			// 		yield new Object[] {
@@ -146,8 +146,8 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 
 			// case SPRINT_STARTED -> new Object[] {event.getEntityKey()};
 
-			// case SPRINT_ENDED -> {
-			// 	if (event instanceof SprintEndedEvent sprintEndedEvent) {
+			// case SPRINT_COMPLETED -> {
+			// 	if (event instanceof SprintCompletedEvent sprintCompletedEvent) {
 			// 		yield new Object[] {
 			// 			actorNickname,
 			// 			event.getEntityKey(),
@@ -155,6 +155,10 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 			// 		};
 			// 	}
 			// 	yield new Object[] {actorNickname, event.getEntityKey()};
+			// }
+
+			// case SPRINT_D_DAY_COUNTDOWN -> {
+			//
 			// }
 			default -> new Object[] {actorNickname, event.getEntityKey()};
 		};
