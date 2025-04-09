@@ -3,12 +3,16 @@ package com.tissue.api.sprint.service.command;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
+import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.sprint.domain.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
@@ -32,6 +36,7 @@ public class SprintCommandService {
 	private final SprintRepository sprintRepository;
 	private final WorkspaceReader workspaceReader;
 	private final IssueReader issueReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public CreateSprintResponse createSprint(
@@ -96,11 +101,18 @@ public class SprintCommandService {
 	public UpdateSprintStatusResponse updateSprintStatus(
 		String workspaceCode,
 		String sprintKey,
-		UpdateSprintStatusRequest request
+		UpdateSprintStatusRequest request,
+		Long currentWorkspaceMemberId
 	) {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateStatus(request.newStatus());
+
+		if (sprint.getStatus() == SprintStatus.ACTIVE) {
+			eventPublisher.publishEvent(SprintStartedEvent.createEvent(sprint, currentWorkspaceMemberId));
+		} else if (sprint.getStatus() == SprintStatus.COMPLETED) {
+			eventPublisher.publishEvent(SprintCompletedEvent.createEvent(sprint, currentWorkspaceMemberId));
+		}
 
 		return UpdateSprintStatusResponse.from(sprint);
 	}
