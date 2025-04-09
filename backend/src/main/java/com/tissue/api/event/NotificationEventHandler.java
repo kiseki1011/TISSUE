@@ -17,6 +17,8 @@ import com.tissue.api.notification.domain.NotificationTargetResolver;
 import com.tissue.api.review.domain.event.ReviewRequestedEvent;
 import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.review.domain.event.ReviewerAddedEvent;
+import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
+import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -161,6 +163,30 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 
+		notificationProcessor.processNotification(event, targets);
+	}
+
+	@Async("notificationTaskExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleSprintStarted(SprintStartedEvent event) {
+		log.debug(
+			"Processing sprint started event. sprint key: {}, workspace code: {}",
+			event.getEntityKey(), event.getWorkspaceCode()
+		);
+
+		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
+		notificationProcessor.processNotification(event, targets);
+	}
+
+	@Async("notificationTaskExecutor")
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleSprintCompleted(SprintCompletedEvent event) {
+		log.debug(
+			"Processing sprint completed event. sprint key: {}, workspace code: {}",
+			event.getEntityKey(), event.getWorkspaceCode()
+		);
+
+		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
 		notificationProcessor.processNotification(event, targets);
 	}
 }
