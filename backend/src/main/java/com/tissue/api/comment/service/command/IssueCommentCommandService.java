@@ -1,9 +1,11 @@
 package com.tissue.api.comment.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.IssueComment;
+import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.api.comment.domain.repository.CommentRepository;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
@@ -23,6 +25,7 @@ public class IssueCommentCommandService {
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CommentRepository commentRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public IssueCommentResponse createComment(
@@ -54,7 +57,11 @@ public class IssueCommentCommandService {
 			.author(currentWorkspaceMember)
 			.build();
 
-		commentRepository.save(comment);
+		IssueComment savedComment = commentRepository.save(comment);
+
+		eventPublisher.publishEvent(
+			IssueCommentAddedEvent.createEvent(issue, savedComment, currentWorkspaceMemberId)
+		);
 
 		return IssueCommentResponse.from(comment);
 	}

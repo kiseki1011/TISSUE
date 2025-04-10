@@ -1,15 +1,19 @@
 package com.tissue.api.comment.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.ReviewComment;
+import com.tissue.api.comment.domain.event.ReviewCommentAddedEvent;
 import com.tissue.api.comment.domain.repository.CommentRepository;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -22,8 +26,10 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommentCommandService {
 
 	private final WorkspaceMemberReader workspaceMemberReader;
+	private final IssueReader issueReader;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public ReviewCommentResponse createComment(
@@ -33,27 +39,23 @@ public class ReviewCommentCommandService {
 		CreateReviewCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		// Todo: IssueQueryService 구현 후 재사용하는 방식으로 리팩토링
-		// Todo: ReviewNotFoundException을 만들자, 근데 issueKey, workspaceCode 정보가 필요할까?
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+
+		// Todo: ReviewNotFoundException을 만들까? 근데 issueKey, workspaceCode 정보가 필요할까?
 		Review review = reviewRepository.findByIdAndIssueKeyAndWorkspaceCode(reviewId, issueKey, workspaceCode)
 			.orElseThrow(
 				() -> new ResourceNotFoundException(String.format(
 					"Review was not found with review id: %d, issue key: %s, workspace code: %s",
-					reviewId, issueKey, workspaceCode)));
+					reviewId, issueKey, workspaceCode))
+			);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(currentWorkspaceMemberId);
 
 		ReviewComment parentComment = null;
 		if (request.hasParentComment()) {
 			parentComment = (ReviewComment)commentRepository.findById(request.parentCommentId())
 				.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()));
 		}
-
-		// Todo: 아래로 리팩토링 가능
-		// IssueComment parentComment = request.hasParentComment()
-		// 	? findIssueComment(request.parentCommentId())
-		// 	: null;
 
 		ReviewComment comment = ReviewComment.builder()
 			.content(request.content())
@@ -62,7 +64,11 @@ public class ReviewCommentCommandService {
 			.author(currentWorkspaceMember)
 			.build();
 
-		commentRepository.save(comment);
+		ReviewComment savedComment = commentRepository.save(comment);
+
+		eventPublisher.publishEvent(
+			ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
+		);
 
 		return ReviewCommentResponse.from(comment);
 	}
