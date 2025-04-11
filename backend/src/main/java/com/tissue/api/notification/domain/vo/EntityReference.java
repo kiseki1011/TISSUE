@@ -112,6 +112,13 @@ public class EntityReference {
 			.build();
 	}
 
+	public static EntityReference forWorkspace(String workspaceCode) {
+		return EntityReference.builder()
+			.workspaceCode(workspaceCode)
+			.resourceType(ResourceType.WORKSPACE)
+			.build();
+	}
+
 	public static EntityReference forWorkspaceMember(String workspaceCode, Long workspaceMemberId) {
 		return EntityReference.builder()
 			.workspaceCode(workspaceCode)
