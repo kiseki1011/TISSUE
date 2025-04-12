@@ -6,6 +6,8 @@ import com.tissue.api.issue.domain.event.IssueEvent;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.review.domain.Review;
+import com.tissue.api.review.domain.enums.ReviewStatus;
 
 import lombok.Getter;
 
@@ -13,6 +15,7 @@ import lombok.Getter;
 public class ReviewSubmittedEvent extends IssueEvent {
 
 	private final Long reviewId;
+	private final ReviewStatus reviewStatus;
 
 	public ReviewSubmittedEvent(
 		Long issueId,
@@ -20,7 +23,8 @@ public class ReviewSubmittedEvent extends IssueEvent {
 		String workspaceCode,
 		IssueType issueType,
 		Long triggeredByWorkspaceMemberId,
-		Long reviewId
+		Long reviewId,
+		ReviewStatus reviewStatus
 	) {
 		super(
 			NotificationType.ISSUE_REVIEW_SUBMITTED,
@@ -33,12 +37,13 @@ public class ReviewSubmittedEvent extends IssueEvent {
 		);
 
 		this.reviewId = reviewId;
+		this.reviewStatus = reviewStatus;
 	}
 
 	public static ReviewSubmittedEvent createEvent(
 		Issue issue,
 		Long triggeredByWorkspaceMemberId,
-		Long reviewId
+		Review review
 	) {
 		return new ReviewSubmittedEvent(
 			issue.getId(),
@@ -46,7 +51,8 @@ public class ReviewSubmittedEvent extends IssueEvent {
 			issue.getWorkspaceCode(),
 			issue.getType(),
 			triggeredByWorkspaceMemberId,
-			reviewId
+			review.getId(),
+			review.getStatus()
 		);
 	}
 

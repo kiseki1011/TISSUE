@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.ReviewComment;
-import com.tissue.api.comment.domain.event.ReviewCommentAddedEvent;
 import com.tissue.api.comment.domain.repository.CommentRepository;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
@@ -66,9 +65,11 @@ public class ReviewCommentCommandService {
 
 		ReviewComment savedComment = commentRepository.save(comment);
 
-		eventPublisher.publishEvent(
-			ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
-		);
+		// TODO: 리뷰 댓글 달리는 것도 알림으로 알려줘야 할까?
+		// TODO: 만약 알림을 알린다면, 해당 리뷰의 제목을 알림 내용에 포함하는게 좋을까?
+		// eventPublisher.publishEvent(
+		// 	ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
+		// );
 
 		return ReviewCommentResponse.from(comment);
 	}

@@ -31,6 +31,16 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
 
+	Set<WorkspaceMember> findAllByWorkspaceCodeAndRoleGreaterThanEqual(
+		String workspaceCode,
+		WorkspaceRole role
+	);
+
+	Optional<WorkspaceMember> findByWorkspaceCodeAndId(
+		String workspaceCode,
+		Long workspaceMemberId
+	);
+
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "
 		+ "AND wm.workspace.code = :workspaceCode")

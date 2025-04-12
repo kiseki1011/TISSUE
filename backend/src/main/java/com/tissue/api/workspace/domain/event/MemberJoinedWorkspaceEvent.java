@@ -11,18 +11,14 @@ import lombok.Getter;
 @Getter
 public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 
-	private final Long memberId;
 	private final Long workspaceMemberId;
-	private final String loginId;
 	private final String nickname;
 	private final WorkspaceRole workspaceRole;
 
 	public MemberJoinedWorkspaceEvent(
 		String workspaceCode,
 		Long triggeredByWorkspaceMemberId,
-		Long memberId,
 		Long workspaceMemberId,
-		String loginId,
 		String nickname,
 		WorkspaceRole workspaceRole
 	) {
@@ -33,23 +29,18 @@ public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 			triggeredByWorkspaceMemberId
 		);
 
-		this.memberId = memberId;
 		this.workspaceMemberId = workspaceMemberId;
-		this.loginId = loginId;
 		this.nickname = nickname;
 		this.workspaceRole = workspaceRole;
 	}
 
 	public static MemberJoinedWorkspaceEvent createEvent(
-		WorkspaceMember workspaceMember,
-		Long triggeredByWorkspaceMemberId
+		WorkspaceMember workspaceMember
 	) {
 		return new MemberJoinedWorkspaceEvent(
 			workspaceMember.getWorkspaceCode(),
-			triggeredByWorkspaceMemberId,
-			workspaceMember.getMember().getId(),
 			workspaceMember.getId(),
-			workspaceMember.getMember().getLoginId(),
+			workspaceMember.getId(),
 			workspaceMember.getNickname(),
 			workspaceMember.getRole()
 		);

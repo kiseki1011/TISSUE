@@ -2,6 +2,7 @@ package com.tissue.api.invitation.service.command;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import com.tissue.api.invitation.presentation.dto.response.RejectInvitationRespo
 import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
 import com.tissue.api.util.RandomNicknameGenerator;
+import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -28,6 +30,7 @@ public class InvitationCommandService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
 	private final RandomNicknameGenerator randomNicknameGenerator;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public AcceptInvitationResponse acceptInvitation(
@@ -46,6 +49,10 @@ public class InvitationCommandService {
 		);
 
 		workspaceMemberRepository.save(workspaceMember);
+
+		eventPublisher.publishEvent(
+			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
+		);
 
 		return AcceptInvitationResponse.from(invitation);
 	}

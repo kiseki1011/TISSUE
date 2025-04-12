@@ -26,7 +26,6 @@ public abstract class WorkspaceEvent implements DomainEvent {
 
 	@Override
 	public String getEntityKey() {
-		// 워크스페이스 이벤트는 기본적으로 워크스페이스 코드를 엔티티 키로 사용
 		return workspaceCode;
 	}
 

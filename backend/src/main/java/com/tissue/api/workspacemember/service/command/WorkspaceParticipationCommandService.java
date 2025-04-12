@@ -1,5 +1,6 @@
 package com.tissue.api.workspacemember.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,6 +9,7 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -26,6 +28,8 @@ public class WorkspaceParticipationCommandService {
 	private final MemberReader memberReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final RandomNicknameGenerator randomNicknameGenerator;
+
+	private final ApplicationEventPublisher eventPublisher;
 
 	/**
 	 * 참여할 워크스페이스의 코드를 통해
@@ -63,6 +67,10 @@ public class WorkspaceParticipationCommandService {
 			randomNicknameGenerator.generateNickname()
 		);
 		workspaceMemberRepository.save(workspaceMember);
+
+		eventPublisher.publishEvent(
+			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
+		);
 
 		return JoinWorkspaceResponse.from(workspaceMember);
 	}

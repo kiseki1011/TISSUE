@@ -1,6 +1,7 @@
 package com.tissue.api.workspacemember.service.command;
 
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,8 @@ import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.service.command.TeamReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -35,6 +38,7 @@ public class WorkspaceMemberCommandService {
 	private final TeamReader teamReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public UpdateNicknameResponse updateNickname(
@@ -68,7 +72,13 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMemberValidator.validateRoleUpdate(requester, target);
 
+		WorkspaceRole oldRole = target.getRole();
+
 		target.updateRole(request.updateWorkspaceRole());
+
+		eventPublisher.publishEvent(
+			WorkspaceMemberRoleChangedEvent.createEvent(target, oldRole, requesterWorkspaceMemberId)
+		);
 
 		return UpdateRoleResponse.from(target);
 	}

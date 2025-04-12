@@ -17,11 +17,6 @@ import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Todo
- *  - 알림 서비스 구현 필요
- *    - 리뷰 상태 변경 -> 모든 리뷰가 작성되었고 전부 APPROVED -> 이슈 assignees에게 알림
- */
 @Service
 @RequiredArgsConstructor
 public class ReviewCommandService {
@@ -56,9 +51,8 @@ public class ReviewCommandService {
 
 		Review savedReview = reviewRepository.save(review);
 
-		// TODO: ReviewSubmittedEvent(이슈의 구독자)
 		eventPublisher.publishEvent(
-			ReviewSubmittedEvent.createEvent(issue, currentWorkspaceMemberId, savedReview.getId())
+			ReviewSubmittedEvent.createEvent(issue, currentWorkspaceMemberId, savedReview)
 		);
 
 		return SubmitReviewResponse.from(savedReview);

@@ -52,7 +52,7 @@ public class ReviewerCommandService {
 		issue.addReviewer(reviewer);
 
 		eventPublisher.publishEvent(
-			ReviewerAddedEvent.createEvent(issue, requesterWorkspaceMemberId, reviewerWorkspaceMemberId)
+			ReviewerAddedEvent.createEvent(issue, requester, reviewer)
 		);
 
 		return AddReviewerResponse.from(reviewer);
