@@ -1,6 +1,5 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,8 +14,8 @@ public record SprintDetail(
 	String sprintKey,
 	String title,
 	String goal,
-	LocalDate startDate,
-	LocalDate endDate,
+	LocalDateTime plannedStartDate,
+	LocalDateTime plannedEndDate,
 	SprintStatus status,
 	List<String> issueKeys,
 	LocalDateTime createdAt,
@@ -28,8 +27,8 @@ public record SprintDetail(
 			.sprintKey(sprint.getSprintKey())
 			.title(sprint.getTitle())
 			.goal(sprint.getGoal())
-			.startDate(sprint.getStartDate())
-			.endDate(sprint.getEndDate())
+			.plannedStartDate(sprint.getPlannedStartDate())
+			.plannedEndDate(sprint.getPlannedEndDate())
 			.status(sprint.getStatus())
 			.issueKeys(sprint.getSprintIssues().stream()
 				.map(si -> si.getIssue().getIssueKey())

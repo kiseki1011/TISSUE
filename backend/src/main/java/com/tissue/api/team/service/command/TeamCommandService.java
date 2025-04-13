@@ -13,10 +13,9 @@ import com.tissue.api.team.presentation.dto.response.CreateTeamResponse;
 import com.tissue.api.team.presentation.dto.response.DeleteTeamResponse;
 import com.tissue.api.team.presentation.dto.response.UpdateTeamColorResponse;
 import com.tissue.api.team.presentation.dto.response.UpdateTeamResponse;
-import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.team.validator.TeamValidator;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TeamCommandService {
 
-	private final TeamQueryService teamQueryService;
-	private final WorkspaceQueryService workspaceQueryService;
+	private final TeamReader teamReader;
+	private final WorkspaceReader workspaceReader;
 	private final TeamRepository teamRepository;
 	private final TeamValidator teamValidator;
 
@@ -36,7 +35,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = workspaceQueryService.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
 		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedTeamColors());
 
@@ -56,7 +55,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamRequest request
 	) {
-		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		Team team = teamReader.findTeam(teamId, workspaceCode);
 
 		team.updateName(request.name());
 		team.updateDescription(request.description());
@@ -70,7 +69,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamColorRequest request
 	) {
-		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		Team team = teamReader.findTeam(teamId, workspaceCode);
 
 		team.updateColor(request.colorType());
 
@@ -82,7 +81,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		Long teamId
 	) {
-		Team team = teamQueryService.findTeam(teamId, workspaceCode);
+		Team team = teamReader.findTeam(teamId, workspaceCode);
 
 		teamValidator.validateTeamIsUsed(team);
 

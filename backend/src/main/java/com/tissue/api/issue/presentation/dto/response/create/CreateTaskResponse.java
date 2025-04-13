@@ -1,11 +1,9 @@
 package com.tissue.api.issue.presentation.dto.response.create;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Task;
@@ -14,20 +12,17 @@ import lombok.Builder;
 
 @Builder
 public record CreateTaskResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-
 	Long createrId,
 	LocalDateTime createdAt,
-
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
-
+	LocalDateTime dueAt,
 	String parentIssueKey
 
 ) implements CreateIssueResponse {
@@ -43,8 +38,7 @@ public record CreateTaskResponse(
 			.content(task.getContent())
 			.summary(task.getSummary())
 			.priority(task.getPriority())
-			.dueDate(task.getDueDate())
-			.difficulty(task.getDifficulty())
+			.dueAt(task.getDueAt())
 			.parentIssueKey(Optional.ofNullable(task.getParentIssue())
 				.map(Issue::getIssueKey)
 				.orElse(null))

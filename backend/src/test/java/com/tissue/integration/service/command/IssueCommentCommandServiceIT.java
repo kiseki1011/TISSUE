@@ -2,6 +2,8 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -64,7 +66,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"story issue",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 

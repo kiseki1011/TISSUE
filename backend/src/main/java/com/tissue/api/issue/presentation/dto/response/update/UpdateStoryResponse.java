@@ -1,9 +1,7 @@
 package com.tissue.api.issue.presentation.dto.response.update;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.types.Story;
@@ -12,20 +10,17 @@ import lombok.Builder;
 
 @Builder
 public record UpdateStoryResponse(
+
 	Long issueId,
 	String issueKey,
 	String workspaceCode,
-
 	Long updaterId,
 	LocalDateTime updatedAt,
-
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDate dueDate,
-	Difficulty difficulty,
-
+	LocalDateTime dueAt,
 	String userStory,
 	String acceptanceCriteria
 
@@ -42,8 +37,7 @@ public record UpdateStoryResponse(
 			.content(story.getContent())
 			.summary(story.getSummary())
 			.priority(story.getPriority())
-			.dueDate(story.getDueDate())
-			.difficulty(story.getDifficulty())
+			.dueAt(story.getDueAt())
 			.userStory(story.getUserStory())
 			.acceptanceCriteria(story.getAcceptanceCriteria())
 			.build();

@@ -2,6 +2,7 @@ package com.tissue.api.invitation.service.command;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,9 +11,10 @@ import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
-import com.tissue.api.invitation.service.query.InvitationQueryService;
+import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
 import com.tissue.api.util.RandomNicknameGenerator;
+import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -23,11 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvitationCommandService {
 
-	private final InvitationQueryService invitationQueryService;
+	private final InvitationReader invitationReader;
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
 	private final RandomNicknameGenerator randomNicknameGenerator;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public AcceptInvitationResponse acceptInvitation(
@@ -46,6 +49,10 @@ public class InvitationCommandService {
 		);
 
 		workspaceMemberRepository.save(workspaceMember);
+
+		eventPublisher.publishEvent(
+			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
+		);
 
 		return AcceptInvitationResponse.from(invitation);
 	}
@@ -75,7 +82,7 @@ public class InvitationCommandService {
 		Long memberId,
 		Long invitationId
 	) {
-		Invitation invitation = invitationQueryService.findPendingInvitation(invitationId);
+		Invitation invitation = invitationReader.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
 		invitationValidator.validateInvitation(memberId, workspaceCode);

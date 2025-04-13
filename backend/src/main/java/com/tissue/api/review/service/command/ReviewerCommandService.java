@@ -1,16 +1,19 @@
 package com.tissue.api.review.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
+import com.tissue.api.review.domain.event.ReviewRequestedEvent;
+import com.tissue.api.review.domain.event.ReviewerAddedEvent;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,8 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewerCommandService {
 
-	private final IssueQueryService issueQueryService;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final IssueReader issueReader;
+	private final WorkspaceMemberReader workspaceMemberReader;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public AddReviewerResponse addReviewer(
@@ -28,13 +32,13 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
 			workspaceCode
 		);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 			requesterWorkspaceMemberId,
 			workspaceCode
 		);
@@ -47,6 +51,10 @@ public class ReviewerCommandService {
 
 		issue.addReviewer(reviewer);
 
+		eventPublisher.publishEvent(
+			ReviewerAddedEvent.createEvent(issue, requester, reviewer)
+		);
+
 		return AddReviewerResponse.from(reviewer);
 	}
 
@@ -57,17 +65,18 @@ public class ReviewerCommandService {
 		Long reviewerWorkspaceMemberId,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			reviewerWorkspaceMemberId,
 			workspaceCode
 		);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 			requesterWorkspaceMemberId,
 			workspaceCode
 		);
 
+		// TODO: 굳이 검사할 필요가 있을까? 그냥 MEMBER 이상이면 해제할 수 있도록 해도 괜찮지 않을까?
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
 		}
@@ -83,10 +92,14 @@ public class ReviewerCommandService {
 		String issueKey,
 		Long requesterWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		issue.validateIsAssignee(requesterWorkspaceMemberId);
 		issue.requestReview();
+
+		eventPublisher.publishEvent(
+			ReviewRequestedEvent.createEvent(issue, requesterWorkspaceMemberId)
+		);
 
 		return RequestReviewResponse.from(issue);
 	}

@@ -10,7 +10,7 @@ import lombok.Builder;
 @Builder
 public record SprintSearchCondition(
 	List<SprintStatus> statuses,
-	@Size(min = 3, message = "{valid.size.keyword}")
+	@Size(min = 2, message = "{valid.size.keyword}")
 	String keyword
 ) {
 	public SprintSearchCondition {

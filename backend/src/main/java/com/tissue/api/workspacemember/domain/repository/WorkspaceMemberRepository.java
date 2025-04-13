@@ -2,6 +2,7 @@ package com.tissue.api.workspacemember.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,24 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
 
-	List<WorkspaceMember> findAllByIdIn(List<Long> idList);
+	List<WorkspaceMember> findAllByIdIn(Set<Long> idList);
+
+	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
+
+	// WorspaceRole에 Comparable을 구현하는 방식은 불가능함!(level 비교 불가)
+	@Deprecated
+	Set<WorkspaceMember> findAllByWorkspaceCodeAndRoleGreaterThanEqual(
+		String workspaceCode,
+		WorkspaceRole role
+	);
+
+	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspaceCode = :workspaceCode AND wm.role IN ('ADMIN', 'OWNER')")
+	Set<WorkspaceMember> findAdminsByWorkspaceCode(@Param("workspaceCode") String workspaceCode);
+
+	Optional<WorkspaceMember> findByWorkspaceCodeAndId(
+		String workspaceCode,
+		Long workspaceMemberId
+	);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

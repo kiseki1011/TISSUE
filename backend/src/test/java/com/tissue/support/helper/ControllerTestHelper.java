@@ -17,6 +17,7 @@ import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.InvitationController;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
+import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.issue.domain.repository.IssueRepository;
 import com.tissue.api.issue.presentation.controller.IssueController;
 import com.tissue.api.issue.service.command.IssueCommandService;
@@ -28,6 +29,7 @@ import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
 import com.tissue.api.position.service.command.PositionCommandService;
+import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.review.domain.repository.IssueReviewerRepository;
 import com.tissue.api.review.presentation.controller.ReviewController;
@@ -42,6 +44,7 @@ import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.controller.WorkspaceController;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspace.service.command.create.CheckCodeDuplicationService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
@@ -119,6 +122,8 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected CheckCodeDuplicationService workspaceCreateService;
 	@MockBean
+	protected WorkspaceReader workspaceReader;
+	@MockBean
 	protected WorkspaceQueryService workspaceQueryService;
 	@MockBean
 	protected WorkspaceCommandService workspaceCommandService;
@@ -129,7 +134,11 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected InvitationQueryService invitationQueryService;
 	@MockBean
+	protected InvitationReader invitationReader;
+	@MockBean
 	protected PositionCommandService positionCommandService;
+	@MockBean
+	protected PositionReader positionReader;
 	@MockBean
 	protected PositionQueryService positionQueryService;
 	@MockBean
@@ -138,6 +147,8 @@ public abstract class ControllerTestHelper {
 	protected ReviewCommandService reviewCommandService;
 	@MockBean
 	protected ReviewerCommandService reviewerCommandService;
+	// @MockBean
+	// protected NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * Validator

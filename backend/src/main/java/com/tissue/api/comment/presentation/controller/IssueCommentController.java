@@ -42,6 +42,9 @@ public class IssueCommentController {
 	 *    - 특정 이슈의 모든 댓글 조회
 	 *    - 특정 댓글의 모든 대댓글 조회
 	 */
+
+	// TODO(seungki1011, 2025-04-11): comment revert api
+
 	private final IssueCommentCommandService issueCommentCommandService;
 
 	@PostMapping

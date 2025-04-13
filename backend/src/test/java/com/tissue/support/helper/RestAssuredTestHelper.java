@@ -10,7 +10,7 @@ import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.service.command.PositionCommandService;
-import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.security.authentication.service.AuthenticationService;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.service.command.create.CheckCodeDuplicationService;
@@ -50,7 +50,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected PositionCommandService positionCommandService;
 	@Autowired
-	protected PositionQueryService positionQueryService;
+	protected PositionReader positionReader;
 
 	/**
 	 * Repository

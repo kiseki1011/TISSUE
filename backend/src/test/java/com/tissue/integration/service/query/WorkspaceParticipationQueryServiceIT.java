@@ -18,7 +18,7 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper {
@@ -54,7 +54,7 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		Pageable pageable = PageRequest.of(0, 20);
 
 		// when
-		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(member1.getId(), pageable);
+		GetWorkspacesResponse response = workspaceParticipationQueryService.getWorkspaces(member1.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(2);
@@ -81,7 +81,7 @@ class WorkspaceParticipationQueryServiceIT extends ServiceIntegrationTestHelper 
 		);
 
 		// when
-		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(member2.getId(), pageable);
+		GetWorkspacesResponse response = workspaceParticipationQueryService.getWorkspaces(member2.getId(), pageable);
 
 		// then
 		assertThat(response.getTotalElements()).isEqualTo(5);

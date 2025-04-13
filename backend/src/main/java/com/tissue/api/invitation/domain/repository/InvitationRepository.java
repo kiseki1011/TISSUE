@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,15 +25,6 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 	);
 
 	List<Invitation> findAllByMemberId(Long id);
-
-	@Query("SELECT i FROM Invitation i "
-		+ "WHERE i.member.id = :memberId "
-		+ "AND i.status IN :statuses")
-	Page<Invitation> findAllByMemberIdAndStatusIn(
-		@Param("memberId") Long memberId,
-		@Param("statuses") List<InvitationStatus> statuses,
-		Pageable pageable
-	);
 
 	@Query("SELECT DISTINCT m.id FROM WorkspaceMember wm JOIN wm.member m "
 		+ "WHERE wm.workspace.id = :workspaceId "

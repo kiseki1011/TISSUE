@@ -1,5 +1,6 @@
 package com.tissue.api.comment.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,10 +11,12 @@ import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,9 +24,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewCommentCommandService {
 
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
+	private final IssueReader issueReader;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public ReviewCommentResponse createComment(
@@ -33,27 +38,23 @@ public class ReviewCommentCommandService {
 		CreateReviewCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		// Todo: IssueQueryService 구현 후 재사용하는 방식으로 리팩토링
-		// Todo: ReviewNotFoundException을 만들자, 근데 issueKey, workspaceCode 정보가 필요할까?
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+
+		// Todo: ReviewNotFoundException을 만들까? 근데 issueKey, workspaceCode 정보가 필요할까?
 		Review review = reviewRepository.findByIdAndIssueKeyAndWorkspaceCode(reviewId, issueKey, workspaceCode)
 			.orElseThrow(
 				() -> new ResourceNotFoundException(String.format(
 					"Review was not found with review id: %d, issue key: %s, workspace code: %s",
-					reviewId, issueKey, workspaceCode)));
+					reviewId, issueKey, workspaceCode))
+			);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(currentWorkspaceMemberId);
 
 		ReviewComment parentComment = null;
 		if (request.hasParentComment()) {
 			parentComment = (ReviewComment)commentRepository.findById(request.parentCommentId())
 				.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()));
 		}
-
-		// Todo: 아래로 리팩토링 가능
-		// IssueComment parentComment = request.hasParentComment()
-		// 	? findIssueComment(request.parentCommentId())
-		// 	: null;
 
 		ReviewComment comment = ReviewComment.builder()
 			.content(request.content())
@@ -62,7 +63,13 @@ public class ReviewCommentCommandService {
 			.author(currentWorkspaceMember)
 			.build();
 
-		commentRepository.save(comment);
+		ReviewComment savedComment = commentRepository.save(comment);
+
+		// TODO: 리뷰 댓글 달리는 것도 알림으로 알려줘야 할까?
+		// TODO: 만약 알림을 알린다면, 해당 리뷰의 제목을 알림 내용에 포함하는게 좋을까?
+		// eventPublisher.publishEvent(
+		// 	ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
+		// );
 
 		return ReviewCommentResponse.from(comment);
 	}
@@ -75,7 +82,7 @@ public class ReviewCommentCommandService {
 		UpdateReviewCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
@@ -94,7 +101,7 @@ public class ReviewCommentCommandService {
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)

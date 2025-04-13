@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.presentation.dto.response.MyProfileResponse;
+import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
@@ -34,7 +34,7 @@ class MemberQueryServiceIT extends ServiceIntegrationTestHelper {
 		Long memberId = member.getId();
 
 		// when
-		MyProfileResponse response = memberQueryService.getMyProfile(memberId);
+		GetProfileResponse response = memberQueryService.getProfile(memberId);
 
 		// then
 		assertThat(response.loginId()).isEqualTo("tester");

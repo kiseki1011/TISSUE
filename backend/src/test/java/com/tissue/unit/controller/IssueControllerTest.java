@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,11 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
@@ -34,14 +34,14 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("") // 검증 실패
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now().plusDays(10))
+			.common(CommonIssueCreateFields.builder()
+				.title("")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
-			.targetReleaseDate(LocalDate.now().plusMonths(1))
-			.hardDeadLine(LocalDate.now().plusMonths(2))
 			.build();
 
 		// when & then
@@ -59,25 +59,25 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
-			.title("Epic Title")
-			.content("Epic Content")
-			.summary("Epic Summary")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now().plusDays(10))
+			.common(CommonIssueCreateFields.builder()
+				.title("Epic Title")
+				.content("Epic Content")
+				.summary("Epic Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(10))
+				.build())
 			.businessGoal("Business Goal")
-			.targetReleaseDate(LocalDate.now().plusMonths(1))
-			.hardDeadLine(LocalDate.now().plusMonths(2))
 			.build();
 
 		CreateEpicResponse response = CreateEpicResponse.builder()
 			.issueId(1L)
 			.workspaceCode(workspaceCode)
-			.title(request.title())
-			.content(request.content())
+			.title("Epic Title")
+			.content("Epic Content")
 			.businessGoal(request.businessGoal())
 			.build();
 
-		when(issueCommandService.createIssue(anyString(), any(CreateIssueRequest.class)))
+		when(issueCommandService.createIssue(anyString(), anyLong(), any(CreateIssueRequest.class)))
 			.thenReturn(response);
 
 		// when & then
@@ -87,7 +87,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.data.issueId").value(1L))
 			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.title").value(request.title()))
+			.andExpect(jsonPath("$.data.title").value("Epic Title"))
 			.andExpect(jsonPath("$.message").value("EPIC issue created."));
 	}
 
@@ -98,15 +98,16 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 		String issueKey = "TEST-123";
 		LocalDateTime now = LocalDateTime.now();
-		LocalDate dueDate = LocalDate.now();
+		LocalDateTime dueAt = LocalDateTime.now();
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueDate(dueDate)
-			.difficulty(Difficulty.HARD)
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(dueAt)
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -121,8 +122,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.content("Updated Content")
 			.summary("Updated Summary")
 			.priority(IssuePriority.HIGH)
-			.dueDate(dueDate)
-			.difficulty(Difficulty.HARD)
+			.dueAt(dueAt)
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
@@ -144,7 +144,6 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.content").value("Updated Content"))
 			.andExpect(jsonPath("$.data.summary").value("Updated Summary"))
 			.andExpect(jsonPath("$.data.priority").value("HIGH"))
-			.andExpect(jsonPath("$.data.difficulty").value("HARD"))
 			.andExpect(jsonPath("$.data.userStory").value("Updated User Story"))
 			.andExpect(jsonPath("$.data.acceptanceCriteria").value("Updated Acceptance Criteria"))
 			.andDo(print());
@@ -157,12 +156,13 @@ class IssueControllerTest extends ControllerTestHelper {
 	void updateIssue_InvalidType_ThrowsException() throws Exception {
 		// given
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.common(CommonIssueUpdateFields.builder()
+				.title("Updated Title")
+				.content("Updated Content")
+				.summary("Updated Summary")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now())
+				.build())
 			.userStory("Updated User Story")
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();

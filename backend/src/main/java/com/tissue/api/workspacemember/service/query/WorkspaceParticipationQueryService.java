@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,12 +18,12 @@ public class WorkspaceParticipationQueryService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Transactional(readOnly = true)
-	public MyWorkspacesResponse getMyWorkspaces(Long memberId, Pageable pageable) {
+	public GetWorkspacesResponse getWorkspaces(Long memberId, Pageable pageable) {
 		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberId(memberId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace()
 			));
 
-		return MyWorkspacesResponse.from(workspaceDetails.getContent(), workspaceDetails.getTotalElements());
+		return GetWorkspacesResponse.from(workspaceDetails.getContent(), workspaceDetails.getTotalElements());
 	}
 }

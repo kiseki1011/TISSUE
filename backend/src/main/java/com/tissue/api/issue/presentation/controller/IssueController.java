@@ -15,11 +15,11 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -45,9 +45,10 @@ public class IssueController {
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
 		@PathVariable String code,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(code, request);
+		CreateIssueResponse response = issueCommandService.createIssue(code, currentWorkspaceMemberId, request);
 
 		return ApiResponse.ok(response.getType() + " issue created.", response);
 	}
@@ -74,7 +75,7 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
-	public ApiResponse<UpdateIssueResponse> updateIssueDetails(
+	public ApiResponse<UpdateIssueResponse> updateIssueDetail(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
@@ -127,19 +128,36 @@ public class IssueController {
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@DeleteMapping("/{issueKey}")
-	public ApiResponse<DeleteIssueResponse> deleteIssue(
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@PostMapping("{issueKey}/watcher")
+	public ApiResponse<AddWatcherResponse> addWatcher(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
-		DeleteIssueResponse response = issueCommandService.deleteIssue(
+		AddWatcherResponse response = issueCommandService.addWatcher(
 			code,
 			issueKey,
 			currentWorkspaceMemberId
 		);
 
-		return ApiResponse.ok("Parent issue deleted.", response);
+		return ApiResponse.ok("Watcher added.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@DeleteMapping("{issueKey}/watcher")
+	public ApiResponse<Void> removeWatcher(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+	) {
+		issueCommandService.removeWatcher(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
+
+		return ApiResponse.okWithNoContent("Watcher added.");
 	}
 }

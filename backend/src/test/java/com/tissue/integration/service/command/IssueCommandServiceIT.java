@@ -2,7 +2,7 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,19 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.Difficulty;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateStoryRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateSubTaskRequest;
+import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
+import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateStoryResponse;
 import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
-import com.tissue.api.issue.presentation.dto.response.delete.DeleteIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
@@ -81,20 +79,22 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 멤버는 TASK 타입 이슈를 생성할 수 있다")
+	@DisplayName("워크스페이스 멤버는 이슈를 생성할 수 있다(Task 생성)")
 	void canCreateTaskIssue() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("test issue")
-			.content("test content")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.common(CommonIssueCreateFields.builder()
+				.title("test issue")
+				.content("test content")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -108,136 +108,22 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("특정 이슈를 부모로 지정하여 이슈를 생성하는 것이 가능하다")
-	void canCreateIssueWithParent() {
-		// given
-		Issue parentIssue = testDataFixture.createEpic(
-			workspace,
-			"parent issue (EPIC type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		CreateStoryRequest request = CreateStoryRequest.builder()
-			.title("child story")
-			.content("child story")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
-			.parentIssueKey(parentIssue.getIssueKey())
-			.userStory("user story")
-			.acceptanceCriteria("acceptance criteria")
-			.build();
-
-		// when
-		CreateStoryResponse response = (CreateStoryResponse)issueCommandService.createIssue(
-			workspace.getCode(),
-			request
-		);
-
-		// then
-		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-
-		assertThat(response.title()).isEqualTo("child story");
-		assertThat(savedIssue.getParentIssue().getId()).isEqualTo(parentIssue.getId());
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("STORY 타입 이슈 생성 시, TASK 타입 이슈를 부모로 지정할 수 없다")
-	void cannotCreateStoryIfParentIsTask() {
-		// given
-		Issue parentIssue = testDataFixture.createTask(
-			workspace,
-			"parent issue (TASK type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		CreateStoryRequest request = CreateStoryRequest.builder()
-			.title("child story")
-			.content("child story")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
-			.parentIssueKey(parentIssue.getIssueKey())
-			.userStory("user story")
-			.acceptanceCriteria("acceptance criteria")
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("SUB_TASK 이슈 생성 시, EPIC 타입 이슈를 부모로 지정할 수 없다")
-	void cannotCreateSubTaskWithEpicParent() {
-		// given
-		Issue parentIssue = testDataFixture.createEpic(
-			workspace,
-			"parent issue (EPIC type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		CreateSubTaskRequest request = CreateSubTaskRequest.builder()
-			.title("child subtask")
-			.content("child subtask")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
-			.parentIssueKey(parentIssue.getIssueKey())
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("같은 위계의 타입을 가진 이슈를 부모로 지정할 수 없다")
-	void cannotCreateIssueWithParentIfParentIsSameHierarchyAsChild() {
-		// given
-		Issue parentIssue = testDataFixture.createTask(
-			workspace,
-			"parent issue (TASK type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("child task")
-			.content("child task")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
-			.parentIssueKey(parentIssue.getIssueKey())
-			.build();
-
-		// when & then
-		assertThatThrownBy(() -> issueCommandService.createIssue(workspace.getCode(), request))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
 	@DisplayName("제일 처음 생성된 이슈의 이슈키는 'ISSUE-1'이어야 한다")
 	void whenFirstIssueIsCreatedIssueKeyMustBe_ISSUE_1() {
 		// given
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("task issue")
-			.content("task issue")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.common(CommonIssueCreateFields.builder()
+				.title("task issue")
+				.content("task issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -256,20 +142,22 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"first issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		CreateTaskRequest request = CreateTaskRequest.builder()
-			.title("second issue (TASK type)")
-			.content("second issue (TASK type)")
-			.priority(IssuePriority.MEDIUM)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.NORMAL)
+			.common(CommonIssueCreateFields.builder()
+				.title("second issue (TASK type)")
+				.content("second issue (TASK type)")
+				.priority(IssuePriority.MEDIUM)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.build();
 
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -284,24 +172,25 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("이슈의 작성자는 본인이 작성한 이슈를 업데이트할 수 있다")
-	void issueAuthorCanEditIssue() {
+	@DisplayName("이슈를 업데이트할 수 있다")
+	void canEditIssue() {
 		// given
 		Issue issue = testDataFixture.createStory(
 			workspace,
 			"test issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("updated issue")
-			.content("updated issue")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.common(CommonIssueUpdateFields.builder()
+				.title("updated issue")
+				.content("updated issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now())
+				.build())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -321,6 +210,73 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
+	@DisplayName("이슈 업데이트 시, summary를 null로 업데이트 가능하다")
+	void canUpdateIssueSummaryFieldAsNull() {
+		// given
+		Issue issue = testDataFixture.createStory(
+			workspace,
+			"test issue (STORY type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.summary(null)
+				.build())
+			.build();
+
+		// when
+		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+		assertThat(response.summary()).isNull();
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("이슈를 업데이트 시, nullable=false인 필드에 대해서는 요청 필드가 null인 경우 업데이트 대상에서 제외된다")
+	void forNonNullableFields_IfRequestFieldIsNull_UpdateIsNotApplied() {
+		// given
+		Issue issue = testDataFixture.createStory(
+			workspace,
+			"original title",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		// all fields except for summary is null for request
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.summary("updated summary")
+				.build())
+			.build();
+
+		// when
+		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+		assertThat(response.title()).isEqualTo("original title");
+	}
+
+	@Test
+	@Transactional
 	@DisplayName("요청의 이슈 타입과 업데이트를 위해 조회한 이슈 타입은 일치해야 한다")
 	void updateIssueTypeMismatchIsNotAllowed() {
 		// given
@@ -328,17 +284,18 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue (TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
-			.title("updated issue")
-			.content("updated issue")
-			.priority(IssuePriority.HIGH)
-			.dueDate(LocalDate.now())
-			.difficulty(Difficulty.HARD)
+			.common(CommonIssueUpdateFields.builder()
+				.title("updated issue")
+				.content("updated issue")
+				.priority(IssuePriority.HIGH)
+				.dueAt(LocalDateTime.now().plusDays(7))
+				.build())
 			.userStory("updated issue")
 			.acceptanceCriteria("updated issue")
 			.build();
@@ -352,61 +309,6 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("이슈 작성자는 이슈를 삭제할 수 있다")
-	void issueAuthorCanDeleteIssue() {
-		// given
-		Issue issue = testDataFixture.createStory(
-			workspace,
-			"test issue (STORY type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-
-		// when
-		DeleteIssueResponse response = issueCommandService.deleteIssue(
-			workspace.getCode(),
-			issue.getIssueKey(),
-			workspaceMember1.getId()
-		);
-
-		// then
-		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-	}
-
-	@Test
-	@Transactional
-	@DisplayName("SUB_TASK의 부모 이슈는 삭제할 수 없다")
-	void cannotDeleteParentOfSubTask() {
-		// given
-		Issue parentIssue = testDataFixture.createStory(
-			workspace,
-			"parent issue (STORY type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-
-		Issue childIssue = testDataFixture.createSubTask(
-			workspace,
-			"child issue (SUBTASK type)",
-			IssuePriority.MEDIUM,
-			null
-		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
-		childIssue.updateParentIssue(parentIssue);
-
-		// when & then
-		assertThatThrownBy(
-			() -> issueCommandService.deleteIssue(workspace.getCode(), parentIssue.getIssueKey(),
-				workspaceMember1.getId()))
-			.isInstanceOf(InvalidOperationException.class);
-	}
-
-	@Test
-	@Transactional
 	@DisplayName("STORY의 부모로 EPIC을 등록할 수 있다")
 	void canAssignEpicAsParentIssueOfStory() {
 		// given
@@ -414,7 +316,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -422,7 +324,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -441,6 +343,116 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
+	@DisplayName("EPIC 타입 이슈를 부모로 등록하는 경우 해당 EPIC 이슈의 스토리 포인트(storyPoint)는 자식 이슈들의 포인트 합산으로 계산된다")
+	void epicParentStoryPointIsCalculated_WhenChildAssignsParentIssue() {
+		// given
+		Issue parentIssue = testDataFixture.createEpic(
+			workspace,
+			"parent issue (EPIC type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		Issue childIssue1 = Story.builder()
+			.workspace(workspace)
+			.title("child issue 1 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(1)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.build();
+
+		issueRepository.save(childIssue1);
+		childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		Issue childIssue2 = Story.builder()
+			.workspace(workspace)
+			.title("child issue 2 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(3)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.build();
+
+		issueRepository.save(childIssue2);
+		childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		// when - assign parent to childIssue1, 2
+		issueCommandService.assignParentIssue(
+			workspace.getCode(),
+			childIssue1.getIssueKey(),
+			workspaceMember1.getId(),
+			new AssignParentIssueRequest(parentIssue.getIssueKey())
+		);
+
+		issueCommandService.assignParentIssue(
+			workspace.getCode(),
+			childIssue2.getIssueKey(),
+			workspaceMember1.getId(),
+			new AssignParentIssueRequest(parentIssue.getIssueKey())
+		);
+
+		// then
+		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()).get();
+
+		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(4);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("이슈 업데이트에서 스토리 포인트를 업데이트 하는 경우, 해당 이슈의 부모가 Epic이면, Epic의 스토리 포인트를 갱신한다")
+	void whenUpdateStoryPoint_IfParentIsEpic_EpicStoryPointIsRecalculated() {
+		// given
+		Issue parentIssue = testDataFixture.createEpic(
+			workspace,
+			"parent issue (EPIC type)",
+			IssuePriority.MEDIUM,
+			LocalDateTime.now().plusDays(7)
+		);
+
+		Issue childIssue = Story.builder()
+			.workspace(workspace)
+			.title("child issue 1 (STORY type)")
+			.content("test")
+			.dueAt(LocalDateTime.now().plusDays(7))
+			.storyPoint(1)
+			.userStory("test")
+			.acceptanceCriteria("test")
+			.parentIssue(parentIssue)
+			.build();
+		issueRepository.save(childIssue);
+
+		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+
+		UpdateStoryRequest request = UpdateStoryRequest.builder()
+			.common(CommonIssueUpdateFields.builder()
+				.build())
+			.storyPoint(10) // update story point to 10
+			.build();
+
+		// when
+		issueCommandService.updateIssue(
+			workspace.getCode(),
+			childIssue.getIssueKey(),
+			workspaceMember1.getId(),
+			request
+		);
+
+		// then
+		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()).get();
+
+		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(10);
+	}
+
+	@Test
+	@Transactional
 	@DisplayName("이슈의 부모를 변경할 수 있다")
 	void canChangeParentIssueOfIssue() {
 		// given
@@ -448,7 +460,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -456,7 +468,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
@@ -466,7 +478,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"new parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 		newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
@@ -492,7 +504,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (EPIC type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -501,7 +513,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -530,7 +542,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"parent issue (Task type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
@@ -539,7 +551,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"child issue (SUB_TASK type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());

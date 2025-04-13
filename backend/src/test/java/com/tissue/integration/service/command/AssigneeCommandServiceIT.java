@@ -2,6 +2,8 @@ package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +65,7 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"test issue(STORY type)",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
@@ -76,18 +78,23 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이슈에 다수의 이슈 작업자(IssueAssignee)를 등록할 수 있다")
 	void canAddMultipleAssigneesToIssue() {
 		// given
+		Long assigneeWMId1 = workspaceMember1.getId();
+		Long assignRequesterWorkspaceMemberId = owner.getId();
+		Long assigneeWMId2 = workspaceMember2.getId();
 
 		// when
 		AddAssigneeResponse response1 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			workspaceMember1.getId()
+			assigneeWMId1,
+			assignRequesterWorkspaceMemberId
 		);
 
 		AddAssigneeResponse response2 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			workspaceMember2.getId()
+			assigneeWMId2,
+			assignRequesterWorkspaceMemberId
 		);
 
 		// then
@@ -99,12 +106,15 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("유효하지 않은 이슈 키에 대해 작업자(IssueAssignee)를 추가할 수 없다")
 	void cannotAddAssigneeWithInvalidIssueKey() {
 		// given
+		Long assigneeWMId = workspaceMember1.getId();
+		Long assignRequesterWorkspaceMemberId = owner.getId();
 
 		// then & when
 		assertThatThrownBy(() -> assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			"INVALIDKEY", // invalid issue key
-			workspaceMember1.getId()
+			assigneeWMId,
+			assignRequesterWorkspaceMemberId
 		))
 			.isInstanceOf(IssueNotFoundException.class);
 	}
@@ -113,23 +123,27 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("이슈에 등록된 작업자(IssueAssignee)를 해제할 수 있다")
 	void canRemoveAssigneeFromIssueIfAssignee() {
 		// given
-		Long requesterWorkspaceMemberId = workspaceMember1.getId();
-		Long assigneeWorkspaceMemberId = workspaceMember2.getId();
+		Long removeRequesterWorkspaceMemberId = workspaceMember1.getId();
+		Long assignRequesterWorkspaceMemberId = owner.getId();
+		Long assigneeWorkspaceMemberId1 = workspaceMember1.getId();
+		Long assigneeWorkspaceMemberId2 = workspaceMember2.getId();
 
 		// requester of assignee removal must be an assignee
-		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), requesterWorkspaceMemberId);
-		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId);
+		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId1,
+			assignRequesterWorkspaceMemberId);
+		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId2,
+			assigneeWorkspaceMemberId1);
 
 		// when
 		RemoveAssigneeResponse response = assigneeCommandService.removeAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWorkspaceMemberId,
-			requesterWorkspaceMemberId
+			assigneeWorkspaceMemberId2,
+			removeRequesterWorkspaceMemberId
 		);
 
 		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(assigneeWorkspaceMemberId);
+		assertThat(response.workspaceMemberId()).isEqualTo(assigneeWorkspaceMemberId2);
 	}
 
 	@Test
@@ -146,7 +160,12 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assigneeWorkspaceMemberId = workspaceMember2.getId();
 		Long requesterWorkspaceMemberId = workspaceMember3.getId();
 
-		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId);
+		assigneeCommandService.addAssignee(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			assigneeWorkspaceMemberId,
+			owner.getId()
+		);
 
 		// when & then
 		assertThatThrownBy(() -> assigneeCommandService.removeAssignee(

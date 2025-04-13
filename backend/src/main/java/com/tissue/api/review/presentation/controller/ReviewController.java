@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.review.presentation.dto.request.CreateReviewRequest;
+import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
-import com.tissue.api.review.presentation.dto.request.UpdateReviewStatusRequest;
-import com.tissue.api.review.presentation.dto.response.CreateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
-import com.tissue.api.review.presentation.dto.response.UpdateReviewStatusResponse;
 import com.tissue.api.review.service.command.ReviewCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -48,16 +46,16 @@ public class ReviewController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<CreateReviewResponse> createReview(
+	public ApiResponse<SubmitReviewResponse> createReview(
 		@PathVariable String code,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long requesterId,
-		@RequestBody @Valid CreateReviewRequest request
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@RequestBody @Valid SubmitReviewRequest request
 	) {
-		CreateReviewResponse response = reviewCommandService.createReview(
+		SubmitReviewResponse response = reviewCommandService.submitReview(
 			code,
 			issueKey,
-			requesterId,
+			currentWorkspaceMemberId,
 			request
 		);
 
@@ -81,24 +79,24 @@ public class ReviewController {
 		return ApiResponse.ok("Review updated.", response);
 	}
 
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping("/{reviewId}/status")
-	public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
-		@PathVariable String code,
-		@PathVariable String issueKey,
-		@PathVariable Long reviewId,
-		@CurrentWorkspaceMember Long requesterId,
-		@RequestBody @Valid UpdateReviewStatusRequest request
-	) {
-		UpdateReviewStatusResponse response = reviewCommandService.updateReviewStatus(
-			code,
-			issueKey,
-			reviewId,
-			requesterId,
-			request
-		);
-
-		return ApiResponse.ok("Review status updated.", response);
-	}
+	// @LoginRequired
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{reviewId}/status")
+	// public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
+	// 	@PathVariable String code,
+	// 	@PathVariable String issueKey,
+	// 	@PathVariable Long reviewId,
+	// 	@CurrentWorkspaceMember Long requesterId,
+	// 	@RequestBody @Valid UpdateReviewStatusRequest request
+	// ) {
+	// 	UpdateReviewStatusResponse response = reviewCommandService.updateReviewStatus(
+	// 		code,
+	// 		issueKey,
+	// 		reviewId,
+	// 		requesterId,
+	// 		request
+	// 	);
+	//
+	// 	return ApiResponse.ok("Review status updated.", response);
+	// }
 }

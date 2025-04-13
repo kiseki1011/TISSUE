@@ -2,7 +2,7 @@ package com.tissue.integration.service.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,14 +66,14 @@ public class SprintReaderIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue 1",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue2 = testDataFixture.createStory(
 			workspace,
 			"issue 2",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
@@ -90,8 +90,8 @@ public class SprintReaderIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -114,8 +114,8 @@ public class SprintReaderIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);

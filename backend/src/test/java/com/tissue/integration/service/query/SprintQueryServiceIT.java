@@ -2,7 +2,7 @@ package com.tissue.integration.service.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -84,21 +84,21 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 			workspace,
 			"issue 1",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue2 = testDataFixture.createStory(
 			workspace,
 			"issue 2",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 
 		issue3 = testDataFixture.createTask(
 			workspace,
 			"issue 3",
 			IssuePriority.MEDIUM,
-			null
+			LocalDateTime.now().plusDays(7)
 		);
 	}
 
@@ -114,8 +114,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -135,11 +135,13 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("특정 워크스페이스의 스프린트들을 페이징으로 조회할 수 있다(기본 조건 조회)")
 	void getSprints_Page_DefaultCondition() {
 		// given
+		Long currentWorkspaceMemberId = workspaceMember1.getId();
+
 		Sprint sprint1 = sprintRepository.save(Sprint.builder()
 			.title("sprint 1")
 			.goal("sprint 1")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -147,8 +149,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint2 = sprintRepository.save(Sprint.builder()
 			.title("sprint 2")
 			.goal("sprint 2")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(2))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(2))
 			.workspace(workspace)
 			.build()
 		);
@@ -156,8 +158,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint3 = sprintRepository.save(Sprint.builder()
 			.title("sprint 3")
 			.goal("sprint 3")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(3))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(3))
 			.workspace(workspace)
 			.build()
 		);
@@ -165,7 +167,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		sprintCommandService.updateSprintStatus(
 			workspace.getCode(),
 			sprint1.getSprintKey(),
-			new UpdateSprintStatusRequest(SprintStatus.ACTIVE)
+			new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
+			currentWorkspaceMemberId
 		);
 
 		Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate").descending());
@@ -190,8 +193,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -214,8 +217,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -251,8 +254,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -290,8 +293,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -332,8 +335,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);
@@ -371,8 +374,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		Sprint sprint = sprintRepository.save(Sprint.builder()
 			.title("test sprint")
 			.goal("test sprint")
-			.startDate(LocalDate.of(2025, 1, 1))
-			.endDate(LocalDate.now().plusDays(1))
+			.plannedStartDate(LocalDateTime.now().minusDays(1))
+			.plannedEndDate(LocalDateTime.now().plusDays(1))
 			.workspace(workspace)
 			.build()
 		);

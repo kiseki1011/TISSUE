@@ -1,18 +1,20 @@
 package com.tissue.api.comment.service.command;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.IssueComment;
+import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.api.comment.domain.repository.CommentRepository;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.service.query.IssueQueryService;
+import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,9 +22,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommentCommandService {
 
-	private final IssueQueryService issueQueryService;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final IssueReader issueReader;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CommentRepository commentRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public IssueCommentResponse createComment(
@@ -31,9 +34,9 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		Issue issue = issueQueryService.findIssue(issueKey, workspaceCode);
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment parentComment = null;
@@ -54,7 +57,11 @@ public class IssueCommentCommandService {
 			.author(currentWorkspaceMember)
 			.build();
 
-		commentRepository.save(comment);
+		IssueComment savedComment = commentRepository.save(comment);
+
+		eventPublisher.publishEvent(
+			IssueCommentAddedEvent.createEvent(issue, savedComment, currentWorkspaceMemberId)
+		);
 
 		return IssueCommentResponse.from(comment);
 	}
@@ -67,7 +74,7 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
@@ -87,7 +94,7 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long currentWorkspaceMemberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberQueryService.findWorkspaceMember(
+		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 			currentWorkspaceMemberId);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,

@@ -35,6 +35,7 @@ import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusRespons
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -122,12 +123,14 @@ public class SprintController {
 	public ApiResponse<UpdateSprintStatusResponse> updateSprintStatus(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
-		@RequestBody @Valid UpdateSprintStatusRequest request
+		@RequestBody @Valid UpdateSprintStatusRequest request,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
 	) {
 		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
 			workspaceCode,
 			sprintKey,
-			request
+			request,
+			currentWorkspaceMemberId
 		);
 		return ApiResponse.ok("Sprint status updated.", response);
 	}
