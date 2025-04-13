@@ -13,8 +13,8 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
+import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.MyWorkspacesResponse;
 import com.tissue.api.workspacemember.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.service.query.WorkspaceParticipationQueryService;
 
@@ -53,12 +53,12 @@ public class WorkspaceParticipationController {
 
 	@LoginRequired
 	@GetMapping
-	public ApiResponse<MyWorkspacesResponse> getMyWorkspaces(
+	public ApiResponse<GetWorkspacesResponse> getWorkspaces(
 		@ResolveLoginMember Long loginMemberId,
 		Pageable pageable
 	) {
 
-		MyWorkspacesResponse response = workspaceParticipationQueryService.getMyWorkspaces(
+		GetWorkspacesResponse response = workspaceParticipationQueryService.getWorkspaces(
 			loginMemberId,
 			pageable
 		);

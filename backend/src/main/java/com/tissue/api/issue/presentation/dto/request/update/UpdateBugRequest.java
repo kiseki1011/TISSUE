@@ -68,9 +68,4 @@ public record UpdateBugRequest(
 			bug.updateAffectedVersions(affectedVersions);
 		}
 	}
-
-	@Override
-	public boolean hasStoryPointValue() {
-		return storyPoint != null;
-	}
 }

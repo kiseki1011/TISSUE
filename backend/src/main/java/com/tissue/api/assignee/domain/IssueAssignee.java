@@ -15,11 +15,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@EqualsAndHashCode(of = "assigneeId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueAssignee extends WorkspaceContextBaseEntity {
 
@@ -31,8 +33,11 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	@JoinColumn(name = "ISSUE_ID", nullable = false)
 	private Issue issue;
 
+	@Column(name = "ASSIGNEE_ID", nullable = false)
+	private Long assigneeId;  // ID만 직접 저장
+
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ASSIGNEE_ID", nullable = false)
+	@JoinColumn(name = "ASSIGNEE_ID", insertable = false, updatable = false)
 	private WorkspaceMember assignee;
 
 	@Column(nullable = false)
@@ -41,6 +46,7 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	public IssueAssignee(Issue issue, WorkspaceMember assignee) {
 		this.issue = issue;
 		this.assignee = assignee;
+		this.assigneeId = assignee.getId();
 		this.assignedAt = LocalDateTime.now();
 	}
 }

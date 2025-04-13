@@ -45,6 +45,16 @@ public class Epic extends Issue {
 		super.updateStoryPoint(calculateTotalStoryPoints());
 	}
 
+	/**
+	 * Todo
+	 *  - 현재 Epic의 자식 이슈들을 읽어오는 과정에 다음의 문제들이 발생할 수 있음
+	 *  - 문제1: N+1 문제
+	 *  - 문제2: 자식 이슈가 많은 경우 메모리 문제
+	 *  - 해결 방법 -> Join Fetch, 집계용 쿼리 사용
+	 *  - 그런데 일반적으로 권장되는 Epic의 자식 수는 10개 이하의 유저 스토리(user story)로 분해되는 것
+	 *  - 자식 수가 몇 백개가 넘어가는 상황은 거의 없을 것으로 예상하기 때문에, Join Fetch로 리팩토링 후에
+	 *  필요하면 집계용 쿼리를 사용하는 방식으로 변경하면 될 것 같음
+	 */
 	public Integer calculateTotalStoryPoints() {
 		return getChildIssues().stream()
 			.filter(issue -> issue.getStatus() != IssueStatus.CLOSED)

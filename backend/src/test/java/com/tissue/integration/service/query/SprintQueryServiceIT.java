@@ -135,6 +135,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("특정 워크스페이스의 스프린트들을 페이징으로 조회할 수 있다(기본 조건 조회)")
 	void getSprints_Page_DefaultCondition() {
 		// given
+		Long currentWorkspaceMemberId = workspaceMember1.getId();
+
 		Sprint sprint1 = sprintRepository.save(Sprint.builder()
 			.title("sprint 1")
 			.goal("sprint 1")
@@ -165,7 +167,8 @@ public class SprintQueryServiceIT extends ServiceIntegrationTestHelper {
 		sprintCommandService.updateSprintStatus(
 			workspace.getCode(),
 			sprint1.getSprintKey(),
-			new UpdateSprintStatusRequest(SprintStatus.ACTIVE)
+			new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
+			currentWorkspaceMemberId
 		);
 
 		Pageable pageable = PageRequest.of(0, 10, Sort.by("createdDate").descending());

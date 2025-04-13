@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CheckCodeDuplicationService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
-	private final MemberQueryService memberQueryService;
+	private final MemberReader memberReader;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
@@ -54,7 +54,7 @@ public class CheckCodeDuplicationService implements WorkspaceCreateService {
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
-		Member member = memberQueryService.findMember(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
 		setUniqueWorkspaceCode(workspace);

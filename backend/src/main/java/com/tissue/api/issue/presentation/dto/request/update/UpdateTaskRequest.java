@@ -48,8 +48,4 @@ public record UpdateTaskRequest(
 
 		task.updateStoryPoint(storyPoint);
 	}
-
-	public boolean hasStoryPointValue() {
-		return storyPoint != null;
-	}
 }

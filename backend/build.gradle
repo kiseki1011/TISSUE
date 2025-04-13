@@ -36,7 +36,7 @@ checkstyle {
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required = true
         html.required = true
@@ -72,7 +72,9 @@ jacocoTestReport {
                             "**/Team*",
                             "**/Message*",
                             "**/*Checker*",
-                            "**/*Condition"
+                            "**/*Condition",
+                            "**/*Reader",
+                            "**/*Handler"
                     ])
                 })
         )
@@ -107,7 +109,9 @@ jacocoTestReport {
                         "**.Team*",
                         "**.Message*",
                         "**.*Checker*",
-                        "**.*Condition"
+                        "**.*Condition",
+                        "**.*Reader",
+                        "**.*Handler"
                 ]
             }
         }

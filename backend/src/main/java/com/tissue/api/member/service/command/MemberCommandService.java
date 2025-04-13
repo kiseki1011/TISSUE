@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.domain.vo.Name;
-import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
@@ -23,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberCommandService {
 
+	private final MemberReader memberReader;
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
 	private final PasswordEncoder passwordEncoder;
@@ -51,7 +51,7 @@ public class MemberCommandService {
 		UpdateMemberInfoRequest request,
 		Long memberId
 	) {
-		Member member = findMemberById(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		updateMemberInfoIfPresent(request, member);
 
@@ -63,7 +63,7 @@ public class MemberCommandService {
 		UpdateMemberEmailRequest request,
 		Long memberId
 	) {
-		Member member = findMemberById(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		String newEmail = request.newEmail();
 		memberValidator.validateEmailIsUnique(newEmail);
@@ -78,18 +78,25 @@ public class MemberCommandService {
 		UpdateMemberPasswordRequest request,
 		Long memberId
 	) {
-		Member member = findMemberById(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		String encodedNewPassword = passwordEncoder.encode(request.newPassword());
 
 		member.updatePassword(encodedNewPassword);
 	}
 
+	/**
+	 * Todo
+	 *  - hard delete X
+	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
+	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
+	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 */
 	@Transactional
 	public void withdraw(
 		Long memberId
 	) {
-		Member member = findMemberById(memberId);
+		Member member = memberReader.findMember(memberId);
 
 		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 
@@ -115,10 +122,5 @@ public class MemberCommandService {
 		if (request.hasBiography()) {
 			member.updateBiography(request.biography());
 		}
-	}
-
-	private Member findMemberById(Long memberId) {
-		return memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 }

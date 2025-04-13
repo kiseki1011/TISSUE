@@ -94,6 +94,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -122,6 +123,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -155,6 +157,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when
 		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
 			workspace.getCode(),
+			workspaceMember1.getId(),
 			request
 		);
 
@@ -303,7 +306,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 				request))
 			.isInstanceOf(InvalidOperationException.class);
 	}
-	
+
 	@Test
 	@Transactional
 	@DisplayName("STORY의 부모로 EPIC을 등록할 수 있다")

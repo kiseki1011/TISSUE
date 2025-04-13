@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ReviewStatus {
-
-	PENDING,
+	// PENDING,
+	COMMENT,
 	APPROVED,
 	CHANGES_REQUESTED
 }

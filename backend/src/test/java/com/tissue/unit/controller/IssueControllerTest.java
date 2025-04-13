@@ -77,7 +77,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.businessGoal(request.businessGoal())
 			.build();
 
-		when(issueCommandService.createIssue(anyString(), any(CreateIssueRequest.class)))
+		when(issueCommandService.createIssue(anyString(), anyLong(), any(CreateIssueRequest.class)))
 			.thenReturn(response);
 
 		// when & then

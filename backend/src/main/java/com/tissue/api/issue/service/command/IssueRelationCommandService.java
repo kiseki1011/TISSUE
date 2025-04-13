@@ -12,7 +12,7 @@ import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationRespons
 import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueRelationCommandService {
 
 	private final IssueReader issueReader;
-	private final WorkspaceMemberQueryService workspaceMemberQueryService;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CircularDependencyChecker circularDependencyChecker;
 
 	@Transactional
@@ -34,7 +34,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
@@ -58,7 +58,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberQueryService.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
 			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);

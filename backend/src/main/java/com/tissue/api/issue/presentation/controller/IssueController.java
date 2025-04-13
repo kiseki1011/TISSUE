@@ -15,6 +15,7 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
+import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
@@ -44,9 +45,10 @@ public class IssueController {
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
 		@PathVariable String code,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(code, request);
+		CreateIssueResponse response = issueCommandService.createIssue(code, currentWorkspaceMemberId, request);
 
 		return ApiResponse.ok(response.getType() + " issue created.", response);
 	}
@@ -123,5 +125,39 @@ public class IssueController {
 		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@PostMapping("{issueKey}/watcher")
+	public ApiResponse<AddWatcherResponse> addWatcher(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+	) {
+		AddWatcherResponse response = issueCommandService.addWatcher(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
+
+		return ApiResponse.ok("Watcher added.", response);
+	}
+
+	@LoginRequired
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@DeleteMapping("{issueKey}/watcher")
+	public ApiResponse<Void> removeWatcher(
+		@PathVariable String code,
+		@PathVariable String issueKey,
+		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+	) {
+		issueCommandService.removeWatcher(
+			code,
+			issueKey,
+			currentWorkspaceMemberId
+		);
+
+		return ApiResponse.okWithNoContent("Watcher added.");
 	}
 }
