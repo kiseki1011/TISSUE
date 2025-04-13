@@ -1,6 +1,6 @@
 package com.tissue.api.notification.domain;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class NotificationProcessor {
 	 */
 	public <T extends DomainEvent> void processNotification(
 		T event,
-		List<WorkspaceMember> targets
+		Collection<WorkspaceMember> targets
 	) {
 		NotificationMessage message = notificationMessageFactory.createMessage(event);
 

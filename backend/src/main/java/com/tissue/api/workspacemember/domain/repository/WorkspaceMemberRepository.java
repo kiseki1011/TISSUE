@@ -31,10 +31,15 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
 
+	// WorspaceRole에 Comparable을 구현하는 방식은 불가능함!(level 비교 불가)
+	@Deprecated
 	Set<WorkspaceMember> findAllByWorkspaceCodeAndRoleGreaterThanEqual(
 		String workspaceCode,
 		WorkspaceRole role
 	);
+
+	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspaceCode = :workspaceCode AND wm.role IN ('ADMIN', 'OWNER')")
+	Set<WorkspaceMember> findAdminsByWorkspaceCode(@Param("workspaceCode") String workspaceCode);
 
 	Optional<WorkspaceMember> findByWorkspaceCodeAndId(
 		String workspaceCode,
