@@ -125,9 +125,23 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	public void remove() {
-		this.workspace.decreaseMemberCount();
-		this.member.getWorkspaceMembers().remove(this);
-		this.workspace.getWorkspaceMembers().remove(this);
+		// this.workspace.decreaseMemberCount();
+		// this.member.getWorkspaceMembers().remove(this);
+		// this.workspace.getWorkspaceMembers().remove(this);
+
+		boolean notDeleted = !this.isDeleted();
+
+		if (notDeleted) {
+			this.workspace.decreaseMemberCount();
+			this.softDelete();
+		}
+	}
+
+	public void restoreMembership() {
+		if (this.isDeleted()) {
+			this.workspace.increaseMemberCount();
+			this.restore();
+		}
 	}
 
 	public void addPosition(Position position) {
