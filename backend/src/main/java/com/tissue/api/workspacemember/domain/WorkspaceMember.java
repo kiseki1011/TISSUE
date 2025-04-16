@@ -124,24 +124,28 @@ public class WorkspaceMember extends BaseEntity {
 		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, nickname);
 	}
 
+	// @Deprecated
+	// public void removeFromWorkspace() {
+	// 	boolean notDeleted = !this.isDeleted();
+	//
+	// 	if (notDeleted) {
+	// 		this.workspace.decreaseMemberCount();
+	// 		this.softDelete();
+	// 	}
+	// }
+	//
+	// @Deprecated
+	// public void restoreMembership() {
+	// 	if (this.isDeleted()) {
+	// 		this.workspace.increaseMemberCount();
+	// 		this.restore();
+	// 	}
+	// }
+
 	public void remove() {
-		// this.workspace.decreaseMemberCount();
-		// this.member.getWorkspaceMembers().remove(this);
-		// this.workspace.getWorkspaceMembers().remove(this);
-
-		boolean notDeleted = !this.isDeleted();
-
-		if (notDeleted) {
-			this.workspace.decreaseMemberCount();
-			this.softDelete();
-		}
-	}
-
-	public void restoreMembership() {
-		if (this.isDeleted()) {
-			this.workspace.increaseMemberCount();
-			this.restore();
-		}
+		this.workspace.decreaseMemberCount(); // Soft delete 사용 시 제거
+		this.member.getWorkspaceMembers().remove(this);
+		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
 	public void addPosition(Position position) {
