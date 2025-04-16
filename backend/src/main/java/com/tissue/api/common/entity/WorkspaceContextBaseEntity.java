@@ -21,7 +21,24 @@ public class WorkspaceContextBaseEntity extends BaseDateEntity {
 	@LastModifiedBy
 	private Long lastModifiedByWorkspaceMember;
 
+	// @Column(nullable = false)
+	// private boolean deleted = false;
+	//
+	// private LocalDateTime deletedAt;
+
 	public void updateCreatedByWorkspaceMember(Long createdByWorkspaceMember) {
 		this.createdByWorkspaceMember = createdByWorkspaceMember;
 	}
+
+	// public void softDelete() {
+	// 	this.deleted = true;
+	// 	this.deletedAt = LocalDateTime.now();
+	// }
+	//
+	// public void restore() {
+	// 	if (this.deleted) {
+	// 		this.deleted = false;
+	// 		this.deletedAt = null;
+	// 	}
+	// }
 }

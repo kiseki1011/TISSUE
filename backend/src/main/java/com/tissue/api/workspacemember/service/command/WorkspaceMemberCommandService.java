@@ -160,7 +160,6 @@ public class WorkspaceMemberCommandService {
 		workspaceMemberValidator.validateRemoveMember(requester, target);
 
 		target.remove();
-		workspaceMemberRepository.delete(target);
 
 		return RemoveWorkspaceMemberResponse.from(target);
 	}
