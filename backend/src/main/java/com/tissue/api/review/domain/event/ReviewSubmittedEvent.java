@@ -22,7 +22,7 @@ public class ReviewSubmittedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long reviewId,
 		ReviewStatus reviewStatus
 	) {
@@ -33,7 +33,7 @@ public class ReviewSubmittedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
 		this.reviewId = reviewId;
@@ -42,7 +42,7 @@ public class ReviewSubmittedEvent extends IssueEvent {
 
 	public static ReviewSubmittedEvent createEvent(
 		Issue issue,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Review review
 	) {
 		return new ReviewSubmittedEvent(
@@ -50,7 +50,7 @@ public class ReviewSubmittedEvent extends IssueEvent {
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			review.getId(),
 			review.getStatus()
 		);

@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.domain;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.Issue;
 
 import jakarta.persistence.Entity;
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SprintIssue extends WorkspaceContextBaseEntity {
+public class SprintIssue extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

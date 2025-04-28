@@ -11,7 +11,6 @@ import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationRespons
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
 import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
@@ -29,16 +28,18 @@ public class IssueRelationCommandService {
 		String workspaceCode,
 		String sourceIssueKey,
 		String targetIssueKey,
-		Long requesterWorkspaceMemberId,
+		Long memberId,
 		CreateIssueRelationRequest request
 	) {
 		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// TODO: IssueAuthorizationService로 로직 분리, 호출
+		// TODO: IssueAuthorizationInterceptor에서 IssueAuthorizationService를 호출하는 형태로 구현?
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	sourceIssue.validateIsAssigneeOrAuthor(requester.getId());
+		// }
 
 		if (request.relationType() == IssueRelationType.BLOCKS) {
 			circularDependencyChecker.validateNoCircularDependency(sourceIssue, targetIssue);
@@ -54,15 +55,17 @@ public class IssueRelationCommandService {
 		String workspaceCode,
 		String sourceIssueKey,
 		String targetIssueKey,
-		Long requesterWorkspaceMemberId
+		Long memberId
 	) {
 		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			sourceIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// TODO: IssueAuthorizationService로 로직 분리, 호출
+		// TODO: IssueAuthorizationInterceptor에서 IssueAuthorizationService를 호출하는 형태로 구현?
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	sourceIssue.validateIsAssigneeOrAuthor(requester.getId());
+		// }
 
 		IssueRelation.removeRelation(sourceIssue, targetIssue);
 

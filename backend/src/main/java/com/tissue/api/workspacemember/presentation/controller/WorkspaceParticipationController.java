@@ -57,7 +57,6 @@ public class WorkspaceParticipationController {
 		@ResolveLoginMember Long loginMemberId,
 		Pageable pageable
 	) {
-
 		GetWorkspacesResponse response = workspaceParticipationQueryService.getWorkspaces(
 			loginMemberId,
 			pageable

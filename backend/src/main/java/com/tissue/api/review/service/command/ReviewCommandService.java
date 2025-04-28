@@ -14,6 +14,8 @@ import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
 import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +26,7 @@ public class ReviewCommandService {
 	private final ReviewReader reviewReader;
 	private final ReviewerReader reviewerReader;
 	private final IssueReader issueReader;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final ReviewRepository reviewRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -31,19 +34,24 @@ public class ReviewCommandService {
 	public SubmitReviewResponse submitReview(
 		String workspaceCode,
 		String issueKey,
-		Long currentWorkspaceMemberId,
+		Long requesterMemberId,
 		SubmitReviewRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		IssueReviewer issueReviewer = reviewerReader.findByIssueKeyAndWorkspaceMemberId(
+		WorkspaceMember reviewerWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
+			requesterMemberId,
+			workspaceCode
+		);
+
+		IssueReviewer reviewer = reviewerReader.findByIssueKeyAndWorkspaceMemberId(
 			issueKey,
-			currentWorkspaceMemberId
+			reviewerWorkspaceMember.getId()
 		);
 
 		issue.validateCanSubmitReview();
 
-		Review review = issueReviewer.submitReview(
+		Review review = reviewer.submitReview(
 			request.status(),
 			request.title(),
 			request.content()
@@ -52,7 +60,7 @@ public class ReviewCommandService {
 		Review savedReview = reviewRepository.save(review);
 
 		eventPublisher.publishEvent(
-			ReviewSubmittedEvent.createEvent(issue, currentWorkspaceMemberId, savedReview)
+			ReviewSubmittedEvent.createEvent(issue, requesterMemberId, savedReview)
 		);
 
 		return SubmitReviewResponse.from(savedReview);
@@ -60,12 +68,14 @@ public class ReviewCommandService {
 
 	@Transactional
 	public UpdateReviewResponse updateReview(
+		String workspaceCode,
 		Long reviewId,
-		Long reviewerWorkspaceMemberId,
+		Long reviewerMemberId,
 		UpdateReviewRequest request
 	) {
 		Review review = reviewReader.findReview(reviewId);
-		review.validateIsAuthor(reviewerWorkspaceMemberId);
+		// TODO: validation service 또는 authorization service를 따로 만들어서 처리
+		// review.validateIsAuthor(reviewerWorkspaceMemberId);
 
 		review.updateTitle(request.title());
 		review.updateContent(request.content());

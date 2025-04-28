@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.context.request.NativeWebRequest;
 
-import com.tissue.api.common.exception.type.UnauthorizedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.security.authentication.resolver.LoginMemberArgumentResolver;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
@@ -111,11 +111,11 @@ class ResolveLoginMemberArgumentResolverTest {
 	@DisplayName("세션이 없으면 예외가 발생한다")
 	void resolveArgument_WhenNoSession_ThrowUserNotLoggedInException() {
 		// given
-		when(sessionManager.getSession(webRequest)).thenThrow(new UnauthorizedException("User not logged in."));
+		when(sessionManager.getSession(webRequest)).thenThrow(new AuthenticationFailedException("User not logged in."));
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
-			.isInstanceOf(UnauthorizedException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 
 		verify(sessionManager).getSession(webRequest);
 		verifyNoMoreInteractions(sessionManager);
@@ -127,11 +127,11 @@ class ResolveLoginMemberArgumentResolverTest {
 		// given
 		when(sessionManager.getSession(webRequest)).thenReturn(session);
 		when(sessionManager.getOptionalLoginMemberId(session)).thenThrow(
-			new UnauthorizedException("User not logged in."));
+			new AuthenticationFailedException("User not logged in."));
 
 		// when & then
 		assertThatThrownBy(() -> resolver.resolveArgument(null, null, webRequest, null))
-			.isInstanceOf(UnauthorizedException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 
 		verify(sessionManager).getSession(webRequest);
 		verify(sessionManager).getOptionalLoginMemberId(session);

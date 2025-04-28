@@ -18,7 +18,7 @@ public interface DomainEvent {
 
 	String getWorkspaceCode();
 
-	Long getTriggeredByWorkspaceMemberId();
+	Long getActorMemberId();
 
 	EntityReference createEntityReference();
 }

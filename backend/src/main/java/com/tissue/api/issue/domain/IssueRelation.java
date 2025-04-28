@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.IssueType;
@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueRelation extends WorkspaceContextBaseEntity {
+public class IssueRelation extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

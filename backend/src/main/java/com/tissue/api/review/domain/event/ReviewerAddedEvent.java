@@ -12,7 +12,7 @@ import lombok.Getter;
 @Getter
 public class ReviewerAddedEvent extends IssueEvent {
 
-	private final Long reviewerWorkspaceMemberId;
+	private final Long reviewerMemberId;
 	private final String reviewerNickname;
 
 	public ReviewerAddedEvent(
@@ -20,8 +20,8 @@ public class ReviewerAddedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
-		Long reviewerWorkspaceMemberId,
+		Long actorMemberId,
+		Long reviewerMemberId,
 		String reviewerNickname
 	) {
 		super(
@@ -31,41 +31,27 @@ public class ReviewerAddedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
-		this.reviewerWorkspaceMemberId = reviewerWorkspaceMemberId;
+		this.reviewerMemberId = reviewerMemberId;
 		this.reviewerNickname = reviewerNickname;
 	}
 
-	// public static ReviewerAddedEvent createEvent(
-	// 	Issue issue,
-	// 	Long triggeredByWorkspaceMemberId,
-	// 	Long reviewerWorkspaceMemberId
-	// ) {
-	// 	return new ReviewerAddedEvent(
-	// 		issue.getId(),
-	// 		issue.getIssueKey(),
-	// 		issue.getWorkspaceCode(),
-	// 		issue.getType(),
-	// 		triggeredByWorkspaceMemberId,
-	// 		reviewerWorkspaceMemberId
-	// 	);
-	// }
-
+	// TODO: WorkspaceMember 대신 바로 memberId를 받을 수 있도록 변경?
 	public static ReviewerAddedEvent createEvent(
 		Issue issue,
-		WorkspaceMember triggeredByWorkspaceMember,
-		WorkspaceMember reviewerWorkspaceMember
+		WorkspaceMember actor,
+		WorkspaceMember reviewer
 	) {
 		return new ReviewerAddedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMember.getId(),
-			reviewerWorkspaceMember.getId(),
-			reviewerWorkspaceMember.getNickname()
+			actor.getMember().getId(),
+			reviewer.getMember().getId(),
+			reviewer.getNickname()
 		);
 	}
 }

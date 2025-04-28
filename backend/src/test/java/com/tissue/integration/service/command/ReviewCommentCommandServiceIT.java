@@ -159,6 +159,7 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		ReviewCommentResponse updateResponse = reviewCommentCommandService.updateComment(
+			workspace.getCode(),
 			issue.getIssueKey(),
 			review.getId(),
 			comment.getId(),

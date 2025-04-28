@@ -17,7 +17,7 @@ public class IssueCommentAddedEvent extends CommentEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long commentId
 	) {
 		super(
@@ -27,7 +27,7 @@ public class IssueCommentAddedEvent extends CommentEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			commentId
 		);
 	}
@@ -35,14 +35,14 @@ public class IssueCommentAddedEvent extends CommentEvent {
 	public static IssueCommentAddedEvent createEvent(
 		Issue issue,
 		IssueComment comment,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new IssueCommentAddedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			comment.getId()
 		);
 	}

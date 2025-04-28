@@ -3,6 +3,8 @@ package com.tissue.unit.security.authorization;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerMapping;
 
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.security.authorization.interceptor.AuthorizationInterceptor;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.security.authorization.interceptor.RoleRequiredInterceptor;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.Workspace;
@@ -36,7 +39,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
-class AuthorizationInterceptorTest {
+class RoleRequiredInterceptorTest {
 
 	public static final String TEST_URI = "/api/v1/workspaces/TESTCODE";
 	public static final String TEST_WORKSPACE_CODE = "TESTCODE";
@@ -62,7 +65,7 @@ class AuthorizationInterceptorTest {
 	@Mock
 	private WorkspaceCodeParser workspaceCodeParser;
 	@InjectMocks
-	private AuthorizationInterceptor authorizationInterceptor;
+	private RoleRequiredInterceptor roleRequiredInterceptor;
 
 	@BeforeEach
 	public void setUp() {
@@ -78,7 +81,7 @@ class AuthorizationInterceptorTest {
 		Object nonHandlerMethod = new Object();
 
 		// when
-		boolean result = authorizationInterceptor.preHandle(request, response, nonHandlerMethod);
+		boolean result = roleRequiredInterceptor.preHandle(request, response, nonHandlerMethod);
 
 		// then
 		assertThat(result).isTrue();
@@ -92,7 +95,7 @@ class AuthorizationInterceptorTest {
 			.thenReturn(null);
 
 		// when
-		boolean result = authorizationInterceptor.preHandle(request, response, handlerMethod);
+		boolean result = roleRequiredInterceptor.preHandle(request, response, handlerMethod);
 
 		// then
 		assertThat(result).isTrue();
@@ -109,8 +112,8 @@ class AuthorizationInterceptorTest {
 			.thenReturn(null);
 
 		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(UnauthorizedException.class);
+		assertThatThrownBy(() -> roleRequiredInterceptor.preHandle(request, response, handlerMethod))
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test
@@ -123,12 +126,12 @@ class AuthorizationInterceptorTest {
 		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(Optional.empty());
 
-		when(request.getRequestURI()).thenReturn(TEST_URI);
-		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))
-			.thenReturn(TEST_WORKSPACE_CODE);
+		Map<String, String> pathVariables = new HashMap<>();
+		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
+		assertThatThrownBy(() -> roleRequiredInterceptor.preHandle(request, response, handlerMethod))
 			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
@@ -155,12 +158,12 @@ class AuthorizationInterceptorTest {
 			.thenReturn(Optional.of(workspaceMember));
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MANAGER);
 
-		when(request.getRequestURI()).thenReturn(TEST_URI);
-		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))
-			.thenReturn(TEST_WORKSPACE_CODE);
+		Map<String, String> pathVariables = new HashMap<>();
+		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when & then
-		assertThatThrownBy(() -> authorizationInterceptor.preHandle(request, response, handlerMethod))
+		assertThatThrownBy(() -> roleRequiredInterceptor.preHandle(request, response, handlerMethod))
 			.isInstanceOf(ForbiddenOperationException.class);
 	}
 
@@ -187,12 +190,12 @@ class AuthorizationInterceptorTest {
 			.thenReturn(Optional.of(workspaceMember));
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MEMBER);
 
-		when(request.getRequestURI()).thenReturn(TEST_URI);
-		when(workspaceCodeParser.extractWorkspaceCode(TEST_URI))
-			.thenReturn(TEST_WORKSPACE_CODE);
+		Map<String, String> pathVariables = new HashMap<>();
+		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when
-		boolean result = authorizationInterceptor.preHandle(request, response, handlerMethod);
+		boolean result = roleRequiredInterceptor.preHandle(request, response, handlerMethod);
 
 		// then
 		assertThat(result).isTrue();

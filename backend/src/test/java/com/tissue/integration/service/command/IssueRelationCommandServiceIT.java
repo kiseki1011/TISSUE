@@ -95,7 +95,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
 
 		// set requester as author of source issue
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when - source issue BLOCKS target issue
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
@@ -118,7 +118,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
@@ -152,7 +152,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		issueRelationCommandService.createRelation(
 			workspace.getCode(),
@@ -163,7 +163,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// set requester as author of target issue
-		targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationCommandService.createRelation(
@@ -182,7 +182,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 		CreateIssueRelationRequest request = new CreateIssueRelationRequest(IssueRelationType.BLOCKS);
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationCommandService.createRelation(
@@ -200,7 +200,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 	void creatingIssueRelationWithTheSourceIssueOfTheSourceIssueIsNotAllowed_CircularDependency() {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// create issue relation between issue A-B
 		issueRelationCommandService.createRelation(
@@ -212,7 +212,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// set requester as author of target issue(issue B)
-		targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// targetIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// create target issue(issue C) of issue B
 		Story targetIssueC = testDataFixture.createStory(
@@ -223,7 +223,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// set requester as author of issue C
-		targetIssueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// targetIssueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// create issue relation between issue B-C
 		issueRelationCommandService.createRelation(
@@ -250,7 +250,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canRemoveIssueRelation() {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
@@ -271,7 +271,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 	void afterRemovingIssueRelation_OutgoingRelationsAndIncomingRelationsMustBeEmpty() {
 		// given
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// when
 		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
@@ -304,7 +304,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 
 		// set requester as author of source issue
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// source issue BLOCKS target issue (A -> B)
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
@@ -329,7 +329,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long requesterWorkspaceMemberId = workspaceMember1.getId();
 
 		// set requester as author of source issue
-		sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// source issue BLOCKS target issue (A -> B)
 		issueRelationCommandService.createRelation(
@@ -347,7 +347,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
+		// issueC.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		// issue C BLOCKS source issue (C -> A)
 		issueRelationCommandService.createRelation(

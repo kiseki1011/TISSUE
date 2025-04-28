@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.tissue.api.common.entity.WorkspaceBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Workspace extends WorkspaceBaseEntity {
+public class Workspace extends BaseEntity {
 
 	// Todo: 추후 낙관적 락 적용
 	// @Version

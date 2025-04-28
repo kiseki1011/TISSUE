@@ -23,7 +23,7 @@ public class WorkspaceMemberReader {
 
 	@Transactional(readOnly = true)
 	public WorkspaceMember findWorkspaceMember(Long id, String code) {
-		return workspaceMemberRepository.findByIdAndWorkspaceCode(id, code)
+		return workspaceMemberRepository.findByMemberIdAndWorkspaceCode(id, code)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id, code));
 	}
 }

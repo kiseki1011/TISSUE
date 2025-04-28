@@ -29,7 +29,7 @@ public record UpdateSubTaskResponse(
 			.issueId(subTask.getId())
 			.issueKey(subTask.getIssueKey())
 			.workspaceCode(subTask.getWorkspaceCode())
-			.updaterId(subTask.getLastModifiedByWorkspaceMember())
+			.updaterId(subTask.getLastModifiedBy())
 			.updatedAt(subTask.getLastModifiedDate())
 			.title(subTask.getTitle())
 			.content(subTask.getContent())

@@ -11,15 +11,15 @@ import lombok.Getter;
 @Getter
 public class IssueUnassignedEvent extends IssueEvent {
 
-	private final Long assigneeWorkspaceMemberId;
+	private final Long assigneeMemberId;
 
 	public IssueUnassignedEvent(
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
-		Long assigneeWorkspaceMemberId
+		Long actorMemberId,
+		Long assigneeMemberId
 	) {
 		super(
 			NotificationType.ISSUE_UNASSIGNED,
@@ -28,23 +28,23 @@ public class IssueUnassignedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
-		this.assigneeWorkspaceMemberId = assigneeWorkspaceMemberId;
+		this.assigneeMemberId = assigneeMemberId;
 	}
 
 	public static IssueUnassignedEvent createEvent(
 		Issue issue,
-		Long assigneeWorkspaceMemberId,
-		Long triggeredByWorkspaceMemberId
+		Long assigneeMemberId,
+		Long actorMemberId
 	) {
 		return new IssueUnassignedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
-			assigneeWorkspaceMemberId
+			actorMemberId,
+			assigneeMemberId
 		);
 	}
 }

@@ -36,7 +36,7 @@ public class ReviewCommentCommandService {
 		String issueKey,
 		Long reviewId,
 		CreateReviewCommentRequest request,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
@@ -48,19 +48,18 @@ public class ReviewCommentCommandService {
 					reviewId, issueKey, workspaceCode))
 			);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		ReviewComment parentComment = null;
-		if (request.hasParentComment()) {
-			parentComment = (ReviewComment)commentRepository.findById(request.parentCommentId())
-				.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()));
-		}
+		ReviewComment parentComment = request.hasParentComment()
+			? (ReviewComment)commentRepository.findById(request.parentCommentId())
+			.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()))
+			: null;
 
 		ReviewComment comment = ReviewComment.builder()
 			.content(request.content())
 			.review(review)
 			.parentComment(parentComment)
-			.author(currentWorkspaceMember)
+			.author(workspaceMember)
 			.build();
 
 		ReviewComment savedComment = commentRepository.save(comment);
@@ -76,19 +75,19 @@ public class ReviewCommentCommandService {
 
 	@Transactional
 	public ReviewCommentResponse updateComment(
+		String workspaceCode,
 		String issueKey,
 		Long reviewId,
 		Long commentId,
 		UpdateReviewCommentRequest request,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
 
-		comment.validateCanEdit(currentWorkspaceMember);
+		comment.validateCanEdit(workspaceMember);
 		comment.updateContent(request.content());
 
 		return ReviewCommentResponse.from(comment);
@@ -96,18 +95,18 @@ public class ReviewCommentCommandService {
 
 	@Transactional
 	public void deleteComment(
+		String workspaceCode,
 		String issueKey,
 		Long reviewId,
 		Long commentId,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
 
-		comment.validateCanEdit(currentWorkspaceMember);
-		comment.softDelete(currentWorkspaceMemberId);
+		comment.validateCanEdit(workspaceMember);
+		comment.softDelete(memberId);
 	}
 }

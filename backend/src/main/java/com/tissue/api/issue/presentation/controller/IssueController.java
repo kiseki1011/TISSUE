@@ -23,9 +23,9 @@ import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse
 import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}/issues")
+@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues")
 public class IssueController {
 
 	private final IssueCommandService issueCommandService;
@@ -44,11 +44,11 @@ public class IssueController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<CreateIssueResponse> createIssue(
-		@PathVariable String code,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@PathVariable String workspaceCode,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(code, currentWorkspaceMemberId, request);
+		CreateIssueResponse response = issueCommandService.createIssue(workspaceCode, loginMemberId, request);
 
 		return ApiResponse.ok(response.getType() + " issue created.", response);
 	}
@@ -57,15 +57,15 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/status")
 	public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateIssueStatusRequest request
 	) {
 		UpdateIssueStatusResponse response = issueCommandService.updateIssueStatus(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId,
+			loginMemberId,
 			request
 		);
 
@@ -76,15 +76,15 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<UpdateIssueResponse> updateIssueDetail(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateIssueRequest request
 	) {
 		UpdateIssueResponse response = issueCommandService.updateIssue(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId,
+			loginMemberId,
 			request
 		);
 
@@ -95,15 +95,15 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid AssignParentIssueRequest request
 	) {
 		AssignParentIssueResponse response = issueCommandService.assignParentIssue(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId,
+			loginMemberId,
 			request
 		);
 
@@ -114,14 +114,14 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
@@ -131,14 +131,14 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PostMapping("{issueKey}/watcher")
 	public ApiResponse<AddWatcherResponse> addWatcher(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		AddWatcherResponse response = issueCommandService.addWatcher(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.ok("Watcher added.", response);
@@ -148,14 +148,14 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("{issueKey}/watcher")
 	public ApiResponse<Void> removeWatcher(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		issueCommandService.removeWatcher(
-			code,
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.okWithNoContent("Watcher added.");

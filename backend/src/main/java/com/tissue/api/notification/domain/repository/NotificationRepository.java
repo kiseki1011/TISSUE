@@ -9,13 +9,13 @@ import com.tissue.api.notification.domain.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-	List<Notification> findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
-		Long receiverWorkspaceMemberId,
+	List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
+		Long memberId,
 		String workspaceCode
 	);
 
-	Optional<Notification> findByIdAndReceiverWorkspaceMemberId(
+	Optional<Notification> findByIdAndReceiverMemberId(
 		Long id,
-		Long receiverWorkspaceMemberId
+		Long memberId
 	);
 }

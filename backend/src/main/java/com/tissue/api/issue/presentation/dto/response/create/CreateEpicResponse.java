@@ -30,7 +30,7 @@ public record CreateEpicResponse(
 			.issueId(epic.getId())
 			.issueKey(epic.getIssueKey())
 			.workspaceCode(epic.getWorkspaceCode())
-			.createrId(epic.getCreatedByWorkspaceMember())
+			.createrId(epic.getCreatedBy())
 			.createdAt(epic.getCreatedDate())
 			.title(epic.getTitle())
 			.content(epic.getContent())

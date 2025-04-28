@@ -3,7 +3,7 @@ package com.tissue.api.review.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.review.domain.enums.ReviewStatus;
@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueReviewer extends WorkspaceContextBaseEntity {
+public class IssueReviewer extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +37,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 	private Issue issue;
 
 	@Column(name = "REVIEWER_ID")
-	private Long reviewerId;  // ID만 직접 저장
+	private Long reviewerMemberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "REVIEWER_ID", insertable = false, updatable = false)
@@ -48,7 +48,7 @@ public class IssueReviewer extends WorkspaceContextBaseEntity {
 
 	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
 		this.reviewer = reviewer;
-		this.reviewerId = reviewer.getId();
+		this.reviewerMemberId = reviewer.getMember().getId();
 		this.issue = issue;
 	}
 

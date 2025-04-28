@@ -182,7 +182,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedBy(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -220,7 +220,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -253,7 +253,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// all fields except for summary is null for request
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
@@ -287,7 +287,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -318,7 +318,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -326,7 +326,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
 		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
@@ -352,7 +352,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue1 = Story.builder()
 			.workspace(workspace)
@@ -365,7 +365,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		issueRepository.save(childIssue1);
-		childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue2 = Story.builder()
 			.workspace(workspace)
@@ -378,7 +378,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		issueRepository.save(childIssue2);
-		childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when - assign parent to childIssue1, 2
 		issueCommandService.assignParentIssue(
@@ -427,7 +427,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 		issueRepository.save(childIssue);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -462,7 +462,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -470,7 +470,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// 변경할 부모 이슈 생성
@@ -480,7 +480,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
 		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
@@ -507,7 +507,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -516,7 +516,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// when
@@ -545,7 +545,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createSubTask(
 			workspace,
@@ -554,7 +554,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// when & then

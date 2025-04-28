@@ -18,7 +18,7 @@ public record UpdateReviewStatusResponse(
 		return UpdateReviewStatusResponse.builder()
 			.reviewId(review.getId())
 			.status(review.getStatus())
-			.updatedBy(review.getLastModifiedByWorkspaceMember())
+			.updatedBy(review.getLastModifiedBy())
 			.updatedAt(review.getLastModifiedDate())
 			.build();
 	}

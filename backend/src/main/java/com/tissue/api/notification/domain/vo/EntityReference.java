@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EntityReference {
 
+	// TODO: WorkspaceMember는 workspaceCode + memberId로 사용하도록 리팩토링
 	private static final String WORKSPACES = "/workspaces/";
 	private static final String ISSUES = "/issues/";
 	private static final String COMMENTS = "/comments/";
@@ -119,11 +120,11 @@ public class EntityReference {
 			.build();
 	}
 
-	public static EntityReference forWorkspaceMember(String workspaceCode, Long workspaceMemberId) {
+	public static EntityReference forWorkspaceMember(String workspaceCode, Long memberId) {
 		return EntityReference.builder()
 			.workspaceCode(workspaceCode)
 			.resourceType(ResourceType.WORKSPACE_MEMBER)
-			.primaryId(workspaceMemberId)
+			.primaryId(memberId)
 			.build();
 	}
 

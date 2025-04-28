@@ -8,6 +8,8 @@ import com.tissue.api.assignee.domain.event.IssueAssignedEvent;
 import com.tissue.api.assignee.domain.event.IssueUnassignedEvent;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
+import com.tissue.api.assignee.service.dto.AddAssigneeCommand;
+import com.tissue.api.assignee.service.dto.RemoveAssigneeCommand;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -28,20 +30,20 @@ public class AssigneeCommandService {
 	public AddAssigneeResponse addAssignee(
 		String workspaceCode,
 		String issueKey,
-		Long assigneeWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
+		AddAssigneeCommand command,
+		Long requesterMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
-			assigneeWorkspaceMemberId,
+			command.memberId(),
 			workspaceCode
 		);
 
 		issue.addAssignee(assignee);
 
 		eventPublisher.publishEvent(
-			IssueAssignedEvent.createEvent(issue, assigneeWorkspaceMemberId, requesterWorkspaceMemberId)
+			IssueAssignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
 		);
 
 		return AddAssigneeResponse.from(assignee);
@@ -51,28 +53,29 @@ public class AssigneeCommandService {
 	public RemoveAssigneeResponse removeAssignee(
 		String workspaceCode,
 		String issueKey,
-		Long assigneeWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
+		RemoveAssigneeCommand command,
+		Long requesterMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
-			assigneeWorkspaceMemberId,
+			command.memberId(),
 			workspaceCode
 		);
+
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
-			requesterWorkspaceMemberId,
+			requesterMemberId,
 			workspaceCode
 		);
 
 		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssignee(requesterWorkspaceMemberId);
+			issue.validateIsAssignee(requesterMemberId);
 		}
 
 		issue.removeAssignee(assignee);
 
 		eventPublisher.publishEvent(
-			IssueUnassignedEvent.createEvent(issue, assigneeWorkspaceMemberId, requesterWorkspaceMemberId)
+			IssueUnassignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
 		);
 
 		return RemoveAssigneeResponse.from(assignee);

@@ -29,7 +29,7 @@ public record CreateSprintResponse(
 			.plannedEndDate(sprint.getPlannedEndDate())
 			.status(sprint.getStatus())
 			.createdAt(sprint.getCreatedDate())
-			.createdBy(sprint.getCreatedByWorkspaceMember())
+			.createdBy(sprint.getCreatedBy())
 			.build();
 	}
 }

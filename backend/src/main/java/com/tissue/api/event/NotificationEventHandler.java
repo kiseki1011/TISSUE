@@ -79,8 +79,10 @@ public class NotificationEventHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueAssigned(IssueAssignedEvent event) {
 
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(event.getWorkspaceCode(),
-			event.getAssignedWorkspaceMemberId());
+		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(
+			event.getWorkspaceCode(),
+			event.getAssignedMemberId()
+		);
 
 		notificationProcessor.processNotification(event, targets);
 	}
@@ -89,8 +91,10 @@ public class NotificationEventHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueUnassigned(IssueUnassignedEvent event) {
 
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(event.getWorkspaceCode(),
-			event.getAssigneeWorkspaceMemberId());
+		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(
+			event.getWorkspaceCode(),
+			event.getAssigneeMemberId()
+		);
 
 		notificationProcessor.processNotification(event, targets);
 	}
@@ -224,7 +228,7 @@ public class NotificationEventHandler {
 
 		Set<WorkspaceMember> targets = targetResolver.getAdminsAndSpecificMember(
 			event.getWorkspaceCode(),
-			event.getTargetWorkspaceMemberId()
+			event.getTargetMemberId()
 		);
 
 		notificationProcessor.processNotification(event, targets);

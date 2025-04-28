@@ -3,7 +3,7 @@ package com.tissue.api.team.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workspace.domain.Workspace;
 
@@ -35,7 +35,7 @@ import lombok.NoArgsConstructor;
 	)
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Team extends WorkspaceContextBaseEntity {
+public class Team extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

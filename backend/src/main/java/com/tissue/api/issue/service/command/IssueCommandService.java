@@ -25,7 +25,6 @@ import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class IssueCommandService {
 	@Transactional
 	public CreateIssueResponse createIssue(
 		String workspaceCode,
-		Long currentWorkspaceMemberId,
+		Long memberId,
 		CreateIssueRequest request
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
@@ -52,10 +51,10 @@ public class IssueCommandService {
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);
 
-		// TODO: author를 watcher로 추가하도록 서비스 호출(addWatcher)
+		addWatcher(workspaceCode, savedIssue.getIssueKey(), memberId);
 
 		eventPublisher.publishEvent(
-			IssueCreatedEvent.createEvent(issue, currentWorkspaceMemberId)
+			IssueCreatedEvent.createEvent(issue, memberId)
 		);
 
 		return CreateIssueResponse.from(savedIssue);
@@ -65,56 +64,51 @@ public class IssueCommandService {
 	public UpdateIssueResponse updateIssue(
 		String workspaceCode,
 		String issueKey,
-		Long requesterWorkspaceMemberId,
+		Long memberId,
 		UpdateIssueRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.validateIssueTypeMatch(request.getType());
 
-		// Todo: AuthorizationService를 만들어서 권한 검사 로직 분리
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// Todo: IssueAuthorizationService를 만들어서 권한 검사 로직 분리?
+		// TODO: IssueAuthorizationInterceptor에서 IssueAuthorizationService를 호출하는 형태로 구현?
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateIsAssigneeOrAuthor(memberId);
+		// }
 
 		Integer oldStoryPoint = issue.getStoryPoint();
 
 		request.updateNonNullFields(issue);
 
 		eventPublisher.publishEvent(
-			IssueUpdatedEvent.createEvent(issue, oldStoryPoint, requesterWorkspaceMemberId)
+			IssueUpdatedEvent.createEvent(issue, oldStoryPoint, memberId)
 		);
 
 		return UpdateIssueResponse.from(issue);
 	}
 
-	/**
-	 * Todo
-	 *  - 추후에 상태 전이와 관련된 규칙이나 워크플로우를 위한 엔진을 만들고(InternalWorkflowEngine -> WorkflowEngine 인터페이스 만들기)
-	 *  - WorkflowService라는 도메인 서비스를 만들어서 WorkflowEngine 호출해서 사용
-	 *  - IssueCommandService는 비즈니스 서비스이기 때문 도메인 서비스인 WorkflowService를 호출하도록 설계 예정
-	 */
 	@Transactional
 	public UpdateIssueStatusResponse updateIssueStatus(
 		String workspaceCode,
 		String issueKey,
-		Long requesterWorkspaceMemberId,
+		Long memberId,
 		UpdateIssueStatusRequest request
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateIsAssigneeOrAuthor(memberId);
+		// }
 
 		IssueStatus oldStatus = issue.getStatus();
 
 		issue.updateStatus(request.status());
 
 		eventPublisher.publishEvent(
-			IssueStatusChangedEvent.createEvent(issue, oldStatus, requesterWorkspaceMemberId)
+			IssueStatusChangedEvent.createEvent(issue, oldStatus, memberId)
 		);
 
 		return UpdateIssueStatusResponse.from(issue);
@@ -124,23 +118,23 @@ public class IssueCommandService {
 	public AssignParentIssueResponse assignParentIssue(
 		String workspaceCode,
 		String issueKey,
-		Long requesterWorkspaceMemberId,
+		Long memberId,
 		AssignParentIssueRequest request
 	) {
 		Issue childIssue = issueReader.findIssue(issueKey, workspaceCode);
 		Issue parentIssue = issueReader.findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			childIssue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	childIssue.validateIsAssigneeOrAuthor(memberId);
+		// }
 
 		Issue oldParentIssue = childIssue.getParentIssue();
 
 		childIssue.updateParentIssue(parentIssue);
 
 		eventPublisher.publishEvent(
-			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, requesterWorkspaceMemberId)
+			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, memberId)
 		);
 
 		return AssignParentIssueResponse.from(childIssue);
@@ -150,14 +144,14 @@ public class IssueCommandService {
 	public RemoveParentIssueResponse removeParentIssue(
 		String workspaceCode,
 		String issueKey,
-		Long requesterWorkspaceMemberId
+		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
+		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssigneeOrAuthor(requesterWorkspaceMemberId);
-		}
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateIsAssigneeOrAuthor(memberId);
+		// }
 
 		Issue oldParentIssue = issue.getParentIssue();
 
@@ -166,7 +160,7 @@ public class IssueCommandService {
 		issue.removeParentRelationship();
 
 		eventPublisher.publishEvent(
-			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, requesterWorkspaceMemberId)
+			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, memberId)
 		);
 
 		return RemoveParentIssueResponse.from(issue);
@@ -176,14 +170,11 @@ public class IssueCommandService {
 	public AddWatcherResponse addWatcher(
 		String workspaceCode,
 		String issueKey,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId,
-			workspaceCode
-		);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.addWatcher(workspaceMember);
 
@@ -194,14 +185,11 @@ public class IssueCommandService {
 	public void removeWatcher(
 		String workspaceCode,
 		String issueKey,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId,
-			workspaceCode
-		);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.removeWatcher(workspaceMember);
 	}

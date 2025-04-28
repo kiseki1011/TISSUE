@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.assignee.presentation.dto.request.AddAssigneeRequest;
+import com.tissue.api.assignee.presentation.dto.request.RemoveAssigneeRequest;
 import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
 import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
@@ -29,6 +31,10 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 	WorkspaceMember workspaceMember2;
 	Story issue;
 
+	Member member1;
+	Member member2;
+	Member ownerMember;
+
 	@BeforeEach
 	public void setUp() {
 		// create workspace
@@ -39,9 +45,12 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// create member
-		Member ownerMember = testDataFixture.createMember("owner");
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
+		// Member ownerMember = testDataFixture.createMember("owner");
+		// Member member1 = testDataFixture.createMember("member1");
+		// Member member2 = testDataFixture.createMember("member2");
+		ownerMember = testDataFixture.createMember("owner");
+		member1 = testDataFixture.createMember("member1");
+		member2 = testDataFixture.createMember("member2");
 
 		// add workspace members
 		owner = testDataFixture.createWorkspaceMember(
@@ -82,18 +91,21 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assignRequesterWorkspaceMemberId = owner.getId();
 		Long assigneeWMId2 = workspaceMember2.getId();
 
+		AddAssigneeRequest addAssigneeRequest1 = new AddAssigneeRequest(member1.getId());
+		AddAssigneeRequest addAssigneeRequest2 = new AddAssigneeRequest(member2.getId());
+
 		// when
 		AddAssigneeResponse response1 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWMId1,
+			addAssigneeRequest1.toCommand(),
 			assignRequesterWorkspaceMemberId
 		);
 
 		AddAssigneeResponse response2 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWMId2,
+			addAssigneeRequest2.toCommand(),
 			assignRequesterWorkspaceMemberId
 		);
 
@@ -109,11 +121,13 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assigneeWMId = workspaceMember1.getId();
 		Long assignRequesterWorkspaceMemberId = owner.getId();
 
+		AddAssigneeRequest addAssigneeRequest = new AddAssigneeRequest(member1.getId());
+
 		// then & when
 		assertThatThrownBy(() -> assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			"INVALIDKEY", // invalid issue key
-			assigneeWMId,
+			addAssigneeRequest.toCommand(),
 			assignRequesterWorkspaceMemberId
 		))
 			.isInstanceOf(IssueNotFoundException.class);
@@ -128,17 +142,31 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assigneeWorkspaceMemberId1 = workspaceMember1.getId();
 		Long assigneeWorkspaceMemberId2 = workspaceMember2.getId();
 
+		AddAssigneeRequest addAssigneeRequest1 = new AddAssigneeRequest(member1.getId());
+		AddAssigneeRequest addAssigneeRequest2 = new AddAssigneeRequest(member2.getId());
+
 		// requester of assignee removal must be an assignee
-		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId1,
-			assignRequesterWorkspaceMemberId);
-		assigneeCommandService.addAssignee(workspace.getCode(), issue.getIssueKey(), assigneeWorkspaceMemberId2,
-			assigneeWorkspaceMemberId1);
+		assigneeCommandService.addAssignee(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			addAssigneeRequest1.toCommand(),
+			assignRequesterWorkspaceMemberId
+		);
+
+		assigneeCommandService.addAssignee(
+			workspace.getCode(),
+			issue.getIssueKey(),
+			addAssigneeRequest2.toCommand(),
+			assigneeWorkspaceMemberId1
+		);
 
 		// when
+		RemoveAssigneeRequest removeAssigneeRequest = new RemoveAssigneeRequest(member2.getId());
+
 		RemoveAssigneeResponse response = assigneeCommandService.removeAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWorkspaceMemberId2,
+			removeAssigneeRequest.toCommand(),
 			removeRequesterWorkspaceMemberId
 		);
 
@@ -160,18 +188,22 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assigneeWorkspaceMemberId = workspaceMember2.getId();
 		Long requesterWorkspaceMemberId = workspaceMember3.getId();
 
+		AddAssigneeRequest addAssigneeRequest = new AddAssigneeRequest(member1.getId());
+
 		assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWorkspaceMemberId,
+			addAssigneeRequest.toCommand(),
 			owner.getId()
 		);
 
 		// when & then
+		RemoveAssigneeRequest removeAssigneeRequest = new RemoveAssigneeRequest(member1.getId());
+
 		assertThatThrownBy(() -> assigneeCommandService.removeAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWorkspaceMemberId,
+			removeAssigneeRequest.toCommand(),
 			requesterWorkspaceMemberId // requester is not assignee
 		))
 			.isInstanceOf(ForbiddenOperationException.class);

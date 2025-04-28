@@ -25,11 +25,14 @@ public class NotificationCommandService {
 	@Transactional
 	public void createNotification(
 		DomainEvent event,
-		Long receiverWorkspaceMemberId,
+		Long receiverMemberId,
 		String title,
 		String message
 	) {
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(event.getTriggeredByWorkspaceMemberId());
+		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
+			event.getActorMemberId(),
+			event.getWorkspaceCode()
+		);
 
 		EntityReference entityReference = event.createEntityReference();
 
@@ -37,21 +40,21 @@ public class NotificationCommandService {
 			.eventId(event.getEventId())
 			.notificationType(event.getNotificationType())
 			.entityReference(entityReference)
-			.actorWorkspaceMemberId(event.getTriggeredByWorkspaceMemberId())
-			.actorWorkspaceMemberNickname(actor.getNickname())
+			.actorMemberId(event.getActorMemberId())
+			.actorNickname(actor.getNickname())
 			.title(title)
 			.message(message)
-			.receiverWorkspaceMemberId(receiverWorkspaceMemberId)
+			.receiverMemberId(receiverMemberId)
 			.build();
 
 		notificationRepository.save(notification);
 	}
 
 	@Transactional
-	public void markAsRead(Long notificationId, Long workspaceMemberId) {
-		Notification notification = notificationRepository.findByIdAndReceiverWorkspaceMemberId(
+	public void markAsRead(Long notificationId, Long receiverMemberId) {
+		Notification notification = notificationRepository.findByIdAndReceiverMemberId(
 				notificationId,
-				workspaceMemberId
+				receiverMemberId
 			)
 			.orElseThrow(() -> new ResourceNotFoundException(
 				String.format("Notification not found. notification id: %d", notificationId)));
@@ -60,9 +63,9 @@ public class NotificationCommandService {
 	}
 
 	@Transactional
-	public void markAllAsRead(Long workspaceMemberId, String workspaceCode) {
+	public void markAllAsRead(Long memberId, String workspaceCode) {
 		List<Notification> notifications = notificationRepository
-			.findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(workspaceMemberId,
+			.findByReceiverMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(memberId,
 				workspaceCode);
 
 		notifications.forEach(Notification::markAsRead);

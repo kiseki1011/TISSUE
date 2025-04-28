@@ -6,11 +6,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.tissue.api.assignee.domain.IssueAssignee;
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
@@ -64,7 +65,7 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Issue extends WorkspaceContextBaseEntity {
+public abstract class Issue extends BaseEntity {
 
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
@@ -136,12 +137,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueAssignee> assignees = new HashSet<>();
 
-	/**
-	 * Todo
-	 *  - 단방향 관계를 위한 설정
-	 *  - Assignee, Reviewer도 단방향 관계로 리팩토링하는게 좋을 듯
-	 *    - 이유?: 굳이 탐색이 편하자고 양방향으로 만들 필요는 없을 듯
-	 */
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "ISSUE_ID")
 	private Set<IssueWatcher> watchers = new HashSet<>();
@@ -185,9 +180,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	}
 
 	public IssueWatcher addWatcher(WorkspaceMember workspaceMember) {
-		// TODO: 굳이 필요할까? 어차피 관찰자로 등록하는 사람은 자기 자신(이미 워크스페이스 참여에 대한 검증을 인터셉터에서 진행)
-		// validateBelongsToWorkspace(workspaceMember);
-
 		IssueWatcher watcher = new IssueWatcher(workspaceMember);
 		watchers.add(watcher);
 		return watcher;
@@ -202,37 +194,37 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 	 *  - 기존 N+1 문제 발생을 IssueXxx 엔티티에 id를 직접 컬럼으로 저장해서, lazy loading 관련 문제 회피
 	 *  - 사용 시점에 Join Fetch 쿼리 사용하는 방식으로 해결할 수도 있음
 	 */
-	public Set<Long> getSubscriberIds() {
-		Set<Long> subscriberIds = new HashSet<>();
+	public Set<Long> getSubscriberMemberIds() {
+		Set<Long> memberIds = new HashSet<>();
 
 		// 작성자 ID 추가
-		if (this.getCreatedByWorkspaceMember() != null) {
-			subscriberIds.add(this.getCreatedByWorkspaceMember());
+		if (this.getCreatedBy() != null) {
+			memberIds.add(this.getCreatedBy());
 		}
 
 		// Assignee IDs 추가
 		assignees.stream()
-			.map(IssueAssignee::getAssigneeId)  // 엔티티 로드 없이 ID 접근
-			.forEach(subscriberIds::add);
+			.map(IssueAssignee::getAssigneeMemberId)  // 엔티티 로드 없이 ID 접근
+			.forEach(memberIds::add);
 
 		// Reviewer IDs 추가
 		reviewers.stream()
-			.map(IssueReviewer::getReviewerId)  // 엔티티 로드 없이 ID 접근
-			.forEach(subscriberIds::add);
+			.map(IssueReviewer::getReviewerMemberId)  // 엔티티 로드 없이 ID 접근
+			.forEach(memberIds::add);
 
 		// Watcher IDs 추가
 		watchers.stream()
-			.map(IssueWatcher::getWatcherId)  // 엔티티 로드 없이 ID 접근
-			.forEach(subscriberIds::add);
+			.map(IssueWatcher::getWatcherMemberId)  // 엔티티 로드 없이 ID 접근
+			.forEach(memberIds::add);
 
-		return subscriberIds;
+		return memberIds;
 	}
 
-	public Set<Long> getReviewerIds() {
+	public Set<Long> getReviewerMemberIds() {
 		Set<Long> reviewerIds = new HashSet<>();
 
 		reviewers.stream()
-			.map(IssueReviewer::getReviewerId)
+			.map(IssueReviewer::getReviewerMemberId)
 			.forEach(reviewerIds::add);
 
 		return reviewerIds;
@@ -263,22 +255,6 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		validateHasReviewForCurrentRound(issueReviewer);
 
 		reviewers.remove(issueReviewer);
-	}
-
-	// TODO: 굳이 검사할 필요가 있을까? 그냥 MEMBER 이상이면 해제할 수 있도록 해도 괜찮지 않을까?
-	public void validateCanRemoveReviewer(Long requesterWorkspaceMemberId, Long reviewerWorkspaceMemberId) {
-		if (requesterWorkspaceMemberId.equals(reviewerWorkspaceMemberId)) {
-			return;
-		}
-
-		boolean isNotAssignee = !isAssignee(requesterWorkspaceMemberId);
-
-		if (isNotAssignee) {
-			throw new ForbiddenOperationException(
-				String.format("Must be the reviewer or be a assignee to remove the reviewer."
-						+ " requesterWorkspaceMemberId: %d, reviewerWorkspaceMemberId: %d",
-					requesterWorkspaceMemberId, reviewerWorkspaceMemberId));
-		}
 	}
 
 	public void validateCanSubmitReview() {
@@ -381,21 +357,21 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 		assignees.remove(issueAssignee);
 	}
 
-	public void validateIsAssignee(Long workspaceMemberId) {
-		boolean isNotAssignee = !isAssignee(workspaceMemberId);
+	public void validateIsAssignee(Long memberId) {
+		boolean isNotAssignee = !isAssignee(memberId);
 
 		if (isNotAssignee) {
 			throw new ForbiddenOperationException(
-				String.format("Must be an assignee of this issue. issue key: %s, workspace member id: %d",
-					issueKey, workspaceMemberId));
+				String.format("Must be an assignee of this issue. workspace code: %s, issue key: %s, member id: %d",
+					workspaceCode, issueKey, memberId));
 		}
 	}
 
-	public void validateIsAssigneeOrAuthor(Long workspaceMemberId) {
-		if (isAssignee(workspaceMemberId)) {
+	public void validateIsAssigneeOrAuthor(Long memberId) {
+		if (isAssignee(memberId)) {
 			return;
 		}
-		if (isAuthor(workspaceMemberId)) {
+		if (isAuthor(memberId)) {
 			return;
 		}
 		throw new ForbiddenOperationException(
@@ -413,13 +389,13 @@ public abstract class Issue extends WorkspaceContextBaseEntity {
 			);
 	}
 
-	private boolean isAssignee(Long workspaceMemberId) {
+	private boolean isAssignee(Long memberId) {
 		return assignees.stream()
-			.anyMatch(issueAssignee -> issueAssignee.getAssignee().getId().equals(workspaceMemberId));
+			.anyMatch(issueAssignee -> Objects.equals(issueAssignee.getAssigneeMemberId(), memberId));
 	}
 
-	private boolean isAuthor(Long workspaceMemberId) {
-		return this.getCreatedByWorkspaceMember().equals(workspaceMemberId);
+	private boolean isAuthor(Long memberId) {
+		return Objects.equals(getCreatedBy(), memberId);
 	}
 
 	private void validateAssigneeLimit() {

@@ -33,7 +33,7 @@ public record UpdateEpicResponse(
 			.issueId(epic.getId())
 			.issueKey(epic.getIssueKey())
 			.workspaceCode(epic.getWorkspaceCode())
-			.updaterId(epic.getLastModifiedByWorkspaceMember())
+			.updaterId(epic.getLastModifiedBy())
 			.updatedAt(epic.getLastModifiedDate())
 			.title(epic.getTitle())
 			.content(epic.getContent())

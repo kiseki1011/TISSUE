@@ -12,15 +12,15 @@ import lombok.Getter;
 @Getter
 public class WorkspaceMemberRoleChangedEvent extends WorkspaceEvent {
 
-	private final Long targetWorkspaceMemberId;
+	private final Long targetMemberId;
 	private final String targetNickname;
 	private final WorkspaceRole oldRole;
 	private final WorkspaceRole newRole;
 
 	public WorkspaceMemberRoleChangedEvent(
 		String workspaceCode,
-		Long triggeredByWorkspaceMemberId,
-		Long targetWorkspaceMemberId,
+		Long actorMemberId,
+		Long targetMemberId,
 		String targetNickname,
 		WorkspaceRole oldRole,
 		WorkspaceRole newRole
@@ -29,10 +29,10 @@ public class WorkspaceMemberRoleChangedEvent extends WorkspaceEvent {
 			NotificationType.WORKSPACE_MEMBER_ROLE_CHANGED,
 			ResourceType.WORKSPACE,
 			workspaceCode,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
-		this.targetWorkspaceMemberId = targetWorkspaceMemberId;
+		this.targetMemberId = targetMemberId;
 		this.targetNickname = targetNickname;
 		this.oldRole = oldRole;
 		this.newRole = newRole;
@@ -41,11 +41,11 @@ public class WorkspaceMemberRoleChangedEvent extends WorkspaceEvent {
 	public static WorkspaceMemberRoleChangedEvent createEvent(
 		WorkspaceMember workspaceMember,
 		WorkspaceRole oldRole,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new WorkspaceMemberRoleChangedEvent(
 			workspaceMember.getWorkspaceCode(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			workspaceMember.getMember().getId(),
 			workspaceMember.getNickname(),
 			oldRole,
@@ -55,6 +55,6 @@ public class WorkspaceMemberRoleChangedEvent extends WorkspaceEvent {
 
 	@Override
 	public EntityReference createEntityReference() {
-		return EntityReference.forWorkspaceMember(getWorkspaceCode(), getTargetWorkspaceMemberId());
+		return EntityReference.forWorkspaceMember(getWorkspaceCode(), getTargetMemberId());
 	}
 }

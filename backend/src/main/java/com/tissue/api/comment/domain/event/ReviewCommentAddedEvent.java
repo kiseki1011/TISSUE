@@ -20,7 +20,7 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long reviewId,
 		Long commentId
 	) {
@@ -31,7 +31,7 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			commentId
 		);
 
@@ -42,14 +42,14 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 		Issue issue,
 		Review review,
 		ReviewComment comment,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new ReviewCommentAddedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			review.getId(),
 			comment.getId()
 		);

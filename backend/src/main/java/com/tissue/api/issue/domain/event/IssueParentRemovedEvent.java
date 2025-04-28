@@ -23,7 +23,7 @@ public class IssueParentRemovedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long removedParentIssueId,
 		String removedParentIssueKey,
 		IssueType removedParentIssueType,
@@ -36,7 +36,7 @@ public class IssueParentRemovedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 		this.removedParentIssueId = removedParentIssueId;
 		this.removedParentIssueKey = removedParentIssueKey;
@@ -49,20 +49,20 @@ public class IssueParentRemovedEvent extends IssueEvent {
 	 *
 	 * @param childIssue 부모가 제거된 자식 이슈
 	 * @param removedParentIssue 제거된 부모 이슈
-	 * @param triggeredByWorkspaceMemberId 이벤트를 발생시킨 워크스페이스 멤버 ID
+	 * @param actorMemberId 이벤트를 발생시킨 워크스페이스 멤버 ID
 	 * @return 새로운 IssueParentRemovedEvent 인스턴스
 	 */
 	public static IssueParentRemovedEvent createEvent(
 		Issue childIssue,
 		Issue removedParentIssue,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new IssueParentRemovedEvent(
 			childIssue.getId(),
 			childIssue.getIssueKey(),
 			childIssue.getWorkspaceCode(),
 			childIssue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			removedParentIssue.getId(),
 			removedParentIssue.getIssueKey(),
 			removedParentIssue.getType(),

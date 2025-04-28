@@ -17,14 +17,15 @@ import com.tissue.support.helper.ControllerTestHelper;
 
 class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 
-	private static final String BASE_URL = "/api/v1/workspaces/{code}/members";
+	private static final String BASE_URL = "/api/v1/workspaces/{workspaceCode}/members";
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/positions/{positionId} - 내 Position 할당을 성공하면 OK 응답")
+	@DisplayName("PATCH /workspaces/{workspaceCode}/members/{memberId}/positions/{positionId} - 내 Position 할당을 성공하면 OK 응답")
 	void assignPosition_Success() throws Exception {
 		// Given
 		String workspaceCode = "TESTCODE";
-		Long workspaceMemberId = 1L;
+		Long targetMemberId = 1L;
+		Long loginMemberId = 1L;
 		Long positionId = 1L;
 
 		AssignPositionResponse response = new AssignPositionResponse(
@@ -37,15 +38,17 @@ class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 			LocalDateTime.now()
 		);
 
-		when(workspaceMemberCommandService.assignPosition(
+		when(workspaceMemberCommandService.setPosition(
 			workspaceCode,
 			positionId,
-			workspaceMemberId
+			targetMemberId,
+			loginMemberId
 		))
 			.thenReturn(response);
 
 		// When & Then
-		mockMvc.perform(patch(BASE_URL + "/positions/{positionId}", workspaceCode, positionId))
+		mockMvc.perform(
+				patch(BASE_URL + "/{memberId}/positions/{positionId}", workspaceCode, targetMemberId, positionId))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
 			.andExpect(jsonPath("$.data.workspaceMemberId").value(1))
@@ -53,20 +56,22 @@ class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/positions/{positionId} - 내 Position 해제를 성공하면 OK 응답, 응답 데이터 없음")
+	@DisplayName("PATCH /workspaces/{workspaceCode}/members/positions/{positionId} - 내 Position 해제를 성공하면 OK 응답, 응답 데이터 없음")
 	void removePosition_Success() throws Exception {
 		// Given
 		String workspaceCode = "TESTCODE";
-		Long currentWorkspaceMemberId = 1L;
+		Long targetMemberId = 1L;
+		Long loginMemberId = 2L;
 		Long positionId = 1L;
 
 		doNothing().when(workspaceMemberCommandService)
-			.removePosition(workspaceCode, positionId, currentWorkspaceMemberId);
+			.clearPosition(workspaceCode, positionId, targetMemberId, loginMemberId);
 
 		// When & Then
-		mockMvc.perform(patch(BASE_URL + "/positions/{positionId}", workspaceCode, positionId))
+		mockMvc.perform(
+				delete(BASE_URL + "/{memberId}/positions/{positionId}", workspaceCode, targetMemberId, positionId))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
+			.andExpect(jsonPath("$.message").value("Position cleared from workspace member."))
 			.andExpect(jsonPath("$.data").doesNotExist());
 	}
 
@@ -77,10 +82,11 @@ class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 		String workspaceCode = "TESTCODE";
 		Long positionId = 1L;
 
-		Long targetWorkspaceMemberId = 2L;
+		Long targetMemberId = 1L;
+		Long loginMemberId = 2L;
 
 		AssignPositionResponse response = new AssignPositionResponse(
-			2L,
+			targetMemberId,
 			List.of(PositionDetail.builder()
 				.name("Developer")
 				.description("Developer description")
@@ -89,19 +95,21 @@ class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 			LocalDateTime.now()
 		);
 
-		when(workspaceMemberCommandService.assignPosition(
-			workspaceCode,
-			positionId,
-			targetWorkspaceMemberId
+		when(workspaceMemberCommandService.setPosition(
+			anyString(),
+			anyLong(),
+			anyLong(),
+			anyLong()
 		))
 			.thenReturn(response);
 
 		// When & Then
 		mockMvc.perform(
-				patch(BASE_URL + "/{memberId}/positions/{positionId}", workspaceCode, targetWorkspaceMemberId, positionId))
+				patch(BASE_URL + "/{memberId}/positions/{positionId}", workspaceCode, targetMemberId, positionId)
+					.sessionAttr("id", loginMemberId))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Position assigned to workspace member."))
-			.andExpect(jsonPath("$.data.workspaceMemberId").value(2))
+			.andExpect(jsonPath("$.data.workspaceMemberId").value(targetMemberId))
 			.andExpect(jsonPath("$.data.assignedPositions[0].name").value("Developer"));
 	}
 }

@@ -1,6 +1,6 @@
 package com.tissue.api.position.domain;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.Entity;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkspaceMemberPosition extends WorkspaceContextBaseEntity {
+public class WorkspaceMemberPosition extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

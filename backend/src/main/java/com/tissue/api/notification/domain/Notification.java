@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "UK_EVENT_RECEIVER",
-			columnNames = {"eventId", "receiverWorkspaceMemberId"})
+			columnNames = {"eventId", "receiverMemberId"})
 	}
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -41,7 +41,7 @@ public class Notification extends BaseDateEntity {
 	private UUID eventId;
 
 	@Column(nullable = false)
-	private Long receiverWorkspaceMemberId;
+	private Long receiverMemberId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -58,9 +58,9 @@ public class Notification extends BaseDateEntity {
 	private String message;
 
 	@Column(nullable = false)
-	private Long actorWorkspaceMemberId;
+	private Long actorMemberId;
 
-	private String actorWorkspaceMemberNickname;
+	private String actorNickname;
 
 	@Column(nullable = false)
 	private boolean isRead;
@@ -70,18 +70,18 @@ public class Notification extends BaseDateEntity {
 		UUID eventId,
 		NotificationType notificationType,
 		EntityReference entityReference,
-		Long actorWorkspaceMemberId,
-		String actorWorkspaceMemberNickname,
-		Long receiverWorkspaceMemberId,
+		Long actorMemberId,
+		String actorNickname,
+		Long receiverMemberId,
 		String title,
 		String message
 	) {
 		this.eventId = eventId;
 		this.type = notificationType;
 		this.entityReference = entityReference;
-		this.actorWorkspaceMemberId = actorWorkspaceMemberId;
-		this.actorWorkspaceMemberNickname = actorWorkspaceMemberNickname;
-		this.receiverWorkspaceMemberId = receiverWorkspaceMemberId;
+		this.actorMemberId = actorMemberId;
+		this.actorNickname = actorNickname;
+		this.receiverMemberId = receiverMemberId;
 		this.title = title;
 		this.message = message;
 		this.isRead = false;

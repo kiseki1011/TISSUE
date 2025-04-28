@@ -9,13 +9,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}/members")
+@RequestMapping("/api/v1/workspaces/{workspaceCode}/members")
 public class WorkspaceMemberDetailController {
 
 	private final WorkspaceMemberCommandService workspaceMemberCommandService;
@@ -38,16 +39,17 @@ public class WorkspaceMemberDetailController {
 	 *    - 예시: [멤버의 소속 부서/팀][멤버의 포지션]멤버의 이름 -> 이렇게 정하는 것이 가능, 중복되는 경우 숫자 붙이기
 	 *    - 예시: [SearchTeam][BACKEND-DEV]HongGilDong
 	 */
-
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PatchMapping("/nickname")
 	public ApiResponse<UpdateNicknameResponse> updateMyNickname(
-		@CurrentWorkspaceMember Long workspaceMemberId,
-		@RequestBody @Valid UpdateNicknameRequest request
+		@PathVariable String workspaceCode,
+		@RequestBody @Valid UpdateNicknameRequest request,
+		@ResolveLoginMember Long memberId
 	) {
 		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
-			workspaceMemberId,
+			workspaceCode,
+			memberId,
 			request
 		);
 
@@ -55,138 +57,78 @@ public class WorkspaceMemberDetailController {
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PatchMapping("/positions/{positionId}")
-	public ApiResponse<AssignPositionResponse> assignMyPosition(
-		@PathVariable String code,
+	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
+	@PatchMapping("/{memberId}/positions/{positionId}")
+	public ApiResponse<AssignPositionResponse> setPosition(
+		@PathVariable String workspaceCode,
+		@PathVariable Long memberId,
 		@PathVariable Long positionId,
-		@CurrentWorkspaceMember Long workspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
-		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
-			code,
+		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
+			workspaceCode,
 			positionId,
-			workspaceMemberId
+			memberId,
+			loginMemberId
 		);
 
 		return ApiResponse.ok("Position assigned to workspace member.", response);
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@DeleteMapping("/positions/{positionId}")
-	public ApiResponse<Void> removeMyPosition(
-		@PathVariable String code,
+	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
+	@DeleteMapping("/{memberId}/positions/{positionId}")
+	public ApiResponse<Void> clearPosition(
+		@PathVariable String workspaceCode,
 		@PathVariable Long positionId,
-		@CurrentWorkspaceMember Long workspaceMemberId
+		@PathVariable Long memberId,
+		@ResolveLoginMember Long loginMemberId
 	) {
-		workspaceMemberCommandService.removePosition(
-			code,
+		workspaceMemberCommandService.clearPosition(
+			workspaceCode,
 			positionId,
-			workspaceMemberId
+			memberId,
+			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Position removed from workspace member.");
+		return ApiResponse.okWithNoContent("Position cleared from workspace member.");
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MANAGER)
-	@PatchMapping("/{workspaceMemberId}/positions/{positionId}")
-	public ApiResponse<AssignPositionResponse> assignPosition(
-		@PathVariable String code,
-		@PathVariable Long workspaceMemberId,
-		@PathVariable Long positionId
-	) {
-		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
-			code,
-			positionId,
-			workspaceMemberId
-		);
-
-		return ApiResponse.ok("Position assigned to workspace member.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MANAGER)
-	@PatchMapping("/{workspaceMemberId}/positions")
-	public ApiResponse<Void> removePosition(
-		@PathVariable String code,
-		@PathVariable Long positionId,
-		@PathVariable Long workspaceMemberId
-	) {
-		workspaceMemberCommandService.removePosition(
-			code,
-			positionId,
-			workspaceMemberId
-		);
-
-		return ApiResponse.okWithNoContent("Position removed from workspace member.");
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PatchMapping("/teams/{teamId}")
-	public ApiResponse<AssignTeamResponse> assignMyTeam(
-		@PathVariable String code,
+	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
+	@PatchMapping("/{memberId}/teams/{teamId}")
+	public ApiResponse<AssignTeamResponse> setTeam(
+		@PathVariable String workspaceCode,
+		@PathVariable Long memberId,
 		@PathVariable Long teamId,
-		@CurrentWorkspaceMember Long workspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		AssignTeamResponse response = workspaceMemberCommandService.assignTeam(
-			code,
+			workspaceCode,
 			teamId,
-			workspaceMemberId
+			memberId,
+			loginMemberId
 		);
 
 		return ApiResponse.ok("Team assigned to workspace member.", response);
 	}
 
 	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@DeleteMapping("/teams/{teamId}")
-	public ApiResponse<Void> removeMyTeam(
-		@PathVariable String code,
+	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
+	@DeleteMapping("/{memberId}/teams/{teamId}")
+	public ApiResponse<Void> clearTeam(
+		@PathVariable String workspaceCode,
 		@PathVariable Long teamId,
-		@CurrentWorkspaceMember Long workspaceMemberId
+		@PathVariable Long memberId,
+		@ResolveLoginMember Long loginMemberId
 	) {
 		workspaceMemberCommandService.removeTeam(
-			code,
+			workspaceCode,
 			teamId,
-			workspaceMemberId
+			memberId,
+			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Team removed from workspace member.");
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MANAGER)
-	@PatchMapping("/{workspaceMemberId}/teams/{teamId}")
-	public ApiResponse<AssignTeamResponse> assignTeam(
-		@PathVariable String code,
-		@PathVariable Long workspaceMemberId,
-		@PathVariable Long teamId
-	) {
-		AssignTeamResponse response = workspaceMemberCommandService.assignTeam(
-			code,
-			teamId,
-			workspaceMemberId
-		);
-
-		return ApiResponse.ok("Team assigned to workspace member.", response);
-	}
-
-	@LoginRequired
-	@RoleRequired(role = WorkspaceRole.MANAGER)
-	@PatchMapping("/{workspaceMemberId}/teams")
-	public ApiResponse<Void> removeTeam(
-		@PathVariable String code,
-		@PathVariable Long teamId,
-		@PathVariable Long workspaceMemberId
-	) {
-		workspaceMemberCommandService.removeTeam(
-			code,
-			teamId,
-			workspaceMemberId
-		);
-
-		return ApiResponse.okWithNoContent("Team removed from workspace member.");
+		return ApiResponse.okWithNoContent("Team cleared from workspace member.");
 	}
 }
