@@ -11,14 +11,12 @@ import lombok.Getter;
 @Getter
 public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 
-	private final Long workspaceMemberId;
 	private final String nickname;
 	private final WorkspaceRole workspaceRole;
 
 	public MemberJoinedWorkspaceEvent(
 		String workspaceCode,
-		Long triggeredByWorkspaceMemberId,
-		Long workspaceMemberId,
+		Long actorMemberId,
 		String nickname,
 		WorkspaceRole workspaceRole
 	) {
@@ -26,10 +24,9 @@ public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 			NotificationType.MEMBER_JOINED_WORKSPACE,
 			ResourceType.WORKSPACE,
 			workspaceCode,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
-		this.workspaceMemberId = workspaceMemberId;
 		this.nickname = nickname;
 		this.workspaceRole = workspaceRole;
 	}
@@ -40,7 +37,6 @@ public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 		return new MemberJoinedWorkspaceEvent(
 			workspaceMember.getWorkspaceCode(),
 			workspaceMember.getId(),
-			workspaceMember.getId(),
 			workspaceMember.getNickname(),
 			workspaceMember.getRole()
 		);
@@ -48,6 +44,6 @@ public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 
 	@Override
 	public EntityReference createEntityReference() {
-		return EntityReference.forWorkspaceMember(getWorkspaceCode(), getWorkspaceMemberId());
+		return EntityReference.forWorkspaceMember(getWorkspaceCode(), getActorMemberId());
 	}
 }

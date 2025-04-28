@@ -64,7 +64,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// when
-		workspaceMemberCommandService.removeWorkspaceMember(target.getId(), requester.getId());
+		workspaceMemberCommandService.removeWorkspaceMember(workspace.getCode(), targetMember.getId(),
+			requesterMember.getId());
 
 		// then
 		// TODO: soft delete을 제대로 구현하면 해당 WorkspaceMember를 찾을 수 없어야 함
@@ -86,7 +87,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember(invalidMemberId, requester.getId()))
+			() -> workspaceMemberCommandService.removeWorkspaceMember(workspace.getCode(), invalidMemberId,
+				requesterMember.getId()))
 			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
 
@@ -104,9 +106,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// when
-		UpdateRoleResponse response = workspaceMemberCommandService.updateWorkspaceMemberRole(
-			target.getId(),
-			requester.getId(),
+		UpdateRoleResponse response = workspaceMemberCommandService.updateRole(
+			workspace.getCode(),
+			targetMember.getId(),
+			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
 		);
 
@@ -125,9 +128,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			WorkspaceRole.OWNER);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			requester.getId(),
-			requester.getId(),
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
+			workspace.getCode(),
+			requesterMember.getId(),
+			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
 		))
 			.isInstanceOf(InvalidOperationException.class);
@@ -150,9 +154,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			target.getId(),
-			requester.getId(),
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
+			workspace.getCode(),
+			targetMember.getId(),
+			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.OWNER)
 		))
 			.isInstanceOf(InvalidOperationException.class);
@@ -173,9 +178,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.OWNER);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			target.getId(),
-			requester.getId(),
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
+			workspace.getCode(),
+			targetMember.getId(),
+			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
 		))
 			.isInstanceOf(ForbiddenOperationException.class);
@@ -194,9 +200,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MANAGER);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateWorkspaceMemberRole(
-			target.getId(),
-			requester.getId(),
+		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
+			workspace.getCode(),
+			targetMember.getId(),
+			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.OWNER)
 		))
 			.isInstanceOf(InvalidOperationException.class);
@@ -217,8 +224,9 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
-			target.getId(),
-			requester.getId()
+			workspace.getCode(),
+			targetMember.getId(),
+			requesterMember.getId()
 		);
 
 		// then
@@ -235,6 +243,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
+			workspace.getCode(),
 			workspaceMember.getId(),
 			new UpdateNicknameRequest("newNickname")
 		);
@@ -274,6 +283,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then - try to update workspaceMember1 nickname to "testnickname"
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
+			workspace.getCode(),
 			workspaceMember1.getId(),
 			new UpdateNicknameRequest("testnickname")
 		))
@@ -303,10 +313,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// When
-		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			position.getId(),
-			workspaceMember.getId()
+			member.getId(),
+			member.getId()
 		);
 
 		// Then
@@ -347,17 +358,19 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// assign position1 to workspace member
-		workspaceMemberCommandService.assignPosition(
+		workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			position1.getId(),
-			workspaceMember.getId()
+			member.getId(),
+			member.getId()
 		);
 
 		// when - assign another position(position2) to workspace member
-		AssignPositionResponse response = workspaceMemberCommandService.assignPosition(
+		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			position2.getId(),
-			workspaceMember.getId()
+			member.getId(),
+			member.getId()
 		);
 
 		// then
@@ -378,11 +391,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When & Then
-		assertThatThrownBy(() -> workspaceMemberCommandService.assignPosition(
+		assertThatThrownBy(() -> workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			999L, // invalid position id
-			workspaceMember.getId()
-		))
-			.isInstanceOf(ResourceNotFoundException.class);
+			member.getId(),
+			member.getId()
+		)).isInstanceOf(ResourceNotFoundException.class);
 	}
 }

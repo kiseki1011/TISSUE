@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
@@ -43,7 +43,7 @@ class SessionValidatorTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionValidator.validateLoginStatus(request))
-			.isInstanceOf(UnauthorizedException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test
@@ -55,7 +55,7 @@ class SessionValidatorTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionValidator.validateLoginStatus(request))
-			.isInstanceOf(UnauthorizedException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test

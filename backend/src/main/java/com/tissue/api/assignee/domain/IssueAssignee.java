@@ -2,7 +2,7 @@ package com.tissue.api.assignee.domain;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -21,9 +21,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "assigneeId", callSuper = false)
+@EqualsAndHashCode(of = "assigneeMemberId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueAssignee extends WorkspaceContextBaseEntity {
+public class IssueAssignee extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +34,7 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	private Issue issue;
 
 	@Column(name = "ASSIGNEE_ID", nullable = false)
-	private Long assigneeId;  // ID만 직접 저장
+	private Long assigneeMemberId;  // ID만 직접 저장
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ASSIGNEE_ID", insertable = false, updatable = false)
@@ -46,7 +46,7 @@ public class IssueAssignee extends WorkspaceContextBaseEntity {
 	public IssueAssignee(Issue issue, WorkspaceMember assignee) {
 		this.issue = issue;
 		this.assignee = assignee;
-		this.assigneeId = assignee.getId();
+		this.assigneeMemberId = assignee.getMember().getId();
 		this.assignedAt = LocalDateTime.now();
 	}
 }

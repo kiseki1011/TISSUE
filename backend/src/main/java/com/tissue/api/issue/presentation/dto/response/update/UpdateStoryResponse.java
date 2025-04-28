@@ -31,7 +31,7 @@ public record UpdateStoryResponse(
 			.issueId(story.getId())
 			.issueKey(story.getIssueKey())
 			.workspaceCode(story.getWorkspaceCode())
-			.updaterId(story.getLastModifiedByWorkspaceMember())
+			.updaterId(story.getLastModifiedBy())
 			.updatedAt(story.getLastModifiedDate())
 			.title(story.getTitle())
 			.content(story.getContent())

@@ -1,15 +1,17 @@
 package com.tissue.api.security.authorization.interceptor;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
+import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.session.SessionManager;
-import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
@@ -22,12 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthorizationInterceptor implements HandlerInterceptor {
-	public static final String CURRENT_WORKSPACE_MEMBER_ID = "currentWorkspaceMemberId";
+public class RoleRequiredInterceptor implements HandlerInterceptor {
 
 	private final SessionManager sessionManager;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final WorkspaceCodeParser workspaceCodeParser;
 
 	private static boolean isNotHandlerMethod(Object handler) {
 		return !(handler instanceof HandlerMethod);
@@ -51,18 +51,22 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		}
 
 		Long memberId = sessionManager.getOptionalLoginMemberId(request.getSession(false))
-			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
+			.orElseThrow(() -> new AuthenticationFailedException("Login is required to access."));
 
-		String workspaceCode = workspaceCodeParser.extractWorkspaceCode(request.getRequestURI());
+		Map<String, String> pathVariables =
+			(Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+
+		String workspaceCode = Optional.ofNullable(pathVariables.get("workspaceCode"))
+			.orElseThrow(() -> new InvalidRequestException("workspaceCode path variable is required."));
+
 		log.debug("Extracted workspace code from URI: {}", workspaceCode);
 
+		// TODO: Reader 사용
 		WorkspaceMember workspaceMember = workspaceMemberRepository
 			.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceCode));
 
 		validateRole(workspaceMember, roleRequired);
-
-		request.setAttribute(CURRENT_WORKSPACE_MEMBER_ID, workspaceMember.getId());
 
 		return true;
 	}

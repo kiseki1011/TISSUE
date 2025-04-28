@@ -19,7 +19,7 @@ public abstract class CommentEvent extends IssueEvent {
 		Long issueId,
 		String issueKey,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long commentId
 	) {
 		super(
@@ -29,7 +29,7 @@ public abstract class CommentEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
 		this.commentId = commentId;

@@ -21,7 +21,7 @@ public record UpdateSprintStatusResponse(
 			.sprintKey(sprint.getSprintKey())
 			.status(sprint.getStatus())
 			.updatedAt(sprint.getLastModifiedDate())
-			.updatedBy(sprint.getLastModifiedByWorkspaceMember())
+			.updatedBy(sprint.getLastModifiedBy())
 			.build();
 	}
 }

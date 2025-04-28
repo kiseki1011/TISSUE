@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
@@ -37,11 +37,12 @@ public class SessionManager {
 		log.info("Login session created for MEMBER_ID: {}", loginResponse.memberId());
 	}
 
+	// TODO: MemberRepository 의존성 제거
 	public Member getLoginMember(HttpSession session) {
 		return getOptionalLoginMemberId(session)
 			.map(id -> memberRepository.findById(id)
 				.orElseThrow(() -> new MemberNotFoundException(id)))
-			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
+			.orElseThrow(() -> new AuthenticationFailedException("Login is required to access."));
 	}
 
 	public Optional<Long> getOptionalLoginMemberId(HttpSession session) {
@@ -88,6 +89,6 @@ public class SessionManager {
 		HttpServletRequest request = (HttpServletRequest)webRequest.getNativeRequest();
 
 		return Optional.ofNullable(request.getSession(false))
-			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
+			.orElseThrow(() -> new AuthenticationFailedException("Login is required to access."));
 	}
 }

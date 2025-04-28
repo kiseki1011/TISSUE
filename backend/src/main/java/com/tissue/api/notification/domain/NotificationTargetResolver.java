@@ -35,9 +35,9 @@ public class NotificationTargetResolver {
 	public List<WorkspaceMember> getIssueSubscriberTargets(String issueKey, String workspaceCode) {
 
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Set<Long> subscriberIds = issue.getSubscriberMemberIds();
 
-		Set<Long> subscriberIds = issue.getSubscriberIds();
-		return workspaceMemberRepository.findAllByIdIn(subscriberIds);
+		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, subscriberIds);
 	}
 
 	/**
@@ -46,26 +46,26 @@ public class NotificationTargetResolver {
 	public List<WorkspaceMember> getIssueReviewerTargets(String issueKey, String workspaceCode) {
 
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Set<Long> reviewerIds = issue.getReviewerMemberIds();
 
-		Set<Long> reviewerIds = issue.getReviewerIds();
-		return workspaceMemberRepository.findAllByIdIn(reviewerIds);
+		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, reviewerIds);
 	}
 
-	public Set<WorkspaceMember> getAdminsAndSpecificMember(String workspaceCode, Long workspaceMemberId) {
+	public Set<WorkspaceMember> getAdminsAndSpecificMember(String workspaceCode, Long memberId) {
 		Set<WorkspaceMember> targets = workspaceMemberRepository
 			.findAdminsByWorkspaceCode(workspaceCode);
 
-		workspaceMemberRepository.findByWorkspaceCodeAndId(workspaceCode, workspaceMemberId)
+		workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
 			.ifPresent(targets::add);
 
 		return targets;
 	}
 
-	public Set<WorkspaceMember> getSpecificMember(String workspaceCode, Long workspaceMemberId) {
+	public Set<WorkspaceMember> getSpecificMember(String workspaceCode, Long memberId) {
 
 		Set<WorkspaceMember> target = new HashSet<>();
 
-		workspaceMemberRepository.findByWorkspaceCodeAndId(workspaceCode, workspaceMemberId)
+		workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
 			.ifPresent(target::add);
 
 		return target;

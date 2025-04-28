@@ -24,7 +24,7 @@ public abstract class SprintEvent implements DomainEvent {
 	private final String workspaceCode;
 	private final Long sprintId;
 	private final String sprintKey;
-	private final Long triggeredByWorkspaceMemberId;
+	private final Long actorMemberId;
 
 	@Override
 	public String getEntityKey() {

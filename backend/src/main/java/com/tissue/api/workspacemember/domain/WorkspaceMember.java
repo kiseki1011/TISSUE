@@ -198,7 +198,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 	}
 
-	public void updateRoleFromOwnerToAdmin() {
+	public void updateRoleToAdmin() {
 		validateCurrentRoleIsOwner();
 		updateRole(WorkspaceRole.ADMIN);
 		this.member.decreaseMyWorkspaceCount();

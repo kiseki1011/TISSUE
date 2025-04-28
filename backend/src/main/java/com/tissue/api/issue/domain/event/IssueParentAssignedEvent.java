@@ -28,7 +28,7 @@ public class IssueParentAssignedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long parentIssueId,
 		String parentIssueKey,
 		IssueType parentIssueType,
@@ -44,7 +44,7 @@ public class IssueParentAssignedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 		this.parentIssueId = parentIssueId;
 		this.parentIssueKey = parentIssueKey;
@@ -61,21 +61,21 @@ public class IssueParentAssignedEvent extends IssueEvent {
 	 * @param childIssue 부모가 할당된 자식 이슈
 	 * @param parentIssue 새로 할당된 부모 이슈
 	 * @param oldParentIssue 이전 부모 이슈 (없으면 null)
-	 * @param triggeredByWorkspaceMemberId 이벤트를 발생시킨 워크스페이스 멤버 ID
+	 * @param actorMemberId 이벤트를 발생시킨 워크스페이스 멤버 ID
 	 * @return 새로운 IssueParentAssignedEvent 인스턴스
 	 */
 	public static IssueParentAssignedEvent createEvent(
 		Issue childIssue,
 		Issue parentIssue,
 		Issue oldParentIssue,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new IssueParentAssignedEvent(
 			childIssue.getId(),
 			childIssue.getIssueKey(),
 			childIssue.getWorkspaceCode(),
 			childIssue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			parentIssue.getId(),
 			parentIssue.getIssueKey(),
 			parentIssue.getType(),

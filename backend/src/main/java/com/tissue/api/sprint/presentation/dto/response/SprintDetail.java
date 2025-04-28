@@ -35,7 +35,7 @@ public record SprintDetail(
 				.sorted()
 				.toList())
 			.createdAt(sprint.getCreatedDate())
-			.createdBy(sprint.getCreatedByWorkspaceMember())
+			.createdBy(sprint.getCreatedBy())
 			.build();
 	}
 }

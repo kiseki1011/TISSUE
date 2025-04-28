@@ -32,35 +32,28 @@ public class IssueCommentCommandService {
 		String workspaceCode,
 		String issueKey,
 		CreateIssueCommentRequest request,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		IssueComment parentComment = null;
-		if (request.hasParentComment()) {
-			parentComment = (IssueComment)commentRepository.findById(request.parentCommentId())
-				.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()));
-		}
-
-		// Todo: 아래로 리팩토링 가능
-		// IssueComment parentComment = request.hasParentComment()
-		// 	? findIssueComment(request.parentCommentId())
-		// 	: null;
+		IssueComment parentComment = request.hasParentComment()
+			? (IssueComment)commentRepository.findById(request.parentCommentId())
+			.orElseThrow(() -> new CommentNotFoundException(request.parentCommentId()))
+			: null;
 
 		IssueComment comment = IssueComment.builder()
 			.content(request.content())
 			.issue(issue)
 			.parentComment(parentComment)
-			.author(currentWorkspaceMember)
+			.author(workspaceMember)
 			.build();
 
 		IssueComment savedComment = commentRepository.save(comment);
 
 		eventPublisher.publishEvent(
-			IssueCommentAddedEvent.createEvent(issue, savedComment, currentWorkspaceMemberId)
+			IssueCommentAddedEvent.createEvent(issue, savedComment, memberId)
 		);
 
 		return IssueCommentResponse.from(comment);
@@ -72,16 +65,18 @@ public class IssueCommentCommandService {
 		String issueKey,
 		Long commentId,
 		UpdateIssueCommentRequest request,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
-				workspaceCode)
+		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
+				commentId,
+				issueKey,
+				workspaceCode
+			)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
 
-		comment.validateCanEdit(currentWorkspaceMember);
+		comment.validateCanEdit(workspaceMember);
 		comment.updateContent(request.content());
 
 		return IssueCommentResponse.from(comment);
@@ -92,16 +87,18 @@ public class IssueCommentCommandService {
 		String workspaceCode,
 		String issueKey,
 		Long commentId,
-		Long currentWorkspaceMemberId
+		Long memberId
 	) {
-		WorkspaceMember currentWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
-			currentWorkspaceMemberId);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(commentId, issueKey,
-				workspaceCode)
+		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
+				commentId,
+				issueKey,
+				workspaceCode
+			)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
 
-		comment.validateCanEdit(currentWorkspaceMember);
-		comment.softDelete(currentWorkspaceMemberId);
+		comment.validateCanEdit(workspaceMember);
+		comment.softDelete(memberId);
 	}
 }

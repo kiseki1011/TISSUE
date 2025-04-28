@@ -29,7 +29,7 @@ public record SprintIssueDetail(
 			.status(issue.getStatus())
 			.priority(issue.getPriority())
 			.createdAt(issue.getCreatedDate())
-			.createdBy(issue.getCreatedByWorkspaceMember())
+			.createdBy(issue.getCreatedBy())
 			.build();
 	}
 }

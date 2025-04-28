@@ -13,9 +13,9 @@ import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationRespons
 import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
 import com.tissue.api.issue.service.command.IssueRelationCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +34,14 @@ public class IssueRelationController {
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable String targetIssueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
+		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateIssueRelationRequest request
 	) {
 		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
 			code,
 			issueKey,
 			targetIssueKey,
-			currentWorkspaceMemberId,
+			loginMemberId,
 			request
 		);
 
@@ -55,13 +55,13 @@ public class IssueRelationController {
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable String targetIssueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
 			code,
 			issueKey,
 			targetIssueKey,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.ok("Issue relation removed.", response);

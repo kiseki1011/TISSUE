@@ -19,9 +19,12 @@ public class DefaultNotificationMessageFactory implements NotificationMessageFac
 
 	@Override
 	public <T extends DomainEvent> NotificationMessage createMessage(T event) {
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(event.getTriggeredByWorkspaceMemberId());
-		String actorNickname = actor.getNickname();
+		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
+			event.getActorMemberId(),
+			event.getWorkspaceCode()
+		);
 
+		String actorNickname = actor.getNickname();
 		String entityKey = event.getEntityKey();
 		String workspaceCode = event.getWorkspaceCode();
 

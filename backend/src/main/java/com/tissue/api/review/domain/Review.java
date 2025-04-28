@@ -1,6 +1,6 @@
 package com.tissue.api.review.domain;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review extends WorkspaceContextBaseEntity {
+public class Review extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

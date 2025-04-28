@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "watcherId", callSuper = false)
+@EqualsAndHashCode(of = "watcherMemberId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueWatcher extends BaseDateEntity {
 
@@ -28,12 +28,8 @@ public class IssueWatcher extends BaseDateEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "ISSUE_ID", nullable = false)
-	// private Issue issue;
-
 	@Column(name = "WATCHER_ID", nullable = false)
-	private Long watcherId;  // ID만 직접 저장
+	private Long watcherMemberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "WATCHER_ID", insertable = false, updatable = false)
@@ -45,7 +41,7 @@ public class IssueWatcher extends BaseDateEntity {
 
 	public IssueWatcher(WorkspaceMember watcher) {
 		this.watcher = watcher;
-		this.watcherId = watcher.getId();
+		this.watcherMemberId = watcher.getMember().getId();
 		this.watchedAt = LocalDateTime.now();
 	}
 }

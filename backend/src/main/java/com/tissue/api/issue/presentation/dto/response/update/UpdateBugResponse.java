@@ -36,7 +36,7 @@ public record UpdateBugResponse(
 			.issueId(bug.getId())
 			.issueKey(bug.getIssueKey())
 			.workspaceCode(bug.getWorkspaceCode())
-			.updaterId(bug.getLastModifiedByWorkspaceMember())
+			.updaterId(bug.getLastModifiedBy())
 			.updatedAt(bug.getLastModifiedDate())
 			.title(bug.getTitle())
 			.content(bug.getContent())

@@ -114,7 +114,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 		Member member = memberRepository.findByLoginId("user123").orElseThrow();
 
 		// then
-		assertThat(workspace.getCreatedByMember()).isEqualTo(member.getId());
+		assertThat(workspace.getCreatedBy()).isEqualTo(member.getId());
 	}
 
 	@Test

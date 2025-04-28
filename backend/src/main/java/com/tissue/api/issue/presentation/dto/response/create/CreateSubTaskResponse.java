@@ -32,7 +32,7 @@ public record CreateSubTaskResponse(
 			.issueId(subTask.getId())
 			.issueKey(subTask.getIssueKey())
 			.workspaceCode(subTask.getWorkspaceCode())
-			.createrId(subTask.getCreatedByWorkspaceMember())
+			.createrId(subTask.getCreatedBy())
 			.createdAt(subTask.getCreatedDate())
 			.title(subTask.getTitle())
 			.content(subTask.getContent())

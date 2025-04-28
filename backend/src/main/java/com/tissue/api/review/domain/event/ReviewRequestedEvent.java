@@ -16,7 +16,7 @@ public class ReviewRequestedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		super(
 			NotificationType.ISSUE_REVIEW_REQUESTED,
@@ -25,20 +25,20 @@ public class ReviewRequestedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 
 	public static ReviewRequestedEvent createEvent(
 		Issue issue,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new ReviewRequestedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 }

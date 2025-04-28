@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.PageResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
@@ -35,7 +36,6 @@ import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusRespons
 import com.tissue.api.sprint.service.command.SprintCommandService;
 import com.tissue.api.sprint.service.query.SprintQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -124,13 +124,13 @@ public class SprintController {
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid UpdateSprintStatusRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
 			workspaceCode,
 			sprintKey,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 		return ApiResponse.ok("Sprint status updated.", response);
 	}

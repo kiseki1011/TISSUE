@@ -15,9 +15,9 @@ import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.comment.service.command.ReviewCommentCommandService;
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +31,6 @@ public class ReviewCommentController {
 
 	/*
 	 * Todo
-	 *  - 리뷰에 댓글 작성
-	 *    - 댓글 내용
-	 *  - 댓글 수정
-	 *  - 댓글 삭제(soft delete)
 	 *  - 댓글 조회
 	 *  - 깃허브 PR 연동
 	 */
@@ -46,14 +42,14 @@ public class ReviewCommentController {
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@Valid @RequestBody CreateReviewCommentRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.createComment(
 			workspaceCode,
 			issueKey,
 			reviewId,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.created("Comment created.", response);
@@ -62,18 +58,20 @@ public class ReviewCommentController {
 	@PatchMapping("/{commentId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<ReviewCommentResponse> updateComment(
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
 		@Valid @RequestBody UpdateReviewCommentRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.updateComment(
+			workspaceCode,
 			issueKey,
 			reviewId,
 			commentId,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.created("Comment updated.", response);
@@ -88,16 +86,18 @@ public class ReviewCommentController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> deleteComment(
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		reviewCommentCommandService.deleteComment(
+			workspaceCode,
 			issueKey,
 			reviewId,
 			commentId,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.okWithNoContent("Comment deleted.");

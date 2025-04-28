@@ -22,7 +22,7 @@ public abstract class WorkspaceEvent implements DomainEvent {
 	private final ResourceType entityType;
 
 	private final String workspaceCode;
-	private final Long triggeredByWorkspaceMemberId;
+	private final Long actorMemberId;
 
 	@Override
 	public String getEntityKey() {

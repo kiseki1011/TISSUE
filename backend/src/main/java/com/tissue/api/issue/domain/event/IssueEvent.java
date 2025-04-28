@@ -25,13 +25,13 @@ public abstract class IssueEvent implements DomainEvent {
 	private final LocalDateTime occurredAt = LocalDateTime.now();
 
 	private final NotificationType notificationType;
-	private final ResourceType entityType;
+	private final ResourceType resourceType;
 
 	private final String workspaceCode;
 	private final Long issueId;
 	private final String issueKey;
 	private final IssueType issueType;
-	private final Long triggeredByWorkspaceMemberId;
+	private final Long actorMemberId;
 
 	@Override
 	public String getEntityKey() {

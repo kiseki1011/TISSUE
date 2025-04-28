@@ -65,7 +65,8 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		RemoveWorkspaceMemberResponse response = RemoveWorkspaceMemberResponse.from(workspaceMember);
 
 		when(workspaceMemberCommandService.removeWorkspaceMember(
-			eq(2L),
+			anyString(),
+			anyLong(),
 			anyLong())
 		)
 			.thenReturn(response);
@@ -97,6 +98,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 		UpdateNicknameResponse response = UpdateNicknameResponse.from(workspaceMember);
 
 		when(workspaceMemberCommandService.updateNickname(
+			anyString(),
 			anyLong(),
 			any(UpdateNicknameRequest.class))
 		)
@@ -129,7 +131,8 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		UpdateRoleResponse response = UpdateRoleResponse.from(target);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+		when(workspaceMemberCommandService.updateRole(
+			anyString(),
 			anyLong(),
 			anyLong(),
 			any(UpdateRoleRequest.class))
@@ -163,7 +166,8 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		UpdateRoleResponse response = UpdateRoleResponse.from(target);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+		when(workspaceMemberCommandService.updateRole(
+			anyString(),
 			anyLong(),
 			anyLong(),
 			any(UpdateRoleRequest.class))

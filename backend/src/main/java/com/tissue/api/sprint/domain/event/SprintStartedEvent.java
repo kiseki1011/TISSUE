@@ -13,7 +13,7 @@ public class SprintStartedEvent extends SprintEvent {
 		Long sprintId,
 		String sprintKey,
 		String workspaceCode,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		super(
 			NotificationType.SPRINT_STARTED,
@@ -21,19 +21,19 @@ public class SprintStartedEvent extends SprintEvent {
 			workspaceCode,
 			sprintId,
 			sprintKey,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 
 	public static SprintStartedEvent createEvent(
 		Sprint sprint,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new SprintStartedEvent(
 			sprint.getId(),
 			sprint.getSprintKey(),
 			sprint.getWorkspaceCode(),
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 }

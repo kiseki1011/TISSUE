@@ -3,7 +3,7 @@ package com.tissue.api.position.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.common.entity.WorkspaceContextBaseEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workspace.domain.Workspace;
 
@@ -27,7 +27,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Position extends WorkspaceContextBaseEntity {
+public class Position extends BaseEntity {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "POSITION_ID")

@@ -40,7 +40,11 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 		// 기본 파라미터 준비
 		// TODO: 굳이 레포지토리로 조회해서 actor를 준비해놔야할까?
 		//  -> 그냥 event에서 꺼내서 사용해도 되지 않을까?
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(event.getTriggeredByWorkspaceMemberId());
+		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
+			event.getActorMemberId(),
+			event.getWorkspaceCode()
+		);
+
 		String actorNickname = actor.getNickname();
 
 		// 파라미터 배열 생성

@@ -27,24 +27,12 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
 
-	List<WorkspaceMember> findAllByIdIn(Set<Long> idList);
+	List<WorkspaceMember> findAllByWorkspaceCodeAndMemberIdIn(String workspaceCode, Set<Long> memberIdList);
 
 	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
 
-	// WorspaceRole에 Comparable을 구현하는 방식은 불가능함!(level 비교 불가)
-	@Deprecated
-	Set<WorkspaceMember> findAllByWorkspaceCodeAndRoleGreaterThanEqual(
-		String workspaceCode,
-		WorkspaceRole role
-	);
-
 	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspaceCode = :workspaceCode AND wm.role IN ('ADMIN', 'OWNER')")
 	Set<WorkspaceMember> findAdminsByWorkspaceCode(@Param("workspaceCode") String workspaceCode);
-
-	Optional<WorkspaceMember> findByWorkspaceCodeAndId(
-		String workspaceCode,
-		Long workspaceMemberId
-	);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

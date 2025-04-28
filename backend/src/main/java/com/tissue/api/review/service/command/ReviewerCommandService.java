@@ -11,8 +11,9 @@ import com.tissue.api.review.domain.event.ReviewerAddedEvent;
 import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
 import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
+import com.tissue.api.review.service.dto.AddReviewerCommand;
+import com.tissue.api.review.service.dto.RemoveReviewerCommand;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
@@ -29,25 +30,27 @@ public class ReviewerCommandService {
 	public AddReviewerResponse addReviewer(
 		String workspaceCode,
 		String issueKey,
-		Long reviewerWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
+		AddReviewerCommand command,
+		Long requesterMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
-			reviewerWorkspaceMemberId,
+			command.memberId(),
 			workspaceCode
 		);
+
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
-			requesterWorkspaceMemberId,
+			requesterMemberId,
 			workspaceCode
 		);
 
-		reviewer.validateRoleIsHigherThanViewer();
-
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssignee(requesterWorkspaceMemberId);
-		}
+		// TODO: Reviewer Authorization Service의 책임으로 옮기기?(서비스 호출)
+		// reviewer.validateRoleIsHigherThanViewer();
+		//
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateIsAssignee(requesterMemberId);
+		// }
 
 		issue.addReviewer(reviewer);
 
@@ -62,24 +65,26 @@ public class ReviewerCommandService {
 	public RemoveReviewerResponse removeReviewer(
 		String workspaceCode,
 		String issueKey,
-		Long reviewerWorkspaceMemberId,
-		Long requesterWorkspaceMemberId
+		RemoveReviewerCommand command,
+		Long requesterMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
-			reviewerWorkspaceMemberId,
+			command.memberId(),
 			workspaceCode
 		);
+
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
-			requesterWorkspaceMemberId,
+			requesterMemberId,
 			workspaceCode
 		);
 
 		// TODO: 굳이 검사할 필요가 있을까? 그냥 MEMBER 이상이면 해제할 수 있도록 해도 괜찮지 않을까?
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateCanRemoveReviewer(requesterWorkspaceMemberId, reviewerWorkspaceMemberId);
-		}
+		// TODO: Reviewer Authorization Service의 책임으로 옮기기?(서비스 호출)
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateCanRemoveReviewer(requesterMemberId, command.memberId());
+		// }
 
 		issue.removeReviewer(reviewer);
 
@@ -90,15 +95,16 @@ public class ReviewerCommandService {
 	public RequestReviewResponse requestReview(
 		String workspaceCode,
 		String issueKey,
-		Long requesterWorkspaceMemberId
+		Long requesterMemberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 
-		issue.validateIsAssignee(requesterWorkspaceMemberId);
+		// TODO: Authorization Service의 책임으로 옮기기?
+		// issue.validateIsAssignee(requesterMemberId);
 		issue.requestReview();
 
 		eventPublisher.publishEvent(
-			ReviewRequestedEvent.createEvent(issue, requesterWorkspaceMemberId)
+			ReviewRequestedEvent.createEvent(issue, requesterMemberId)
 		);
 
 		return RequestReviewResponse.from(issue);

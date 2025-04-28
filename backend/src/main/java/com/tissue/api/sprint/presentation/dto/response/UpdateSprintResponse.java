@@ -26,7 +26,7 @@ public record UpdateSprintResponse(
 			.plannedStartDate(sprint.getPlannedStartDate())
 			.plannedEndDate(sprint.getPlannedEndDate())
 			.updatedAt(sprint.getLastModifiedDate())
-			.updatedBy(sprint.getLastModifiedByWorkspaceMember())
+			.updatedBy(sprint.getLastModifiedBy())
 			.build();
 	}
 }

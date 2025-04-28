@@ -31,7 +31,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		IssueStatus oldStatus,
 		IssueStatus newStatus,
 		Long parentIssueId,
@@ -46,7 +46,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 		this.oldStatus = oldStatus;
 		this.newStatus = newStatus;
@@ -59,7 +59,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 	public static IssueStatusChangedEvent createEvent(
 		Issue issue,
 		IssueStatus oldStatus,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		Issue parentIssue = issue.hasParent() ? issue.getParentIssue() : null;
 
@@ -68,7 +68,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			oldStatus,
 			issue.getStatus(),
 			parentIssue != null ? parentIssue.getId() : null,

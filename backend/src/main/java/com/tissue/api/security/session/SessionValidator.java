@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.dto.PermissionContext;
 import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,7 +26,7 @@ public class SessionValidator {
 	public void validateLoginStatus(HttpServletRequest request) {
 		Optional<HttpSession> session = Optional.ofNullable(request.getSession(false));
 		if (session.isEmpty() || session.map(s -> s.getAttribute(SessionAttributes.LOGIN_MEMBER_ID)).isEmpty()) {
-			throw new UnauthorizedException("Login is required to access.");
+			throw new AuthenticationFailedException("Login is required to access.");
 		}
 	}
 
@@ -37,10 +37,8 @@ public class SessionValidator {
 		if (isInvalidPermission(permissionContext)) {
 			sessionManager.clearPermission(session);
 			throw new ForbiddenOperationException(
-				String.format(
-					"You do not have permission or the permission has expired. permissionType: %s",
-					permissionType
-				)
+				String.format("You do not have permission or the permission has expired. permissionType: %s",
+					permissionType)
 			);
 		}
 	}

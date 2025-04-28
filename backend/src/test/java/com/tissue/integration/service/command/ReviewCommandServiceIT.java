@@ -11,12 +11,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.assignee.presentation.dto.request.AddAssigneeRequest;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.member.domain.Member;
+import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
 import com.tissue.api.workspace.domain.Workspace;
@@ -35,6 +37,10 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	WorkspaceMember workspaceMember2;
 	Story issue;
 
+	Member member1;
+	Member member2;
+	Member ownerMember;
+
 	@BeforeEach
 	public void setUp() {
 		// create workspace
@@ -45,9 +51,12 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// create member
-		Member ownerMember = testDataFixture.createMember("owner");
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
+		// Member ownerMember = testDataFixture.createMember("owner");
+		// Member member1 = testDataFixture.createMember("member1");
+		// Member member2 = testDataFixture.createMember("member2");
+		ownerMember = testDataFixture.createMember("owner");
+		member1 = testDataFixture.createMember("member1");
+		member2 = testDataFixture.createMember("member2");
 
 		// add workspace members
 		owner = testDataFixture.createWorkspaceMember(
@@ -88,18 +97,22 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		Long assigneeWorkspaceMemberId = workspaceMember1.getId();
 		Long reviewerWorkspaceMemberId = workspaceMember2.getId();
 
+		AddAssigneeRequest addAssigneeRequest = new AddAssigneeRequest(member1.getId());
+
 		assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			assigneeWorkspaceMemberId,
+			addAssigneeRequest.toCommand(),
 			owner.getId()
 		);
+
+		AddReviewerRequest addReviewerRequest = new AddReviewerRequest(member2.getId());
 
 		reviewerCommandService.addReviewer(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			reviewerWorkspaceMemberId,
-			requesterWorkspaceMemberId
+			addReviewerRequest.toCommand(),
+			member1.getId()
 		);
 
 		SubmitReviewRequest request = new SubmitReviewRequest(APPROVED, "test review", "test review");
@@ -142,35 +155,6 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThat(response.reviewerId()).isEqualTo(reviewerWorkspaceMemberId);
 		assertThat(response.status()).isEqualTo(APPROVED);
 	}
-
-	// @Test
-	// @Transactional
-	// @DisplayName("리뷰 상태 CHANGES_REQUESTED로 리뷰 작성에 성공하면, 이슈의 상태도 CHANGES_REQUESTED로 변한다")
-	// void creatingReviewWithReviewStatusChangesRequested_ThenIssueStatusIsUpdatedToChangesRequested() {
-	// 	// given
-	// 	Long requesterWorkspaceMemberId = workspaceMember1.getId();
-	// 	Long reviewerWorkspaceMemberId = workspaceMember2.getId();
-	//
-	// 	testDataFixture.addIssueAssignee(issue, workspaceMember1);
-	// 	testDataFixture.addIssueReviewer(issue, workspaceMember2);
-	//
-	// 	issue.updateStatus(IssueStatus.IN_PROGRESS);
-	// 	issue.requestReview();
-	//
-	// 	// when
-	// 	reviewCommandService.submitReview(
-	// 		workspace.getCode(),
-	// 		issue.getIssueKey(),
-	// 		reviewerWorkspaceMemberId,
-	// 		new SubmitReviewRequest(CHANGES_REQUESTED, "test review", "test review")
-	// 	);
-	//
-	// 	// then
-	// 	Issue foundIssue = issueRepository.findByIssueKeyAndWorkspaceCode(issue.getIssueKey(), workspace.getCode())
-	// 		.get();
-	//
-	// 	assertThat(foundIssue.getStatus()).isEqualTo(IssueStatus.CHANGES_REQUESTED);
-	// }
 
 	@Test
 	@Transactional
@@ -260,7 +244,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		assertThatThrownBy(() -> reviewCommandService.submitReview(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			notReviewerWorkspaceMemberId, // workspace member that is not a reviewer
+			member1.getId(), // workspace member that is not a reviewer
 			new SubmitReviewRequest(COMMENT, "test review", "test review")
 		)).isInstanceOf(InvalidOperationException.class);
 	}
