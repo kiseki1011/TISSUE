@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.assignee.presentation.dto.request.AddAssigneeRequest;
 import com.tissue.api.assignee.presentation.dto.request.RemoveAssigneeRequest;
-import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
-import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
+import com.tissue.api.assignee.presentation.dto.response.IssueAssigneeResponse;
 import com.tissue.api.assignee.service.command.AssigneeCommandService;
 import com.tissue.api.assignee.service.dto.AddAssigneeCommand;
 import com.tissue.api.assignee.service.dto.RemoveAssigneeCommand;
@@ -33,7 +32,7 @@ public class AssigneeController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
-	public ApiResponse<AddAssigneeResponse> addAssignee(
+	public ApiResponse<IssueAssigneeResponse> addAssignee(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AddAssigneeRequest request,
@@ -41,7 +40,7 @@ public class AssigneeController {
 	) {
 		AddAssigneeCommand command = request.toCommand();
 
-		AddAssigneeResponse response = assigneeCommandService.addAssignee(
+		IssueAssigneeResponse response = assigneeCommandService.addAssignee(
 			code,
 			issueKey,
 			command,
@@ -54,7 +53,7 @@ public class AssigneeController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping
-	public ApiResponse<RemoveAssigneeResponse> removeAssignee(
+	public ApiResponse<IssueAssigneeResponse> removeAssignee(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@RequestBody @Valid RemoveAssigneeRequest request,
@@ -62,7 +61,7 @@ public class AssigneeController {
 	) {
 		RemoveAssigneeCommand command = request.toCommand();
 
-		RemoveAssigneeResponse response = assigneeCommandService.removeAssignee(
+		IssueAssigneeResponse response = assigneeCommandService.removeAssignee(
 			code,
 			issueKey,
 			command,

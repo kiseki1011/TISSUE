@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.tissue.api.assignee.presentation.dto.request.AddAssigneeRequest;
 import com.tissue.api.assignee.presentation.dto.request.RemoveAssigneeRequest;
-import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
-import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
+import com.tissue.api.assignee.presentation.dto.response.IssueAssigneeResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.types.Story;
@@ -95,14 +94,14 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		AddAssigneeRequest addAssigneeRequest2 = new AddAssigneeRequest(member2.getId());
 
 		// when
-		AddAssigneeResponse response1 = assigneeCommandService.addAssignee(
+		IssueAssigneeResponse response1 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			addAssigneeRequest1.toCommand(),
 			assignRequesterWorkspaceMemberId
 		);
 
-		AddAssigneeResponse response2 = assigneeCommandService.addAssignee(
+		IssueAssigneeResponse response2 = assigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			addAssigneeRequest2.toCommand(),
@@ -110,8 +109,8 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response1.workspaceMemberId()).isEqualTo(workspaceMember1.getId());
-		assertThat(response2.workspaceMemberId()).isEqualTo(workspaceMember2.getId());
+		assertThat(response1.memberId()).isEqualTo(member1.getId());
+		assertThat(response2.memberId()).isEqualTo(member2.getId());
 	}
 
 	@Test
@@ -163,7 +162,7 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when
 		RemoveAssigneeRequest removeAssigneeRequest = new RemoveAssigneeRequest(member2.getId());
 
-		RemoveAssigneeResponse response = assigneeCommandService.removeAssignee(
+		IssueAssigneeResponse response = assigneeCommandService.removeAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			removeAssigneeRequest.toCommand(),
@@ -171,7 +170,7 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(assigneeWorkspaceMemberId2);
+		assertThat(response.memberId()).isEqualTo(member2.getId());
 	}
 
 	@Test

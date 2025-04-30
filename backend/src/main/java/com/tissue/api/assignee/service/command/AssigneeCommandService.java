@@ -6,8 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.assignee.domain.event.IssueAssignedEvent;
 import com.tissue.api.assignee.domain.event.IssueUnassignedEvent;
-import com.tissue.api.assignee.presentation.dto.response.AddAssigneeResponse;
-import com.tissue.api.assignee.presentation.dto.response.RemoveAssigneeResponse;
+import com.tissue.api.assignee.presentation.dto.response.IssueAssigneeResponse;
 import com.tissue.api.assignee.service.dto.AddAssigneeCommand;
 import com.tissue.api.assignee.service.dto.RemoveAssigneeCommand;
 import com.tissue.api.issue.domain.Issue;
@@ -27,7 +26,7 @@ public class AssigneeCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public AddAssigneeResponse addAssignee(
+	public IssueAssigneeResponse addAssignee(
 		String workspaceCode,
 		String issueKey,
 		AddAssigneeCommand command,
@@ -46,11 +45,11 @@ public class AssigneeCommandService {
 			IssueAssignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
 		);
 
-		return AddAssigneeResponse.from(assignee);
+		return IssueAssigneeResponse.from(assignee, issueKey);
 	}
 
 	@Transactional
-	public RemoveAssigneeResponse removeAssignee(
+	public IssueAssigneeResponse removeAssignee(
 		String workspaceCode,
 		String issueKey,
 		RemoveAssigneeCommand command,
@@ -78,6 +77,6 @@ public class AssigneeCommandService {
 			IssueUnassignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
 		);
 
-		return RemoveAssigneeResponse.from(assignee);
+		return IssueAssigneeResponse.from(assignee, issueKey);
 	}
 }
