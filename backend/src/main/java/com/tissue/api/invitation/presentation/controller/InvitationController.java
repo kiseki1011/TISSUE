@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.PageResponse;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
-import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
 import com.tissue.api.invitation.service.command.InvitationCommandService;
 import com.tissue.api.invitation.service.query.InvitationQueryService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -36,12 +35,12 @@ public class InvitationController {
 
 	@LoginRequired
 	@GetMapping
-	public ApiResponse<PageResponse<InvitationResponse>> getMyInvitations(
+	public ApiResponse<PageResponse<InvitationDetail>> getMyInvitations(
 		@ResolveLoginMember Long loginMemberId,
 		InvitationSearchCondition searchCondition,
 		@PageableDefault(size = 20, sort = "createdDate", direction = Sort.Direction.DESC) Pageable pageable
 	) {
-		Page<InvitationResponse> page = invitationQueryService.getInvitations(
+		Page<InvitationDetail> page = invitationQueryService.getInvitations(
 			loginMemberId,
 			searchCondition,
 			pageable
@@ -51,11 +50,11 @@ public class InvitationController {
 
 	@LoginRequired
 	@PostMapping("/{invitationId}/accept")
-	public ApiResponse<AcceptInvitationResponse> acceptInvitation(
+	public ApiResponse<InvitationResponse> acceptInvitation(
 		@PathVariable Long invitationId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AcceptInvitationResponse response = invitationCommandService.acceptInvitation(
+		InvitationResponse response = invitationCommandService.acceptInvitation(
 			loginMemberId,
 			invitationId
 		);
@@ -64,11 +63,11 @@ public class InvitationController {
 
 	@LoginRequired
 	@PostMapping("/{invitationId}/reject")
-	public ApiResponse<RejectInvitationResponse> rejectInvitation(
+	public ApiResponse<InvitationResponse> rejectInvitation(
 		@PathVariable Long invitationId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RejectInvitationResponse response = invitationCommandService.rejectInvitation(
+		InvitationResponse response = invitationCommandService.rejectInvitation(
 			loginMemberId,
 			invitationId
 		);

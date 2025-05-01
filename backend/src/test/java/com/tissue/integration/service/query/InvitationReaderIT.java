@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
-import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
@@ -51,7 +51,7 @@ class InvitationReaderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		Page<InvitationResponse> result = invitationQueryService.getInvitations(
+		Page<InvitationDetail> result = invitationQueryService.getInvitations(
 			member.getId(),
 			searchCondition,
 			pageable
@@ -88,7 +88,7 @@ class InvitationReaderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		Page<InvitationResponse> result = invitationQueryService.getInvitations(
+		Page<InvitationDetail> result = invitationQueryService.getInvitations(
 			member.getId(),
 			searchCondition,
 			pageable

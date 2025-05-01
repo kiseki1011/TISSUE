@@ -9,8 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
-import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
 import com.tissue.api.util.RandomNicknameGenerator;
@@ -33,7 +32,7 @@ public class InvitationCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public AcceptInvitationResponse acceptInvitation(
+	public InvitationResponse acceptInvitation(
 		Long memberId,
 		Long invitationId
 	) {
@@ -54,18 +53,18 @@ public class InvitationCommandService {
 			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
 		);
 
-		return AcceptInvitationResponse.from(invitation);
+		return InvitationResponse.from(invitation);
 	}
 
 	@Transactional
-	public RejectInvitationResponse rejectInvitation(
+	public InvitationResponse rejectInvitation(
 		Long memberId,
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.updateStatus(InvitationStatus.REJECTED);
 
-		return RejectInvitationResponse.from(invitation);
+		return InvitationResponse.from(invitation);
 	}
 
 	@Transactional
@@ -85,6 +84,9 @@ public class InvitationCommandService {
 		Invitation invitation = invitationReader.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
+		// TODO: InvitationValidator를 InvitationValidationService로 이름 바꾸기?
+		//  - 또는 validation을 Invitation 엔티티에서 진행?
+		//  - 그런데 다른 도메인과 연결되었기 때문에 도메인 서비스로 분리하는게 좋을 듯
 		invitationValidator.validateInvitation(memberId, workspaceCode);
 
 		return invitation;
