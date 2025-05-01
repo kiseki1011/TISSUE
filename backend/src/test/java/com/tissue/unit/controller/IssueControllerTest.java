@@ -20,9 +20,8 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateEpicResponse;
-import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class IssueControllerTest extends ControllerTestHelper {
@@ -57,6 +56,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	void createEpic_ValidRequest_ReturnsCreatedResponse() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
+		String issueKey = "ISSUE-1";
 
 		CreateEpicRequest request = CreateEpicRequest.builder()
 			.common(CommonIssueCreateFields.builder()
@@ -69,13 +69,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.businessGoal("Business Goal")
 			.build();
 
-		CreateEpicResponse response = CreateEpicResponse.builder()
-			.issueId(1L)
-			.workspaceCode(workspaceCode)
-			.title("Epic Title")
-			.content("Epic Content")
-			.businessGoal(request.businessGoal())
-			.build();
+		IssueResponse response = new IssueResponse(workspaceCode, issueKey);
 
 		when(issueCommandService.createIssue(anyString(), anyLong(), any(CreateIssueRequest.class)))
 			.thenReturn(response);
@@ -85,10 +79,9 @@ class IssueControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isCreated())
-			.andExpect(jsonPath("$.data.issueId").value(1L))
-			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.title").value("Epic Title"))
-			.andExpect(jsonPath("$.message").value("EPIC issue created."));
+			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.issueKey").value(issueKey))
+			.andExpect(jsonPath("$.message").value("Issue created."));
 	}
 
 	@Test
@@ -112,20 +105,7 @@ class IssueControllerTest extends ControllerTestHelper {
 			.acceptanceCriteria("Updated Acceptance Criteria")
 			.build();
 
-		UpdateStoryResponse response = UpdateStoryResponse.builder()
-			.issueId(1L)
-			.issueKey(issueKey)
-			.workspaceCode(workspaceCode)
-			.updaterId(100L)
-			.updatedAt(now)
-			.title("Updated Title")
-			.content("Updated Content")
-			.summary("Updated Summary")
-			.priority(IssuePriority.HIGH)
-			.dueAt(dueAt)
-			.userStory("Updated User Story")
-			.acceptanceCriteria("Updated Acceptance Criteria")
-			.build();
+		IssueResponse response = new IssueResponse(workspaceCode, issueKey);
 
 		when(issueCommandService.updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
 			.thenReturn(response);
@@ -136,16 +116,8 @@ class IssueControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Issue details updated."))
-			.andExpect(jsonPath("$.data.issueId").value(1L))
 			.andExpect(jsonPath("$.data.issueKey").value(issueKey))
 			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
-			.andExpect(jsonPath("$.data.updaterId").value(100L))
-			.andExpect(jsonPath("$.data.title").value("Updated Title"))
-			.andExpect(jsonPath("$.data.content").value("Updated Content"))
-			.andExpect(jsonPath("$.data.summary").value("Updated Summary"))
-			.andExpect(jsonPath("$.data.priority").value("HIGH"))
-			.andExpect(jsonPath("$.data.userStory").value("Updated User Story"))
-			.andExpect(jsonPath("$.data.acceptanceCriteria").value("Updated Acceptance Criteria"))
 			.andDo(print());
 
 		verify(issueCommandService).updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request));

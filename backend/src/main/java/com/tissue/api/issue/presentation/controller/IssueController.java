@@ -17,10 +17,8 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -43,26 +41,26 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<CreateIssueResponse> createIssue(
+	public ApiResponse<IssueResponse> createIssue(
 		@PathVariable String workspaceCode,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		CreateIssueResponse response = issueCommandService.createIssue(workspaceCode, loginMemberId, request);
+		IssueResponse response = issueCommandService.createIssue(workspaceCode, loginMemberId, request);
 
-		return ApiResponse.ok(response.getType() + " issue created.", response);
+		return ApiResponse.ok("Issue created.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/status")
-	public ApiResponse<UpdateIssueStatusResponse> updateIssueStatus(
+	public ApiResponse<IssueResponse> updateIssueStatus(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateIssueStatusRequest request
 	) {
-		UpdateIssueStatusResponse response = issueCommandService.updateIssueStatus(
+		IssueResponse response = issueCommandService.updateIssueStatus(
 			workspaceCode,
 			issueKey,
 			loginMemberId,
@@ -75,13 +73,13 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
-	public ApiResponse<UpdateIssueResponse> updateIssueDetail(
+	public ApiResponse<IssueResponse> updateIssueDetail(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateIssueRequest request
 	) {
-		UpdateIssueResponse response = issueCommandService.updateIssue(
+		IssueResponse response = issueCommandService.updateIssue(
 			workspaceCode,
 			issueKey,
 			loginMemberId,
