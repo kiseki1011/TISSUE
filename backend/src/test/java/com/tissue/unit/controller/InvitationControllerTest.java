@@ -25,8 +25,8 @@ import org.springframework.mock.web.MockHttpSession;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
 import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
+import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
@@ -49,7 +49,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		// given
 		Long invitationId = 1L;
 
-		AcceptInvitationResponse response = new AcceptInvitationResponse(invitationId, null, null);
+		InvitationResponse response = new InvitationResponse("TESTCODE", invitationId);
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
