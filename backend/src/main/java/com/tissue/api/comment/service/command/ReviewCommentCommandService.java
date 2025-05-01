@@ -70,7 +70,7 @@ public class ReviewCommentCommandService {
 		// 	ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
 		// );
 
-		return ReviewCommentResponse.from(comment);
+		return ReviewCommentResponse.from(issue, savedComment);
 	}
 
 	@Transactional
@@ -82,6 +82,7 @@ public class ReviewCommentCommandService {
 		UpdateReviewCommentRequest request,
 		Long memberId
 	) {
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
@@ -90,17 +91,18 @@ public class ReviewCommentCommandService {
 		comment.validateCanEdit(workspaceMember);
 		comment.updateContent(request.content());
 
-		return ReviewCommentResponse.from(comment);
+		return ReviewCommentResponse.from(issue, comment);
 	}
 
 	@Transactional
-	public void deleteComment(
+	public ReviewCommentResponse deleteComment(
 		String workspaceCode,
 		String issueKey,
 		Long reviewId,
 		Long commentId,
 		Long memberId
 	) {
+		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
@@ -108,5 +110,7 @@ public class ReviewCommentCommandService {
 
 		comment.validateCanEdit(workspaceMember);
 		comment.softDelete(memberId);
+
+		return ReviewCommentResponse.from(issue, comment);
 	}
 }

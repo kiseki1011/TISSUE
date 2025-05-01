@@ -1,43 +1,23 @@
 package com.tissue.api.comment.presentation.dto.response;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.tissue.api.comment.domain.ReviewComment;
-import com.tissue.api.comment.domain.enums.CommentStatus;
+import com.tissue.api.issue.domain.Issue;
 
 import lombok.Builder;
 
 @Builder
 public record ReviewCommentResponse(
-	Long id,
-	String content,
-	AuthorInfo author,
-	LocalDateTime createdAt,
-	boolean isEdited,
-	CommentStatus status,
-	List<ReviewCommentResponse> childComments
+	String workspaceCode,
+	String issueKey,
+	Long reviewId,
+	Long commentId
 ) {
-	public record AuthorInfo(
-		Long workspaceMemberId,
-		String nickname
-	) {
-	}
-
-	public static ReviewCommentResponse from(ReviewComment comment) {
+	public static ReviewCommentResponse from(Issue issue, ReviewComment comment) {
 		return ReviewCommentResponse.builder()
-			.id(comment.getId())
-			.content(comment.getContent())
-			.author(new AuthorInfo(
-				comment.getAuthor().getId(),
-				comment.getAuthor().getNickname()
-			))
-			.createdAt(comment.getCreatedDate())
-			.isEdited(comment.isEdited())
-			.status(comment.getStatus())
-			.childComments(comment.getChildComments().stream()
-				.map(child -> from((ReviewComment)child))
-				.toList())
+			.workspaceCode(issue.getWorkspaceCode())
+			.issueKey(issue.getIssueKey())
+			.reviewId(comment.getReview().getId())
+			.commentId(comment.getId())
 			.build();
 	}
 }

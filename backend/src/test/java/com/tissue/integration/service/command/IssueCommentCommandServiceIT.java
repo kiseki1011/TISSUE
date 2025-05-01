@@ -93,8 +93,11 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
-		assertThat(response.content()).isEqualTo("test comment");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+
+		Comment comment = commentRepository.findById(1L).get();
+		assertThat(response.commentId()).isEqualTo(comment.getId());
 	}
 
 	@Test
@@ -122,8 +125,12 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.content()).isEqualTo("reply comment");
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+
+		Comment comment = commentRepository.findById(2L).get();
+		assertThat(response.commentId()).isEqualTo(comment.getId());
+		assertThat(comment.getContent()).isEqualTo("reply comment");
 	}
 
 	@Test
@@ -181,8 +188,13 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
-		assertThat(response.content()).isEqualTo("update comment");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+
+		Comment updatedComment = commentRepository.findById(1L).get();
+
+		assertThat(response.commentId()).isEqualTo(updatedComment.getId());
+		assertThat(updatedComment.getContent()).isEqualTo("update comment");
 	}
 
 	@Test

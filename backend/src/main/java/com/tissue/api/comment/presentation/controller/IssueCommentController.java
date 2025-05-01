@@ -83,25 +83,25 @@ public class IssueCommentController {
 			loginMemberId
 		);
 
-		return ApiResponse.created("Comment updated.", response);
+		return ApiResponse.ok("Comment updated.", response);
 	}
 
 	@DeleteMapping("/{commentId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<Void> deleteComment(
+	public ApiResponse<IssueCommentResponse> deleteComment(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long commentId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		issueCommentCommandService.deleteComment(
+		IssueCommentResponse response = issueCommentCommandService.deleteComment(
 			workspaceCode,
 			issueKey,
 			commentId,
 			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Comment deleted.");
+		return ApiResponse.ok("Comment deleted.", response);
 	}
 
 }

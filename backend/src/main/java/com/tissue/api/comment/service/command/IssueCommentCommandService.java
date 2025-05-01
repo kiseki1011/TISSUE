@@ -56,7 +56,7 @@ public class IssueCommentCommandService {
 			IssueCommentAddedEvent.createEvent(issue, savedComment, memberId)
 		);
 
-		return IssueCommentResponse.from(comment);
+		return IssueCommentResponse.from(savedComment);
 	}
 
 	@Transactional
@@ -83,7 +83,7 @@ public class IssueCommentCommandService {
 	}
 
 	@Transactional
-	public void deleteComment(
+	public IssueCommentResponse deleteComment(
 		String workspaceCode,
 		String issueKey,
 		Long commentId,
@@ -100,5 +100,7 @@ public class IssueCommentCommandService {
 
 		comment.validateCanEdit(workspaceMember);
 		comment.softDelete(memberId);
+
+		return IssueCommentResponse.from(comment);
 	}
 }
