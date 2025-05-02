@@ -6,9 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.repository.IssueRelationRepository;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
-import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
 import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
@@ -21,10 +21,11 @@ public class IssueRelationCommandService {
 
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
+	private final IssueRelationRepository relationRepository;
 	private final CircularDependencyChecker circularDependencyChecker;
 
 	@Transactional
-	public CreateIssueRelationResponse createRelation(
+	public IssueRelationResponse createRelation(
 		String workspaceCode,
 		String sourceIssueKey,
 		String targetIssueKey,
@@ -45,13 +46,14 @@ public class IssueRelationCommandService {
 			circularDependencyChecker.validateNoCircularDependency(sourceIssue, targetIssue);
 		}
 
-		IssueRelation.createRelation(sourceIssue, targetIssue, request.relationType());
+		IssueRelation relation = IssueRelation.createRelation(sourceIssue, targetIssue, request.relationType());
+		relationRepository.save(relation);
 
-		return CreateIssueRelationResponse.from(sourceIssue, targetIssue, request.relationType());
+		return IssueRelationResponse.from(sourceIssue, targetIssue, relation);
 	}
 
 	@Transactional
-	public RemoveIssueRelationResponse removeRelation(
+	public void removeRelation(
 		String workspaceCode,
 		String sourceIssueKey,
 		String targetIssueKey,
@@ -68,7 +70,5 @@ public class IssueRelationCommandService {
 		// }
 
 		IssueRelation.removeRelation(sourceIssue, targetIssue);
-
-		return RemoveIssueRelationResponse.from(sourceIssue, targetIssue);
 	}
 }

@@ -1,16 +1,17 @@
 package com.tissue.api.issue.presentation.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
-import com.tissue.api.issue.presentation.dto.response.CreateIssueRelationResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveIssueRelationResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
 import com.tissue.api.issue.service.command.IssueRelationCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -30,14 +31,14 @@ public class IssueRelationController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{targetIssueKey}")
-	public ApiResponse<CreateIssueRelationResponse> createRelation(
+	public ApiResponse<IssueRelationResponse> createRelation(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable String targetIssueKey,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateIssueRelationRequest request
 	) {
-		CreateIssueRelationResponse response = issueRelationCommandService.createRelation(
+		IssueRelationResponse response = issueRelationCommandService.createRelation(
 			code,
 			issueKey,
 			targetIssueKey,
@@ -49,21 +50,22 @@ public class IssueRelationController {
 	}
 
 	@LoginRequired
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{targetIssueKey}")
-	public ApiResponse<RemoveIssueRelationResponse> removeRelation(
+	public ApiResponse<Void> removeRelation(
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@PathVariable String targetIssueKey,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RemoveIssueRelationResponse response = issueRelationCommandService.removeRelation(
+		issueRelationCommandService.removeRelation(
 			code,
 			issueKey,
 			targetIssueKey,
 			loginMemberId
 		);
 
-		return ApiResponse.ok("Issue relation removed.", response);
+		return ApiResponse.okWithNoContent("Issue relation removed.");
 	}
 }

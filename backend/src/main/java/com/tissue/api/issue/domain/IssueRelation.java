@@ -46,6 +46,7 @@ public class IssueRelation extends BaseEntity {
 		Issue targetIssue,
 		IssueRelationType relationType
 	) {
+		// TODO: 생성자는 최대한 순수하게 유지하고, validate 로직을 createRelation으로 옮길까?
 		validateSelfReference(sourceIssue, targetIssue);
 		validateRelationExists(sourceIssue, targetIssue);
 
@@ -54,7 +55,7 @@ public class IssueRelation extends BaseEntity {
 		this.relationType = relationType != null ? relationType : IssueRelationType.RELEVANT;
 	}
 
-	public static void createRelation(
+	public static IssueRelation createRelation(
 		Issue sourceIssue,
 		Issue targetIssue,
 		IssueRelationType type
@@ -68,6 +69,8 @@ public class IssueRelation extends BaseEntity {
 		IssueRelation oppositeRelation = new IssueRelation(targetIssue, sourceIssue, type.getOpposite());
 		targetIssue.getOutgoingRelations().add(oppositeRelation);
 		sourceIssue.getIncomingRelations().add(oppositeRelation);
+
+		return relation;
 	}
 
 	public static void removeRelation(Issue sourceIssue, Issue targetIssue) {
