@@ -16,9 +16,9 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
-import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.WatchIssueResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -48,7 +48,7 @@ public class IssueCommandService {
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);
 
-		addWatcher(workspaceCode, savedIssue.getIssueKey(), memberId);
+		watchIssue(workspaceCode, savedIssue.getIssueKey(), memberId);
 
 		eventPublisher.publishEvent(
 			IssueCreatedEvent.createEvent(issue, memberId)
@@ -164,31 +164,31 @@ public class IssueCommandService {
 	}
 
 	@Transactional
-	public AddWatcherResponse addWatcher(
+	public WatchIssueResponse watchIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.addWatcher(workspaceMember);
 
-		return AddWatcherResponse.from(workspaceMember, issue);
+		return WatchIssueResponse.from(issue, memberId);
 	}
 
 	@Transactional
-	public void removeWatcher(
+	public WatchIssueResponse unwatchIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.removeWatcher(workspaceMember);
+
+		return WatchIssueResponse.from(issue, memberId);
 	}
 
 	// @Transactional

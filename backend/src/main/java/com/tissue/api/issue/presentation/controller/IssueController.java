@@ -15,9 +15,9 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
-import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.WatchIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -126,13 +126,13 @@ public class IssueController {
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PostMapping("{issueKey}/watcher")
-	public ApiResponse<AddWatcherResponse> addWatcher(
+	@PostMapping("{issueKey}/watch")
+	public ApiResponse<WatchIssueResponse> watchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AddWatcherResponse response = issueCommandService.addWatcher(
+		WatchIssueResponse response = issueCommandService.watchIssue(
 			workspaceCode,
 			issueKey,
 			loginMemberId
@@ -143,18 +143,18 @@ public class IssueController {
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@DeleteMapping("{issueKey}/watcher")
-	public ApiResponse<Void> removeWatcher(
+	@DeleteMapping("{issueKey}/watch")
+	public ApiResponse<WatchIssueResponse> unwatchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		issueCommandService.removeWatcher(
+		WatchIssueResponse response = issueCommandService.unwatchIssue(
 			workspaceCode,
 			issueKey,
 			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Watcher added.");
+		return ApiResponse.ok("Watcher removed.", response);
 	}
 }
