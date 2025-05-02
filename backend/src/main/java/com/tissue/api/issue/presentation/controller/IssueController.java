@@ -16,9 +16,8 @@ import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
 import com.tissue.api.issue.service.command.IssueCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -48,7 +47,7 @@ public class IssueController {
 	) {
 		IssueResponse response = issueCommandService.createIssue(workspaceCode, loginMemberId, request);
 
-		return ApiResponse.ok("Issue created.", response);
+		return ApiResponse.created("Issue created.", response);
 	}
 
 	@LoginRequired
@@ -92,13 +91,13 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
-	public ApiResponse<AssignParentIssueResponse> assignParentIssue(
+	public ApiResponse<ParentIssueResponse> assignParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid AssignParentIssueRequest request
 	) {
-		AssignParentIssueResponse response = issueCommandService.assignParentIssue(
+		ParentIssueResponse response = issueCommandService.assignParentIssue(
 			workspaceCode,
 			issueKey,
 			loginMemberId,
@@ -111,12 +110,12 @@ public class IssueController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
-	public ApiResponse<RemoveParentIssueResponse> removeParentIssue(
+	public ApiResponse<ParentIssueResponse> removeParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
+		ParentIssueResponse response = issueCommandService.removeParentIssue(
 			workspaceCode,
 			issueKey,
 			loginMemberId

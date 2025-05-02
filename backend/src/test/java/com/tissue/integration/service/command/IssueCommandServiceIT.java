@@ -20,9 +20,8 @@ import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFie
 import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -342,16 +341,15 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+		ParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			new AssignParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		// then
 		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(parentIssue.getIssueKey());
-		assertThat(assignParentResponse.parentIssueId()).isEqualTo(parentIssue.getId());
 	}
 
 	@Test
@@ -496,16 +494,17 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+		ParentIssueResponse response = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			new AssignParentIssueRequest(newParentIssue.getIssueKey())
 		);
 
 		// then
-		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(newParentIssue.getIssueKey());
-		assertThat(assignParentResponse.parentIssueId()).isEqualTo(newParentIssue.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
+		assertThat(response.parentIssueKey()).isEqualTo(newParentIssue.getIssueKey());
 	}
 
 	@Test
@@ -533,17 +532,17 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		childIssue.updateParentIssue(parentIssue);
 
 		// when
-		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
+		ParentIssueResponse response = issueCommandService.removeParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId()
+			member1.getId()
 		);
+
+		log.info("response = {}", response);
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
-
-		Issue updatedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(updatedIssue.getParentIssue()).isNull();
+		assertThat(response.parentIssueKey()).isNull();
 	}
 
 	@Test

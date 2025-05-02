@@ -17,9 +17,8 @@ import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -113,7 +112,7 @@ public class IssueCommandService {
 	}
 
 	@Transactional
-	public AssignParentIssueResponse assignParentIssue(
+	public ParentIssueResponse assignParentIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId,
@@ -135,11 +134,11 @@ public class IssueCommandService {
 			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, memberId)
 		);
 
-		return AssignParentIssueResponse.from(childIssue);
+		return ParentIssueResponse.from(childIssue);
 	}
 
 	@Transactional
-	public RemoveParentIssueResponse removeParentIssue(
+	public ParentIssueResponse removeParentIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
@@ -161,7 +160,7 @@ public class IssueCommandService {
 			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, memberId)
 		);
 
-		return RemoveParentIssueResponse.from(issue);
+		return ParentIssueResponse.from(issue);
 	}
 
 	@Transactional

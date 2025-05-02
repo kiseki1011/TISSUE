@@ -19,9 +19,8 @@ import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class IssueControllerTest extends ControllerTestHelper {
@@ -159,12 +158,10 @@ class IssueControllerTest extends ControllerTestHelper {
 		String parentIssueKey = "ISSUE-999";
 		AssignParentIssueRequest request = new AssignParentIssueRequest(parentIssueKey);
 
-		AssignParentIssueResponse response = AssignParentIssueResponse.builder()
-			.issueId(1L)
+		ParentIssueResponse response = ParentIssueResponse.builder()
+			.workspaceCode(workspaceCode)
 			.issueKey(issueKey)
-			.parentIssueId(2L)
 			.parentIssueKey(parentIssueKey)
-			.assignedAt(LocalDateTime.now())
 			.build();
 
 		when(issueCommandService.assignParentIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
@@ -176,9 +173,8 @@ class IssueControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Parent issue assigned."))
-			.andExpect(jsonPath("$.data.issueId").value(response.issueId()))
+			.andExpect(jsonPath("$.data.workspaceCode").value(response.workspaceCode()))
 			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
-			.andExpect(jsonPath("$.data.parentIssueId").value(response.parentIssueId()))
 			.andExpect(jsonPath("$.data.parentIssueKey").value(response.parentIssueKey()))
 			.andDo(print());
 	}
@@ -190,10 +186,10 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "WORKSPACE";
 		String issueKey = "ISSUE-1";
 
-		RemoveParentIssueResponse response = RemoveParentIssueResponse.builder()
-			.issueId(1L)
+		ParentIssueResponse response = ParentIssueResponse.builder()
+			.workspaceCode(workspaceCode)
 			.issueKey(issueKey)
-			.removedAt(LocalDateTime.now())
+			.parentIssueKey(null)
 			.build();
 
 		when(issueCommandService.removeParentIssue(eq(workspaceCode), eq(issueKey), anyLong()))
@@ -204,7 +200,6 @@ class IssueControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Parent issue relationship removed."))
-			.andExpect(jsonPath("$.data.issueId").value(response.issueId()))
 			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
 			.andDo(print());
 	}
