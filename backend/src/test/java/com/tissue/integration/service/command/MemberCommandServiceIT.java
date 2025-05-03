@@ -16,8 +16,7 @@ import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -46,13 +45,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		SignupMemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request);
 
 		// then
 		Member foundMember = findMemberById(1L);
 
 		assertThat(foundMember.getId()).isEqualTo(response.memberId());
-		assertThat(foundMember.getEmail()).isEqualTo(response.email());
 	}
 
 	@Test
@@ -190,7 +188,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
@@ -219,7 +217,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
@@ -251,7 +249,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());

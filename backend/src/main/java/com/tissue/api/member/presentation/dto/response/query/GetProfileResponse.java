@@ -1,4 +1,4 @@
-package com.tissue.api.member.presentation.dto.response;
+package com.tissue.api.member.presentation.dto.response.query;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

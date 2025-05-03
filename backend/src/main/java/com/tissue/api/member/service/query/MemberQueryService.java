@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberQueryRepository;
 import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 
 import lombok.RequiredArgsConstructor;
 

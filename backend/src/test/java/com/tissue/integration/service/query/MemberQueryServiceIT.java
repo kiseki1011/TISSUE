@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class MemberQueryServiceIT extends ServiceIntegrationTestHelper {

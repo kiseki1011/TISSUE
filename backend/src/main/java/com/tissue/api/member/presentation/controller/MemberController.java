@@ -18,10 +18,8 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.member.validator.MemberValidator;
@@ -63,35 +61,35 @@ public class MemberController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<SignupMemberResponse> signup(
+	public ApiResponse<MemberResponse> signup(
 		@Valid @RequestBody SignupMemberRequest request
 	) {
-		SignupMemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
 	}
 
 	@LoginRequired
 	@PatchMapping
-	public ApiResponse<UpdateMemberInfoResponse> updateMemberInfo(
+	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberInfoRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
 	@LoginRequired
 	@PatchMapping("/email")
-	public ApiResponse<UpdateMemberEmailResponse> updateMemberEmail(
+	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
 		memberValidator.validateMemberPassword(request.password(), loginMemberId);
-		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateEmail(request, loginMemberId);
 		sessionManager.updateSessionEmail(session, request.newEmail());
 
 		return ApiResponse.ok("Member email updated.", response);
@@ -99,23 +97,23 @@ public class MemberController {
 
 	@LoginRequired
 	@PatchMapping("/password")
-	public ApiResponse<Void> updateMemberPassword(
+	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@ResolveLoginMember Long loginMemberId
 	) {
 		memberValidator.validateMemberPassword(request.originalPassword(), loginMemberId);
-		memberCommandService.updatePassword(request, loginMemberId);
+		MemberResponse response = memberCommandService.updatePassword(request, loginMemberId);
 
-		return ApiResponse.okWithNoContent("Member password updated.");
+		return ApiResponse.ok("Member password updated.", response);
 	}
 
 	/**
 	 * Todo
-	 *  - hard delete X
+	 *  - soft delete으로 변경
 	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
 	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 *  - soft delete으로 변경 시 MemberResponse 사용
 	 */
 	@LoginRequired
 	@DeleteMapping

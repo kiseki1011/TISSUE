@@ -10,9 +10,7 @@ import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
 
@@ -32,7 +30,7 @@ public class MemberCommandService {
 	 *  - 회원 가입도 동시성 관련 처리 필요
 	 */
 	@Transactional
-	public SignupMemberResponse signup(
+	public MemberResponse signup(
 		SignupMemberRequest request
 	) {
 		memberValidator.validateLoginIdIsUnique(request.loginId());
@@ -43,11 +41,11 @@ public class MemberCommandService {
 
 		Member savedMember = memberRepository.save(member);
 
-		return SignupMemberResponse.from(savedMember);
+		return MemberResponse.from(savedMember);
 	}
 
 	@Transactional
-	public UpdateMemberInfoResponse updateInfo(
+	public MemberResponse updateInfo(
 		UpdateMemberInfoRequest request,
 		Long memberId
 	) {
@@ -55,11 +53,11 @@ public class MemberCommandService {
 
 		updateMemberInfoIfPresent(request, member);
 
-		return UpdateMemberInfoResponse.from(member);
+		return MemberResponse.from(member);
 	}
 
 	@Transactional
-	public UpdateMemberEmailResponse updateEmail(
+	public MemberResponse updateEmail(
 		UpdateMemberEmailRequest request,
 		Long memberId
 	) {
@@ -70,11 +68,11 @@ public class MemberCommandService {
 
 		member.updateEmail(newEmail);
 
-		return UpdateMemberEmailResponse.from(member);
+		return MemberResponse.from(member);
 	}
 
 	@Transactional
-	public void updatePassword(
+	public MemberResponse updatePassword(
 		UpdateMemberPasswordRequest request,
 		Long memberId
 	) {
@@ -83,6 +81,8 @@ public class MemberCommandService {
 		String encodedNewPassword = passwordEncoder.encode(request.newPassword());
 
 		member.updatePassword(encodedNewPassword);
+
+		return MemberResponse.from(member);
 	}
 
 	/**
@@ -103,6 +103,7 @@ public class MemberCommandService {
 		memberRepository.delete(member);
 	}
 
+	// TODO: 이 방식을 개선
 	private void updateMemberInfoIfPresent(
 		UpdateMemberInfoRequest request,
 		Member member

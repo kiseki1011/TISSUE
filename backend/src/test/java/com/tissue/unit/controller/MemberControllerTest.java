@@ -30,9 +30,8 @@ import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.helper.ControllerTestHelper;
 
@@ -248,20 +247,12 @@ class MemberControllerTest extends ControllerTestHelper {
 			.biography("Im a backend developer")
 			.build();
 
-		Member member = Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
-			.build();
+		Long memberId = 1L;
+
+		MemberResponse response = new MemberResponse(memberId);
 
 		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
-			.thenReturn(UpdateMemberInfoResponse.from(member));
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
@@ -269,7 +260,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member info updated."))
-			.andExpect(jsonPath("$.data.memberId").value(member.getId()))
+			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
 
@@ -281,20 +272,10 @@ class MemberControllerTest extends ControllerTestHelper {
 			.birthDate(LocalDate.of(2995, 1, 1))
 			.build();
 
-		Member member = Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
-			.build();
+		Long memberId = 1L;
 
 		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
-			.thenReturn(UpdateMemberInfoResponse.from(member));
+			.thenReturn(new MemberResponse(memberId));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
@@ -327,13 +308,12 @@ class MemberControllerTest extends ControllerTestHelper {
 	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		Long memberId = 1L;
 
-		UpdateMemberEmailResponse response = UpdateMemberEmailResponse.from(
-			Member.builder()
-				.email("newemail@test.com")
-				.build());
+		MemberResponse response = new MemberResponse(memberId);
 
-		when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong())).thenReturn(response);
+		when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong()))
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -341,7 +321,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member email updated."))
-			//.andExpect(jsonPath("$.data.email").value("newemail@test.com")) // 요청을 레코드로 변경 후 적용
+			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
 
