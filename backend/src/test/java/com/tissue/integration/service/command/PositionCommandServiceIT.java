@@ -37,6 +37,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		databaseCleaner.execute();
 	}
 
+	// TODO: 포지션 생성 시, 색을 정할 수 있도록 설정
 	@Test
 	@DisplayName("특정 워크스페이스에 대해 포지션을 생성할 수 있다")
 	void canCreatePosition() {

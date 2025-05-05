@@ -27,6 +27,7 @@ public class PositionCommandService {
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
+	// TODO: 포지션 생성 시, 색을 정할 수 있도록 설정
 	@Transactional
 	public PositionResponse createPosition(
 		String workspaceCode,
@@ -44,6 +45,7 @@ public class PositionCommandService {
 		return PositionResponse.from(positionRepository.save(position));
 	}
 
+	// TODO: 포지션 업데이트 시, 색을 정할 수 있도록 설정(null인 필드는 업데이트 하지 않는 방식으로 진행)
 	@Transactional
 	public PositionResponse updatePosition(
 		String workspaceCode,
@@ -58,6 +60,7 @@ public class PositionCommandService {
 		return PositionResponse.from(position);
 	}
 
+	// TODO: 색 업데이트를 updatePosition에 포함할 시, 이 메서드와 API 삭제
 	@Transactional
 	public PositionResponse updatePositionColor(
 		String workspaceCode,
