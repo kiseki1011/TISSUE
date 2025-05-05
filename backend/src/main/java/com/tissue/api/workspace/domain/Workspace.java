@@ -2,17 +2,13 @@ package com.tissue.api.workspace.domain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.enums.SprintStatus;
-import com.tissue.api.team.domain.Team;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -67,9 +63,6 @@ public class Workspace extends BaseEntity {
 	private Integer nextSprintNumber = 1;
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Team> teams = new ArrayList<>();
-
-	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -114,12 +107,6 @@ public class Workspace extends BaseEntity {
 
 	public void updateDescription(String description) {
 		this.description = description;
-	}
-
-	public Set<ColorType> getUsedTeamColors() {
-		return this.teams.stream()
-			.map(Team::getColor)
-			.collect(Collectors.toSet());
 	}
 
 	/*
