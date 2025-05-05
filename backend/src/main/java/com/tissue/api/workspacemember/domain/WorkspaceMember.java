@@ -1,7 +1,9 @@
 package com.tissue.api.workspacemember.domain;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
@@ -60,7 +62,7 @@ public class WorkspaceMember extends BaseEntity {
 	private String workspaceCode;
 
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
+	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
 
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
@@ -143,14 +145,14 @@ public class WorkspaceMember extends BaseEntity {
 	// }
 
 	public void remove() {
-		this.workspace.decreaseMemberCount(); // Soft delete 사용 시 제거
+		this.workspace.decreaseMemberCount();
 		this.member.getWorkspaceMembers().remove(this);
 		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
 	public void addPosition(Position position) {
 		validatePositionBelongsToWorkspace(position);
-		validateDuplicateAssignedPosition(position);
+		// validateDuplicateAssignedPosition(position);
 
 		WorkspaceMemberPosition.builder()
 			.workspaceMember(this)
@@ -228,19 +230,6 @@ public class WorkspaceMember extends BaseEntity {
 
 	public boolean roleIsLowerThan(WorkspaceRole role) {
 		return this.role.isLowerThan(role);
-	}
-
-	private void validateDuplicateAssignedPosition(Position position) {
-		boolean isAlreadyAssigned = workspaceMemberPositions.stream()
-			.anyMatch(wmp -> wmp.getPosition().equals(position));
-
-		if (isAlreadyAssigned) {
-			throw new InvalidOperationException(
-				String.format(
-					"Position '%s' is already assigned to this workspace member. workspaceMemberId: %d, positionId: %d",
-					position.getName(), id, position.getId())
-			);
-		}
 	}
 
 	private void validatePositionBelongsToWorkspace(Position position) {

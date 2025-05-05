@@ -15,9 +15,7 @@ import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
-import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -49,12 +47,14 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		CreatePositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
+		PositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
 
 		// Then
-		assertThat(createResponse.name()).isEqualTo("Developer");
-		assertThat(createResponse.description()).isEqualTo("Backend Developer");
-		assertThat(createResponse.color()).isNotNull();
+		Position position = positionRepository.findById(createResponse.positionId()).get();
+
+		assertThat(position.getName()).isEqualTo("Developer");
+		assertThat(position.getDescription()).isEqualTo("Backend Developer");
+		assertThat(position.getColor()).isNotNull();
 	}
 
 	@Test
@@ -67,13 +67,13 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		CreatePositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
+		PositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
 
 		// Then
-		Position findPosition = positionRepository.findById(createResponse.positionId()).orElseThrow();
+		Position position = positionRepository.findById(createResponse.positionId()).orElseThrow();
 
-		assertThat(findPosition.getColor()).isNotNull();
-		assertThat(findPosition.getColor()).isInstanceOf(ColorType.class);
+		assertThat(position.getColor()).isNotNull();
+		assertThat(position.getColor()).isInstanceOf(ColorType.class);
 	}
 
 	@Test
@@ -88,21 +88,26 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build()
 		);
 
+		String newName = "Senior Developer";
+		String newDescription = "Senior Backend Developer";
+
 		UpdatePositionRequest request = new UpdatePositionRequest(
-			"Senior Developer",
-			"Senior Backend Developer"
+			newName,
+			newDescription
 		);
 
 		// When
-		UpdatePositionResponse response = positionCommandService.updatePosition(
+		PositionResponse response = positionCommandService.updatePosition(
 			workspace.getCode(),
 			position.getId(),
 			request
 		);
 
 		// Then
-		assertThat(response.name()).isEqualTo("Senior Developer");
-		assertThat(response.description()).isEqualTo("Senior Backend Developer");
+		Position foundPosition = positionRepository.findById(response.positionId()).get();
+
+		assertThat(foundPosition.getName()).isEqualTo(newName);
+		assertThat(foundPosition.getDescription()).isEqualTo(newDescription);
 	}
 
 	@Test
@@ -120,14 +125,16 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdatePositionColorRequest request = new UpdatePositionColorRequest(ColorType.GREEN);
 
 		// when
-		UpdatePositionColorResponse response = positionCommandService.updatePositionColor(
+		PositionResponse response = positionCommandService.updatePositionColor(
 			workspace.getCode(),
 			position.getId(),
 			request
 		);
 
 		// then
-		assertThat(response.color()).isEqualTo(ColorType.GREEN);
+		Position foundPosition = positionRepository.findById(response.positionId()).get();
+
+		assertThat(foundPosition.getColor()).isEqualTo(ColorType.GREEN);
 	}
 
 	@Test
