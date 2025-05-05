@@ -9,10 +9,7 @@ import com.tissue.api.team.domain.repository.TeamRepository;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
-import com.tissue.api.team.presentation.dto.response.CreateTeamResponse;
-import com.tissue.api.team.presentation.dto.response.DeleteTeamResponse;
-import com.tissue.api.team.presentation.dto.response.UpdateTeamColorResponse;
-import com.tissue.api.team.presentation.dto.response.UpdateTeamResponse;
+import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
@@ -31,26 +28,24 @@ public class TeamCommandService {
 	private final TeamValidator teamValidator;
 
 	@Transactional
-	public CreateTeamResponse createTeam(
+	public TeamResponse createTeam(
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		ColorType randomColor = ColorType.getRandomColor();
-
 		Team team = Team.builder()
 			.name(request.name())
 			.description(request.description())
-			.color(randomColor)
+			.color(ColorType.getRandomColor())
 			.workspace(workspace)
 			.build();
 
-		return CreateTeamResponse.from(teamRepository.save(team));
+		return TeamResponse.from(teamRepository.save(team));
 	}
 
 	@Transactional
-	public UpdateTeamResponse updateTeam(
+	public TeamResponse updateTeam(
 		String workspaceCode,
 		Long teamId,
 		UpdateTeamRequest request
@@ -60,11 +55,11 @@ public class TeamCommandService {
 		team.updateName(request.name());
 		team.updateDescription(request.description());
 
-		return UpdateTeamResponse.from(team);
+		return TeamResponse.from(team);
 	}
 
 	@Transactional
-	public UpdateTeamColorResponse updateTeamColor(
+	public TeamResponse updateTeamColor(
 		String workspaceCode,
 		Long teamId,
 		UpdateTeamColorRequest request
@@ -73,11 +68,11 @@ public class TeamCommandService {
 
 		team.updateColor(request.colorType());
 
-		return UpdateTeamColorResponse.from(team);
+		return TeamResponse.from(team);
 	}
 
 	@Transactional
-	public DeleteTeamResponse deleteTeam(
+	public void deleteTeam(
 		String workspaceCode,
 		Long teamId
 	) {
@@ -86,7 +81,5 @@ public class TeamCommandService {
 		teamValidator.validateTeamIsUsed(team);
 
 		teamRepository.delete(team);
-
-		return DeleteTeamResponse.from(team);
 	}
 }

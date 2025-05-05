@@ -17,11 +17,8 @@ import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
-import com.tissue.api.team.presentation.dto.response.CreateTeamResponse;
-import com.tissue.api.team.presentation.dto.response.DeleteTeamResponse;
 import com.tissue.api.team.presentation.dto.response.GetTeamsResponse;
-import com.tissue.api.team.presentation.dto.response.UpdateTeamColorResponse;
-import com.tissue.api.team.presentation.dto.response.UpdateTeamResponse;
+import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.service.command.TeamCommandService;
 import com.tissue.api.team.service.query.TeamQueryService;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -41,47 +38,48 @@ public class TeamController {
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<CreateTeamResponse> createTeam(
+	public ApiResponse<TeamResponse> createTeam(
 		@PathVariable String code,
 		@Valid @RequestBody CreateTeamRequest request
 	) {
-		CreateTeamResponse response = teamCommandService.createTeam(code, request);
+		TeamResponse response = teamCommandService.createTeam(code, request);
 		return ApiResponse.created("Team created.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}")
-	public ApiResponse<UpdateTeamResponse> updateTeam(
+	public ApiResponse<TeamResponse> updateTeam(
 		@PathVariable String code,
 		@PathVariable Long teamId,
 		@Valid @RequestBody UpdateTeamRequest request
 	) {
-		UpdateTeamResponse response = teamCommandService.updateTeam(code, teamId, request);
+		TeamResponse response = teamCommandService.updateTeam(code, teamId, request);
 		return ApiResponse.ok("Team updated.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}/color")
-	public ApiResponse<UpdateTeamColorResponse> updateTeamColor(
+	public ApiResponse<TeamResponse> updateTeamColor(
 		@PathVariable String code,
 		@PathVariable Long teamId,
 		@Valid @RequestBody UpdateTeamColorRequest request
 	) {
-		UpdateTeamColorResponse response = teamCommandService.updateTeamColor(code, teamId, request);
+		TeamResponse response = teamCommandService.updateTeamColor(code, teamId, request);
 		return ApiResponse.ok("Team color updated.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{teamId}")
-	public ApiResponse<DeleteTeamResponse> deleteTeam(
+	public ApiResponse<Void> deleteTeam(
 		@PathVariable String code,
 		@PathVariable Long teamId
 	) {
-		DeleteTeamResponse response = teamCommandService.deleteTeam(code, teamId);
-		return ApiResponse.ok("Team deleted.", response);
+		teamCommandService.deleteTeam(code, teamId);
+		return ApiResponse.okWithNoContent("Team deleted.");
 	}
 
 	@LoginRequired
