@@ -37,7 +37,7 @@ public class TeamCommandService {
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedTeamColors());
+		ColorType randomColor = ColorType.getRandomColor();
 
 		Team team = Team.builder()
 			.name(request.name())
