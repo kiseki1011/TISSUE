@@ -10,8 +10,6 @@ import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.position.domain.Position;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.team.domain.Team;
@@ -38,10 +36,6 @@ public class Workspace extends BaseEntity {
 	// @Version
 	// private Long version;
 
-	/**
-	 * 다음 링크의 주석을 확인
-	 * {@link Member#MAX_MY_WORKSPACE_COUNT}
-	 */
 	private static final int MAX_MEMBER_COUNT = 500;
 	private static final String DEFAULT_KEY_PREFIX = "ISSUE";
 
@@ -71,9 +65,6 @@ public class Workspace extends BaseEntity {
 
 	@Column(nullable = false)
 	private Integer nextSprintNumber = 1;
-
-	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Position> positions = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Team> teams = new ArrayList<>();
@@ -123,12 +114,6 @@ public class Workspace extends BaseEntity {
 
 	public void updateDescription(String description) {
 		this.description = description;
-	}
-
-	public Set<ColorType> getUsedPositionColors() {
-		return this.positions.stream()
-			.map(Position::getColor)
-			.collect(Collectors.toSet());
 	}
 
 	public Set<ColorType> getUsedTeamColors() {

@@ -65,7 +65,6 @@ public class Position extends BaseEntity {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		this.color = color;
-		workspace.getPositions().add(this);
 	}
 
 	public void updateName(String name) {
