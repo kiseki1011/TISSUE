@@ -2,12 +2,15 @@ package com.tissue.api.workspace.service.command.create;
 
 import java.util.Optional;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InternalServerException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
@@ -42,6 +45,12 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	private final WorkspaceValidator workspaceValidator;
 
 	@Override
+	@Retryable(
+		retryFor = {DataIntegrityViolationException.class},
+		notRecoverable = {InvalidOperationException.class},
+		maxAttempts = MAX_RETRIES,
+		backoff = @Backoff(delay = 300)
+	)
 	@Transactional
 	public CreateWorkspaceResponse createWorkspace(
 		CreateWorkspaceRequest request,
@@ -49,29 +58,31 @@ public class RetryCodeGenerationOnExceptionService implements WorkspaceCreateSer
 	) {
 		Member member = memberReader.findMember(memberId);
 
-		for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-			try {
-				Workspace workspace = CreateWorkspaceRequest.to(request);
-				setWorkspaceCode(workspace);
-				setEncodedPasswordIfPresent(request, workspace);
-				setKeyPrefix(request, workspace);
+		Workspace workspace = CreateWorkspaceRequest.to(request);
+		setWorkspaceCode(workspace);
+		setEncodedPasswordIfPresent(request, workspace);
+		setKeyPrefix(request, workspace);
 
-				Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
+		Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
-				WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
-					member,
-					savedWorkspace,
-					randomNicknameGenerator.generateNickname()
-				);
-				workspaceMemberRepository.save(workspaceMember);
+		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+			member,
+			savedWorkspace,
+			randomNicknameGenerator.generateNickname()
+		);
+		workspaceMemberRepository.save(workspaceMember);
 
-				return CreateWorkspaceResponse.from(savedWorkspace);
-			} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-				log.error("Catched exception for workspace code collision.");
-				log.error("Exception: ", e);
-				log.info("Workspace code collision occured. Retry attempt: #{}", attempt);
-			}
-		}
+		return CreateWorkspaceResponse.from(savedWorkspace);
+	}
+
+	@Recover
+	public CreateWorkspaceResponse recover(
+		DataIntegrityViolationException exception,
+		CreateWorkspaceRequest request,
+		Long memberId
+	) {
+		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
+		// TODO: InternalServerException에 exception도 받을수 있도록 수정
 		throw new InternalServerException(
 			String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)
 		);
