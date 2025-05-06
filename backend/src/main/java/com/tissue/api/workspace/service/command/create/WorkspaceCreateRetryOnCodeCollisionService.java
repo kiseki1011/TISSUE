@@ -19,7 +19,7 @@ import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -52,7 +52,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		backoff = @Backoff(delay = 300)
 	)
 	@Transactional
-	public CreateWorkspaceResponse createWorkspace(
+	public WorkspaceResponse createWorkspace(
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
@@ -72,11 +72,11 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		);
 		workspaceMemberRepository.save(workspaceMember);
 
-		return CreateWorkspaceResponse.from(savedWorkspace);
+		return WorkspaceResponse.from(savedWorkspace);
 	}
 
 	@Recover
-	public CreateWorkspaceResponse recover(
+	public WorkspaceResponse recover(
 		DataIntegrityViolationException exception,
 		CreateWorkspaceRequest request,
 		Long memberId

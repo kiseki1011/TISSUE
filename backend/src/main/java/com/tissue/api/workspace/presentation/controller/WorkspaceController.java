@@ -21,7 +21,6 @@ import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
@@ -47,11 +46,11 @@ public class WorkspaceController {
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<CreateWorkspaceResponse> createWorkspace(
+	public ApiResponse<WorkspaceResponse> createWorkspace(
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid CreateWorkspaceRequest request
 	) {
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(
 			request,
 			loginMemberId
 		);
