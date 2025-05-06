@@ -17,7 +17,7 @@ import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 @SpringBootTest
-class RetryCodeGenerationOnExceptionServiceIT extends ServiceIntegrationTestHelper {
+class WorkspaceCreateRetryOnCodeCollisionServiceIT extends ServiceIntegrationTestHelper {
 
 	@MockBean
 	private WorkspaceCodeGenerator workspaceCodeGenerator;
