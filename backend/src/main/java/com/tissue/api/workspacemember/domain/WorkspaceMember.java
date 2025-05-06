@@ -107,6 +107,7 @@ public class WorkspaceMember extends BaseEntity {
 		return workspaceMember;
 	}
 
+	// TODO: increaseMyWorkspaceCount, decreaseMyWorkspaceCount 호출은 어디서 하는 것이 제일 좋을까?
 	public static WorkspaceMember addOwnerWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -200,6 +201,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 	}
 
+	// TODO: increaseMyWorkspaceCount, decreaseMyWorkspaceCount 호출은 어디서 하는 것이 제일 좋을까?
 	public void updateRoleToAdmin() {
 		validateCurrentRoleIsOwner();
 		updateRole(WorkspaceRole.ADMIN);
