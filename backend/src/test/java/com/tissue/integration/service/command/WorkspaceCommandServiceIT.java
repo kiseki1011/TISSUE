@@ -13,8 +13,7 @@ import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -73,15 +72,16 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(
+		WorkspaceResponse response = workspaceCommandService.updateWorkspaceInfo(
 			request,
 			workspace.getCode()
 		);
 
 		// then
-		assertThat(response.code()).isEqualTo(workspace.getCode());
-		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getName())
-			.isEqualTo("updated workspace name");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+
+		Workspace foundWorkspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		assertThat(foundWorkspace.getName()).isEqualTo("updated workspace name");
 	}
 
 	@Test
@@ -191,10 +191,13 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("UPDATEPREFIX");
 
 		// when
-		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getCode(), request);
+		WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getCode(), request);
 
 		// then
-		assertThat(response.issueKeyPrefix()).isEqualTo("UPDATEPREFIX");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+
+		Workspace foundWorkspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		assertThat(foundWorkspace.getIssueKeyPrefix()).isEqualTo("UPDATEPREFIX");
 	}
 
 	@Test

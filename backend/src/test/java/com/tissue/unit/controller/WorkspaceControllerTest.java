@@ -26,9 +26,7 @@ import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
-import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class WorkspaceControllerTest extends ControllerTestHelper {
@@ -108,39 +106,41 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/info - 워크스페이스 정보 수정 요청에 성공하면 OK를 응답한다")
+	@DisplayName("PATCH /workspaces/{workspaceCode}/info - 워크스페이스 정보 수정 요청에 성공하면 OK를 응답한다")
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		UpdateWorkspaceInfoRequest request = new UpdateWorkspaceInfoRequest("New Title", "New Description");
 
+		String workspaceCode = "TESTCODE";
+
 		Workspace workspace = Workspace.builder()
-			.code("TESTCODE")
+			.code(workspaceCode)
 			.name("New Title")
 			.description("New Description")
 			.build();
 
-		UpdateWorkspaceInfoResponse response = UpdateWorkspaceInfoResponse.from(workspace);
+		WorkspaceResponse response = WorkspaceResponse.from(workspace);
 
 		when(workspaceCommandService.updateWorkspaceInfo(
 			ArgumentMatchers.any(UpdateWorkspaceInfoRequest.class),
-			eq("TESTCODE")))
+			eq(workspaceCode)))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/info", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/info", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Workspace info updated."))
-			.andExpect(jsonPath("$.data.code").value("TESTCODE"))
+			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
-			.updateWorkspaceInfo(ArgumentMatchers.any(UpdateWorkspaceInfoRequest.class), eq("TESTCODE"));
+			.updateWorkspaceInfo(ArgumentMatchers.any(UpdateWorkspaceInfoRequest.class), eq(workspaceCode));
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{code} - 워크스페이스 삭제 요청에 성공하면 OK")
+	@DisplayName("DELETE /workspaces/{workspaceCode} - 워크스페이스 삭제 요청에 성공하면 OK")
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
@@ -149,16 +149,15 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code("TESTCODE")
 			.build();
 
-		when(workspaceCommandService.deleteWorkspace(eq("TESTCODE"), anyLong()))
-			.thenReturn(DeleteWorkspaceResponse.from(workspace));
+		// when(workspaceCommandService.deleteWorkspace(eq("TESTCODE"), anyLong()))
+		// 	.thenReturn();
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{code}", "TESTCODE")
+		mockMvc.perform(delete("/api/v1/workspaces/{workspaceCode}", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Workspace deleted."))
-			.andExpect(jsonPath("$.data.code").value("TESTCODE"));
+			.andExpect(status().isNoContent())
+			.andExpect(jsonPath("$.message").value("Workspace deleted."));
 
 		verify(workspaceCommandService, times(1))
 			.deleteWorkspace(eq("TESTCODE"), anyLong());
@@ -194,28 +193,25 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/key - 이슈 키 접두사(issue key prefix) 수정에 성공하면 OK")
+	@DisplayName("PATCH /workspaces/{workspaceCode}/key - 이슈 키 접두사(issue key prefix) 수정에 성공하면 OK")
 	void updateWorkspaceIssueKeyPrefix_shouldReturnOK() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("TESTPREFIX");
 
-		UpdateIssueKeyResponse response = UpdateIssueKeyResponse.builder()
-			.workspaceId(1L)
-			.workspaceCode("TESTCODE")
-			.issueKeyPrefix("TESTPREFIX")
-			.build();
+		String workspaceCode = "TESTCODE";
 
-		when(workspaceCommandService.updateIssueKeyPrefix("TESTCODE", request))
+		WorkspaceResponse response = new WorkspaceResponse(workspaceCode);
+
+		when(workspaceCommandService.updateIssueKeyPrefix(workspaceCode, request))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/key", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/key", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Issue key prefix updated."))
-			.andExpect(jsonPath("$.data.workspaceCode").value("TESTCODE"))
-			.andExpect(jsonPath("$.data.issueKeyPrefix").value("TESTPREFIX"))
+			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
@@ -223,13 +219,13 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/key - 이슈 키 접두사(issue key prefix) 수정 요청에 영문자를 사용하지 않으면 검증을 실패한다")
+	@DisplayName("PATCH /workspaces/{workspaceCode}/key - 이슈 키 접두사(issue key prefix) 수정 요청에 영문자를 사용하지 않으면 검증을 실패한다")
 	void updateWorkspaceIssueKeyPrefix_failsRequestValidation() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("잘못된접두사");
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/key", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/key", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())

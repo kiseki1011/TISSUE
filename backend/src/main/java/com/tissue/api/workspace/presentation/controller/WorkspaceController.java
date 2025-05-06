@@ -22,9 +22,7 @@ import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
-import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
@@ -64,11 +62,11 @@ public class WorkspaceController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/info")
-	public ApiResponse<UpdateWorkspaceInfoResponse> updateWorkspaceInfo(
+	public ApiResponse<WorkspaceResponse> updateWorkspaceInfo(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
 	) {
-		UpdateWorkspaceInfoResponse response = workspaceCommandService.updateWorkspaceInfo(
+		WorkspaceResponse response = workspaceCommandService.updateWorkspaceInfo(
 			request,
 			code
 		);
@@ -79,28 +77,29 @@ public class WorkspaceController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
-	public ApiResponse<Void> updateWorkspacePassword(
+	public ApiResponse<WorkspaceResponse> updateWorkspacePassword(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateWorkspacePasswordRequest request
 	) {
 		workspaceValidator.validateWorkspacePassword(request.originalPassword(), code);
-		workspaceCommandService.updateWorkspacePassword(request, code);
+		WorkspaceResponse response = workspaceCommandService.updateWorkspacePassword(request, code);
 
-		return ApiResponse.okWithNoContent("Workspace password updated.");
+		return ApiResponse.ok("Workspace password updated.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.OWNER)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{code}")
-	public ApiResponse<DeleteWorkspaceResponse> deleteWorkspace(
+	public ApiResponse<Void> deleteWorkspace(
 		@PathVariable String code,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
 		workspaceValidator.validateWorkspacePassword(request.password(), code);
-		DeleteWorkspaceResponse response = workspaceCommandService.deleteWorkspace(code, loginMemberId);
+		workspaceCommandService.deleteWorkspace(code, loginMemberId);
 
-		return ApiResponse.ok("Workspace deleted.", response);
+		return ApiResponse.okWithNoContent("Workspace deleted.");
 	}
 
 	@LoginRequired
@@ -117,11 +116,11 @@ public class WorkspaceController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/key")
-	public ApiResponse<UpdateIssueKeyResponse> updateIssueKey(
+	public ApiResponse<WorkspaceResponse> updateIssueKey(
 		@PathVariable String code,
 		@RequestBody @Valid UpdateIssueKeyRequest request
 	) {
-		UpdateIssueKeyResponse response = workspaceCommandService.updateIssueKeyPrefix(
+		WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(
 			code,
 			request
 		);
