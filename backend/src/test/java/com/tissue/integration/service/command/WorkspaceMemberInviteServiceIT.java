@@ -118,9 +118,9 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("멤버를 초대할 때, 하나 이상의 유효한 초대가 존재해야 한다")
 	void whenInvitingMembers_AtLeast_A_SingleInvitationMustBeValid() {
 		// given
-		Member member1 = testDataFixture.createMember("member1");
-		WorkspaceMember workspaceMember1 = testDataFixture.createWorkspaceMember(
-			member1,
+		Member member = testDataFixture.createMember("member1");
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
 			workspace,
 			WorkspaceRole.MEMBER
 		);

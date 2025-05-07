@@ -44,9 +44,6 @@ class AssigneeCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// create member
-		// Member ownerMember = testDataFixture.createMember("owner");
-		// Member member1 = testDataFixture.createMember("member1");
-		// Member member2 = testDataFixture.createMember("member2");
 		ownerMember = testDataFixture.createMember("owner");
 		member1 = testDataFixture.createMember("member1");
 		member2 = testDataFixture.createMember("member2");

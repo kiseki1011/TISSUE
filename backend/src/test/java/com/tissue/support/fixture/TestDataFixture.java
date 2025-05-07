@@ -103,6 +103,7 @@ public class TestDataFixture {
 			Member.builder()
 				.loginId(loginId)
 				.email(loginId + "@test.com")
+				.username(loginId + "Username")
 				.password(passwordEncoder.encode("test1234!"))
 				.name(new Name("Gildong", "Hong"))
 				.build()

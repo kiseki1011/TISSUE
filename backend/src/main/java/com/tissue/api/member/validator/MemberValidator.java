@@ -51,6 +51,14 @@ public class MemberValidator {
 		}
 	}
 
+	public void validateUsernameIsUnique(String username) {
+		if (memberRepository.existsByUsername(username)) {
+			throw new DuplicateResourceException(
+				String.format("Username already exists. username: %s", username)
+			);
+		}
+	}
+
 	public void validateMemberHasNoOwnedWorkspaces(Long memberId) {
 		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberIdAndRole(memberId, WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {

@@ -10,6 +10,7 @@ import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
@@ -35,6 +36,7 @@ public class MemberCommandService {
 	) {
 		memberValidator.validateLoginIdIsUnique(request.loginId());
 		memberValidator.validateEmailIsUnique(request.email());
+		memberValidator.validateUsernameIsUnique(request.username());
 
 		String encodedPassword = passwordEncoder.encode(request.password());
 		Member member = request.toEntity(encodedPassword);
@@ -73,13 +75,13 @@ public class MemberCommandService {
 
 	@Transactional
 	public MemberResponse updateUsername(
-		UpdateUsernameRequest request,
+		UpdateMemberUsernameRequest request,
 		Long memberId
 	) {
 		Member member = memberReader.findMember(memberId);
 
 		String newUsername = request.newUsername();
-		memberValidator.validateUsernameIsUnique(newUsername);
+		// memberValidator.validateUsernameIsUnique(newUsername);
 
 		member.updateUsername(newUsername);
 

@@ -88,6 +88,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId("testuser")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -116,6 +117,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -147,6 +149,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
+			.username("testusername")
 			.password(password)
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -181,6 +184,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.username("testusername")
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
@@ -200,7 +204,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청에 성공하면 OK")
+	@DisplayName("POST /members/permissions - 업데이트 권한 요청에 성공하면 OK")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
@@ -210,7 +214,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions/update")
+		mockMvc.perform(post("/api/v1/members/permissions")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -219,7 +223,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
+	@DisplayName("POST /members/permissions - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
 	void getUpdateAuthorization_failPasswordValid_UNAUTHORIZED() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
@@ -229,7 +233,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions/update")
+		mockMvc.perform(post("/api/v1/members/permissions")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
