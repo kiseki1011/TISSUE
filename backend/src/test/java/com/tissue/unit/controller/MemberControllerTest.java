@@ -328,27 +328,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
-
-	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 패스워드 검증을 실패하면 UNAUTHORIZED")
-	void updateEmail_failPasswordValid_UNAUTHORIZED() throws Exception {
-		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
-
-		doThrow(new AuthenticationFailedException("Login password is invalid."))
-			.when(memberValidator)
-			.validateMemberPassword(eq("password1234!"), anyLong());
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members/email")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isUnauthorized())
-			.andExpect(jsonPath("$.message").value(
-				"Login password is invalid."))
-			.andDo(print());
-	}
-
+	
 	@Test
 	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
 	void withdrawMember_success_OK() throws Exception {

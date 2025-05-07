@@ -82,6 +82,7 @@ public class MemberController {
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
+	// TODO: 이메일 인증 기능 추가 필요
 	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
@@ -90,7 +91,6 @@ public class MemberController {
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
 		MemberResponse response = memberCommandService.updateEmail(request, loginMemberId);
 
 		return ApiResponse.ok("Member email updated.", response);
@@ -117,7 +117,6 @@ public class MemberController {
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		memberValidator.validateMemberPassword(request.originalPassword(), loginMemberId);
 		MemberResponse response = memberCommandService.updatePassword(request, loginMemberId);
 
 		return ApiResponse.ok("Member password updated.", response);
@@ -139,13 +138,15 @@ public class MemberController {
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
-		memberCommandService.withdraw(loginMemberId);
+		memberCommandService.withdraw(request, loginMemberId);
+
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
+	// TODO: validateMemberPassword를 setTemporaryPermission 내부로 옮겨야 할까?
+	// TODO: permission 관련 API들을 다른 컨트롤러로 분리해야 할까?
 	@LoginRequired
 	@PostMapping("/permissions")
 	public ApiResponse<Void> getMemberUpdatePermission(

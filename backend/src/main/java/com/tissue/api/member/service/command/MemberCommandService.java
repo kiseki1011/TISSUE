@@ -11,6 +11,7 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
+import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
@@ -81,7 +82,7 @@ public class MemberCommandService {
 		Member member = memberReader.findMember(memberId);
 
 		String newUsername = request.newUsername();
-		// memberValidator.validateUsernameIsUnique(newUsername);
+		memberValidator.validateUsernameIsUnique(newUsername);
 
 		member.updateUsername(newUsername);
 
@@ -94,6 +95,7 @@ public class MemberCommandService {
 		Long memberId
 	) {
 		Member member = memberReader.findMember(memberId);
+		memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
 		String encodedNewPassword = passwordEncoder.encode(request.newPassword());
 
@@ -111,16 +113,17 @@ public class MemberCommandService {
 	 */
 	@Transactional
 	public void withdraw(
+		WithdrawMemberRequest request,
 		Long memberId
 	) {
 		Member member = memberReader.findMember(memberId);
-
+		memberValidator.validateMemberPassword(request.password(), memberId);
 		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 
 		memberRepository.delete(member);
 	}
 
-	// TODO: 이 방식을 개선
+	// TODO: 이 방식을 개선?
 	private void updateMemberInfoIfPresent(
 		UpdateMemberProfileRequest request,
 		Member member

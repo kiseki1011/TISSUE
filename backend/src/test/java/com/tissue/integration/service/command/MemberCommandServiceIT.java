@@ -16,6 +16,7 @@ import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
+import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -145,7 +146,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("tester");
 
 		// when
-		memberCommandService.withdraw(member.getId());
+		memberCommandService.withdraw(new WithdrawMemberRequest("test1234!"), member.getId());
 
 		// then
 		assertThat(memberRepository.findById(member.getId())).isEmpty();
@@ -163,7 +164,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
 
 		// when & then
-		assertThatThrownBy(() -> memberCommandService.withdraw(member.getId()))
+		assertThatThrownBy(() -> memberCommandService.withdraw(new WithdrawMemberRequest("test1234!"), member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
