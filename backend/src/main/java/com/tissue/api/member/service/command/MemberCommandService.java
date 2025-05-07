@@ -8,8 +8,8 @@ import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
@@ -46,7 +46,7 @@ public class MemberCommandService {
 
 	@Transactional
 	public MemberResponse updateInfo(
-		UpdateMemberInfoRequest request,
+		UpdateMemberProfileRequest request,
 		Long memberId
 	) {
 		Member member = memberReader.findMember(memberId);
@@ -67,6 +67,21 @@ public class MemberCommandService {
 		memberValidator.validateEmailIsUnique(newEmail);
 
 		member.updateEmail(newEmail);
+
+		return MemberResponse.from(member);
+	}
+
+	@Transactional
+	public MemberResponse updateUsername(
+		UpdateUsernameRequest request,
+		Long memberId
+	) {
+		Member member = memberReader.findMember(memberId);
+
+		String newUsername = request.newUsername();
+		memberValidator.validateUsernameIsUnique(newUsername);
+
+		member.updateUsername(newUsername);
 
 		return MemberResponse.from(member);
 	}
@@ -105,7 +120,7 @@ public class MemberCommandService {
 
 	// TODO: 이 방식을 개선
 	private void updateMemberInfoIfPresent(
-		UpdateMemberInfoRequest request,
+		UpdateMemberProfileRequest request,
 		Member member
 	) {
 		if (request.hasName()) {

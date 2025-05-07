@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Past;
 import lombok.Builder;
 
 @Builder
-public record UpdateMemberInfoRequest(
+public record UpdateMemberProfileRequest(
 	@NameSize
 	@NamePattern
 	String firstName,

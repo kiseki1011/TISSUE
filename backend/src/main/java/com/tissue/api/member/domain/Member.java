@@ -42,17 +42,17 @@ public class Member extends BaseDateEntity {
 	private String loginId;
 	@Column(unique = true, nullable = false)
 	private String email;
+	@Column(unique = true, nullable = false)
+	private String username;
 	@Column(nullable = false)
 	private String password;
 
+	// TODO: memberProfile VO로 묶어서 관리?
 	@Embedded
 	private Name name;
-
 	@Lob
 	private String biography;
-
 	private LocalDate birthDate;
-
 	@Enumerated(EnumType.STRING)
 	private JobType jobType;
 
@@ -69,6 +69,7 @@ public class Member extends BaseDateEntity {
 	public Member(
 		String loginId,
 		String email,
+		String username,
 		String password,
 		String biography,
 		JobType jobType,
@@ -77,6 +78,7 @@ public class Member extends BaseDateEntity {
 	) {
 		this.loginId = loginId;
 		this.email = email;
+		this.username = username;
 		this.password = password;
 		this.biography = biography;
 		this.jobType = jobType;
@@ -94,12 +96,16 @@ public class Member extends BaseDateEntity {
 		this.myWorkspaceCount--;
 	}
 
-	public void updatePassword(String password) {
-		this.password = password;
-	}
-
 	public void updateEmail(String email) {
 		this.email = email;
+	}
+
+	public void updateUsername(String username) {
+		this.username = username;
+	}
+
+	public void updatePassword(String password) {
+		this.password = password;
 	}
 
 	public void updateName(Name name) {

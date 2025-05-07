@@ -15,7 +15,7 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -181,7 +181,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.biography("Im currently unemployed")
 			.jobType(JobType.ETC)
 			.birthDate(LocalDate.of(1995, 2, 2))
@@ -212,7 +212,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.biography("Im currently unemployed")
 			.build();
 
@@ -244,7 +244,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.lastName("Kim")
 			.build();
 

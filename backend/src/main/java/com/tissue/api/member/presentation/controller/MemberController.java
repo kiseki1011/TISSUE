@@ -15,8 +15,8 @@ import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
@@ -71,7 +71,7 @@ public class MemberController {
 	@LoginRequired
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
-		@RequestBody @Valid UpdateMemberInfoRequest request,
+		@RequestBody @Valid UpdateMemberProfileRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {

@@ -28,7 +28,7 @@ import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
@@ -241,7 +241,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
 	void updateMemberInfo_success_OK() throws Exception {
 		// given
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.biography("Im a backend developer")
@@ -251,7 +251,7 @@ class MemberControllerTest extends ControllerTestHelper {
 
 		MemberResponse response = new MemberResponse(memberId);
 
-		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
+		when(memberCommandService.updateInfo(any(UpdateMemberProfileRequest.class), anyLong()))
 			.thenReturn(response);
 
 		// when & then
@@ -268,13 +268,13 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 프로필 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
 	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
 		// given
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(2995, 1, 1))
 			.build();
 
 		Long memberId = 1L;
 
-		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
+		when(memberCommandService.updateInfo(any(UpdateMemberProfileRequest.class), anyLong()))
 			.thenReturn(new MemberResponse(memberId));
 
 		// when & then
