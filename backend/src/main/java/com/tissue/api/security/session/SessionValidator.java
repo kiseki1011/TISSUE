@@ -50,11 +50,9 @@ public class SessionValidator {
 
 		if (storedPermissionType != permissionType) {
 			throw new InvalidOperationException(
-				String.format(
-					"Permission type of request does not match with current permission type."
+				String.format("Permission type of request does not match with current permission type."
 						+ " Requested permission: %s, Current permission: %s",
-					permissionType, storedPermissionType
-				)
+					permissionType, storedPermissionType)
 			);
 		}
 
