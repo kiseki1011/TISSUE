@@ -1,6 +1,7 @@
 package com.tissue.api.member.validator;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
@@ -15,6 +16,7 @@ import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepositor
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberValidator {
 

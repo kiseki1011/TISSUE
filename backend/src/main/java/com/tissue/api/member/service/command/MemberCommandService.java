@@ -1,8 +1,10 @@
 package com.tissue.api.member.service.command;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.repository.MemberRepository;
 import com.tissue.api.member.domain.vo.Name;
@@ -29,7 +31,7 @@ public class MemberCommandService {
 
 	/**
 	 * Todo
-	 *  - 회원 가입도 동시성 관련 처리 필요
+	 *  - signup, updateUsername은 동시성 관련 처리 필요
 	 */
 	@Transactional
 	public MemberResponse signup(
@@ -42,9 +44,12 @@ public class MemberCommandService {
 		String encodedPassword = passwordEncoder.encode(request.password());
 		Member member = request.toEntity(encodedPassword);
 
-		Member savedMember = memberRepository.save(member);
-
-		return MemberResponse.from(savedMember);
+		try {
+			Member savedMember = memberRepository.save(member);
+			return MemberResponse.from(savedMember);
+		} catch (DataIntegrityViolationException e) {
+			throw new DuplicateResourceException("회원가입에 실패했습니다.", e);
+		}
 	}
 
 	@Transactional
@@ -69,9 +74,12 @@ public class MemberCommandService {
 		String newEmail = request.newEmail();
 		memberValidator.validateEmailIsUnique(newEmail);
 
-		member.updateEmail(newEmail);
-
-		return MemberResponse.from(member);
+		try {
+			member.updateEmail(newEmail);
+			return MemberResponse.from(member);
+		} catch (DataIntegrityViolationException e) {
+			throw new DuplicateResourceException("중복된 Email입니다", e);
+		}
 	}
 
 	@Transactional
@@ -81,12 +89,14 @@ public class MemberCommandService {
 	) {
 		Member member = memberReader.findMember(memberId);
 
-		String newUsername = request.newUsername();
-		memberValidator.validateUsernameIsUnique(newUsername);
+		memberValidator.validateUsernameIsUnique(request.newUsername());
 
-		member.updateUsername(newUsername);
-
-		return MemberResponse.from(member);
+		try {
+			member.updateUsername(request.newUsername());
+			return MemberResponse.from(member);
+		} catch (DataIntegrityViolationException e) {
+			throw new DuplicateResourceException("중복된 username입니다", e);
+		}
 	}
 
 	@Transactional
@@ -97,9 +107,7 @@ public class MemberCommandService {
 		Member member = memberReader.findMember(memberId);
 		memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
-		String encodedNewPassword = passwordEncoder.encode(request.newPassword());
-
-		member.updatePassword(encodedNewPassword);
+		member.updatePassword(passwordEncoder.encode(request.newPassword()));
 
 		return MemberResponse.from(member);
 	}
@@ -123,7 +131,6 @@ public class MemberCommandService {
 		memberRepository.delete(member);
 	}
 
-	// TODO: 이 방식을 개선?
 	private void updateMemberInfoIfPresent(
 		UpdateMemberProfileRequest request,
 		Member member
