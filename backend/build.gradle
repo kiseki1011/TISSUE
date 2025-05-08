@@ -75,7 +75,8 @@ jacocoTestReport {
                             "**/*Condition",
                             "**/*Reader",
                             "**/*Handler",
-                            "**/*Entity"
+                            "**/*Entity",
+                            "**/RandomNicknameGenerator*"
                     ])
                 })
         )
@@ -113,7 +114,8 @@ jacocoTestReport {
                         "**.*Condition",
                         "**.*Reader",
                         "**.*Handler",
-                        "**.*Entity"
+                        "**.*Entity",
+                        "**.RandomNicknameGenerator*"
                 ]
             }
         }
