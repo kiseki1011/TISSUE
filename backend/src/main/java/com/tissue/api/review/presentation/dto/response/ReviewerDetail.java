@@ -14,7 +14,7 @@ public record ReviewerDetail(
 	public static ReviewerDetail from(IssueReviewer reviewer) {
 		return ReviewerDetail.builder()
 			.workspaceMemberId(reviewer.getReviewer().getId())
-			.nickname(reviewer.getReviewer().getNickname())
+			.nickname(reviewer.getReviewer().getDisplayName())
 			.role(reviewer.getReviewer().getRole())
 			.build();
 	}

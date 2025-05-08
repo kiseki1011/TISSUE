@@ -47,7 +47,7 @@ public class WorkspaceMemberRoleChangedEvent extends WorkspaceEvent {
 			workspaceMember.getWorkspaceCode(),
 			actorMemberId,
 			workspaceMember.getMember().getId(),
-			workspaceMember.getNickname(),
+			workspaceMember.getDisplayName(),
 			oldRole,
 			workspaceMember.getRole()
 		);

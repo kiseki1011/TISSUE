@@ -16,7 +16,7 @@ public record RemoveReviewerResponse(
 	public static RemoveReviewerResponse from(WorkspaceMember reviewer, Issue issue) {
 		return RemoveReviewerResponse.builder()
 			.workspaceMemberId(reviewer.getId())
-			.nickname(reviewer.getNickname())
+			.nickname(reviewer.getDisplayName())
 			.removedAt(issue.getLastModifiedDate())
 			.build();
 	}

@@ -51,7 +51,7 @@ public class ReviewerAddedEvent extends IssueEvent {
 			issue.getType(),
 			actor.getMember().getId(),
 			reviewer.getMember().getId(),
-			reviewer.getNickname()
+			reviewer.getDisplayName()
 		);
 	}
 }

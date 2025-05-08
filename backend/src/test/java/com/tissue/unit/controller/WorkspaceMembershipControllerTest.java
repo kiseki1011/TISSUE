@@ -93,7 +93,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		workspaceMember.updateNickname("newNickname");
+		workspaceMember.updateDisplayName("newNickname");
 
 		UpdateNicknameResponse response = UpdateNicknameResponse.from(workspaceMember);
 

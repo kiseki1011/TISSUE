@@ -273,7 +273,7 @@ public abstract class Issue extends BaseEntity {
 			.findFirst()
 			.orElseThrow(() -> new ForbiddenOperationException(
 				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
-					workspaceMember.getId(), workspaceMember.getNickname()))
+					workspaceMember.getId(), workspaceMember.getDisplayName()))
 			);
 	}
 
@@ -385,7 +385,7 @@ public abstract class Issue extends BaseEntity {
 			.findFirst()
 			.orElseThrow(() -> new InvalidOperationException(
 				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
-					assignee.getId(), assignee.getNickname()))
+					assignee.getId(), assignee.getDisplayName()))
 			);
 	}
 

@@ -27,21 +27,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "UK_WORKSPACE_NICKNAME",
-			columnNames = {"WORKSPACE_CODE", "nickname"})
-	}
-)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {
@@ -72,33 +63,34 @@ public class WorkspaceMember extends BaseEntity {
 	private WorkspaceRole role;
 
 	@Column(nullable = false)
-	private String nickname;
+	private String displayName;
+
+	// TODO: 캐싱은 추후에 고려
+	//  (클라이언트에서 displayName, username을 한번에 조회하고 조합해서 사용하는 방식 고려
+	// private String displayWithUsername;
 
 	@Builder
 	public WorkspaceMember(
 		Member member,
 		Workspace workspace,
-		WorkspaceRole role,
-		String nickname
+		WorkspaceRole role
 	) {
 		this.member = member;
 		this.workspace = workspace;
 		this.role = role;
-		this.nickname = nickname;
+		this.displayName = member.getUsername();
 		this.workspaceCode = workspace.getCode();
 	}
 
-	public static WorkspaceMember addWorkspaceMember(
+	public static WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
-		WorkspaceRole role,
-		String nickname
+		WorkspaceRole role
 	) {
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
 			.member(member)
 			.workspace(workspace)
 			.role(role)
-			.nickname(nickname)
 			.build();
 
 		member.getWorkspaceMembers().add(workspaceMember);
@@ -110,21 +102,19 @@ public class WorkspaceMember extends BaseEntity {
 	// TODO: increaseMyWorkspaceCount, decreaseMyWorkspaceCount 호출은 어디서 하는 것이 제일 좋을까?
 	public static WorkspaceMember addOwnerWorkspaceMember(
 		Member member,
-		Workspace workspace,
-		String nickname
+		Workspace workspace
 	) {
 		member.increaseMyWorkspaceCount();
 		workspace.increaseMemberCount();
-		return addWorkspaceMember(member, workspace, WorkspaceRole.OWNER, nickname);
+		return createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
 	}
 
-	public static WorkspaceMember addMemberWorkspaceMember(
+	public static WorkspaceMember addWorkspaceMember(
 		Member member,
-		Workspace workspace,
-		String nickname
+		Workspace workspace
 	) {
 		workspace.increaseMemberCount();
-		return addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, nickname);
+		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 	}
 
 	// @Deprecated
@@ -214,8 +204,8 @@ public class WorkspaceMember extends BaseEntity {
 		this.member.increaseMyWorkspaceCount();
 	}
 
-	public void updateNickname(String nickname) {
-		this.nickname = nickname;
+	public void updateDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	public void validateRoleIsHigherThanViewer() {

@@ -12,7 +12,7 @@ public record UpdateNicknameResponse(
 	public static UpdateNicknameResponse from(WorkspaceMember workspaceMember) {
 		return new UpdateNicknameResponse(
 			workspaceMember.getId(),
-			workspaceMember.getNickname(),
+			workspaceMember.getDisplayName(),
 			workspaceMember.getLastModifiedDate()
 		);
 	}

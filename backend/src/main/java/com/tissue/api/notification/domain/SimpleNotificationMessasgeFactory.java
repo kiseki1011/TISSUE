@@ -45,7 +45,7 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 			event.getWorkspaceCode()
 		);
 
-		String actorNickname = actor.getNickname();
+		String actorNickname = actor.getDisplayName();
 
 		// 파라미터 배열 생성
 		Object[] titleArgs = createTitleArguments(event);

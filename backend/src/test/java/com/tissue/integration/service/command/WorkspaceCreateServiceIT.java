@@ -102,11 +102,11 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
-		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getNickname())
+		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getDisplayName())
 			.isNotNull();
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
-		assertThat(workspaceMember.getNickname()).isNotNull();
+		assertThat(workspaceMember.getDisplayName()).isNotNull();
 	}
 
 	@Test

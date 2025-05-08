@@ -49,7 +49,7 @@ public class WorkspaceMemberCommandService {
 		try {
 			WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-			workspaceMember.updateNickname(request.nickname());
+			workspaceMember.updateDisplayName(request.nickname());
 			workspaceMemberRepository.saveAndFlush(workspaceMember);
 
 			return UpdateNicknameResponse.from(workspaceMember);
@@ -114,7 +114,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public AssignTeamResponse assignTeam(
+	public AssignTeamResponse setTeam(
 		String workspaceCode,
 		Long teamId,
 		Long targetMemberId,

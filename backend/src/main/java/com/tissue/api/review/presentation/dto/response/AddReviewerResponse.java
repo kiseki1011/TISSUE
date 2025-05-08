@@ -21,7 +21,7 @@ public record AddReviewerResponse(
 	public static AddReviewerResponse from(WorkspaceMember reviewer) {
 		return AddReviewerResponse.builder()
 			.reviewerId(reviewer.getId())
-			.reviewerNickname(reviewer.getNickname())
+			.reviewerNickname(reviewer.getDisplayName())
 			.reviewerRole(reviewer.getRole())
 			.build();
 	}

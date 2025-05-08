@@ -29,10 +29,6 @@ public class MemberCommandService {
 	private final MemberValidator memberValidator;
 	private final PasswordEncoder passwordEncoder;
 
-	/**
-	 * Todo
-	 *  - signup, updateUsername은 동시성 관련 처리 필요
-	 */
 	@Transactional
 	public MemberResponse signup(
 		SignupMemberRequest request

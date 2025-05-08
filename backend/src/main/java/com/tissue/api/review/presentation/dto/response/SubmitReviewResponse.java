@@ -29,7 +29,7 @@ public record SubmitReviewResponse(
 			.reviewRound(review.getReviewRound())
 			.reviewerId(review.getIssueReviewer().getReviewer().getId())
 			.reviewerNickName(
-				review.getIssueReviewer().getReviewer().getNickname()) // Todo: 최적화 여지, 서비스의 WorkspaceMember에서 가져오기
+				review.getIssueReviewer().getReviewer().getDisplayName()) // Todo: 최적화 여지, 서비스의 WorkspaceMember에서 가져오기
 			.createdAt(review.getCreatedDate())
 			.build();
 	}

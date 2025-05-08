@@ -7,17 +7,14 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 public class WorkspaceMemberEntityFixture {
 	public WorkspaceMember createOwnerWorkspaceMember(Member member, Workspace workspace) {
-		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.OWNER,
-			member.getEmail());
+		return WorkspaceMember.createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
 	}
 
 	public WorkspaceMember createManagerWorkspaceMember(Member member, Workspace workspace) {
-		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MANAGER,
-			member.getEmail());
+		return WorkspaceMember.createWorkspaceMember(member, workspace, WorkspaceRole.MANAGER);
 	}
 
 	public WorkspaceMember createMemberWorkspaceMember(Member member, Workspace workspace) {
-		return WorkspaceMember.addWorkspaceMember(member, workspace, WorkspaceRole.MEMBER,
-			member.getEmail());
+		return WorkspaceMember.createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 	}
 }

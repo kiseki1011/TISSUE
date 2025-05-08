@@ -1,5 +1,7 @@
 package com.tissue.api.workspace.service.command.create;
 
+import static com.tissue.api.workspacemember.domain.WorkspaceMember.*;
+
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,14 +16,12 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,6 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
-	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceValidator workspaceValidator;
 
@@ -59,18 +58,16 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		Member member = memberReader.findMember(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
-		setWorkspaceCode(workspace);
+		setGeneratedWorkspaceCode(workspace);
 		setEncodedPasswordIfPresent(request, workspace);
-		setKeyPrefix(request, workspace);
+		setIssueKeyPrefix(request, workspace);
 
 		Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addOwnerWorkspaceMember(
+		workspaceMemberRepository.save(addOwnerWorkspaceMember(
 			member,
-			savedWorkspace,
-			randomNicknameGenerator.generateNickname()
-		);
-		workspaceMemberRepository.save(workspaceMember);
+			savedWorkspace
+		));
 
 		return WorkspaceResponse.from(savedWorkspace);
 	}
@@ -88,12 +85,12 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		);
 	}
 
-	private void setKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
+	private void setIssueKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
 		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
 		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 	}
 
-	private void setWorkspaceCode(Workspace workspace) {
+	private void setGeneratedWorkspaceCode(Workspace workspace) {
 		String generatedCode = workspaceCodeGenerator.generateWorkspaceCode();
 		workspace.setCode(generatedCode);
 	}

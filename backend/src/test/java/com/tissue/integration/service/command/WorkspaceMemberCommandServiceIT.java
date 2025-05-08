@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.Position;
+import com.tissue.api.team.domain.Team;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -23,6 +23,7 @@ import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
@@ -56,7 +57,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canRemoveMemberFromWorkspace() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
@@ -79,7 +80,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void cannotKickMemberFromWorkspaceWithInvalidMemberId() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
 		Long invalidMemberId = 999L;
 
@@ -98,7 +99,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void canUpdateWorkspaceRoleOfWorkspaceMember() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
@@ -146,7 +147,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	void cannotUpdateWorkspaceRoleToOwner() {
 		// given
 		Member requesterMember = testDataFixture.createMember("requester");
-		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace, "testnickname");
+		WorkspaceMember requester = WorkspaceMember.addOwnerWorkspaceMember(requesterMember, workspace);
 
 		Member targetMember = testDataFixture.createMember("target");
 		WorkspaceMember target = testDataFixture.createWorkspaceMember(targetMember, workspace, WorkspaceRole.MEMBER);
@@ -234,7 +235,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("워크스페이스 멤버의 별칭(nickname)을 업데이트 할 수 있다")
+	@DisplayName("WorkspaceMember의 표시 이름(displayName)을 업데이트 할 수 있다")
 	void canUpdateWorkspaceMemberNickname() {
 		// given
 		Member member = testDataFixture.createMember("tester");
@@ -255,44 +256,12 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.findByMemberIdAndWorkspaceCode(member.getId(), workspace.getCode())
 			.get();
 
-		assertThat(updatedMember.getNickname()).isEqualTo("newNickname");
-	}
-
-	@Test
-	@DisplayName("같은 워크스페이스 내에서 별칭(nickname)은 중복되면 안된다")
-	void cannotUpdateNicknameToDuplicateNickname() {
-		// given
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
-
-		WorkspaceMember workspaceMember1 = testDataFixture.createWorkspaceMember(
-			member1,
-			workspace,
-			WorkspaceRole.MEMBER
-		);
-
-		// workspaceMember2 nickname is "testnickname"
-		WorkspaceMember workspaceMember2 = workspaceMemberRepository.save(
-			WorkspaceMember.addWorkspaceMember(
-				member2,
-				workspace,
-				WorkspaceRole.MEMBER,
-				"testnickname"
-			)
-		);
-
-		// when & then - try to update workspaceMember1 nickname to "testnickname"
-		assertThatThrownBy(() -> workspaceMemberCommandService.updateNickname(
-			workspace.getCode(),
-			workspaceMember1.getId(),
-			new UpdateNicknameRequest("testnickname")
-		))
-			.isInstanceOfAny(DuplicateResourceException.class);
+		assertThat(updatedMember.getDisplayName()).isEqualTo("newNickname");
 	}
 
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 멤버에게 포지션(Position)을 할당할 수 있다")
+	@DisplayName("워크스페이스 멤버에게 직책(Position)을 설정할 수 있다")
 	void canAssignPositionToWorkspaceMember() {
 		// given
 		Member member = testDataFixture.createMember("tester");
@@ -327,7 +296,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 	@Test
 	@Transactional
-	@DisplayName("하나의 워크스페이스 멤버에게 다수의 포지션(Position)을 할당할 수 있다")
+	@DisplayName("하나의 워크스페이스 멤버에게 다수의 포지션(Position)을 설정할 수 있다")
 	void canAssignMultiplePositions() {
 		// given
 		Member member = testDataFixture.createMember("tester");
@@ -377,7 +346,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("존재하지 않는 포지션(Position)을 할당할 수 없다")
+	@DisplayName("존재하지 않는 포지션(Position)을 설정할 수 없다")
 	void cannotAssignInvalidPosition() {
 		// given
 		Member member = testDataFixture.createMember("tester");
@@ -395,5 +364,39 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			member.getId(),
 			member.getId()
 		)).isInstanceOf(ResourceNotFoundException.class);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("WorkspaceMember에게 소속(Team)을 설정할 수 있다")
+	void canAssignTeamToWorkspaceMember() {
+		// given
+		Member member = testDataFixture.createMember("tester");
+
+		Team team = teamRepository.save(Team.builder()
+			.workspace(workspace)
+			.color(ColorType.BLACK)
+			.name("Payment Team")
+			.description("Team for payment")
+			.build());
+
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
+			workspace,
+			WorkspaceRole.MEMBER
+		);
+
+		entityManager.flush();
+
+		// When
+		AssignTeamResponse response = workspaceMemberCommandService.setTeam(
+			workspace.getCode(),
+			team.getId(),
+			member.getId(),
+			member.getId()
+		);
+
+		// Then
+		assertThat(response.workspaceMemberId()).isEqualTo(workspaceMember.getId());
 	}
 }

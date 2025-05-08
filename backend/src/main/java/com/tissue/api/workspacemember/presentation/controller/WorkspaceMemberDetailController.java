@@ -103,7 +103,7 @@ public class WorkspaceMemberDetailController {
 		@PathVariable Long teamId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AssignTeamResponse response = workspaceMemberCommandService.assignTeam(
+		AssignTeamResponse response = workspaceMemberCommandService.setTeam(
 			workspaceCode,
 			teamId,
 			memberId,

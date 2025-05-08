@@ -86,7 +86,7 @@ public class Review extends BaseEntity {
 				String.format(
 					"This review does not belong to the specified reviewer."
 						+ " reviewId: %d, authorWorkspaceMemberId: %d, authorNickname: %s",
-					id, author.getId(), author.getNickname()
+					id, author.getId(), author.getDisplayName()
 				)
 			);
 		}

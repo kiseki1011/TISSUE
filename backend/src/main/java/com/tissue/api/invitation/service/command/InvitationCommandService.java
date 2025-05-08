@@ -12,10 +12,8 @@ import com.tissue.api.invitation.domain.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
-import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,6 @@ public class InvitationCommandService {
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
-	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -39,12 +36,9 @@ public class InvitationCommandService {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.updateStatus(InvitationStatus.ACCEPTED);
 
-		// Todo: nickname 유일성을 위한 처리 필요(동시성, 유일성 처리)
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
 			invitation.getMember(),
-			invitation.getWorkspace(),
-			WorkspaceRole.MEMBER,
-			randomNicknameGenerator.generateNickname()
+			invitation.getWorkspace()
 		);
 
 		workspaceMemberRepository.save(workspaceMember);

@@ -106,7 +106,7 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.reviewerId()).isEqualTo(reviewerWorkspaceMemberId);
-		assertThat(response.reviewerNickname()).isEqualTo(workspaceMember2.getNickname());
+		assertThat(response.reviewerNickname()).isEqualTo(workspaceMember2.getDisplayName());
 	}
 
 	@Test
