@@ -15,6 +15,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;
@@ -25,7 +26,6 @@ import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -41,7 +41,7 @@ public class WorkspaceController {
 	private final WorkspaceCreateService workspaceCreateService;
 	private final WorkspaceCommandService workspaceCommandService;
 	private final WorkspaceQueryService workspaceQueryService;
-	private final WorkspaceValidator workspaceValidator;
+	private final WorkspaceAuthenticationService workspaceAuthenticationService;
 
 	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
@@ -60,14 +60,14 @@ public class WorkspaceController {
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@PatchMapping("/{code}/info")
+	@PatchMapping("/{workspaceCode}/info")
 	public ApiResponse<WorkspaceResponse> updateWorkspaceInfo(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
 	) {
 		WorkspaceResponse response = workspaceCommandService.updateWorkspaceInfo(
 			request,
-			code
+			workspaceCode
 		);
 
 		return ApiResponse.ok("Workspace info updated.", response);
@@ -77,11 +77,11 @@ public class WorkspaceController {
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
 	public ApiResponse<WorkspaceResponse> updateWorkspacePassword(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@RequestBody @Valid UpdateWorkspacePasswordRequest request
 	) {
-		workspaceValidator.validateWorkspacePassword(request.originalPassword(), code);
-		WorkspaceResponse response = workspaceCommandService.updateWorkspacePassword(request, code);
+		workspaceAuthenticationService.authenticate(request.originalPassword(), workspaceCode);
+		WorkspaceResponse response = workspaceCommandService.updateWorkspacePassword(request, workspaceCode);
 
 		return ApiResponse.ok("Workspace password updated.", response);
 	}
@@ -89,14 +89,14 @@ public class WorkspaceController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.OWNER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping("/{code}")
+	@DeleteMapping("/{workspaceCode}")
 	public ApiResponse<Void> deleteWorkspace(
-		@PathVariable String code,
+		@PathVariable String workspaceCode,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
-		workspaceValidator.validateWorkspacePassword(request.password(), code);
-		workspaceCommandService.deleteWorkspace(code, loginMemberId);
+		workspaceAuthenticationService.authenticate(request.password(), workspaceCode);
+		workspaceCommandService.deleteWorkspace(workspaceCode, loginMemberId);
 
 		return ApiResponse.okWithNoContent("Workspace deleted.");
 	}
