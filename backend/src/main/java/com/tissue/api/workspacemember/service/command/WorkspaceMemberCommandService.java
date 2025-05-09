@@ -12,14 +12,11 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.domain.service.WorkspaceMemberAuthorizationService;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -35,10 +32,11 @@ public class WorkspaceMemberCommandService {
 	private final TeamReader teamReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
+	private final WorkspaceMemberAuthorizationService workspaceMemberAuthorizationService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public UpdateNicknameResponse updateDisplayName(
+	public WorkspaceMemberResponse updateDisplayName(
 		String workspaceCode,
 		Long memberId,
 		UpdateDisplayNameRequest request
@@ -48,11 +46,11 @@ public class WorkspaceMemberCommandService {
 		workspaceMember.updateDisplayName(request.displayName());
 		workspaceMemberRepository.saveAndFlush(workspaceMember);
 
-		return UpdateNicknameResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
-	public UpdateRoleResponse updateRole(
+	public WorkspaceMemberResponse updateRole(
 		String workspaceCode,
 		Long targetMemberId,
 		Long requesterMemberId,
@@ -61,21 +59,20 @@ public class WorkspaceMemberCommandService {
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
 		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
 
-		workspaceMemberValidator.validateRoleUpdate(requester, target);
+		workspaceMemberAuthorizationService.validateCanUpdateRole(requesterMemberId, targetMemberId, workspaceCode);
 
 		WorkspaceRole oldRole = target.getRole();
-
 		target.updateRole(request.updateWorkspaceRole());
 
 		eventPublisher.publishEvent(
 			WorkspaceMemberRoleChangedEvent.createEvent(target, oldRole, requesterMemberId)
 		);
 
-		return UpdateRoleResponse.from(target);
+		return WorkspaceMemberResponse.from(target);
 	}
 
 	@Transactional
-	public AssignPositionResponse setPosition(
+	public WorkspaceMemberResponse setPosition(
 		String workspaceCode,
 		Long positionId,
 		Long targetMemberId,
@@ -86,7 +83,7 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMember.addPosition(position);
 
-		return AssignPositionResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
@@ -103,7 +100,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public AssignTeamResponse setTeam(
+	public WorkspaceMemberResponse setTeam(
 		String workspaceCode,
 		Long teamId,
 		Long targetMemberId,
@@ -114,7 +111,7 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMember.addTeam(team);
 
-		return AssignTeamResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
@@ -146,7 +143,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public RemoveWorkspaceMemberResponse removeWorkspaceMember(
+	public void removeWorkspaceMember(
 		String workspaceCode,
 		Long targetMemberId,
 		Long requesterMemberId
@@ -154,11 +151,12 @@ public class WorkspaceMemberCommandService {
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
 		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
 
-		// TODO: WorkspaceMemberAuthorizationService에 로직 정의해서 사용
-		workspaceMemberValidator.validateRemoveMember(requester, target);
+		workspaceMemberAuthorizationService.validateCanRemoveWorkspaceMember(
+			requesterMemberId,
+			targetMemberId,
+			workspaceCode
+		);
 
 		target.remove();
-
-		return RemoveWorkspaceMemberResponse.from(target);
 	}
 }

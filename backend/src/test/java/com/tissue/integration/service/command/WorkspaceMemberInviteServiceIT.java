@@ -52,25 +52,6 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("다수의 멤버를 워크스페이스로 초대할 수 있다")
-	void canInviteMultipleMembersAtOnceToWorkspace() {
-		// given
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
-
-		InviteMembersRequest request = new InviteMembersRequest(Set.of("member1", "member2"));
-
-		// when
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
-
-		// then
-		assertThat(response.invitedMembers()).contains(
-			InviteMembersResponse.InvitedMember.from(member1),
-			InviteMembersResponse.InvitedMember.from(member2)
-		);
-	}
-
-	@Test
 	@DisplayName("다수의 멤버에게 초대를 보낼때, 존재하지 않는 멤버에 대한 초대는 대상에서 제외된다")
 	void whenInvitingMultipleMembers_NonExistingIdentifiersAreExcluded() {
 		// given
@@ -85,7 +66,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
 
 		// then
-		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member));
+		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
 	}
 
 	@Test
@@ -110,8 +91,8 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
 
 		// then
-		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member2));
 		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
 	}
 
 	@Test

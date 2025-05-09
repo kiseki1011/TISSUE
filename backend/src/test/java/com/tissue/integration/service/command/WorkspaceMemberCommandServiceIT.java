@@ -22,11 +22,8 @@ import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -42,6 +39,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	@AfterEach
 	void tearDown() {
 		databaseCleaner.execute();
+	}
+
+	private WorkspaceMember findWorkspaceMember(String workspaceCode, Long memberId) {
+		return workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
+			.orElseThrow(() -> new ResourceNotFoundException("WorkspaceMember not found"));
 	}
 
 	/**
@@ -107,7 +109,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// when
-		UpdateRoleResponse response = workspaceMemberCommandService.updateRole(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.updateRole(
 			workspace.getCode(),
 			targetMember.getId(),
 			requesterMember.getId(),
@@ -115,7 +117,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.updatedRole()).isEqualTo(WorkspaceRole.MANAGER);
+		assertThat(response.memberId()).isEqualTo(targetMember.getId());
+
+		WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+		assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.MANAGER);
 	}
 
 	@Test
@@ -243,20 +248,17 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			WorkspaceRole.MEMBER);
 
 		// when
-		UpdateNicknameResponse response = workspaceMemberCommandService.updateDisplayName(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.updateDisplayName(
 			workspace.getCode(),
-			workspaceMember.getId(),
-			new UpdateDisplayNameRequest("newNickname")
+			member.getId(),
+			new UpdateDisplayNameRequest("newDisplayName")
 		);
 
 		// then
-		assertThat(response.updatedNickname()).isEqualTo("newNickname");
+		assertThat(response.memberId()).isEqualTo(member.getId());
 
-		WorkspaceMember updatedMember = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(member.getId(), workspace.getCode())
-			.get();
-
-		assertThat(updatedMember.getDisplayName()).isEqualTo("newNickname");
+		WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+		assertThat(updatedMember.getDisplayName()).isEqualTo("newDisplayName");
 	}
 
 	@Test
@@ -282,7 +284,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// When
-		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			position.getId(),
 			member.getId(),
@@ -290,8 +292,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// Then
-		assertThat(response.workspaceMemberId()).isEqualTo(workspaceMember.getId());
-		// assertThat(respose.positionId()).isEqualTo(position.getId());
+		assertThat(response.memberId()).isEqualTo(member.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
@@ -332,7 +334,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when - assign another position(position2) to workspace member
-		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
 			workspace.getCode(),
 			position2.getId(),
 			member.getId(),
@@ -341,8 +343,11 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		// TODO: PositionResponse인 response1, response2의 positionId 검증
-		// assertThat(response.assignedPositions().get(0).name()).isEqualTo("BACKEND");
-		// assertThat(response.assignedPositions().get(1).name()).isEqualTo("FRONTEND");
+		assertThat(response.memberId()).isEqualTo(member.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+
+		WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+		assertThat(updatedMember.getWorkspaceMemberPositions().size()).isEqualTo(2L);
 	}
 
 	@Test
@@ -380,7 +385,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.description("Team for payment")
 			.build());
 
-		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+		testDataFixture.createWorkspaceMember(
 			member,
 			workspace,
 			WorkspaceRole.MEMBER
@@ -389,7 +394,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// When
-		AssignTeamResponse response = workspaceMemberCommandService.setTeam(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.setTeam(
 			workspace.getCode(),
 			team.getId(),
 			member.getId(),
@@ -397,6 +402,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// Then
-		assertThat(response.workspaceMemberId()).isEqualTo(workspaceMember.getId());
+		assertThat(response.memberId()).isEqualTo(member.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+
+		WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+		assertThat(workspaceMember.getWorkspaceMemberTeams().get(0).getTeam().getName()).isEqualTo("Payment Team");
 	}
 }

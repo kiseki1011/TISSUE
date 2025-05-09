@@ -14,9 +14,7 @@ import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 
 import jakarta.validation.Valid;
@@ -34,12 +32,12 @@ public class WorkspaceMemberDetailController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PatchMapping("/display-name")
-	public ApiResponse<UpdateNicknameResponse> updateDisplayName(
+	public ApiResponse<WorkspaceMemberResponse> updateDisplayName(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid UpdateDisplayNameRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateNicknameResponse response = workspaceMemberCommandService.updateDisplayName(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.updateDisplayName(
 			workspaceCode,
 			loginMemberId,
 			request
@@ -51,13 +49,13 @@ public class WorkspaceMemberDetailController {
 	@LoginRequired
 	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
 	@PatchMapping("/{memberId}/positions/{positionId}")
-	public ApiResponse<AssignPositionResponse> setPosition(
+	public ApiResponse<WorkspaceMemberResponse> setPosition(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@PathVariable Long positionId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AssignPositionResponse response = workspaceMemberCommandService.setPosition(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
 			workspaceCode,
 			positionId,
 			memberId,
@@ -83,19 +81,19 @@ public class WorkspaceMemberDetailController {
 			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Position cleared from workspace member.");
+		return ApiResponse.okWithNoContent("Position removed from workspace member.");
 	}
 
 	@LoginRequired
 	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
 	@PatchMapping("/{memberId}/teams/{teamId}")
-	public ApiResponse<AssignTeamResponse> setTeam(
+	public ApiResponse<WorkspaceMemberResponse> setTeam(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@PathVariable Long teamId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AssignTeamResponse response = workspaceMemberCommandService.setTeam(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.setTeam(
 			workspaceCode,
 			teamId,
 			memberId,
@@ -121,6 +119,6 @@ public class WorkspaceMemberDetailController {
 			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Team cleared from workspace member.");
+		return ApiResponse.okWithNoContent("Team removed from workspace member.");
 	}
 }

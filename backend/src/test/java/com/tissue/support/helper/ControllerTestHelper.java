@@ -42,6 +42,7 @@ import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
+import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.presentation.controller.WorkspaceController;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
@@ -147,6 +148,8 @@ public abstract class ControllerTestHelper {
 	protected ReviewCommandService reviewCommandService;
 	@MockBean
 	protected ReviewerCommandService reviewerCommandService;
+	@MockBean
+	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	// @MockBean
 	// protected NotificationMessageFactory notificationMessageFactory;
 

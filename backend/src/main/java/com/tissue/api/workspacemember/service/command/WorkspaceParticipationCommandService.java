@@ -14,7 +14,8 @@ import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
+import com.tissue.api.workspacemember.domain.service.WorkspaceMemberAuthorizationService;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,9 @@ public class WorkspaceParticipationCommandService {
 	 */
 	private final WorkspaceReader workspaceReader;
 	private final MemberReader memberReader;
+	private final WorkspaceMemberReader workspaceMemberReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final WorkspaceMemberAuthorizationService workspaceMemberAuthorizationService;
 
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -40,8 +43,10 @@ public class WorkspaceParticipationCommandService {
 	 * @return JoinWorkspaceResponse - 워크스페이스 참여 응답을 위한 DTO
 	 */
 	@Transactional
-	public JoinWorkspaceResponse joinWorkspace(String workspaceCode, Long memberId) {
-
+	public WorkspaceMemberResponse joinWorkspace(
+		String workspaceCode,
+		Long memberId
+	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 		Member member = memberReader.findMember(memberId);
 
@@ -59,6 +64,18 @@ public class WorkspaceParticipationCommandService {
 			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
 		);
 
-		return JoinWorkspaceResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
+	}
+
+	@Transactional
+	public void leaveWorkspace(
+		String workspaceCode,
+		Long memberId
+	) {
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+
+		workspaceMemberAuthorizationService.validateCanLeaveWorkspace(memberId, workspaceCode);
+
+		workspaceMember.remove();
 	}
 }
