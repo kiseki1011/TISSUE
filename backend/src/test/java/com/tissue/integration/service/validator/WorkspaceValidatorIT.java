@@ -10,7 +10,7 @@ import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceValidatorIT extends ServiceIntegrationTestHelper {
+class WorkspaceAuthenticationServiceIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	void tearDown() {
@@ -24,7 +24,7 @@ class WorkspaceValidatorIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", "test1234!", null);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceValidator.validateWorkspacePassword("invalidPassword", workspace.getCode()))
+		assertThatThrownBy(() -> workspaceAuthenticationService.authenticate("invalidPassword", workspace.getCode()))
 			.isInstanceOf(AuthenticationFailedException.class);
 	}
 }
