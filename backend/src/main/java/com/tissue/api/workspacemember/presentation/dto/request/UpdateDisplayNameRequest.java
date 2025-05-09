@@ -1,15 +1,15 @@
 package com.tissue.api.workspacemember.presentation.dto.request;
 
-import com.tissue.api.common.validator.annotation.pattern.NicknamePattern;
-import com.tissue.api.common.validator.annotation.size.NicknameSize;
+import com.tissue.api.common.validator.annotation.pattern.DisplayNamePattern;
+import com.tissue.api.common.validator.annotation.size.DisplayNameSize;
 
 import jakarta.validation.constraints.NotBlank;
 
 public record UpdateDisplayNameRequest(
 
-	@NicknameSize
-	@NicknamePattern
+	@DisplayNameSize
+	@DisplayNamePattern
 	@NotBlank(message = "{valid.notblank}")
-	String nickname
+	String displayName
 ) {
 }

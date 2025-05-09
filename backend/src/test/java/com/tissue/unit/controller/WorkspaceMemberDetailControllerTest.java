@@ -65,7 +65,7 @@ class WorkspaceMemberDetailControllerTest extends ControllerTestHelper {
 		Long positionId = 1L;
 
 		doNothing().when(workspaceMemberCommandService)
-			.clearPosition(workspaceCode, positionId, targetMemberId, loginMemberId);
+			.removePosition(workspaceCode, positionId, targetMemberId, loginMemberId);
 
 		// When & Then
 		mockMvc.perform(

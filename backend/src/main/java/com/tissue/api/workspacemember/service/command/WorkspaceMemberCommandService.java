@@ -1,12 +1,9 @@
 package com.tissue.api.workspacemember.service.command;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.team.domain.Team;
@@ -46,20 +43,12 @@ public class WorkspaceMemberCommandService {
 		Long memberId,
 		UpdateDisplayNameRequest request
 	) {
-		try {
-			WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-			workspaceMember.updateDisplayName(request.nickname());
-			workspaceMemberRepository.saveAndFlush(workspaceMember);
+		workspaceMember.updateDisplayName(request.displayName());
+		workspaceMemberRepository.saveAndFlush(workspaceMember);
 
-			return UpdateNicknameResponse.from(workspaceMember);
-
-		} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-			log.error("Duplicate nickname: ", e);
-
-			throw new DuplicateResourceException(
-				String.format("Nickname already exists for this workspace. nickname: %s", request.nickname()), e);
-		}
+		return UpdateNicknameResponse.from(workspaceMember);
 	}
 
 	@Transactional
@@ -101,7 +90,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public void clearPosition(
+	public void removePosition(
 		String workspaceCode,
 		Long positionId,
 		Long targetMemberId,

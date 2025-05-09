@@ -80,7 +80,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/nickname - 별칭을 변경하는데 성공하면 200을 응답받는다")
+	@DisplayName("PATCH /workspaces/{code}/members/display-name - 표시 이름(displayName)을 변경하는데 성공하면 200을 응답받는다")
 	void testUpdateNickname_ifSuccess_return200() throws Exception {
 		// given
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
@@ -105,11 +105,11 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/nickname", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/display-name", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(new UpdateDisplayNameRequest("newNickname"))))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Nickname updated."))
+			.andExpect(jsonPath("$.message").value("Display name updated."))
 			.andExpect(jsonPath("$.data.updatedNickname").value("newNickname"))
 			.andDo(print());
 	}

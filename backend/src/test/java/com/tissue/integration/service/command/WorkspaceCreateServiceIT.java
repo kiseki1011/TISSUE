@@ -87,7 +87,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	// Todo: 워크스페이스 멤버 별칭 방식 변경 후 수정
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 생성 시 생성자인 워크스페이스 멤버(WorkspaceMember)의 별칭(nickname)이 기본적으로 설정된다")
+	@DisplayName("워크스페이스 생성 시 생성자인 워크스페이스 멤버(WorkspaceMember)의 별칭(displayName)이 기본적으로 설정된다")
 	void workspaceCreate_WorkspaceMemberDefaultNicknameIsEmail() {
 		// given
 		Member member = testDataFixture.createMember("member1");

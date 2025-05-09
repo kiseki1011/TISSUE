@@ -70,13 +70,13 @@ public class WorkspaceMemberDetailController {
 	@LoginRequired
 	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
 	@DeleteMapping("/{memberId}/positions/{positionId}")
-	public ApiResponse<Void> clearPosition(
+	public ApiResponse<Void> removePosition(
 		@PathVariable String workspaceCode,
 		@PathVariable Long positionId,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		workspaceMemberCommandService.clearPosition(
+		workspaceMemberCommandService.removePosition(
 			workspaceCode,
 			positionId,
 			memberId,
@@ -108,7 +108,7 @@ public class WorkspaceMemberDetailController {
 	@LoginRequired
 	@SelfOrRoleRequired(role = WorkspaceRole.MANAGER, memberIdParam = "memberId")
 	@DeleteMapping("/{memberId}/teams/{teamId}")
-	public ApiResponse<Void> clearTeam(
+	public ApiResponse<Void> removeTeam(
 		@PathVariable String workspaceCode,
 		@PathVariable Long teamId,
 		@PathVariable Long memberId,

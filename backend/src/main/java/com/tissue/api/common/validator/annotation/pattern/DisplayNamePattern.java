@@ -18,10 +18,10 @@ import jakarta.validation.constraints.Pattern;
 @Constraint(validatedBy = {})
 @Pattern(
 	regexp = "^\\p{L}[\\p{L}\\p{N}]*$",
-	message = "{valid.pattern.nickname}"
+	message = "{valid.pattern.displayName}"
 )
-public @interface NicknamePattern {
-	String message() default "{valid.pattern.nickname}";
+public @interface DisplayNamePattern {
+	String message() default "{valid.pattern.displayName}";
 
 	Class<?>[] groups() default {};
 

@@ -272,7 +272,7 @@ public abstract class Issue extends BaseEntity {
 			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
 			.findFirst()
 			.orElseThrow(() -> new ForbiddenOperationException(
-				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, nickname: %s",
+				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
 					workspaceMember.getId(), workspaceMember.getDisplayName()))
 			);
 	}
@@ -384,7 +384,7 @@ public abstract class Issue extends BaseEntity {
 			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
 			.findFirst()
 			.orElseThrow(() -> new InvalidOperationException(
-				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, nickname: %s",
+				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, displayName: %s",
 					assignee.getId(), assignee.getDisplayName()))
 			);
 	}

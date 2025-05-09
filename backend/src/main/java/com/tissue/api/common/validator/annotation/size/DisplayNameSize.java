@@ -14,10 +14,10 @@ import jakarta.validation.constraints.Size;
 @Constraint(validatedBy = {})
 @Size(
 	min = 2, max = 20,
-	message = "{valid.size.nickname}"
+	message = "{valid.size.displayName}"
 )
-public @interface NicknameSize {
-	String message() default "{valid.size.nickname}";
+public @interface DisplayNameSize {
+	String message() default "{valid.size.displayName}";
 
 	Class<?>[] groups() default {};
 
