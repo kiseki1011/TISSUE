@@ -5,7 +5,7 @@ import com.tissue.api.common.validator.annotation.size.NicknameSize;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record UpdateNicknameRequest(
+public record UpdateDisplayNameRequest(
 
 	@NicknameSize
 	@NicknamePattern

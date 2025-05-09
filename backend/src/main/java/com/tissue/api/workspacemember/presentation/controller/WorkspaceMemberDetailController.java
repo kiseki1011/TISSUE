@@ -13,7 +13,7 @@ import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
@@ -31,29 +31,21 @@ public class WorkspaceMemberDetailController {
 
 	private final WorkspaceMemberCommandService workspaceMemberCommandService;
 
-	/*
-	 * Todo
-	 *  - <br>
-	 *  - 구현 예정
-	 *  - setNicknameSchema: 워크스페이스의 별칭 스키마 정하기 (OWNER)
-	 *    - 예시: [멤버의 소속 부서/팀][멤버의 포지션]멤버의 이름 -> 이렇게 정하는 것이 가능, 중복되는 경우 숫자 붙이기
-	 *    - 예시: [SearchTeam][BACKEND-DEV]HongGilDong
-	 */
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PatchMapping("/nickname")
-	public ApiResponse<UpdateNicknameResponse> updateMyNickname(
+	@PatchMapping("/display-name")
+	public ApiResponse<UpdateNicknameResponse> updateDisplayName(
 		@PathVariable String workspaceCode,
-		@RequestBody @Valid UpdateNicknameRequest request,
-		@ResolveLoginMember Long memberId
+		@RequestBody @Valid UpdateDisplayNameRequest request,
+		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
+		UpdateNicknameResponse response = workspaceMemberCommandService.updateDisplayName(
 			workspaceCode,
-			memberId,
+			loginMemberId,
 			request
 		);
 
-		return ApiResponse.ok("Nickname updated.", response);
+		return ApiResponse.ok("Display name updated.", response);
 	}
 
 	@LoginRequired

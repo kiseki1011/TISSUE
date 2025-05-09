@@ -20,7 +20,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
@@ -243,10 +243,10 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			WorkspaceRole.MEMBER);
 
 		// when
-		UpdateNicknameResponse response = workspaceMemberCommandService.updateNickname(
+		UpdateNicknameResponse response = workspaceMemberCommandService.updateDisplayName(
 			workspace.getCode(),
 			workspaceMember.getId(),
-			new UpdateNicknameRequest("newNickname")
+			new UpdateDisplayNameRequest("newNickname")
 		);
 
 		// then

@@ -15,7 +15,7 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
@@ -41,10 +41,10 @@ public class WorkspaceMemberCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public UpdateNicknameResponse updateNickname(
+	public UpdateNicknameResponse updateDisplayName(
 		String workspaceCode,
 		Long memberId,
-		UpdateNicknameRequest request
+		UpdateDisplayNameRequest request
 	) {
 		try {
 			WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);

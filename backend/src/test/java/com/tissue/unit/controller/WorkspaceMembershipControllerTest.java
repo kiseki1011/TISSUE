@@ -22,7 +22,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
@@ -97,17 +97,17 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		UpdateNicknameResponse response = UpdateNicknameResponse.from(workspaceMember);
 
-		when(workspaceMemberCommandService.updateNickname(
+		when(workspaceMemberCommandService.updateDisplayName(
 			anyString(),
 			anyLong(),
-			any(UpdateNicknameRequest.class))
+			any(UpdateDisplayNameRequest.class))
 		)
 			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/nickname", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new UpdateNicknameRequest("newNickname"))))
+				.content(objectMapper.writeValueAsString(new UpdateDisplayNameRequest("newNickname"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Nickname updated."))
 			.andExpect(jsonPath("$.data.updatedNickname").value("newNickname"))
