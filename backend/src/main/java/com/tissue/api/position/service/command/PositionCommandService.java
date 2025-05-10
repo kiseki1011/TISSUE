@@ -9,10 +9,7 @@ import com.tissue.api.position.domain.repository.PositionRepository;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
-import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
-import com.tissue.api.position.presentation.dto.response.DeletePositionResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.position.validator.PositionValidator;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
@@ -30,28 +27,27 @@ public class PositionCommandService {
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
+	// TODO: 포지션 생성 시, 색을 정할 수 있도록 설정
 	@Transactional
-	public CreatePositionResponse createPosition(
+	public PositionResponse createPosition(
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		ColorType randomColor = ColorType.getRandomUnusedColor(workspace.getUsedPositionColors());
-
 		Position position = Position.builder()
 			.name(request.name())
 			.description(request.description())
-			.color(randomColor)
+			.color(ColorType.getRandomColor())
 			.workspace(workspace)
 			.build();
-		;
 
-		return CreatePositionResponse.from(positionRepository.save(position));
+		return PositionResponse.from(positionRepository.save(position));
 	}
 
+	// TODO: 포지션 업데이트 시, 색을 정할 수 있도록 설정(null인 필드는 업데이트 하지 않는 방식으로 진행)
 	@Transactional
-	public UpdatePositionResponse updatePosition(
+	public PositionResponse updatePosition(
 		String workspaceCode,
 		Long positionId,
 		UpdatePositionRequest request
@@ -61,11 +57,12 @@ public class PositionCommandService {
 		position.updateName(request.name());
 		position.updateDescription(request.description());
 
-		return UpdatePositionResponse.from(position);
+		return PositionResponse.from(position);
 	}
 
+	// TODO: 색 업데이트를 updatePosition에 포함할 시, 이 메서드와 API 삭제
 	@Transactional
-	public UpdatePositionColorResponse updatePositionColor(
+	public PositionResponse updatePositionColor(
 		String workspaceCode,
 		Long positionId,
 		UpdatePositionColorRequest request
@@ -74,11 +71,11 @@ public class PositionCommandService {
 
 		position.updateColor(request.colorType());
 
-		return UpdatePositionColorResponse.from(position);
+		return PositionResponse.from(position);
 	}
 
 	@Transactional
-	public DeletePositionResponse deletePosition(
+	public void deletePosition(
 		String workspaceCode,
 		Long positionId
 	) {
@@ -87,7 +84,5 @@ public class PositionCommandService {
 		positionValidator.validatePositionIsUsed(position);
 
 		positionRepository.delete(position);
-
-		return DeletePositionResponse.from(position);
 	}
 }

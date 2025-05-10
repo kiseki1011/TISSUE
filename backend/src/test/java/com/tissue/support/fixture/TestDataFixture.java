@@ -103,6 +103,7 @@ public class TestDataFixture {
 			Member.builder()
 				.loginId(loginId)
 				.email(loginId + "@test.com")
+				.username(loginId + "Username")
 				.password(passwordEncoder.encode("test1234!"))
 				.name(new Name("Gildong", "Hong"))
 				.build()
@@ -146,11 +147,10 @@ public class TestDataFixture {
 		Workspace workspace,
 		WorkspaceRole role
 	) {
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
+		WorkspaceMember workspaceMember = WorkspaceMember.createWorkspaceMember(
 			member,
 			workspace,
-			role,
-			member.getEmail() // Todo: 별칭 정책 수정, 이슈 #201 참고
+			role
 		);
 
 		return workspaceMemberRepository.save(workspaceMember);

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.comment.domain.Comment;
 import com.tissue.api.comment.domain.ReviewComment;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
@@ -108,8 +109,10 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
-		assertThat(response.content()).isEqualTo("Test Comment");
+		Comment comment = commentRepository.findById(1L).get();
+
+		assertThat(comment.getContent()).isEqualTo("Test Comment");
+		assertThat(response.commentId()).isEqualTo(comment.getId());
 	}
 
 	@Test
@@ -139,8 +142,10 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.content()).isEqualTo("reply comment");
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		Comment comment = commentRepository.findById(2L).get();
+
+		assertThat(comment.getContent()).isEqualTo("reply comment");
+		assertThat(response.commentId()).isEqualTo(comment.getId());
 	}
 
 	@Test
@@ -168,6 +173,7 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(updateResponse.content()).isEqualTo("update comment");
+		assertThat(comment.getContent()).isEqualTo("update comment");
+		assertThat(updateResponse.commentId()).isEqualTo(comment.getId());
 	}
 }

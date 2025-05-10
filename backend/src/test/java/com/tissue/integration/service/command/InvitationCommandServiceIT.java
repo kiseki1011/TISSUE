@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -39,7 +39,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when
-		AcceptInvitationResponse response = invitationCommandService.acceptInvitation(member.getId(), 1L);
+		InvitationResponse response = invitationCommandService.acceptInvitation(member.getId(), 1L);
 
 		// then
 		assertThat(response).isNotNull();

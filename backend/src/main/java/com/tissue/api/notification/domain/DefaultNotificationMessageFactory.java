@@ -24,7 +24,7 @@ public class DefaultNotificationMessageFactory implements NotificationMessageFac
 			event.getWorkspaceCode()
 		);
 
-		String actorNickname = actor.getNickname();
+		String actorNickname = actor.getDisplayName();
 		String entityKey = event.getEntityKey();
 		String workspaceCode = event.getWorkspaceCode();
 

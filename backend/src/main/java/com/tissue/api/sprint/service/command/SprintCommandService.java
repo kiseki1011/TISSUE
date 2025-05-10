@@ -19,10 +19,7 @@ import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
-import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
-import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
+import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 
@@ -39,7 +36,7 @@ public class SprintCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public CreateSprintResponse createSprint(
+	public SprintResponse createSprint(
 		String workspaceCode,
 		CreateSprintRequest request
 	) {
@@ -54,11 +51,11 @@ public class SprintCommandService {
 			.build();
 
 		Sprint savedSprint = sprintRepository.save(sprint);
-		return CreateSprintResponse.from(savedSprint);
+		return SprintResponse.from(savedSprint);
 	}
 
 	@Transactional
-	public AddSprintIssuesResponse addIssues(
+	public SprintResponse addIssues(
 		String workspaceCode,
 		String sprintKey,
 		AddSprintIssuesRequest request
@@ -71,11 +68,11 @@ public class SprintCommandService {
 			sprint.addIssue(issue);
 		}
 
-		return AddSprintIssuesResponse.of(sprint, request.issueKeys());
+		return SprintResponse.from(sprint);
 	}
 
 	@Transactional
-	public UpdateSprintResponse updateSprint(
+	public SprintResponse updateSprint(
 		String workspaceCode,
 		String sprintKey,
 		UpdateSprintRequest request
@@ -94,11 +91,11 @@ public class SprintCommandService {
 			sprint.updateDates(startDate, endDate);
 		}
 
-		return UpdateSprintResponse.from(sprint);
+		return SprintResponse.from(sprint);
 	}
 
 	@Transactional
-	public UpdateSprintStatusResponse updateSprintStatus(
+	public SprintResponse updateSprintStatus(
 		String workspaceCode,
 		String sprintKey,
 		UpdateSprintStatusRequest request,
@@ -114,11 +111,11 @@ public class SprintCommandService {
 			eventPublisher.publishEvent(SprintCompletedEvent.createEvent(sprint, currentWorkspaceMemberId));
 		}
 
-		return UpdateSprintStatusResponse.from(sprint);
+		return SprintResponse.from(sprint);
 	}
 
 	@Transactional
-	public void removeIssue(
+	public SprintResponse removeIssue(
 		String workspaceCode,
 		String sprintKey,
 		RemoveSprintIssueRequest request
@@ -127,5 +124,7 @@ public class SprintCommandService {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.removeIssue(issue);
+
+		return SprintResponse.from(sprint);
 	}
 }

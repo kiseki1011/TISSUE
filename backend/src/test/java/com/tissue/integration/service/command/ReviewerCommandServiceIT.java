@@ -20,8 +20,7 @@ import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
 import com.tissue.api.review.presentation.dto.request.RemoveReviewerRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewerResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -97,7 +96,7 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 		AddReviewerRequest request = new AddReviewerRequest(member2.getId());
 
 		// when
-		AddReviewerResponse response = reviewerCommandService.addReviewer(
+		ReviewerResponse response = reviewerCommandService.addReviewer(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			request.toCommand(),
@@ -105,8 +104,9 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.reviewerId()).isEqualTo(reviewerWorkspaceMemberId);
-		assertThat(response.reviewerNickname()).isEqualTo(workspaceMember2.getNickname());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+		assertThat(response.reviewerMemberId()).isEqualTo(member2.getId());
 	}
 
 	@Test
@@ -172,21 +172,21 @@ class ReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			addReviewerRequest.toCommand(),
-			requesterWorkspaceMemberId
+			member1.getId()
 		);
 
 		// when
 		RemoveReviewerRequest request = new RemoveReviewerRequest(member2.getId());
 
-		RemoveReviewerResponse response = reviewerCommandService.removeReviewer(
+		ReviewerResponse response = reviewerCommandService.removeReviewer(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			request.toCommand(),
-			requesterWorkspaceMemberId
+			member1.getId()
 		);
 
 		// then
-		assertThat(response.workspaceMemberId()).isEqualTo(reviewerWorkspaceMemberId);
+		assertThat(response.reviewerMemberId()).isEqualTo(member2.getId());
 	}
 
 	@Test

@@ -15,9 +15,9 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
+import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -37,6 +37,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.biography("biography")
 			.jobType(JobType.DEVELOPER)
@@ -46,13 +47,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		SignupMemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request);
 
 		// then
 		Member foundMember = findMemberById(1L);
 
 		assertThat(foundMember.getId()).isEqualTo(response.memberId());
-		assertThat(foundMember.getEmail()).isEqualTo(response.email());
 	}
 
 	@Test
@@ -62,6 +62,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.biography("biography")
 			.jobType(JobType.DEVELOPER)
@@ -86,6 +87,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.biography("biography")
 			.jobType(JobType.DEVELOPER)
@@ -144,7 +146,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("tester");
 
 		// when
-		memberCommandService.withdraw(member.getId());
+		memberCommandService.withdraw(new WithdrawMemberRequest("test1234!"), member.getId());
 
 		// then
 		assertThat(memberRepository.findById(member.getId())).isEmpty();
@@ -162,7 +164,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
 
 		// when & then
-		assertThatThrownBy(() -> memberCommandService.withdraw(member.getId()))
+		assertThatThrownBy(() -> memberCommandService.withdraw(new WithdrawMemberRequest("test1234!"), member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
@@ -173,6 +175,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = memberRepository.save(Member.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.name(Name.builder()
 				.firstName("Gildong")
@@ -183,14 +186,14 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.biography("Im currently unemployed")
 			.jobType(JobType.ETC)
 			.birthDate(LocalDate.of(1995, 2, 2))
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
@@ -204,6 +207,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = memberRepository.save(Member.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.name(Name.builder()
 				.firstName("Gildong")
@@ -214,12 +218,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.biography("Im currently unemployed")
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
@@ -236,6 +240,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = memberRepository.save(Member.builder()
 			.loginId("tester")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.name(Name.builder()
 				.firstName("Gildong")
@@ -246,12 +251,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.lastName("Kim")
 			.build();
 
 		// when
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, member.getId());
+		MemberResponse response = memberCommandService.updateInfo(request, member.getId());
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());

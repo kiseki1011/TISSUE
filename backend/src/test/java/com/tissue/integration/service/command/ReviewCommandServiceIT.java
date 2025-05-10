@@ -20,7 +20,7 @@ import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
-import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -144,16 +144,16 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 		issue.requestReview();
 
 		// when
-		SubmitReviewResponse response = reviewCommandService.submitReview(
+		ReviewResponse response = reviewCommandService.submitReview(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			reviewerWorkspaceMemberId,
+			member2.getId(),
 			new SubmitReviewRequest(APPROVED, "test review", "test review")
 		);
 
 		// then
-		assertThat(response.reviewerId()).isEqualTo(reviewerWorkspaceMemberId);
-		assertThat(response.status()).isEqualTo(APPROVED);
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 	}
 
 	@Test

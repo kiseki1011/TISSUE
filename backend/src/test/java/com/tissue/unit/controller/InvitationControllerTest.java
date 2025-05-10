@@ -25,7 +25,7 @@ import org.springframework.mock.web.MockHttpSession;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
@@ -49,7 +49,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 		// given
 		Long invitationId = 1L;
 
-		AcceptInvitationResponse response = new AcceptInvitationResponse(invitationId, null, null);
+		InvitationResponse response = new InvitationResponse("TESTCODE", invitationId);
 
 		MockHttpSession session = new MockHttpSession();
 		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
@@ -114,14 +114,14 @@ class InvitationControllerTest extends ControllerTestHelper {
 		InvitationSearchCondition searchCondition = new InvitationSearchCondition(List.of(InvitationStatus.PENDING));
 		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdDate"));
 
-		List<InvitationResponse> content = List.of(
-			new InvitationResponse(
+		List<InvitationDetail> content = List.of(
+			new InvitationDetail(
 				1L, "TESTCODE1",
 				1L,
 				InvitationStatus.PENDING,
 				LocalDateTime.now()
 			),
-			new InvitationResponse(
+			new InvitationDetail(
 				2L,
 				"TESTCODE2",
 				1L,
@@ -129,7 +129,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 				LocalDateTime.now()
 			)
 		);
-		Page<InvitationResponse> page = new PageImpl<>(content, pageable, content.size());
+		Page<InvitationDetail> page = new PageImpl<>(content, pageable, content.size());
 
 		when(invitationQueryService.getInvitations(loginMemberId, searchCondition, pageable))
 			.thenReturn(page);
@@ -157,15 +157,15 @@ class InvitationControllerTest extends ControllerTestHelper {
 			Sort.by(Sort.Direction.DESC, "createdDate")
 		);
 
-		List<InvitationResponse> content = List.of(
-			new InvitationResponse(
+		List<InvitationDetail> content = List.of(
+			new InvitationDetail(
 				1L,
 				"TESTCODE1",
 				1L,
 				InvitationStatus.ACCEPTED,
 				LocalDateTime.now()
 			),
-			new InvitationResponse(
+			new InvitationDetail(
 				2L,
 				"TESTCODE2",
 				1L,
@@ -174,7 +174,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 			)
 		);
 
-		Page<InvitationResponse> page = new PageImpl<>(content, pageable, content.size());
+		Page<InvitationDetail> page = new PageImpl<>(content, pageable, content.size());
 
 		when(invitationQueryService.getInvitations(
 			anyLong(),

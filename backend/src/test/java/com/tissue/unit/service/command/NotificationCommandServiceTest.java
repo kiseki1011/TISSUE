@@ -59,7 +59,7 @@ class NotificationCommandServiceTest {
 
 		// 액터 모의 설정
 		WorkspaceMember actorMember = mock(WorkspaceMember.class);
-		when(actorMember.getNickname()).thenReturn("TestUser");
+		when(actorMember.getDisplayName()).thenReturn("TestUser");
 		when(workspaceMemberReader.findWorkspaceMember(actorId, workspaceCode)).thenReturn(actorMember);
 
 		// when

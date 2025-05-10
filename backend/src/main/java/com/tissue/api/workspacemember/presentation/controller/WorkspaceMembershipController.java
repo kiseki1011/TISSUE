@@ -1,25 +1,25 @@
 package com.tissue.api.workspacemember.presentation.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
 
@@ -60,13 +60,13 @@ public class WorkspaceMembershipController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{memberId}/role")
-	public ApiResponse<UpdateRoleResponse> updateWorkspaceMemberRole(
+	public ApiResponse<WorkspaceMemberResponse> updateWorkspaceMemberRole(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId,
 		@RequestBody @Valid UpdateRoleRequest request
 	) {
-		UpdateRoleResponse response = workspaceMemberCommandService.updateRole(
+		WorkspaceMemberResponse response = workspaceMemberCommandService.updateRole(
 			workspaceCode,
 			memberId,
 			loginMemberId,
@@ -94,19 +94,20 @@ public class WorkspaceMembershipController {
 	}
 
 	@LoginRequired
-	@SelfOrRoleRequired(role = WorkspaceRole.ADMIN, memberIdParam = "memberId")
+	@RoleRequired(role = WorkspaceRole.ADMIN)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{memberId}")
-	public ApiResponse<RemoveWorkspaceMemberResponse> removeWorkspaceMember(
+	public ApiResponse<Void> removeWorkspaceMember(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RemoveWorkspaceMemberResponse response = workspaceMemberCommandService.removeWorkspaceMember(
+		workspaceMemberCommandService.removeWorkspaceMember(
 			workspaceCode,
 			memberId,
 			loginMemberId
 		);
 
-		return ApiResponse.ok("Member was removed from this workspace", response);
+		return ApiResponse.okWithNoContent("Member was removed from this workspace");
 	}
 }

@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
-import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
-import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewResponse;
 import com.tissue.api.review.service.command.ReviewCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -43,13 +42,13 @@ public class ReviewController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<SubmitReviewResponse> submitReview(
+	public ApiResponse<ReviewResponse> submitReview(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@RequestBody @Valid SubmitReviewRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		SubmitReviewResponse response = reviewCommandService.submitReview(
+		ReviewResponse response = reviewCommandService.submitReview(
 			workspaceCode,
 			issueKey,
 			loginMemberId,
@@ -62,13 +61,13 @@ public class ReviewController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{reviewId}")
-	public ApiResponse<UpdateReviewResponse> updateReview(
+	public ApiResponse<ReviewResponse> updateReview(
 		@PathVariable String workspaceCode,
 		@PathVariable Long reviewId,
 		@RequestBody @Valid UpdateReviewRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateReviewResponse response = reviewCommandService.updateReview(
+		ReviewResponse response = reviewCommandService.updateReview(
 			workspaceCode,
 			reviewId,
 			loginMemberId,
@@ -81,14 +80,14 @@ public class ReviewController {
 	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PatchMapping("/{reviewId}/status")
-	// public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
+	// public ApiResponse<ReviewResponse> updateReviewStatus(
 	// 	@PathVariable String code,
 	// 	@PathVariable String issueKey,
 	// 	@PathVariable Long reviewId,
 	// 	@CurrentWorkspaceMember Long requesterId,
 	// 	@RequestBody @Valid UpdateReviewStatusRequest request
 	// ) {
-	// 	UpdateReviewStatusResponse response = reviewCommandService.updateReviewStatus(
+	// 	ReviewResponse response = reviewCommandService.updateReviewStatus(
 	// 		code,
 	// 		issueKey,
 	// 		reviewId,

@@ -28,11 +28,10 @@ import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.helper.ControllerTestHelper;
 
@@ -89,6 +88,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId("testuser")
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -117,6 +117,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest request = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email("test@test.com")
+			.username("testusername")
 			.password("test1234!")
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -148,6 +149,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId("testuser1234")
 			.email("testemail@gmail.com")
+			.username("testusername")
 			.password(password)
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -182,6 +184,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.username("testusername")
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
@@ -201,7 +204,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청에 성공하면 OK")
+	@DisplayName("POST /members/permissions - 업데이트 권한 요청에 성공하면 OK")
 	void getUpdateAuthorization_success_OK() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
@@ -211,7 +214,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions/update")
+		mockMvc.perform(post("/api/v1/members/permissions")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -220,7 +223,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions/update - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
+	@DisplayName("POST /members/permissions - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
 	void getUpdateAuthorization_failPasswordValid_UNAUTHORIZED() throws Exception {
 		// given
 		PermissionRequest request = new PermissionRequest("password1234!");
@@ -230,7 +233,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.validateMemberPassword(anyString(), anyLong());
 
 		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions/update")
+		mockMvc.perform(post("/api/v1/members/permissions")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())
@@ -242,26 +245,18 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
 	void updateMemberInfo_success_OK() throws Exception {
 		// given
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.biography("Im a backend developer")
 			.build();
 
-		Member member = Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
-			.build();
+		Long memberId = 1L;
 
-		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
-			.thenReturn(UpdateMemberInfoResponse.from(member));
+		MemberResponse response = new MemberResponse(memberId);
+
+		when(memberCommandService.updateInfo(any(UpdateMemberProfileRequest.class), anyLong()))
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
@@ -269,7 +264,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member info updated."))
-			.andExpect(jsonPath("$.data.memberId").value(member.getId()))
+			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
 
@@ -277,24 +272,14 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members - 멤버 프로필 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
 	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
 		// given
-		UpdateMemberInfoRequest request = UpdateMemberInfoRequest.builder()
+		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(2995, 1, 1))
 			.build();
 
-		Member member = Member.builder()
-			.loginId("tester")
-			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
-			.build();
+		Long memberId = 1L;
 
-		when(memberCommandService.updateInfo(any(UpdateMemberInfoRequest.class), anyLong()))
-			.thenReturn(UpdateMemberInfoResponse.from(member));
+		when(memberCommandService.updateInfo(any(UpdateMemberProfileRequest.class), anyLong()))
+			.thenReturn(new MemberResponse(memberId));
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members")
@@ -327,13 +312,12 @@ class MemberControllerTest extends ControllerTestHelper {
 	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		Long memberId = 1L;
 
-		UpdateMemberEmailResponse response = UpdateMemberEmailResponse.from(
-			Member.builder()
-				.email("newemail@test.com")
-				.build());
+		MemberResponse response = new MemberResponse(memberId);
 
-		when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong())).thenReturn(response);
+		when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong()))
+			.thenReturn(response);
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -341,30 +325,10 @@ class MemberControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member email updated."))
-			//.andExpect(jsonPath("$.data.email").value("newemail@test.com")) // 요청을 레코드로 변경 후 적용
+			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
-
-	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트 요청 시 패스워드 검증을 실패하면 UNAUTHORIZED")
-	void updateEmail_failPasswordValid_UNAUTHORIZED() throws Exception {
-		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
-
-		doThrow(new AuthenticationFailedException("Login password is invalid."))
-			.when(memberValidator)
-			.validateMemberPassword(eq("password1234!"), anyLong());
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members/email")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isUnauthorized())
-			.andExpect(jsonPath("$.message").value(
-				"Login password is invalid."))
-			.andDo(print());
-	}
-
+	
 	@Test
 	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
 	void withdrawMember_success_OK() throws Exception {

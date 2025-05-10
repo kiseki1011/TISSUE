@@ -9,14 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.invitation.domain.Invitation;
 import com.tissue.api.invitation.domain.InvitationStatus;
 import com.tissue.api.invitation.domain.repository.InvitationRepository;
-import com.tissue.api.invitation.presentation.dto.response.AcceptInvitationResponse;
-import com.tissue.api.invitation.presentation.dto.response.RejectInvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.invitation.service.query.InvitationReader;
 import com.tissue.api.invitation.validator.InvitationValidator;
-import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,23 +26,19 @@ public class InvitationCommandService {
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
-	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public AcceptInvitationResponse acceptInvitation(
+	public InvitationResponse acceptInvitation(
 		Long memberId,
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.updateStatus(InvitationStatus.ACCEPTED);
 
-		// Todo: nickname 유일성을 위한 처리 필요(동시성, 유일성 처리)
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
 			invitation.getMember(),
-			invitation.getWorkspace(),
-			WorkspaceRole.MEMBER,
-			randomNicknameGenerator.generateNickname()
+			invitation.getWorkspace()
 		);
 
 		workspaceMemberRepository.save(workspaceMember);
@@ -54,18 +47,18 @@ public class InvitationCommandService {
 			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
 		);
 
-		return AcceptInvitationResponse.from(invitation);
+		return InvitationResponse.from(invitation);
 	}
 
 	@Transactional
-	public RejectInvitationResponse rejectInvitation(
+	public InvitationResponse rejectInvitation(
 		Long memberId,
 		Long invitationId
 	) {
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.updateStatus(InvitationStatus.REJECTED);
 
-		return RejectInvitationResponse.from(invitation);
+		return InvitationResponse.from(invitation);
 	}
 
 	@Transactional
@@ -85,6 +78,9 @@ public class InvitationCommandService {
 		Invitation invitation = invitationReader.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
+		// TODO: InvitationValidator를 InvitationValidationService로 이름 바꾸기?
+		//  - 또는 validation을 Invitation 엔티티에서 진행?
+		//  - 그런데 다른 도메인과 연결되었기 때문에 도메인 서비스로 분리하는게 좋을 듯
 		invitationValidator.validateInvitation(memberId, workspaceCode);
 
 		return invitation;

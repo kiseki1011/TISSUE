@@ -74,7 +74,6 @@ public class Team extends BaseEntity {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		this.color = color;
-		workspace.getTeams().add(this);
 	}
 
 	public void updateName(String name) {

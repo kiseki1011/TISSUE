@@ -3,7 +3,6 @@ package com.tissue.api.issue.domain;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.domain.enums.IssueType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,17 +46,16 @@ public class IssueRelation extends BaseEntity {
 		Issue targetIssue,
 		IssueRelationType relationType
 	) {
+		// TODO: 생성자는 최대한 순수하게 유지하고, validate 로직을 createRelation으로 옮길까?
 		validateSelfReference(sourceIssue, targetIssue);
 		validateRelationExists(sourceIssue, targetIssue);
 
 		this.sourceIssue = sourceIssue;
 		this.targetIssue = targetIssue;
 		this.relationType = relationType != null ? relationType : IssueRelationType.RELEVANT;
-
-		validateTypeCompatibility(this.relationType);
 	}
 
-	public static void createRelation(
+	public static IssueRelation createRelation(
 		Issue sourceIssue,
 		Issue targetIssue,
 		IssueRelationType type
@@ -71,6 +69,8 @@ public class IssueRelation extends BaseEntity {
 		IssueRelation oppositeRelation = new IssueRelation(targetIssue, sourceIssue, type.getOpposite());
 		targetIssue.getOutgoingRelations().add(oppositeRelation);
 		sourceIssue.getIncomingRelations().add(oppositeRelation);
+
+		return relation;
 	}
 
 	public static void removeRelation(Issue sourceIssue, Issue targetIssue) {
@@ -95,32 +95,6 @@ public class IssueRelation extends BaseEntity {
 			throw new InvalidOperationException(String.format(
 				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s",
 				sourceIssue.getIssueKey(), targetIssue.getIssueKey()));
-		}
-	}
-
-	private void validateTypeCompatibility(IssueRelationType relationType) {
-		if (relationType != IssueRelationType.DUPLICATES) {
-			return;
-		}
-
-		boolean sourceIsEpic = sourceIssue.getType() == IssueType.EPIC;
-		boolean targetIsEpic = targetIssue.getType() == IssueType.EPIC;
-
-		if (sourceIsEpic != targetIsEpic) {
-			throw new InvalidOperationException(
-				String.format("EPIC issues can only be duplicates of other EPIC issues. Source: %s, Target: %s",
-					sourceIssue.getType(), targetIssue.getType())
-			);
-		}
-
-		boolean sourceIsSubTask = sourceIssue.getType() == IssueType.SUB_TASK;
-		boolean targetIsSubTask = targetIssue.getType() == IssueType.SUB_TASK;
-
-		if (sourceIsSubTask != targetIsSubTask) {
-			throw new InvalidOperationException(
-				String.format("SUB_TASK issues can only be duplicates of other SUB_TASK issues. Source: %s, Target: %s",
-					sourceIssue.getType(), targetIssue.getType())
-			);
 		}
 	}
 

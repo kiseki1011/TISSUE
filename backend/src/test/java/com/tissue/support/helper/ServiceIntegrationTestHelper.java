@@ -40,9 +40,10 @@ import com.tissue.api.team.service.command.TeamCommandService;
 import com.tissue.api.team.service.command.TeamReader;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
+import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
-import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.tissue.api.workspace.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -98,7 +99,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected MemberQueryService memberQueryService;
 	@Autowired
-	protected RetryCodeGenerationOnExceptionService workspaceCreateService;
+	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
 	@Autowired
 	protected InvitationCommandService invitationCommandService;
 	@Autowired
@@ -135,6 +136,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected SprintCommandService sprintCommandService;
 	@Autowired
 	protected SprintQueryService sprintQueryService;
+	@Autowired
+	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	@Autowired
 	protected SprintReader sprintReader;
 	// @Autowired

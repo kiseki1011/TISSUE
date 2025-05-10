@@ -27,31 +27,29 @@ public class WorkspaceMemberInviteService {
 	private final InvitationRepository invitationRepository;
 
 	@Transactional
-	public InviteMembersResponse inviteMembers(String workspaceCode, InviteMembersRequest request) {
+	public InviteMembersResponse inviteMembers(
+		String workspaceCode,
+		InviteMembersRequest request
+	) {
 
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		// 1. 초대 가능한 멤버 필터링
-		List<Member> membersToInvite = filterInvitableMembers(workspace.getId(), request.memberIdentifiers());
+		// 초대 가능한 멤버 필터링
+		List<Member> members = filterInvitableMembers(workspaceCode, request.memberIdentifiers());
 
-		// 2. 초대장 생성 및 초대된 멤버 정보 수집
-		List<InviteMembersResponse.InvitedMember> invitedMembers = membersToInvite.stream()
-			.map(member -> {
-				createInvitation(workspace, member);
-				return InviteMembersResponse.InvitedMember.from(member);
-			})
-			.toList();
+		// 초대장 생성
+		members.forEach(member -> createInvitation(workspace, member));
 
-		if (invitedMembers.isEmpty()) {
+		if (members.isEmpty()) {
 			throw new InvalidOperationException("No members were available for invitation.");
 		}
 
-		return InviteMembersResponse.of(workspaceCode, invitedMembers);
+		return InviteMembersResponse.from(workspaceCode, members);
 	}
 
-	private List<Member> filterInvitableMembers(Long workspaceId, Set<String> memberIdentifiers) {
+	private List<Member> filterInvitableMembers(String workspaceCode, Set<String> memberIdentifiers) {
 		// 이미 참여중이거나 초대중인 멤버 ID 조회
-		Set<Long> existingMemberIds = invitationRepository.findExistingMemberIds(workspaceId);
+		Set<Long> existingMemberIds = invitationRepository.findExistingMemberIds(workspaceCode);
 
 		return memberRepository.findAllByEmailInOrLoginIdIn(memberIdentifiers).stream()
 			.filter(member -> !existingMemberIds.contains(member.getId()))

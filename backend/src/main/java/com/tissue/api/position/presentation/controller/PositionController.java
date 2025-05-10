@@ -15,11 +15,8 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
-import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
-import com.tissue.api.position.presentation.dto.response.DeletePositionResponse;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.position.service.command.PositionCommandService;
 import com.tissue.api.position.service.query.PositionQueryService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
@@ -41,47 +38,48 @@ public class PositionController {
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<CreatePositionResponse> createPosition(
+	public ApiResponse<PositionResponse> createPosition(
 		@PathVariable String code,
 		@Valid @RequestBody CreatePositionRequest request
 	) {
-		CreatePositionResponse response = positionCommandService.createPosition(code, request);
+		PositionResponse response = positionCommandService.createPosition(code, request);
 		return ApiResponse.created("Position created.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}")
-	public ApiResponse<UpdatePositionResponse> updatePosition(
+	public ApiResponse<PositionResponse> updatePosition(
 		@PathVariable String code,
 		@PathVariable Long positionId,
 		@Valid @RequestBody UpdatePositionRequest request
 	) {
-		UpdatePositionResponse response = positionCommandService.updatePosition(code, positionId, request);
+		PositionResponse response = positionCommandService.updatePosition(code, positionId, request);
 		return ApiResponse.ok("Position updated.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}/color")
-	public ApiResponse<UpdatePositionColorResponse> updatePositionColor(
+	public ApiResponse<PositionResponse> updatePositionColor(
 		@PathVariable String code,
 		@PathVariable Long positionId,
 		@Valid @RequestBody UpdatePositionColorRequest request
 	) {
-		UpdatePositionColorResponse response = positionCommandService.updatePositionColor(code, positionId, request);
+		PositionResponse response = positionCommandService.updatePositionColor(code, positionId, request);
 		return ApiResponse.ok("Position color updated.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{positionId}")
-	public ApiResponse<DeletePositionResponse> deletePosition(
+	public ApiResponse<Void> deletePosition(
 		@PathVariable String code,
 		@PathVariable Long positionId
 	) {
-		DeletePositionResponse response = positionCommandService.deletePosition(code, positionId);
-		return ApiResponse.ok("Position deleted.", response);
+		positionCommandService.deletePosition(code, positionId);
+		return ApiResponse.okWithNoContent("Position deleted.");
 	}
 
 	@LoginRequired

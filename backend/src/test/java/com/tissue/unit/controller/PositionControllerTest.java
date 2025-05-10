@@ -17,11 +17,9 @@ import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
-import com.tissue.api.position.presentation.dto.response.CreatePositionResponse;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.position.presentation.dto.response.PositionDetail;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionColorResponse;
-import com.tissue.api.position.presentation.dto.response.UpdatePositionResponse;
+import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class PositionControllerTest extends ControllerTestHelper {
@@ -40,12 +38,9 @@ class PositionControllerTest extends ControllerTestHelper {
 			"Backend Developer"
 		);
 
-		CreatePositionResponse expectedResponse = new CreatePositionResponse(
-			positionId,
-			"Developer",
-			"Backend Developer",
-			ColorType.BLACK,
-			LocalDateTime.now()
+		PositionResponse expectedResponse = new PositionResponse(
+			WORKSPACE_CODE,
+			positionId
 		);
 
 		when(positionCommandService.createPosition(WORKSPACE_CODE, request))
@@ -58,7 +53,6 @@ class PositionControllerTest extends ControllerTestHelper {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.message").value("Position created."))
 			.andExpect(jsonPath("$.data.positionId").value(1L))
-			.andExpect(jsonPath("$.data.name").value("Developer"))
 			.andDo(print());
 	}
 
@@ -90,11 +84,9 @@ class PositionControllerTest extends ControllerTestHelper {
 			"Senior Backend Developer"
 		);
 
-		UpdatePositionResponse expectedResponse = new UpdatePositionResponse(
-			positionId,
-			"Senior Developer",
-			"Senior Backend Developer",
-			LocalDateTime.now()
+		PositionResponse expectedResponse = new PositionResponse(
+			WORKSPACE_CODE,
+			positionId
 		);
 
 		when(positionCommandService.updatePosition(WORKSPACE_CODE, positionId, request))
@@ -105,7 +97,7 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.name").value("Senior Developer"))
+			.andExpect(jsonPath("$.data.positionId").value(positionId))
 			.andDo(print());
 	}
 
@@ -118,10 +110,9 @@ class PositionControllerTest extends ControllerTestHelper {
 			ColorType.GREEN
 		);
 
-		UpdatePositionColorResponse expectedResponse = new UpdatePositionColorResponse(
-			positionId,
-			ColorType.GREEN,
-			LocalDateTime.now()
+		PositionResponse expectedResponse = new PositionResponse(
+			WORKSPACE_CODE,
+			positionId
 		);
 
 		when(positionCommandService.updatePositionColor(WORKSPACE_CODE, positionId, request))
@@ -132,7 +123,7 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.color").value("GREEN"))
+			.andExpect(jsonPath("$.data.positionId").value(positionId))
 			.andDo(print());
 	}
 

@@ -16,12 +16,9 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.update.UpdateIssueRequest;
-import com.tissue.api.issue.presentation.dto.response.AddWatcherResponse;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.UpdateIssueStatusResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.update.UpdateIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueResponse;
+import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
+import com.tissue.api.issue.presentation.dto.response.WatchIssueResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -41,7 +38,7 @@ public class IssueCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public CreateIssueResponse createIssue(
+	public IssueResponse createIssue(
 		String workspaceCode,
 		Long memberId,
 		CreateIssueRequest request
@@ -51,17 +48,17 @@ public class IssueCommandService {
 		Issue issue = request.toIssue(workspace);
 		Issue savedIssue = issueRepository.save(issue);
 
-		addWatcher(workspaceCode, savedIssue.getIssueKey(), memberId);
+		watchIssue(workspaceCode, savedIssue.getIssueKey(), memberId);
 
 		eventPublisher.publishEvent(
 			IssueCreatedEvent.createEvent(issue, memberId)
 		);
 
-		return CreateIssueResponse.from(savedIssue);
+		return IssueResponse.from(savedIssue);
 	}
 
 	@Transactional
-	public UpdateIssueResponse updateIssue(
+	public IssueResponse updateIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId,
@@ -86,11 +83,11 @@ public class IssueCommandService {
 			IssueUpdatedEvent.createEvent(issue, oldStoryPoint, memberId)
 		);
 
-		return UpdateIssueResponse.from(issue);
+		return IssueResponse.from(issue);
 	}
 
 	@Transactional
-	public UpdateIssueStatusResponse updateIssueStatus(
+	public IssueResponse updateIssueStatus(
 		String workspaceCode,
 		String issueKey,
 		Long memberId,
@@ -111,11 +108,11 @@ public class IssueCommandService {
 			IssueStatusChangedEvent.createEvent(issue, oldStatus, memberId)
 		);
 
-		return UpdateIssueStatusResponse.from(issue);
+		return IssueResponse.from(issue);
 	}
 
 	@Transactional
-	public AssignParentIssueResponse assignParentIssue(
+	public ParentIssueResponse assignParentIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId,
@@ -137,11 +134,11 @@ public class IssueCommandService {
 			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, memberId)
 		);
 
-		return AssignParentIssueResponse.from(childIssue);
+		return ParentIssueResponse.from(childIssue);
 	}
 
 	@Transactional
-	public RemoveParentIssueResponse removeParentIssue(
+	public ParentIssueResponse removeParentIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
@@ -163,35 +160,35 @@ public class IssueCommandService {
 			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, memberId)
 		);
 
-		return RemoveParentIssueResponse.from(issue);
+		return ParentIssueResponse.from(issue);
 	}
 
 	@Transactional
-	public AddWatcherResponse addWatcher(
+	public WatchIssueResponse watchIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.addWatcher(workspaceMember);
 
-		return AddWatcherResponse.from(workspaceMember, issue);
+		return WatchIssueResponse.from(issue, memberId);
 	}
 
 	@Transactional
-	public void removeWatcher(
+	public WatchIssueResponse unwatchIssue(
 		String workspaceCode,
 		String issueKey,
 		Long memberId
 	) {
 		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.removeWatcher(workspaceMember);
+
+		return WatchIssueResponse.from(issue, memberId);
 	}
 
 	// @Transactional

@@ -5,10 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.tissue.api.member.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
+import com.tissue.api.workspace.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
@@ -26,7 +25,6 @@ public class WorkspaceConfig {
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
-	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceValidator workspaceValidator;
 
@@ -36,12 +34,11 @@ public class WorkspaceConfig {
 	 */
 	@Bean
 	public WorkspaceCreateService workspaceCreateService() {
-		return new RetryCodeGenerationOnExceptionService(
+		return new WorkspaceCreateRetryOnCodeCollisionService(
 			memberReader,
 			workspaceRepository,
 			workspaceMemberRepository,
 			workspaceCodeGenerator,
-			randomNicknameGenerator,
 			passwordEncoder,
 			workspaceValidator
 		);

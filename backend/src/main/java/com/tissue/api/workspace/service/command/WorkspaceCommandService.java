@@ -13,9 +13,7 @@ import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.presentation.dto.response.DeleteWorkspaceResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateIssueKeyResponse;
-import com.tissue.api.workspace.presentation.dto.response.UpdateWorkspaceInfoResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspace.validator.WorkspaceValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +29,7 @@ public class WorkspaceCommandService {
 	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
-	public UpdateWorkspaceInfoResponse updateWorkspaceInfo(
+	public WorkspaceResponse updateWorkspaceInfo(
 		UpdateWorkspaceInfoRequest request,
 		String workspaceCode
 	) {
@@ -39,11 +37,11 @@ public class WorkspaceCommandService {
 
 		updateWorkspaceInfoIfPresent(request, workspace);
 
-		return UpdateWorkspaceInfoResponse.from(workspace);
+		return WorkspaceResponse.from(workspace);
 	}
 
 	@Transactional
-	public void updateWorkspacePassword(
+	public WorkspaceResponse updateWorkspacePassword(
 		UpdateWorkspacePasswordRequest request,
 		String workspaceCode
 	) {
@@ -51,6 +49,8 @@ public class WorkspaceCommandService {
 
 		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
 		workspace.updatePassword(encodedUpdatePassword);
+
+		return WorkspaceResponse.from(workspace);
 	}
 
 	/**
@@ -61,9 +61,10 @@ public class WorkspaceCommandService {
 	 *  - 추후에 Member의 myWorkspaceCount 로직 변경이 필요
 	 *  - 워크스페이스 복구 로직 필요
 	 *  - 30일 이상 DELETED 상태인 워크스페이스는 배치(batch)로 삭제
+	 *  - soft delete으로 변경 후 응답으로 WorkspaceResponse 사용
 	 */
 	@Transactional
-	public DeleteWorkspaceResponse deleteWorkspace(
+	public void deleteWorkspace(
 		String workspaceCode,
 		Long memberId
 	) {
@@ -73,12 +74,10 @@ public class WorkspaceCommandService {
 		member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);
-
-		return DeleteWorkspaceResponse.from(workspace);
 	}
 
 	@Transactional
-	public UpdateIssueKeyResponse updateIssueKeyPrefix(
+	public WorkspaceResponse updateIssueKeyPrefix(
 		String workspaceCode,
 		UpdateIssueKeyRequest request
 	) {
@@ -87,7 +86,7 @@ public class WorkspaceCommandService {
 		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
 		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
-		return UpdateIssueKeyResponse.from(workspace);
+		return WorkspaceResponse.from(workspace);
 	}
 
 	private void updateWorkspaceInfoIfPresent(UpdateWorkspaceInfoRequest request, Workspace workspace) {

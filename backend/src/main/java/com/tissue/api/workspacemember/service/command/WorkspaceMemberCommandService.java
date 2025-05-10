@@ -1,12 +1,9 @@
 package com.tissue.api.workspacemember.service.command;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.service.command.PositionReader;
 import com.tissue.api.team.domain.Team;
@@ -15,14 +12,11 @@ import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.domain.service.WorkspaceMemberAuthorizationService;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignPositionResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.AssignTeamResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.api.workspacemember.validator.WorkspaceMemberValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -38,32 +32,25 @@ public class WorkspaceMemberCommandService {
 	private final TeamReader teamReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
+	private final WorkspaceMemberAuthorizationService workspaceMemberAuthorizationService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public UpdateNicknameResponse updateNickname(
+	public WorkspaceMemberResponse updateDisplayName(
 		String workspaceCode,
 		Long memberId,
-		UpdateNicknameRequest request
+		UpdateDisplayNameRequest request
 	) {
-		try {
-			WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
-			workspaceMember.updateNickname(request.nickname());
-			workspaceMemberRepository.saveAndFlush(workspaceMember);
+		workspaceMember.updateDisplayName(request.displayName());
+		workspaceMemberRepository.saveAndFlush(workspaceMember);
 
-			return UpdateNicknameResponse.from(workspaceMember);
-
-		} catch (DataIntegrityViolationException | ConstraintViolationException e) {
-			log.error("Duplicate nickname: ", e);
-
-			throw new DuplicateResourceException(
-				String.format("Nickname already exists for this workspace. nickname: %s", request.nickname()), e);
-		}
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
-	public UpdateRoleResponse updateRole(
+	public WorkspaceMemberResponse updateRole(
 		String workspaceCode,
 		Long targetMemberId,
 		Long requesterMemberId,
@@ -72,21 +59,20 @@ public class WorkspaceMemberCommandService {
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
 		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
 
-		workspaceMemberValidator.validateRoleUpdate(requester, target);
+		workspaceMemberAuthorizationService.validateCanUpdateRole(requesterMemberId, targetMemberId, workspaceCode);
 
 		WorkspaceRole oldRole = target.getRole();
-
 		target.updateRole(request.updateWorkspaceRole());
 
 		eventPublisher.publishEvent(
 			WorkspaceMemberRoleChangedEvent.createEvent(target, oldRole, requesterMemberId)
 		);
 
-		return UpdateRoleResponse.from(target);
+		return WorkspaceMemberResponse.from(target);
 	}
 
 	@Transactional
-	public AssignPositionResponse setPosition(
+	public WorkspaceMemberResponse setPosition(
 		String workspaceCode,
 		Long positionId,
 		Long targetMemberId,
@@ -97,11 +83,11 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMember.addPosition(position);
 
-		return AssignPositionResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
-	public void clearPosition(
+	public void removePosition(
 		String workspaceCode,
 		Long positionId,
 		Long targetMemberId,
@@ -114,7 +100,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public AssignTeamResponse assignTeam(
+	public WorkspaceMemberResponse setTeam(
 		String workspaceCode,
 		Long teamId,
 		Long targetMemberId,
@@ -125,7 +111,7 @@ public class WorkspaceMemberCommandService {
 
 		workspaceMember.addTeam(team);
 
-		return AssignTeamResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
@@ -157,7 +143,7 @@ public class WorkspaceMemberCommandService {
 	}
 
 	@Transactional
-	public RemoveWorkspaceMemberResponse removeWorkspaceMember(
+	public void removeWorkspaceMember(
 		String workspaceCode,
 		Long targetMemberId,
 		Long requesterMemberId
@@ -165,11 +151,12 @@ public class WorkspaceMemberCommandService {
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
 		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
 
-		// TODO: WorkspaceMemberAuthorizationService에 로직 정의해서 사용
-		workspaceMemberValidator.validateRemoveMember(requester, target);
+		workspaceMemberAuthorizationService.validateCanRemoveWorkspaceMember(
+			requesterMemberId,
+			targetMemberId,
+			workspaceCode
+		);
 
 		target.remove();
-
-		return RemoveWorkspaceMemberResponse.from(target);
 	}
 }

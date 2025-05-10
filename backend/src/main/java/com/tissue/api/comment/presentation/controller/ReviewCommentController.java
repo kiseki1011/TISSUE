@@ -74,7 +74,7 @@ public class ReviewCommentController {
 			loginMemberId
 		);
 
-		return ApiResponse.created("Comment updated.", response);
+		return ApiResponse.ok("Comment updated.", response);
 	}
 
 	/**
@@ -83,16 +83,15 @@ public class ReviewCommentController {
 	 *  - 깃허브 API의 댓글 시스템 파악이 필요
 	 */
 	@DeleteMapping("/{commentId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<Void> deleteComment(
+	public ApiResponse<ReviewCommentResponse> deleteComment(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		reviewCommentCommandService.deleteComment(
+		ReviewCommentResponse response = reviewCommentCommandService.deleteComment(
 			workspaceCode,
 			issueKey,
 			reviewId,
@@ -100,6 +99,6 @@ public class ReviewCommentController {
 			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Comment deleted.");
+		return ApiResponse.ok("Comment deleted.", response);
 	}
 }

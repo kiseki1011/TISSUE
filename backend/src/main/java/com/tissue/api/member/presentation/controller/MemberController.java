@@ -15,13 +15,12 @@ import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberInfoRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
+import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.GetProfileResponse;
-import com.tissue.api.member.presentation.dto.response.SignupMemberResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberEmailResponse;
-import com.tissue.api.member.presentation.dto.response.UpdateMemberInfoResponse;
+import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
+import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.api.member.service.command.MemberCommandService;
 import com.tissue.api.member.service.query.MemberQueryService;
 import com.tissue.api.member.validator.MemberValidator;
@@ -63,59 +62,73 @@ public class MemberController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<SignupMemberResponse> signup(
+	public ApiResponse<MemberResponse> signup(
 		@Valid @RequestBody SignupMemberRequest request
 	) {
-		SignupMemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request);
 		return ApiResponse.created("Signup successful.", response);
 	}
 
 	@LoginRequired
 	@PatchMapping
-	public ApiResponse<UpdateMemberInfoResponse> updateMemberInfo(
-		@RequestBody @Valid UpdateMemberInfoRequest request,
+	public ApiResponse<MemberResponse> updateMemberInfo(
+		@RequestBody @Valid UpdateMemberProfileRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		UpdateMemberInfoResponse response = memberCommandService.updateInfo(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
+	// TODO: 이메일 인증 기능 추가 필요
 	@LoginRequired
 	@PatchMapping("/email")
-	public ApiResponse<UpdateMemberEmailResponse> updateMemberEmail(
+	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
-		UpdateMemberEmailResponse response = memberCommandService.updateEmail(request, loginMemberId);
-		sessionManager.updateSessionEmail(session, request.newEmail());
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		MemberResponse response = memberCommandService.updateEmail(request, loginMemberId);
 
 		return ApiResponse.ok("Member email updated.", response);
 	}
 
 	@LoginRequired
+	@PatchMapping("/username")
+	public ApiResponse<MemberResponse> updateMemberUsername(
+		@RequestBody @Valid UpdateMemberUsernameRequest request,
+		@ResolveLoginMember Long loginMemberId,
+		HttpSession session
+	) {
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		MemberResponse response = memberCommandService.updateUsername(request, loginMemberId);
+
+		return ApiResponse.ok("Member username updated.", response);
+	}
+
+	@LoginRequired
 	@PatchMapping("/password")
-	public ApiResponse<Void> updateMemberPassword(
+	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.originalPassword(), loginMemberId);
-		memberCommandService.updatePassword(request, loginMemberId);
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		MemberResponse response = memberCommandService.updatePassword(request, loginMemberId);
 
-		return ApiResponse.okWithNoContent("Member password updated.");
+		return ApiResponse.ok("Member password updated.", response);
 	}
 
 	/**
 	 * Todo
-	 *  - hard delete X
+	 *  - soft delete으로 변경
 	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
 	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 *  - soft delete으로 변경 시 MemberResponse 사용
 	 */
 	@LoginRequired
 	@DeleteMapping
@@ -124,15 +137,18 @@ public class MemberController {
 		@ResolveLoginMember Long loginMemberId,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
-		memberCommandService.withdraw(loginMemberId);
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		memberCommandService.withdraw(request, loginMemberId);
+
 		session.invalidate();
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
 	}
 
+	// TODO: validateMemberPassword를 setTemporaryPermission 내부로 옮겨야 할까?
+	// TODO: permission 관련 API들을 다른 컨트롤러로 분리해야 할까?
 	@LoginRequired
-	@PostMapping("/permissions/update")
+	@PostMapping("/permissions")
 	public ApiResponse<Void> getMemberUpdatePermission(
 		@RequestBody @Valid PermissionRequest request,
 		@ResolveLoginMember Long loginMemberId,
@@ -143,4 +159,16 @@ public class MemberController {
 
 		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
+
+	@LoginRequired
+	@PostMapping("/permissions/refresh")
+	public ApiResponse<Void> refreshMemberUpdatePermission(
+		HttpSession session
+	) {
+		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		sessionManager.refreshPermission(session, PermissionType.MEMBER_UPDATE);
+
+		return ApiResponse.okWithNoContent("Permission refreshed.");
+	}
+
 }

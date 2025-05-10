@@ -14,11 +14,12 @@ import io.restassured.http.ContentType;
 @Component
 public class MemberApiFixture {
 
-	public void signupApi(String loginId, String email, String password) {
+	public void signupApi(String loginId, String email, String password, String username) {
 		SignupMemberRequest signupMemberRequest = SignupMemberRequest.builder()
 			.loginId(loginId)
 			.email(email)
 			.password(password)
+			.username(username)
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))

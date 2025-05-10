@@ -6,16 +6,14 @@ import com.tissue.api.member.domain.Member;
 
 public record InviteMembersResponse(
 	String workspaceCode,
-	List<InvitedMember> invitedMembers
+	List<Long> invitedMemberIds
 ) {
 
-	public static InviteMembersResponse of(String workspaceCode, List<InvitedMember> invitedMembers) {
-		return new InviteMembersResponse(workspaceCode, invitedMembers);
-	}
-
-	public record InvitedMember(Long id, String email) {
-		public static InvitedMember from(Member member) {
-			return new InvitedMember(member.getId(), member.getEmail());
-		}
+	public static InviteMembersResponse from(String workspaceCode, List<Member> invitedMembers) {
+		return new InviteMembersResponse(workspaceCode,
+			invitedMembers.stream()
+				.map(Member::getId)
+				.toList()
+		);
 	}
 }

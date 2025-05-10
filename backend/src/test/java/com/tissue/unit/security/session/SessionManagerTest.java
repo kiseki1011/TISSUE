@@ -138,19 +138,6 @@ class SessionManagerTest {
 	}
 
 	@Test
-	@DisplayName("이메일 업데이트 요청이 오면 세션의 이메일이 갱신된다")
-	void updateSessionEmail() {
-		// given
-		String newEmail = "new@test.com";
-
-		// when
-		sessionManager.updateSessionEmail(session, newEmail);
-
-		// then
-		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, newEmail);
-	}
-
-	@Test
 	@DisplayName("세션 무효화 요청이 오면 세션이 무효화된다")
 	void invalidateSession() {
 		// given

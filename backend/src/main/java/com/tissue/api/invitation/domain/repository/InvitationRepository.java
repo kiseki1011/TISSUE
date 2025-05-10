@@ -27,12 +27,12 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 	List<Invitation> findAllByMemberId(Long id);
 
 	@Query("SELECT DISTINCT m.id FROM WorkspaceMember wm JOIN wm.member m "
-		+ "WHERE wm.workspace.id = :workspaceId "
+		+ "WHERE wm.workspace.code = :workspaceCode "
 		+ "UNION "
 		+ "SELECT DISTINCT m.id FROM Invitation i JOIN i.member m "
-		+ "WHERE i.workspace.id = :workspaceId AND i.status = 'PENDING'")
+		+ "WHERE i.workspace.code = :workspaceCode AND i.status = 'PENDING'")
 	Set<Long> findExistingMemberIds(
-		@Param("workspaceId") Long workspaceId
+		@Param("workspaceCode") String workspaceCode
 	);
 
 	@Modifying

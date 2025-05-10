@@ -1,6 +1,7 @@
 package com.tissue.api.member.validator;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
@@ -15,6 +16,7 @@ import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepositor
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberValidator {
 
@@ -47,6 +49,14 @@ public class MemberValidator {
 		if (memberRepository.existsByEmail(email)) {
 			throw new DuplicateResourceException(
 				String.format("Email already exists. email: %s", email)
+			);
+		}
+	}
+
+	public void validateUsernameIsUnique(String username) {
+		if (memberRepository.existsByUsername(username)) {
+			throw new DuplicateResourceException(
+				String.format("Username already exists. username: %s", username)
 			);
 		}
 	}

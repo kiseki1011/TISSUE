@@ -11,7 +11,7 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.presentation.dto.response.CreateWorkspaceResponse;
+import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
@@ -35,12 +35,12 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id()).get();
+		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 
-		assertThat(response.code()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
@@ -55,10 +55,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		assertThat(response.code().length()).isEqualTo(8);
+		assertThat(response.workspaceCode().length()).isEqualTo(8);
 	}
 
 	@Test
@@ -74,10 +74,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.code()).get();
+		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getRole()).isEqualTo(WorkspaceRole.OWNER);
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
@@ -87,7 +87,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 	// Todo: 워크스페이스 멤버 별칭 방식 변경 후 수정
 	@Test
 	@Transactional
-	@DisplayName("워크스페이스 생성 시 생성자인 워크스페이스 멤버(WorkspaceMember)의 별칭(nickname)이 기본적으로 설정된다")
+	@DisplayName("워크스페이스 생성 시 생성자인 워크스페이스 멤버(WorkspaceMember)의 별칭(displayName)이 기본적으로 설정된다")
 	void workspaceCreate_WorkspaceMemberDefaultNicknameIsEmail() {
 		// given
 		Member member = testDataFixture.createMember("member1");
@@ -98,15 +98,15 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.code()).get();
-		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getNickname())
+		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getDisplayName())
 			.isNotNull();
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
-		assertThat(workspaceMember.getNickname()).isNotNull();
+		assertThat(workspaceMember.getDisplayName()).isNotNull();
 	}
 
 	@Test
@@ -165,10 +165,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id()).get();
+		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 
 		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("ISSUE");
 	}
@@ -186,10 +186,10 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateWorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
+		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findById(response.id()).get();
+		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 
 		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("TESTPREFIX");
 	}

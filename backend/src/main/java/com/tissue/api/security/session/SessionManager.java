@@ -25,8 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Component
 public class SessionManager {
-	private static final int UPDATE_PERMISSION_MINUTES = 3;
-	private static final int DELETE_PERMISSION_MINUTES = 1;
+	private static final int PERMISSION_EXPIRATION_MINUTES = 3;
 
 	private final MemberRepository memberRepository;
 
@@ -51,11 +50,10 @@ public class SessionManager {
 	}
 
 	public void setTemporaryPermission(HttpSession session, PermissionType permissionType) {
-		LocalDateTime expiresAt = LocalDateTime.now();
-
+		LocalDateTime expiresAt;
 		expiresAt = switch (permissionType) {
-			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE -> expiresAt.plusMinutes(UPDATE_PERMISSION_MINUTES);
-			case MEMBER_DELETE, WORKSPACE_DELETE -> expiresAt.plusMinutes(DELETE_PERMISSION_MINUTES);
+			case MEMBER_UPDATE, WORKSPACE_PASSWORD_UPDATE, WORKSPACE_DELETE ->
+				LocalDateTime.now().plusMinutes(PERMISSION_EXPIRATION_MINUTES);
 			default -> throw new InvalidOperationException("Permission type does not exist.");
 		};
 
@@ -66,15 +64,18 @@ public class SessionManager {
 		log.info("{} permission granted. Expires at: {}", permissionType, expiresAt);
 	}
 
+	public void refreshPermission(HttpSession session, PermissionType type) {
+		session.setAttribute(SessionAttributes.PERMISSION_TYPE, type);
+		session.setAttribute(SessionAttributes.PERMISSION_EXISTS, true);
+		session.setAttribute(SessionAttributes.PERMISSION_EXPIRES_AT,
+			LocalDateTime.now().plusMinutes(PERMISSION_EXPIRATION_MINUTES));
+	}
+
 	public void clearPermission(HttpSession session) {
 		session.removeAttribute(SessionAttributes.PERMISSION_TYPE);
 		session.removeAttribute(SessionAttributes.PERMISSION_EXISTS);
 		session.removeAttribute(SessionAttributes.PERMISSION_EXPIRES_AT);
 		log.info("Permission cleared.");
-	}
-
-	public void updateSessionEmail(HttpSession session, String newEmail) {
-		session.setAttribute(LOGIN_MEMBER_EMAIL, newEmail);
 	}
 
 	public void invalidateSession(HttpServletRequest request) {

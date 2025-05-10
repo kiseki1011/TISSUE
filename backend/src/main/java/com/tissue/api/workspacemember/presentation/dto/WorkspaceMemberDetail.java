@@ -18,7 +18,7 @@ public record WorkspaceMemberDetail(
 	public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
 		return WorkspaceMemberDetail.builder()
 			.workspaceMemberId(workspaceMember.getId())
-			.nickname(workspaceMember.getNickname())
+			.nickname(workspaceMember.getDisplayName())
 			.workspaceRole(workspaceMember.getRole())
 			.joinedWorkspaceAt(workspaceMember.getCreatedDate())
 			.updatedAt(workspaceMember.getLastModifiedDate())

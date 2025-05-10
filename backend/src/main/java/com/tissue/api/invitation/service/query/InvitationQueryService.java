@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.invitation.domain.repository.InvitationQueryRepository;
 import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
-import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
+import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ public class InvitationQueryService {
 	private final InvitationQueryRepository invitationQueryRepository;
 
 	@Transactional(readOnly = true)
-	public Page<InvitationResponse> getInvitations(
+	public Page<InvitationDetail> getInvitations(
 		Long memberId,
 		InvitationSearchCondition searchCondition,
 		Pageable pageable
@@ -27,6 +27,6 @@ public class InvitationQueryService {
 			memberId,
 			searchCondition.statuses(),
 			pageable
-		).map(InvitationResponse::from);
+		).map(InvitationDetail::from);
 	}
 }
