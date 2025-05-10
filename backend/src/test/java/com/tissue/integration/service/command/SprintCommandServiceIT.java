@@ -16,20 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.types.Story;
 import com.tissue.api.member.domain.Member;
 import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.SprintIssue;
 import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
-import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
-import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
+import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.WorkspaceRole;
@@ -110,14 +109,17 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateSprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
 
 		// then
-		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(response.sprintKey(), workspace.getCode())
-			.get();
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
 
 		assertThat(foundSprint.getTitle()).isEqualTo("test sprint");
-		assertThat(response.title()).isEqualTo("test sprint");
 	}
 
 	@Test
@@ -132,7 +134,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateSprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo("SPRINT-1");
@@ -142,7 +144,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 	@DisplayName("스프린트를 생성하면 스프린트 키(sprintKey)의 번호가 1씩 증가한다")
 	void whenCreatingSprint_SprintKeyNumberIncreasesByOne() {
 		// given
-		CreateSprintResponse firstSprintResponse = sprintCommandService.createSprint(
+		SprintResponse firstSprintResponse = sprintCommandService.createSprint(
 			workspace.getCode(),
 			CreateSprintRequest.builder()
 				.title("first sprint")
@@ -160,7 +162,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateSprintResponse secondSprintResponse = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse secondSprintResponse = sprintCommandService.createSprint(workspace.getCode(), request);
 
 		// then
 		assertThat(firstSprintResponse.sprintKey()).isEqualTo("SPRINT-1");
@@ -168,6 +170,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
+	@Transactional
 	@DisplayName("여러개의 이슈를 한번에 스프린트에 등록할 수 있다")
 	void canAddMultipleIssuesAsBulkToSprint() {
 		// given
@@ -184,7 +187,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		AddSprintIssuesResponse response = sprintCommandService.addIssues(
+		SprintResponse response = sprintCommandService.addIssues(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -192,7 +195,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
-		assertThat(response.addedIssueKeys()).isEqualTo(List.of(issue1.getIssueKey(), issue2.getIssueKey()));
+
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getSprintIssues().stream().map(SprintIssue::getIssue).map(Issue::getIssueKey).toList())
+			.isEqualTo(List.of(issue1.getIssueKey(), issue2.getIssueKey()));
 	}
 
 	@Test
@@ -270,7 +280,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateSprintResponse response = sprintCommandService.updateSprint(
+		SprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -278,8 +288,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
-		assertThat(response.title()).isEqualTo("updated title");
-		assertThat(response.goal()).isEqualTo("updated goal");
+
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getTitle()).isEqualTo("updated title");
+		assertThat(foundSprint.getGoal()).isEqualTo("updated goal");
 	}
 
 	@Test
@@ -300,7 +316,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateSprintResponse response = sprintCommandService.updateSprint(
+		SprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -308,8 +324,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
-		assertThat(response.title()).isEqualTo("updated title");
-		assertThat(response.goal()).isEqualTo("original goal");
+
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getTitle()).isEqualTo("updated title");
+		assertThat(foundSprint.getGoal()).isEqualTo("original goal");
 	}
 
 	@Test
@@ -330,7 +352,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateSprintResponse response = sprintCommandService.updateSprint(
+		SprintResponse response = sprintCommandService.updateSprint(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			request
@@ -338,8 +360,14 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
-		assertThat(response.plannedStartDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(7));
-		assertThat(response.plannedEndDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(14));
+
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getPlannedStartDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(7));
+		assertThat(foundSprint.getPlannedEndDate().toLocalDate()).isEqualTo(LocalDate.now().plusDays(14));
 	}
 
 	@Test
@@ -384,7 +412,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build());
 
 		// when
-		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
+		SprintResponse response = sprintCommandService.updateSprintStatus(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
@@ -392,7 +420,12 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.status()).isEqualTo(SprintStatus.ACTIVE);
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
 	}
 
 	@Test
@@ -410,7 +443,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build());
 
 		// when
-		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
+		SprintResponse response = sprintCommandService.updateSprintStatus(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			new UpdateSprintStatusRequest(SprintStatus.CANCELLED),
@@ -418,7 +451,12 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.status()).isEqualTo(SprintStatus.CANCELLED);
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getStatus()).isEqualTo(SprintStatus.CANCELLED);
 	}
 
 	@Test
@@ -487,7 +525,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		sprintRepository.save(sprint);
 
 		// when
-		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
+		SprintResponse response = sprintCommandService.updateSprintStatus(
 			workspace.getCode(),
 			sprint.getSprintKey(),
 			new UpdateSprintStatusRequest(status),
@@ -495,7 +533,12 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.status()).isEqualTo(status);
+		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
+			response.sprintKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(foundSprint.getStatus()).isEqualTo(status);
 	}
 
 	@ParameterizedTest
