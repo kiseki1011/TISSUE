@@ -70,7 +70,7 @@ public class ReviewCommentCommandService {
 		// 	ReviewCommentAddedEvent.createEvent(issue, review, savedComment, currentWorkspaceMemberId)
 		// );
 
-		return ReviewCommentResponse.from(issue, savedComment);
+		return ReviewCommentResponse.from(savedComment);
 	}
 
 	@Transactional
@@ -91,7 +91,7 @@ public class ReviewCommentCommandService {
 		comment.validateCanEdit(workspaceMember);
 		comment.updateContent(request.content());
 
-		return ReviewCommentResponse.from(issue, comment);
+		return ReviewCommentResponse.from(comment);
 	}
 
 	@Transactional
@@ -111,6 +111,6 @@ public class ReviewCommentCommandService {
 		comment.validateCanEdit(workspaceMember);
 		comment.softDelete(memberId);
 
-		return ReviewCommentResponse.from(issue, comment);
+		return ReviewCommentResponse.from(comment);
 	}
 }

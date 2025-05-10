@@ -1,7 +1,6 @@
 package com.tissue.api.comment.presentation.dto.response;
 
 import com.tissue.api.comment.domain.ReviewComment;
-import com.tissue.api.issue.domain.Issue;
 
 import lombok.Builder;
 
@@ -12,10 +11,10 @@ public record ReviewCommentResponse(
 	Long reviewId,
 	Long commentId
 ) {
-	public static ReviewCommentResponse from(Issue issue, ReviewComment comment) {
+	public static ReviewCommentResponse from(ReviewComment comment) {
 		return ReviewCommentResponse.builder()
-			.workspaceCode(issue.getWorkspaceCode())
-			.issueKey(issue.getIssueKey())
+			.workspaceCode(comment.getReview().getWorkspaceCode())
+			.issueKey(comment.getReview().getIssueKey())
 			.reviewId(comment.getReview().getId())
 			.commentId(comment.getId())
 			.build();
