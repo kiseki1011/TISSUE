@@ -12,8 +12,7 @@ import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.review.domain.repository.ReviewRepository;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
-import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
-import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewResponse;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
 
@@ -31,7 +30,7 @@ public class ReviewCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public SubmitReviewResponse submitReview(
+	public ReviewResponse submitReview(
 		String workspaceCode,
 		String issueKey,
 		Long requesterMemberId,
@@ -63,11 +62,11 @@ public class ReviewCommandService {
 			ReviewSubmittedEvent.createEvent(issue, requesterMemberId, savedReview)
 		);
 
-		return SubmitReviewResponse.from(savedReview);
+		return ReviewResponse.from(savedReview);
 	}
 
 	@Transactional
-	public UpdateReviewResponse updateReview(
+	public ReviewResponse updateReview(
 		String workspaceCode,
 		Long reviewId,
 		Long reviewerMemberId,
@@ -80,7 +79,7 @@ public class ReviewCommandService {
 		review.updateTitle(request.title());
 		review.updateContent(request.content());
 
-		return UpdateReviewResponse.from(review);
+		return ReviewResponse.from(review);
 	}
 
 }

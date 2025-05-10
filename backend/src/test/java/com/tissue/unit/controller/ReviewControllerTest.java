@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewerResponse;
 import com.tissue.api.review.service.dto.AddReviewerCommand;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class ReviewControllerTest extends ControllerTestHelper {
@@ -28,10 +27,10 @@ class ReviewControllerTest extends ControllerTestHelper {
 		AddReviewerRequest request = new AddReviewerRequest(reviewerMemberId);
 		AddReviewerCommand command = request.toCommand();
 
-		AddReviewerResponse response = AddReviewerResponse.builder()
-			.reviewerId(reviewerMemberId)
-			.reviewerNickname("testNickname")
-			.reviewerRole(WorkspaceRole.MEMBER)
+		ReviewerResponse response = ReviewerResponse.builder()
+			.workspaceCode(workspaceCode)
+			.issueKey(issueKey)
+			.reviewerMemberId(reviewerMemberId)
 			.build();
 
 		// 서비스 모킹 - command 객체 매칭
@@ -50,7 +49,6 @@ class ReviewControllerTest extends ControllerTestHelper {
 			)
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Reviewer added."))
-			.andExpect(jsonPath("$.data.reviewerId").value(1L))
 			.andDo(print());
 	}
 }

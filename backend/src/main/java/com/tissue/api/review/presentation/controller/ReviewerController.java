@@ -8,11 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
 import com.tissue.api.review.presentation.dto.request.RemoveReviewerRequest;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewerResponse;
 import com.tissue.api.review.service.command.ReviewerCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
@@ -32,13 +31,13 @@ public class ReviewerController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
-	public ApiResponse<AddReviewerResponse> addReviewer(
+	public ApiResponse<ReviewerResponse> addReviewer(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AddReviewerRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		AddReviewerResponse response = reviewerCommandService.addReviewer(
+		ReviewerResponse response = reviewerCommandService.addReviewer(
 			workspaceCode,
 			issueKey,
 			request.toCommand(),
@@ -51,13 +50,13 @@ public class ReviewerController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping
-	public ApiResponse<RemoveReviewerResponse> removeReviewer(
+	public ApiResponse<ReviewerResponse> removeReviewer(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@RequestBody @Valid RemoveReviewerRequest request,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RemoveReviewerResponse response = reviewerCommandService.removeReviewer(
+		ReviewerResponse response = reviewerCommandService.removeReviewer(
 			workspaceCode,
 			issueKey,
 			request.toCommand(),
@@ -67,15 +66,16 @@ public class ReviewerController {
 		return ApiResponse.ok("Reviewer removed.", response);
 	}
 
+	// TODO: IssueController로 이동하는게 맞지 않을까?
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/reviews")
-	public ApiResponse<RequestReviewResponse> requestReview(
+	public ApiResponse<IssueResponse> requestReview(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@ResolveLoginMember Long loginMemberId
 	) {
-		RequestReviewResponse response = reviewerCommandService.requestReview(
+		IssueResponse response = reviewerCommandService.requestReview(
 			workspaceCode,
 			issueKey,
 			loginMemberId

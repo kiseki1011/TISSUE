@@ -5,12 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.issue.service.command.IssueReader;
 import com.tissue.api.review.domain.event.ReviewRequestedEvent;
 import com.tissue.api.review.domain.event.ReviewerAddedEvent;
-import com.tissue.api.review.presentation.dto.response.AddReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RemoveReviewerResponse;
-import com.tissue.api.review.presentation.dto.response.RequestReviewResponse;
+import com.tissue.api.review.presentation.dto.response.ReviewerResponse;
 import com.tissue.api.review.service.dto.AddReviewerCommand;
 import com.tissue.api.review.service.dto.RemoveReviewerCommand;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
@@ -27,7 +26,7 @@ public class ReviewerCommandService {
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public AddReviewerResponse addReviewer(
+	public ReviewerResponse addReviewer(
 		String workspaceCode,
 		String issueKey,
 		AddReviewerCommand command,
@@ -58,11 +57,11 @@ public class ReviewerCommandService {
 			ReviewerAddedEvent.createEvent(issue, requester, reviewer)
 		);
 
-		return AddReviewerResponse.from(reviewer);
+		return ReviewerResponse.from(issue, reviewer);
 	}
 
 	@Transactional
-	public RemoveReviewerResponse removeReviewer(
+	public ReviewerResponse removeReviewer(
 		String workspaceCode,
 		String issueKey,
 		RemoveReviewerCommand command,
@@ -88,11 +87,12 @@ public class ReviewerCommandService {
 
 		issue.removeReviewer(reviewer);
 
-		return RemoveReviewerResponse.from(reviewer, issue);
+		return ReviewerResponse.from(issue, reviewer);
 	}
 
+	// TODO: IssueService로 이동하는게 맞지 않을까?
 	@Transactional
-	public RequestReviewResponse requestReview(
+	public IssueResponse requestReview(
 		String workspaceCode,
 		String issueKey,
 		Long requesterMemberId
@@ -107,6 +107,6 @@ public class ReviewerCommandService {
 			ReviewRequestedEvent.createEvent(issue, requesterMemberId)
 		);
 
-		return RequestReviewResponse.from(issue);
+		return IssueResponse.from(issue);
 	}
 }
