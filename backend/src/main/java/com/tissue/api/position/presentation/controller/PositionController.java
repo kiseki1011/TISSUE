@@ -17,11 +17,11 @@ import com.tissue.api.position.presentation.dto.request.UpdatePositionColorReque
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
-import com.tissue.api.position.service.command.PositionCommandService;
-import com.tissue.api.position.service.query.PositionQueryService;
+import com.tissue.api.position.application.service.command.PositionCommandService;
+import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

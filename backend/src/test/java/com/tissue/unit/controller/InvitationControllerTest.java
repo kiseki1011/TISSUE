@@ -23,8 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
+import com.tissue.api.invitation.domain.model.enums.InvitationStatus;
+import com.tissue.api.invitation.presentation.controller.query.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.security.session.SessionAttributes;

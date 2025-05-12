@@ -18,13 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.notification.domain.Notification;
-import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.repository.NotificationRepository;
-import com.tissue.api.notification.service.command.NotificationCommandService;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
+import com.tissue.api.notification.domain.model.Notification;
+import com.tissue.api.notification.domain.model.enums.NotificationType;
+import com.tissue.api.notification.domain.model.enums.ResourceType;
+import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
+import com.tissue.api.notification.application.service.command.NotificationCommandService;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCommandServiceTest {

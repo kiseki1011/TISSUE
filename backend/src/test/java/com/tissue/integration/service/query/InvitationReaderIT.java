@@ -13,12 +13,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.invitation.domain.Invitation;
-import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.invitation.presentation.dto.InvitationSearchCondition;
+import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.invitation.domain.model.enums.InvitationStatus;
+import com.tissue.api.invitation.presentation.controller.query.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class InvitationReaderIT extends ServiceIntegrationTestHelper {

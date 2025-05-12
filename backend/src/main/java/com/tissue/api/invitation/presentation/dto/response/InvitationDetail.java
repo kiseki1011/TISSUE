@@ -2,8 +2,8 @@ package com.tissue.api.invitation.presentation.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.invitation.domain.Invitation;
-import com.tissue.api.invitation.domain.InvitationStatus;
+import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.invitation.domain.model.enums.InvitationStatus;
 
 import lombok.Builder;
 

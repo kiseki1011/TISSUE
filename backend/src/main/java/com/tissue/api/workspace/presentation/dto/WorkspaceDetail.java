@@ -2,7 +2,7 @@ package com.tissue.api.workspace.presentation.dto;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -30,9 +30,9 @@ import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.sprint.service.command.SprintCommandService;
-import com.tissue.api.sprint.service.query.SprintQueryService;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.sprint.application.service.command.SprintCommandService;
+import com.tissue.api.sprint.application.service.query.SprintQueryService;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

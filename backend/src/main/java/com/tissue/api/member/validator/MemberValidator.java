@@ -6,12 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

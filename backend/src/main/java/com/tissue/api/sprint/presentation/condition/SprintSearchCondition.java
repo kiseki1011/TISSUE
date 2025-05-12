@@ -2,7 +2,7 @@ package com.tissue.api.sprint.presentation.condition;
 
 import java.util.List;
 
-import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 
 import jakarta.validation.constraints.Size;
 import lombok.Builder;

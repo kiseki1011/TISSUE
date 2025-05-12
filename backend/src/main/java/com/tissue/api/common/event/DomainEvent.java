@@ -3,7 +3,7 @@ package com.tissue.api.common.event;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.model.enums.NotificationType;
 import com.tissue.api.notification.domain.vo.EntityReference;
 
 public interface DomainEvent {

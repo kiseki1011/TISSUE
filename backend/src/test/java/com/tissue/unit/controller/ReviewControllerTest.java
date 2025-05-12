@@ -9,9 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
-import com.tissue.api.review.presentation.dto.response.ReviewerResponse;
-import com.tissue.api.review.service.dto.AddReviewerCommand;
+import com.tissue.api.issue.application.dto.AddReviewerCommand;
+import com.tissue.api.issue.presentation.controller.dto.request.AddReviewerRequest;
+import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class ReviewControllerTest extends ControllerTestHelper {
@@ -27,14 +27,14 @@ class ReviewControllerTest extends ControllerTestHelper {
 		AddReviewerRequest request = new AddReviewerRequest(reviewerMemberId);
 		AddReviewerCommand command = request.toCommand();
 
-		ReviewerResponse response = ReviewerResponse.builder()
+		IssueReviewerResponse response = IssueReviewerResponse.builder()
 			.workspaceCode(workspaceCode)
 			.issueKey(issueKey)
 			.reviewerMemberId(reviewerMemberId)
 			.build();
 
 		// 서비스 모킹 - command 객체 매칭
-		when(reviewerCommandService.addReviewer(
+		when(issueReviewerCommandService.addReviewer(
 			eq(workspaceCode),
 			eq(issueKey),
 			eq(command),

@@ -1,6 +1,6 @@
 package com.tissue.api.notification.domain.vo;
 
-import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.model.enums.ResourceType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

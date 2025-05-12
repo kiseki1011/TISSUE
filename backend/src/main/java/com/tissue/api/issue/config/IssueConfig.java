@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.tissue.api.issue.config.properties.IssueProperties;
-import com.tissue.api.issue.validator.checker.CachedDfsCircularDependencyChecker;
-import com.tissue.api.issue.validator.checker.CircularDependencyChecker;
+import com.tissue.api.issue.infrastructure.checker.CachedDfsCircularDependencyChecker;
+import com.tissue.api.issue.domain.service.checker.CircularDependencyChecker;
 
 @Configuration
 public class IssueConfig {

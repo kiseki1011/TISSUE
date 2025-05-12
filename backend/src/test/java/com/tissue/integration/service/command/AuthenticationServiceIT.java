@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.member.application.service.command.MemberCommandService;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
-import com.tissue.api.member.service.command.MemberCommandService;
+import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
-import com.tissue.api.security.authentication.service.AuthenticationService;
+import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class AuthenticationServiceIT extends ServiceIntegrationTestHelper {

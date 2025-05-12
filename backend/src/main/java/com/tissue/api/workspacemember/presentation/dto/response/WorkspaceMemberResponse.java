@@ -1,6 +1,6 @@
 package com.tissue.api.workspacemember.presentation.dto.response;
 
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 public record WorkspaceMemberResponse(
 	String workspaceCode,

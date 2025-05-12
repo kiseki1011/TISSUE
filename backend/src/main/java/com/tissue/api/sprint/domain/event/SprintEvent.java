@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.notification.domain.model.enums.NotificationType;
+import com.tissue.api.notification.domain.model.enums.ResourceType;
 import com.tissue.api.notification.domain.vo.EntityReference;
 
 import lombok.Getter;

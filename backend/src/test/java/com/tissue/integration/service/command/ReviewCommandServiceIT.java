@@ -1,6 +1,5 @@
 package com.tissue.integration.service.command;
 
-import static com.tissue.api.review.domain.enums.ReviewStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDateTime;
@@ -11,19 +10,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.assignee.presentation.dto.request.AddAssigneeRequest;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.review.presentation.dto.request.AddReviewerRequest;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.AddReviewerRequest;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.review.domain.model.enums.ReviewStatus;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.response.ReviewResponse;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +99,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		AddAssigneeRequest addAssigneeRequest = new AddAssigneeRequest(member1.getId());
 
-		assigneeCommandService.addAssignee(
+		issueAssigneeCommandService.addAssignee(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			addAssigneeRequest.toCommand(),
@@ -108,14 +108,14 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		AddReviewerRequest addReviewerRequest = new AddReviewerRequest(member2.getId());
 
-		reviewerCommandService.addReviewer(
+		issueReviewerCommandService.addReviewer(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			addReviewerRequest.toCommand(),
 			member1.getId()
 		);
 
-		SubmitReviewRequest request = new SubmitReviewRequest(APPROVED, "test review", "test review");
+		SubmitReviewRequest request = new SubmitReviewRequest(ReviewStatus.APPROVED, "test review", "test review");
 
 		// when & then
 		assertThatThrownBy(
@@ -123,7 +123,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 				workspace.getCode(),
 				issue.getIssueKey(),
 				reviewerWorkspaceMemberId,
-				new SubmitReviewRequest(APPROVED, "test review", "test review")
+				new SubmitReviewRequest(ReviewStatus.APPROVED, "test review", "test review")
 			)
 		).isInstanceOf(InvalidOperationException.class);
 
@@ -148,7 +148,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			member2.getId(),
-			new SubmitReviewRequest(APPROVED, "test review", "test review")
+			new SubmitReviewRequest(ReviewStatus.APPROVED, "test review", "test review")
 		);
 
 		// then
@@ -175,7 +175,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			new SubmitReviewRequest(CHANGES_REQUESTED, "test review", "test review")
+			new SubmitReviewRequest(ReviewStatus.CHANGES_REQUESTED, "test review", "test review")
 		);
 
 		// then
@@ -245,7 +245,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			member1.getId(), // workspace member that is not a reviewer
-			new SubmitReviewRequest(COMMENT, "test review", "test review")
+			new SubmitReviewRequest(ReviewStatus.COMMENT, "test review", "test review")
 		)).isInstanceOf(InvalidOperationException.class);
 	}
 
@@ -268,7 +268,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			new SubmitReviewRequest(COMMENT, "test review", "test review")
+			new SubmitReviewRequest(ReviewStatus.COMMENT, "test review", "test review")
 		);
 
 		// when & then
@@ -276,7 +276,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			issue.getIssueKey(),
 			reviewerWorkspaceMemberId,
-			new SubmitReviewRequest(COMMENT, "test review", "test review")
+			new SubmitReviewRequest(ReviewStatus.COMMENT, "test review", "test review")
 		)).isInstanceOf(InvalidOperationException.class);
 	}
 }

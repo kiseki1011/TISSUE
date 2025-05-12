@@ -20,7 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.security.session.SessionAttributes;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.request.DeleteWorkspaceRequest;

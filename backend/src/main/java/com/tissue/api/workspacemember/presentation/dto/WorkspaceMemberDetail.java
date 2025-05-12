@@ -2,8 +2,8 @@ package com.tissue.api.workspacemember.presentation.dto;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import lombok.Builder;
 

@@ -1,10 +1,10 @@
 package com.tissue.api.issue.domain.event;
 
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.notification.domain.model.enums.NotificationType;
+import com.tissue.api.notification.domain.model.enums.ResourceType;
 
 import lombok.Getter;
 

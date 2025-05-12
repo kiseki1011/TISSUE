@@ -22,8 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.member.domain.JobType;
-import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.model.enums.JobType;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
@@ -328,7 +328,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.data.memberId").value(memberId))
 			.andDo(print());
 	}
-	
+
 	@Test
 	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
 	void withdrawMember_success_OK() throws Exception {

@@ -12,20 +12,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
-import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
-import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
-import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CreateTaskRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
+import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -341,15 +340,20 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		ParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+		IssueResponse response = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
 			member1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		// then
-		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(parentIssue.getIssueKey());
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			response.issueKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(issue.getParentIssue().getIssueKey()).isEqualTo(parentIssue.getIssueKey());
 	}
 
 	@Test
@@ -396,14 +400,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			workspace.getCode(),
 			childIssue1.getIssueKey(),
 			workspaceMember1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue2.getIssueKey(),
 			workspaceMember1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		// then
@@ -457,7 +461,8 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			parentIssue.getIssueKey(),
-			workspace.getCode()).get();
+			workspace.getCode()
+		).get();
 
 		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(10);
 	}
@@ -494,22 +499,28 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		ParentIssueResponse response = issueCommandService.assignParentIssue(
+		IssueResponse response = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
 			member1.getId(),
-			new AssignParentIssueRequest(newParentIssue.getIssueKey())
+			new AddParentIssueRequest(newParentIssue.getIssueKey())
 		);
 
 		// then
 		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
 		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
-		assertThat(response.parentIssueKey()).isEqualTo(newParentIssue.getIssueKey());
+
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			childIssue.getIssueKey(),
+			workspace.getCode()
+		).get();
+
+		assertThat(issue.getParentIssue().getIssueKey()).isEqualTo(newParentIssue.getIssueKey());
 	}
 
 	@Test
 	@Transactional
-	@DisplayName("STORY의 부모 이슈인 EPIC에 대한 부모 관계를 해제할 수 있다")
+	@DisplayName("부모 관계를 해제할 수 있다")
 	void canRemoveParentRelationship() {
 		// given
 		Issue parentIssue = testDataFixture.createEpic(
@@ -532,7 +543,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		childIssue.updateParentIssue(parentIssue);
 
 		// when
-		ParentIssueResponse response = issueCommandService.removeParentIssue(
+		IssueResponse response = issueCommandService.removeParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
 			member1.getId()
@@ -542,7 +553,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
-		assertThat(response.parentIssueKey()).isNull();
+
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()
+		).get();
+
+		assertThat(issue.getParentIssue()).isNull();
 	}
 
 	@Test
