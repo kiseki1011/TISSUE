@@ -1,4 +1,4 @@
-package com.tissue.api.issue.domain.model.enums;
+package com.tissue.api.issue.domain.enums;
 
 public enum IssueRelationType {
 

@@ -4,15 +4,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.model.enums.IssueRelationType;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueRelation;
-import com.tissue.api.issue.domain.service.checker.CircularDependencyChecker;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueRelation;
+import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.service.validator.CircularDependencyValidator;
 import com.tissue.api.issue.infrastructure.repository.IssueRelationRepository;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueRelationResponse;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ public class IssueRelationCommandService {
 	private final IssueReader issueReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRelationRepository relationRepository;
-	private final CircularDependencyChecker circularDependencyChecker;
+	private final CircularDependencyValidator circularDependencyValidator;
 
 	@Transactional
 	public IssueRelationResponse createRelation(
@@ -44,7 +44,7 @@ public class IssueRelationCommandService {
 		// }
 
 		if (request.relationType() == IssueRelationType.BLOCKS) {
-			circularDependencyChecker.validateNoCircularDependency(sourceIssue, targetIssue);
+			circularDependencyValidator.validateNoCircularDependency(sourceIssue, targetIssue);
 		}
 
 		IssueRelation relation = IssueRelation.createRelation(sourceIssue, targetIssue, request.relationType());
