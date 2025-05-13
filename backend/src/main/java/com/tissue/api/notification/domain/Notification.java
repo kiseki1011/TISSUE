@@ -50,12 +50,8 @@ public class Notification extends BaseDateEntity {
 	@Embedded
 	private EntityReference entityReference;
 
-	// TODO: title, message를 VO로 묶기?
-	@Column(nullable = false)
-	private String title;
-
-	@Column(length = 1000)
-	private String message;
+	@Embedded
+	private NotificationMessage message;
 
 	@Column(nullable = false)
 	private Long actorMemberId;
@@ -73,8 +69,7 @@ public class Notification extends BaseDateEntity {
 		Long actorMemberId,
 		String actorNickname,
 		Long receiverMemberId,
-		String title,
-		String message
+		NotificationMessage message
 	) {
 		this.eventId = eventId;
 		this.type = notificationType;
@@ -82,12 +77,19 @@ public class Notification extends BaseDateEntity {
 		this.actorMemberId = actorMemberId;
 		this.actorNickname = actorNickname;
 		this.receiverMemberId = receiverMemberId;
-		this.title = title;
 		this.message = message;
 		this.isRead = false;
 	}
 
 	public void markAsRead() {
 		this.isRead = true;
+	}
+
+	public String getTitle() {
+		return message.title();
+	}
+
+	public String getContent() {
+		return message.content();
 	}
 }

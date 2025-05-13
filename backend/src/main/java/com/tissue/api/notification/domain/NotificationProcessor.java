@@ -44,8 +44,7 @@ public class NotificationProcessor {
 				notificationService.createNotification(
 					event,
 					target.getId(),
-					message.title(),
-					message.content()
+					message
 				);
 				successCount++;
 			} catch (ResourceNotFoundException e) {

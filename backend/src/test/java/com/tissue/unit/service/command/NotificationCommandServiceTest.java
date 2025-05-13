@@ -18,13 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.domain.Notification;
+import com.tissue.api.notification.domain.NotificationMessage;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
-import com.tissue.api.notification.application.service.command.NotificationCommandService;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCommandServiceTest {
@@ -48,7 +49,8 @@ class NotificationCommandServiceTest {
 		NotificationType notificationType = NotificationType.ISSUE_CREATED;
 		ResourceType resourceType = ResourceType.ISSUE;
 		String title = "Test Title";
-		String message = "Test Message";
+		String content = "Test Message";
+		NotificationMessage message = new NotificationMessage(title, content);
 		Long actorId = 300L;
 
 		DomainEvent event = mock(DomainEvent.class);
@@ -66,7 +68,6 @@ class NotificationCommandServiceTest {
 		notificationCommandService.createNotification(
 			event,
 			receiverId,
-			title,
 			message
 		);
 
@@ -80,8 +81,8 @@ class NotificationCommandServiceTest {
 		assertThat(savedNotification.getEventId()).isEqualTo(eventId);
 		assertThat(savedNotification.getReceiverMemberId()).isEqualTo(receiverId);
 		assertThat(savedNotification.getType()).isEqualTo(notificationType);
-		assertThat(savedNotification.getTitle()).isEqualTo(title);
-		assertThat(savedNotification.getMessage()).isEqualTo(message);
+		assertThat(savedNotification.getTitle()).isEqualTo(message.title());
+		assertThat(savedNotification.getContent()).isEqualTo(message.content());
 		assertThat(savedNotification.getActorMemberId()).isEqualTo(actorId);
 		assertThat(savedNotification.getActorNickname()).isEqualTo("TestUser");
 		assertThat(savedNotification.isRead()).isFalse();

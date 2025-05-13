@@ -8,10 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.domain.Notification;
-import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
+import com.tissue.api.notification.domain.NotificationMessage;
 import com.tissue.api.notification.domain.vo.EntityReference;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,8 +27,7 @@ public class NotificationCommandService {
 	public void createNotification(
 		DomainEvent event,
 		Long receiverMemberId,
-		String title,
-		String message
+		NotificationMessage message
 	) {
 		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
 			event.getActorMemberId(),
@@ -42,7 +42,6 @@ public class NotificationCommandService {
 			.entityReference(entityReference)
 			.actorMemberId(event.getActorMemberId())
 			.actorNickname(actor.getDisplayName())
-			.title(title)
 			.message(message)
 			.receiverMemberId(receiverMemberId)
 			.build();
