@@ -13,19 +13,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
+import com.tissue.api.issue.application.service.reader.IssueReader;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
-import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.notification.domain.NotificationMessageFactory;
-import com.tissue.api.notification.domain.NotificationProcessor;
-import com.tissue.api.notification.domain.NotificationTargetResolver;
+import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
+import com.tissue.api.notification.application.service.command.NotificationProcessor;
+import com.tissue.api.notification.application.service.command.NotificationTargetService;
+import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationEventHandlerTest {
@@ -43,7 +43,7 @@ class NotificationEventHandlerTest {
 	private WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Mock
-	private NotificationTargetResolver targetResolver;
+	private NotificationTargetService targetResolver;
 
 	@Mock
 	private NotificationProcessor notificationProcessor;

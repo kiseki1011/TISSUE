@@ -19,8 +19,8 @@ import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
-import com.tissue.api.notification.domain.NotificationProcessor;
-import com.tissue.api.notification.domain.NotificationTargetResolver;
+import com.tissue.api.notification.application.service.command.NotificationProcessor;
+import com.tissue.api.notification.application.service.command.NotificationTargetService;
 import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificationEventHandler {
 
 	private final NotificationProcessor notificationProcessor;
-	private final NotificationTargetResolver targetResolver;
+	private final NotificationTargetService targetResolver;
 
 	/**
 	 * 이슈 생성 이벤트 처리 - 워크스페이스 전체 멤버에게 알림

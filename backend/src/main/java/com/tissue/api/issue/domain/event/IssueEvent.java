@@ -7,7 +7,7 @@ import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.notification.domain.model.vo.EntityReference;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

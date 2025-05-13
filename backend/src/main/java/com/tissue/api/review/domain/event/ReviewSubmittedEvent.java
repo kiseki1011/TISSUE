@@ -3,11 +3,11 @@ package com.tissue.api.review.domain.event;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueEvent;
-import com.tissue.api.review.domain.Review;
-import com.tissue.api.review.domain.enums.ReviewStatus;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.notification.domain.model.vo.EntityReference;
+import com.tissue.api.review.domain.Review;
+import com.tissue.api.review.domain.enums.ReviewStatus;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.tissue.api.notification.domain.vo;
+package com.tissue.api.notification.domain.model.vo;
 
 import com.tissue.api.notification.domain.enums.ResourceType;
 

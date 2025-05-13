@@ -1,4 +1,4 @@
-package com.tissue.api.notification.domain.vo;
+package com.tissue.api.notification.domain.model.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

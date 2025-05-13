@@ -1,4 +1,4 @@
-package com.tissue.api.notification.domain;
+package com.tissue.api.notification.domain.service.message;
 
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEve
  * Helper class for creating notification message content arguments.
  */
 @Component
-public class NotificationContentArgumentFormatter {
+public class NotificationContentArgumentsFormatter {
 
 	/**
 	 * Create default arguments.

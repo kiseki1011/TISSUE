@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tissue.api.notification.domain.Notification;
+import com.tissue.api.notification.domain.model.Notification;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 

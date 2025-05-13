@@ -1,4 +1,4 @@
-package com.tissue.api.notification.domain;
+package com.tissue.api.notification.infrastructure.message;
 
 import java.util.Locale;
 
@@ -7,7 +7,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.notification.domain.vo.NotificationMessage;
+import com.tissue.api.notification.domain.model.vo.NotificationMessage;
+import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
+import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
@@ -19,7 +21,7 @@ public class SimpleNotificationMessasgeFactory implements NotificationMessageFac
 
 	private final MessageSource messageSource;
 	private final WorkspaceMemberReader workspaceMemberReader;
-	private final NotificationContentArgumentFormatter argumentFormatter;
+	private final NotificationContentArgumentsFormatter argumentFormatter;
 
 	@Override
 	public <T extends DomainEvent> NotificationMessage createMessage(T event) {

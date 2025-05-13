@@ -1,10 +1,10 @@
-package com.tissue.api.notification.domain;
+package com.tissue.api.notification.application.service.command;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.tissue.api.issue.application.service.reader.IssueReader;
 import com.tissue.api.issue.domain.Issue;
@@ -13,9 +13,9 @@ import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberR
 
 import lombok.RequiredArgsConstructor;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class NotificationTargetResolver {
+public class NotificationTargetService {
 
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final IssueReader issueReader;
