@@ -7,6 +7,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.event.DomainEvent;
+import com.tissue.api.notification.domain.vo.NotificationMessage;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 

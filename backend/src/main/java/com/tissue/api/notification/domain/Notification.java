@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.notification.domain.vo.NotificationMessage;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

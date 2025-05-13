@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
+import com.tissue.api.notification.domain.vo.NotificationMessage;
 import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
