@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.api.notification.infrastructure.message.SimpleNotificationMessasgeFactory;
+import com.tissue.api.notification.infrastructure.message.SimpleNotificationMessageFactory;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,6 @@ public class NotificationConfig {
 
 	@Bean
 	public NotificationMessageFactory notificationMessageFactory() {
-		return new SimpleNotificationMessasgeFactory(messageSource, workspaceMemberReader, argumentFormatter);
+		return new SimpleNotificationMessageFactory(messageSource, workspaceMemberReader, argumentFormatter);
 	}
 }

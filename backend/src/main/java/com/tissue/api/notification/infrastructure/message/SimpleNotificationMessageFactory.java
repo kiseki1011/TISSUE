@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class SimpleNotificationMessasgeFactory implements NotificationMessageFactory {
+public class SimpleNotificationMessageFactory implements NotificationMessageFactory {
 
 	private final MessageSource messageSource;
 	private final WorkspaceMemberReader workspaceMemberReader;
