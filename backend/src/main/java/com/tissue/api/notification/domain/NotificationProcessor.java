@@ -22,30 +22,26 @@ public class NotificationProcessor {
 	private final NotificationMessageFactory notificationMessageFactory;
 
 	/**
-	 * 알림 처리 메서드 - 외부에서 알림 대상 주입
+	 * Handles notification processing for the given event and target members.
+	 * Targets are injected externally.
+	 * <p>
+	 * This method uses a best-effort approach.
+	 * Notifications are attempted for all targets, and failures are logged without retry logic.
 	 */
+	// TODO: Consider using Transactional Outbox Pattern
 	public <T extends DomainEvent> void processNotification(
 		T event,
 		Collection<WorkspaceMember> targets
 	) {
 		NotificationMessage message = notificationMessageFactory.createMessage(event);
 
-		/*
-		 * Todo: 알림 생성 로직 개선
-		 *  - AsIs: best-effort 방식 사용중. 일부 알림이 실패해도 재처리 로직 없이, 실패한 경우를 로깅정도만 함.
-		 *  - ToBe: 이벤트 저장소 패턴 또는 Transactional Outbox Pattern 사용
-		 */
 		int totalTargets = targets.size();
 		int successCount = 0;
 		int failCount = 0;
 
 		for (WorkspaceMember target : targets) {
 			try {
-				notificationService.createNotification(
-					event,
-					target.getId(),
-					message
-				);
+				notificationService.createNotification(event, target.getId(), message);
 				successCount++;
 			} catch (ResourceNotFoundException e) {
 				failCount++;
