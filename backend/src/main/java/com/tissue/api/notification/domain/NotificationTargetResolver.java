@@ -21,14 +21,15 @@ public class NotificationTargetResolver {
 	private final IssueReader issueReader;
 
 	/**
-	 * 워크스페이스 전체 멤버를 알림 대상으로 결정
+	 * Retrieve all members in the workspace as notification targets.
 	 */
 	public List<WorkspaceMember> getWorkspaceWideMemberTargets(String workspaceCode) {
 		return workspaceMemberRepository.findAllByWorkspaceCode(workspaceCode);
 	}
 
 	/**
-	 * 이슈 구독자(작성자, 담당자, 리뷰어, 워처 등)를 알림 대상으로 결정
+	 * Retrieve the issue subscribers (e.g., author, assignee, reviewers, watchers)
+	 * as notification targets.
 	 */
 	public List<WorkspaceMember> getIssueSubscriberTargets(String issueKey, String workspaceCode) {
 
@@ -39,7 +40,7 @@ public class NotificationTargetResolver {
 	}
 
 	/**
-	 * 이슈의 리뷰어(검토자)들을 알림 대상으로 결정
+	 * Retrieve the reviewers of the issue as notification targets.
 	 */
 	public List<WorkspaceMember> getIssueReviewerTargets(String issueKey, String workspaceCode) {
 
@@ -49,9 +50,12 @@ public class NotificationTargetResolver {
 		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, reviewerIds);
 	}
 
-	public Set<WorkspaceMember> getAdminsAndSpecificMember(String workspaceCode, Long memberId) {
-		Set<WorkspaceMember> targets = workspaceMemberRepository
-			.findAdminsByWorkspaceCode(workspaceCode);
+	/**
+	 * Retrieve workspace administrators and a specific member as notification targets.
+	 */
+	public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
+
+		Set<WorkspaceMember> targets = workspaceMemberRepository.findAdminsByWorkspaceCode(workspaceCode);
 
 		workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
 			.ifPresent(targets::add);
@@ -59,7 +63,10 @@ public class NotificationTargetResolver {
 		return targets;
 	}
 
-	public Set<WorkspaceMember> getSpecificMember(String workspaceCode, Long memberId) {
+	/**
+	 * Retrieve a specific member as a notification target.
+	 */
+	public Set<WorkspaceMember> getSpecificMemberTarget(String workspaceCode, Long memberId) {
 
 		Set<WorkspaceMember> target = new HashSet<>();
 

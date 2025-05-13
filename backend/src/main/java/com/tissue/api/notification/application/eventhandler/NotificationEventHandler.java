@@ -8,20 +8,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.tissue.api.issue.domain.event.IssueAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.api.comment.domain.event.ReviewCommentAddedEvent;
+import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
+import com.tissue.api.issue.domain.event.IssueReviewRequestedEvent;
+import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
+import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.notification.domain.NotificationProcessor;
 import com.tissue.api.notification.domain.NotificationTargetResolver;
-import com.tissue.api.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
-import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
@@ -79,7 +79,7 @@ public class NotificationEventHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueAssigned(IssueAssignedEvent event) {
 
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(
+		Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
 			event.getWorkspaceCode(),
 			event.getAssignedMemberId()
 		);
@@ -91,7 +91,7 @@ public class NotificationEventHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueUnassigned(IssueUnassignedEvent event) {
 
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMember(
+		Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
 			event.getWorkspaceCode(),
 			event.getAssigneeMemberId()
 		);
@@ -226,7 +226,7 @@ public class NotificationEventHandler {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleWorkspaceMemberRoleChanged(WorkspaceMemberRoleChangedEvent event) {
 
-		Set<WorkspaceMember> targets = targetResolver.getAdminsAndSpecificMember(
+		Set<WorkspaceMember> targets = targetResolver.getAdminAndSpecificMemberTargets(
 			event.getWorkspaceCode(),
 			event.getTargetMemberId()
 		);
