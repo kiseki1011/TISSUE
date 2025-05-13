@@ -12,7 +12,7 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;

@@ -21,7 +21,7 @@ import com.tissue.api.team.presentation.dto.response.GetTeamsResponse;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.query.TeamQueryService;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

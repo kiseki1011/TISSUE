@@ -2,7 +2,7 @@ package com.tissue.api.member.application.service.command;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 

@@ -16,7 +16,7 @@ import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;

@@ -9,20 +9,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.comment.domain.model.Comment;
-import com.tissue.api.comment.domain.model.IssueComment;
-import com.tissue.api.comment.domain.model.enums.CommentStatus;
+import com.tissue.api.comment.domain.Comment;
+import com.tissue.api.comment.domain.IssueComment;
+import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {

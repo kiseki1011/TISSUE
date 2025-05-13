@@ -10,16 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class PositionCommandServiceIT extends ServiceIntegrationTestHelper {

@@ -2,10 +2,10 @@ package com.tissue.api.sprint.presentation.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.issue.domain.enums.IssueType;
 
 import lombok.Builder;
 

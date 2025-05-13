@@ -6,16 +6,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueReviewer;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueReviewer;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
-import com.tissue.api.review.domain.model.Review;
+import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.ReviewResponse;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

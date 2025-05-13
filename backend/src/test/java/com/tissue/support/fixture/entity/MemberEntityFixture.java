@@ -1,6 +1,6 @@
 package com.tissue.support.fixture.entity;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 
 public class MemberEntityFixture {
 	public Member createMember(String loginId, String email) {

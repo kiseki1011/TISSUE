@@ -11,7 +11,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;

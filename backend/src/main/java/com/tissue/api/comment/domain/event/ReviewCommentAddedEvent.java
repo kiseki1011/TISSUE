@@ -1,12 +1,12 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.comment.domain.model.ReviewComment;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.notification.domain.model.enums.NotificationType;
-import com.tissue.api.notification.domain.model.enums.ResourceType;
+import com.tissue.api.comment.domain.ReviewComment;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.vo.EntityReference;
-import com.tissue.api.review.domain.model.Review;
+import com.tissue.api.review.domain.Review;
 
 import lombok.Getter;
 

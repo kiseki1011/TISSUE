@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;

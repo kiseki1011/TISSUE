@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;

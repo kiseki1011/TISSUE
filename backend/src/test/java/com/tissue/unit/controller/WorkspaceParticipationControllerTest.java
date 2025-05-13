@@ -19,11 +19,11 @@ import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.security.session.SessionAttributes;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;

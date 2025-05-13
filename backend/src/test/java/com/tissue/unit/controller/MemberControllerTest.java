@@ -22,8 +22,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.enums.JobType;
 import com.tissue.api.member.domain.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;

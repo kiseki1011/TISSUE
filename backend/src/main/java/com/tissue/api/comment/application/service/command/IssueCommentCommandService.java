@@ -5,15 +5,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
-import com.tissue.api.comment.domain.model.IssueComment;
+import com.tissue.api.comment.domain.IssueComment;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.position.domain.Position;
 
 public interface PositionRepository extends JpaRepository<Position, Long> {
 	Optional<Position> findByIdAndWorkspaceCode(Long id, String workspaceCode);

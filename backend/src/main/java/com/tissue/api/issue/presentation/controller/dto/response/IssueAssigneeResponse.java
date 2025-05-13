@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.controller.dto.response;
 
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 
 import lombok.Builder;
 

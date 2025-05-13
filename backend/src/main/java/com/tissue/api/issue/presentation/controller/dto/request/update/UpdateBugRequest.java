@@ -3,10 +3,10 @@ package com.tissue.api.issue.presentation.controller.dto.request.update;
 import java.util.Set;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
-import com.tissue.api.issue.domain.model.enums.BugSeverity;
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.types.Bug;
+import com.tissue.api.issue.domain.enums.BugSeverity;
+import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.types.Bug;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;

@@ -2,9 +2,9 @@ package com.tissue.api.issue.presentation.controller.dto.request.create;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.workspace.domain.Workspace;
 
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,

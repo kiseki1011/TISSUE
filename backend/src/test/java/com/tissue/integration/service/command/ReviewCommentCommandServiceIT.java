@@ -10,21 +10,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.comment.domain.model.Comment;
-import com.tissue.api.comment.domain.model.ReviewComment;
+import com.tissue.api.comment.domain.Comment;
+import com.tissue.api.comment.domain.ReviewComment;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
-import com.tissue.api.issue.domain.model.IssueReviewer;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.types.Story;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.review.domain.model.Review;
-import com.tissue.api.review.domain.model.enums.ReviewStatus;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.issue.domain.IssueReviewer;
+import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.review.domain.Review;
+import com.tissue.api.review.domain.enums.ReviewStatus;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {

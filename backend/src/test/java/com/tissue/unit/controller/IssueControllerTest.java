@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CreateEpicRequest;

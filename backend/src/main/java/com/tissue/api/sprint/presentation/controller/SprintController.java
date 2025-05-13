@@ -32,7 +32,7 @@ import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

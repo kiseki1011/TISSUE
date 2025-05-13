@@ -3,7 +3,7 @@ package com.tissue.api.position.presentation.dto.response;
 import java.time.LocalDateTime;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.position.domain.Position;
 
 import lombok.Builder;
 

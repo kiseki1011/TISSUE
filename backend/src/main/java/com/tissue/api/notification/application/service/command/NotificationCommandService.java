@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.notification.domain.model.Notification;
+import com.tissue.api.notification.domain.Notification;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.api.notification.domain.vo.EntityReference;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

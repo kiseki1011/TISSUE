@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.support.helper.RestAssuredTestHelper;
 

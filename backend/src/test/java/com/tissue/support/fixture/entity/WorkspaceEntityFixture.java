@@ -1,6 +1,6 @@
 package com.tissue.support.fixture.entity;
 
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 public class WorkspaceEntityFixture {
 

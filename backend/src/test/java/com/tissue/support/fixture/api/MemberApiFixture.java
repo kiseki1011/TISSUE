@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.member.domain.enums.JobType;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 
 import io.restassured.RestAssured;

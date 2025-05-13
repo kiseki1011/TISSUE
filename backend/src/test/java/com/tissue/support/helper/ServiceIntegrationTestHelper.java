@@ -16,42 +16,42 @@ import com.tissue.api.issue.application.service.command.IssueAssigneeCommandServ
 import com.tissue.api.issue.application.service.command.IssueCommandService;
 import com.tissue.api.issue.application.service.command.IssueRelationCommandService;
 import com.tissue.api.issue.application.service.command.IssueReviewerCommandService;
-import com.tissue.api.issue.domain.service.checker.CircularDependencyChecker;
+import com.tissue.api.issue.domain.service.validator.CircularDependencyValidator;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.validator.MemberValidator;
-import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionReader;
 import com.tissue.api.position.application.service.query.PositionQueryService;
-import com.tissue.api.review.infrastructure.repository.ReviewRepository;
+import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.review.application.service.command.ReviewCommandService;
+import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
-import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
 import com.tissue.api.sprint.application.service.command.SprintReader;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
-import com.tissue.api.team.infrastructure.repository.TeamRepository;
+import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
+import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamReader;
+import com.tissue.api.team.infrastructure.repository.TeamRepository;
 import com.tissue.api.util.WorkspaceCodeParser;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.support.fixture.TestDataFixture;
 import com.tissue.support.util.DatabaseCleaner;
 
@@ -151,7 +151,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceValidator workspaceValidator;
 	@Autowired
-	protected CircularDependencyChecker circularDependencyChecker;
+	protected CircularDependencyValidator circularDependencyValidator;
 
 	/**
 	 * Repository

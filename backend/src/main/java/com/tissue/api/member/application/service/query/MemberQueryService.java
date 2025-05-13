@@ -3,7 +3,7 @@ package com.tissue.api.member.application.service.query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.infrastructure.repository.MemberQueryRepository;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;

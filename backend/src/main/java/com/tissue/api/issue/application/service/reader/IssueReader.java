@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 

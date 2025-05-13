@@ -1,11 +1,11 @@
 package com.tissue.api.workspacemember.domain.event;
 
-import com.tissue.api.notification.domain.model.enums.NotificationType;
-import com.tissue.api.notification.domain.model.enums.ResourceType;
+import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.vo.EntityReference;
 import com.tissue.api.workspace.domain.event.WorkspaceEvent;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
 
 import lombok.Getter;
 

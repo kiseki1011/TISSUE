@@ -4,14 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.position.validator.PositionValidator;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;

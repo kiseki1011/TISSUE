@@ -5,22 +5,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.enums.IssueStatus;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.UpdateIssueStatusRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.team.domain.model.Team;
+import com.tissue.api.team.domain.Team;
 import com.tissue.api.team.infrastructure.repository.TeamQueryRepository;
 import com.tissue.api.team.presentation.dto.response.GetTeamsResponse;
 

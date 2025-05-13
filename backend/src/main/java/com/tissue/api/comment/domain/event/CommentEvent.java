@@ -1,9 +1,9 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueEvent;
-import com.tissue.api.notification.domain.model.enums.NotificationType;
-import com.tissue.api.notification.domain.model.enums.ResourceType;
+import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
 
 import lombok.Getter;
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;

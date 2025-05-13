@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 public class PositionQueryServiceIT extends ServiceIntegrationTestHelper {

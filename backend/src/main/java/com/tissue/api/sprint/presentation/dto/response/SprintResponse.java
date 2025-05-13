@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 
 public record SprintResponse(
 	String workspaceCode,

@@ -1,8 +1,8 @@
 package com.tissue.api.sprint.domain.event;
 
-import com.tissue.api.notification.domain.model.enums.NotificationType;
-import com.tissue.api.notification.domain.model.enums.ResourceType;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.notification.domain.enums.NotificationType;
+import com.tissue.api.notification.domain.enums.ResourceType;
+import com.tissue.api.sprint.domain.Sprint;
 
 import lombok.Getter;
 

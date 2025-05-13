@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.comment.domain.model.Comment;
-import com.tissue.api.comment.domain.model.IssueComment;
-import com.tissue.api.comment.domain.model.ReviewComment;
+import com.tissue.api.comment.domain.Comment;
+import com.tissue.api.comment.domain.IssueComment;
+import com.tissue.api.comment.domain.ReviewComment;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 

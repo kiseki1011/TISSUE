@@ -6,7 +6,7 @@ import com.tissue.api.common.validator.annotation.size.IssueKeyPrefixSize;
 import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.password.SimplePasswordSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;

@@ -3,7 +3,7 @@ package com.tissue.api.review.application.service.command;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.review.domain.model.Review;
+import com.tissue.api.review.domain.Review;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;

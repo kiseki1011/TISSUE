@@ -6,14 +6,14 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.domain.model.types.Epic;
+import com.tissue.api.issue.domain.types.Epic;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

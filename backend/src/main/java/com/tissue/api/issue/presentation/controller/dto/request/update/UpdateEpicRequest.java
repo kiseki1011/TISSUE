@@ -1,9 +1,9 @@
 package com.tissue.api.issue.presentation.controller.dto.request.update;
 
 import com.tissue.api.common.validator.annotation.size.text.LongText;
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.types.Epic;
+import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.types.Epic;
 
 import jakarta.validation.Valid;
 import lombok.Builder;

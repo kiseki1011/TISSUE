@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.invitation.application.service.reader.InvitationReader;
-import com.tissue.api.invitation.domain.model.Invitation;
-import com.tissue.api.invitation.domain.model.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.Invitation;
+import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.service.InvitationValidator;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
-import com.tissue.api.invitation.validator.InvitationValidator;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;

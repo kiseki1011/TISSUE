@@ -3,7 +3,7 @@ package com.tissue.api.position.application.service.command;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.position.domain.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 
 import lombok.RequiredArgsConstructor;
