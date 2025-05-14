@@ -21,7 +21,7 @@ import com.tissue.api.position.application.service.command.PositionCommandServic
 import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.tissue.api.team.presentation.dto.response;
 
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 
 public record TeamResponse(
 	String workspaceCode,

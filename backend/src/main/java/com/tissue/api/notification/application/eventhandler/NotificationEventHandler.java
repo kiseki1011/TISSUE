@@ -25,7 +25,7 @@ import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 
 import lombok.RequiredArgsConstructor;

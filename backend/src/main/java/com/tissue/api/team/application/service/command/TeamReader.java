@@ -3,7 +3,7 @@ package com.tissue.api.team.application.service.command;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 
 import lombok.RequiredArgsConstructor;

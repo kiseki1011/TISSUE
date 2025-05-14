@@ -3,7 +3,7 @@ package com.tissue.api.sprint.application.service.command;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 
 import lombok.RequiredArgsConstructor;

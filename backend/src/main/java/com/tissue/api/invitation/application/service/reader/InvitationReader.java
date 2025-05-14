@@ -3,7 +3,7 @@ package com.tissue.api.invitation.application.service.reader;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.invitation.domain.Invitation;
+import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 

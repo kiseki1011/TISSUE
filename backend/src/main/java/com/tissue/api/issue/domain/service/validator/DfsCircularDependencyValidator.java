@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.IssueRelation;
-import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.IssueRelation;
+import com.tissue.api.issue.domain.model.enums.IssueRelationType;
 import com.tissue.api.issue.domain.service.validator.cache.IssueRelationDependencyCache;
 
 import lombok.RequiredArgsConstructor;

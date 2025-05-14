@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.service.validator;
 
-import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.model.Issue;
 
 public interface CircularDependencyValidator {
 	/**

@@ -4,14 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;

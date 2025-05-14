@@ -2,7 +2,7 @@ package com.tissue.api.workspace.application.service.command;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
 

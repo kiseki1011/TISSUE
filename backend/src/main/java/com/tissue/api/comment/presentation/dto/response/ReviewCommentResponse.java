@@ -1,6 +1,6 @@
 package com.tissue.api.comment.presentation.dto.response;
 
-import com.tissue.api.comment.domain.ReviewComment;
+import com.tissue.api.comment.domain.model.ReviewComment;
 
 import lombok.Builder;
 

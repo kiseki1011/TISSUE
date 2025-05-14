@@ -9,10 +9,10 @@ import com.tissue.api.issue.application.dto.RemoveReviewerCommand;
 import com.tissue.api.issue.application.service.reader.IssueReader;
 import com.tissue.api.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
-import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

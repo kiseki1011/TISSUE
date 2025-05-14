@@ -1,7 +1,7 @@
 package com.tissue.api.issue.presentation.controller.dto.response;
 
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.IssueRelation;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.IssueRelation;
 
 import lombok.Builder;
 

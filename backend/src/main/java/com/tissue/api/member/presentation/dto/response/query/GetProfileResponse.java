@@ -3,8 +3,8 @@ package com.tissue.api.member.presentation.dto.response.query;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.enums.JobType;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.model.enums.JobType;
 
 public record GetProfileResponse(
 	String loginId,

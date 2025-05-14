@@ -12,19 +12,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
 import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;

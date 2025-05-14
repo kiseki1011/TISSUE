@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.controller.dto.request;
 
-import com.tissue.api.issue.domain.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
 
 import jakarta.validation.constraints.NotNull;
 

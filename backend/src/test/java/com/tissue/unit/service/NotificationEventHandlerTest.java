@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
@@ -24,7 +24,7 @@ import com.tissue.api.notification.application.service.command.NotificationProce
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 @ExtendWith(MockitoExtension.class)

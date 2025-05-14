@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.ShortText;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -12,7 +12,7 @@ import com.tissue.api.notification.domain.model.vo.EntityReference;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 

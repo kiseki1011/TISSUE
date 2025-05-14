@@ -16,22 +16,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.sprint.domain.Sprint;
-import com.tissue.api.sprint.domain.SprintIssue;
-import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.model.SprintIssue;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {

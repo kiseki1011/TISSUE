@@ -7,10 +7,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.sprint.domain.Sprint;
-import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
@@ -20,7 +20,7 @@ import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.tissue.api.workspace.application.service.command.create;
 
-import static com.tissue.api.workspacemember.domain.WorkspaceMember.*;
+import static com.tissue.api.workspacemember.domain.model.WorkspaceMember.*;
 
 import java.util.Optional;
 
@@ -14,10 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberReader;
-import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;

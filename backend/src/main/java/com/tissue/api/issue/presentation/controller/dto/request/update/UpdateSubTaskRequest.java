@@ -1,8 +1,8 @@
 package com.tissue.api.issue.presentation.controller.dto.request.update;
 
-import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.types.SubTask;
+import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.types.SubTask;
 
 import jakarta.validation.Valid;
 import lombok.Builder;

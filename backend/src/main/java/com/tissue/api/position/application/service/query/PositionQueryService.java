@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionQueryRepository;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 

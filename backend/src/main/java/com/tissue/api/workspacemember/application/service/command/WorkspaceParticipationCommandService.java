@@ -1,6 +1,6 @@
 package com.tissue.api.workspacemember.application.service.command;
 
-import static com.tissue.api.workspacemember.domain.WorkspaceMember.*;
+import static com.tissue.api.workspacemember.domain.model.WorkspaceMember.*;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberReader;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberPermissionValidator;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;

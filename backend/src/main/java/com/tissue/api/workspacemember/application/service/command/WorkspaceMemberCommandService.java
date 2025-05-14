@@ -4,12 +4,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.application.service.command.PositionReader;
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.team.application.service.command.TeamReader;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberPermissionValidator;

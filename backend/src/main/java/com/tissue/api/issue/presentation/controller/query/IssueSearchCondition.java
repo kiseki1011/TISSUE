@@ -3,9 +3,9 @@ package com.tissue.api.issue.presentation.controller.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.enums.IssueType;
 
 import jakarta.validation.constraints.Size;
 

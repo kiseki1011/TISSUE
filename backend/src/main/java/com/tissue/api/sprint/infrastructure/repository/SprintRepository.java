@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 public interface SprintRepository extends JpaRepository<Sprint, Long> {
 

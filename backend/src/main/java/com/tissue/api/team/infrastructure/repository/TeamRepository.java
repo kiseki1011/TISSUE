@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 
 public interface TeamRepository extends JpaRepository<Team, Long> {
 	Optional<Team> findByIdAndWorkspaceCode(Long id, String workspaceCode);

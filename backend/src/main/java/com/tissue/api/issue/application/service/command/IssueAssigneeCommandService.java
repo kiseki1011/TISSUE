@@ -9,10 +9,10 @@ import com.tissue.api.issue.application.dto.RemoveAssigneeCommand;
 import com.tissue.api.issue.application.service.reader.IssueReader;
 import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
-import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;

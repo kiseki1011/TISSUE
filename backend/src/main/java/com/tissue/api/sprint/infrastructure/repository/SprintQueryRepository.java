@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
 

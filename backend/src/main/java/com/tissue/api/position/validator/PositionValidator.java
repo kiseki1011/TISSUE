@@ -3,7 +3,7 @@ package com.tissue.api.position.validator;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 
 import lombok.RequiredArgsConstructor;

@@ -10,16 +10,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.types.Story;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.enums.WorkspaceRole;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class IssueAssigneeCommandServiceIT extends ServiceIntegrationTestHelper {

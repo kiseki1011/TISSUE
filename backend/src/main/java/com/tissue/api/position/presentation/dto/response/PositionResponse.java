@@ -1,6 +1,6 @@
 package com.tissue.api.position.presentation.dto.response;
 
-import com.tissue.api.position.domain.Position;
+import com.tissue.api.position.domain.model.Position;
 
 public record PositionResponse(
 	String workspaceCode,

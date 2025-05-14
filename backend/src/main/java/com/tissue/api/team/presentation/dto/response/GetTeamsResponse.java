@@ -2,7 +2,7 @@ package com.tissue.api.team.presentation.dto.response;
 
 import java.util.List;
 
-import com.tissue.api.team.domain.Team;
+import com.tissue.api.team.domain.model.Team;
 
 public record GetTeamsResponse(
 	List<TeamDetail> teams

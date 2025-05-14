@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceAuthenticationServiceIT extends ServiceIntegrationTestHelper {
