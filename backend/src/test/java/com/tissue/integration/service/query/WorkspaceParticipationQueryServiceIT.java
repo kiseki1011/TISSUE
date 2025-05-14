@@ -14,10 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 

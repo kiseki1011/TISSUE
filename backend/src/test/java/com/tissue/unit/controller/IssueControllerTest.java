@@ -12,15 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
-import com.tissue.api.issue.presentation.dto.request.create.CreateEpicRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CreateIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
-import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.IssueResponse;
-import com.tissue.api.issue.presentation.dto.response.ParentIssueResponse;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CreateEpicRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
+import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class IssueControllerTest extends ControllerTestHelper {
@@ -156,13 +155,9 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "WORKSPACE";
 		String issueKey = "ISSUE-1";
 		String parentIssueKey = "ISSUE-999";
-		AssignParentIssueRequest request = new AssignParentIssueRequest(parentIssueKey);
+		AddParentIssueRequest request = new AddParentIssueRequest(parentIssueKey);
 
-		ParentIssueResponse response = ParentIssueResponse.builder()
-			.workspaceCode(workspaceCode)
-			.issueKey(issueKey)
-			.parentIssueKey(parentIssueKey)
-			.build();
+		IssueResponse response = new IssueResponse(workspaceCode, issueKey);
 
 		when(issueCommandService.assignParentIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
 			.thenReturn(response);
@@ -175,7 +170,6 @@ class IssueControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.message").value("Parent issue assigned."))
 			.andExpect(jsonPath("$.data.workspaceCode").value(response.workspaceCode()))
 			.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
-			.andExpect(jsonPath("$.data.parentIssueKey").value(response.parentIssueKey()))
 			.andDo(print());
 	}
 
@@ -186,11 +180,7 @@ class IssueControllerTest extends ControllerTestHelper {
 		String workspaceCode = "WORKSPACE";
 		String issueKey = "ISSUE-1";
 
-		ParentIssueResponse response = ParentIssueResponse.builder()
-			.workspaceCode(workspaceCode)
-			.issueKey(issueKey)
-			.parentIssueKey(null)
-			.build();
+		IssueResponse response = new IssueResponse(workspaceCode, issueKey);
 
 		when(issueCommandService.removeParentIssue(eq(workspaceCode), eq(issueKey), anyLong()))
 			.thenReturn(response);

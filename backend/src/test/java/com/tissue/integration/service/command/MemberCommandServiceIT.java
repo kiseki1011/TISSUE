@@ -10,17 +10,17 @@ import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.JobType;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.vo.Name;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class MemberCommandServiceIT extends ServiceIntegrationTestHelper {

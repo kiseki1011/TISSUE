@@ -13,19 +13,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.event.NotificationEventHandler;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.application.service.reader.IssueReader;
 import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
-import com.tissue.api.issue.service.command.IssueReader;
-import com.tissue.api.notification.domain.NotificationMessageFactory;
-import com.tissue.api.notification.domain.NotificationProcessor;
-import com.tissue.api.notification.domain.NotificationTargetResolver;
-import com.tissue.api.notification.service.command.NotificationCommandService;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssueType;
+import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
+import com.tissue.api.notification.application.service.command.NotificationCommandService;
+import com.tissue.api.notification.application.service.command.NotificationProcessor;
+import com.tissue.api.notification.application.service.command.NotificationTargetService;
+import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationEventHandlerTest {
@@ -43,7 +43,7 @@ class NotificationEventHandlerTest {
 	private WorkspaceMemberRepository workspaceMemberRepository;
 
 	@Mock
-	private NotificationTargetResolver targetResolver;
+	private NotificationTargetService targetService;
 
 	@Mock
 	private NotificationProcessor notificationProcessor;
@@ -81,13 +81,13 @@ class NotificationEventHandlerTest {
 		);
 
 		// targetResolver가 워크스페이스 멤버 목록을 반환하도록 설정
-		when(targetResolver.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
+		when(targetService.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
 
 		// when
 		notificationEventHandler.handleIssueCreated(event);
 
 		// then
-		verify(targetResolver).getWorkspaceWideMemberTargets(workspaceCode);
+		verify(targetService).getWorkspaceWideMemberTargets(workspaceCode);
 		verify(notificationProcessor).processNotification(event, members);
 	}
 
@@ -121,13 +121,13 @@ class NotificationEventHandlerTest {
 		);
 
 		// targetResolver가 이슈 구독자 목록을 반환하도록 설정
-		when(targetResolver.getIssueSubscriberTargets(issueKey, workspaceCode)).thenReturn(subscribers);
+		when(targetService.getIssueSubscriberTargets(issueKey, workspaceCode)).thenReturn(subscribers);
 
 		// when
 		notificationEventHandler.handleIssueUpdated(event);
 
 		// then
-		verify(targetResolver).getIssueSubscriberTargets(issueKey, workspaceCode);
+		verify(targetService).getIssueSubscriberTargets(issueKey, workspaceCode);
 		verify(notificationProcessor).processNotification(event, subscribers);
 	}
 
@@ -158,7 +158,7 @@ class NotificationEventHandlerTest {
 		);
 
 		// targetResolver가 워크스페이스 멤버 목록을 반환하도록 설정
-		when(targetResolver.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
+		when(targetService.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
 
 		// processor가 예외를 던지도록 설정
 		doThrow(new RuntimeException("Test exception"))
@@ -169,7 +169,7 @@ class NotificationEventHandlerTest {
 			.isInstanceOf(RuntimeException.class);
 
 		// 호출 확인
-		verify(targetResolver).getWorkspaceWideMemberTargets(workspaceCode);
+		verify(targetService).getWorkspaceWideMemberTargets(workspaceCode);
 		verify(notificationProcessor).processNotification(event, members);
 	}
 }

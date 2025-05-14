@@ -12,9 +12,9 @@ import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.member.domain.JobType;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.vo.Name;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.member.domain.model.vo.Name;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

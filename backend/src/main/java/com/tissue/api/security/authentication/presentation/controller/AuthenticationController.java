@@ -9,7 +9,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
-import com.tissue.api.security.authentication.service.AuthenticationService;
+import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpServletRequest;

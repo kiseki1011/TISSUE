@@ -11,17 +11,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.IssueRelation;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
-import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.IssueRelation;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.enums.IssueRelationType;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueRelationRequest;
+import com.tissue.api.issue.presentation.controller.dto.response.IssueRelationResponse;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -346,7 +346,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then - validate circular dependency (B -> A)
 		assertThatThrownBy(
-			() -> circularDependencyChecker.validateNoCircularDependency(targetIssue, sourceIssue))
+			() -> circularDependencyValidator.validateNoCircularDependency(targetIssue, sourceIssue))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 
@@ -389,7 +389,7 @@ class IssueRelationCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then - validate circular dependency (B -> C)
 		assertThatThrownBy(
-			() -> circularDependencyChecker.validateNoCircularDependency(targetIssue, issueC))
+			() -> circularDependencyValidator.validateNoCircularDependency(targetIssue, issueC))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 }

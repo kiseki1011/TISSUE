@@ -2,7 +2,7 @@ package com.tissue.api.sprint.domain.event;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 import lombok.Getter;
 

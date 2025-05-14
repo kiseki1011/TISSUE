@@ -5,8 +5,8 @@ import org.springframework.util.StringUtils;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.service.command.WorkspaceReader;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 

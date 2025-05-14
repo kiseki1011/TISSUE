@@ -3,8 +3,8 @@ package com.tissue.api.team.validator;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.team.domain.Team;
-import com.tissue.api.team.domain.repository.TeamRepository;
+import com.tissue.api.team.domain.model.Team;
+import com.tissue.api.team.infrastructure.repository.TeamRepository;
 
 import lombok.RequiredArgsConstructor;
 

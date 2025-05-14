@@ -19,9 +19,9 @@ import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.GetTeamsResponse;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
-import com.tissue.api.team.service.command.TeamCommandService;
-import com.tissue.api.team.service.query.TeamQueryService;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.team.application.service.command.TeamCommandService;
+import com.tissue.api.team.application.service.query.TeamQueryService;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

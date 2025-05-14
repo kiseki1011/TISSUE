@@ -8,9 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 

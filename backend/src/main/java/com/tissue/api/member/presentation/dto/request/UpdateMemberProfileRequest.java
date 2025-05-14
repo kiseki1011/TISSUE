@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import com.tissue.api.common.validator.annotation.pattern.NamePattern;
 import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.member.domain.JobType;
+import com.tissue.api.member.domain.model.enums.JobType;
 
 import jakarta.validation.constraints.Past;
 import lombok.Builder;

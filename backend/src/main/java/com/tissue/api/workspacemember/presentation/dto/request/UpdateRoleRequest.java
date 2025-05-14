@@ -1,6 +1,6 @@
 package com.tissue.api.workspacemember.presentation.dto.request;
 
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.constraints.NotNull;
 

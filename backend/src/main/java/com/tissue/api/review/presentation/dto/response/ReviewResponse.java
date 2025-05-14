@@ -1,6 +1,6 @@
 package com.tissue.api.review.presentation.dto.response;
 
-import com.tissue.api.review.domain.Review;
+import com.tissue.api.review.domain.model.Review;
 
 import lombok.Builder;
 
