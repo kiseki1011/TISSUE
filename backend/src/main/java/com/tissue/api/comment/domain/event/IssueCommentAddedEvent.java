@@ -1,11 +1,11 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.comment.domain.IssueComment;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.comment.domain.model.IssueComment;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.notification.domain.model.vo.EntityReference;
 
 import lombok.Getter;
 
@@ -17,7 +17,7 @@ public class IssueCommentAddedEvent extends CommentEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		Long commentId
 	) {
 		super(
@@ -27,7 +27,7 @@ public class IssueCommentAddedEvent extends CommentEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			commentId
 		);
 	}
@@ -35,14 +35,14 @@ public class IssueCommentAddedEvent extends CommentEvent {
 	public static IssueCommentAddedEvent createEvent(
 		Issue issue,
 		IssueComment comment,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new IssueCommentAddedEvent(
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			comment.getId()
 		);
 	}

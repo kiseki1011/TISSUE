@@ -2,7 +2,7 @@ package com.tissue.api.review.presentation.dto.request;
 
 import com.tissue.api.common.validator.annotation.size.text.ContentText;
 import com.tissue.api.common.validator.annotation.size.text.ShortText;
-import com.tissue.api.review.domain.enums.ReviewStatus;
+import com.tissue.api.review.domain.model.enums.ReviewStatus;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

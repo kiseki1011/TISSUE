@@ -3,8 +3,8 @@ package com.tissue.api.sprint.presentation.dto.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.tissue.api.sprint.domain.Sprint;
-import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 
 import lombok.Builder;
 
@@ -35,7 +35,7 @@ public record SprintDetail(
 				.sorted()
 				.toList())
 			.createdAt(sprint.getCreatedDate())
-			.createdBy(sprint.getCreatedByWorkspaceMember())
+			.createdBy(sprint.getCreatedBy())
 			.build();
 	}
 }

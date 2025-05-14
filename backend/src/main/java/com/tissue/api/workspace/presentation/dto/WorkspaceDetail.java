@@ -2,7 +2,7 @@ package com.tissue.api.workspace.presentation.dto;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -52,9 +52,9 @@ public class WorkspaceDetail {
 			.name(workspace.getName())
 			.description(workspace.getDescription())
 			.memberCount(workspace.getMemberCount())
-			.createdBy(workspace.getCreatedByMember())
+			.createdBy(workspace.getCreatedBy())
 			.createdAt(workspace.getCreatedDate())
-			.updatedBy(workspace.getLastModifiedByWorkspaceMember())
+			.updatedBy(workspace.getLastModifiedBy())
 			.updatedAt(workspace.getLastModifiedDate())
 			.build();
 	}

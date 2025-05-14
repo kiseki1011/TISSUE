@@ -13,49 +13,50 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.global.config.webmvc.WebMvcConfig;
-import com.tissue.api.invitation.domain.repository.InvitationRepository;
-import com.tissue.api.invitation.presentation.controller.InvitationController;
-import com.tissue.api.invitation.service.command.InvitationCommandService;
-import com.tissue.api.invitation.service.query.InvitationQueryService;
-import com.tissue.api.invitation.service.query.InvitationReader;
-import com.tissue.api.issue.domain.repository.IssueRepository;
-import com.tissue.api.issue.presentation.controller.IssueController;
-import com.tissue.api.issue.service.command.IssueCommandService;
-import com.tissue.api.member.domain.repository.MemberRepository;
-import com.tissue.api.member.presentation.controller.MemberController;
-import com.tissue.api.member.service.command.MemberCommandService;
-import com.tissue.api.member.service.query.MemberQueryService;
+import com.tissue.api.invitation.application.service.command.InvitationCommandService;
+import com.tissue.api.invitation.application.service.query.InvitationQueryService;
+import com.tissue.api.invitation.application.service.reader.InvitationReader;
+import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
+import com.tissue.api.invitation.presentation.controller.command.InvitationController;
+import com.tissue.api.issue.application.service.command.IssueCommandService;
+import com.tissue.api.issue.application.service.command.IssueReviewerCommandService;
+import com.tissue.api.issue.infrastructure.repository.IssueRepository;
+import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
+import com.tissue.api.issue.presentation.controller.command.IssueController;
+import com.tissue.api.issue.presentation.controller.command.IssueReviewerController;
+import com.tissue.api.member.application.service.command.MemberCommandService;
+import com.tissue.api.member.application.service.query.MemberQueryService;
+import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.member.presentation.controller.command.MemberController;
 import com.tissue.api.member.validator.MemberValidator;
-import com.tissue.api.position.domain.repository.PositionRepository;
+import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
-import com.tissue.api.position.service.command.PositionCommandService;
-import com.tissue.api.position.service.command.PositionReader;
-import com.tissue.api.position.service.query.PositionQueryService;
-import com.tissue.api.review.domain.repository.IssueReviewerRepository;
+import com.tissue.api.position.application.service.command.PositionCommandService;
+import com.tissue.api.position.application.service.command.PositionReader;
+import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.review.presentation.controller.ReviewController;
-import com.tissue.api.review.presentation.controller.ReviewerController;
-import com.tissue.api.review.service.command.ReviewCommandService;
-import com.tissue.api.review.service.command.ReviewerCommandService;
+import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
-import com.tissue.api.security.authentication.service.AuthenticationService;
+import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
 import com.tissue.api.util.WorkspaceCodeParser;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.presentation.controller.WorkspaceController;
-import com.tissue.api.workspace.service.command.WorkspaceCommandService;
-import com.tissue.api.workspace.service.command.WorkspaceReader;
-import com.tissue.api.workspace.service.command.create.CheckCodeDuplicationService;
-import com.tissue.api.workspace.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.controller.WorkspaceMemberDetailController;
-import com.tissue.api.workspacemember.presentation.controller.WorkspaceMembershipController;
-import com.tissue.api.workspacemember.presentation.controller.WorkspaceParticipationController;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberInviteService;
-import com.tissue.api.workspacemember.service.command.WorkspaceParticipationCommandService;
-import com.tissue.api.workspacemember.service.query.WorkspaceParticipationQueryService;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
+import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
+import com.tissue.api.workspace.presentation.controller.command.WorkspaceController;
+import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
+import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceMemberDetailController;
+import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceMembershipController;
+import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceParticipationController;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
+import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.support.config.WebMvcTestConfig;
 
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +74,7 @@ import lombok.extern.slf4j.Slf4j;
 		PositionController.class,
 		IssueController.class,
 		ReviewController.class,
-		ReviewerController.class
+		IssueReviewerController.class
 	},
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
@@ -120,7 +121,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@MockBean
-	protected CheckCodeDuplicationService workspaceCreateService;
+	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
 	@MockBean
 	protected WorkspaceReader workspaceReader;
 	@MockBean
@@ -146,7 +147,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected ReviewCommandService reviewCommandService;
 	@MockBean
-	protected ReviewerCommandService reviewerCommandService;
+	protected IssueReviewerCommandService issueReviewerCommandService;
+	@MockBean
+	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	// @MockBean
 	// protected NotificationMessageFactory notificationMessageFactory;
 

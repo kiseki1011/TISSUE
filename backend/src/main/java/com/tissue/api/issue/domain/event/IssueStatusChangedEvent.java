@@ -1,8 +1,8 @@
 package com.tissue.api.issue.domain.event;
 
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.enums.IssueType;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 
@@ -31,7 +31,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 		String issueKey,
 		String workspaceCode,
 		IssueType issueType,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		IssueStatus oldStatus,
 		IssueStatus newStatus,
 		Long parentIssueId,
@@ -46,7 +46,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 			issueId,
 			issueKey,
 			issueType,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 		this.oldStatus = oldStatus;
 		this.newStatus = newStatus;
@@ -59,7 +59,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 	public static IssueStatusChangedEvent createEvent(
 		Issue issue,
 		IssueStatus oldStatus,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		Issue parentIssue = issue.hasParent() ? issue.getParentIssue() : null;
 
@@ -68,7 +68,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
 			issue.getType(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			oldStatus,
 			issue.getStatus(),
 			parentIssue != null ? parentIssue.getId() : null,

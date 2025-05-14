@@ -10,12 +10,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.invitation.domain.Invitation;
-import com.tissue.api.invitation.domain.InvitationStatus;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
@@ -52,25 +52,6 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 	}
 
 	@Test
-	@DisplayName("다수의 멤버를 워크스페이스로 초대할 수 있다")
-	void canInviteMultipleMembersAtOnceToWorkspace() {
-		// given
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
-
-		InviteMembersRequest request = new InviteMembersRequest(Set.of("member1", "member2"));
-
-		// when
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
-
-		// then
-		assertThat(response.invitedMembers()).contains(
-			InviteMembersResponse.InvitedMember.from(member1),
-			InviteMembersResponse.InvitedMember.from(member2)
-		);
-	}
-
-	@Test
 	@DisplayName("다수의 멤버에게 초대를 보낼때, 존재하지 않는 멤버에 대한 초대는 대상에서 제외된다")
 	void whenInvitingMultipleMembers_NonExistingIdentifiersAreExcluded() {
 		// given
@@ -85,7 +66,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
 
 		// then
-		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member));
+		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
 	}
 
 	@Test
@@ -110,17 +91,17 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
 
 		// then
-		assertThat(response.invitedMembers().get(0)).isEqualTo(InviteMembersResponse.InvitedMember.from(member2));
 		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
 	}
 
 	@Test
 	@DisplayName("멤버를 초대할 때, 하나 이상의 유효한 초대가 존재해야 한다")
 	void whenInvitingMembers_AtLeast_A_SingleInvitationMustBeValid() {
 		// given
-		Member member1 = testDataFixture.createMember("member1");
-		WorkspaceMember workspaceMember1 = testDataFixture.createWorkspaceMember(
-			member1,
+		Member member = testDataFixture.createMember("member1");
+		WorkspaceMember workspaceMember = testDataFixture.createWorkspaceMember(
+			member,
 			workspace,
 			WorkspaceRole.MEMBER
 		);

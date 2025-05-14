@@ -14,10 +14,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.enums.PermissionType;
-import com.tissue.api.common.exception.type.UnauthorizedException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.repository.MemberRepository;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.security.session.SessionManager;
@@ -111,7 +111,7 @@ class SessionManagerTest {
 
 		// when & then
 		assertThatThrownBy(() -> sessionManager.getLoginMember(session))
-			.isInstanceOf(UnauthorizedException.class);
+			.isInstanceOf(AuthenticationFailedException.class);
 	}
 
 	@Test
@@ -135,19 +135,6 @@ class SessionManagerTest {
 		// then
 		verify(session).setAttribute(SessionAttributes.PERMISSION_TYPE, PermissionType.MEMBER_UPDATE);
 		verify(session).setAttribute(eq(SessionAttributes.PERMISSION_EXPIRES_AT), any(LocalDateTime.class));
-	}
-
-	@Test
-	@DisplayName("이메일 업데이트 요청이 오면 세션의 이메일이 갱신된다")
-	void updateSessionEmail() {
-		// given
-		String newEmail = "new@test.com";
-
-		// when
-		sessionManager.updateSessionEmail(session, newEmail);
-
-		// then
-		verify(session).setAttribute(SessionAttributes.LOGIN_MEMBER_EMAIL, newEmail);
 	}
 
 	@Test

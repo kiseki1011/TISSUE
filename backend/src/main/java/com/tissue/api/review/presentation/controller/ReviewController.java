@@ -12,20 +12,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
-import com.tissue.api.review.presentation.dto.response.SubmitReviewResponse;
-import com.tissue.api.review.presentation.dto.response.UpdateReviewResponse;
-import com.tissue.api.review.service.command.ReviewCommandService;
+import com.tissue.api.review.presentation.dto.response.ReviewResponse;
+import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}/reviews")
+@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/reviews")
 public class ReviewController {
 
 	private final ReviewCommandService reviewCommandService;
@@ -33,10 +32,7 @@ public class ReviewController {
 	/*
 	 * Todo
 	 *  - 리뷰어들에게 리뷰 요청
-	 *    - 알림 보내기(추후에 Notification 도메인과 함께 개발)
-	 *    - 이벤트 기반 아키텍쳐 사용?
 	 *  - 리뷰 상태 변경
-	 *    - 이벤트 기반 아키텍쳐 사용?
 	 *  - 리뷰 삭제(내꺼)
 	 *  - 리뷰 삭제(MANAGER 권한 이상) - 위의 리뷰 삭제와 서비스 같이 사용
 	 *  - 리뷰 댓글 달기(CommentController에서 진행하는 것이 좋을까?)
@@ -46,33 +42,35 @@ public class ReviewController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<SubmitReviewResponse> createReview(
-		@PathVariable String code,
+	public ApiResponse<ReviewResponse> submitReview(
+		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId,
-		@RequestBody @Valid SubmitReviewRequest request
+		@RequestBody @Valid SubmitReviewRequest request,
+		@ResolveLoginMember Long loginMemberId
 	) {
-		SubmitReviewResponse response = reviewCommandService.submitReview(
-			code,
+		ReviewResponse response = reviewCommandService.submitReview(
+			workspaceCode,
 			issueKey,
-			currentWorkspaceMemberId,
+			loginMemberId,
 			request
 		);
 
-		return ApiResponse.ok("Review created.", response);
+		return ApiResponse.ok("Review submitted.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{reviewId}")
-	public ApiResponse<UpdateReviewResponse> updateReview(
+	public ApiResponse<ReviewResponse> updateReview(
+		@PathVariable String workspaceCode,
 		@PathVariable Long reviewId,
-		@CurrentWorkspaceMember Long requesterId,
-		@RequestBody @Valid UpdateReviewRequest request
+		@RequestBody @Valid UpdateReviewRequest request,
+		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateReviewResponse response = reviewCommandService.updateReview(
+		ReviewResponse response = reviewCommandService.updateReview(
+			workspaceCode,
 			reviewId,
-			requesterId,
+			loginMemberId,
 			request
 		);
 
@@ -82,14 +80,14 @@ public class ReviewController {
 	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PatchMapping("/{reviewId}/status")
-	// public ApiResponse<UpdateReviewStatusResponse> updateReviewStatus(
+	// public ApiResponse<ReviewResponse> updateReviewStatus(
 	// 	@PathVariable String code,
 	// 	@PathVariable String issueKey,
 	// 	@PathVariable Long reviewId,
 	// 	@CurrentWorkspaceMember Long requesterId,
 	// 	@RequestBody @Valid UpdateReviewStatusRequest request
 	// ) {
-	// 	UpdateReviewStatusResponse response = reviewCommandService.updateReviewStatus(
+	// 	ReviewResponse response = reviewCommandService.updateReviewStatus(
 	// 		code,
 	// 		issueKey,
 	// 		reviewId,

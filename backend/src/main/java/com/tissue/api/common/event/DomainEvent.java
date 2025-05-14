@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.vo.EntityReference;
+import com.tissue.api.notification.domain.model.vo.EntityReference;
 
 public interface DomainEvent {
 
@@ -18,7 +18,7 @@ public interface DomainEvent {
 
 	String getWorkspaceCode();
 
-	Long getTriggeredByWorkspaceMemberId();
+	Long getActorMemberId();
 
 	EntityReference createEntityReference();
 }

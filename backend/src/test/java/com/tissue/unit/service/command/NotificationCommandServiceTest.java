@@ -18,13 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.notification.domain.Notification;
+import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.repository.NotificationRepository;
-import com.tissue.api.notification.service.command.NotificationCommandService;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.service.command.WorkspaceMemberReader;
+import com.tissue.api.notification.domain.model.Notification;
+import com.tissue.api.notification.domain.model.vo.NotificationMessage;
+import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationCommandServiceTest {
@@ -48,24 +49,25 @@ class NotificationCommandServiceTest {
 		NotificationType notificationType = NotificationType.ISSUE_CREATED;
 		ResourceType resourceType = ResourceType.ISSUE;
 		String title = "Test Title";
-		String message = "Test Message";
+		String content = "Test Message";
+		NotificationMessage message = new NotificationMessage(title, content);
 		Long actorId = 300L;
 
 		DomainEvent event = mock(DomainEvent.class);
 		when(event.getEventId()).thenReturn(eventId);
-		when(event.getTriggeredByWorkspaceMemberId()).thenReturn(actorId);
+		when(event.getActorMemberId()).thenReturn(actorId);
 		when(event.getNotificationType()).thenReturn(notificationType);
+		when(event.getWorkspaceCode()).thenReturn(workspaceCode);
 
 		// 액터 모의 설정
 		WorkspaceMember actorMember = mock(WorkspaceMember.class);
-		when(actorMember.getNickname()).thenReturn("TestUser");
-		when(workspaceMemberReader.findWorkspaceMember(actorId)).thenReturn(actorMember);
+		when(actorMember.getDisplayName()).thenReturn("TestUser");
+		when(workspaceMemberReader.findWorkspaceMember(actorId, workspaceCode)).thenReturn(actorMember);
 
 		// when
 		notificationCommandService.createNotification(
 			event,
 			receiverId,
-			title,
 			message
 		);
 
@@ -77,12 +79,12 @@ class NotificationCommandServiceTest {
 		// 저장된 Notification 객체의 속성들이 올바르게 설정되었는지 검증
 		Notification savedNotification = notificationCaptor.getValue();
 		assertThat(savedNotification.getEventId()).isEqualTo(eventId);
-		assertThat(savedNotification.getReceiverWorkspaceMemberId()).isEqualTo(receiverId);
+		assertThat(savedNotification.getReceiverMemberId()).isEqualTo(receiverId);
 		assertThat(savedNotification.getType()).isEqualTo(notificationType);
-		assertThat(savedNotification.getTitle()).isEqualTo(title);
-		assertThat(savedNotification.getMessage()).isEqualTo(message);
-		assertThat(savedNotification.getActorWorkspaceMemberId()).isEqualTo(actorId);
-		assertThat(savedNotification.getActorWorkspaceMemberNickname()).isEqualTo("TestUser");
+		assertThat(savedNotification.getTitle()).isEqualTo(message.title());
+		assertThat(savedNotification.getContent()).isEqualTo(message.content());
+		assertThat(savedNotification.getActorMemberId()).isEqualTo(actorId);
+		assertThat(savedNotification.getActorNickname()).isEqualTo("TestUser");
 		assertThat(savedNotification.isRead()).isFalse();
 	}
 
@@ -95,7 +97,7 @@ class NotificationCommandServiceTest {
 
 		// 기존 알림 모의 설정
 		Notification notification = mock(Notification.class);
-		when(notificationRepository.findByIdAndReceiverWorkspaceMemberId(notificationId, workspaceMemberId))
+		when(notificationRepository.findByIdAndReceiverMemberId(notificationId, workspaceMemberId))
 			.thenReturn(Optional.of(notification));
 
 		// when
@@ -114,7 +116,7 @@ class NotificationCommandServiceTest {
 		Long workspaceMemberId = 200L;
 
 		// 존재하지 않는 알림 모의 설정
-		when(notificationRepository.findByIdAndReceiverWorkspaceMemberId(notificationId, workspaceMemberId))
+		when(notificationRepository.findByIdAndReceiverMemberId(notificationId, workspaceMemberId))
 			.thenReturn(Optional.empty());
 
 		// when & then
@@ -135,7 +137,7 @@ class NotificationCommandServiceTest {
 		Notification notification2 = mock(Notification.class);
 		List<Notification> unreadNotifications = Arrays.asList(notification1, notification2);
 
-		when(notificationRepository.findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
+		when(notificationRepository.findByReceiverMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
 			workspaceMemberId, workspaceCode
 		)).thenReturn(unreadNotifications);
 
@@ -160,7 +162,7 @@ class NotificationCommandServiceTest {
 
 		// 빈 알림 목록 모의 설정
 		List<Notification> emptyList = List.of();
-		when(notificationRepository.findByReceiverWorkspaceMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
+		when(notificationRepository.findByReceiverMemberIdAndEntityReference_WorkspaceCodeAndIsReadFalse(
 			workspaceMemberId, workspaceCode
 		)).thenReturn(emptyList);
 

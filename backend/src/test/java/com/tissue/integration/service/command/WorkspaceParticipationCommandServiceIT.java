@@ -8,10 +8,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -36,12 +36,14 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 		Member member = testDataFixture.createMember("tester");
 
 		// when
-		JoinWorkspaceResponse response = workspaceParticipationCommandService.joinWorkspace(
+		WorkspaceMemberResponse response = workspaceParticipationCommandService.joinWorkspace(
 			workspace.getCode(),
 			member.getId()
 		);
 
 		// then
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.memberId()).isEqualTo(member.getId());
 		assertThat(response).isNotNull();
 	}
 

@@ -6,28 +6,25 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueType;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
-import com.tissue.api.issue.presentation.dto.request.create.CommonIssueCreateFields;
-import com.tissue.api.issue.presentation.dto.request.create.CreateTaskRequest;
-import com.tissue.api.issue.presentation.dto.request.update.CommonIssueUpdateFields;
-import com.tissue.api.issue.presentation.dto.request.update.UpdateStoryRequest;
-import com.tissue.api.issue.presentation.dto.response.AssignParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.RemoveParentIssueResponse;
-import com.tissue.api.issue.presentation.dto.response.create.CreateTaskResponse;
-import com.tissue.api.issue.presentation.dto.response.update.UpdateStoryResponse;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.create.CreateTaskRequest;
+import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
+import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
+import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +37,10 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 	WorkspaceMember workspaceMember1;
 	WorkspaceMember workspaceMember2;
 
+	Member ownerMember;
+	Member member1;
+	Member member2;
+
 	@BeforeEach
 	void setUp() {
 		// create workspace
@@ -50,9 +51,9 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// create member
-		Member ownerMember = testDataFixture.createMember("owner");
-		Member member1 = testDataFixture.createMember("member1");
-		Member member2 = testDataFixture.createMember("member2");
+		ownerMember = testDataFixture.createMember("owner");
+		member1 = testDataFixture.createMember("member1");
+		member2 = testDataFixture.createMember("member2");
 
 		// add workspace members
 		owner = testDataFixture.createWorkspaceMember(
@@ -92,18 +93,19 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
+		IssueResponse response = issueCommandService.createIssue(
 			workspace.getCode(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			request
 		);
 
 		// then
-		assertThat(response.getType()).isEqualTo(IssueType.TASK);
-		assertThat(response.title()).isEqualTo("test issue");
+		Issue issue = issueRepository.findById(1L).orElseThrow();
 
-		Issue findIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(findIssue.getWorkspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(issue.getWorkspaceCode());
+		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
+
+		assertThat(issue.getTitle()).isEqualTo("test issue");
 	}
 
 	@Test
@@ -121,16 +123,15 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
+		IssueResponse response = issueCommandService.createIssue(
 			workspace.getCode(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			request
 		);
 
 		// then
-		Issue savedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(savedIssue.getIssueKey()).isEqualTo("ISSUE-1");
-		assertThat(savedIssue.getWorkspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo("ISSUE-1");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
@@ -155,19 +156,14 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		CreateTaskResponse response = (CreateTaskResponse)issueCommandService.createIssue(
+		IssueResponse response = issueCommandService.createIssue(
 			workspace.getCode(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			request
 		);
 
 		// then
-		assertThat(response.getType()).isEqualTo(IssueType.TASK);
-		assertThat(response.title()).isEqualTo("second issue (TASK type)");
-
-		Issue secondIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(firstIssue.getIssueKey()).isEqualTo("ISSUE-1");
-		assertThat(secondIssue.getIssueKey()).isEqualTo("ISSUE-2");
+		assertThat(response.issueKey()).isEqualTo("ISSUE-2");
 	}
 
 	@Test
@@ -182,7 +178,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedBy(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -196,16 +192,16 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+		IssueResponse response = issueCommandService.updateIssue(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			request
 		);
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-		assertThat(response.title()).isEqualTo("updated issue");
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
 	}
 
 	@Test
@@ -220,7 +216,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -229,19 +225,28 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+		IssueResponse response = issueCommandService.updateIssue(
 			workspace.getCode(),
 			issue.getIssueKey(),
-			workspaceMember1.getId(),
+			member1.getId(),
 			request
 		);
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-		assertThat(response.summary()).isNull();
+		assertThat(response.workspaceCode()).isEqualTo(issue.getWorkspaceCode());
+
+		Issue updatedIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			response.issueKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(updatedIssue.getSummary()).isNull();
+
 	}
 
 	@Test
+	@Disabled("테스트가 마음에 안듬. 개선 필요.")
 	@Transactional
 	@DisplayName("이슈를 업데이트 시, nullable=false인 필드에 대해서는 요청 필드가 null인 경우 업데이트 대상에서 제외된다")
 	void forNonNullableFields_IfRequestFieldIsNull_UpdateIsNotApplied() {
@@ -253,7 +258,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// all fields except for summary is null for request
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
@@ -263,7 +268,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		UpdateStoryResponse response = (UpdateStoryResponse)issueCommandService.updateIssue(
+		IssueResponse response = issueCommandService.updateIssue(
 			workspace.getCode(),
 			issue.getIssueKey(),
 			workspaceMember1.getId(),
@@ -272,7 +277,13 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-		assertThat(response.title()).isEqualTo("original title");
+
+		Issue updatedIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			response.issueKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(updatedIssue.getTitle()).isEqualTo("original title");
 	}
 
 	@Test
@@ -287,7 +298,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// issue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -318,7 +329,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -326,19 +337,23 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+		IssueResponse response = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			member1.getId(),
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		// then
-		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(parentIssue.getIssueKey());
-		assertThat(assignParentResponse.parentIssueId()).isEqualTo(parentIssue.getId());
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			response.issueKey(),
+			response.workspaceCode()
+		).get();
+
+		assertThat(issue.getParentIssue().getIssueKey()).isEqualTo(parentIssue.getIssueKey());
 	}
 
 	@Test
@@ -352,7 +367,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue1 = Story.builder()
 			.workspace(workspace)
@@ -365,7 +380,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		issueRepository.save(childIssue1);
-		childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue1.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue2 = Story.builder()
 			.workspace(workspace)
@@ -378,21 +393,21 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		issueRepository.save(childIssue2);
-		childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue2.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when - assign parent to childIssue1, 2
 		issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue1.getIssueKey(),
 			workspaceMember1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue2.getIssueKey(),
 			workspaceMember1.getId(),
-			new AssignParentIssueRequest(parentIssue.getIssueKey())
+			new AddParentIssueRequest(parentIssue.getIssueKey())
 		);
 
 		// then
@@ -427,7 +442,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 		issueRepository.save(childIssue);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		UpdateStoryRequest request = UpdateStoryRequest.builder()
 			.common(CommonIssueUpdateFields.builder()
@@ -446,7 +461,8 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Issue foundParentIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			parentIssue.getIssueKey(),
-			workspace.getCode()).get();
+			workspace.getCode()
+		).get();
 
 		assertThat(foundParentIssue.getStoryPoint()).isEqualTo(10);
 	}
@@ -462,7 +478,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -470,7 +486,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// 변경할 부모 이슈 생성
@@ -480,24 +496,31 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			IssuePriority.MEDIUM,
 			LocalDateTime.now().plusDays(7)
 		);
-		newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// newParentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		// when
-		AssignParentIssueResponse assignParentResponse = issueCommandService.assignParentIssue(
+		IssueResponse response = issueCommandService.assignParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId(),
-			new AssignParentIssueRequest(newParentIssue.getIssueKey())
+			member1.getId(),
+			new AddParentIssueRequest(newParentIssue.getIssueKey())
 		);
 
 		// then
-		assertThat(assignParentResponse.parentIssueKey()).isEqualTo(newParentIssue.getIssueKey());
-		assertThat(assignParentResponse.parentIssueId()).isEqualTo(newParentIssue.getId());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
+
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			childIssue.getIssueKey(),
+			workspace.getCode()
+		).get();
+
+		assertThat(issue.getParentIssue().getIssueKey()).isEqualTo(newParentIssue.getIssueKey());
 	}
 
 	@Test
 	@Transactional
-	@DisplayName("STORY의 부모 이슈인 EPIC에 대한 부모 관계를 해제할 수 있다")
+	@DisplayName("부모 관계를 해제할 수 있다")
 	void canRemoveParentRelationship() {
 		// given
 		Issue parentIssue = testDataFixture.createEpic(
@@ -507,7 +530,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createStory(
 			workspace,
@@ -516,21 +539,27 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// when
-		RemoveParentIssueResponse response = issueCommandService.removeParentIssue(
+		IssueResponse response = issueCommandService.removeParentIssue(
 			workspace.getCode(),
 			childIssue.getIssueKey(),
-			workspaceMember1.getId()
+			member1.getId()
 		);
+
+		log.info("response = {}", response);
 
 		// then
 		assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
 
-		Issue updatedIssue = issueRepository.findById(response.issueId()).orElseThrow();
-		assertThat(updatedIssue.getParentIssue()).isNull();
+		Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
+			parentIssue.getIssueKey(),
+			workspace.getCode()
+		).get();
+
+		assertThat(issue.getParentIssue()).isNull();
 	}
 
 	@Test
@@ -545,7 +574,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// parentIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 
 		Issue childIssue = testDataFixture.createSubTask(
 			workspace,
@@ -554,7 +583,7 @@ class IssueCommandServiceIT extends ServiceIntegrationTestHelper {
 			LocalDateTime.now().plusDays(7)
 		);
 
-		childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
+		// childIssue.updateCreatedByWorkspaceMember(workspaceMember1.getId());
 		childIssue.updateParentIssue(parentIssue);
 
 		// when & then

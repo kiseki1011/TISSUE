@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,17 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateNicknameRequest;
+import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.RemoveWorkspaceMemberResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateNicknameResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.UpdateRoleResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceMemberEntityFixture;
@@ -50,36 +47,19 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	@DisplayName("DELETE /workspaces/{code}/members/{memberId} - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
 		// given
-		Member member = memberEntityFixture.createMember(
-			"member1",
-			"member1@test.com"
-		);
-
-		Workspace workspace = workspaceEntityFixture.createWorkspace("TESTCODE");
-
-		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(
-			member,
-			workspace
-		);
-
-		RemoveWorkspaceMemberResponse response = RemoveWorkspaceMemberResponse.from(workspaceMember);
-
-		when(workspaceMemberCommandService.removeWorkspaceMember(
-			eq(2L),
-			anyLong())
-		)
-			.thenReturn(response);
+		doNothing().when(workspaceMemberCommandService)
+			.removeWorkspaceMember(anyString(), anyLong(), anyLong());
 
 		// when & then
 		mockMvc.perform(delete("/api/v1/workspaces/{code}/members/{memberId}", "TESTCODE", 2L)
 				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
+			.andExpect(status().isNoContent())
 			.andExpect(jsonPath("$.message").value("Member was removed from this workspace"))
 			.andDo(print());
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{code}/members/nickname - 별칭을 변경하는데 성공하면 200을 응답받는다")
+	@DisplayName("PATCH /workspaces/{code}/members/display-name - 표시 이름(displayName)을 변경하는데 성공하면 200을 응답받는다")
 	void testUpdateNickname_ifSuccess_return200() throws Exception {
 		// given
 		WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createManagerWorkspaceMember(
@@ -92,23 +72,23 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		workspaceMember.updateNickname("newNickname");
+		workspaceMember.updateDisplayName("newNickname");
 
-		UpdateNicknameResponse response = UpdateNicknameResponse.from(workspaceMember);
+		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(workspaceMember);
 
-		when(workspaceMemberCommandService.updateNickname(
+		when(workspaceMemberCommandService.updateDisplayName(
+			anyString(),
 			anyLong(),
-			any(UpdateNicknameRequest.class))
+			any(UpdateDisplayNameRequest.class))
 		)
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/nickname", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{code}/members/display-name", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new UpdateNicknameRequest("newNickname"))))
+				.content(objectMapper.writeValueAsString(new UpdateDisplayNameRequest("newNickname"))))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Nickname updated."))
-			.andExpect(jsonPath("$.data.updatedNickname").value("newNickname"))
+			.andExpect(jsonPath("$.message").value("Display name updated."))
 			.andDo(print());
 	}
 
@@ -127,9 +107,10 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateRoleResponse response = UpdateRoleResponse.from(target);
+		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(target);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+		when(workspaceMemberCommandService.updateRole(
+			anyString(),
 			anyLong(),
 			anyLong(),
 			any(UpdateRoleRequest.class))
@@ -161,9 +142,10 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.build()
 		);
 
-		UpdateRoleResponse response = UpdateRoleResponse.from(target);
+		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(target);
 
-		when(workspaceMemberCommandService.updateWorkspaceMemberRole(
+		when(workspaceMemberCommandService.updateRole(
+			anyString(),
 			anyLong(),
 			anyLong(),
 			any(UpdateRoleRequest.class))
@@ -176,7 +158,6 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Member's role for this workspace was updated"))
-			.andExpect(jsonPath("$.data.updatedRole").value("MANAGER"))
 			.andDo(print());
 	}
 
@@ -185,25 +166,14 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	void inviteMembers_Success() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
-		Set<String> memberIdentifiers = new HashSet<>(Arrays.asList(
-			"john@example.com",
-			"jane@example.com"
-		));
+		InviteMembersRequest request = InviteMembersRequest.of(Set.of("dummy1", "dummy2"));
 
-		InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
+		// invited member IDs (직접 생성)
+		List<Long> invitedMemberIds = List.of(1L, 2L);
+		InviteMembersResponse response = new InviteMembersResponse(workspaceCode, invitedMemberIds);
 
-		List<InviteMembersResponse.InvitedMember> invitedMembers = Arrays.asList(
-			new InviteMembersResponse.InvitedMember(1L, "john@example.com"),
-			new InviteMembersResponse.InvitedMember(2L, "jane@example.com")
-		);
-
-		InviteMembersResponse response = InviteMembersResponse.of(workspaceCode, invitedMembers);
-
-		// 로그인 멤버 및 권한 설정
-		when(workspaceMemberInviteService.inviteMembers(
-			workspaceCode,
-			request)
-		)
+		// mock behavior 설정
+		when(workspaceMemberInviteService.inviteMembers(eq(workspaceCode), eq(request)))
 			.thenReturn(response);
 
 		// when & then
@@ -214,10 +184,8 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.code").value("200"))
 			.andExpect(jsonPath("$.message").value("Members invited"))
 			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
-			.andExpect(jsonPath("$.data.invitedMembers[0].id").value(1))
-			.andExpect(jsonPath("$.data.invitedMembers[0].email").value("john@example.com"))
-			.andExpect(jsonPath("$.data.invitedMembers[1].id").value(2))
-			.andExpect(jsonPath("$.data.invitedMembers[1].email").value("jane@example.com"))
+			.andExpect(jsonPath("$.data.invitedMemberIds").isArray())
+			.andExpect(jsonPath("$.data.invitedMemberIds.length()").value(2))
 			.andDo(print());
 
 		verify(workspaceMemberInviteService).inviteMembers(workspaceCode, request);

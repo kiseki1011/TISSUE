@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 import lombok.Getter;
 
@@ -18,7 +18,7 @@ public class SprintCompletedEvent extends SprintEvent {
 		Long sprintId,
 		String sprintKey,
 		String workspaceCode,
-		Long triggeredByWorkspaceMemberId,
+		Long actorMemberId,
 		LocalDateTime sprintStartedAt,
 		LocalDateTime sprintCompletedAt
 	) {
@@ -28,7 +28,7 @@ public class SprintCompletedEvent extends SprintEvent {
 			workspaceCode,
 			sprintId,
 			sprintKey,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 
 		this.sprintStartedAt = sprintStartedAt;
@@ -37,13 +37,13 @@ public class SprintCompletedEvent extends SprintEvent {
 
 	public static SprintCompletedEvent createEvent(
 		Sprint sprint,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new SprintCompletedEvent(
 			sprint.getId(),
 			sprint.getSprintKey(),
 			sprint.getWorkspaceCode(),
-			triggeredByWorkspaceMemberId,
+			actorMemberId,
 			sprint.getStartDate(),
 			sprint.getEndDate()
 		);

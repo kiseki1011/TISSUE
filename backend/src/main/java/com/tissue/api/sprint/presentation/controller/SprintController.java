@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.PageResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.presentation.condition.SprintIssueSearchCondition;
 import com.tissue.api.sprint.presentation.condition.SprintSearchCondition;
@@ -26,16 +27,12 @@ import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
-import com.tissue.api.sprint.presentation.dto.response.AddSprintIssuesResponse;
-import com.tissue.api.sprint.presentation.dto.response.CreateSprintResponse;
 import com.tissue.api.sprint.presentation.dto.response.SprintDetail;
 import com.tissue.api.sprint.presentation.dto.response.SprintIssueDetail;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintResponse;
-import com.tissue.api.sprint.presentation.dto.response.UpdateSprintStatusResponse;
-import com.tissue.api.sprint.service.command.SprintCommandService;
-import com.tissue.api.sprint.service.query.SprintQueryService;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
+import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
+import com.tissue.api.sprint.application.service.command.SprintCommandService;
+import com.tissue.api.sprint.application.service.query.SprintQueryService;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,11 +49,11 @@ public class SprintController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
-	public ApiResponse<CreateSprintResponse> createSprint(
+	public ApiResponse<SprintResponse> createSprint(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid CreateSprintRequest request
 	) {
-		CreateSprintResponse response = sprintCommandService.createSprint(
+		SprintResponse response = sprintCommandService.createSprint(
 			workspaceCode,
 			request
 		);
@@ -71,12 +68,12 @@ public class SprintController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{sprintKey}")
-	public ApiResponse<UpdateSprintResponse> updateSprint(
+	public ApiResponse<SprintResponse> updateSprint(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid UpdateSprintRequest request
 	) {
-		UpdateSprintResponse response = sprintCommandService.updateSprint(
+		SprintResponse response = sprintCommandService.updateSprint(
 			workspaceCode,
 			sprintKey,
 			request
@@ -87,12 +84,12 @@ public class SprintController {
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{sprintKey}/issues")
-	public ApiResponse<AddSprintIssuesResponse> addIssues(
+	public ApiResponse<SprintResponse> addIssues(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid AddSprintIssuesRequest request
 	) {
-		AddSprintIssuesResponse response = sprintCommandService.addIssues(
+		SprintResponse response = sprintCommandService.addIssues(
 			workspaceCode,
 			sprintKey,
 			request
@@ -101,36 +98,35 @@ public class SprintController {
 	}
 
 	@LoginRequired
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{sprintKey}/issues")
-	public ApiResponse<Void> removeIssue(
+	public ApiResponse<SprintResponse> removeIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid RemoveSprintIssueRequest request
 	) {
-		sprintCommandService.removeIssue(
+		SprintResponse response = sprintCommandService.removeIssue(
 			workspaceCode,
 			sprintKey,
 			request
 		);
-		return ApiResponse.okWithNoContent("Issue removed from sprint.");
+		return ApiResponse.ok("Issue removed from sprint.", response);
 	}
 
 	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{sprintKey}/status")
-	public ApiResponse<UpdateSprintStatusResponse> updateSprintStatus(
+	public ApiResponse<SprintResponse> updateSprintStatus(
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid UpdateSprintStatusRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
-		UpdateSprintStatusResponse response = sprintCommandService.updateSprintStatus(
+		SprintResponse response = sprintCommandService.updateSprintStatus(
 			workspaceCode,
 			sprintKey,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 		return ApiResponse.ok("Sprint status updated.", response);
 	}

@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.support.helper.RestAssuredTestHelper;
 
@@ -38,7 +38,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	@DisplayName("워크스페이스를 생성하면 응답의 데이터에 워크스페이스의 이름, 설명, 코드가 존재해야 한다")
 	void test1() {
 
-		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!", "testusername");
 		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
@@ -54,7 +54,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 			.post("/api/v1/workspaces")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
-			.body("data.id", equalTo(1))
+			.body("data.workspaceCode", hasLength(8))
 			.extract().response();
 	}
 
@@ -62,7 +62,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	@DisplayName("하나의 워크스페이스를 생성하면 DB에 하나의 워크스페이스만 존재해야 한다")
 	void test2() {
 
-		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!");
+		memberApiFixture.signupApi("user123", "user123@gmail.com", "test1234!", "testusername");
 		String sessionCookie = loginApiFixture.loginWithIdApi("user123", "test1234!");
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
@@ -90,8 +90,9 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 		String loginId = "user123";
 		String email = "user123@test.com";
 		String password = "password123!";
+		String username = "testusername";
 
-		memberApiFixture.signupApi(loginId, email, password);
+		memberApiFixture.signupApi(loginId, email, password, username);
 		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()
@@ -114,7 +115,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 		Member member = memberRepository.findByLoginId("user123").orElseThrow();
 
 		// then
-		assertThat(workspace.getCreatedByMember()).isEqualTo(member.getId());
+		assertThat(workspace.getCreatedBy()).isEqualTo(member.getId());
 	}
 
 	@Test
@@ -124,8 +125,9 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 		String loginId = "user123";
 		String email = "user123@test.com";
 		String password = "password123!";
+		String username = "testusername";
 
-		memberApiFixture.signupApi(loginId, email, password);
+		memberApiFixture.signupApi(loginId, email, password, username);
 		String sessionCookie = loginApiFixture.loginWithIdApi(loginId, password);
 
 		CreateWorkspaceRequest request = CreateWorkspaceRequest.builder()

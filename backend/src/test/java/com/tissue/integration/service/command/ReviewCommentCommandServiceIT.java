@@ -1,6 +1,5 @@
 package com.tissue.integration.service.command;
 
-import static com.tissue.api.review.domain.enums.ReviewStatus.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDateTime;
@@ -11,19 +10,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.comment.domain.ReviewComment;
+import com.tissue.api.comment.domain.model.Comment;
+import com.tissue.api.comment.domain.model.ReviewComment;
 import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
-import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.IssueStatus;
-import com.tissue.api.issue.domain.types.Story;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.review.domain.IssueReviewer;
-import com.tissue.api.review.domain.Review;
-import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
+import com.tissue.api.issue.domain.model.IssueReviewer;
+import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.domain.model.enums.IssueStatus;
+import com.tissue.api.issue.domain.model.types.Story;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.review.domain.model.Review;
+import com.tissue.api.review.domain.model.enums.ReviewStatus;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
@@ -80,7 +81,7 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		issue.requestReview();
 
 		// add a APPROVED review
-		review = testDataFixture.createReview(reviewer, "test review", APPROVED);
+		review = testDataFixture.createReview(reviewer, "test review", ReviewStatus.APPROVED);
 	}
 
 	@AfterEach
@@ -108,8 +109,10 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
-		assertThat(response.content()).isEqualTo("Test Comment");
+		Comment comment = commentRepository.findById(1L).get();
+
+		assertThat(comment.getContent()).isEqualTo("Test Comment");
+		assertThat(response.commentId()).isEqualTo(comment.getId());
 	}
 
 	@Test
@@ -139,8 +142,10 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.content()).isEqualTo("reply comment");
-		assertThat(response.author().workspaceMemberId()).isEqualTo(workspaceMember1.getId());
+		Comment comment = commentRepository.findById(2L).get();
+
+		assertThat(comment.getContent()).isEqualTo("reply comment");
+		assertThat(response.commentId()).isEqualTo(comment.getId());
 	}
 
 	@Test
@@ -159,6 +164,7 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		ReviewCommentResponse updateResponse = reviewCommentCommandService.updateComment(
+			workspace.getCode(),
 			issue.getIssueKey(),
 			review.getId(),
 			comment.getId(),
@@ -167,6 +173,7 @@ class ReviewCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(updateResponse.content()).isEqualTo("update comment");
+		assertThat(comment.getContent()).isEqualTo("update comment");
+		assertThat(updateResponse.commentId()).isEqualTo(comment.getId());
 	}
 }

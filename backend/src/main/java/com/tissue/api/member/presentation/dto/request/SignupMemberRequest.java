@@ -5,14 +5,16 @@ import java.time.LocalDate;
 import com.tissue.api.common.validator.annotation.pattern.IdPattern;
 import com.tissue.api.common.validator.annotation.pattern.NamePattern;
 import com.tissue.api.common.validator.annotation.pattern.PasswordPattern;
+import com.tissue.api.common.validator.annotation.pattern.UsernamePattern;
 import com.tissue.api.common.validator.annotation.size.EmailSize;
 import com.tissue.api.common.validator.annotation.size.IdSize;
 import com.tissue.api.common.validator.annotation.size.NameSize;
+import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.member.domain.JobType;
-import com.tissue.api.member.domain.Member;
-import com.tissue.api.member.domain.vo.Name;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.member.domain.model.vo.Name;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +32,11 @@ public record SignupMemberRequest(
 	@Email(message = "{valid.pattern.email}}")
 	@NotBlank(message = "{valid.notblank}")
 	String email,
+
+	@UsernameSize
+	@UsernamePattern
+	@NotBlank(message = "{valid.notblank}")
+	String username,
 
 	@PasswordSize
 	@PasswordPattern
@@ -57,6 +64,7 @@ public record SignupMemberRequest(
 			.loginId(this.loginId)
 			.email(this.email)
 			.password(encodedPassword)
+			.username(this.username)
 			.name(Name.builder()
 				.firstName(this.firstName)
 				.lastName(this.lastName)

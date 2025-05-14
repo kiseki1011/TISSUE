@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.request;
 
-import com.tissue.api.sprint.domain.enums.SprintStatus;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 
 import jakarta.validation.constraints.NotNull;
 

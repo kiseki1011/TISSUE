@@ -2,7 +2,7 @@ package com.tissue.api.sprint.domain.event;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 import lombok.Getter;
 
@@ -13,7 +13,7 @@ public class SprintStartedEvent extends SprintEvent {
 		Long sprintId,
 		String sprintKey,
 		String workspaceCode,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		super(
 			NotificationType.SPRINT_STARTED,
@@ -21,19 +21,19 @@ public class SprintStartedEvent extends SprintEvent {
 			workspaceCode,
 			sprintId,
 			sprintKey,
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 
 	public static SprintStartedEvent createEvent(
 		Sprint sprint,
-		Long triggeredByWorkspaceMemberId
+		Long actorMemberId
 	) {
 		return new SprintStartedEvent(
 			sprint.getId(),
 			sprint.getSprintKey(),
 			sprint.getWorkspaceCode(),
-			triggeredByWorkspaceMemberId
+			actorMemberId
 		);
 	}
 }

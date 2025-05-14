@@ -7,7 +7,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.common.exception.type.UnauthorizedException;
+import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.security.session.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
@@ -40,7 +40,8 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	 *
 	 * @param parameter - LoginMember를 받을 파라미터.
 	 *                  이 파라미터는 {@link #supportsParameter}으로 넘겨져서 {@code true}를 반환해야 한다.
-	 * @return LoginMemberDto
+	 * @return Long
+	 * @throws AuthenticationFailedException - Throws AuthenticationFailedException if LOGIN_MEMBER_ID is null
 	 */
 	@Override
 	public Object resolveArgument(
@@ -51,7 +52,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 	) {
 		HttpSession session = sessionManager.getSession(webRequest);
 		return sessionManager.getOptionalLoginMemberId(session)
-			.orElseThrow(() -> new UnauthorizedException("Login is required to access."));
+			.orElseThrow(() -> new AuthenticationFailedException("Login is required to access."));
 	}
 
 	private boolean hasResolveLoginMemberAnnotation(MethodParameter parameter) {

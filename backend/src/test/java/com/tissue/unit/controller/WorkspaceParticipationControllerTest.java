@@ -19,14 +19,14 @@ import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.security.session.SessionAttributes;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
-import com.tissue.api.workspacemember.domain.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
-import com.tissue.api.workspacemember.presentation.dto.response.JoinWorkspaceResponse;
+import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceMemberEntityFixture;
@@ -46,7 +46,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
+	@DisplayName("POST /members/workspaces/{code}/members - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
 	void test11() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
@@ -59,13 +59,13 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			workspace);
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
 
-		JoinWorkspaceResponse response = JoinWorkspaceResponse.from(workspaceMember);
+		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(workspaceMember);
 
 		when(workspaceParticipationCommandService.joinWorkspace(eq(workspaceCode), anyLong()))
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
@@ -74,7 +74,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/workspaces/{code} - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
+	@DisplayName("POST /members/workspaces/{code}/members - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
 	void test12() throws Exception {
 		// given
 		String workspaceCode = "TESTCODE";
@@ -86,7 +86,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.thenThrow(new AuthenticationFailedException("Workspace password is invalid."));
 
 		// when & then
-		mockMvc.perform(post("/api/v1/workspaces/{code}", workspaceCode)
+		mockMvc.perform(post("/api/v1/workspaces/{code}/members", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isUnauthorized())

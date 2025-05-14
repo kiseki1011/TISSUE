@@ -9,8 +9,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.tissue.api.security.authentication.interceptor.AuthenticationInterceptor;
 import com.tissue.api.security.authentication.resolver.LoginMemberArgumentResolver;
-import com.tissue.api.security.authorization.interceptor.AuthorizationInterceptor;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMemberArgumentResolver;
+import com.tissue.api.security.authorization.interceptor.RoleRequiredInterceptor;
+import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequiredInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,22 +18,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-	private final AuthorizationInterceptor authorizationInterceptor;
+	private final RoleRequiredInterceptor roleRequiredInterceptor;
+	private final SelfOrRoleRequiredInterceptor selfOrRoleRequiredInterceptor;
 	private final AuthenticationInterceptor authenticationInterceptor;
 	private final LoginMemberArgumentResolver loginMemberArgumentResolver;
-	private final CurrentWorkspaceMemberArgumentResolver currentWorkspaceMemberArgumentResolver;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(authenticationInterceptor)
 			.order(1);
-		registry.addInterceptor(authorizationInterceptor)
+		registry.addInterceptor(roleRequiredInterceptor)
 			.order(2);
+		registry.addInterceptor(selfOrRoleRequiredInterceptor)
+			.order(3);
 	}
 
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(loginMemberArgumentResolver);
-		resolvers.add(currentWorkspaceMemberArgumentResolver);
 	}
 }

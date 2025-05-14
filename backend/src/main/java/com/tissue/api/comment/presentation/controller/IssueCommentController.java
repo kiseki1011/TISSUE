@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tissue.api.comment.application.service.command.IssueCommentCommandService;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
-import com.tissue.api.comment.service.command.IssueCommentCommandService;
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.WorkspaceRole;
-import com.tissue.api.workspacemember.resolver.CurrentWorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,13 +54,13 @@ public class IssueCommentController {
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@Valid @RequestBody CreateIssueCommentRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		IssueCommentResponse response = issueCommentCommandService.createComment(
 			workspaceCode,
 			issueKey,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
 		return ApiResponse.created("Comment created.", response);
@@ -73,36 +73,35 @@ public class IssueCommentController {
 		@PathVariable String issueKey,
 		@PathVariable Long commentId,
 		@Valid @RequestBody UpdateIssueCommentRequest request,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
 		IssueCommentResponse response = issueCommentCommandService.updateComment(
 			workspaceCode,
 			issueKey,
 			commentId,
 			request,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
-		return ApiResponse.created("Comment updated.", response);
+		return ApiResponse.ok("Comment updated.", response);
 	}
 
 	@DeleteMapping("/{commentId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<Void> deleteComment(
+	public ApiResponse<IssueCommentResponse> deleteComment(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long commentId,
-		@CurrentWorkspaceMember Long currentWorkspaceMemberId
+		@ResolveLoginMember Long loginMemberId
 	) {
-		issueCommentCommandService.deleteComment(
+		IssueCommentResponse response = issueCommentCommandService.deleteComment(
 			workspaceCode,
 			issueKey,
 			commentId,
-			currentWorkspaceMemberId
+			loginMemberId
 		);
 
-		return ApiResponse.okWithNoContent("Comment deleted.");
+		return ApiResponse.ok("Comment deleted.", response);
 	}
 
 }

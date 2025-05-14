@@ -3,15 +3,14 @@ package com.tissue.api.workspace.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.tissue.api.member.service.command.MemberReader;
+import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.security.PasswordEncoder;
-import com.tissue.api.util.RandomNicknameGenerator;
 import com.tissue.api.util.WorkspaceCodeGenerator;
-import com.tissue.api.workspace.domain.repository.WorkspaceRepository;
-import com.tissue.api.workspace.service.command.create.RetryCodeGenerationOnExceptionService;
-import com.tissue.api.workspace.service.command.create.WorkspaceCreateService;
-import com.tissue.api.workspace.validator.WorkspaceValidator;
-import com.tissue.api.workspacemember.domain.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
+import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
+import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
+import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +25,6 @@ public class WorkspaceConfig {
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
-	private final RandomNicknameGenerator randomNicknameGenerator;
 	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceValidator workspaceValidator;
 
@@ -36,12 +34,11 @@ public class WorkspaceConfig {
 	 */
 	@Bean
 	public WorkspaceCreateService workspaceCreateService() {
-		return new RetryCodeGenerationOnExceptionService(
+		return new WorkspaceCreateRetryOnCodeCollisionService(
 			memberReader,
 			workspaceRepository,
 			workspaceMemberRepository,
 			workspaceCodeGenerator,
-			randomNicknameGenerator,
 			passwordEncoder,
 			workspaceValidator
 		);
