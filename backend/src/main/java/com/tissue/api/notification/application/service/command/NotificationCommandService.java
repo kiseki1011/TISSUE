@@ -41,7 +41,7 @@ public class NotificationCommandService {
 			.notificationType(event.getNotificationType())
 			.entityReference(entityReference)
 			.actorMemberId(event.getActorMemberId())
-			.actorNickname(actor.getDisplayName())
+			.actorDisplayName(actor.getDisplayName())
 			.message(message)
 			.receiverMemberId(receiverMemberId)
 			.build();
