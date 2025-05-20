@@ -24,7 +24,7 @@ public class NotificationCommandService {
 	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
-	public void createNotification(
+	public Notification createNotification(
 		DomainEvent event,
 		Long receiverMemberId,
 		NotificationMessage message
@@ -46,7 +46,7 @@ public class NotificationCommandService {
 			.receiverMemberId(receiverMemberId)
 			.build();
 
-		notificationRepository.save(notification);
+		return notificationRepository.save(notification);
 	}
 
 	@Transactional
