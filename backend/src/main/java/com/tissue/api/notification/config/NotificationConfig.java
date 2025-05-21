@@ -12,6 +12,7 @@ import com.tissue.api.workspacemember.application.service.command.WorkspaceMembe
 import lombok.RequiredArgsConstructor;
 
 @Configuration
+// @ComponentScan(basePackageClasses = NotificationSender.class)
 @RequiredArgsConstructor
 public class NotificationConfig {
 
@@ -23,4 +24,6 @@ public class NotificationConfig {
 	public NotificationMessageFactory notificationMessageFactory() {
 		return new SimpleNotificationMessageFactory(messageSource, workspaceMemberReader, argumentFormatter);
 	}
+
+	// TODO(고민중): 사용할 EmailClient 구현체 선택? notification 도메인은 별도의 모듈로 분리 예정?
 }

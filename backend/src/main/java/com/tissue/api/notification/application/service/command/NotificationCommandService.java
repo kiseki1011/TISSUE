@@ -24,7 +24,7 @@ public class NotificationCommandService {
 	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
-	public void createNotification(
+	public Notification createNotification(
 		DomainEvent event,
 		Long receiverMemberId,
 		NotificationMessage message
@@ -41,12 +41,12 @@ public class NotificationCommandService {
 			.notificationType(event.getNotificationType())
 			.entityReference(entityReference)
 			.actorMemberId(event.getActorMemberId())
-			.actorNickname(actor.getDisplayName())
+			.actorDisplayName(actor.getDisplayName())
 			.message(message)
 			.receiverMemberId(receiverMemberId)
 			.build();
 
-		notificationRepository.save(notification);
+		return notificationRepository.save(notification);
 	}
 
 	@Transactional

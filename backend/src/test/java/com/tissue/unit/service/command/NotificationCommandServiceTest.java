@@ -84,7 +84,7 @@ class NotificationCommandServiceTest {
 		assertThat(savedNotification.getTitle()).isEqualTo(message.title());
 		assertThat(savedNotification.getContent()).isEqualTo(message.content());
 		assertThat(savedNotification.getActorMemberId()).isEqualTo(actorId);
-		assertThat(savedNotification.getActorNickname()).isEqualTo("TestUser");
+		assertThat(savedNotification.getActorDisplayName()).isEqualTo("TestUser");
 		assertThat(savedNotification.isRead()).isFalse();
 	}
 
