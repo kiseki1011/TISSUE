@@ -44,6 +44,9 @@ public class Notification extends BaseDateEntity {
 	@Column(nullable = false)
 	private Long receiverMemberId;
 
+	@Column(nullable = false)
+	private String receiverEmail;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private NotificationType type;
@@ -70,6 +73,7 @@ public class Notification extends BaseDateEntity {
 		Long actorMemberId,
 		String actorDisplayName,
 		Long receiverMemberId,
+		String receiverEmail,
 		NotificationMessage message
 	) {
 		this.eventId = eventId;
@@ -78,6 +82,7 @@ public class Notification extends BaseDateEntity {
 		this.actorMemberId = actorMemberId;
 		this.actorDisplayName = actorDisplayName;
 		this.receiverMemberId = receiverMemberId;
+		this.receiverEmail = receiverEmail;
 		this.message = message;
 		this.isRead = false;
 	}

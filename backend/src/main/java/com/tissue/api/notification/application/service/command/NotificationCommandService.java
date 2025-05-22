@@ -34,6 +34,11 @@ public class NotificationCommandService {
 			event.getWorkspaceCode()
 		);
 
+		WorkspaceMember receiver = workspaceMemberReader.findWorkspaceMember(
+			receiverMemberId,
+			event.getWorkspaceCode()
+		);
+
 		EntityReference entityReference = event.createEntityReference();
 
 		Notification notification = Notification.builder()
@@ -44,6 +49,7 @@ public class NotificationCommandService {
 			.actorDisplayName(actor.getDisplayName())
 			.message(message)
 			.receiverMemberId(receiverMemberId)
+			.receiverEmail(receiver.getEmail())
 			.build();
 
 		return notificationRepository.save(notification);

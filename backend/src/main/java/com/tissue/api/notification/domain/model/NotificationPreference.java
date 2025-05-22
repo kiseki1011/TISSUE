@@ -48,10 +48,7 @@ public class NotificationPreference {
 	private NotificationChannel channel;
 
 	@Column(nullable = false)
-	private boolean inAppEnabled = true;
-
-	@Column(nullable = false)
-	private boolean emailEnabled = false;
+	private boolean enabled = true;
 
 	@Builder
 	public NotificationPreference(
@@ -59,14 +56,16 @@ public class NotificationPreference {
 		String workspaceCode,
 		NotificationType type,
 		NotificationChannel channel,
-		boolean inAppEnabled,
-		boolean emailEnabled
+		boolean enabled
 	) {
 		this.receiverMemberId = receiverMemberId;
 		this.workspaceCode = workspaceCode;
 		this.type = type;
 		this.channel = channel;
-		this.inAppEnabled = inAppEnabled;
-		this.emailEnabled = emailEnabled;
+		this.enabled = enabled;
+	}
+
+	public void updateEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

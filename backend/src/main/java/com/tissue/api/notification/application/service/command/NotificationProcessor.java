@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.notification.domain.enums.NotificationChannel;
 import com.tissue.api.notification.domain.model.Notification;
+import com.tissue.api.notification.domain.model.NotificationPreference;
 import com.tissue.api.notification.domain.service.sender.NotificationSender;
 import com.tissue.api.notification.infrastructure.repository.NotificationPreferenceRepository;
 
@@ -35,10 +36,7 @@ public class NotificationProcessor {
 				notification.getType(),
 				channel
 			)
-			.map(pref -> switch (channel) {
-				case IN_APP -> pref.isInAppEnabled();
-				case EMAIL -> pref.isEmailEnabled();
-			})
+			.map(NotificationPreference::isEnabled)
 			.orElse(true); // 설정 없으면 수신 허용
 	}
 }

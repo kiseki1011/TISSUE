@@ -30,11 +30,11 @@ public class EmailSender implements NotificationSender {
 		// TODO: 최선 노력 방식(best effort)이어도 Exception을 잡는게 좋은 방식인가?
 		//  일단 발생 가능성이 더 높은 세세한 예외를 위에서 잡아야 하는건 알겠음
 		try {
-			// String to = notification.getReceiverEmail();
+			String to = notification.getReceiverEmail();
 			String subject = notification.getTitle();
 			String body = notification.getContent();
 
-			emailClient.send("email@placeholder", subject, body);
+			emailClient.send(to, subject, body);
 		} catch (Exception e) {
 			log.warn("failed to send email notification: receiver member id={}, title={}, cause={}",
 				notification.getReceiverMemberId(),

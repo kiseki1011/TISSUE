@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{code}/notifications")
+@RequestMapping("/api/v1/workspaces/{workspaceCode}/notifications")
 public class NotificationQueryController {
 
 	/**
