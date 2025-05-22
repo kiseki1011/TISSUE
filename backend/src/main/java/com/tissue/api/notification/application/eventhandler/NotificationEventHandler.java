@@ -24,9 +24,11 @@ import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
+import com.tissue.api.notification.domain.model.ActivityLog;
 import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
+import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
 import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
@@ -54,6 +56,7 @@ public class NotificationEventHandler {
 	private final NotificationProcessor notificationProcessor;
 	private final NotificationTargetService targetResolver;
 	private final NotificationMessageFactory notificationMessageFactory;
+	private final ActivityLogRepository activityLogRepository;
 
 	/**
 	 * 이슈 생성 이벤트 처리 - 워크스페이스 전체 멤버에게 알림
@@ -75,7 +78,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -87,7 +89,6 @@ public class NotificationEventHandler {
 			event.getAssignedMemberId()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -99,7 +100,6 @@ public class NotificationEventHandler {
 			event.getAssigneeMemberId()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -111,7 +111,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -123,7 +122,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -135,7 +133,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -147,7 +144,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -159,7 +155,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -171,7 +166,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -183,7 +177,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -195,7 +188,6 @@ public class NotificationEventHandler {
 			event.getWorkspaceCode()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -204,7 +196,6 @@ public class NotificationEventHandler {
 
 		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -213,7 +204,6 @@ public class NotificationEventHandler {
 
 		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -222,7 +212,6 @@ public class NotificationEventHandler {
 
 		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	@Async("notificationTaskExecutor")
@@ -234,16 +223,17 @@ public class NotificationEventHandler {
 			event.getTargetMemberId()
 		);
 		processNotifications(event, targets);
-		// notificationProcessor.processNotification(event, targets);
 	}
 
 	private <T extends DomainEvent> void processNotifications(T event, Collection<WorkspaceMember> targets) {
+
+		NotificationMessage message = notificationMessageFactory.createMessage(event);
+		activityLogRepository.save(ActivityLog.from(event, message));
+
 		if (targets == null || targets.isEmpty()) {
 			log.debug("No notification targets for event: {}", event.getEventId());
 			return;
 		}
-
-		NotificationMessage message = notificationMessageFactory.createMessage(event);
 
 		for (WorkspaceMember target : targets) {
 			Notification notification = commandService.createNotification(event, target.getMember().getId(), message);

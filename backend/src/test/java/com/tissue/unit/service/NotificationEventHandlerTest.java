@@ -23,6 +23,7 @@ import com.tissue.api.notification.application.service.command.NotificationTarge
 import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
+import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
@@ -50,6 +51,9 @@ class NotificationEventHandlerTest {
 
 	@Mock
 	private NotificationMessageFactory notificationMessageFactory;
+
+	@Mock
+	private ActivityLogRepository activityLogRepository;
 
 	@InjectMocks
 	private NotificationEventHandler notificationEventHandler;
