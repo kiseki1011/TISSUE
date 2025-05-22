@@ -73,7 +73,7 @@ class NotificationProcessorTest {
 	}
 
 	@Test
-	@DisplayName("설정에서 이메일만 허용된 경우 이메일만 전송된다")
+	@DisplayName("설정에서 이메일을 비허용하면 인앱 알림만 발송된다")
 	void process_shouldOnlySendEmail_WhenPreferenceDisallowsInApp() {
 		// given
 		Notification notification = mock(Notification.class);
@@ -89,19 +89,19 @@ class NotificationProcessorTest {
 		when(preferenceRepository.findByReceiver(any(), any(), any(), eq(NotificationChannel.IN_APP)))
 			.thenReturn(Optional.of(
 				new NotificationPreference(1L, "TEST", NotificationType.ISSUE_CREATED, NotificationChannel.IN_APP,
-					false, false)));
+					true)));
 
 		when(preferenceRepository.findByReceiver(any(), any(), any(), eq(NotificationChannel.EMAIL)))
 			.thenReturn(Optional.of(
-				new NotificationPreference(1L, "TEST", NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL, false,
-					true)));
+				new NotificationPreference(1L, "TEST", NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL,
+					false)));
 
 		// when
 		notificationProcessor.process(notification);
 
 		// then
-		verify(inAppSender, never()).send(any());
-		verify(emailSender).send(notification);
+		verify(inAppSender).send(notification);
+		verify(emailSender, never()).send(any());
 	}
 
 	@Test
@@ -118,10 +118,15 @@ class NotificationProcessorTest {
 				.stringKey("ISSUE-1")
 				.build());
 
-		when(preferenceRepository.findByReceiver(any(), any(), any(), any()))
+		when(preferenceRepository.findByReceiver(any(), any(), any(), eq(NotificationChannel.IN_APP)))
 			.thenReturn(Optional.of(
 				new NotificationPreference(1L, "TEST", NotificationType.ISSUE_CREATED, NotificationChannel.IN_APP,
-					false, false)));
+					false)));
+
+		when(preferenceRepository.findByReceiver(any(), any(), any(), eq(NotificationChannel.EMAIL)))
+			.thenReturn(Optional.of(
+				new NotificationPreference(1L, "TEST", NotificationType.ISSUE_CREATED, NotificationChannel.EMAIL,
+					false)));
 
 		// when
 		notificationProcessor.process(notification);
