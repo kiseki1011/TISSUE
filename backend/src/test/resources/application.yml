@@ -11,11 +11,27 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    properties.hibernate:
-      format_sql: true
-      show-sql: true
-      highlight_sql: true
-      default_batch_fetch_size: 100
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        highlight_sql: true
+        default_batch_fetch_size: 100
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    cache-duration: 0
 
 logging:
   level:

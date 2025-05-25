@@ -4,7 +4,7 @@ spring:
     active: local
 
 ---
-# Local & Test
+# Local
 spring:
   config:
     activate:
@@ -24,6 +24,16 @@ spring:
       show-sql: true
       highlight_sql: true
       default_batch_fetch_size: 100
+
+  mail:
+    # gmail smtp, will change later
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 logging:
   level:
