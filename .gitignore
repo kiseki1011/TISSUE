@@ -43,3 +43,6 @@ docker-compose-mysql.yml
 ### h2 db ###
 /h2/
 /mysql-data/
+
+### SSH script ###
+start-tunnel.sh
