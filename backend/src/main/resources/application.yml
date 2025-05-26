@@ -10,11 +10,17 @@ spring:
     activate:
       on-profile: local
 
+  # h2 in-memory
   datasource:
-    url: jdbc:h2:tcp://localhost:1521/testdb
+    url: jdbc:h2:mem:tissue_local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+  redis:
+    host: localhost
+    port: 6379
+    password: ${LOCAL_DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -35,17 +41,17 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
-logging:
-  level:
-    org.hibernate:
-      SQL: DEBUG
-      orm.jdbc.bind: TRACE
-
   messages:
     basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
     encoding: UTF-8    # 인코딩 설정
     fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
     cache-duration: 0  # 캐시 저장 안함
+
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
 
 api:
   issue:
@@ -60,10 +66,11 @@ spring:
     activate:
       on-profile: dev
 
+  # use development DB
   datasource:
-    url: jdbc:mysql://localhost:3306/devdb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: rootpassword
+    url: jdbc:mysql://localhost:3306/tissue_local
+    username: developer
+    password: ${LOCAL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   messages:
@@ -82,10 +89,12 @@ spring:
     activate:
       on-profile: prod
 
+  # change to use reliable datasource for deployment (ex. RDS, ElastiCache...)
+  # or use private cloud
   datasource:
-    url: jdbc:mysql://localhost:3306/proddb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: rootpassword
+    url: jdbc:mysql://localhost:3306/tissue_local
+    username: developer
+    password: ${LOCAL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
