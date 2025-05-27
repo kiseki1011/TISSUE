@@ -20,7 +20,7 @@ spring:
   redis:
     host: localhost
     port: 6379
-    password: ${LOCAL_DB_PASSWORD}
+    password: ${LOCAL_REDIS_PASSWORD}
 
   jpa:
     hibernate:
@@ -70,7 +70,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
-    password: ${LOCAL_DB_PASSWORD}
+    password: ${LOCAL_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   messages:
@@ -94,7 +94,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
-    password: ${LOCAL_DB_PASSWORD}
+    password: ${LOCAL_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
