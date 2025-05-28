@@ -41,6 +41,10 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
+  email:
+    verification:
+      strategy: redis  # or rdb
+
   messages:
     basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
     encoding: UTF-8    # 인코딩 설정
