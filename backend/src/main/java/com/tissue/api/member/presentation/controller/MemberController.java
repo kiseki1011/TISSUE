@@ -1,4 +1,4 @@
-package com.tissue.api.member.presentation.controller.command;
+package com.tissue.api.member.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
