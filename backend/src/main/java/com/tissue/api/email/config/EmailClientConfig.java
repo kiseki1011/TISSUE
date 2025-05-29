@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.tissue.api.email.domain.EmailClient;
-import com.tissue.api.email.infrastructure.DummyEmailClient;
+import com.tissue.api.email.infrastructure.GmailSmtpClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,10 +15,9 @@ public class EmailClientConfig {
 
 	private final JavaMailSender mailSender;
 
-	// TODO: register different beans using @Profile
 	@Bean
 	public EmailClient emailClient() {
-		return new DummyEmailClient();
-		// return new GmailSmtpClient(mailSender);
+		// return new DummyEmailClient();
+		return new GmailSmtpClient(mailSender);
 	}
 }
