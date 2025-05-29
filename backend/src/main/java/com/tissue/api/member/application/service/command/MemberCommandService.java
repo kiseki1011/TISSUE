@@ -28,6 +28,7 @@ public class MemberCommandService {
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
 	private final PasswordEncoder passwordEncoder;
+	private final MemberEmailVerificationService memberEmailVerificationService;
 
 	@Transactional
 	public MemberResponse signup(
@@ -36,6 +37,8 @@ public class MemberCommandService {
 		memberValidator.validateLoginIdIsUnique(request.loginId());
 		memberValidator.validateEmailIsUnique(request.email());
 		memberValidator.validateUsernameIsUnique(request.username());
+
+		memberEmailVerificationService.validateEmailVerified(request.email());
 
 		String encodedPassword = passwordEncoder.encode(request.password());
 		Member member = request.toEntity(encodedPassword);
@@ -67,11 +70,11 @@ public class MemberCommandService {
 	) {
 		Member member = memberReader.findMember(memberId);
 
-		String newEmail = request.newEmail();
-		memberValidator.validateEmailIsUnique(newEmail);
+		memberValidator.validateEmailIsUnique(request.newEmail());
+		memberEmailVerificationService.validateEmailVerified(request.newEmail());
 
 		try {
-			member.updateEmail(newEmail);
+			member.updateEmail(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateResourceException("중복된 Email입니다", e);
