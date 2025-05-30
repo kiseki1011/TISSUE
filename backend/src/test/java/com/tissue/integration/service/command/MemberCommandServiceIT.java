@@ -1,15 +1,18 @@
 package com.tissue.integration.service.command;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
 import com.tissue.api.member.domain.model.vo.Name;
@@ -24,6 +27,9 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
+
+	@MockBean
+	private MemberEmailVerificationService memberEmailVerificationService;
 
 	@AfterEach
 	public void tearDown() {
@@ -47,6 +53,9 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
+		doNothing().when(memberEmailVerificationService)
+			.validateEmailVerified(request.email());
+
 		MemberResponse response = memberCommandService.signup(request);
 
 		// then
@@ -72,6 +81,9 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
+		doNothing().when(memberEmailVerificationService)
+			.validateEmailVerified(request.email());
+
 		memberCommandService.signup(request);
 
 		// then
@@ -97,6 +109,9 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
+		doNothing().when(memberEmailVerificationService)
+			.validateEmailVerified(request.email());
+
 		memberCommandService.signup(request);
 
 		// then
@@ -112,9 +127,14 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("tester");
 		String originalEmail = member.getEmail();
 
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("test1234!", "newemail@test.com");
+
 		// when
+		doNothing().when(memberEmailVerificationService)
+			.validateEmailVerified(request.newEmail());
+
 		memberCommandService.updateEmail(
-			new UpdateMemberEmailRequest("test1234!", "newemail@test.com"),
+			request,
 			member.getId()
 		);
 
