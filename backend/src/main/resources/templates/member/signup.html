@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Signup</title>
+</head>
+<body>
+<h2>Signup</h2>
+<form th:action="@{/members/signup}" method="post" id="signup-form">
+    <label>Login ID: <input type="text" name="loginId" required/></label><br/>
+    <label>Email: <input type="email" name="email" id="email-input" required/></label>
+    <button type="button" id="send-email-btn">Send Verification Email</button>
+    <span id="email-verification-status">❌ Not Verified</span><br/>
+    <label>Username: <input type="text" name="username" required/></label><br/>
+    <label>Password: <input type="password" name="password" required/></label><br/>
+    <label>First Name: <input type="text" name="firstName"/></label><br/>
+    <label>Last Name: <input type="text" name="lastName"/></label><br/>
+    <label>Birth Date: <input type="date" name="birthDate"/></label><br/>
+    <label>Job Type: <input type="text" name="jobType"/></label><br/>
+    <label>Bio: <textarea name="biography"></textarea></label><br/>
+    <button type="submit">Sign Up</button>
+</form>
+
+<script>
+    document.getElementById("send-email-btn").addEventListener("click", function () {
+    const email = document.getElementById("email-input").value;
+
+    fetch('/api/v1/members/email-verification/request', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    }).then(res => {
+        alert(res.ok ? "Verification email sent." : "Failed to send email.");
+        });
+    });
+
+    setInterval(() => {
+        const email = document.getElementById("email-input").value;
+        if (!email) return;
+
+        fetch(`/api/v1/members/email-verification/status?email=${encodeURIComponent(email)}`)
+            .then(res => res.json())
+            .then(data => {
+                const verified = data.data;
+                const status = document.getElementById("email-verification-status");
+                status.textContent = verified ? "✅ Verified" : "❌ Not Verified";
+                status.style.color = verified ? "green" : "red";
+            });
+    }, 5000);
+</script>
+</body>
+</html>
