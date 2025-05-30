@@ -50,9 +50,6 @@ public class MemberEmailVerificationService {
 
 	public boolean verifyEmail(String email, String tokenValue) {
 		return repository.verify(email, tokenValue);
-		// if (!repository.verify(email, tokenValue)) {
-		// 	throw new InvalidRequestException("Token is invalid or expired.");
-		// }
 	}
 
 	public void validateEmailVerified(String email) {
