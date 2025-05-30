@@ -1,6 +1,7 @@
 package com.tissue.api.member.infrastructure.verification.redis;
 
 import java.time.Duration;
+import java.util.Objects;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -27,9 +28,9 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 	// TODO: "verified" 상수화
 	@Override
 	public boolean verify(String email, String tokenValue) {
-		String stored = redisTemplate.opsForValue().get(PREFIX + email);
+		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
 
-		if (!tokenValue.equals(stored)) {
+		if (!Objects.equals(tokenValue, storedValue)) {
 			return false;
 		}
 
@@ -39,8 +40,8 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 
 	@Override
 	public boolean isVerified(String email) {
-		String value = redisTemplate.opsForValue().get(PREFIX + email);
-		return "verified".equals(value);
+		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
+		return Objects.equals("verified", storedValue);
 	}
 
 	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
