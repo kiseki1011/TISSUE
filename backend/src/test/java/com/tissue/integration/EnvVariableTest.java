@@ -16,11 +16,16 @@ public class EnvVariableTest {
 	@Value("${GMAIL_PASSWORD}")
 	private String gmailPassword;
 
+	@Value("${LOCAL_REDIS_PASSWORD}")
+	private String redisPassword;
+
 	@Test
 	@DisplayName("환경변수가 정상적으로 주입되는지 확인한다")
 	void checkIfGmailEnvVariableIsAvailable() {
 		assertThat(gmailUsername).isNotNull();
 		assertThat(gmailPassword).isNotNull();
+		assertThat(redisPassword).isNotNull();
 		System.out.println("GMAIL_USERNAME = " + gmailUsername);
+		System.out.println("LOCAL_REDIS_PASSWORD = " + redisPassword);
 	}
 }
