@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
+import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.presentation.dto.request.EmailVerificationRequest;
 
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberEmailVerificationController {
 
 	private final MemberEmailVerificationService memberEmailVerificationService;
+	private final EmailVerificationProperties properties;
 
 	@PostMapping("/request")
 	public ApiResponse<Void> request(@RequestBody @Valid EmailVerificationRequest request) {
@@ -31,7 +33,7 @@ public class MemberEmailVerificationController {
 		return ApiResponse.okWithNoContent("Verification email sent.");
 	}
 
-	@GetMapping("/api/v1/members/verify")
+	@GetMapping("/verify")
 	public ResponseEntity<Void> verifyEmail(
 		@RequestParam String email,
 		@RequestParam String token
@@ -40,8 +42,7 @@ public class MemberEmailVerificationController {
 			boolean verified = memberEmailVerificationService.verifyEmail(email, token);
 
 			String redirectUrl = verified
-				? "https://yourdomain.com/email/verify/success"
-				: "https://yourdomain.com/email/verify/fail";
+				? properties.getSuccessUrl() : properties.getFailureUrl();
 
 			return ResponseEntity
 				.status(HttpStatus.FOUND)
@@ -51,8 +52,14 @@ public class MemberEmailVerificationController {
 		} catch (InvalidRequestException e) {
 			return ResponseEntity
 				.status(HttpStatus.FOUND)
-				.header(HttpHeaders.LOCATION, "https://yourdomain.com/email/verify/fail")
+				.header(HttpHeaders.LOCATION, properties.getFailureUrl())
 				.build();
 		}
+	}
+
+	@GetMapping("/status")
+	public ApiResponse<Boolean> isVerified(@RequestParam String email) {
+		boolean verified = memberEmailVerificationService.isEmailVerified(email);
+		return ApiResponse.ok("Email verification status: " + verified, verified);
 	}
 }

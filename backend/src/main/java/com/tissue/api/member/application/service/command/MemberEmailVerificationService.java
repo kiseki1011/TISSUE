@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.email.domain.EmailClient;
+import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class MemberEmailVerificationService {
 
 	private final EmailVerificationRepository repository;
 	private final EmailClient emailClient;
+	private final EmailVerificationProperties properties;
 
 	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
 	private static final Duration TTL = Duration.ofMinutes(30);
@@ -27,7 +29,7 @@ public class MemberEmailVerificationService {
 		String tokenValue = UUID.randomUUID().toString();
 		repository.saveToken(email, tokenValue, TTL);
 
-		String link = "https://yourdomain.com/api/v1/members/email-verification/verify?email=%s&token=%s"
+		String link = properties.getVerificationUrl() + "?email=%s&token=%s"
 			.formatted(email, tokenValue);
 
 		String subject = "Tissue - Email Verification";
@@ -58,5 +60,9 @@ public class MemberEmailVerificationService {
 		if (emailNotVerified) {
 			throw new InvalidRequestException("Email is not verified. Please complete verification before signing up.");
 		}
+	}
+
+	public boolean isEmailVerified(String email) {
+		return repository.isVerified(email);
 	}
 }
