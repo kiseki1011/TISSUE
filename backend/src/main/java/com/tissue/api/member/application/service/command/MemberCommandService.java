@@ -45,6 +45,8 @@ public class MemberCommandService {
 
 		try {
 			Member savedMember = memberRepository.save(member);
+			memberEmailVerificationService.clearVerification(request.email());
+
 			return MemberResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateResourceException("회원가입에 실패했습니다.", e);
@@ -75,6 +77,7 @@ public class MemberCommandService {
 
 		try {
 			member.updateEmail(request.newEmail());
+			memberEmailVerificationService.clearVerification(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateResourceException("중복된 Email입니다", e);

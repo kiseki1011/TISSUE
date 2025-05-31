@@ -59,4 +59,10 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 			.map(t -> t.isVerified() && !t.isExpired())
 			.orElse(false);
 	}
+
+	@Override
+	@Transactional
+	public void deleteToken(String email) {
+		jpaRepository.deleteByEmail(email);
+	}
 }

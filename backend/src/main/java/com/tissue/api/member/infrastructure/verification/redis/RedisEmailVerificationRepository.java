@@ -19,13 +19,13 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 	private final RedisTemplate<String, String> redisTemplate;
 
 	private static final String PREFIX = "email_verification:";
+	private static final String VERIFIED = "verified";
 
 	@Override
 	public void saveToken(String email, String tokenValue, Duration ttl) {
 		redisTemplate.opsForValue().set(PREFIX + email, tokenValue, ttl);
 	}
 
-	// TODO: "verified" 상수화
 	@Override
 	public boolean verify(String email, String tokenValue) {
 		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
@@ -34,18 +34,23 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 			return false;
 		}
 
-		redisTemplate.opsForValue().set(PREFIX + email, "verified", ttl());
+		redisTemplate.opsForValue().set(PREFIX + email, VERIFIED, ttl());
 		return true;
 	}
 
 	@Override
 	public boolean isVerified(String email) {
 		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
-		return Objects.equals("verified", storedValue);
+		return Objects.equals(VERIFIED, storedValue);
 	}
 
 	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
 	private Duration ttl() {
 		return Duration.ofMinutes(30);
+	}
+
+	@Override
+	public void deleteToken(String email) {
+		redisTemplate.delete(PREFIX + email);
 	}
 }

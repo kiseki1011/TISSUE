@@ -62,4 +62,8 @@ public class MemberEmailVerificationService {
 	public boolean isEmailVerified(String email) {
 		return repository.isVerified(email);
 	}
+
+	public void clearVerification(String email) {
+		repository.deleteToken(email);
+	}
 }
