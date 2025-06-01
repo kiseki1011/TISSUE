@@ -1,4 +1,4 @@
-package com.tissue.api.member.presentation.dto.request;
+package com.tissue.ui.member.dto.request;
 
 import java.time.LocalDate;
 
@@ -21,7 +21,7 @@ import jakarta.validation.constraints.Past;
 import lombok.Builder;
 
 @Builder
-public record SignupMemberRequest(
+public record SignupFormRequest(
 	@IdSize
 	@IdPattern
 	@NotBlank(message = "{valid.notblank}")
@@ -58,6 +58,7 @@ public record SignupMemberRequest(
 	@StandardText
 	String biography
 ) {
+	// TODO: toCommand 정의
 	public SignupMemberCommand toCommand() {
 		return SignupMemberCommand.builder()
 			.loginId(loginId.trim())

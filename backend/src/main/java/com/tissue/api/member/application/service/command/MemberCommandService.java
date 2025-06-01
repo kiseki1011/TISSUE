@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
@@ -32,20 +32,20 @@ public class MemberCommandService {
 
 	@Transactional
 	public MemberResponse signup(
-		SignupMemberRequest request
+		SignupMemberCommand command
 	) {
-		memberValidator.validateLoginIdIsUnique(request.loginId());
-		memberValidator.validateEmailIsUnique(request.email());
-		memberValidator.validateUsernameIsUnique(request.username());
+		memberValidator.validateLoginIdIsUnique(command.loginId());
+		memberValidator.validateEmailIsUnique(command.email());
+		memberValidator.validateUsernameIsUnique(command.username());
 
-		memberEmailVerificationService.validateEmailVerified(request.email());
+		memberEmailVerificationService.validateEmailVerified(command.email());
 
-		String encodedPassword = passwordEncoder.encode(request.password());
-		Member member = request.toEntity(encodedPassword);
+		String encodedPassword = passwordEncoder.encode(command.password());
+		Member member = command.toEntity(encodedPassword);
 
 		try {
 			Member savedMember = memberRepository.save(member);
-			memberEmailVerificationService.clearVerification(request.email());
+			memberEmailVerificationService.clearVerification(command.email());
 
 			return MemberResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {

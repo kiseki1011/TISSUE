@@ -65,7 +65,7 @@ public class MemberController {
 	public ApiResponse<MemberResponse> signup(
 		@Valid @RequestBody SignupMemberRequest request
 	) {
-		MemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request.toCommand());
 		return ApiResponse.created("Signup successful.", response);
 	}
 

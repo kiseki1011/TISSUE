@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
+import com.tissue.ui.member.dto.request.SignupFormRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class MemberViewController {
 	@GetMapping("/signup")
 	public String signupForm(Model model) {
 
-		SignupMemberRequest request = SignupMemberRequest.builder().build();
+		SignupFormRequest request = SignupFormRequest.builder().build();
 
 		model.addAttribute("signupMemberRequest", request);
 
@@ -36,7 +36,7 @@ public class MemberViewController {
 	// TODO: /members -> member 상세 정보 뷰 만들기
 	@PostMapping("/signup")
 	public String signup(
-		@Valid @ModelAttribute("signupMemberRequest") SignupMemberRequest request,
+		@Valid @ModelAttribute("signupFormRequest") SignupFormRequest request,
 		BindingResult bindingResult,
 		Model model
 	) {
@@ -44,7 +44,7 @@ public class MemberViewController {
 			return "member/signup";
 		}
 
-		memberCommandService.signup(request);
+		memberCommandService.signup(request.toCommand());
 
 		return "redirect:/members/signup/success";
 		// return "redirect:/members";
