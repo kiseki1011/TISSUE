@@ -2,52 +2,189 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Signup</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 50px;
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        #email-verification-status {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+            .error-input {
+        border: 1px solid red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 3px;
+        }
+    </style>
 </head>
 <body>
-<h2>Signup</h2>
-<form th:action="@{/members/signup}" method="post" id="signup-form">
-    <label>Login ID: <input type="text" name="loginId" required/></label><br/>
-    <label>Email: <input type="email" name="email" id="email-input" required/></label>
-    <button type="button" id="send-email-btn">Send Verification Email</button>
-    <span id="email-verification-status">❌ Not Verified</span><br/>
-    <label>Username: <input type="text" name="username" required/></label><br/>
-    <label>Password: <input type="password" name="password" required/></label><br/>
-    <label>First Name: <input type="text" name="firstName"/></label><br/>
-    <label>Last Name: <input type="text" name="lastName"/></label><br/>
-    <label>Birth Date: <input type="date" name="birthDate"/></label><br/>
-    <label>Job Type: <input type="text" name="jobType"/></label><br/>
-    <label>Bio: <textarea name="biography"></textarea></label><br/>
-    <button type="submit">Sign Up</button>
+<form th:action="@{/members/signup}" th:object="${signupMemberRequest}" method="post">
+    <label>Login ID:
+        <input type="text" th:field="*{loginId}" th:classappend="${#fields.hasErrors('loginId')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('loginId')}" th:errors="*{loginId}" class="error-message"></div>
+    </label>
+
+    <label>Email:
+        <input type="email" th:field="*{email}" id="email-input"
+               th:classappend="${#fields.hasErrors('email')} ? 'error-input'"/>
+        <button type="button" id="send-email-btn">Send Verification Email</button>
+        <span id="email-verification-status">Needs Verification</span>
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
+    </label>
+
+    <label>Username:
+        <input type="text" th:field="*{username}" th:classappend="${#fields.hasErrors('username')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-message"></div>
+    </label>
+
+    <label>Password:
+        <input type="password" th:field="*{password}"
+               th:classappend="${#fields.hasErrors('password')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></div>
+    </label>
+
+    <label>First Name:
+        <input type="text" th:field="*{firstName}"
+               th:classappend="${#fields.hasErrors('firstName')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error-message"></div>
+    </label>
+
+    <label>Last Name:
+        <input type="text" th:field="*{lastName}"
+               th:classappend="${#fields.hasErrors('lastName')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error-message"></div>
+    </label>
+
+    <label>Birth Date:
+        <input type="date" th:field="*{birthDate}"/>
+    </label>
+
+    <label>Job Type:
+        <input type="text" th:field="*{jobType}"/>
+    </label>
+
+    <label>Bio:
+        <textarea th:field="*{biography}"></textarea>
+    </label>
+
+    <button type="submit" id="submit-btn" disabled>Sign Up</button>
 </form>
 
 <script>
-    document.getElementById("send-email-btn").addEventListener("click", function () {
-    const email = document.getElementById("email-input").value;
+    let pollingInterval;
+    let lastPolledEmail = null;
+    let verified = false;
 
-    fetch('/api/v1/members/email-verification/request', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email })
-    }).then(res => {
-        alert(res.ok ? "Verification email sent." : "Failed to send email.");
+    const emailInput = document.getElementById("email-input");
+    const sendEmailBtn = document.getElementById("send-email-btn");
+    const status = document.getElementById("email-verification-status");
+    const submitBtn = document.getElementById("submit-btn");
+
+    function startPolling(email) {
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        pollingInterval = setInterval(() => {
+            fetch(`/api/v1/members/email-verification/status?email=${encodeURIComponent(email)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const isVerified = data.data;
+                    if (isVerified) {
+                        clearInterval(pollingInterval);
+                        verified = true;
+                        status.textContent = "✅ Verified";
+                        status.style.color = "green";
+                        emailInput.readOnly = true;
+                        submitBtn.disabled = false;
+                    } else {
+                        status.textContent = "❌ Not Verified";
+                        status.style.color = "red";
+                        submitBtn.disabled = true;
+                    }
+                });
+        }, 1000);
+    }
+
+    sendEmailBtn.addEventListener("click", () => {
+        const email = emailInput.value.trim();
+
+        fetch('/api/v1/members/email-verification/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).then(res => {
+            alert(res.ok ? "Verification email sent." : "Failed to send email.");
+            if (res.ok) {
+                lastPolledEmail = email;
+                verified = false;
+                emailInput.readOnly = false;
+                submitBtn.disabled = true;
+                startPolling(email);
+            }
         });
     });
 
-    setInterval(() => {
-        const email = document.getElementById("email-input").value;
-        if (!email) return;
-
-        fetch(`/api/v1/members/email-verification/status?email=${encodeURIComponent(email)}`)
-            .then(res => res.json())
-            .then(data => {
-                const verified = data.data;
-                const status = document.getElementById("email-verification-status");
-                status.textContent = verified ? "✅ Verified" : "❌ Not Verified";
-                status.style.color = verified ? "green" : "red";
-            });
-    }, 5000);
+    emailInput.addEventListener("input", () => {
+        const current = emailInput.value;
+        if (current !== lastPolledEmail) {
+            status.textContent = "❌ Not Verified";
+            status.style.color = "red";
+            verified = false;
+            emailInput.readOnly = false;
+            submitBtn.disabled = true;
+            if (pollingInterval) clearInterval(pollingInterval);
+        }
+    });
 </script>
 </body>
 </html>
