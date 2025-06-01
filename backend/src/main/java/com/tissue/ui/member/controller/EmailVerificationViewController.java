@@ -1,4 +1,4 @@
-package com.tissue.ui.member;
+package com.tissue.ui.member.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

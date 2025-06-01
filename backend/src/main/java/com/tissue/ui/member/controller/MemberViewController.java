@@ -1,7 +1,8 @@
-package com.tissue.ui.member;
+package com.tissue.ui.member.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -23,17 +25,9 @@ public class MemberViewController {
 	@GetMapping("/signup")
 	public String signupForm(Model model) {
 
-		SignupMemberRequest request = SignupMemberRequest.builder()
-			.loginId("")
-			.email("")
-			.username("")
-			.password("")
-			.firstName("")
-			.lastName("")
-			.biography("")
-			.build();
+		SignupMemberRequest request = SignupMemberRequest.builder().build();
 
-		model.addAttribute("member", request);
+		model.addAttribute("signupMemberRequest", request);
 
 		return "member/signup";
 	}
@@ -41,10 +35,17 @@ public class MemberViewController {
 	// TODO: 공통 에러 페이지 추가 (4xx, 5xx, 6xx)
 	// TODO: /members -> member 상세 정보 뷰 만들기
 	@PostMapping("/signup")
-	public String signup(@ModelAttribute SignupMemberRequest request, Model model) {
+	public String signup(
+		@Valid @ModelAttribute("signupMemberRequest") SignupMemberRequest request,
+		BindingResult bindingResult,
+		Model model
+	) {
+		if (bindingResult.hasErrors()) {
+			return "member/signup";
+		}
+
 		memberCommandService.signup(request);
 
-		model.addAttribute("message", "Signup successful");
 		return "redirect:/members/signup/success";
 		// return "redirect:/members";
 	}
