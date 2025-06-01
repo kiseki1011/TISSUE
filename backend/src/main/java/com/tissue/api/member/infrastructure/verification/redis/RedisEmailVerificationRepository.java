@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(name = "email.verification.strategy", havingValue = "redis")
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 	@Override
 	public boolean verify(String email, String tokenValue) {
 		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
+
+		log.debug("Stored token: {}, input token: {}", storedValue, tokenValue);
 
 		if (!Objects.equals(tokenValue, storedValue)) {
 			return false;
