@@ -57,8 +57,8 @@
             font-weight: bold;
         }
 
-            .error-input {
-        border: 1px solid red;
+        .error-input {
+            border: 1px solid red;
         }
 
         .error-message {
@@ -66,32 +66,69 @@
             font-size: 0.9em;
             margin-top: 3px;
         }
+
+        .readonly-input {
+            background-color: #f0f0f0;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
-<form th:action="@{/members/signup}" th:object="${signupMemberRequest}" method="post">
+<form th:action="@{/members/signup}" th:object="${signupFormRequest}" method="post">
+    <!-- Login ID -->
     <label>Login ID:
         <input type="text" th:field="*{loginId}" th:classappend="${#fields.hasErrors('loginId')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('loginId')}" th:errors="*{loginId}" class="error-message"></div>
     </label>
 
+    <!-- Email -->
     <label>Email:
         <input type="email" th:field="*{email}" id="email-input"
                th:classappend="${#fields.hasErrors('email')} ? 'error-input'"/>
         <button type="button" id="send-email-btn">Send Verification Email</button>
-        <span id="email-verification-status">Needs Verification</span>
+        <button type="button" id="change-email-btn" style="display: none;">Change Email</button>
+        <span id="email-verification-status">❌ Needs Verification</span>
         <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
     </label>
 
+    <!-- Username -->
     <label>Username:
         <input type="text" th:field="*{username}" th:classappend="${#fields.hasErrors('username')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-message"></div>
     </label>
 
+    <!-- Password -->
     <label>Password:
-        <input type="password" th:field="*{password}"
+        <input type="password" th:field="*{password}" id="password-input"
                th:classappend="${#fields.hasErrors('password')} ? 'error-input'"/>
-        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></div>
+        <div th:if="${#fields.hasErrors('password')} and ${false == isPasswordEmpty}"
+             th:errors="*{password}" class="error-message"></div>
+
+    </label>
+
+    <!-- Confirm Password -->
+    <label>Confirm Password:
+        <input type="password" id="confirm-password-input"/>
+        <div id="password-match-message" class="error-message"></div>
     </label>
 
     <label>First Name:
@@ -119,20 +156,128 @@
     </label>
 
     <button type="submit" id="submit-btn" disabled>Sign Up</button>
+
+    <!-- error modal -->
+    <div id="global-error-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <p id="global-error-message"></p>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
 </form>
 
-<script>
+</body>
+</html>
+
+<script th:inline="javascript">
     let pollingInterval;
     let lastPolledEmail = null;
     let verified = false;
+    let pollingStarted = false;
 
     const emailInput = document.getElementById("email-input");
     const sendEmailBtn = document.getElementById("send-email-btn");
+    const changeEmailBtn = document.getElementById("change-email-btn");
     const status = document.getElementById("email-verification-status");
     const submitBtn = document.getElementById("submit-btn");
 
+    const passwordInput = document.getElementById("password-input");
+    const confirmPasswordInput = document.getElementById("confirm-password-input");
+    const matchMessage = document.getElementById("password-match-message");
+
+    const initialVerified = /*[[${emailVerified}]]*/ false;
+    const globalError = /*[[${globalError}]]*/ null;
+
+    passwordInput.addEventListener("focus", () => {
+        passwordInput.classList.remove("error-input");
+    });
+
+    sendEmailBtn.addEventListener("click", () => {
+        const email = emailInput.value.trim();
+        alert("Sent verification email.");
+
+        lastPolledEmail = email;
+        verified = false;
+        emailInput.readOnly = false;
+        emailInput.classList.remove("readonly-input");
+        submitBtn.disabled = true;
+        startPolling(email);
+
+        fetch('/api/v1/members/email-verification/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).then(res => {
+            if (!res.ok) {
+                alert("메일 전송에 실패했습니다.");
+            }
+        });
+    });
+
+    emailInput.addEventListener("input", () => {
+        const current = emailInput.value;
+
+        if (current !== lastPolledEmail) {
+            verified = false;
+            emailInput.readOnly = false;
+            emailInput.classList.remove("readonly-input");
+            submitBtn.disabled = true;
+            status.textContent = "❌ Needs Verification";
+            status.style.color = "red";
+            if (pollingStarted) {
+                clearInterval(pollingInterval);
+                pollingStarted = false;
+            }
+        }
+    });
+
+    if (changeEmailBtn) {
+        changeEmailBtn.addEventListener("click", () => {
+            emailInput.readOnly = false;
+            emailInput.classList.remove("readonly-input");
+            verified = false;
+            submitBtn.disabled = true;
+            status.textContent = "❌ Needs Verification";
+            status.style.color = "red";
+            changeEmailBtn.style.display = "none";
+        });
+    }
+
+    confirmPasswordInput.addEventListener("input", () => {
+        if (confirmPasswordInput.value === passwordInput.value) {
+            matchMessage.textContent = "✅ 패스워드 일치";
+            matchMessage.style.color = "green";
+        } else {
+            matchMessage.textContent = "❌ 패스워드 불일치";
+            matchMessage.style.color = "red";
+        }
+
+        checkFormValidity();
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (initialVerified) {
+            emailInput.readOnly = true;
+            emailInput.classList.add("readonly-input");
+            submitBtn.disabled = false;
+            status.textContent = "✅ Verified";
+            status.style.color = "green";
+            changeEmailBtn.style.display = "inline-block";
+            verified = true;
+        }
+
+        if (globalError) {
+            document.getElementById("global-error-message").textContent = "회원가입 실패: " + globalError;
+            document.getElementById("global-error-modal").style.display = "flex";
+        }
+    });
+
+    function closeModal() {
+        document.getElementById("global-error-modal").style.display = "none";
+    }
+
     function startPolling(email) {
-        if (pollingInterval) clearInterval(pollingInterval);
+        pollingStarted = true;
 
         pollingInterval = setInterval(() => {
             fetch(`/api/v1/members/email-verification/status?email=${encodeURIComponent(email)}`)
@@ -142,49 +287,25 @@
                     if (isVerified) {
                         clearInterval(pollingInterval);
                         verified = true;
+
+                        // 인증 완료 UI 처리
+                        emailInput.readOnly = true;
+                        emailInput.classList.add("readonly-input");
                         status.textContent = "✅ Verified";
                         status.style.color = "green";
-                        emailInput.readOnly = true;
-                        submitBtn.disabled = false;
-                    } else {
-                        status.textContent = "❌ Not Verified";
-                        status.style.color = "red";
-                        submitBtn.disabled = true;
+                        checkFormValidity(); // submit 버튼 활성화 가능 여부 확인
+
+                        // ✅ 이메일 변경 버튼 표시
+                        changeEmailBtn.style.display = "inline-block";
                     }
                 });
         }, 1000);
     }
 
-    sendEmailBtn.addEventListener("click", () => {
-        const email = emailInput.value.trim();
+    function checkFormValidity() {
+        const passwordsMatch = confirmPasswordInput.value === passwordInput.value;
+        const isFormValid = verified && passwordsMatch;
 
-        fetch('/api/v1/members/email-verification/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email })
-        }).then(res => {
-            alert(res.ok ? "Verification email sent." : "Failed to send email.");
-            if (res.ok) {
-                lastPolledEmail = email;
-                verified = false;
-                emailInput.readOnly = false;
-                submitBtn.disabled = true;
-                startPolling(email);
-            }
-        });
-    });
-
-    emailInput.addEventListener("input", () => {
-        const current = emailInput.value;
-        if (current !== lastPolledEmail) {
-            status.textContent = "❌ Not Verified";
-            status.style.color = "red";
-            verified = false;
-            emailInput.readOnly = false;
-            submitBtn.disabled = true;
-            if (pollingInterval) clearInterval(pollingInterval);
-        }
-    });
+        submitBtn.disabled = !isFormValid;
+    }
 </script>
-</body>
-</html>
