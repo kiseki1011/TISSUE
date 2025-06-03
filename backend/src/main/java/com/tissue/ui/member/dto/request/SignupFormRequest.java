@@ -58,7 +58,6 @@ public record SignupFormRequest(
 	@StandardText
 	String biography
 ) {
-	// TODO: toCommand 정의
 	public SignupMemberCommand toCommand() {
 		return SignupMemberCommand.builder()
 			.loginId(loginId.trim())
