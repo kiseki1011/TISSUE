@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
+import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.ui.member.dto.request.SignupFormRequest;
 
 import jakarta.validation.Valid;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberViewController {
 
 	private final MemberCommandService memberCommandService;
+	private final MemberEmailVerificationService memberEmailVerificationService;
 
 	// TODO: SignupMemberRequest 팩토리 메서드 구현
 	@GetMapping("/signup")
@@ -27,7 +31,7 @@ public class MemberViewController {
 
 		SignupFormRequest request = SignupFormRequest.builder().build();
 
-		model.addAttribute("signupMemberRequest", request);
+		model.addAttribute("signupFormRequest", request);
 
 		return "member/signup";
 	}
@@ -40,14 +44,28 @@ public class MemberViewController {
 		BindingResult bindingResult,
 		Model model
 	) {
+		boolean isPasswordEmpty = request.password() == null || request.password().isBlank();
+		model.addAttribute("isPasswordEmpty", isPasswordEmpty);
+
 		if (bindingResult.hasErrors()) {
+			boolean emailVerified = memberEmailVerificationService.isEmailVerified(request.email());
+			model.addAttribute("emailVerified", emailVerified);
+
 			return "member/signup";
 		}
 
-		memberCommandService.signup(request.toCommand());
+		try {
+			memberCommandService.signup(request.toCommand());
+			return "redirect:/members/signup/success";
+			// return "redirect:/members";
+		} catch (DuplicateResourceException | InvalidRequestException e) {
+			model.addAttribute("globalError", e.getMessage());
+			boolean emailVerified = memberEmailVerificationService.isEmailVerified(request.email());
+			model.addAttribute("emailVerified", emailVerified);
+			model.addAttribute("isPasswordEmpty", true);
 
-		return "redirect:/members/signup/success";
-		// return "redirect:/members";
+			return "member/signup";
+		}
 	}
 
 	@GetMapping("/signup/success")
