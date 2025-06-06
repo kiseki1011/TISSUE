@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" class="dark" lang="en" style="color-scheme: dark;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TISSUE Terminal</title>
+    <link th:href="@{/css/signup_terminal.css}" rel="stylesheet"/>
+    
+    <!-- 터미널 아이콘 설정 -->
+    <link rel="icon" type="image/png" href="/favicon-terminal.png"/>
+
+    <!-- SEO -->
+    <meta name="description" content="TISSUE Terminal - Interactive Signup Interface">
+</head>
+<body class="terminal-body">
+<!-- 전체 화면이 터미널입니다 - 별도 컨테이너 없음 -->
+<div id="terminal-screen" class="terminal-screen">
+    <!-- 초기 로딩 상태 -->
+    <div id="boot-sequence" class="boot-sequence">
+        <div class="boot-line">TISSUE Terminal v1.0.0</div>
+        <div class="boot-line">Booting system...</div>
+        <div class="boot-line">Loading kernel modules... [OK]</div>
+        <div class="boot-line">Initializing user management system... [OK]</div>
+        <div class="boot-line">Starting registration service... [OK]</div>
+        <div class="boot-line"></div>
+        <div class="boot-line">System ready.</div>
+        <div class="boot-line"></div>
+    </div>
+
+    <!-- 메인 터미널 인터페이스 -->
+    <div id="terminal-interface" style="display: none;">
+        <!-- 터미널 히스토리가 여기에 쌓입니다 -->
+        <div id="terminal-history"></div>
+
+        <!-- 현재 입력 라인 -->
+        <div id="current-prompt" class="prompt-line">
+            <span class="prompt-prefix">guest@tissue:~$</span>
+            <span id="current-input" class="current-input"></span>
+            <span id="terminal-cursor" class="terminal-cursor">█</span>
+        </div>
+    </div>
+</div>
+
+<!-- 숨겨진 폼 (Spring과 통신용) -->
+<form th:action="@{/members/signup}" th:object="${signupFormRequest}" method="post" id="hidden-signup-form"
+      style="display: none;">
+    <input type="hidden" th:field="*{loginId}" id="form-loginId"/>
+    <input type="hidden" th:field="*{email}" id="form-email"/>
+    <input type="hidden" th:field="*{username}" id="form-username"/>
+    <input type="hidden" th:field="*{password}" id="form-password"/>
+    <input type="hidden" th:field="*{firstName}" id="form-firstName"/>
+    <input type="hidden" th:field="*{lastName}" id="form-lastName"/>
+    <input type="hidden" th:field="*{birthDate}" id="form-birthDate"/>
+    <input type="hidden" th:field="*{jobType}" id="form-jobType"/>
+    <input type="hidden" th:field="*{biography}" id="form-biography"/>
+</form>
+
+<!-- 포커스 유지용 숨겨진 입력 -->
+<input id="focus-keeper" type="text" aria-hidden="true" style="position: absolute; left: -9999px; opacity: 0;"/>
+
+<!-- 서버 데이터 전달 -->
+<script th:inline="javascript">
+    window.TISSUE_CONFIG = {
+        emailVerified: /*[[${emailVerified}]]*/ false,
+        globalError: /*[[${globalError}]]*/ null,
+        validationErrors: /*[[${validationErrors}]]*/ {}
+    };
+</script>
+
+<!-- 메인 JavaScript -->
+<script th:src="@{/js/signup_terminal.js}"></script>
+</body>
+</html>

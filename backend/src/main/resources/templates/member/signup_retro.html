@@ -2,83 +2,70 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Signup</title>
-    <link th:href="@{/css/signup_test.css}" rel="stylesheet"/>
+    <link th:href="@{/css/signup_retro.css}" rel="stylesheet"/>
 </head>
 <body>
-<form th:action="@{/members/signup}" th:object="${signupFormRequest}" method="post">
-    <!-- Login ID -->
-    <label>Login ID:
+<div class="terminal-container">
+    <h1>🧬 TISSUE - Member Signup</h1>
+
+    <form th:action="@{/members/signup}" th:object="${signupFormRequest}" method="post">
+
+        <label>Login ID:</label>
         <input type="text" th:field="*{loginId}" th:classappend="${#fields.hasErrors('loginId')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('loginId')}" th:errors="*{loginId}" class="error-message"></div>
-    </label>
 
-    <!-- Email -->
-    <label>Email:
+        <label>Email:</label>
         <input type="email" th:field="*{email}" id="email-input"
                th:classappend="${#fields.hasErrors('email')} ? 'error-input'"/>
-        <button type="button" id="send-email-btn">Send Verification Email</button>
-        <button type="button" id="change-email-btn" style="display: none;">Change Email</button>
-        <span id="email-verification-status">❌ Needs Verification</span>
+        <div class="inline-group">
+            <button type="button" id="send-email-btn">[ Send Verification ]</button>
+            <button type="button" id="change-email-btn" style="display: none;">[ Change Email ]</button>
+            <span id="email-verification-status">❌ Needs Verification</span>
+        </div>
         <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
-    </label>
 
-    <!-- Username -->
-    <label>Username:
+        <label>Username:</label>
         <input type="text" th:field="*{username}" th:classappend="${#fields.hasErrors('username')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error-message"></div>
-    </label>
 
-    <!-- Password -->
-    <label>Password:
+        <label>Password:</label>
         <input type="password" th:field="*{password}" id="password-input"
                th:classappend="${#fields.hasErrors('password')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('password')} and ${false == isPasswordEmpty}"
              th:errors="*{password}" class="error-message"></div>
 
-    </label>
-
-    <!-- Confirm Password -->
-    <label>Confirm Password:
+        <label>Confirm Password:</label>
         <input type="password" id="confirm-password-input"/>
         <div id="password-match-message" class="error-message"></div>
-    </label>
 
-    <label>First Name:
-        <input type="text" th:field="*{firstName}"
-               th:classappend="${#fields.hasErrors('firstName')} ? 'error-input'"/>
+        <label>First Name:</label>
+        <input type="text" th:field="*{firstName}" th:classappend="${#fields.hasErrors('firstName')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error-message"></div>
-    </label>
 
-    <label>Last Name:
-        <input type="text" th:field="*{lastName}"
-               th:classappend="${#fields.hasErrors('lastName')} ? 'error-input'"/>
+        <label>Last Name:</label>
+        <input type="text" th:field="*{lastName}" th:classappend="${#fields.hasErrors('lastName')} ? 'error-input'"/>
         <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error-message"></div>
-    </label>
 
-    <label>Birth Date:
+        <label>Birth Date:</label>
         <input type="date" th:field="*{birthDate}"/>
-    </label>
 
-    <label>Job Type:
+        <label>Job Type:</label>
         <input type="text" th:field="*{jobType}"/>
-    </label>
 
-    <label>Bio:
+        <label>Bio:</label>
         <textarea th:field="*{biography}"></textarea>
-    </label>
 
-    <button type="submit" id="submit-btn" disabled>Sign Up</button>
+        <button type="submit" id="submit-btn" disabled>[ SIGN UP ]</button>
 
-    <!-- error modal -->
-    <div id="global-error-modal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <p id="global-error-message"></p>
-            <button onclick="closeModal()">Close</button>
+        <!-- error modal -->
+        <div id="global-error-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <p id="global-error-message"></p>
+                <button onclick="closeModal()">Close</button>
+            </div>
         </div>
-    </div>
-</form>
-</body>
-</html>
+    </form>
+</div>
 
 <script th:inline="javascript">
     const initialVerified = /*[[${emailVerified}]]*/ false;
@@ -87,3 +74,5 @@
 
 <script th:src="@{/js/signup.js}"></script>
 
+</body>
+</html>
