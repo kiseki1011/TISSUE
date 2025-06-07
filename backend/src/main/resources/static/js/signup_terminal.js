@@ -2,7 +2,6 @@
  * TISSUE Terminal Signup System
  * 브라우저를 실제 터미널처럼 만드는 완전 몰입형 인터페이스
  */
-
 class TissueTerminal {
     constructor() {
         // 시스템 상태
@@ -147,15 +146,10 @@ class TissueTerminal {
      * 부팅 시퀀스 실행
      */
     async startBootSequence() {
-        // 부팅 메시지들을 이미 HTML에 있으므로,
-        // 일정 시간 후 터미널 인터페이스로 전환
-        await this.delay(3500); // 부팅 애니메이션 완료까지 대기
+        // 베너는 그대로 두고, 그 아래에 터미널 인터페이스 추가
+        await this.delay(1000); // 부팅 애니메이션 완료까지 대기
 
-        // 부팅 시퀀스 숨기고 터미널 인터페이스 표시
-        if (this.bootSequence) {
-            this.bootSequence.style.display = 'none';
-        }
-
+        // 터미널 인터페이스를 베너 아래에 표시
         if (this.terminalInterface) {
             this.terminalInterface.style.display = 'block';
         }
@@ -165,10 +159,13 @@ class TissueTerminal {
         // 포커스 설정
         this.maintainFocus();
 
-        // 환영 메시지 출력
+        // 환영 메시지 출력(deprecated 예정)
         await this.showWelcomeMessage();
 
-        // 회원가입 프로세스 시작
+        // 환영 메시지 없이 바로 명령어 입력 모드로(커맨드 설정 추가 후 사용)
+        // this.startCommandMode();
+
+        // 회원가입 프로세스 시작(커맨드를 사용하는 경우 제거)
         this.startSignupProcess();
     }
 
@@ -178,11 +175,6 @@ class TissueTerminal {
     async showWelcomeMessage() {
         await this.delay(500);
 
-        this.addHistoryLine('', ''); // 빈 줄
-        this.addHistoryLine('Welcome to TISSUE Terminal', 'system-msg');
-        this.addHistoryLine('Interactive registration system initialized.', 'system-msg');
-        this.addHistoryLine('', ''); // 빈 줄
-
         // 서버 에러가 있으면 표시
         if (this.globalError) {
             this.addHistoryLine('⚠ Previous registration attempt failed:', 'error-msg');
@@ -190,7 +182,7 @@ class TissueTerminal {
             this.addHistoryLine('', '');
         }
 
-        await this.delay(1000);
+        await this.delay(500);
     }
 
     /**

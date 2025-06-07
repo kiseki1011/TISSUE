@@ -17,6 +17,191 @@ html, body {
     font-display: swap;
 }
 
+/* 베너 섹션 - 항상 상단에 고정 */
+.banner-section {
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+/* 베너 레이아웃 - 좌우 배치 */
+.banner-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 15px;
+}
+
+/* 왼쪽: ASCII 아트 베너 */
+.banner-left {
+    flex-shrink: 0;
+}
+
+/* ASCII 아트 스타일 - glow 효과 제거, 일반 터미널 색상 적용 */
+/*
+.ascii-banner {
+    color: #CCCCCC;           /* 일반 터미널 텍스트와 동일한 색상 */
+    font-family: 'Cascadia Code', monospace;
+    font-size: 14px;          /* 기본 터미널 폰트 사이즈와 동일 */
+    line-height: 1.1;
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+    /* glow 효과 제거 */
+}
+*/
+
+.ascii-banner {
+    color: #CCCCCC;
+    font-family: 'Cascadia Code', monospace;
+    /* 기본 터미널과 동일하게 유지 */
+    font-size: 14px;
+    line-height: 1.1;
+    /* 20% 크게 보이지만 실제 폰트 사이즈는 동일 */
+    transform: scale(1.4);
+    /* 왼쪽 위를 기준으로 확대 */
+    transform-origin: left top;
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+}
+
+
+/* 버전 정보 */
+.version-info {
+    color: #FFFF00;           /* 노란색으로 강조 */
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 5px;
+    text-align: left;         /* 왼쪽 정렬 */
+    padding-left: 0;
+}
+
+/* 오른쪽: 시스템 정보 */
+.banner-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.system-info {
+    color: #CCCCCC;
+}
+
+.info-title {
+    color: #CCCCCC;           /* 프롬프트와 같은 파란색 */
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.info-separator {
+    color: #666666;
+    margin: 8px 0;
+    font-size: 12px;
+}
+
+.info-item {
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.info-label {
+    color: #FFFF00;           /* 노란색 레이블 */
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+}
+
+.info-value {
+    color: #CCCCCC;
+}
+
+.info-help {
+    color: #00FF00;           /* 녹색 도움말 */
+    font-style: italic;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+/* 베너 하단 구분선 */
+.banner-bottom {
+    margin-top: 10px;
+}
+
+.separator-line {
+    color: #666666;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .banner-layout {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .banner-right {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .ascii-banner {
+        font-size: 12px;
+    }
+
+    .info-item {
+        font-size: 12px;
+    }
+
+    .info-label {
+        width: 100px;
+        font-size: 12px;
+    }
+
+    .banner-layout {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ascii-banner {
+        font-size: 10px;
+    }
+
+    .info-item {
+        font-size: 11px;
+    }
+
+    .info-label {
+        width: 80px;
+        font-size: 11px;
+    }
+
+    .version-info {
+        font-size: 12px;
+    }
+}
+
+/* 애니메이션 제거 - 단순하게 유지 */
+.banner-section {
+    opacity: 1;
+    /* 애니메이션 효과 제거 */
+}
+
+/* 부팅 시퀀스 애니메이션 개선 */
+.boot-sequence {
+    opacity: 0;
+    animation: fadeInSystem 1s ease-in forwards;
+    font-family: inherit;
+    color: #00FF00; /* 클래식한 녹색 부팅 메시지 */
+}
+
+@keyframes fadeInSystem {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 /* 전체 페이지를 터미널로 변환 */
 .terminal-body {
     background: #0C0C0C; /* Windows Terminal 기본 배경색 */
@@ -60,12 +245,6 @@ html, body {
 
 .terminal-screen::-webkit-scrollbar-thumb:hover {
     background: #505050;
-}
-
-/* 부팅 시퀀스 스타일 */
-.boot-sequence {
-    font-family: inherit;
-    color: #00FF00; /* 클래식한 녹색 부팅 메시지 */
 }
 
 .boot-line {
