@@ -56,7 +56,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		doNothing().when(memberEmailVerificationService)
 			.validateEmailVerified(request.email());
 
-		MemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request.toCommand());
 
 		// then
 		Member foundMember = findMemberById(1L);
@@ -84,7 +84,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		doNothing().when(memberEmailVerificationService)
 			.validateEmailVerified(request.email());
 
-		memberCommandService.signup(request);
+		memberCommandService.signup(request.toCommand());
 
 		// then
 		String encodedPassword = memberRepository.findByLoginId("tester").get().getPassword();
@@ -112,7 +112,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		doNothing().when(memberEmailVerificationService)
 			.validateEmailVerified(request.email());
 
-		memberCommandService.signup(request);
+		memberCommandService.signup(request.toCommand());
 
 		// then
 		String encodedPassword = memberRepository.findByLoginId("tester").get().getPassword();
