@@ -2,9 +2,9 @@ package com.tissue.api.notification.domain.service.sender.email;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.email.domain.EmailClient;
 import com.tissue.api.notification.domain.enums.NotificationChannel;
 import com.tissue.api.notification.domain.model.Notification;
-import com.tissue.api.notification.domain.service.sender.EmailClient;
 import com.tissue.api.notification.domain.service.sender.NotificationSender;
 
 import lombok.RequiredArgsConstructor;

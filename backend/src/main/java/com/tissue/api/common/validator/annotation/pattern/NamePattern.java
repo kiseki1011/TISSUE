@@ -17,7 +17,7 @@ import jakarta.validation.constraints.Pattern;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Pattern(
-	regexp = "^\\p{L}+$",
+	regexp = "^$|^\\p{L}+$",
 	message = "{valid.pattern.name}"
 )
 public @interface NamePattern {

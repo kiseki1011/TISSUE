@@ -1,0 +1,522 @@
+/* 전체 화면을 터미널로 만들기 위한 기본 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden; /* 스크롤바 숨기기 - 터미널답게 */
+}
+
+/* 터미널 폰트 설정 */
+@font-face {
+    font-family: 'Cascadia Code';
+    src: url('/fonts/CascadiaCode.ttf') format('truetype');
+    font-display: swap;
+}
+
+/* 베너 섹션 - 항상 상단에 고정 */
+.banner-section {
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+/* 베너 레이아웃 - 좌우 배치 */
+.banner-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 15px;
+}
+
+/* 왼쪽: ASCII 아트 베너 */
+.banner-left {
+    flex-shrink: 0;
+}
+
+.ascii-banner {
+    color: #CCCCCC;
+    font-family: 'Cascadia Code', monospace;
+    /* 기본 터미널과 동일하게 유지 */
+    font-size: 14px;
+    /* 왼쪽 위를 기준으로 확대 */
+    transform-origin: left top;
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+}
+
+
+/* 버전 정보 - ASCII 베너의 오른쪽 하단에 배치 */
+.version-info {
+    color: #CCCCCC;
+    font-size: 14px; /* 원본 크기 유지 */
+    font-weight: normal;
+
+    /* 절대 위치로 오른쪽 하단에 배치 */
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    /* 약간의 여백으로 베너와 겹치지 않도록 */
+    margin-bottom: 5px;
+    margin-right: 5px;
+}
+
+/* 오른쪽: 시스템 정보 */
+.banner-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.system-info {
+    color: #CCCCCC;
+}
+
+.info-title {
+    color: #CCCCCC;           /* 프롬프트와 같은 파란색 */
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.info-separator {
+    color: #666666;
+    margin: 8px 0;
+    font-size: 12px;
+}
+
+.info-item {
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.info-label {
+    color: #FFFF00;           /* 노란색 레이블 */
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+}
+
+.info-value {
+    color: #CCCCCC;
+}
+
+.info-help {
+    /* color: #00FF00; */           /* 녹색 도움말 */
+    color: #CCCCCC;
+    font-style: italic;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+/* 베너 하단 구분선 */
+.banner-bottom {
+    margin-top: 10px;
+}
+
+.separator-line {
+    color: #666666;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .banner-layout {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .banner-right {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .ascii-banner {
+        font-size: 12px;
+    }
+
+    .info-item {
+        font-size: 12px;
+    }
+
+    .info-label {
+        width: 100px;
+        font-size: 12px;
+    }
+
+    .banner-layout {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ascii-banner {
+        font-size: 10px;
+    }
+
+    .info-item {
+        font-size: 11px;
+    }
+
+    .info-label {
+        width: 80px;
+        font-size: 11px;
+    }
+
+    .version-info {
+        font-size: 12px;
+    }
+}
+
+/* 애니메이션 제거 - 단순하게 유지 */
+.banner-section {
+    opacity: 1;
+    /* 애니메이션 효과 제거 */
+}
+
+/* 부팅 시퀀스 애니메이션 개선 */
+.boot-sequence {
+    opacity: 0;
+    animation: fadeInSystem 1s ease-in forwards;
+    font-family: inherit;
+    color: #00FF00; /* 클래식한 녹색 부팅 메시지 */
+}
+
+@keyframes fadeInSystem {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 전체 페이지를 터미널로 변환 */
+.terminal-body {
+    background: #0C0C0C; /* Windows Terminal 기본 배경색 */
+    color: #CCCCCC;      /* Windows Terminal 기본 텍스트 색 */
+    font-family: 'Cascadia Code', 'Fira Code', 'Monaco', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    cursor: text; /* 전체 화면에서 텍스트 커서 */
+}
+
+/* 터미널 화면 전체 */
+.terminal-screen {
+    height: 100vh;
+    width: 100vw;
+    padding: 30px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #0C0C0C;
+
+    /* 터미널다운 스크롤바 */
+    scrollbar-width: thin;
+    scrollbar-color: #404040 #0C0C0C;
+}
+
+.terminal-screen::-webkit-scrollbar {
+    width: 12px;
+}
+
+.terminal-screen::-webkit-scrollbar-track {
+    background: #0C0C0C;
+}
+
+.terminal-screen::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 6px;
+    border: 2px solid #0C0C0C;
+}
+
+.terminal-screen::-webkit-scrollbar-thumb:hover {
+    background: #505050;
+}
+
+.boot-line {
+    margin-bottom: 2px;
+    opacity: 0;
+    animation: fadeInLine 0.1s ease-in forwards;
+}
+
+/* 부팅 라인들이 순차적으로 나타나도록 */
+.boot-line:nth-child(1) { animation-delay: 0.2s; }
+.boot-line:nth-child(2) { animation-delay: 0.6s; }
+.boot-line:nth-child(3) { animation-delay: 1.0s; }
+.boot-line:nth-child(4) { animation-delay: 1.4s; }
+.boot-line:nth-child(5) { animation-delay: 1.8s; }
+.boot-line:nth-child(6) { animation-delay: 2.2s; }
+.boot-line:nth-child(7) { animation-delay: 2.6s; color: #FFFF00; }
+.boot-line:nth-child(8) { animation-delay: 3.0s; }
+
+@keyframes fadeInLine {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 터미널 인터페이스 */
+.prompt-line {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0;
+    min-height: 20px;
+}
+
+.prompt-prefix {
+    color: #00AAFF;      /* 프롬프트는 파란색 */
+    margin-right: 8px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.current-input {
+    color: #FFFFFF;      /* 사용자 입력은 흰색 */
+    min-width: 1px;
+    word-break: break-all;
+}
+
+/* 터미널 커서 */
+.terminal-cursor {
+    color: #FFFFFF;
+    background: #FFFFFF;
+    animation: terminalBlink 1s infinite;
+    margin-left: 1px;
+    display: inline-block;
+    width: 8px;
+    text-align: center;
+}
+
+@keyframes terminalBlink {
+    0%, 50% {
+        opacity: 1;
+        background: #FFFFFF;
+        color: #0C0C0C;
+    }
+    51%, 100% {
+        opacity: 0.3;
+        background: transparent;
+        color: #FFFFFF;
+    }
+}
+
+/* 터미널 히스토리 라인들 */
+.history-line {
+    margin-bottom: 2px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.history-prompt {
+    color: #00AAFF;
+    margin-right: 8px;
+}
+
+.history-command {
+    color: #FFFFFF;
+}
+
+.history-output {
+    color: #CCCCCC;
+    margin-left: 0;
+    white-space: pre-wrap;
+}
+
+/* 다양한 메시지 타입 */
+.success-msg {
+    color: #00FF00;
+    font-weight: 500;
+}
+
+.error-msg {
+    color: #FF6B6B;
+    font-weight: 500;
+}
+
+.warning-msg {
+    color: #FFD93D;
+    font-weight: 500;
+}
+
+.info-msg {
+    color: #74C0FC;
+}
+
+.system-msg {
+    color: #A5A5A5;
+    font-style: italic;
+}
+
+.default-system-text {
+    color: #CCCCCC;
+}
+
+/* 명령어 강조 스타일 */
+.command-highlight {
+    color: #FFFF00;  /* 노란색 */
+    font-weight: bold;
+}
+
+/* 진행률 표시 */
+.progress-line {
+    color: #74C0FC;
+    margin: 4px 0;
+}
+
+.progress-bar {
+    color: #00FF00;
+    font-family: monospace;
+}
+
+/* 입력 필드 스타일 */
+.field-description {
+    color: #A5A5A5;
+    font-size: 12px;
+    margin-left: 16px;
+    margin-bottom: 2px;
+}
+
+.field-error {
+    color: #FF6B6B;
+    margin-left: 16px;
+    margin-top: 2px;
+}
+
+.field-success {
+    color: #00FF00;
+    margin-left: 16px;
+    margin-top: 2px;
+}
+
+/* 패스워드 마스킹 */
+.password-mask {
+    color: #FFFF00;
+    letter-spacing: 2px;
+}
+
+/* 이메일 인증 상태 */
+.email-status {
+    margin-left: 16px;
+    margin-top: 2px;
+}
+
+.email-pending {
+    color: #FFD93D;
+}
+
+.email-verified {
+    color: #00FF00;
+}
+
+.email-failed {
+    color: #FF6B6B;
+}
+
+/* 로딩 인디케이터 */
+.loading-dots::after {
+    content: '';
+    animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .terminal-body {
+        font-size: 12px;
+    }
+
+    .terminal-screen {
+        padding: 10px;
+    }
+
+    .prompt-prefix {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .terminal-body {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .terminal-screen {
+        padding: 8px;
+    }
+}
+
+/* 접근성 지원 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    .terminal-body {
+        background: #000000;
+        color: #FFFFFF;
+    }
+
+    .success-msg {
+        color: #00FF00;
+    }
+
+    .error-msg {
+        color: #FF0000;
+    }
+
+    .warning-msg {
+        color: #FFFF00;
+    }
+}
+
+/* 움직임 줄이기 설정 */
+@media (prefers-reduced-motion: reduce) {
+    .terminal-cursor {
+        animation: none;
+    }
+
+    .boot-line {
+        animation: none;
+        opacity: 1;
+    }
+
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 포커스 시각화 (접근성) */
+.terminal-screen:focus-within {
+    outline: 2px solid #00AAFF;
+    outline-offset: -2px;
+}
+
+/* 선택 영역 스타일 */
+::selection {
+    background: #264F78;
+    color: #FFFFFF;
+}
+
+::-moz-selection {
+    background: #264F78;
+    color: #FFFFFF;
+}
