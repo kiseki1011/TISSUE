@@ -12,9 +12,8 @@ import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -59,19 +58,17 @@ public record SignupMemberRequest(
 	@StandardText
 	String biography
 ) {
-	public Member toEntity(String encodedPassword) {
-		return Member.builder()
-			.loginId(this.loginId)
-			.email(this.email)
-			.password(encodedPassword)
-			.username(this.username)
-			.name(Name.builder()
-				.firstName(this.firstName)
-				.lastName(this.lastName)
-				.build())
-			.birthDate(this.birthDate)
-			.jobType(this.jobType)
-			.biography(this.biography)
+	public SignupMemberCommand toCommand() {
+		return SignupMemberCommand.builder()
+			.loginId(loginId.trim())
+			.email(email.trim())
+			.password(password)
+			.username(username.trim())
+			.firstName(firstName.trim())
+			.lastName(lastName.trim())
+			.birthDate(birthDate)
+			.jobType(jobType)
+			.biography(biography.trim())
 			.build();
 	}
 }

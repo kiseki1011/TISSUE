@@ -1,20 +1,119 @@
+# TODO: application.yml 정리 필요
 # Default
 spring:
   profiles:
     active: local
 
+  messages:
+    basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
+    encoding: UTF-8    # 인코딩 설정
+    fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
+    cache-duration: 0  # 캐시 저장 안함
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties.hibernate:
+      format_sql: true
+      show-sql: true
+      highlight_sql: true
+      default_batch_fetch_size: 100
+
+base-url: http://localhost:8080
+
+email:
+  verification:
+    strategy: redis  # or rdb
+    success-url: ${base-url}/members/email-verification/success
+    failure-url: ${base-url}/members/email-verification/fail
+    verification-url: ${base-url}/api/v1/members/email-verification/verify
+
+api:
+  issue:
+    circular-dependency-cache:
+      size: 1000
+      duration: 1
+
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
+
 ---
-# Local & Test
+# Local
 spring:
   config:
     activate:
       on-profile: local
 
+  # TODO: embedded redis, test-container, 등의 사용을 고려하자
+  # 현재 ssh 터널링을 통해 다른 컴퓨터에 실행되고 있는 DB 컨테이너에 연결해서 사용중(성능 이슈로 인해)
+  # h2 in-memory
   datasource:
-    url: jdbc:h2:tcp://localhost:1521/testdb
+    url: jdbc:h2:mem:tissue_local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${LOCAL_REDIS_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties.hibernate:
+      format_sql: true
+      show-sql: true
+      highlight_sql: true
+      default_batch_fetch_size: 100
+
+  mail:
+    # gmail smtp, will change later
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+logging:
+  level:
+    org.hibernate:
+      SQL: DEBUG
+      orm.jdbc.bind: TRACE
+---
+# SSR test
+spring:
+  config:
+    activate:
+      on-profile: ssr
+
+  mail:
+    # gmail smtp, will change later
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/tissue_local
+    username: developer
+    password: ${LOCAL_MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${LOCAL_REDIS_PASSWORD}
 
   jpa:
     hibernate:
@@ -31,18 +130,6 @@ logging:
       SQL: DEBUG
       orm.jdbc.bind: TRACE
 
-  messages:
-    basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
-    encoding: UTF-8    # 인코딩 설정
-    fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
-    cache-duration: 0  # 캐시 저장 안함
-
-api:
-  issue:
-    circular-dependency-cache:
-      size: 1000
-      duration: 1
-
 ---
 # Development
 spring:
@@ -50,20 +137,22 @@ spring:
     activate:
       on-profile: dev
 
+  # TODO: 실제 DB 사용(데이터 보존 필요)
+  # use development DB
   datasource:
-    url: jdbc:mysql://localhost:3306/devdb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: rootpassword
+    url: jdbc:mysql://localhost:3306/tissue_local
+    username: developer
+    password: ${LOCAL_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  messages:
-    cache-duration: 0
-
-api:
-  issue:
-    circular-dependency-cache:
-      size: 1000
-      duration: 1
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties.hibernate:
+      format_sql: true
+      show-sql: true
+      highlight_sql: true
+      default_batch_fetch_size: 100
 
 ---
 # Production
@@ -72,10 +161,12 @@ spring:
     activate:
       on-profile: prod
 
+  # change to use reliable datasource for deployment (ex. RDS, ElastiCache...)
+  # or use private cloud
   datasource:
-    url: jdbc:mysql://localhost:3306/proddb?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
-    password: rootpassword
+    url: jdbc:mysql://localhost:3306/tissue_local
+    username: developer
+    password: ${LOCAL_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

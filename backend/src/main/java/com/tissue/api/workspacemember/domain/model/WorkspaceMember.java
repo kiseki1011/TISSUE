@@ -63,6 +63,9 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String displayName;
 
+	@Column(nullable = false)
+	private String email;
+
 	// TODO: 캐싱은 추후에 고려
 	//  (클라이언트에서 displayName, username을 한번에 조회하고 조합해서 사용하는 방식 고려
 	// private String displayWithUsername;
@@ -77,6 +80,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace = workspace;
 		this.role = role;
 		this.displayName = member.getUsername();
+		this.email = member.getEmail();
 		this.workspaceCode = workspace.getCode();
 	}
 

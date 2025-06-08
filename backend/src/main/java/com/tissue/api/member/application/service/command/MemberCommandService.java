@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
@@ -28,20 +28,25 @@ public class MemberCommandService {
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
 	private final PasswordEncoder passwordEncoder;
+	private final MemberEmailVerificationService memberEmailVerificationService;
 
 	@Transactional
 	public MemberResponse signup(
-		SignupMemberRequest request
+		SignupMemberCommand command
 	) {
-		memberValidator.validateLoginIdIsUnique(request.loginId());
-		memberValidator.validateEmailIsUnique(request.email());
-		memberValidator.validateUsernameIsUnique(request.username());
+		memberValidator.validateLoginIdIsUnique(command.loginId());
+		memberValidator.validateEmailIsUnique(command.email());
+		memberValidator.validateUsernameIsUnique(command.username());
 
-		String encodedPassword = passwordEncoder.encode(request.password());
-		Member member = request.toEntity(encodedPassword);
+		memberEmailVerificationService.validateEmailVerified(command.email());
+
+		String encodedPassword = passwordEncoder.encode(command.password());
+		Member member = command.toEntity(encodedPassword);
 
 		try {
 			Member savedMember = memberRepository.save(member);
+			memberEmailVerificationService.clearVerification(command.email());
+
 			return MemberResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateResourceException("회원가입에 실패했습니다.", e);
@@ -67,11 +72,12 @@ public class MemberCommandService {
 	) {
 		Member member = memberReader.findMember(memberId);
 
-		String newEmail = request.newEmail();
-		memberValidator.validateEmailIsUnique(newEmail);
+		memberValidator.validateEmailIsUnique(request.newEmail());
+		memberEmailVerificationService.validateEmailVerified(request.newEmail());
 
 		try {
-			member.updateEmail(newEmail);
+			member.updateEmail(request.newEmail());
+			memberEmailVerificationService.clearVerification(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateResourceException("중복된 Email입니다", e);

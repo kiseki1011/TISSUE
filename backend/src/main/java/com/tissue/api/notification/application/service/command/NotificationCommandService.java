@@ -24,13 +24,18 @@ public class NotificationCommandService {
 	private final WorkspaceMemberReader workspaceMemberReader;
 
 	@Transactional
-	public void createNotification(
+	public Notification createNotification(
 		DomainEvent event,
 		Long receiverMemberId,
 		NotificationMessage message
 	) {
 		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
 			event.getActorMemberId(),
+			event.getWorkspaceCode()
+		);
+
+		WorkspaceMember receiver = workspaceMemberReader.findWorkspaceMember(
+			receiverMemberId,
 			event.getWorkspaceCode()
 		);
 
@@ -41,12 +46,13 @@ public class NotificationCommandService {
 			.notificationType(event.getNotificationType())
 			.entityReference(entityReference)
 			.actorMemberId(event.getActorMemberId())
-			.actorNickname(actor.getDisplayName())
+			.actorDisplayName(actor.getDisplayName())
 			.message(message)
 			.receiverMemberId(receiverMemberId)
+			.receiverEmail(receiver.getEmail())
 			.build();
 
-		notificationRepository.save(notification);
+		return notificationRepository.save(notification);
 	}
 
 	@Transactional

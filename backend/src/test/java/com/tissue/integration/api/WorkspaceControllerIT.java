@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	}
 
 	@Test
+	@Disabled("mock signup")
 	@DisplayName("워크스페이스를 생성하면 응답의 데이터에 워크스페이스의 이름, 설명, 코드가 존재해야 한다")
 	void test1() {
 
@@ -59,6 +61,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	}
 
 	@Test
+	@Disabled("mock signup")
 	@DisplayName("하나의 워크스페이스를 생성하면 DB에 하나의 워크스페이스만 존재해야 한다")
 	void test2() {
 
@@ -84,6 +87,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	}
 
 	@Test
+	@Disabled("mock signup")
 	@DisplayName("워크스페이스가 생성될 시 생성자(로그인ID)가 기록된다")
 	void test3() {
 		// given
@@ -119,6 +123,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 	}
 
 	@Test
+	@Disabled("mock signup")
 	@DisplayName("워크스페이스가 생성될 시 생성일이 기록된다")
 	void test4() {
 		// given

@@ -36,10 +36,14 @@ out/
 ### VS Code ###
 .vscode/
 
-### h2 docker-compose ###
+### docker-compose ###
 docker-compose-h2.yml
 docker-compose-mysql.yml
+local-docker-compose.yml
 
 ### h2 db ###
 /h2/
 /mysql-data/
+
+### SSH script ###
+start-tunnel.sh

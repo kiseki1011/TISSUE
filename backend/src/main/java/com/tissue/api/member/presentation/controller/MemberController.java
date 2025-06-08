@@ -1,4 +1,4 @@
-package com.tissue.api.member.presentation.controller.command;
+package com.tissue.api.member.presentation.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -65,7 +65,7 @@ public class MemberController {
 	public ApiResponse<MemberResponse> signup(
 		@Valid @RequestBody SignupMemberRequest request
 	) {
-		MemberResponse response = memberCommandService.signup(request);
+		MemberResponse response = memberCommandService.signup(request.toCommand());
 		return ApiResponse.created("Signup successful.", response);
 	}
 
