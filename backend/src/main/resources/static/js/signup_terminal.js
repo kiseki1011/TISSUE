@@ -175,6 +175,15 @@ class TissueTerminal {
     async showWelcomeMessage() {
         await this.delay(500);
 
+        // 텍스트를 여러 부분으로 나누어서 처리
+        const helpLine = document.createElement('div');
+        helpLine.className = 'history-line default-system-text';
+        helpLine.innerHTML = 'Type <span class="command-highlight">\'help\'</span> to see the list of available commands.';
+        this.terminalHistory.appendChild(helpLine);
+
+        this.addHistoryLine('', ''); // 빈 줄
+        this.addHistoryLine('\n', ''); // 빈 줄
+
         // 서버 에러가 있으면 표시
         if (this.globalError) {
             this.addHistoryLine('⚠ Previous registration attempt failed:', 'error-msg');

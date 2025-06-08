@@ -36,28 +36,11 @@ html, body {
     flex-shrink: 0;
 }
 
-/* ASCII 아트 스타일 - glow 효과 제거, 일반 터미널 색상 적용 */
-/*
-.ascii-banner {
-    color: #CCCCCC;           /* 일반 터미널 텍스트와 동일한 색상 */
-    font-family: 'Cascadia Code', monospace;
-    font-size: 14px;          /* 기본 터미널 폰트 사이즈와 동일 */
-    line-height: 1.1;
-    margin: 0;
-    padding: 0;
-    white-space: pre;
-    /* glow 효과 제거 */
-}
-*/
-
 .ascii-banner {
     color: #CCCCCC;
     font-family: 'Cascadia Code', monospace;
     /* 기본 터미널과 동일하게 유지 */
     font-size: 14px;
-    line-height: 1.1;
-    /* 20% 크게 보이지만 실제 폰트 사이즈는 동일 */
-    transform: scale(1.4);
     /* 왼쪽 위를 기준으로 확대 */
     transform-origin: left top;
     margin: 0;
@@ -66,14 +49,20 @@ html, body {
 }
 
 
-/* 버전 정보 */
+/* 버전 정보 - ASCII 베너의 오른쪽 하단에 배치 */
 .version-info {
-    color: #FFFF00;           /* 노란색으로 강조 */
-    font-size: 14px;
+    color: #CCCCCC;
+    font-size: 14px; /* 원본 크기 유지 */
     font-weight: normal;
-    margin-top: 5px;
-    text-align: left;         /* 왼쪽 정렬 */
-    padding-left: 0;
+
+    /* 절대 위치로 오른쪽 하단에 배치 */
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    /* 약간의 여백으로 베너와 겹치지 않도록 */
+    margin-bottom: 5px;
+    margin-right: 5px;
 }
 
 /* 오른쪽: 시스템 정보 */
@@ -116,10 +105,11 @@ html, body {
 }
 
 .info-help {
-    color: #00FF00;           /* 녹색 도움말 */
+    /* color: #00FF00; */           /* 녹색 도움말 */
+    color: #CCCCCC;
     font-style: italic;
-    margin-top: 8px;
-    font-size: 13px;
+    margin-top: 6px;
+    font-size: 14px;
 }
 
 /* 베너 하단 구분선 */
@@ -219,7 +209,7 @@ html, body {
 .terminal-screen {
     height: 100vh;
     width: 100vw;
-    padding: 20px;
+    padding: 30px;
     overflow-y: auto;
     overflow-x: hidden;
     background: #0C0C0C;
@@ -358,6 +348,16 @@ html, body {
 .system-msg {
     color: #A5A5A5;
     font-style: italic;
+}
+
+.default-system-text {
+    color: #CCCCCC;
+}
+
+/* 명령어 강조 스타일 */
+.command-highlight {
+    color: #FFFF00;  /* 노란색 */
+    font-weight: bold;
 }
 
 /* 진행률 표시 */
