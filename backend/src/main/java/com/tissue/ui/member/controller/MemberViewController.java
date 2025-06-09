@@ -54,38 +54,6 @@ public class MemberViewController {
 		return "member/signup_terminal";
 	}
 
-	// TODO: 공통 에러 페이지 추가 (4xx, 5xx, 6xx)
-	// TODO: /members -> member 상세 정보 뷰 만들기
-	// @PostMapping("/signup")
-	// public String signup(
-	// 	@Valid @ModelAttribute("signupFormRequest") SignupFormRequest request,
-	// 	BindingResult bindingResult,
-	// 	Model model
-	// ) {
-	// 	boolean isPasswordEmpty = request.password() == null || request.password().isBlank();
-	// 	model.addAttribute("isPasswordEmpty", isPasswordEmpty);
-	//
-	// 	if (bindingResult.hasErrors()) {
-	// 		boolean emailVerified = memberEmailVerificationService.isEmailVerified(request.email());
-	// 		model.addAttribute("emailVerified", emailVerified);
-	//
-	// 		return "member/signup_terminal";
-	// 	}
-	//
-	// 	try {
-	// 		memberCommandService.signup(request.toCommand());
-	// 		return "redirect:/members/signup/success";
-	// 		// return "redirect:/members";
-	// 	} catch (DuplicateResourceException | InvalidRequestException e) {
-	// 		model.addAttribute("globalError", e.getMessage());
-	// 		boolean emailVerified = memberEmailVerificationService.isEmailVerified(request.email());
-	// 		model.addAttribute("emailVerified", emailVerified);
-	// 		model.addAttribute("isPasswordEmpty", true);
-	//
-	// 		return "member/signup";
-	// 	}
-	// }
-
 	@PostMapping("/signup")
 	public String signup(
 		@Valid @ModelAttribute("signupFormRequest") SignupFormRequest request,
