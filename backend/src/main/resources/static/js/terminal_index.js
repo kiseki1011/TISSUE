@@ -321,12 +321,27 @@ class TissueTerminal {
    */
   displayBanner() {
     // ASCII 아트 베너
+    /**
     const bannerAscii = `████████╗██╗███████╗███████╗██╗   ██╗███████╗
 ╚══██╔══╝██║██╔════╝██╔════╝██║   ██║██╔════╝
    ██║   ██║███████╗███████╗██║   ██║█████╗
    ██║   ██║╚════██║╚════██║██║   ██║██╔══╝
    ██║   ██║███████║███████║╚██████╔╝███████╗
    ╚═╝   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝`;
+    */
+
+    const bannerAscii = `████████╗███████╗██████╗ ███╗   ███╗██╗███╗   ██╗ █████╗ ██╗
+╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██║████╗  ██║██╔══██╗██║
+   ██║   █████╗  ██████╔╝██╔████╔██║██║██╔██╗ ██║███████║██║
+   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██║╚██╗██║██╔══██║██║
+   ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██║  ██║███████╗
+   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
+   ██╗███████╗███████╗██╗   ██╗███████╗
+   ██║██╔════╝██╔════╝██║   ██║██╔════╝
+   ██║███████╗███████╗██║   ██║█████╗
+   ██║╚════██║╚════██║██║   ██║██╔══╝
+   ██║███████║███████║╚██████╔╝███████╗
+   ╚═╝╚══════╝╚══════╝ ╚═════╝ ╚══════╝`
 
     // 베너 컨테이너 생성
     const bannerContainer = document.createElement("div");
@@ -353,8 +368,18 @@ class TissueTerminal {
     this.displaySystemInfo();
 
     // 도움말 메시지
-    this.addHistoryLine("Type 'help' to see the list of commands.", "help-msg");
-    this.addHistoryLine("", "");
+//    this.addHistoryLine("Type 'help' to see the list of commands.", "help-msg");
+//    this.addHistoryLine("", "");
+//    this.addHistoryLine("\n", "");
+
+    // 텍스트를 여러 부분으로 나누어서 처리
+    const helpLine = document.createElement('div');
+    helpLine.className = 'help-msg';
+    helpLine.innerHTML = 'Type <span class="command-highlight">\'help\'</span> to see the list of available commands.';
+    this.terminalHistory.appendChild(helpLine);
+
+    this.addHistoryLine('', ''); // 빈 줄
+    this.addHistoryLine('\n', ''); // 빈 줄
 
     this.scrollToBottom();
   }

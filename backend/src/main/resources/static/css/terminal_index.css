@@ -79,6 +79,7 @@ body {
 }
 
 .current-input {
+  white-space: pre;
   color: #ffffff; /* 사용자 입력은 흰색 */
   min-width: 1px;
   word-break: break-all;
@@ -86,27 +87,18 @@ body {
 
 /* 터미널 커서 */
 .terminal-cursor {
-  color: #ffffff;
-  background: #ffffff;
-  animation: terminalBlink 1s infinite;
-  margin-left: 1px;
-  display: inline-block;
-  width: 8px;
-  text-align: center;
+  color: #ffffff;             /* 흰색 문자 */
+  background: transparent;    /* 회색 박스 없애기 */
+  animation: terminalBlink 1s step-start infinite;
+  display: inline;
 }
 
 @keyframes terminalBlink {
-  0%,
-  50% {
+  0%, 50% {
     opacity: 1;
-    background: #ffffff;
-    color: #0c0c0c;
   }
-  51%,
-  100% {
-    opacity: 0.3;
-    background: transparent;
-    color: #ffffff;
+  51%, 100% {
+    opacity: 0;
   }
 }
 
@@ -145,10 +137,10 @@ body {
 }
 
 .version-info {
-  color: #ffff00; /* 노란색으로 강조 */
+  color: #cccccc;
   font-size: 14px;
   font-weight: normal;
-  margin-left: 8px;
+  margin-left: 4px;
 }
 
 /* 시스템 정보 스타일 */
@@ -168,12 +160,20 @@ body {
 .info-label {
   color: #ffff00; /* 노란색 레이블 */
   font-weight: bold;
-  display: inline-block;
-  width: 120px;
+  margin-right: 8px;
+
+  /* info-value가 깔금하게 일렬로 배치된 표 형식 */
+  /* display: inline-block; */
+  /* width: 120px; */
 }
 
 .info-value {
   color: #cccccc;
+}
+
+.command-highlight {
+    color: #FFFF00;
+    font-weight: bold;
 }
 
 /* 다양한 메시지 타입 */
@@ -202,17 +202,34 @@ body {
 }
 
 .help-msg {
-  color: #00ff00;
+  color: #cccccc;
   font-style: italic;
 }
 
-/* 베너 컨테이너 */
+/* 베너 컨테이너와 그 다음 시스템 정보 컨테이너를 하나의 그룹으로 처리 */
 .banner-container {
-  margin-bottom: 15px;
+    display: inline-block; /* 인라인 블록으로 변경 */
+    vertical-align: top; /* 상단 정렬 */
+    width: auto; /* 내용에 맞춰 너비 조정 */
+    margin-right: 40px; /* 오른쪽 여백 */
+    margin-bottom: 25px;
 }
 
 .system-info-container {
-  margin-bottom: 10px;
+    display: inline-block; /* 인라인 블록으로 변경 */
+    vertical-align: top; /* 상단 정렬 */
+    width: calc(100% - 600px); /* 베너 너비를 제외한 나머지 공간 */
+    margin-bottom: 10px;
+}
+
+/* 반응형 처리 - 화면이 좁으면 세로 배치로 복귀 */
+@media (max-width: 1024px) {
+    .banner-container,
+    .system-info-container {
+        display: block; /* 블록 요소로 복귀 */
+        width: 100%; /* 전체 너비 사용 */
+        margin-right: 0;
+    }
 }
 
 /* 반응형 디자인 */
