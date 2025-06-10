@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -171,4 +172,30 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Permission refreshed.");
 	}
 
+	/**
+	 * Login ID 중복 검사
+	 */
+	@GetMapping("/check-loginid")
+	public ApiResponse<Void> checkLoginIdAvailability(@RequestParam String loginId) {
+		memberValidator.validateLoginIdIsUnique(loginId);
+		return ApiResponse.okWithNoContent("Login ID is available");
+	}
+
+	/**
+	 * 이메일 중복 검사
+	 */
+	@GetMapping("/check-email")
+	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
+		memberValidator.validateEmailIsUnique(email);
+		return ApiResponse.okWithNoContent("Email is available");
+	}
+
+	/**
+	 * 사용자명 중복 검사
+	 */
+	@GetMapping("/check-username")
+	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
+		memberValidator.validateUsernameIsUnique(username);
+		return ApiResponse.okWithNoContent("Username is available");
+	}
 }
