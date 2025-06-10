@@ -14,6 +14,7 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
+import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -23,7 +24,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameReques
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
-import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
