@@ -21,7 +21,7 @@ public class HomePageController {
 	 */
 	@GetMapping("/")
 	public String terminal(Model model) {
-		// 터미널 방식의 페이지는 클라이언트 사이드에서 대부분 것을 처리함
+		// 터미널 방식의 페이지는 클라이언트 사이드에서 많은 것을 처리함
 		model.addAttribute("pageTitle", "TISSUE Terminal");
 
 		return "home/terminal_index";
