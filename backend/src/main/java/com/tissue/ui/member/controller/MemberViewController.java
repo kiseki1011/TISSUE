@@ -37,8 +37,7 @@ public class MemberViewController {
 
 		SignupFormRequest request = SignupFormRequest.builder()
 			.loginId("")
-			.firstName("")
-			.lastName("")
+			.name("")
 			.password("")
 			.email("")
 			.jobType(JobType.ETC)

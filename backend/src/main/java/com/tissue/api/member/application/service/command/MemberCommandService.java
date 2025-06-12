@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -138,10 +137,7 @@ public class MemberCommandService {
 		Member member
 	) {
 		if (request.hasName()) {
-			member.updateName(Name.builder()
-				.firstName(request.firstName())
-				.lastName(request.lastName())
-				.build());
+			member.updateName(request.name());
 		}
 		if (request.hasBirthDate()) {
 			member.updateBirthDate(request.birthDate());

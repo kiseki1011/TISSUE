@@ -13,11 +13,9 @@ public record MemberDetail(
 	String loginId,
 	String email,
 
-	String lastName,
-	String firstName,
+	String name,
 	LocalDate birthDate,
 	JobType jobType,
-	String biography,
 
 	int ownedWorkspaceCount,
 
@@ -28,8 +26,7 @@ public record MemberDetail(
 		return MemberDetail.builder()
 			.loginId(member.getLoginId())
 			.email(member.getEmail())
-			.lastName(member.getName().getLastName())
-			.firstName(member.getName().getFirstName())
+			.name(member.getName())
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
 			.ownedWorkspaceCount(member.getMyWorkspaceCount())

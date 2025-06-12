@@ -8,12 +8,10 @@ import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -50,9 +48,7 @@ public class Member extends BaseDateEntity {
 	@Column(nullable = false)
 	private String password;
 
-	// TODO: memberProfile VO로 묶어서 관리?
-	@Embedded
-	private Name name;
+	private String name;
 
 	private LocalDate birthDate;
 
@@ -75,7 +71,7 @@ public class Member extends BaseDateEntity {
 		String username,
 		String password,
 		JobType jobType,
-		Name name,
+		String name,
 		LocalDate birthDate
 	) {
 		this.loginId = loginId;
@@ -109,7 +105,7 @@ public class Member extends BaseDateEntity {
 		this.password = password;
 	}
 
-	public void updateName(Name name) {
+	public void updateName(String name) {
 		this.name = name;
 	}
 

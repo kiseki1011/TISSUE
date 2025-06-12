@@ -43,11 +43,7 @@ public record SignupFormRequest(
 
 	@NameSize
 	@NamePattern
-	String firstName,
-
-	@NameSize
-	@NamePattern
-	String lastName,
+	String name,
 
 	@Past(message = "{valid.birthdate}")
 	LocalDate birthDate,
@@ -60,8 +56,7 @@ public record SignupFormRequest(
 			.email(email.trim())
 			.password(password)
 			.username(username.trim())
-			.firstName(firstName.trim())
-			.lastName(lastName.trim())
+			.name(name.trim())
 			.birthDate(birthDate)
 			.jobType(jobType)
 			.build();

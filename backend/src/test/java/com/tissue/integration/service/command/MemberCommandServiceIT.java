@@ -15,7 +15,6 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
@@ -46,8 +45,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.username("testusername")
 			.password("test1234!")
 			.jobType(JobType.DEVELOPER)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1900, 1, 1))
 			.build();
 
@@ -73,8 +71,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.username("testusername")
 			.password("test1234!")
 			.jobType(JobType.DEVELOPER)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1900, 1, 1))
 			.build();
 
@@ -100,8 +97,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.username("testusername")
 			.password("test1234!")
 			.jobType(JobType.DEVELOPER)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1900, 1, 1))
 			.build();
 
@@ -194,16 +190,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
+			.name("Gildong Hong")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
 		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
-			.biography("Im currently unemployed")
 			.jobType(JobType.ETC)
 			.birthDate(LocalDate.of(1995, 2, 2))
 			.build();
@@ -225,16 +217,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
+			.name("Gildong Hong")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
 		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
-			.biography("Im currently unemployed")
 			.build();
 
 		// when
@@ -256,16 +244,12 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
+			.name("Gildong Hong")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
 
 		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
-			.lastName("Kim")
 			.build();
 
 		// when
@@ -273,7 +257,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		assertThat(findMemberById(member.getId()).getName().getLastName()).isEqualTo("Hong");
+		assertThat(findMemberById(member.getId()).getName()).isEqualTo("Gildong Hong");
 	}
 
 	private Member findMemberById(Long id) {

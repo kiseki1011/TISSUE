@@ -10,8 +10,7 @@ public record GetProfileResponse(
 	String loginId,
 	String email,
 
-	String lastName,
-	String firstName,
+	String name,
 	LocalDate birthDate,
 	JobType jobType,
 
@@ -25,8 +24,7 @@ public record GetProfileResponse(
 		return new GetProfileResponse(
 			member.getLoginId(),
 			member.getEmail(),
-			member.getName().getLastName(),
-			member.getName().getFirstName(),
+			member.getName(),
 			member.getBirthDate(),
 			member.getJobType(),
 			member.getMyWorkspaceCount(),

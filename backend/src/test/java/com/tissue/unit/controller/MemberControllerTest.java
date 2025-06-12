@@ -24,7 +24,6 @@ import org.springframework.mock.web.MockHttpSession;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -60,10 +59,7 @@ class MemberControllerTest extends ControllerTestHelper {
 		Member member = Member.builder()
 			.loginId("tester")
 			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1990, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.build();
@@ -75,7 +71,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Found profile."))
-			.andExpect(jsonPath("$.data.firstName").value("Gildong"))
+			.andExpect(jsonPath("$.data.name").value("Gildong Hong"))
 			.andExpect(jsonPath("$.data.birthDate").value(LocalDate.of(1990, 1, 1).toString()))
 			.andDo(print());
 	}
@@ -89,8 +85,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.build();
@@ -117,8 +112,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.build();
@@ -148,8 +142,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("testemail@gmail.com")
 			.username("testusername")
 			.password(password)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.build();
@@ -181,8 +174,7 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email(email)
 			.password(password)
 			.username("testusername")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
 			.build();
@@ -243,7 +235,6 @@ class MemberControllerTest extends ControllerTestHelper {
 		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
 			.build();
 
 		Long memberId = 1L;

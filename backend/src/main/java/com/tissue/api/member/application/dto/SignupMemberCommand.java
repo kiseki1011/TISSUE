@@ -4,7 +4,6 @@ import java.time.LocalDate;
 
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 
 import lombok.Builder;
 
@@ -14,8 +13,7 @@ public record SignupMemberCommand(
 	String email,
 	String username,
 	String password,
-	String firstName,
-	String lastName,
+	String name,
 	LocalDate birthDate,
 	JobType jobType
 ) {
@@ -25,10 +23,7 @@ public record SignupMemberCommand(
 			.email(email)
 			.password(encodedPassword)
 			.username(username)
-			.name(Name.builder()
-				.firstName(firstName)
-				.lastName(lastName)
-				.build())
+			.name(name)
 			.birthDate(birthDate)
 			.jobType(jobType)
 			.build();
