@@ -11,13 +11,14 @@ import jakarta.validation.constraints.Pattern;
 
 /**
  * Pattern validation for names
- *  - Name must contain only letters (such as a-z, A-Z, 가-힣) without numbers, spaces, or special characters
+ *  - Name must contain only letters (such as a-z, A-Z, 가-힣) without numbers or special characters
+ *  - A single space between letters is allowed
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Pattern(
-	regexp = "^$|^\\p{L}+$",
+	regexp = "^$|^[\\\\p{L}]+( [\\\\p{L}]+)*$",
 	message = "{valid.pattern.name}"
 )
 public @interface NamePattern {
