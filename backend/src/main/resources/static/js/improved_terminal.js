@@ -581,13 +581,28 @@ class TissueTerminal {
     }
   }
 
+  // /**
+  //  * 입력 표시 업데이트
+  //  */
+  // updateInputDisplay() {
+  //   if (!this.currentInput) return;
+  //   this.currentInput.textContent = this.currentInputText;
+  //   this.refreshCursor();
+  // }
+
   /**
    * 입력 표시 업데이트
    */
   updateInputDisplay() {
     if (!this.currentInput) return;
-    this.currentInput.textContent = this.currentInputText;
-    this.refreshCursor();
+
+    // 회원가입 중이고 민감한 필드인 경우 마스킹 처리
+    if (this.signupInProgress && this.currentFieldInfo?.sensitive) {
+      this.updateMaskedInputDisplay();
+    } else {
+      this.currentInput.textContent = this.currentInputText;
+      this.refreshCursor();
+    }
   }
 
   /**
@@ -854,6 +869,31 @@ class TissueTerminal {
     }
   }
 
+  // /**
+  //  * 회원가입 중 키 입력 처리
+  //  */
+  // handleSignupKeyPress(event) {
+  //   const field = this.currentFieldInfo;
+  //   if (!field) return;
+
+  //   if (event.key === "Enter") {
+  //     this.processSignupInput();
+  //   } else if (event.key === "Backspace") {
+  //     this.handleBackspace();
+  //   } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+  //     this.cancelSignupProcess();
+  //   } else if (event.key === "Tab" && field.name === "jobType") {
+  //     this.showJobTypeOptions();
+  //   } else if (
+  //     event.key.length === 1 &&
+  //     !event.ctrlKey &&
+  //     !event.altKey &&
+  //     !event.metaKey
+  //   ) {
+  //     this.addCharacterToInput(event.key);
+  //   }
+  // }
+
   /**
    * 회원가입 중 키 입력 처리
    */
@@ -865,6 +905,10 @@ class TissueTerminal {
       this.processSignupInput();
     } else if (event.key === "Backspace") {
       this.handleBackspace();
+      // 패스워드 필드인 경우 마스킹된 화면 업데이트
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelSignupProcess();
     } else if (event.key === "Tab" && field.name === "jobType") {
@@ -876,7 +920,23 @@ class TissueTerminal {
       !event.metaKey
     ) {
       this.addCharacterToInput(event.key);
+      // 패스워드 필드인 경우 마스킹된 화면 업데이트
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
     }
+  }
+
+  /**
+   * 패스워드 필드용 마스킹된 입력 표시 업데이트
+   */
+  updateMaskedInputDisplay() {
+    if (!this.currentInput) return;
+
+    // 실제 입력 텍스트 길이만큼 * 표시
+    const maskedText = "*".repeat(this.currentInputText.length);
+    this.currentInput.textContent = maskedText;
+    this.refreshCursor();
   }
 
   /**
@@ -969,26 +1029,33 @@ class TissueTerminal {
       };
     }
 
-    // 서버에서 중복 검사 (선택적)
     try {
       const response = await fetch(
         `/api/v1/members/check-loginid?loginId=${encodeURIComponent(value)}`
       );
-      if (response.ok) {
+
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
         const result = await response.json();
-        if (!result.data) {
-          return {
-            valid: false,
-            error: "This Login ID is already taken",
-          };
-        }
+        return {
+          valid: false,
+          error: result.message || "This Login ID is already taken",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify Login ID availability",
+        };
       }
     } catch (error) {
       console.warn("Failed to check Login ID availability:", error);
-      // 네트워크 오류 시에는 클라이언트 검증만 수행
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
     }
-
-    return { valid: true };
   }
 
   /**
@@ -1003,25 +1070,33 @@ class TissueTerminal {
       };
     }
 
-    // 서버에서 중복 검사
     try {
       const response = await fetch(
         `/api/v1/members/check-email?email=${encodeURIComponent(value)}`
       );
-      if (response.ok) {
+
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
         const result = await response.json();
-        if (!result.data) {
-          return {
-            valid: false,
-            error: "This email is already registered",
-          };
-        }
+        return {
+          valid: false,
+          error: result.message || "This email is already registered",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify email availability",
+        };
       }
     } catch (error) {
       console.warn("Failed to check email availability:", error);
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
     }
-
-    return { valid: true };
   }
 
   /**
@@ -1062,6 +1137,60 @@ class TissueTerminal {
     }
     return { valid: true };
   }
+
+  /**
+   * 사용자명 검증
+   */
+  async validateUsername(value) {
+    // 길이 검증 (4-20자)
+    if (value.length < 4 || value.length > 20) {
+      return {
+        valid: false,
+        error: "Username must be between 4 and 20 characters",
+      };
+    }
+
+    // 패턴 검증: 첫 글자는 문자, 나머지는 문자 또는 숫자
+    // JavaScript에서 \p{L}과 \p{N}은 u 플래그와 함께 사용
+    if (!/^[\p{L}][\p{L}\p{N}]*$/u.test(value)) {
+      return {
+        valid: false,
+        error:
+          "Username must start with a letter and contain only letters and numbers",
+      };
+    }
+
+    // 서버에서 중복 검사
+    try {
+      const response = await fetch(
+        `/api/v1/members/check-username?username=${encodeURIComponent(value)}`
+      );
+
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
+        const result = await response.json();
+        return {
+          valid: false,
+          error: result.message || "This username is already taken",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify username availability",
+        };
+      }
+    } catch (error) {
+      console.warn("Failed to check username availability:", error);
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
+    }
+  }
+
+  // TODO: birthdate, name, job에 대한 검증도 필요
 
   /**
    * 회원가입 중 이메일 인증 처리
@@ -1191,7 +1320,7 @@ class TissueTerminal {
       // 서버로 회원가입 데이터 전송
       const signupData = this.prepareSignupData();
 
-      const response = await fetch("/api/v1/members/signup", {
+      const response = await fetch("/api/v1/members", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(signupData),
@@ -1201,7 +1330,13 @@ class TissueTerminal {
         const result = await response.json();
 
         // 성공 메시지 출력
-        await this.displaySuccessMessage(result.data);
+        const memberData = {
+          username: this.signupData.username,
+          email: this.signupData.email,
+          loginId: this.signupData.loginId,
+        };
+
+        await this.displaySuccessMessage(memberData);
 
         // 상태 초기화
         this.resetSignupState();
@@ -1255,6 +1390,7 @@ class TissueTerminal {
     this.addHistoryLine("", "");
     this.addHistoryLine("🎉 Welcome to TISSUE!", "success-msg");
     this.addHistoryLine(`   Username: ${memberData.username}`, "info-msg");
+    this.addHistoryLine(`   Login ID: ${memberData.loginId}`, "info-msg");
     this.addHistoryLine(`   Email: ${memberData.email}`, "info-msg");
     this.addHistoryLine("", "");
     this.addHistoryLine(
@@ -1307,6 +1443,223 @@ class TissueTerminal {
     this.addHistoryLine("", "");
 
     this.resetSignupState();
+  }
+
+  /**
+   * 회원가입 명령어를 히스토리에 추가 (일반 명령어와 구분)
+   */
+  addCommandToSignupHistory(command) {
+    const line = document.createElement("div");
+    line.className = "history-line";
+
+    const prompt = document.createElement("span");
+    prompt.className = "history-prompt";
+    prompt.textContent = this.currentFieldInfo.prompt + ": ";
+    prompt.style.color = "#FFD93D"; // 회원가입 프롬프트는 노란색
+
+    const commandSpan = document.createElement("span");
+    commandSpan.className = "history-command";
+    commandSpan.textContent = command.split(": ")[1] || ""; // 프롬프트 부분 제거하고 값만 표시
+
+    line.appendChild(prompt);
+    line.appendChild(commandSpan);
+
+    this.terminalHistory.appendChild(line);
+    this.scrollToBottom();
+  }
+
+  /**
+   * 타이핑 효과로 메시지 출력
+   */
+  async typeMessage(text, className = "history-output", speed = 50) {
+    const line = document.createElement("div");
+    line.className = `history-line ${className}`;
+    this.terminalHistory.appendChild(line);
+
+    for (let i = 0; i <= text.length; i++) {
+      line.textContent = text.substring(0, i);
+      this.scrollToBottom();
+      await new Promise((resolve) => setTimeout(resolve, speed));
+    }
+  }
+
+  /**
+   * 회원가입 에러 처리
+   */
+  handleSignupError(errorData) {
+    this.addHistoryLine("✗ Registration failed", "error-msg");
+
+    if (errorData && errorData.message) {
+      this.addHistoryLine(`   ${errorData.message}`, "error-msg");
+    } else {
+      this.addHistoryLine("   An unexpected error occurred", "error-msg");
+    }
+
+    this.addHistoryLine("", "");
+    this.addHistoryLine(
+      'You can try again by typing "signup" command.',
+      "system-msg"
+    );
+    this.addHistoryLine("", "");
+
+    this.resetSignupState();
+  }
+
+  /**
+   * 진행률 계산 및 표시
+   */
+  calculateProgress() {
+    const fields = this.getSignupFields();
+    const completedFields = Object.keys(this.signupData).length;
+    return Math.round((completedFields / fields.length) * 100);
+  }
+
+  /**
+   * 회원가입 진행 상황 요약 표시 (중간에 확인용)
+   */
+  showSignupSummary() {
+    this.addHistoryLine("", "");
+    this.addHistoryLine("Registration Progress Summary:", "info-msg");
+    this.addHistoryLine("─".repeat(40), "system-msg");
+
+    Object.entries(this.signupData).forEach(([key, value]) => {
+      const displayValue =
+        key === "password" || key === "confirmPassword" ? "[HIDDEN]" : value;
+      this.addHistoryLine(`  ${key}: ${displayValue}`, "system-msg");
+    });
+
+    this.addHistoryLine("─".repeat(40), "system-msg");
+    this.addHistoryLine("", "");
+  }
+
+  /**
+   * 이름 검증 (firstName, lastName)
+   */
+  async validateName(value) {
+    if (value.length > 50) {
+      return {
+        valid: false,
+        error: "Name must be 50 characters or less",
+      };
+    }
+
+    // 특수문자 제한 (선택적)
+    if (!/^[\p{L}\s'-]*$/u.test(value)) {
+      return {
+        valid: false,
+        error: "Name contains invalid characters",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 생년월일 검증
+   */
+  async validateBirthDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return {
+        valid: false,
+        error: "Please use YYYY-MM-DD format",
+      };
+    }
+
+    const date = new Date(value);
+    const now = new Date();
+
+    if (isNaN(date.getTime())) {
+      return {
+        valid: false,
+        error: "Invalid date",
+      };
+    }
+
+    if (date > now) {
+      return {
+        valid: false,
+        error: "Birth date cannot be in the future",
+      };
+    }
+
+    // 150세 제한
+    const minDate = new Date(
+      now.getFullYear() - 150,
+      now.getMonth(),
+      now.getDate()
+    );
+    if (date < minDate) {
+      return {
+        valid: false,
+        error: "Please enter a valid birth date",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 직업 유형 검증
+   */
+  async validateJobType(value) {
+    const validJobTypes = [
+      "DEVELOPER",
+      "DESIGNER",
+      "DEV-OPS",
+      "MANAGER",
+      "RESEARCHER",
+      "ETC",
+      // "STUDENT"
+    ];
+
+    if (value.toLowerCase() === "list") {
+      // 옵션 목록 표시
+      this.showJobTypeOptions();
+      return {
+        valid: false,
+        error: "Please select from the options above",
+      };
+    }
+
+    const upperValue = value.toUpperCase();
+    if (!validJobTypes.includes(upperValue)) {
+      return {
+        valid: false,
+        error: `Invalid job type. Type "list" to see available options`,
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 자기소개 검증
+   */
+  async validateBiography(value) {
+    if (value.length > 500) {
+      return {
+        valid: false,
+        error: "Biography must be 500 characters or less",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 직업 옵션 표시
+   */
+  showJobTypeOptions() {
+    this.addHistoryLine("Available job types:", "info-msg");
+    // this.addHistoryLine("  STUDENT      - Student", "system-msg");
+    this.addHistoryLine("  DEVELOPER     - Software Developer", "system-msg");
+    this.addHistoryLine("  DEVOPS        - Devops Engineer", "system-msg");
+    this.addHistoryLine("  DATA_ANALYST  - Data Analyst", "system-msg");
+    this.addHistoryLine("  DESIGNER      - Designer", "system-msg");
+    this.addHistoryLine("  MANAGER       - Project Manager", "system-msg");
+    this.addHistoryLine("  RESEARCHER    - Researcher", "system-msg");
+    this.addHistoryLine("  ETC           - Other", "system-msg");
+    this.addHistoryLine("", "");
   }
 }
 

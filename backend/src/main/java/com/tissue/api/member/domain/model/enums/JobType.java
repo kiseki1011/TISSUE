@@ -9,7 +9,6 @@ import lombok.Getter;
 public enum JobType {
 	DEVELOPER("개발자"),
 	DESIGNER("디자이너"),
-	PLANNER("기획자"),
 	MARKETER("마케터"),
 	MANAGER("매니저"),
 	SALES("영업"),
