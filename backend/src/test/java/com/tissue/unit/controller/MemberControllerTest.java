@@ -66,7 +66,6 @@ class MemberControllerTest extends ControllerTestHelper {
 				.build())
 			.birthDate(LocalDate.of(1990, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
 			.build();
 
 		when(memberQueryService.getProfile(anyLong())).thenReturn(GetProfileResponse.from(member));
@@ -93,7 +92,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -122,7 +120,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -154,7 +151,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -188,7 +184,6 @@ class MemberControllerTest extends ControllerTestHelper {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 

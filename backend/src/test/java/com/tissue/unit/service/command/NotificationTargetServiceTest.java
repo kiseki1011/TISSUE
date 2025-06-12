@@ -55,7 +55,6 @@ public class NotificationTargetServiceTest {
 			.name(new Name("Admin", "One"))
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1990, 1, 1))
-			.biography("Admin")
 			.build();
 
 		Member specificMember = Member.builder()
@@ -64,9 +63,8 @@ public class NotificationTargetServiceTest {
 			.username("user1")
 			.password("pass")
 			.name(new Name("User", "One"))
-			.jobType(JobType.PLANNER)
+			.jobType(JobType.DESIGNER)
 			.birthDate(LocalDate.of(1995, 5, 5))
-			.biography("Bio")
 			.build();
 
 		WorkspaceMember adminMember = WorkspaceMember.createWorkspaceMember(admin1, workspace, WorkspaceRole.ADMIN);
@@ -111,7 +109,6 @@ public class NotificationTargetServiceTest {
 			.name(new Name("QA", "Admin"))
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1985, 2, 2))
-			.biography("QA Head")
 			.build();
 
 		WorkspaceMember adminMember = WorkspaceMember.createWorkspaceMember(admin, workspace, WorkspaceRole.ADMIN);

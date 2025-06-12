@@ -11,7 +11,6 @@ import com.tissue.api.common.validator.annotation.size.IdSize;
 import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.enums.JobType;
 
@@ -53,10 +52,7 @@ public record SignupFormRequest(
 	@Past(message = "{valid.birthdate}")
 	LocalDate birthDate,
 
-	JobType jobType,
-
-	@StandardText
-	String biography
+	JobType jobType
 ) {
 	public SignupMemberCommand toCommand() {
 		return SignupMemberCommand.builder()
@@ -68,7 +64,6 @@ public record SignupFormRequest(
 			.lastName(lastName.trim())
 			.birthDate(birthDate)
 			.jobType(jobType)
-			.biography(biography.trim())
 			.build();
 	}
 }

@@ -149,8 +149,5 @@ public class MemberCommandService {
 		if (request.hasJobType()) {
 			member.updateJobType(request.jobType());
 		}
-		if (request.hasBiography()) {
-			member.updateBiography(request.biography());
-		}
 	}
 }

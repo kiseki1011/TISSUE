@@ -42,7 +42,6 @@ public class MemberViewController {
 			.password("")
 			.email("")
 			.jobType(JobType.ETC)
-			.biography("")
 			.build();
 
 		model.addAttribute("signupFormRequest", request);

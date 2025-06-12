@@ -23,7 +23,6 @@ public class MemberApiFixture {
 			.firstName("Gildong")
 			.lastName("Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 

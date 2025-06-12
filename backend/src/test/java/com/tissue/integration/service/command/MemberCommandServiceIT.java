@@ -45,7 +45,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.biography("biography")
 			.jobType(JobType.DEVELOPER)
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -73,7 +72,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.biography("biography")
 			.jobType(JobType.DEVELOPER)
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -101,7 +99,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.biography("biography")
 			.jobType(JobType.DEVELOPER)
 			.firstName("Gildong")
 			.lastName("Hong")
@@ -201,7 +198,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 				.firstName("Gildong")
 				.lastName("Hong")
 				.build())
-			.biography("Im a backend developer")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
@@ -233,7 +229,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 				.firstName("Gildong")
 				.lastName("Hong")
 				.build())
-			.biography("Im a backend developer!")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());
@@ -248,7 +243,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		assertThat(response.memberId()).isEqualTo(member.getId());
 
-		assertThat(findMemberById(member.getId()).getBiography()).isEqualTo("Im currently unemployed");
 		assertThat(findMemberById(member.getId()).getJobType()).isEqualTo(JobType.DEVELOPER);
 		assertThat(findMemberById(member.getId()).getBirthDate()).isEqualTo(LocalDate.of(1995, 1, 1));
 	}
@@ -266,7 +260,6 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 				.firstName("Gildong")
 				.lastName("Hong")
 				.build())
-			.biography("Im a backend developer")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.build());

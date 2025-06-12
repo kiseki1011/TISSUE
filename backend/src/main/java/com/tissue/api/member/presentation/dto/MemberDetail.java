@@ -32,7 +32,6 @@ public record MemberDetail(
 			.firstName(member.getName().getFirstName())
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
-			.biography(member.getBiography())
 			.ownedWorkspaceCount(member.getMyWorkspaceCount())
 			.createdAt(member.getCreatedDate())
 			.updatedAt(member.getLastModifiedDate())

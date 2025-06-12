@@ -17,8 +17,7 @@ public record SignupMemberCommand(
 	String firstName,
 	String lastName,
 	LocalDate birthDate,
-	JobType jobType,
-	String biography
+	JobType jobType
 ) {
 	public Member toEntity(String encodedPassword) {
 		return Member.builder()
@@ -32,7 +31,6 @@ public record SignupMemberCommand(
 				.build())
 			.birthDate(birthDate)
 			.jobType(jobType)
-			.biography(biography)
 			.build();
 	}
 }
