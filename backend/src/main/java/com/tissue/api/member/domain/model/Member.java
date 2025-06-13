@@ -55,6 +55,7 @@ public class Member extends BaseDateEntity {
 	@Enumerated(EnumType.STRING)
 	private JobType jobType;
 
+	// TODO: 그냥 필요하면 계산해서 보여주는게 좋지 않을까?
 	@Column(nullable = false)
 	private int myWorkspaceCount = 0;
 
