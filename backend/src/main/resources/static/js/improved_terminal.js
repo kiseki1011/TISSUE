@@ -1,5 +1,21 @@
-// TODO: 매직넘버나 스트링을 상수로 분리
-// TODO: 설정값을 서버에서 주입받아서 사용(베너, 버전, author, license, 등...)
+// TODO-1: 매직넘버나 스트링을 상수로 분리
+// TODO-2: 설정값을 서버에서 주입받아서 사용(베너, 버전, author, license, 등...)
+// TODO-3: ✓ vs ✅ 어떤걸 사용? 아니면 마지막만 ✅를 사용할까?
+// TODO-4: ✗ vs ❌
+// TODO-5: handleKeyPress에서 handleSignupKeyPress 대신 handleSpecialModeKeyPress 사용하도록 변경
+// TODO-6: exit 명령어 사용시, 창을 나갈지 물어보는 모달 보여주고, 창 나가기
+// TODO-7: help [command]를 사용하면 자세한 설명 출력하기
+// TODO-8: vi, vim, emac 등의 명령어 사용하면 터미널 처럼 편집기 모드로 들어가짐 -> 여기서 글을 작성해서 저장하면 글이 저장됨
+// TODO-9: ls 명령어를 통해 저장한 글 조회 기능?(50개 까지 보여주기, 페이징 적용)
+// TODO-10: 내가 작성한 글 보는 기능?
+// TODO-11: 모든 API 요청에 대한 공통 함수 만들어서 사용?(credentials: "include" 적용)
+// TODO-12: 테마 추가(라이트모드, 다크모드, 등..)
+// TODO-13: JobType 목록을 서버에서 가져오기/캐싱
+// TODO-14: 필드에 대한 검증 로직을 클라이언트 사이드에서 다시 정의해서 사용하고 있음
+// - 서버사이드에서 규칙을 가져오는 방법은 없을까?(SSOT으로 관리하고 싶음)
+// - properties 파일을 하나 만들어서 규칙을 외부에서 주입하는 방식 고려
+// TOOD-15: 코드 가독성 리팩토링
+// TOOD-16: JS 모듈화
 
 /**
  * TISSUE Terminal System
@@ -30,14 +46,27 @@ class TissueTerminal {
     this.systemName = "TISSUE Terminal";
 
     // 회원가입 관련 상태 변수들
-    this.signupInProgress = false; // 현재 회원가입 진행 중인지
-    this.signupStep = 0; // 현재 회원가입 단계
-    this.signupData = {}; // 수집된 회원가입 데이터
-    this.currentFieldInfo = null; // 현재 입력받고 있는 필드 정보
+    this.signupInProgress = false;
+    this.signupStep = 0;
+    this.signupData = {};
+    this.currentFieldInfo = null;
 
     // 이메일 인증 관련
-    this.emailVerificationStatus = "none"; // none, pending, verified, failed
+    this.emailVerificationStatus = "none";
     this.emailPollingInterval = null;
+
+    // 로그인 관련 상태
+    this.isLoggedIn = false;
+    this.currentUser = null;
+    this.loginInProgress = false;
+    this.loginStep = 0;
+    this.loginData = {};
+
+    // 프로필 수정 관련 상태
+    this.editInProgress = false;
+    this.editStep = 0;
+    this.editData = {};
+    this.editFieldInfo = null;
 
     // 서버 데이터 로드
     this.loadServerConfig();
@@ -160,9 +189,9 @@ class TissueTerminal {
     // 기본 동작 방지
     event.preventDefault();
 
-    // 회원가입이 진행 중인 경우 별도 처리
-    if (this.signupInProgress) {
-      this.handleSignupKeyPress(event);
+    // 특별한 모드(회원가입, 로그인, 수정) 중인 경우 별도 처리
+    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
+      this.handleSpecialModeKeyPress(event);
       return;
     }
 
@@ -255,7 +284,7 @@ class TissueTerminal {
     // 베너 출력 명령어
     banner: function () {
       this.displayBanner();
-      return null; // displayBanner가 직접 출력하므로 추가 반환값 없음
+      return null;
     },
 
     // 화면 지우기 명령어
@@ -302,14 +331,15 @@ class TissueTerminal {
       return args.join(" ");
     },
 
-    // 사용자 정보 명령어
-    // TODO: 로그인안하면 guset, 로그인하면 본인 username 반환
+    // 사용자 정보 명령어 (수정: 로그인 상태 반영)
     whoami: function () {
+      if (this.isLoggedIn && this.currentUser) {
+        return this.currentUser.username;
+      }
       return "guest";
     },
 
     // 종료 명령어
-    // TODO: exit을 실행하면 나갈지 물어보는 모달창을 보여주거나, exit 명령어를 제거(clear 사용)
     exit: function () {
       this.addHistoryLine("Goodbye!", "success-msg");
       setTimeout(() => {
@@ -319,14 +349,54 @@ class TissueTerminal {
     },
 
     signup: function (args) {
-      // 이미 회원가입이 진행 중인지 확인
       if (this.signupInProgress) {
         return "Signup process is already in progress. Use Ctrl+C to cancel.";
       }
-
-      // 회원가입 프로세스 시작
       this.startSignupProcess();
-      return null; // 추가 출력 없음 (startSignupProcess에서 처리)
+      return null;
+    },
+
+    login: function (args) {
+      if (this.loginInProgress) {
+        return "Login process is already in progress. Use Ctrl+C to cancel.";
+      }
+      this.startLoginProcess();
+      return null;
+    },
+
+    logout: function (args) {
+      if (!this.isLoggedIn) {
+        return "You are not logged in.";
+      }
+      this.performLogout();
+      return null;
+    },
+
+    profile: function (args) {
+      if (!this.isLoggedIn) {
+        return "Please login first to view your profile.";
+      }
+      this.displayUserProfile();
+      return null;
+    },
+
+    edit: function (args) {
+      if (!this.isLoggedIn) {
+        return "Please login first to edit your profile.";
+      }
+      if (this.editInProgress) {
+        return "Profile editing is already in progress. Use Ctrl+C to cancel.";
+      }
+      this.startEditProcess(args);
+      return null;
+    },
+
+    status: function (args) {
+      if (this.isLoggedIn) {
+        return `Logged in as: ${this.currentUser.username} (${this.currentUser.email})`;
+      } else {
+        return "Not logged in (guest session)";
+      }
     },
   };
 
@@ -339,11 +409,17 @@ class TissueTerminal {
       clear: "Clear the terminal screen",
       help: "Show this help message",
       info: "Display system information",
-      version: "Show version information",
+      version: "Show current version of tissue",
       date: "Display current date and time",
       echo: "Echo the given text",
-      whoami: "Display current user",
+      whoami: "Display current username",
       exit: "Exit the terminal",
+      signup: "Create a new user account",
+      login: "Sign in to your account",
+      logout: "Sign out from your account",
+      profile: "View your profile information",
+      edit: "Edit profile information",
+      status: "Show current login status",
     };
     return descriptions[commandName] || "No description available";
   }
@@ -390,11 +466,6 @@ class TissueTerminal {
     // 시스템 정보 출력
     this.displaySystemInfo();
 
-    // 도움말 메시지
-    //    this.addHistoryLine("Type 'help' to see the list of commands.", "help-msg");
-    //    this.addHistoryLine("", "");
-    //    this.addHistoryLine("\n", "");
-
     // 텍스트를 여러 부분으로 나누어서 처리
     const helpLine = document.createElement("div");
     helpLine.className = "help-msg";
@@ -402,8 +473,8 @@ class TissueTerminal {
       "Type <span class=\"command-highlight\">'help'</span> to see the list of available commands.";
     this.terminalHistory.appendChild(helpLine);
 
-    this.addHistoryLine("", ""); // 빈 줄
-    this.addHistoryLine("\n", ""); // 빈 줄
+    this.addHistoryLine("", "");
+    this.addHistoryLine("\n", "");
 
     this.scrollToBottom();
   }
@@ -489,10 +560,6 @@ class TissueTerminal {
     this.terminalHistory.appendChild(line);
     this.scrollToBottom();
   }
-
-  /**
-   * 유틸리티 메서드들
-   */
 
   /**
    * 히스토리 라인 추가
@@ -581,28 +648,34 @@ class TissueTerminal {
     }
   }
 
-  // /**
-  //  * 입력 표시 업데이트
-  //  */
-  // updateInputDisplay() {
-  //   if (!this.currentInput) return;
-  //   this.currentInput.textContent = this.currentInputText;
-  //   this.refreshCursor();
-  // }
-
   /**
-   * 입력 표시 업데이트
+   * 입력 표시 업데이트 (수정: 모든 특별 모드 마스킹 처리)
    */
   updateInputDisplay() {
     if (!this.currentInput) return;
 
-    // 회원가입 중이고 민감한 필드인 경우 마스킹 처리
-    if (this.signupInProgress && this.currentFieldInfo?.sensitive) {
+    // 특별 모드 중이고 민감한 필드인 경우 마스킹 처리
+    if (
+      (this.signupInProgress || this.loginInProgress || this.editInProgress) &&
+      this.currentFieldInfo?.sensitive
+    ) {
       this.updateMaskedInputDisplay();
     } else {
       this.currentInput.textContent = this.currentInputText;
       this.refreshCursor();
     }
+  }
+
+  /**
+   * 패스워드 필드용 마스킹된 입력 표시 업데이트
+   */
+  updateMaskedInputDisplay() {
+    if (!this.currentInput) return;
+
+    // 실제 입력 텍스트 길이만큼 * 표시
+    const maskedText = "*".repeat(this.currentInputText.length);
+    this.currentInput.textContent = maskedText;
+    this.refreshCursor();
   }
 
   /**
@@ -673,10 +746,19 @@ class TissueTerminal {
   cleanup() {
     console.log("TISSUE Terminal: Cleaning up...");
     this.isDestroyed = true;
-    // 이벤트 리스너들은 페이지 언로드 시 자동으로 정리됨
+
+    // 이메일 폴링 정리
+    if (this.emailPollingInterval) {
+      clearInterval(this.emailPollingInterval);
+      this.emailPollingInterval = null;
+    }
   }
 
-  // 회원가입 필드 정의 (기존 SignupFormRequest와 동일한 구조)
+  // ========== 회원가입 관련 메서드들 ==========
+
+  /**
+   * 회원가입 필드 정의
+   */
   getSignupFields() {
     return [
       {
@@ -697,8 +779,8 @@ class TissueTerminal {
       },
       {
         name: "username",
-        prompt: "Display Name",
-        description: "Your display name (2-30 characters)",
+        prompt: "Username",
+        description: "Your username (2-30 characters)",
         required: true,
         validation: this.validateUsername.bind(this),
       },
@@ -707,7 +789,7 @@ class TissueTerminal {
         prompt: "Password",
         description: "At least 8 characters with letters, numbers, and symbols",
         required: true,
-        sensitive: true, // 입력 시 마스킹 처리
+        sensitive: true,
         validation: this.validatePassword.bind(this),
       },
       {
@@ -719,16 +801,9 @@ class TissueTerminal {
         validation: this.validatePasswordConfirm.bind(this),
       },
       {
-        name: "firstName",
-        prompt: "First Name",
+        name: "name",
+        prompt: "Name",
         description: "Your given name (optional)",
-        required: false,
-        validation: this.validateName.bind(this),
-      },
-      {
-        name: "lastName",
-        prompt: "Last Name",
-        description: "Your family name (optional)",
         required: false,
         validation: this.validateName.bind(this),
       },
@@ -746,13 +821,6 @@ class TissueTerminal {
         required: false,
         validation: this.validateJobType.bind(this),
       },
-      {
-        name: "biography",
-        prompt: "Biography",
-        description: "Brief description about yourself (optional)",
-        required: false,
-        validation: this.validateBiography.bind(this),
-      },
     ];
   }
 
@@ -764,7 +832,7 @@ class TissueTerminal {
     this.signupStep = 0;
     this.signupData = {};
 
-    // 환영 메시지 출력
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("=".repeat(60), "info-msg");
     this.addHistoryLine(
       "              TISSUE Registration Wizard",
@@ -786,7 +854,6 @@ class TissueTerminal {
     );
     this.addHistoryLine("", "");
 
-    // 첫 번째 필드 입력 시작
     setTimeout(() => this.promptNextField(), 1000);
   }
 
@@ -796,7 +863,6 @@ class TissueTerminal {
   promptNextField() {
     const fields = this.getSignupFields();
 
-    // 모든 필드를 완료했는지 확인
     if (this.signupStep >= fields.length) {
       this.completeSignupProcess();
       return;
@@ -865,34 +931,9 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = `${field.prompt}: `;
-      promptElement.style.color = "#FFD93D"; // 회원가입 중에는 노란색으로 표시
+      promptElement.style.color = "#FFD93D";
     }
   }
-
-  // /**
-  //  * 회원가입 중 키 입력 처리
-  //  */
-  // handleSignupKeyPress(event) {
-  //   const field = this.currentFieldInfo;
-  //   if (!field) return;
-
-  //   if (event.key === "Enter") {
-  //     this.processSignupInput();
-  //   } else if (event.key === "Backspace") {
-  //     this.handleBackspace();
-  //   } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
-  //     this.cancelSignupProcess();
-  //   } else if (event.key === "Tab" && field.name === "jobType") {
-  //     this.showJobTypeOptions();
-  //   } else if (
-  //     event.key.length === 1 &&
-  //     !event.ctrlKey &&
-  //     !event.altKey &&
-  //     !event.metaKey
-  //   ) {
-  //     this.addCharacterToInput(event.key);
-  //   }
-  // }
 
   /**
    * 회원가입 중 키 입력 처리
@@ -905,7 +946,6 @@ class TissueTerminal {
       this.processSignupInput();
     } else if (event.key === "Backspace") {
       this.handleBackspace();
-      // 패스워드 필드인 경우 마스킹된 화면 업데이트
       if (field.sensitive) {
         this.updateMaskedInputDisplay();
       }
@@ -920,23 +960,10 @@ class TissueTerminal {
       !event.metaKey
     ) {
       this.addCharacterToInput(event.key);
-      // 패스워드 필드인 경우 마스킹된 화면 업데이트
       if (field.sensitive) {
         this.updateMaskedInputDisplay();
       }
     }
-  }
-
-  /**
-   * 패스워드 필드용 마스킹된 입력 표시 업데이트
-   */
-  updateMaskedInputDisplay() {
-    if (!this.currentInput) return;
-
-    // 실제 입력 텍스트 길이만큼 * 표시
-    const maskedText = "*".repeat(this.currentInputText.length);
-    this.currentInput.textContent = maskedText;
-    this.refreshCursor();
   }
 
   /**
@@ -1009,188 +1036,9 @@ class TissueTerminal {
     this.signupStep++;
     this.currentInputText = "";
     this.updateInputDisplay();
-
-    // 프롬프트를 기본 상태로 복원
     this.resetPromptAfterSignup();
-
     setTimeout(() => this.promptNextField(), 500);
   }
-
-  /**
-   * Login ID 검증
-   */
-  async validateLoginId(value) {
-    // 기본 형식 검증
-    if (!/^[a-zA-Z0-9_]{4,20}$/.test(value)) {
-      return {
-        valid: false,
-        error:
-          "Login ID must be 4-20 characters (letters, numbers, underscore only)",
-      };
-    }
-
-    try {
-      const response = await fetch(
-        `/api/v1/members/check-loginid?loginId=${encodeURIComponent(value)}`
-      );
-
-      if (response.status === 200) {
-        return { valid: true };
-      } else if (response.status === 409) {
-        const result = await response.json();
-        return {
-          valid: false,
-          error: result.message || "This Login ID is already taken",
-        };
-      } else {
-        console.warn("Unexpected response status:", response.status);
-        return {
-          valid: false,
-          error: "Unable to verify Login ID availability",
-        };
-      }
-    } catch (error) {
-      console.warn("Failed to check Login ID availability:", error);
-      return {
-        valid: false,
-        error: "Network error. Please try again later.",
-      };
-    }
-  }
-
-  /**
-   * 이메일 검증
-   */
-  async validateEmail(value) {
-    // 기본 이메일 형식 검증
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return {
-        valid: false,
-        error: "Please enter a valid email address",
-      };
-    }
-
-    try {
-      const response = await fetch(
-        `/api/v1/members/check-email?email=${encodeURIComponent(value)}`
-      );
-
-      if (response.status === 200) {
-        return { valid: true };
-      } else if (response.status === 409) {
-        const result = await response.json();
-        return {
-          valid: false,
-          error: result.message || "This email is already registered",
-        };
-      } else {
-        console.warn("Unexpected response status:", response.status);
-        return {
-          valid: false,
-          error: "Unable to verify email availability",
-        };
-      }
-    } catch (error) {
-      console.warn("Failed to check email availability:", error);
-      return {
-        valid: false,
-        error: "Network error. Please try again later.",
-      };
-    }
-  }
-
-  /**
-   * 패스워드 검증
-   */
-  async validatePassword(value) {
-    if (value.length < 8) {
-      return {
-        valid: false,
-        error: "Password must be at least 8 characters long",
-      };
-    }
-
-    // 복잡성 검증: 영문자, 숫자, 특수문자 포함
-    const hasLetter = /[a-zA-Z]/.test(value);
-    const hasNumber = /\d/.test(value);
-    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-
-    if (!hasLetter || !hasNumber || !hasSymbol) {
-      return {
-        valid: false,
-        error: "Password must contain letters, numbers, and symbols",
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /**
-   * 패스워드 확인 검증
-   */
-  async validatePasswordConfirm(value) {
-    if (value !== this.signupData.password) {
-      return {
-        valid: false,
-        error: "Passwords do not match",
-      };
-    }
-    return { valid: true };
-  }
-
-  /**
-   * 사용자명 검증
-   */
-  async validateUsername(value) {
-    // 길이 검증 (4-20자)
-    if (value.length < 4 || value.length > 20) {
-      return {
-        valid: false,
-        error: "Username must be between 4 and 20 characters",
-      };
-    }
-
-    // 패턴 검증: 첫 글자는 문자, 나머지는 문자 또는 숫자
-    // JavaScript에서 \p{L}과 \p{N}은 u 플래그와 함께 사용
-    if (!/^[\p{L}][\p{L}\p{N}]*$/u.test(value)) {
-      return {
-        valid: false,
-        error:
-          "Username must start with a letter and contain only letters and numbers",
-      };
-    }
-
-    // 서버에서 중복 검사
-    try {
-      const response = await fetch(
-        `/api/v1/members/check-username?username=${encodeURIComponent(value)}`
-      );
-
-      if (response.status === 200) {
-        return { valid: true };
-      } else if (response.status === 409) {
-        const result = await response.json();
-        return {
-          valid: false,
-          error: result.message || "This username is already taken",
-        };
-      } else {
-        console.warn("Unexpected response status:", response.status);
-        return {
-          valid: false,
-          error: "Unable to verify username availability",
-        };
-      }
-    } catch (error) {
-      console.warn("Failed to check username availability:", error);
-      return {
-        valid: false,
-        error: "Network error. Please try again later.",
-      };
-    }
-  }
-
-  // TODO: birthdate, name, job에 대한 검증도 필요
 
   /**
    * 회원가입 중 이메일 인증 처리
@@ -1236,8 +1084,6 @@ class TissueTerminal {
           errorData?.message || "Failed to send verification email";
         this.addHistoryLine(`✗ ${errorMessage}`, "error-msg");
         this.addHistoryLine("", "");
-
-        // 이메일 재입력 요청
         this.currentInputText = "";
         this.updateInputDisplay();
       }
@@ -1317,7 +1163,6 @@ class TissueTerminal {
     this.addHistoryLine("", "");
 
     try {
-      // 서버로 회원가입 데이터 전송
       const signupData = this.prepareSignupData();
 
       const response = await fetch("/api/v1/members", {
@@ -1329,7 +1174,6 @@ class TissueTerminal {
       if (response.ok) {
         const result = await response.json();
 
-        // 성공 메시지 출력
         const memberData = {
           username: this.signupData.username,
           email: this.signupData.email,
@@ -1337,8 +1181,6 @@ class TissueTerminal {
         };
 
         await this.displaySuccessMessage(memberData);
-
-        // 상태 초기화
         this.resetSignupState();
       } else {
         const errorData = await response.json().catch(() => null);
@@ -1363,7 +1205,6 @@ class TissueTerminal {
    * 회원가입 데이터 준비
    */
   prepareSignupData() {
-    // confirmPassword는 서버로 전송하지 않음
     const { confirmPassword, ...dataToSend } = this.signupData;
 
     return {
@@ -1371,11 +1212,9 @@ class TissueTerminal {
       email: dataToSend.email,
       username: dataToSend.username,
       password: dataToSend.password,
-      firstName: dataToSend.firstName || "",
-      lastName: dataToSend.lastName || "",
+      name: dataToSend.name || "",
       birthDate: dataToSend.birthDate || null,
       jobType: dataToSend.jobType || "ETC",
-      biography: dataToSend.biography || "",
     };
   }
 
@@ -1415,7 +1254,6 @@ class TissueTerminal {
       this.emailPollingInterval = null;
     }
 
-    // 프롬프트 복원
     this.resetPromptAfterSignup();
   }
 
@@ -1426,7 +1264,7 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF"; // 기본 파란색으로 복원
+      promptElement.style.color = "#00AAFF";
     }
 
     this.currentInputText = "";
@@ -1441,12 +1279,11 @@ class TissueTerminal {
     this.addHistoryLine("^C", "system-msg");
     this.addHistoryLine("Registration cancelled by user", "warning-msg");
     this.addHistoryLine("", "");
-
     this.resetSignupState();
   }
 
   /**
-   * 회원가입 명령어를 히스토리에 추가 (일반 명령어와 구분)
+   * 회원가입 명령어를 히스토리에 추가
    */
   addCommandToSignupHistory(command) {
     const line = document.createElement("div");
@@ -1455,11 +1292,11 @@ class TissueTerminal {
     const prompt = document.createElement("span");
     prompt.className = "history-prompt";
     prompt.textContent = this.currentFieldInfo.prompt + ": ";
-    prompt.style.color = "#FFD93D"; // 회원가입 프롬프트는 노란색
+    prompt.style.color = "#FFD93D";
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";
-    commandSpan.textContent = command.split(": ")[1] || ""; // 프롬프트 부분 제거하고 값만 표시
+    commandSpan.textContent = command.split(": ")[1] || "";
 
     line.appendChild(prompt);
     line.appendChild(commandSpan);
@@ -1497,7 +1334,7 @@ class TissueTerminal {
 
     this.addHistoryLine("", "");
     this.addHistoryLine(
-      'You can try again by typing "signup" command.',
+      'You can try again by using the "signup" command.',
       "system-msg"
     );
     this.addHistoryLine("", "");
@@ -1505,35 +1342,177 @@ class TissueTerminal {
     this.resetSignupState();
   }
 
+  // ========== 검증 함수들 ==========
+
   /**
-   * 진행률 계산 및 표시
+   * Login ID 검증
    */
-  calculateProgress() {
-    const fields = this.getSignupFields();
-    const completedFields = Object.keys(this.signupData).length;
-    return Math.round((completedFields / fields.length) * 100);
+  async validateLoginId(value) {
+    if (!/^[a-zA-Z0-9_]{4,20}$/.test(value)) {
+      return {
+        valid: false,
+        error:
+          "Login ID must be 4-20 characters (letters, numbers, underscore only)",
+      };
+    }
+
+    try {
+      const response = await fetch(
+        `/api/v1/members/check-loginid?loginId=${encodeURIComponent(value)}`
+      );
+
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
+        const result = await response.json();
+        return {
+          valid: false,
+          error: result.message || "This Login ID is already taken",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify Login ID availability",
+        };
+      }
+    } catch (error) {
+      console.warn("Failed to check Login ID availability:", error);
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
+    }
   }
 
   /**
-   * 회원가입 진행 상황 요약 표시 (중간에 확인용)
+   * 이메일 검증
    */
-  showSignupSummary() {
-    this.addHistoryLine("", "");
-    this.addHistoryLine("Registration Progress Summary:", "info-msg");
-    this.addHistoryLine("─".repeat(40), "system-msg");
+  async validateEmail(value) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      return {
+        valid: false,
+        error: "Please enter a valid email address",
+      };
+    }
 
-    Object.entries(this.signupData).forEach(([key, value]) => {
-      const displayValue =
-        key === "password" || key === "confirmPassword" ? "[HIDDEN]" : value;
-      this.addHistoryLine(`  ${key}: ${displayValue}`, "system-msg");
-    });
+    try {
+      const response = await fetch(
+        `/api/v1/members/check-email?email=${encodeURIComponent(value)}`
+      );
 
-    this.addHistoryLine("─".repeat(40), "system-msg");
-    this.addHistoryLine("", "");
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
+        const result = await response.json();
+        return {
+          valid: false,
+          error: result.message || "This email is already registered",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify email availability",
+        };
+      }
+    } catch (error) {
+      console.warn("Failed to check email availability:", error);
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
+    }
   }
 
   /**
-   * 이름 검증 (firstName, lastName)
+   * 패스워드 검증
+   */
+  async validatePassword(value) {
+    if (value.length < 8) {
+      return {
+        valid: false,
+        error: "Password must be at least 8 characters long",
+      };
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+    if (!hasLetter || !hasNumber || !hasSymbol) {
+      return {
+        valid: false,
+        error: "Password must contain letters, numbers, and symbols",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * 패스워드 확인 검증
+   */
+  async validatePasswordConfirm(value) {
+    if (value !== this.signupData.password) {
+      return {
+        valid: false,
+        error: "Passwords do not match",
+      };
+    }
+    return { valid: true };
+  }
+
+  /**
+   * 사용자명 검증
+   */
+  async validateUsername(value) {
+    if (value.length < 4 || value.length > 20) {
+      return {
+        valid: false,
+        error: "Username must be between 4 and 20 characters",
+      };
+    }
+
+    if (!/^[\p{L}][\p{L}\p{N}]*$/u.test(value)) {
+      return {
+        valid: false,
+        error:
+          "Username must start with a letter and contain only letters and numbers",
+      };
+    }
+
+    try {
+      const response = await fetch(
+        `/api/v1/members/check-username?username=${encodeURIComponent(value)}`
+      );
+
+      if (response.status === 200) {
+        return { valid: true };
+      } else if (response.status === 409) {
+        const result = await response.json();
+        return {
+          valid: false,
+          error: result.message || "This username is already taken",
+        };
+      } else {
+        console.warn("Unexpected response status:", response.status);
+        return {
+          valid: false,
+          error: "Unable to verify username availability",
+        };
+      }
+    } catch (error) {
+      console.warn("Failed to check username availability:", error);
+      return {
+        valid: false,
+        error: "Network error. Please try again later.",
+      };
+    }
+  }
+
+  /**
+   * 이름 검증
    */
   async validateName(value) {
     if (value.length > 50) {
@@ -1543,8 +1522,7 @@ class TissueTerminal {
       };
     }
 
-    // 특수문자 제한 (선택적)
-    if (!/^[\p{L}\s'-]*$/u.test(value)) {
+    if (!/^[\p{L}]+( [\p{L}]+)*$/u.test(value)) {
       return {
         valid: false,
         error: "Name contains invalid characters",
@@ -1582,7 +1560,6 @@ class TissueTerminal {
       };
     }
 
-    // 150세 제한
     const minDate = new Date(
       now.getFullYear() - 150,
       now.getMonth(),
@@ -1605,15 +1582,13 @@ class TissueTerminal {
     const validJobTypes = [
       "DEVELOPER",
       "DESIGNER",
-      "DEV-OPS",
+      "DEVOPS",
       "MANAGER",
       "RESEARCHER",
       "ETC",
-      // "STUDENT"
     ];
 
     if (value.toLowerCase() === "list") {
-      // 옵션 목록 표시
       this.showJobTypeOptions();
       return {
         valid: false,
@@ -1633,25 +1608,10 @@ class TissueTerminal {
   }
 
   /**
-   * 자기소개 검증
-   */
-  async validateBiography(value) {
-    if (value.length > 500) {
-      return {
-        valid: false,
-        error: "Biography must be 500 characters or less",
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /**
    * 직업 옵션 표시
    */
   showJobTypeOptions() {
     this.addHistoryLine("Available job types:", "info-msg");
-    // this.addHistoryLine("  STUDENT      - Student", "system-msg");
     this.addHistoryLine("  DEVELOPER     - Software Developer", "system-msg");
     this.addHistoryLine("  DEVOPS        - Devops Engineer", "system-msg");
     this.addHistoryLine("  DATA_ANALYST  - Data Analyst", "system-msg");
@@ -1661,7 +1621,1113 @@ class TissueTerminal {
     this.addHistoryLine("  ETC           - Other", "system-msg");
     this.addHistoryLine("", "");
   }
+
+  // ========== 로그인 관련 메서드들 ==========
+
+  /**
+   * 로그인 프로세스 시작
+   */
+  startLoginProcess() {
+    this.loginInProgress = true;
+    this.loginStep = 0;
+    this.loginData = {};
+
+    this.addHistoryLine("=".repeat(50), "info-msg");
+    this.addHistoryLine("             TISSUE Login", "success-msg");
+    this.addHistoryLine("=".repeat(50), "info-msg");
+    this.addHistoryLine("", "");
+    this.addHistoryLine("Please enter your login credentials.", "system-msg");
+    this.addHistoryLine("Use Ctrl+C to cancel login process.", "system-msg");
+    this.addHistoryLine("", "");
+
+    setTimeout(() => this.promptLoginField(), 500);
+  }
+
+  /**
+   * 로그인 필드 입력 요청
+   */
+  promptLoginField() {
+    const fields = [
+      { name: "identifier", prompt: "Login ID(or Email)", sensitive: false },
+      { name: "password", prompt: "Password", sensitive: true },
+    ];
+
+    if (this.loginStep >= fields.length) {
+      this.processLogin();
+      return;
+    }
+
+    const field = fields[this.loginStep];
+    this.currentFieldInfo = field;
+
+    this.addHistoryLine(`${field.prompt}:`, "info-msg");
+    this.updatePromptForLogin(field);
+  }
+
+  /**
+   * 로그인용 프롬프트 업데이트
+   */
+  updatePromptForLogin(field) {
+    const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
+    if (promptElement) {
+      promptElement.textContent = `${field.prompt}: `;
+      promptElement.style.color = "#00FF00";
+    }
+  }
+
+  /**
+   * 로그인 중 키 입력 처리
+   */
+  handleLoginKeyPress(event) {
+    const field = this.currentFieldInfo;
+    if (!field) return;
+
+    if (event.key === "Enter") {
+      this.processLoginInput();
+    } else if (event.key === "Backspace") {
+      this.handleBackspace();
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
+    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+      this.cancelLoginProcess();
+    } else if (
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
+      this.addCharacterToInput(event.key);
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
+    }
+  }
+
+  /**
+   * 로그인 입력 처리
+   */
+  async processLoginInput() {
+    const field = this.currentFieldInfo;
+    const value = this.currentInputText.trim();
+
+    // 입력 내용을 히스토리에 표시
+    const displayValue = field.sensitive
+      ? "*".repeat(this.currentInputText.length)
+      : value;
+    this.addCommandToLoginHistory(field.prompt + ": " + displayValue);
+
+    if (!value) {
+      this.addHistoryLine("✗ This field is required", "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      return;
+    }
+
+    // 데이터 저장
+    this.loginData[field.name] = value;
+
+    // 다음 단계로
+    this.loginStep++;
+    this.currentInputText = "";
+    this.updateInputDisplay();
+
+    setTimeout(() => this.promptLoginField(), 300);
+  }
+
+  /**
+   * 로그인 처리
+   */
+  async processLogin() {
+    this.addHistoryLine("", "");
+    this.addHistoryLine("🔐 Authenticating...", "info-msg");
+
+    try {
+      const response = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.loginData),
+      });
+
+      if (response.status === 200) {
+        const result = await response.json();
+
+        this.isLoggedIn = true;
+        this.currentUser = result.data;
+        this.promptPrefix = `${this.currentUser.username}@tissue:~$ `;
+
+        this.addHistoryLine("✓ Login successful!", "success-msg");
+        this.addHistoryLine(
+          `Welcome back, ${this.currentUser.username}!`,
+          "system-msg"
+        );
+        this.addHistoryLine("", "");
+
+        this.resetLoginState();
+      } else if (response.status === 401) {
+        this.addHistoryLine("✗ Invalid credentials", "error-msg");
+        this.addHistoryLine(
+          "Please check your login ID (or email) and password.",
+          "system-msg"
+        );
+        this.addHistoryLine("", "");
+        this.resetLoginState();
+      } else {
+        this.addHistoryLine("✗ Login failed", "error-msg");
+        this.addHistoryLine("Please try again later.", "system-msg");
+        this.addHistoryLine("", "");
+        this.resetLoginState();
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      this.addHistoryLine("✗ Network error occurred", "error-msg");
+      this.addHistoryLine("Please check your connection.", "system-msg");
+      this.addHistoryLine("", "");
+      this.resetLoginState();
+    }
+  }
+
+  /**
+   * 로그아웃 처리
+   */
+  async performLogout() {
+    this.addHistoryLine("🔓 Logging out...", "info-msg");
+
+    try {
+      const response = await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      this.isLoggedIn = false;
+      this.currentUser = null;
+      this.promptPrefix = "guest@tissue:~$ ";
+
+      this.addHistoryLine("✓ Logged out successfully", "success-msg");
+      this.addHistoryLine("Thank you for using TISSUE!", "system-msg");
+      this.addHistoryLine("", "");
+
+      this.resetPromptAfterLogout();
+    } catch (error) {
+      console.error("Logout error:", error);
+      this.isLoggedIn = false;
+      this.currentUser = null;
+      this.promptPrefix = "guest@tissue:~$ ";
+      this.resetPromptAfterLogout();
+    }
+  }
+
+  /**
+   * 사용자 프로필 표시
+   */
+  async displayUserProfile() {
+    this.addHistoryLine("📋 Loading profile information...", "info-msg");
+
+    try {
+      const response = await fetch("/api/v1/members", {
+        credentials: "include",
+      });
+
+      if (response.status === 200) {
+        const result = await response.json();
+        const profile = result.data;
+
+        this.addHistoryLine("", "");
+        this.addHistoryLine("=".repeat(60), "info-msg");
+        this.addHistoryLine("                    USER PROFILE", "success-msg");
+        this.addHistoryLine("=".repeat(60), "info-msg");
+        this.addHistoryLine("", "");
+
+        // 프로필 정보 표시
+        const profileInfo = [
+          { label: "Login ID:", value: profile.loginId || "N/A" },
+          { label: "Username:", value: profile.username || "N/A" },
+          { label: "Email:", value: profile.email || "N/A" },
+          { label: "Name:", value: profile.name || "Not set" },
+          { label: "Birth Date:", value: profile.birthDate || "Not set" },
+          { label: "Job Type:", value: profile.jobType || "Not set" },
+        ];
+
+        profileInfo.forEach((item) => {
+          const line = document.createElement("div");
+          line.className = "system-info-line";
+
+          const label = document.createElement("span");
+          label.className = "info-label";
+          label.textContent = item.label.padEnd(15);
+
+          const value = document.createElement("span");
+          value.className = "info-value";
+          value.textContent = item.value;
+
+          line.appendChild(label);
+          line.appendChild(value);
+          this.terminalHistory.appendChild(line);
+        });
+
+        this.addHistoryLine("", "");
+        this.addHistoryLine(
+          'Use "edit [field]" to modify profile information.',
+          "system-msg"
+        );
+        this.addHistoryLine(
+          "Available fields: username, email, name, birthDate, jobType, password",
+          "system-msg"
+        );
+        this.addHistoryLine("", "");
+
+        this.scrollToBottom();
+      } else if (response.status === 401) {
+        this.addHistoryLine("✗ Session expired", "error-msg");
+        this.addHistoryLine("Please login again.", "system-msg");
+        this.addHistoryLine("", "");
+        this.handleSessionExpired();
+      } else {
+        this.addHistoryLine("✗ Failed to load profile", "error-msg");
+        this.addHistoryLine("Please try again later.", "system-msg");
+        this.addHistoryLine("", "");
+      }
+    } catch (error) {
+      console.error("Profile loading failed:", error);
+      this.addHistoryLine("✗ Network error occurred", "error-msg");
+      this.addHistoryLine("", "");
+    }
+  }
+
+  // ========== 프로필 수정 관련 메서드들 (보안 강화) ==========
+
+  /**
+   * 프로필 수정 프로세스 시작 (보안 강화된 버전)
+   */
+  startEditProcess(args) {
+    const field = args[0];
+
+    if (!field) {
+      this.addHistoryLine("Usage: edit [field]", "error-msg");
+      this.addHistoryLine(
+        "Available fields: username, email, name, birthDate, jobType, password",
+        "system-msg"
+      );
+      this.addHistoryLine("", "");
+      return;
+    }
+
+    const editableFields = {
+      username: {
+        prompt: "New Username",
+        description: "4-20 characters (letters and numbers only)",
+        validation: this.validateUsername.bind(this),
+        endpoint: "/api/v1/members/username",
+        requestKey: "newUsername",
+        requiresCurrentPassword: true, // 민감한 필드는 현재 패스워드 필요
+      },
+      email: {
+        prompt: "New Email Address",
+        description: "Valid email address (verification required)",
+        validation: this.validateEmail.bind(this),
+        endpoint: "/api/v1/members/email",
+        requestKey: "newEmail",
+        requiresCurrentPassword: true, // 민감한 필드는 현재 패스워드 필요
+        requiresVerification: true,
+      },
+      name: {
+        prompt: "New Name",
+        description: "Your display name (optional field)",
+        validation: this.validateName.bind(this),
+        endpoint: "/api/v1/members",
+        requestKey: "name",
+        requiresCurrentPassword: false, // 일반 필드는 패스워드 불필요
+      },
+      birthDate: {
+        prompt: "Birth Date",
+        description: "YYYY-MM-DD format (optional field)",
+        validation: this.validateBirthDate.bind(this),
+        endpoint: "/api/v1/members",
+        requestKey: "birthDate",
+        requiresCurrentPassword: false, // 일반 필드는 패스워드 불필요
+      },
+      jobType: {
+        prompt: "Job Type",
+        description: 'Your profession (type "list" to see options)',
+        validation: this.validateJobType.bind(this),
+        endpoint: "/api/v1/members",
+        requestKey: "jobType",
+        requiresCurrentPassword: false, // 일반 필드는 패스워드 불필요
+      },
+      password: {
+        prompt: "New Password",
+        description: "At least 8 characters with letters, numbers, and symbols",
+        validation: this.validateNewPassword.bind(this),
+        endpoint: "/api/v1/members/password",
+        requestKey: "newPassword",
+        requiresCurrentPassword: true,
+        requiresConfirmation: true,
+        sensitive: true,
+      },
+    };
+
+    if (!editableFields[field]) {
+      this.addHistoryLine(`✗ Unknown field: ${field}`, "error-msg");
+      this.addHistoryLine(
+        "Available fields: " + Object.keys(editableFields).join(", "),
+        "system-msg"
+      );
+      this.addHistoryLine("", "");
+      return;
+    }
+
+    this.startFieldEdit(field, editableFields[field]);
+  }
+
+  /**
+   * 필드 편집 시작
+   */
+  startFieldEdit(field, fieldInfo) {
+    this.editInProgress = true;
+    this.editData = { field: field, fieldInfo: fieldInfo };
+    this.editFieldInfo = fieldInfo;
+
+    this.addHistoryLine("✏️  Profile Edit Mode", "info-msg");
+    this.addHistoryLine(`Editing: ${field}`, "system-msg");
+    this.addHistoryLine(`${fieldInfo.description}`, "system-msg");
+    this.addHistoryLine("Use Ctrl+C to cancel editing.", "system-msg");
+    this.addHistoryLine("", "");
+
+    if (field === "jobType") {
+      this.showJobTypeOptions();
+    }
+
+    // 현재 패스워드가 필요한 필드인 경우
+    if (fieldInfo.requiresCurrentPassword) {
+      this.editData.step = "current_password";
+      this.currentFieldInfo = {
+        prompt: "Current Password",
+        sensitive: true,
+      };
+      this.addHistoryLine(
+        "First, please enter your current password:",
+        "info-msg"
+      );
+    } else {
+      // 일반 필드는 바로 입력 시작
+      this.editData.step = "field_input";
+      this.currentFieldInfo = fieldInfo;
+    }
+
+    this.currentInputText = "";
+    this.updateInputDisplay();
+    this.updatePromptForEdit();
+  }
+
+  /**
+   * 수정용 프롬프트 업데이트
+   */
+  updatePromptForEdit() {
+    const promptElement = this.currentPrompt?.querySelector(".prompt-prefix");
+    if (promptElement && this.currentFieldInfo) {
+      promptElement.textContent = `${this.currentFieldInfo.prompt}: `;
+      promptElement.style.color = "#FF6B6B"; // 수정 중에는 빨간색
+    }
+  }
+
+  /**
+   * 수정 중 키 입력 처리
+   */
+  handleEditKeyPress(event) {
+    const field = this.currentFieldInfo;
+    if (!field) return;
+
+    if (event.key === "Enter") {
+      this.processEditInput();
+    } else if (event.key === "Backspace") {
+      this.handleBackspace();
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
+    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+      this.cancelEditProcess();
+    } else if (event.key === "Tab" && this.editData.field === "jobType") {
+      this.showJobTypeOptions();
+    } else if (
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
+      this.addCharacterToInput(event.key);
+      if (field.sensitive) {
+        this.updateMaskedInputDisplay();
+      }
+    }
+  }
+
+  /**
+   * 프로필 수정 처리 (보안 강화된 버전)
+   */
+  async processEditInput() {
+    const value = this.currentInputText.trim();
+    const step = this.editData.step;
+
+    if (!value) {
+      this.addHistoryLine("✗ Value cannot be empty", "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      return;
+    }
+
+    // 입력 값을 히스토리에 표시
+    const displayValue = this.currentFieldInfo?.sensitive
+      ? "*".repeat(this.currentInputText.length)
+      : value;
+
+    this.addCommandToEditHistory(
+      `${this.currentFieldInfo?.prompt || "Input"}: ${displayValue}`
+    );
+
+    try {
+      if (step === "current_password") {
+        await this.handleCurrentPasswordInput(value);
+      } else if (step === "new_password") {
+        await this.handleNewPasswordInput(value);
+      } else if (step === "confirm_password") {
+        await this.handleConfirmPasswordInput(value);
+      } else if (step === "field_input") {
+        await this.handleFieldInput(value);
+      } else {
+        console.warn(`Unknown edit step: ${step}`);
+        this.addHistoryLine("✗ Internal error: unknown edit step", "error-msg");
+        this.addHistoryLine("", "");
+        this.resetEditState();
+      }
+    } catch (error) {
+      console.error("Edit process failed:", error);
+      this.addHistoryLine("✗ Network error occurred", "error-msg");
+      this.addHistoryLine("", "");
+      this.resetEditState();
+    }
+  }
+
+  /**
+   * 현재 패스워드 입력 처리
+   */
+  async handleCurrentPasswordInput(currentPassword) {
+    // 민감한 필드들은 먼저 권한 획득 필요
+    if (this.editData.fieldInfo.requiresCurrentPassword) {
+      this.addHistoryLine("", "");
+      this.addHistoryLine(
+        "🔐 Verifying password and getting permission...",
+        "info-msg"
+      );
+
+      try {
+        // 1단계: 권한 획득
+        await this.requestUpdatePermission(currentPassword);
+
+        this.addHistoryLine("✓ Permission granted", "success-msg");
+        this.addHistoryLine("", "");
+
+        // 패스워드 변경인 경우: 현재 패스워드를 저장 (이중 검증용)
+        if (this.editData.field === "password") {
+          this.editData.currentPassword = currentPassword; // 나중에 API 요청 시 필요
+          this.editData.step = "new_password";
+          this.currentFieldInfo = {
+            prompt: "New Password",
+            sensitive: true,
+          };
+          this.addHistoryLine("Now enter your new password:", "info-msg");
+        } else {
+          // 다른 민감한 필드들은 해당 필드 입력으로
+          this.editData.step = "field_input";
+          this.currentFieldInfo = this.editData.fieldInfo;
+          this.addHistoryLine(
+            `Now enter your new ${this.editData.field}:`,
+            "info-msg"
+          );
+        }
+      } catch (error) {
+        this.addHistoryLine("✗ Incorrect current password", "error-msg");
+        this.addHistoryLine("", "");
+        this.resetEditState();
+        return;
+      }
+    } else {
+      // 일반 필드는 바로 필드 입력으로
+      this.editData.step = "field_input";
+      this.currentFieldInfo = this.editData.fieldInfo;
+      this.addHistoryLine("", "");
+      this.addHistoryLine(
+        `Now enter your new ${this.editData.field}:`,
+        "info-msg"
+      );
+    }
+
+    this.currentInputText = "";
+    this.updateInputDisplay();
+    this.updatePromptForEdit();
+  }
+
+  /**
+   * 권한 요청 (현재 패스워드로 세션에 권한 설정)
+   */
+  async requestUpdatePermission(currentPassword) {
+    const response = await fetch("/api/v1/members/permissions", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: currentPassword }),
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Permission request failed");
+    }
+  }
+
+  /**
+   * 현재 패스워드 검증 (서버로 즉시 전송)
+   */
+  async sendCurrentPasswordVerification(currentPassword) {
+    const response = await fetch("/api/v1/members/verify-password", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: currentPassword }),
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Password verification failed");
+    }
+
+    // 임시 토큰을 받아서 다음 요청에 사용
+    const result = await response.json();
+    this.editData.verificationToken = result.data?.token;
+  }
+
+  /**
+   * 새 패스워드 입력 처리
+   */
+  async handleNewPasswordInput(newPassword) {
+    // 검증 실행
+    const isValid = await this.editData.fieldInfo.validation(newPassword);
+    if (!isValid.valid) {
+      this.addHistoryLine(`✗ ${isValid.error}`, "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      return;
+    }
+
+    // 패스워드 확인이 필요한 경우
+    if (this.editData.fieldInfo.requiresConfirmation) {
+      this.editData.newPassword = newPassword;
+      this.editData.step = "confirm_password";
+      this.currentFieldInfo = {
+        prompt: "Confirm New Password",
+        sensitive: true,
+      };
+
+      this.addHistoryLine("", "");
+      this.addHistoryLine("Please confirm your new password:", "info-msg");
+
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      this.updatePromptForEdit();
+      return;
+    }
+
+    // 패스워드 업데이트 요청 (이중 검증: 세션 권한 + 현재 패스워드)
+    await this.sendUpdateRequest(
+      {
+        originalPassword: this.editData.currentPassword, // 실제 현재 패스워드 필요!
+        newPassword: newPassword,
+      },
+      this.editData.fieldInfo.endpoint
+    );
+  }
+
+  /**
+   * 패스워드 재입력 확인 처리
+   */
+  async handleConfirmPasswordInput(confirmPassword) {
+    if (confirmPassword !== this.editData.newPassword) {
+      this.addHistoryLine("✗ Passwords do not match", "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      return;
+    }
+
+    // 패스워드 업데이트 요청 (이중 검증: 세션 권한 + 현재 패스워드)
+    await this.sendUpdateRequest(
+      {
+        originalPassword: this.editData.currentPassword, // 실제 현재 패스워드 필요!
+        newPassword: this.editData.newPassword,
+      },
+      this.editData.fieldInfo.endpoint
+    );
+  }
+
+  /**
+   * 일반 필드 입력 처리
+   */
+  async handleFieldInput(value) {
+    const fieldInfo = this.editData.fieldInfo;
+    if (!fieldInfo) {
+      console.error("fieldInfo is missing in editData");
+      this.addHistoryLine(
+        "✗ Internal error: field information missing",
+        "error-msg"
+      );
+      this.resetEditState();
+      return;
+    }
+
+    try {
+      // 이메일의 경우 별도 처리
+      if (this.editData.field === "email") {
+        await this.handleEmailUpdate(value);
+        return;
+      }
+
+      const isValid = await fieldInfo.validation(value);
+      if (!isValid.valid) {
+        this.addHistoryLine(`✗ ${isValid.error}`, "error-msg");
+        this.addHistoryLine("", "");
+        this.currentInputText = "";
+        this.updateInputDisplay();
+        return;
+      }
+
+      // 업데이트 요청 데이터 준비
+      const updateData = {};
+      updateData[fieldInfo.requestKey] = value;
+
+      // 모든 업데이트는 세션 권한으로 처리 (별도 패스워드 불필요)
+      await this.sendUpdateRequest(updateData, fieldInfo.endpoint);
+    } catch (error) {
+      console.error("Field validation or update failed:", error);
+      this.addHistoryLine(`✗ Validation error: ${error.message}`, "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 이메일 업데이트 처리 (현재 패스워드와 함께)
+   */
+  async handleEmailUpdate(email) {
+    // 기본 이메일 형식 검증
+    const isValid = await this.editData.fieldInfo.validation(email);
+    if (!isValid.valid) {
+      this.addHistoryLine(`✗ ${isValid.error}`, "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+      return;
+    }
+
+    // 이메일 인증 요청 (세션 권한으로 처리)
+    this.addHistoryLine("", "");
+    this.addHistoryLine("📧 Sending verification email...", "info-msg");
+
+    try {
+      const response = await fetch(
+        "/api/v1/members/email-verification/request",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email }), // 패스워드 불필요, 세션 권한으로 처리
+        }
+      );
+
+      if (response.ok) {
+        this.addHistoryLine(
+          "✓ Verification email sent successfully!",
+          "success-msg"
+        );
+        this.addHistoryLine("", "");
+        this.addHistoryLine(
+          "⏳ Waiting for email verification...",
+          "warning-msg"
+        );
+        this.addHistoryLine(
+          "   Check your email and click the verification link",
+          "system-msg"
+        );
+
+        // 이메일 인증 대기
+        this.editData.pendingEmail = email;
+        this.startEmailPollingForEdit(email);
+      } else if (response.status === 403) {
+        this.addHistoryLine(
+          "✗ Permission expired or insufficient",
+          "error-msg"
+        );
+        this.addHistoryLine("Please try the edit command again.", "system-msg");
+        this.addHistoryLine("", "");
+        this.resetEditState();
+      } else {
+        const errorData = await response.json().catch(() => null);
+        this.addHistoryLine(
+          `✗ ${errorData?.message || "Failed to send verification email"}`,
+          "error-msg"
+        );
+        this.addHistoryLine("", "");
+        this.currentInputText = "";
+        this.updateInputDisplay();
+      }
+    } catch (error) {
+      console.error("Email verification request failed:", error);
+      this.addHistoryLine("✗ Network error occurred", "error-msg");
+      this.addHistoryLine("", "");
+      this.currentInputText = "";
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 편집 중 이메일 인증 폴링
+   */
+  startEmailPollingForEdit(email) {
+    if (this.emailPollingInterval) {
+      clearInterval(this.emailPollingInterval);
+    }
+
+    let attempts = 0;
+    const maxAttempts = 300; // 5분
+
+    this.emailPollingInterval = setInterval(async () => {
+      attempts++;
+
+      if (attempts >= maxAttempts) {
+        clearInterval(this.emailPollingInterval);
+        this.addHistoryLine("⏰ Email verification timeout", "warning-msg");
+        this.addHistoryLine("", "");
+        this.resetEditState();
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/v1/members/email-verification/status?email=${encodeURIComponent(
+            email
+          )}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.data === true) {
+            clearInterval(this.emailPollingInterval);
+            this.addHistoryLine(
+              "✅ Email verified successfully!",
+              "success-msg"
+            );
+            this.addHistoryLine("", "");
+
+            // 이메일 업데이트 요청 (세션 권한으로 처리)
+            await this.sendUpdateRequest(
+              { newEmail: this.editData.pendingEmail },
+              this.editData.fieldInfo.endpoint
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Email verification polling error:", error);
+      }
+    }, 1000);
+  }
+
+  /**
+   * 일반 업데이트 요청 전송
+   */
+  async sendUpdateRequest(data, endpoint) {
+    this.addHistoryLine("🔄 Updating profile...", "info-msg");
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        credentials: "include", // 세션 권한 체크
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data), // 패스워드 변경 시 originalPassword 포함
+      });
+
+      if (response.status === 200) {
+        this.addHistoryLine("✓ Profile updated successfully!", "success-msg");
+
+        // 필드별 성공 메시지
+        if (this.editData.field === "password") {
+          this.addHistoryLine("Password has been changed", "info-msg");
+          this.addHistoryLine(
+            "Please use your new password for future logins",
+            "system-msg"
+          );
+        } else {
+          const displayValue =
+            data[this.editData.fieldInfo.requestKey] || data.newEmail;
+          this.addHistoryLine(
+            `${this.editData.field}: ${displayValue}`,
+            "info-msg"
+          );
+        }
+
+        this.addHistoryLine("", "");
+        this.resetEditState();
+      } else if (response.status === 401) {
+        this.addHistoryLine("✗ Authentication failed", "error-msg");
+        this.addHistoryLine("Please login again.", "system-msg");
+        this.addHistoryLine("", "");
+        this.handleSessionExpired();
+      } else if (response.status === 403) {
+        // 세션 권한 또는 패스워드 검증 실패
+        const errorData = await response.json().catch(() => null);
+        if (errorData?.message?.includes("password")) {
+          this.addHistoryLine(
+            "✗ Current password verification failed",
+            "error-msg"
+          );
+          this.addHistoryLine(
+            "The current password you entered is incorrect.",
+            "system-msg"
+          );
+        } else {
+          this.addHistoryLine(
+            "✗ Permission expired or insufficient",
+            "error-msg"
+          );
+          this.addHistoryLine(
+            "Please try the edit command again.",
+            "system-msg"
+          );
+        }
+        this.addHistoryLine("", "");
+        this.resetEditState();
+      } else if (response.status === 409) {
+        const errorData = await response.json().catch(() => null);
+        this.addHistoryLine(
+          `✗ ${errorData?.message || "Value already in use"}`,
+          "error-msg"
+        );
+        this.addHistoryLine("", "");
+        this.currentInputText = "";
+        this.updateInputDisplay();
+      } else {
+        const errorData = await response.json().catch(() => null);
+        this.addHistoryLine(
+          `✗ Update failed: ${errorData?.message || "Unknown error"}`,
+          "error-msg"
+        );
+        this.addHistoryLine("Please try again later.", "system-msg");
+        this.addHistoryLine("", "");
+        this.resetEditState();
+      }
+    } catch (error) {
+      console.error("Update request failed:", error);
+      this.addHistoryLine("✗ Network error occurred", "error-msg");
+      this.addHistoryLine("", "");
+      this.resetEditState();
+    }
+  }
+
+  /**
+   * 새 패스워드 검증
+   */
+  async validateNewPassword(value) {
+    if (value.length < 8) {
+      return {
+        valid: false,
+        error: "Password must be at least 8 characters long",
+      };
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+    if (!hasLetter || !hasNumber || !hasSymbol) {
+      return {
+        valid: false,
+        error: "Password must contain letters, numbers, and symbols",
+      };
+    }
+
+    return { valid: true };
+  }
+
+  // ========== 특별 모드 키 입력 처리 ==========
+
+  /**
+   * 특별 모드 키 입력 처리
+   */
+  handleSpecialModeKeyPress(event) {
+    if (this.signupInProgress) {
+      this.handleSignupKeyPress(event);
+    } else if (this.loginInProgress) {
+      this.handleLoginKeyPress(event);
+    } else if (this.editInProgress) {
+      this.handleEditKeyPress(event);
+    }
+  }
+
+  // ========== 상태 초기화 및 정리 메서드들 ==========
+
+  /**
+   * 로그인 상태 초기화
+   */
+  resetLoginState() {
+    this.loginInProgress = false;
+    this.loginStep = 0;
+    this.loginData = {};
+    this.currentFieldInfo = null;
+    this.resetPromptAfterLogin();
+  }
+
+  /**
+   * 프로필 수정 상태 초기화
+   */
+  resetEditState() {
+    this.editInProgress = false;
+    this.editFieldInfo = null;
+    this.currentFieldInfo = null;
+
+    // 메모리에서 민감한 데이터 완전 제거
+    if (this.editData.currentPassword) {
+      // 메모리에서 완전히 제거
+      this.editData.currentPassword = null;
+      delete this.editData.currentPassword;
+    }
+    if (this.editData.newPassword) {
+      this.editData.newPassword = null;
+      delete this.editData.newPassword;
+    }
+
+    this.editData = {};
+
+    if (this.emailPollingInterval) {
+      clearInterval(this.emailPollingInterval);
+      this.emailPollingInterval = null;
+    }
+
+    this.resetPromptAfterEdit();
+  }
+
+  /**
+   * 프롬프트 복원 메서드들
+   */
+  resetPromptAfterLogin() {
+    const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
+    if (promptElement) {
+      promptElement.textContent = this.promptPrefix;
+      promptElement.style.color = "#00AAFF";
+    }
+    this.currentInputText = "";
+    this.updateInputDisplay();
+  }
+
+  resetPromptAfterEdit() {
+    const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
+    if (promptElement) {
+      promptElement.textContent = this.promptPrefix;
+      promptElement.style.color = "#00AAFF";
+    }
+    this.currentInputText = "";
+    this.updateInputDisplay();
+  }
+
+  resetPromptAfterLogout() {
+    const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
+    if (promptElement) {
+      promptElement.textContent = this.promptPrefix;
+      promptElement.style.color = "#00AAFF";
+    }
+  }
+
+  /**
+   * 취소 처리 메서드들
+   */
+  cancelLoginProcess() {
+    this.addHistoryLine("", "");
+    this.addHistoryLine("^C", "system-msg");
+    this.addHistoryLine("Login cancelled by user", "warning-msg");
+    this.addHistoryLine("", "");
+    this.resetLoginState();
+  }
+
+  cancelEditProcess() {
+    this.addHistoryLine("", "");
+    this.addHistoryLine("^C", "system-msg");
+    this.addHistoryLine("Profile editing cancelled", "warning-msg");
+    this.addHistoryLine("", "");
+    this.resetEditState();
+  }
+
+  /**
+   * 히스토리 추가 메서드들
+   */
+  addCommandToLoginHistory(command) {
+    const line = document.createElement("div");
+    line.className = "history-line";
+
+    const prompt = document.createElement("span");
+    prompt.className = "history-prompt";
+    prompt.textContent = this.currentFieldInfo.prompt + ": ";
+    prompt.style.color = "#00FF00";
+
+    const commandSpan = document.createElement("span");
+    commandSpan.className = "history-command";
+    commandSpan.textContent = command.split(": ")[1] || "";
+
+    line.appendChild(prompt);
+    line.appendChild(commandSpan);
+    this.terminalHistory.appendChild(line);
+    this.scrollToBottom();
+  }
+
+  addCommandToEditHistory(command) {
+    const line = document.createElement("div");
+    line.className = "history-line";
+
+    const prompt = document.createElement("span");
+    prompt.className = "history-prompt";
+
+    if (this.currentFieldInfo) {
+      prompt.textContent = this.currentFieldInfo.prompt + ": ";
+    } else {
+      prompt.textContent = "Input: ";
+    }
+    prompt.style.color = "#FF6B6B";
+
+    const commandSpan = document.createElement("span");
+    commandSpan.className = "history-command";
+    commandSpan.textContent = command.split(": ")[1] || command;
+
+    line.appendChild(prompt);
+    line.appendChild(commandSpan);
+    this.terminalHistory.appendChild(line);
+    this.scrollToBottom();
+  }
+
+  /**
+   * 세션 만료 처리
+   */
+  handleSessionExpired() {
+    this.isLoggedIn = false;
+    this.currentUser = null;
+    this.promptPrefix = "guest@tissue:~$ ";
+    this.resetPromptAfterLogout();
+
+    // 진행 중인 프로세스들 정리
+    if (this.editInProgress) this.resetEditState();
+    if (this.loginInProgress) this.resetLoginState();
+    if (this.signupInProgress) this.resetSignupState();
+  }
 }
+
+// ========== 전역 인스턴스 및 초기화 ==========
 
 // 전역 인스턴스
 let terminal = null;
