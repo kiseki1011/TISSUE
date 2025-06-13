@@ -87,17 +87,19 @@ body {
 
 /* 터미널 커서 */
 .terminal-cursor {
-  color: #ffffff;             /* 흰색 문자 */
-  background: transparent;    /* 회색 박스 없애기 */
+  color: #ffffff; /* 흰색 문자 */
+  background: transparent; /* 회색 박스 없애기 */
   animation: terminalBlink 1s step-start infinite;
   display: inline;
 }
 
 @keyframes terminalBlink {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }
@@ -172,8 +174,8 @@ body {
 }
 
 .command-highlight {
-    color: #FFFF00;
-    font-weight: bold;
+  color: #ffff00;
+  font-weight: bold;
 }
 
 /* 다양한 메시지 타입 */
@@ -208,28 +210,28 @@ body {
 
 /* 베너 컨테이너와 그 다음 시스템 정보 컨테이너를 하나의 그룹으로 처리 */
 .banner-container {
-    display: inline-block; /* 인라인 블록으로 변경 */
-    vertical-align: top; /* 상단 정렬 */
-    width: auto; /* 내용에 맞춰 너비 조정 */
-    margin-right: 40px; /* 오른쪽 여백 */
-    margin-bottom: 25px;
+  display: inline-block; /* 인라인 블록으로 변경 */
+  vertical-align: top; /* 상단 정렬 */
+  width: auto; /* 내용에 맞춰 너비 조정 */
+  margin-right: 40px; /* 오른쪽 여백 */
+  margin-bottom: 25px;
 }
 
 .system-info-container {
-    display: inline-block; /* 인라인 블록으로 변경 */
-    vertical-align: top; /* 상단 정렬 */
-    width: calc(100% - 600px); /* 베너 너비를 제외한 나머지 공간 */
-    margin-bottom: 10px;
+  display: inline-block; /* 인라인 블록으로 변경 */
+  vertical-align: top; /* 상단 정렬 */
+  width: calc(100% - 600px); /* 베너 너비를 제외한 나머지 공간 */
+  margin-bottom: 10px;
 }
 
 /* 반응형 처리 - 화면이 좁으면 세로 배치로 복귀 */
 @media (max-width: 1024px) {
-    .banner-container,
-    .system-info-container {
-        display: block; /* 블록 요소로 복귀 */
-        width: 100%; /* 전체 너비 사용 */
-        margin-right: 0;
-    }
+  .banner-container,
+  .system-info-container {
+    display: block; /* 블록 요소로 복귀 */
+    width: 100%; /* 전체 너비 사용 */
+    margin-right: 0;
+  }
 }
 
 /* 반응형 디자인 */
@@ -325,4 +327,328 @@ body {
 ::-moz-selection {
   background: #264f78;
   color: #ffffff;
+}
+
+/* 로그인 관련 스타일 */
+.login-prompt {
+  color: #00ff00 !important;
+  font-weight: bold;
+}
+
+/* 프로필 수정 관련 스타일 */
+.edit-prompt {
+  color: #ff6b6b !important;
+  font-weight: bold;
+}
+
+/* 프로필 정보 표시 스타일 */
+.profile-section {
+  border-left: 3px solid #00aaff;
+  padding-left: 15px;
+  margin: 10px 0;
+}
+
+.profile-field {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.profile-label {
+  color: #74c0fc;
+  min-width: 150px;
+  font-weight: bold;
+}
+
+.profile-value {
+  color: #cccccc;
+  word-break: break-word;
+}
+
+/* 상태 표시 스타일 */
+.status-online {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.status-offline {
+  color: #a5a5a5;
+  font-style: italic;
+}
+
+/* 인증 관련 스타일 */
+.verification-pending {
+  color: #ffd93d;
+  font-style: italic;
+}
+
+.verification-success {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.verification-failed {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+/* 프로그레스 바 스타일 개선 */
+.progress-bar {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.progress-text {
+  color: #74c0fc;
+  margin-left: 5px;
+}
+
+/* 필드 그룹 스타일 */
+.field-group {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  padding: 10px;
+  margin: 5px 0;
+  border-left: 2px solid #404040;
+}
+
+.field-group.required {
+  border-left-color: #ffd93d;
+}
+
+.field-group.optional {
+  border-left-color: #74c0fc;
+}
+
+/* 사용자 상태 표시 */
+.user-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.user-badge.guest {
+  background: #404040;
+  color: #cccccc;
+}
+
+.user-badge.member {
+  background: #00aaff;
+  color: #ffffff;
+}
+
+.user-badge.admin {
+  background: #ff6b6b;
+  color: #ffffff;
+}
+
+/* 테이블 형태 정보 표시 */
+.info-table {
+  display: table;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.info-row {
+  display: table-row;
+}
+
+.info-cell {
+  display: table-cell;
+  padding: 3px 0;
+  vertical-align: top;
+}
+
+.info-cell.label {
+  color: #74c0fc;
+  font-weight: bold;
+  width: 150px;
+  padding-right: 20px;
+}
+
+.info-cell.value {
+  color: #cccccc;
+  word-break: break-word;
+}
+
+/* 에러/성공 메시지 개선 */
+.message-box {
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-left: 4px solid;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.message-box.success {
+  border-left-color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.message-box.error {
+  border-left-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.message-box.warning {
+  border-left-color: #ffd93d;
+  background: rgba(255, 217, 61, 0.05);
+}
+
+.message-box.info {
+  border-left-color: #74c0fc;
+  background: rgba(116, 192, 252, 0.05);
+}
+
+/* 입력 필드 힌트 스타일 */
+.input-hint {
+  color: #808080;
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* 명령어 자동완성 힌트 */
+.completion-hint {
+  color: #808080;
+  background: rgba(128, 128, 128, 0.1);
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin: 5px 0;
+}
+
+/* 로딩 애니메이션 */
+.loading-dots::after {
+  content: "";
+  animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+  0%,
+  20% {
+    content: "";
+  }
+  40% {
+    content: ".";
+  }
+  60% {
+    content: "..";
+  }
+  80%,
+  100% {
+    content: "...";
+  }
+}
+
+/* 세션 상태 표시 */
+.session-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 11px;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid;
+  z-index: 1000;
+}
+
+.session-indicator.logged-in {
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.session-indicator.guest {
+  color: #cccccc;
+  border-color: #cccccc;
+}
+
+/* 프로필 편집 모드 표시 */
+.edit-mode-indicator {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px dashed #ff6b6b;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+.edit-mode-indicator::before {
+  content: "✏️ EDIT MODE: ";
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+/* 반응형 개선 */
+@media (max-width: 768px) {
+  .info-table {
+    display: block;
+  }
+
+  .info-row {
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #404040;
+    padding-bottom: 5px;
+  }
+
+  .info-cell {
+    display: block;
+    width: 100%;
+  }
+
+  .info-cell.label {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 3px;
+  }
+
+  .session-indicator {
+    position: static;
+    display: inline-block;
+    margin: 10px 0;
+  }
+}
+
+/* 다크모드 접근성 개선 */
+@media (prefers-contrast: high) {
+  .profile-field {
+    border-bottom: 1px solid #555;
+    padding-bottom: 3px;
+  }
+
+  .message-box {
+    border-width: 2px;
+  }
+
+  .user-badge {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 애니메이션 줄이기 설정 확장 */
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots::after {
+    animation: none;
+    content: "...";
+  }
+
+  .terminal-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* 스크린 리더를 위한 숨김 텍스트 확장 */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
 }
