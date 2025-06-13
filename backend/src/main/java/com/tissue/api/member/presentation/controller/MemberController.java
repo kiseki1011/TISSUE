@@ -74,16 +74,13 @@ public class MemberController {
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberProfileRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@ResolveLoginMember Long loginMemberId
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	// TODO: 이메일 인증 기능 추가 필요
 	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
