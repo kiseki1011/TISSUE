@@ -79,18 +79,11 @@ public class GlobalExceptionHandler {
 	public ApiResponse<Void> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
 		// enum 타입 변환 실패로 인한 예외인 경우
 		if (ex.getCause() instanceof InvalidFormatException) {
-			return ApiResponse.fail(
-				HttpStatus.BAD_REQUEST,
-				"Invalid enum value provided",
-				null
-			);
+			return ApiResponse.fail(HttpStatus.BAD_REQUEST, "Invalid enum value provided", null);
 		}
 
 		// 그 외의 요청 본문 관련 예외
-		return ApiResponse.fail(HttpStatus.BAD_REQUEST,
-			"Invalid request body",
-			null
-		);
+		return ApiResponse.fail(HttpStatus.BAD_REQUEST, "Invalid request body", null);
 	}
 
 	@ExceptionHandler(TissueException.class)
