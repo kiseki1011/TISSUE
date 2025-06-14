@@ -120,7 +120,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("tester");
 		String originalEmail = member.getEmail();
 
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("test1234!", "newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		// when
 		doNothing().when(memberEmailVerificationService)
@@ -146,7 +146,7 @@ class MemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> memberCommandService.updateEmail(
-			new UpdateMemberEmailRequest("test1234!", member.getEmail()),
+			new UpdateMemberEmailRequest(member.getEmail()),
 			member.getId()
 		))
 			.isInstanceOf(DuplicateResourceException.class);

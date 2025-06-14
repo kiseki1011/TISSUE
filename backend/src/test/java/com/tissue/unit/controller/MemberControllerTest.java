@@ -282,7 +282,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK")
 	void updateEmail_success_OK() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -297,7 +297,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 업데이트 된 이메일이 포함된다")
 	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 		Long memberId = 1L;
 
 		MemberResponse response = new MemberResponse(memberId);
