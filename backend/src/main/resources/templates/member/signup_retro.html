@@ -38,22 +38,15 @@
         <input type="password" id="confirm-password-input"/>
         <div id="password-match-message" class="error-message"></div>
 
-        <label>First Name:</label>
-        <input type="text" th:field="*{firstName}" th:classappend="${#fields.hasErrors('firstName')} ? 'error-input'"/>
-        <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error-message"></div>
-
-        <label>Last Name:</label>
-        <input type="text" th:field="*{lastName}" th:classappend="${#fields.hasErrors('lastName')} ? 'error-input'"/>
-        <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error-message"></div>
+        <label>Name:</label>
+        <input type="text" th:field="*{name}" th:classappend="${#fields.hasErrors('name')} ? 'error-input'"/>
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div>
 
         <label>Birth Date:</label>
         <input type="date" th:field="*{birthDate}"/>
 
         <label>Job Type:</label>
         <input type="text" th:field="*{jobType}"/>
-
-        <label>Bio:</label>
-        <textarea th:field="*{biography}"></textarea>
 
         <button type="submit" id="submit-btn" disabled>[ SIGN UP ]</button>
 
