@@ -24,14 +24,14 @@ public class HomePageController {
 		// 터미널 방식의 페이지는 클라이언트 사이드에서 많은 것을 처리함
 		model.addAttribute("pageTitle", "TISSUE Terminal");
 
-		return "home/terminal_index";
+		return "home/main_terminal";
 	}
 
 	/**
 	 * 헬스체크 엔드포인트
 	 * 단순 시스템 상태 확인용 API
 	 */
-	@GetMapping("api/health")
+	@GetMapping("/api/health")
 	@ResponseBody
 	public Map<String, Object> health() {
 		// TODO: TerminalHealth라는 DTO 만들어서 사용
