@@ -80,7 +80,8 @@ jacocoTestReport {
                             "**/*Client*",
                             "**/*Repository*",
                             "**/*Initializer*",
-                            "**/*Token*"
+                            "**/*Token*",
+                            "**/*Dto*"
                     ])
                 })
         )
@@ -123,7 +124,8 @@ jacocoTestReport {
                         "**.*Client*",
                         "**.*Repository*",
                         "**.*Initializer*",
-                        "**.*Token*"
+                        "**.*Token*",
+                        "**.*Dto*"
                 ]
             }
         }
