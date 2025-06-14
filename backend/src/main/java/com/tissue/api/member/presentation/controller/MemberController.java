@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
@@ -24,7 +23,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
@@ -48,18 +46,9 @@ public class MemberController {
 	 *  - 이메일 업데이트 시, 이메일로 확인(검증) 이메일 보내기
 	 */
 	private final MemberCommandService memberCommandService;
-	private final MemberQueryService memberQueryService;
 	private final MemberValidator memberValidator;
 	private final SessionManager sessionManager;
 	private final SessionValidator sessionValidator;
-
-	@GetMapping
-	public ApiResponse<GetProfileResponse> getProfile(
-		@ResolveLoginMember Long loginMemberId
-	) {
-		GetProfileResponse response = memberQueryService.getProfile(loginMemberId);
-		return ApiResponse.ok("Found profile.", response);
-	}
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
