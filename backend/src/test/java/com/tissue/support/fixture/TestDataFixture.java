@@ -12,8 +12,8 @@ import com.tissue.api.comment.domain.model.Comment;
 import com.tissue.api.comment.domain.model.IssueComment;
 import com.tissue.api.comment.domain.model.ReviewComment;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueAssignee;
@@ -30,7 +30,6 @@ import com.tissue.api.issue.infrastructure.repository.IssueAssigneeRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.domain.model.enums.ReviewStatus;
@@ -105,7 +104,7 @@ public class TestDataFixture {
 				.email(loginId + "@test.com")
 				.username(loginId + "Username")
 				.password(passwordEncoder.encode("test1234!"))
-				.name(new Name("Gildong", "Hong"))
+				.name("Gildong Hong")
 				.build()
 		);
 	}

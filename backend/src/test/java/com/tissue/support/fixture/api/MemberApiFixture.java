@@ -20,10 +20,8 @@ public class MemberApiFixture {
 			.email(email)
 			.password(password)
 			.username(username)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 

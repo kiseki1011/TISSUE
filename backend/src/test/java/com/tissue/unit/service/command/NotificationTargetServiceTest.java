@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -52,10 +51,9 @@ public class NotificationTargetServiceTest {
 			.email("admin1@example.com")
 			.username("admin1")
 			.password("pass")
-			.name(new Name("Admin", "One"))
+			.name("Admin One")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1990, 1, 1))
-			.biography("Admin")
 			.build();
 
 		Member specificMember = Member.builder()
@@ -63,10 +61,9 @@ public class NotificationTargetServiceTest {
 			.email("user1@example.com")
 			.username("user1")
 			.password("pass")
-			.name(new Name("User", "One"))
-			.jobType(JobType.PLANNER)
+			.name("User One")
+			.jobType(JobType.DESIGNER)
 			.birthDate(LocalDate.of(1995, 5, 5))
-			.biography("Bio")
 			.build();
 
 		WorkspaceMember adminMember = WorkspaceMember.createWorkspaceMember(admin1, workspace, WorkspaceRole.ADMIN);
@@ -108,10 +105,9 @@ public class NotificationTargetServiceTest {
 			.email("admin@example.com")
 			.username("admin")
 			.password("pass")
-			.name(new Name("QA", "Admin"))
+			.name("Qa Admin")
 			.jobType(JobType.DEVELOPER)
 			.birthDate(LocalDate.of(1985, 2, 2))
-			.biography("QA Head")
 			.build();
 
 		WorkspaceMember adminMember = WorkspaceMember.createWorkspaceMember(admin, workspace, WorkspaceRole.ADMIN);
