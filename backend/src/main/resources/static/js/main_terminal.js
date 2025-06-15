@@ -1497,12 +1497,12 @@ class TissueTerminal {
     this.signupData = {};
 
     this.addHistoryLine("\n", "");
-    this.addHistoryLine("=".repeat(60), "info-msg");
+    this.addHistoryLine("=".repeat(50), "info-msg");
     this.addHistoryLine(
-      `              ${this.getMessage("registrationWizard")}`,
+      `                    ${this.getMessage("registrationWizard")}`,
       "success-msg"
     );
-    this.addHistoryLine("=".repeat(60), "info-msg");
+    this.addHistoryLine("=".repeat(50), "info-msg");
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("welcomeRegistration"), "system-msg");
     this.addHistoryLine(this.getMessage("canCancelAnytime"), "system-msg");
@@ -1692,7 +1692,7 @@ class TissueTerminal {
     this.currentInputText = "";
     this.updateInputDisplay();
     this.resetPromptAfterSignup();
-    setTimeout(() => this.promptNextField(), 500);
+    setTimeout(() => this.promptNextField(), 300);
   }
 
   /**
@@ -1845,6 +1845,7 @@ class TissueTerminal {
         };
 
         await this.displaySuccessMessage(memberData);
+
         this.resetSignupState();
       } else {
         const errorData = await response.json().catch(() => null);
@@ -1858,6 +1859,7 @@ class TissueTerminal {
         "system-msg"
       );
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
       this.resetSignupState();
     }
   }
@@ -1904,6 +1906,7 @@ class TissueTerminal {
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("canNowLogin"), "system-msg");
     this.addHistoryLine("", "");
+    this.addHistoryLine("\n", "");
   }
 
   /**
@@ -2008,6 +2011,7 @@ class TissueTerminal {
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("trySignupAgain"), "system-msg");
     this.addHistoryLine("", "");
+    this.addHistoryLine("\n", "");
 
     this.resetSignupState();
   }
@@ -2308,9 +2312,10 @@ class TissueTerminal {
     this.loginStep = 0;
     this.loginData = {};
 
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("=".repeat(50), "info-msg");
     this.addHistoryLine(
-      `             ${this.getMessage("tissueLogin")}`,
+      `                   ${this.getMessage("tissueLogin")}`,
       "success-msg"
     );
     this.addHistoryLine("=".repeat(50), "info-msg");
@@ -2319,7 +2324,7 @@ class TissueTerminal {
     this.addHistoryLine(this.getMessage("canCancelLogin"), "system-msg");
     this.addHistoryLine("", "");
 
-    setTimeout(() => this.promptLoginField(), 500);
+    setTimeout(() => this.promptLoginField(), 300);
   }
 
   /**
@@ -2347,7 +2352,7 @@ class TissueTerminal {
     const field = fields[this.loginStep];
     this.currentFieldInfo = field;
 
-    this.addHistoryLine(`${field.prompt}:`, "info-msg");
+    // this.addHistoryLine(`${field.prompt}:`, "info-msg");
     this.updatePromptForLogin(field);
   }
 
@@ -2420,7 +2425,7 @@ class TissueTerminal {
     this.currentInputText = "";
     this.updateInputDisplay();
 
-    setTimeout(() => this.promptLoginField(), 300);
+    setTimeout(() => this.promptLoginField(), 200);
   }
 
   /**
@@ -2451,17 +2456,20 @@ class TissueTerminal {
           "system-msg"
         );
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
 
         this.resetLoginState();
       } else if (response.status === 401) {
         this.addHistoryLine(this.getMessage("invalidCredentials"), "error-msg");
         this.addHistoryLine(this.getMessage("checkCredentials"), "system-msg");
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
         this.resetLoginState();
       } else {
         this.addHistoryLine(this.getMessage("loginFailed"), "error-msg");
         this.addHistoryLine(this.getMessage("tryAgainLater"), "system-msg");
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
         this.resetLoginState();
       }
     } catch (error) {
@@ -2469,6 +2477,7 @@ class TissueTerminal {
       this.addHistoryLine(`✗ ${this.getMessage("networkError")}`, "error-msg");
       this.addHistoryLine(this.getMessage("checkConnection"), "system-msg");
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
       this.resetLoginState();
     }
   }
@@ -2496,6 +2505,7 @@ class TissueTerminal {
       );
       this.addHistoryLine(this.getMessage("thankYouForUsing"), "system-msg");
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
 
       this.resetPromptAfterLogout();
     } catch (error) {
@@ -2524,12 +2534,12 @@ class TissueTerminal {
         const profile = result.data;
 
         this.addHistoryLine("", "");
-        this.addHistoryLine("=".repeat(60), "info-msg");
+        this.addHistoryLine("=".repeat(50), "info-msg");
         this.addHistoryLine(
           `                    ${this.getMessage("userProfile")}`,
           "success-msg"
         );
-        this.addHistoryLine("=".repeat(60), "info-msg");
+        this.addHistoryLine("=".repeat(50), "info-msg");
         this.addHistoryLine("", "");
 
         // 프로필 정보 표시
@@ -2581,6 +2591,7 @@ class TissueTerminal {
         this.addHistoryLine(this.getMessage("useEditCommand"), "system-msg");
         this.addHistoryLine(this.getMessage("availableFields"), "system-msg");
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
 
         this.scrollToBottom();
       } else if (response.status === 401) {
@@ -2595,11 +2606,13 @@ class TissueTerminal {
         );
         this.addHistoryLine(this.getMessage("tryAgainLater"), "system-msg");
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
       }
     } catch (error) {
       console.error("Profile loading failed:", error);
       this.addHistoryLine(`✗ ${this.getMessage("networkError")}`, "error-msg");
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
     }
   }
 
@@ -2684,6 +2697,7 @@ class TissueTerminal {
         "system-msg"
       );
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
       return;
     }
 
@@ -2809,12 +2823,14 @@ class TissueTerminal {
         console.warn(`Unknown edit step: ${step}`);
         this.addHistoryLine("✗ Internal error: unknown edit step", "error-msg");
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
         this.resetEditState();
       }
     } catch (error) {
       console.error("Edit process failed:", error);
       this.addHistoryLine("✗ Network error occurred", "error-msg");
       this.addHistoryLine("", "");
+      this.addHistoryLine("\n", "");
       this.resetEditState();
     }
   }
@@ -2867,6 +2883,7 @@ class TissueTerminal {
           "error-msg"
         );
         this.addHistoryLine("", "");
+        this.addHistoryLine("\n", "");
         this.resetEditState();
         return;
       }
