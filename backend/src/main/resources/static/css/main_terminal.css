@@ -11,24 +11,22 @@ body {
   overflow: hidden; /* 스크롤바 숨기기 - 터미널답게 */
 }
 
-/* 터미널 폰트 설정 */
-@font-face {
-  font-family: "Cascadia Code";
-  src: url("/fonts/CascadiaCode.ttf") format("truetype");
-  font-display: swap;
-}
-
 /* 전체 페이지를 터미널로 변환 */
 .terminal-body {
   background: #0c0c0c; /* Windows Terminal 기본 배경색 */
   color: #cccccc; /* Windows Terminal 기본 텍스트 색 */
-  font-family: "Cascadia Code", "Fira Code", "Monaco", "Consolas", monospace;
-  font-size: 14px;
+
   line-height: 1.4;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
   cursor: text; /* 전체 화면에서 텍스트 커서 */
+
+  /* font: cdn -> local -> fallback */
+  font-family: "JetBrains Mono", "D2 coding", "SF Mono", "Cascadia Code",
+    "Consolas", "Liberation Mono", "맑은 고딕", "Apple SD Gothic Neo", monospace;
+
+  font-size: 14px;
 }
 
 /* 터미널 화면 전체 */

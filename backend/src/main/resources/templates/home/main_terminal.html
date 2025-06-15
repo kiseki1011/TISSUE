@@ -10,13 +10,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TISSUE Terminal</title>
-    <link th:href="@{/css/main_terminal.css}" rel="stylesheet" />
+    <title>TISSUE - Terminal Issue</title>
+
     <link rel="icon" type="image/png" href="/favicon.ico" />
-    <meta
-      name="description"
-      content="TISSUE(Terminal Issue) - Main"
-    />
+    <meta name="description" content="TISSUE - Terminal Issue" />
+
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- CDN font -->
+    <!-- Comment out the following line if CDN access is not available in your enviroment." -->
+    <link rel="stylesheet" th:href="@{/css/fonts-cdn.css}" />
+
+    <!-- Local font -->
+    <link rel="stylesheet" th:href="@{/css/fonts-local.css}" />
+
+    <!-- Terminal(main page) -->
+    <link rel="stylesheet" th:href="@{/css/main_terminal.css}" />
   </head>
   <body class="terminal-body">
     <!-- 터미널 화면 전체 -->
