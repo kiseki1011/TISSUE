@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.domain.model.vo.Name;
+import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
@@ -15,7 +15,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
@@ -138,19 +137,13 @@ public class MemberCommandService {
 		Member member
 	) {
 		if (request.hasName()) {
-			member.updateName(Name.builder()
-				.firstName(request.firstName())
-				.lastName(request.lastName())
-				.build());
+			member.updateName(request.name());
 		}
 		if (request.hasBirthDate()) {
 			member.updateBirthDate(request.birthDate());
 		}
 		if (request.hasJobType()) {
 			member.updateJobType(request.jobType());
-		}
-		if (request.hasBiography()) {
-			member.updateBiography(request.biography());
 		}
 	}
 }

@@ -7,13 +7,14 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.enums.PermissionType;
 import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.application.service.query.MemberQueryService;
+import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -22,8 +23,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
-import com.tissue.api.member.validator.MemberValidator;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
@@ -47,18 +46,9 @@ public class MemberController {
 	 *  - 이메일 업데이트 시, 이메일로 확인(검증) 이메일 보내기
 	 */
 	private final MemberCommandService memberCommandService;
-	private final MemberQueryService memberQueryService;
 	private final MemberValidator memberValidator;
 	private final SessionManager sessionManager;
 	private final SessionValidator sessionValidator;
-
-	@GetMapping
-	public ApiResponse<GetProfileResponse> getProfile(
-		@ResolveLoginMember Long loginMemberId
-	) {
-		GetProfileResponse response = memberQueryService.getProfile(loginMemberId);
-		return ApiResponse.ok("Found profile.", response);
-	}
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -73,16 +63,13 @@ public class MemberController {
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberProfileRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@ResolveLoginMember Long loginMemberId
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
 		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	// TODO: 이메일 인증 기능 추가 필요
 	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
@@ -171,4 +158,30 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Permission refreshed.");
 	}
 
+	/**
+	 * Login ID 중복 검사
+	 */
+	@GetMapping("/check-loginid")
+	public ApiResponse<Void> checkLoginIdAvailability(@RequestParam String loginId) {
+		memberValidator.validateLoginIdIsUnique(loginId);
+		return ApiResponse.okWithNoContent("Login ID is available");
+	}
+
+	/**
+	 * 이메일 중복 검사
+	 */
+	@GetMapping("/check-email")
+	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
+		memberValidator.validateEmailIsUnique(email);
+		return ApiResponse.okWithNoContent("Email is available");
+	}
+
+	/**
+	 * 사용자명 중복 검사
+	 */
+	@GetMapping("/check-username")
+	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
+		memberValidator.validateUsernameIsUnique(username);
+		return ApiResponse.okWithNoContent("Username is available");
+	}
 }

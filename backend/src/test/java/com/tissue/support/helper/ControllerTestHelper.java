@@ -26,9 +26,10 @@ import com.tissue.api.issue.presentation.controller.command.IssueController;
 import com.tissue.api.issue.presentation.controller.command.IssueReviewerController;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
+import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.controller.MemberController;
-import com.tissue.api.member.validator.MemberValidator;
+import com.tissue.api.member.presentation.controller.MemberQueryController;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionReader;
 import com.tissue.api.position.application.service.query.PositionQueryService;
@@ -71,6 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceParticipationController.class,
 		WorkspaceMemberDetailController.class,
 		MemberController.class,
+		MemberQueryController.class,
 		PositionController.class,
 		IssueController.class,
 		ReviewController.class,

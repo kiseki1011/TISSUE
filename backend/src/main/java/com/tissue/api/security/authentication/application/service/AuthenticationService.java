@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.validator.MemberValidator;
+import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 

@@ -4,32 +4,25 @@ import java.time.LocalDate;
 
 import com.tissue.api.common.validator.annotation.pattern.NamePattern;
 import com.tissue.api.common.validator.annotation.size.NameSize;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.member.domain.model.enums.JobType;
 
 import jakarta.validation.constraints.Past;
 import lombok.Builder;
 
+// TODO: 각 필드 업데이트를 위한 요청으로 전부 쪼개서 사용? 할 필요는 없을듯..
 @Builder
 public record UpdateMemberProfileRequest(
 	@NameSize
 	@NamePattern
-	String firstName,
-
-	@NameSize
-	@NamePattern
-	String lastName,
+	String name,
 
 	@Past(message = "{valid.birthdate}")
 	LocalDate birthDate,
 
-	JobType jobType,
-
-	@StandardText
-	String biography
+	JobType jobType
 ) {
 	public boolean hasName() {
-		return isNotBlank(firstName) && isNotBlank(lastName);
+		return isNotBlank(name);
 	}
 
 	public boolean hasBirthDate() {
@@ -38,10 +31,6 @@ public record UpdateMemberProfileRequest(
 
 	public boolean hasJobType() {
 		return jobType != null;
-	}
-
-	public boolean hasBiography() {
-		return isNotBlank(biography);
 	}
 
 	private boolean isNotBlank(String value) {

@@ -24,7 +24,6 @@ import org.springframework.mock.web.MockHttpSession;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
@@ -60,13 +59,9 @@ class MemberControllerTest extends ControllerTestHelper {
 		Member member = Member.builder()
 			.loginId("tester")
 			.email("test@test.com")
-			.name(Name.builder()
-				.firstName("Gildong")
-				.lastName("Hong")
-				.build())
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1990, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
 			.build();
 
 		when(memberQueryService.getProfile(anyLong())).thenReturn(GetProfileResponse.from(member));
@@ -76,7 +71,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Found profile."))
-			.andExpect(jsonPath("$.data.firstName").value("Gildong"))
+			.andExpect(jsonPath("$.data.name").value("Gildong Hong"))
 			.andExpect(jsonPath("$.data.birthDate").value(LocalDate.of(1990, 1, 1).toString()))
 			.andDo(print());
 	}
@@ -90,10 +85,8 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -119,10 +112,8 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("test@test.com")
 			.username("testusername")
 			.password("test1234!")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -151,10 +142,8 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email("testemail@gmail.com")
 			.username("testusername")
 			.password(password)
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -185,10 +174,8 @@ class MemberControllerTest extends ControllerTestHelper {
 			.email(email)
 			.password(password)
 			.username("testusername")
-			.firstName("Gildong")
-			.lastName("Hong")
+			.name("Gildong Hong")
 			.birthDate(LocalDate.of(1995, 1, 1))
-			.biography("Im a backend engineer.")
 			.jobType(JobType.DEVELOPER)
 			.build();
 
@@ -248,7 +235,6 @@ class MemberControllerTest extends ControllerTestHelper {
 		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
 			.birthDate(LocalDate.of(1995, 1, 1))
 			.jobType(JobType.DEVELOPER)
-			.biography("Im a backend developer")
 			.build();
 
 		Long memberId = 1L;
@@ -296,7 +282,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK")
 	void updateEmail_success_OK() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 
 		// when & then
 		mockMvc.perform(patch("/api/v1/members/email")
@@ -311,7 +297,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 업데이트 된 이메일이 포함된다")
 	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("password1234!", "newemail@test.com");
+		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
 		Long memberId = 1L;
 
 		MemberResponse response = new MemberResponse(memberId);

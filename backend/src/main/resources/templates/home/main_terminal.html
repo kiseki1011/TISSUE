@@ -1,0 +1,71 @@
+<!--@formatter:off-->
+
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  class="dark"
+  lang="en"
+  style="color-scheme: dark"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TISSUE - Terminal Issue</title>
+
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <meta name="description" content="TISSUE - Terminal Issue" />
+
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- CDN font -->
+    <!-- Comment out the following line if CDN access is not available in your enviroment." -->
+    <link rel="stylesheet" th:href="@{/css/fonts-cdn.css}" />
+
+    <!-- Local font -->
+    <link rel="stylesheet" th:href="@{/css/fonts-local.css}" />
+
+    <!-- Terminal(main page) -->
+    <link rel="stylesheet" th:href="@{/css/main_terminal.css}" />
+  </head>
+  <body class="terminal-body">
+    <!-- 터미널 화면 전체 -->
+    <div id="terminal-screen" class="terminal-screen">
+      <!-- 터미널 히스토리 - 모든 출력이 여기에 누적됨 -->
+      <div id="terminal-history"></div>
+
+      <!-- 현재 입력 프롬프트 -->
+      <div id="current-prompt" class="prompt-line">
+        <span class="prompt-prefix">guest@tissue:~$</span>
+        <span id="current-input" class="current-input"></span>
+        <span id="terminal-cursor" class="terminal-cursor">█</span>
+      </div>
+    </div>
+
+    <!-- 포커스 유지를 위한 숨겨진 입력 필드 -->
+    <input
+      id="focus-keeper"
+      type="text"
+      aria-hidden="true"
+      style="position: absolute; left: -9999px; opacity: 0"
+    />
+
+    <!-- 서버 설정 데이터 주입 -->
+    <script th:inline="javascript">
+      window.TISSUE_CONFIG = {
+        systemInfo: {
+          version: "1.0.0",
+          repository: "github.com/your-username/tissue",
+          author: "Your Name",
+          email: "your.email@example.com",
+          license: "MIT",
+          documentation: "tissue.docs.example.com",
+        },
+      };
+    </script>
+
+    <script th:src="@{/js/main_terminal.js}"></script>
+  </body>
+</html>

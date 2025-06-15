@@ -8,19 +8,16 @@ import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.domain.model.vo.Name;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -41,22 +38,24 @@ public class Member extends BaseDateEntity {
 
 	@Column(unique = true, nullable = false)
 	private String loginId;
+
 	@Column(unique = true, nullable = false)
 	private String email;
+
 	@Column(unique = true, nullable = false)
 	private String username;
+
 	@Column(nullable = false)
 	private String password;
 
-	// TODO: memberProfile VO로 묶어서 관리?
-	@Embedded
-	private Name name;
-	@Lob
-	private String biography;
+	private String name;
+
 	private LocalDate birthDate;
+
 	@Enumerated(EnumType.STRING)
 	private JobType jobType;
 
+	// TODO: 그냥 필요하면 계산해서 보여주는게 좋지 않을까?
 	@Column(nullable = false)
 	private int myWorkspaceCount = 0;
 
@@ -72,16 +71,14 @@ public class Member extends BaseDateEntity {
 		String email,
 		String username,
 		String password,
-		String biography,
 		JobType jobType,
-		Name name,
+		String name,
 		LocalDate birthDate
 	) {
 		this.loginId = loginId;
 		this.email = email;
 		this.username = username;
 		this.password = password;
-		this.biography = biography;
 		this.jobType = jobType;
 		this.name = name;
 		this.birthDate = birthDate;
@@ -109,12 +106,8 @@ public class Member extends BaseDateEntity {
 		this.password = password;
 	}
 
-	public void updateName(Name name) {
+	public void updateName(String name) {
 		this.name = name;
-	}
-
-	public void updateBiography(String biography) {
-		this.biography = biography;
 	}
 
 	public void updateBirthDate(LocalDate birthDate) {

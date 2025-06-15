@@ -1,0 +1,652 @@
+/* 전체 화면을 터미널로 만들기 위한 기본 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden; /* 스크롤바 숨기기 - 터미널답게 */
+}
+
+/* 전체 페이지를 터미널로 변환 */
+.terminal-body {
+  background: #0c0c0c; /* Windows Terminal 기본 배경색 */
+  color: #cccccc; /* Windows Terminal 기본 텍스트 색 */
+
+  line-height: 1.4;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  cursor: text; /* 전체 화면에서 텍스트 커서 */
+
+  /* font: cdn -> local -> fallback */
+  font-family: "JetBrains Mono", "D2 coding", "SF Mono", "Cascadia Code",
+    "Consolas", "Liberation Mono", "맑은 고딕", "Apple SD Gothic Neo", monospace;
+
+  font-size: 14px;
+}
+
+/* 터미널 화면 전체 */
+.terminal-screen {
+  height: 100vh;
+  width: 100vw;
+  padding: 30px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0c0c0c;
+
+  /* 터미널다운 스크롤바 */
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #0c0c0c;
+}
+
+.terminal-screen::-webkit-scrollbar {
+  width: 12px;
+}
+
+.terminal-screen::-webkit-scrollbar-track {
+  background: #0c0c0c;
+}
+
+.terminal-screen::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 6px;
+  border: 2px solid #0c0c0c;
+}
+
+.terminal-screen::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+/* 터미널 프롬프트 라인 */
+.prompt-line {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0;
+  min-height: 20px;
+}
+
+.prompt-prefix {
+  color: #00aaff; /* 프롬프트는 파란색 */
+  margin-right: 8px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.current-input {
+  white-space: pre;
+  color: #ffffff; /* 사용자 입력은 흰색 */
+  min-width: 1px;
+  word-break: break-all;
+}
+
+/* 터미널 커서 */
+.terminal-cursor {
+  color: #ffffff; /* 흰색 문자 */
+  background: transparent; /* 회색 박스 없애기 */
+  animation: terminalBlink 1s step-start infinite;
+  display: inline;
+}
+
+@keyframes terminalBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 터미널 히스토리 라인들 */
+.history-line {
+  margin-bottom: 2px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.history-prompt {
+  color: #00aaff;
+  margin-right: 8px;
+}
+
+.history-command {
+  color: #ffffff;
+}
+
+.history-output {
+  color: #cccccc;
+  margin-left: 0;
+  white-space: pre-wrap;
+}
+
+/* ASCII 베너 스타일 - transform 제거, 일반 텍스트로 처리 */
+.ascii-banner {
+  color: #cccccc;
+  font-family: "Cascadia Code", monospace;
+  font-size: 14px;
+  line-height: 1.1;
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  display: inline;
+}
+
+.version-info {
+  color: #cccccc;
+  font-size: 14px;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* 시스템 정보 스타일 */
+.system-info-title {
+  color: #cccccc;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.system-info-line {
+  color: #cccccc;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.info-label {
+  color: #ffff00; /* 노란색 레이블 */
+  font-weight: bold;
+  margin-right: 8px;
+
+  /* info-value가 깔금하게 일렬로 배치된 표 형식 */
+  /* display: inline-block; */
+  /* width: 120px; */
+}
+
+.info-value {
+  color: #cccccc;
+}
+
+.command-highlight {
+  color: #ffff00;
+  font-weight: bold;
+}
+
+/* 다양한 메시지 타입 */
+.success-msg {
+  color: #00ff00;
+  font-weight: 500;
+}
+
+.error-msg {
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.warning-msg {
+  color: #ffd93d;
+  font-weight: 500;
+}
+
+.info-msg {
+  color: #74c0fc;
+}
+
+.system-msg {
+  color: #a5a5a5;
+  font-style: italic;
+}
+
+.help-msg {
+  color: #cccccc;
+  font-style: italic;
+}
+
+/* 베너 컨테이너와 그 다음 시스템 정보 컨테이너를 하나의 그룹으로 처리 */
+.banner-container {
+  display: inline-block; /* 인라인 블록으로 변경 */
+  vertical-align: top; /* 상단 정렬 */
+  width: auto; /* 내용에 맞춰 너비 조정 */
+  margin-right: 40px; /* 오른쪽 여백 */
+  margin-bottom: 25px;
+}
+
+.system-info-container {
+  display: inline-block; /* 인라인 블록으로 변경 */
+  vertical-align: top; /* 상단 정렬 */
+  width: calc(100% - 600px); /* 베너 너비를 제외한 나머지 공간 */
+  margin-bottom: 10px;
+}
+
+/* 반응형 처리 - 화면이 좁으면 세로 배치로 복귀 */
+@media (max-width: 1024px) {
+  .banner-container,
+  .system-info-container {
+    display: block; /* 블록 요소로 복귀 */
+    width: 100%; /* 전체 너비 사용 */
+    margin-right: 0;
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .terminal-body {
+    font-size: 12px;
+  }
+
+  .terminal-screen {
+    padding: 15px;
+  }
+
+  .info-label {
+    width: 100px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-body {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .terminal-screen {
+    padding: 10px;
+  }
+
+  .info-label {
+    width: 80px;
+    font-size: 11px;
+  }
+}
+
+/* 접근성 지원 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  .terminal-body {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  .success-msg {
+    color: #00ff00;
+  }
+
+  .error-msg {
+    color: #ff0000;
+  }
+
+  .warning-msg {
+    color: #ffff00;
+  }
+}
+
+/* 움직임 줄이기 설정 */
+@media (prefers-reduced-motion: reduce) {
+  .terminal-cursor {
+    animation: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 포커스 시각화 (접근성) */
+.terminal-screen:focus-within {
+  outline: 2px solid #00aaff;
+  outline-offset: -2px;
+}
+
+/* 선택 영역 스타일 */
+::selection {
+  background: #264f78;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: #264f78;
+  color: #ffffff;
+}
+
+/* 로그인 관련 스타일 */
+.login-prompt {
+  color: #00ff00 !important;
+  font-weight: bold;
+}
+
+/* 프로필 수정 관련 스타일 */
+.edit-prompt {
+  color: #ff6b6b !important;
+  font-weight: bold;
+}
+
+/* 프로필 정보 표시 스타일 */
+.profile-section {
+  border-left: 3px solid #00aaff;
+  padding-left: 15px;
+  margin: 10px 0;
+}
+
+.profile-field {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.profile-label {
+  color: #74c0fc;
+  min-width: 150px;
+  font-weight: bold;
+}
+
+.profile-value {
+  color: #cccccc;
+  word-break: break-word;
+}
+
+/* 상태 표시 스타일 */
+.status-online {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.status-offline {
+  color: #a5a5a5;
+  font-style: italic;
+}
+
+/* 인증 관련 스타일 */
+.verification-pending {
+  color: #ffd93d;
+  font-style: italic;
+}
+
+.verification-success {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.verification-failed {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+/* 프로그레스 바 스타일 개선 */
+.progress-bar {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.progress-text {
+  color: #74c0fc;
+  margin-left: 5px;
+}
+
+/* 필드 그룹 스타일 */
+.field-group {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  padding: 10px;
+  margin: 5px 0;
+  border-left: 2px solid #404040;
+}
+
+.field-group.required {
+  border-left-color: #ffd93d;
+}
+
+.field-group.optional {
+  border-left-color: #74c0fc;
+}
+
+/* 사용자 상태 표시 */
+.user-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.user-badge.guest {
+  background: #404040;
+  color: #cccccc;
+}
+
+.user-badge.member {
+  background: #00aaff;
+  color: #ffffff;
+}
+
+.user-badge.admin {
+  background: #ff6b6b;
+  color: #ffffff;
+}
+
+/* 테이블 형태 정보 표시 */
+.info-table {
+  display: table;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.info-row {
+  display: table-row;
+}
+
+.info-cell {
+  display: table-cell;
+  padding: 3px 0;
+  vertical-align: top;
+}
+
+.info-cell.label {
+  color: #74c0fc;
+  font-weight: bold;
+  width: 150px;
+  padding-right: 20px;
+}
+
+.info-cell.value {
+  color: #cccccc;
+  word-break: break-word;
+}
+
+/* 에러/성공 메시지 개선 */
+.message-box {
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-left: 4px solid;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.message-box.success {
+  border-left-color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.message-box.error {
+  border-left-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.message-box.warning {
+  border-left-color: #ffd93d;
+  background: rgba(255, 217, 61, 0.05);
+}
+
+.message-box.info {
+  border-left-color: #74c0fc;
+  background: rgba(116, 192, 252, 0.05);
+}
+
+/* 입력 필드 힌트 스타일 */
+.input-hint {
+  color: #808080;
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* 명령어 자동완성 힌트 */
+.completion-hint {
+  color: #808080;
+  background: rgba(128, 128, 128, 0.1);
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin: 5px 0;
+}
+
+/* 로딩 애니메이션 */
+.loading-dots::after {
+  content: "";
+  animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+  0%,
+  20% {
+    content: "";
+  }
+  40% {
+    content: ".";
+  }
+  60% {
+    content: "..";
+  }
+  80%,
+  100% {
+    content: "...";
+  }
+}
+
+/* 세션 상태 표시 */
+.session-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 11px;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid;
+  z-index: 1000;
+}
+
+.session-indicator.logged-in {
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.session-indicator.guest {
+  color: #cccccc;
+  border-color: #cccccc;
+}
+
+/* 프로필 편집 모드 표시 */
+.edit-mode-indicator {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px dashed #ff6b6b;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+.edit-mode-indicator::before {
+  content: "✏️ EDIT MODE: ";
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+/* 반응형 개선 */
+@media (max-width: 768px) {
+  .info-table {
+    display: block;
+  }
+
+  .info-row {
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #404040;
+    padding-bottom: 5px;
+  }
+
+  .info-cell {
+    display: block;
+    width: 100%;
+  }
+
+  .info-cell.label {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 3px;
+  }
+
+  .session-indicator {
+    position: static;
+    display: inline-block;
+    margin: 10px 0;
+  }
+}
+
+/* 다크모드 접근성 개선 */
+@media (prefers-contrast: high) {
+  .profile-field {
+    border-bottom: 1px solid #555;
+    padding-bottom: 3px;
+  }
+
+  .message-box {
+    border-width: 2px;
+  }
+
+  .user-badge {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 애니메이션 줄이기 설정 확장 */
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots::after {
+    animation: none;
+    content: "...";
+  }
+
+  .terminal-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* 스크린 리더를 위한 숨김 텍스트 확장 */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
