@@ -36,6 +36,9 @@ class TissueTerminal {
     this.terminalCursor = null;
     this.focusKeeper = null;
 
+    // 커서 현재 위치
+    this.cursorPosition = 0;
+
     // 입력 상태
     this.currentInputText = "";
     this.commandHistory = [];
@@ -225,6 +228,22 @@ class TissueTerminal {
       this.navigateHistory(-1);
     } else if (event.key === "ArrowDown") {
       this.navigateHistory(1);
+    } else if (event.key === "ArrowLeft") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("left");
+      } else {
+        this.moveCursorLeft();
+      }
+    } else if (event.key === "ArrowRight") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("right");
+      } else {
+        this.moveCursorRight();
+      }
+    } else if (event.key === "Home") {
+      this.moveCursorToStart();
+    } else if (event.key === "End") {
+      this.moveCursorToEnd();
     } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
       this.executeCommand("clear");
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
@@ -239,6 +258,62 @@ class TissueTerminal {
     ) {
       this.addCharacterToInput(event.key);
     }
+  }
+
+  /**
+   * 커서 이동 메서드들
+   */
+  moveCursorLeft() {
+    if (this.cursorPosition > 0) {
+      this.cursorPosition--;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorRight() {
+    if (this.cursorPosition < this.currentInputText.length) {
+      this.cursorPosition++;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorToStart() {
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+  }
+
+  moveCursorToEnd() {
+    this.cursorPosition = this.currentInputText.length;
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 단어 단위 커서 이동
+   */
+  moveCursorByWord(direction) {
+    const text = this.currentInputText;
+    let newPosition = this.cursorPosition;
+
+    if (direction === "left") {
+      // 왼쪽으로 단어 단위 이동
+      while (newPosition > 0 && text[newPosition - 1] === " ") {
+        newPosition--; // 공백 건너뛰기
+      }
+      while (newPosition > 0 && text[newPosition - 1] !== " ") {
+        newPosition--; // 단어 끝까지
+      }
+    } else if (direction === "right") {
+      // 오른쪽으로 단어 단위 이동
+      while (newPosition < text.length && text[newPosition] !== " ") {
+        newPosition++; // 현재 단어 끝까지
+      }
+      while (newPosition < text.length && text[newPosition] === " ") {
+        newPosition++; // 공백 건너뛰기
+      }
+    }
+
+    this.cursorPosition = newPosition;
+    this.updateInputDisplay();
   }
 
   /**
@@ -754,6 +829,7 @@ class TissueTerminal {
 
     this.historyIndex = -1;
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
 
     // 명령어 실행
@@ -1241,25 +1317,62 @@ class TissueTerminal {
   }
 
   /**
-   * 입력에 문자 추가
+   * 입력에 문자 추가(커서 위치 고려)
    */
   addCharacterToInput(char) {
-    this.currentInputText += char;
+    // this.currentInputText += char;
+    // this.updateInputDisplay();
+
+    // 커서 위치에 문자 삽입
+    const before = this.currentInputText.substring(0, this.cursorPosition);
+    const after = this.currentInputText.substring(this.cursorPosition);
+
+    this.currentInputText = before + char + after;
+    this.cursorPosition++; // 커서를 한 칸 앞으로
+
     this.updateInputDisplay();
   }
 
   /**
-   * 백스페이스 처리
+   * 백스페이스 처리(커서 위치 고려)
    */
   handleBackspace() {
-    if (this.currentInputText.length > 0) {
-      this.currentInputText = this.currentInputText.slice(0, -1);
+    // if (this.currentInputText.length > 0) {
+    //   this.currentInputText = this.currentInputText.slice(0, -1);
+    //   this.updateInputDisplay();
+    // }
+
+    if (this.cursorPosition > 0) {
+      const before = this.currentInputText.substring(
+        0,
+        this.cursorPosition - 1
+      );
+      const after = this.currentInputText.substring(this.cursorPosition);
+
+      this.currentInputText = before + after;
+      this.cursorPosition--; // 커서를 한 칸 뒤로
+
       this.updateInputDisplay();
     }
   }
 
   /**
-   * 명령어 히스토리 탐색
+   * Delete 키 처리
+   */
+  handleDelete() {
+    if (this.cursorPosition < this.currentInputText.length) {
+      const before = this.currentInputText.substring(0, this.cursorPosition);
+      const after = this.currentInputText.substring(this.cursorPosition + 1);
+
+      this.currentInputText = before + after;
+      // 커서 위치는 그대로 유지
+
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 명령어 히스토리 탐색 (히스토리 탐색 시 커서를 끝으로 이동)
    */
   navigateHistory(direction) {
     if (this.commandHistory.length === 0) return;
@@ -1278,6 +1391,8 @@ class TissueTerminal {
       this.currentInputText = this.commandHistory[this.historyIndex];
     }
 
+    // 커서를 텍스트 끝으로 이동
+    this.cursorPosition = this.currentInputText.length;
     this.updateInputDisplay();
   }
 
@@ -1309,48 +1424,145 @@ class TissueTerminal {
     if (this.currentInputText) {
       this.addCommandToHistory(this.currentInputText + "^C");
       this.currentInputText = "";
+      this.cursorPosition = 0; // 커서 위치 초기화
       this.updateInputDisplay();
     }
   }
 
   /**
-   * 입력 표시 업데이트 (수정: 모든 특별 모드 마스킹 처리)
+   * 입력 표시 업데이트(커서 위치 반영)
    */
+  // updateInputDisplay() {
+  //   if (!this.currentInput) return;
+
+  //   // 특별 모드 중이고 민감한 필드인 경우 마스킹 처리
+  //   if (
+  //     (this.signupInProgress || this.loginInProgress || this.editInProgress) &&
+  //     this.currentFieldInfo?.sensitive
+  //   ) {
+  //     this.updateMaskedInputDisplay();
+  //   } else {
+  //     this.currentInput.textContent = this.currentInputText;
+  //     this.refreshCursor();
+  //   }
+  // }
   updateInputDisplay() {
     if (!this.currentInput) return;
 
-    // 특별 모드 중이고 민감한 필드인 경우 마스킹 처리
+    // 특별 모드 마스킹 처리
     if (
       (this.signupInProgress || this.loginInProgress || this.editInProgress) &&
       this.currentFieldInfo?.sensitive
     ) {
       this.updateMaskedInputDisplay();
-    } else {
-      this.currentInput.textContent = this.currentInputText;
-      this.refreshCursor();
+      return; // 여기서 리턴해서 아래 로직 실행 안함
     }
+
+    // 🔥 기존 구조를 활용한 커서 위치 처리
+    const beforeCursor = this.currentInputText.substring(
+      0,
+      this.cursorPosition
+    );
+    const afterCursor = this.currentInputText.substring(this.cursorPosition);
+
+    // 현재 입력 영역에 커서 앞 텍스트만 표시
+    this.currentInput.textContent = beforeCursor;
+
+    // 기존 커서 요소 찾기
+    if (this.terminalCursor) {
+      // 커서 뒤에 숨겨진 텍스트가 있다면 data 속성으로 저장 (화면엔 안 보임)
+      this.terminalCursor.setAttribute("data-after-text", afterCursor);
+    }
+
+    // 기존 refreshCursor 메서드 호출 (기존 깜빡임 유지)
+    this.refreshCursor();
   }
 
   /**
    * 패스워드 필드용 마스킹된 입력 표시 업데이트
    */
+  // updateMaskedInputDisplay() {
+  //   if (!this.currentInput) return;
+
+  //   // 실제 입력 텍스트 길이만큼 * 표시
+  //   const maskedText = "*".repeat(this.currentInputText.length);
+  //   this.currentInput.textContent = maskedText;
+  //   this.refreshCursor();
+  // }
   updateMaskedInputDisplay() {
     if (!this.currentInput) return;
 
-    // 실제 입력 텍스트 길이만큼 * 표시
-    const maskedText = "*".repeat(this.currentInputText.length);
-    this.currentInput.textContent = maskedText;
+    // 커서 앞부분만 마스킹해서 표시
+    const beforeCursor = "*".repeat(this.cursorPosition);
+    this.currentInput.textContent = beforeCursor;
+
+    // 커서 뒤 텍스트 정보 저장
+    const afterCursorLength =
+      this.currentInputText.length - this.cursorPosition;
+    const afterMasked = "*".repeat(afterCursorLength);
+
+    if (this.terminalCursor) {
+      this.terminalCursor.setAttribute("data-after-text", afterMasked);
+    }
+
     this.refreshCursor();
+  }
+
+  /**
+   * 명령어 입력 초기화 시 커서 위치도 초기화
+   */
+  resetCurrentInput() {
+    this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
+    this.updateInputDisplay();
   }
 
   /**
    * 커서 새로고침
    */
+  // refreshCursor() {
+  //   if (this.terminalCursor) {
+  //     this.terminalCursor.style.animation = "none";
+  //     this.terminalCursor.offsetHeight; // 강제 리플로우
+  //     this.terminalCursor.style.animation = "terminalBlink 1s infinite";
+  //   }
+  // }
+
   refreshCursor() {
     if (this.terminalCursor) {
+      // 커서 뒤 텍스트가 있으면 커서 다음에 표시
+      const afterText =
+        this.terminalCursor.getAttribute("data-after-text") || "";
+
+      // 기존 커서 다음 형제 요소들 제거 (afterText 전용)
+      let nextSibling = this.terminalCursor.nextSibling;
+      while (nextSibling) {
+        const toRemove = nextSibling;
+        nextSibling = nextSibling.nextSibling;
+        if (toRemove.className === "after-cursor-text") {
+          toRemove.remove();
+        }
+      }
+
+      // 커서 뒤 텍스트가 있으면 추가
+      if (afterText) {
+        const afterSpan = document.createElement("span");
+        afterSpan.className = "after-cursor-text";
+        afterSpan.textContent = afterText;
+        afterSpan.style.color = "#ffffff"; // 일반 텍스트 색상
+
+        // 커서 바로 다음에 삽입
+        this.terminalCursor.parentNode.insertBefore(
+          afterSpan,
+          this.terminalCursor.nextSibling
+        );
+      }
+
+      // 기존 깜빡임 효과 유지
       this.terminalCursor.style.animation = "none";
       this.terminalCursor.offsetHeight; // 강제 리플로우
-      this.terminalCursor.style.animation = "terminalBlink 1s infinite";
+      this.terminalCursor.style.animation =
+        "terminalBlink 1s step-start infinite";
     }
   }
 
@@ -1938,6 +2150,7 @@ class TissueTerminal {
     }
 
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -3361,6 +3574,9 @@ class TissueTerminal {
   /**
    * 프롬프트 복원 메서드들
    */
+  /**
+   * TODO: 복원 메서드들 공통으로 사용해도 괜찮지 않을까?
+   */
   resetPromptAfterLogin() {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
@@ -3368,6 +3584,7 @@ class TissueTerminal {
       promptElement.style.color = "#00AAFF";
     }
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -3378,6 +3595,7 @@ class TissueTerminal {
       promptElement.style.color = "#00AAFF";
     }
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -3387,6 +3605,8 @@ class TissueTerminal {
       promptElement.textContent = this.promptPrefix;
       promptElement.style.color = "#00AAFF";
     }
+
+    this.cursorPosition = 0; // 커서 위치 초기화
   }
 
   /**
