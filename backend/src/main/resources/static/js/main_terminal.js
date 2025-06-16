@@ -101,9 +101,9 @@ class TissueTerminal {
         name: "Neon",
         description: "Neon tones",
       },
-      crimsonnight: {
-        name: "Crimson Night",
-        description: "Dark with red-orange flair",
+      cherryash: {
+        name: "Cherry Ash",
+        description: "Dark with red and orange flair",
       },
     };
 
