@@ -78,6 +78,38 @@ class TissueTerminal {
     this.jobTypes = null;
     this.jobTypesLoaded = false;
 
+    // 테마 관련 상태
+    this.currentTheme = "dark"; // 기본 테마
+    this.availableThemes = {
+      dark: {
+        name: "Dark",
+        description: "Classic dark theme (default)",
+      },
+      light: {
+        name: "Light",
+        description: "Bright and clean light theme",
+      },
+      nightwing: {
+        name: "Nightwing",
+        description: "Dark theme with purple accents",
+      },
+      solarizedlight: {
+        name: "Solarized Light",
+        description: "Soft, balanced contrast",
+      },
+      neon: {
+        name: "Neon",
+        description: "Neon tones",
+      },
+      crimsonnight: {
+        name: "Crimson Night",
+        description: "Dark with red-orange flair",
+      },
+    };
+
+    // 로컬 스토리지에서 저장된 테마 로드
+    this.loadSavedTheme();
+
     // 다국어 메시지 시스템
     this.messages = this.initializeMessages();
 
@@ -143,10 +175,7 @@ class TissueTerminal {
       console.log("Current language: ", terminal.currentLanguage);
       console.log("Browser language: ", navigator.language);
 
-      // 메시지 객체 확인
-      console.log("Messages object:", terminal.messages);
-      console.log("Korean messages exist:", !!terminal.messages?.ko);
-      console.log("English messages exist:", !!terminal.messages?.en);
+      console.log(`Current theme: ${this.currentTheme}`);
     } catch (error) {
       console.error("TISSUE Terminal: Initialization failed", error);
       this.showCriticalError("System initialization failed");
@@ -205,127 +234,6 @@ class TissueTerminal {
   }
 
   /**
-   * 키 입력 처리
-   */
-  handleKeyPress(event) {
-    if (!this.bootCompleted) return;
-
-    // 기본 동작 방지
-    event.preventDefault();
-
-    // 기존 로직 계속...
-    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
-      this.handleSpecialModeKeyPress(event);
-      return;
-    }
-
-    // 나머지 키 처리 로직...
-    if (event.key === "Enter") {
-      this.processCommand();
-    } else if (event.key === "Backspace") {
-      this.handleBackspace();
-    } else if (event.key === "ArrowUp") {
-      this.navigateHistory(-1);
-    } else if (event.key === "ArrowDown") {
-      this.navigateHistory(1);
-    } else if (event.key === "ArrowLeft") {
-      if (event.ctrlKey || event.metaKey) {
-        this.moveCursorByWord("left");
-      } else {
-        this.moveCursorLeft();
-      }
-    } else if (event.key === "ArrowRight") {
-      if (event.ctrlKey || event.metaKey) {
-        this.moveCursorByWord("right");
-      } else {
-        this.moveCursorRight();
-      }
-    } else if (event.key === "Home") {
-      this.moveCursorToStart();
-    } else if (event.key === "End") {
-      this.moveCursorToEnd();
-    } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
-      this.executeCommand("clear");
-    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
-      this.handleCancel();
-    } else if (event.key === "Tab") {
-      this.handleTabCompletion();
-    } else if (
-      event.key.length === 1 &&
-      !event.ctrlKey &&
-      !event.altKey &&
-      !event.metaKey
-    ) {
-      this.addCharacterToInput(event.key);
-    }
-  }
-
-  /**
-   * 커서 이동 메서드들
-   */
-  moveCursorLeft() {
-    if (this.cursorPosition > 0) {
-      this.cursorPosition--;
-      this.updateInputDisplay();
-    }
-  }
-
-  moveCursorRight() {
-    if (this.cursorPosition < this.currentInputText.length) {
-      this.cursorPosition++;
-      this.updateInputDisplay();
-    }
-  }
-
-  moveCursorToStart() {
-    this.cursorPosition = 0;
-    this.updateInputDisplay();
-  }
-
-  moveCursorToEnd() {
-    this.cursorPosition = this.currentInputText.length;
-    this.updateInputDisplay();
-  }
-
-  /**
-   * 단어 단위 커서 이동
-   */
-  moveCursorByWord(direction) {
-    const text = this.currentInputText;
-    let newPosition = this.cursorPosition;
-
-    if (direction === "left") {
-      // 왼쪽으로 단어 단위 이동
-      while (newPosition > 0 && text[newPosition - 1] === " ") {
-        newPosition--; // 공백 건너뛰기
-      }
-      while (newPosition > 0 && text[newPosition - 1] !== " ") {
-        newPosition--; // 단어 끝까지
-      }
-    } else if (direction === "right") {
-      // 오른쪽으로 단어 단위 이동
-      while (newPosition < text.length && text[newPosition] !== " ") {
-        newPosition++; // 현재 단어 끝까지
-      }
-      while (newPosition < text.length && text[newPosition] === " ") {
-        newPosition++; // 공백 건너뛰기
-      }
-    }
-
-    this.cursorPosition = newPosition;
-    this.updateInputDisplay();
-  }
-
-  /**
-   * 브라우저 언어 감지 (영어 기본, 한국어만 특별 처리)
-   */
-  detectLanguage() {
-    const browserLang = navigator.language || navigator.userLanguage;
-    // 한국어인 경우만 'ko', 나머지는 모두 'en' (기본값)
-    return browserLang.startsWith("ko") ? "ko" : "en";
-  }
-
-  /**
    * 다국어 메시지 초기화
    */
   initializeMessages() {
@@ -355,6 +263,21 @@ class TissueTerminal {
         loginAgain: "다시 로그인해주세요",
         checkConnection: "연결을 확인해주세요",
 
+        // 테마 관련
+        themeChanged: "테마가 {0}(으)로 변경되었습니다",
+        themeAlreadyActive: "이미 {0} 테마를 사용 중입니다",
+        themeNotFound: "알 수 없는 테마: {0}",
+        themeApplyFailed: "테마 적용 실패: {0}",
+        themeListTitle: "사용 가능한 테마:",
+        themeUsage: "사용법: theme [테마명]",
+        themeExample: "예시: theme dark",
+        currentTheme: "현재 테마: {0}",
+        themeDescription: "설명: {0}",
+        themeCurrent: "현재",
+        themeTabTip: "팁: 테마명 자동완성은 Tab 키를 사용하세요",
+        helpThemeSection: "테마 예시:",
+        helpTheme: "터미널 테마 변경",
+
         // 명령어 관련
         commandNotFound: "명령어를 찾을 수 없습니다",
         typeHelpForCommands: "'help' 명령어로 사용 가능한 명령어를 확인하세요.",
@@ -363,6 +286,7 @@ class TissueTerminal {
         commandCompletion:
           "Tab으로 명령어 완성, 위/아래 화살표로 명령어 히스토리.",
         goodbye: "안녕히 가세요!",
+        tabCompletionAvailable: "사용 가능한 자동완성:",
 
         // 회원가입 관련
         registrationWizard: "TISSUE 회원가입 마법사",
@@ -530,21 +454,22 @@ class TissueTerminal {
         // 명령어 설명
         commandDescriptions: {
           banner: "시스템 배너와 정보 표시",
-          clear: "터미널 화면 지우기",
+          lang: "언어 변경",
+          theme: "터미널 테마 변경",
           help: "이 도움말 메시지 표시",
           info: "시스템 정보 표시",
           version: "tissue의 현재 버전 표시",
           date: "현재 날짜와 시간 표시",
           echo: "주어진 텍스트 출력",
           whoami: "현재 사용자명 표시",
+          clear: "터미널 화면 지우기",
           exit: "터미널 종료",
+          status: "현재 로그인 상태 표시",
           signup: "새 사용자 계정 생성",
           login: "계정에 로그인",
           logout: "계정에서 로그아웃",
           profile: "프로필 정보 보기",
           edit: "프로필 정보 수정",
-          status: "현재 로그인 상태 표시",
-          lang: "언어 변경",
         },
         noDescriptionAvailable: "설명이 없습니다",
       },
@@ -574,6 +499,20 @@ class TissueTerminal {
         loginAgain: "Please login again",
         checkConnection: "Please check your connection",
 
+        // Theme related
+        themeChanged: "Theme changed to: {0}",
+        themeAlreadyActive: "Already using theme: {0}",
+        themeNotFound: "Unknown theme: {0}",
+        themeApplyFailed: "Failed to apply theme: {0}",
+        themeListTitle: "Available themes:",
+        themeUsage: "Usage: theme [theme-name]",
+        themeExample: "Example: theme dark",
+        currentTheme: "Current theme: {0}",
+        themeDescription: "Description: {0}",
+        themeCurrent: "current",
+        themeTabTip: "Tip: Use Tab key for theme name completion",
+        helpThemeSection: "Theme Examples:",
+
         // Command related
         commandNotFound: "command not found",
         typeHelpForCommands: "Type 'help' to see available commands.",
@@ -582,6 +521,7 @@ class TissueTerminal {
         commandCompletion:
           "Use Tab for command completion, Up/Down arrows for command history.",
         goodbye: "Goodbye!",
+        tabCompletionAvailable: "Available completions:",
 
         // Signup related
         registrationWizard: "TISSUE Registration Wizard",
@@ -754,25 +694,357 @@ class TissueTerminal {
         // Command descriptions
         commandDescriptions: {
           banner: "Display system banner and information",
-          clear: "Clear the terminal screen",
+          lang: "Change language",
+          theme: "Change terminal theme",
           help: "Show this help message",
           info: "Display system information",
           version: "Show current version of tissue",
           date: "Display current date and time",
           echo: "Echo the given text",
           whoami: "Display current username",
+          clear: "Clear the terminal screen",
           exit: "Exit the terminal",
+          status: "Show current login status",
           signup: "Create a new user account",
           login: "Sign in to your account",
           logout: "Sign out from your account",
           profile: "View your profile information",
           edit: "Edit profile information",
-          status: "Show current login status",
-          lang: "Change language",
         },
         noDescriptionAvailable: "No description available",
       },
     };
+  }
+
+  /**
+   * 테마 관련 메서드
+   */
+
+  /**
+   * 저장된 테마 로드
+   */
+  loadSavedTheme() {
+    try {
+      const savedTheme = localStorage.getItem("tissue-terminal-theme");
+      if (savedTheme && this.availableThemes[savedTheme]) {
+        this.currentTheme = savedTheme;
+      }
+    } catch (error) {
+      console.warn("Failed to load theme, using default theme:", error);
+      this.currentTheme = "dark";
+    }
+  }
+
+  /**
+   * 테마 저장
+   */
+  saveTheme(themeName) {
+    try {
+      localStorage.setItem("tissue-terminal-theme", themeName);
+    } catch (error) {
+      console.warn("Failed to save theme:", error);
+    }
+  }
+
+  /**
+   * 테마 적용
+   */
+  applyTheme(themeName) {
+    if (!this.availableThemes[themeName]) {
+      throw new Error(`Unknown theme: ${themeName}`);
+    }
+
+    // HTML 요소에 data-theme 속성 설정
+    document.documentElement.setAttribute("data-theme", themeName);
+
+    // 현재 테마 업데이트
+    this.currentTheme = themeName;
+
+    // 테마 저장
+    this.saveTheme(themeName);
+
+    // 테마 변경 알림
+    this.addHistoryLine(
+      this.getMessage("themeChanged", this.availableThemes[themeName].name),
+      "success-msg"
+    );
+
+    console.log(`Theme changed to ${themeName}`);
+  }
+
+  /**
+   * 현재 테마 정보 표시
+   */
+  showCurrentTheme() {
+    const theme = this.availableThemes[this.currentTheme];
+    this.addHistoryLine(
+      this.getMessage("currentTheme", theme.name),
+      "info-msg"
+    );
+    // this.addHistoryLine(
+    //   this.getMessage("themeDescription", theme.description),
+    //   "system-msg"
+    // );
+  }
+
+  /**
+   * 사용 가능한 테마 목록 표시
+   */
+  showAvailableThemes() {
+    this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+    this.addHistoryLine("", "");
+
+    Object.entries(this.availableThemes).forEach(([key, theme]) => {
+      const isCurrentTheme = key === this.currentTheme;
+      const prefix = isCurrentTheme ? "→ " : "  ";
+
+      const suffix = isCurrentTheme
+        ? ` (${this.getMessage("themeCurrent")})`
+        : "";
+      const className = isCurrentTheme ? "command-highlight" : "system-msg";
+
+      this.addHistoryLine(
+        `${prefix}${key.padEnd(15)} - ${theme.name}${suffix}`,
+        className
+      );
+      // this.addHistoryLine(`${" ".repeat(17)}${theme.description}`, "help-msg");
+      this.addHistoryLine("", "");
+    });
+
+    // 🔥 getMessage 적용
+    this.addHistoryLine(this.getMessage("themeUsage"), "info-msg");
+    this.addHistoryLine(this.getMessage("themeExample"), "system-msg");
+  }
+
+  /**
+   * 테마 명령어 처리
+   */
+  handleThemeCommand(args) {
+    // 인자가 없으면 현재 테마와 사용 가능한 테마 목록 표시
+    if (args.length === 0) {
+      this.showCurrentTheme();
+      this.addHistoryLine("", "");
+      this.showAvailableThemes();
+      return;
+    }
+
+    const themeName = args[0].toLowerCase();
+
+    // 특별 명령어들
+    if (themeName === "list" || themeName === "ls") {
+      this.showAvailableThemes();
+      return;
+    }
+
+    if (themeName === "current" || themeName === "show") {
+      this.showCurrentTheme();
+      return;
+    }
+
+    if (themeName === "reset") {
+      this.applyTheme("dark");
+      return;
+    }
+
+    if (themeName === "random") {
+      const themeNames = Object.keys(this.availableThemes);
+      const randomTheme =
+        themeNames[Math.floor(Math.random() * themeNames.length)];
+      this.applyTheme(randomTheme);
+      return;
+    }
+
+    // 정확한 매칭만 지원
+    if (this.availableThemes[themeName]) {
+      if (themeName === this.currentTheme) {
+        this.addHistoryLine(
+          this.getMessage(
+            "themeAlreadyActive",
+            this.availableThemes[themeName].name
+          ),
+          "warning-msg"
+        );
+        return;
+      }
+
+      try {
+        this.applyTheme(themeName);
+      } catch (error) {
+        this.addHistoryLine(
+          this.getMessage("themeApplyFailed", error.message),
+          "error-msg"
+        );
+      }
+    } else {
+      // 매칭되는 테마가 없으면 바로 에러 + 목록 표시
+      this.addHistoryLine(
+        this.getMessage("themeNotFound", themeName),
+        "error-msg"
+      );
+      this.addHistoryLine("", "");
+      this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+
+      const themeList = Object.keys(this.availableThemes);
+      this.addHistoryLine(themeList.join(", "), "system-msg");
+      this.addHistoryLine("", "");
+      this.addHistoryLine(this.getMessage("themeTabTip"), "help-msg");
+    }
+  }
+
+  /**
+   * 동적 스타일 조정
+   */
+  adjustDynamicStyles() {
+    // 예: 특정 테마에서만 필요한 추가 스타일 적용
+    const dynamicStyle = document.getElementById("dynamic-theme-style");
+
+    if (dynamicStyle) {
+      dynamicStyle.remove();
+    }
+
+    const style = document.createElement("style");
+    style.id = "dynamic-theme-style";
+
+    // 네온 테마에서 글로우 효과 추가
+    if (this.currentTheme === "neon") {
+      style.textContent = `
+      .ascii-banner {
+        text-shadow: 0 0 10px currentColor;
+      }
+      .terminal-cursor {
+        text-shadow: 0 0 8px currentColor;
+      }
+      .success-msg {
+        text-shadow: 0 0 6px currentColor;
+      }
+      .error-msg {
+        text-shadow: 0 0 6px currentColor;
+      }
+    `;
+    }
+
+    document.head.appendChild(style);
+  }
+
+  /**
+   * 키 입력 처리
+   */
+  handleKeyPress(event) {
+    if (!this.bootCompleted) return;
+
+    // 기본 동작 방지
+    event.preventDefault();
+
+    // 기존 로직 계속...
+    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
+      this.handleSpecialModeKeyPress(event);
+      return;
+    }
+
+    // 나머지 키 처리 로직...
+    if (event.key === "Enter") {
+      this.processCommand();
+    } else if (event.key === "Backspace") {
+      this.handleBackspace();
+    } else if (event.key === "ArrowUp") {
+      this.navigateHistory(-1);
+    } else if (event.key === "ArrowDown") {
+      this.navigateHistory(1);
+    } else if (event.key === "ArrowLeft") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("left");
+      } else {
+        this.moveCursorLeft();
+      }
+    } else if (event.key === "ArrowRight") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("right");
+      } else {
+        this.moveCursorRight();
+      }
+    } else if (event.key === "Home") {
+      this.moveCursorToStart();
+    } else if (event.key === "End") {
+      this.moveCursorToEnd();
+    } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
+      this.executeCommand("clear");
+    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+      this.handleCancel();
+    } else if (event.key === "Tab") {
+      this.handleTabCompletion();
+    } else if (
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
+      this.addCharacterToInput(event.key);
+    }
+  }
+
+  /**
+   * 커서 이동 메서드들
+   */
+  moveCursorLeft() {
+    if (this.cursorPosition > 0) {
+      this.cursorPosition--;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorRight() {
+    if (this.cursorPosition < this.currentInputText.length) {
+      this.cursorPosition++;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorToStart() {
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+  }
+
+  moveCursorToEnd() {
+    this.cursorPosition = this.currentInputText.length;
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 단어 단위 커서 이동
+   */
+  moveCursorByWord(direction) {
+    const text = this.currentInputText;
+    let newPosition = this.cursorPosition;
+
+    if (direction === "left") {
+      // 왼쪽으로 단어 단위 이동
+      while (newPosition > 0 && text[newPosition - 1] === " ") {
+        newPosition--; // 공백 건너뛰기
+      }
+      while (newPosition > 0 && text[newPosition - 1] !== " ") {
+        newPosition--; // 단어 끝까지
+      }
+    } else if (direction === "right") {
+      // 오른쪽으로 단어 단위 이동
+      while (newPosition < text.length && text[newPosition] !== " ") {
+        newPosition++; // 현재 단어 끝까지
+      }
+      while (newPosition < text.length && text[newPosition] === " ") {
+        newPosition++; // 공백 건너뛰기
+      }
+    }
+
+    this.cursorPosition = newPosition;
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 브라우저 언어 감지 (영어 기본, 한국어만 특별 처리)
+   */
+  detectLanguage() {
+    const browserLang = navigator.language || navigator.userLanguage;
+    // 한국어인 경우만 'ko', 나머지는 모두 'en' (기본값)
+    return browserLang.startsWith("ko") ? "ko" : "en";
   }
 
   /**
@@ -876,6 +1148,11 @@ class TissueTerminal {
     // 베너 출력 명령어
     banner: function () {
       this.displayBanner();
+      return null;
+    },
+
+    theme: function (args) {
+      this.handleThemeCommand(args);
       return null;
     },
 
@@ -1399,19 +1676,65 @@ class TissueTerminal {
   /**
    * 탭 완성
    */
+  // handleTabCompletion() {
+  //   const input = this.currentInputText.trim();
+  //   if (!input) return;
+
+  //   const commands = Object.keys(this.commands);
+  //   const matches = commands.filter((cmd) => cmd.startsWith(input));
+
+  //   if (matches.length === 1) {
+  //     this.currentInputText = matches[0] + " ";
+  //     this.updateInputDisplay();
+  //   } else if (matches.length > 1) {
+  //     this.addHistoryLine("", "");
+  //     this.addHistoryLine("Available completions:", "info-msg");
+  //     this.addHistoryLine(matches.join("  "), "system-msg");
+  //     this.addHistoryLine("", "");
+  //   }
+  // }
+
   handleTabCompletion() {
     const input = this.currentInputText.trim();
     if (!input) return;
 
+    // theme 명령어의 하위 완성
+    if (input.startsWith("theme ")) {
+      const themeInput = input.substring(6); // 'theme ' 이후 부분
+      const themeNames = Object.keys(this.availableThemes);
+      const matches = themeNames.filter((theme) =>
+        theme.startsWith(themeInput)
+      );
+
+      if (matches.length === 1) {
+        this.currentInputText = `theme ${matches[0]}`;
+        this.cursorPosition = this.currentInputText.length;
+        this.updateInputDisplay();
+      } else if (matches.length > 1) {
+        this.addHistoryLine("", "");
+
+        this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+        this.addHistoryLine(matches.join("  "), "system-msg");
+        this.addHistoryLine("", "");
+      }
+      return;
+    }
+
+    // 일반 명령어 완성
     const commands = Object.keys(this.commands);
     const matches = commands.filter((cmd) => cmd.startsWith(input));
 
     if (matches.length === 1) {
       this.currentInputText = matches[0] + " ";
+      this.cursorPosition = this.currentInputText.length;
       this.updateInputDisplay();
     } else if (matches.length > 1) {
       this.addHistoryLine("", "");
-      this.addHistoryLine("Available completions:", "info-msg");
+
+      this.addHistoryLine(
+        this.getMessage("tabCompletionAvailable"),
+        "info-msg"
+      );
       this.addHistoryLine(matches.join("  "), "system-msg");
       this.addHistoryLine("", "");
     }
@@ -1432,20 +1755,6 @@ class TissueTerminal {
   /**
    * 입력 표시 업데이트(커서 위치 반영)
    */
-  // updateInputDisplay() {
-  //   if (!this.currentInput) return;
-
-  //   // 특별 모드 중이고 민감한 필드인 경우 마스킹 처리
-  //   if (
-  //     (this.signupInProgress || this.loginInProgress || this.editInProgress) &&
-  //     this.currentFieldInfo?.sensitive
-  //   ) {
-  //     this.updateMaskedInputDisplay();
-  //   } else {
-  //     this.currentInput.textContent = this.currentInputText;
-  //     this.refreshCursor();
-  //   }
-  // }
   updateInputDisplay() {
     if (!this.currentInput) return;
 
@@ -1458,7 +1767,6 @@ class TissueTerminal {
       return; // 여기서 리턴해서 아래 로직 실행 안함
     }
 
-    // 🔥 기존 구조를 활용한 커서 위치 처리
     const beforeCursor = this.currentInputText.substring(
       0,
       this.cursorPosition
@@ -1474,31 +1782,32 @@ class TissueTerminal {
       this.terminalCursor.setAttribute("data-after-text", afterCursor);
     }
 
-    // 기존 refreshCursor 메서드 호출 (기존 깜빡임 유지)
     this.refreshCursor();
   }
 
   /**
    * 패스워드 필드용 마스킹된 입력 표시 업데이트
    */
-  // updateMaskedInputDisplay() {
-  //   if (!this.currentInput) return;
-
-  //   // 실제 입력 텍스트 길이만큼 * 표시
-  //   const maskedText = "*".repeat(this.currentInputText.length);
-  //   this.currentInput.textContent = maskedText;
-  //   this.refreshCursor();
-  // }
   updateMaskedInputDisplay() {
     if (!this.currentInput) return;
+
+    // 커서 위치 검증 및 보정
+    if (this.cursorPosition > this.currentInputText.length) {
+      this.cursorPosition = this.currentInputText.length;
+    }
+    if (this.cursorPosition < 0) {
+      this.cursorPosition = 0;
+    }
 
     // 커서 앞부분만 마스킹해서 표시
     const beforeCursor = "*".repeat(this.cursorPosition);
     this.currentInput.textContent = beforeCursor;
 
-    // 커서 뒤 텍스트 정보 저장
-    const afterCursorLength =
-      this.currentInputText.length - this.cursorPosition;
+    // 커서 뒤 텍스트 정보 저장 (안전하게 처리)
+    const afterCursorLength = Math.max(
+      0,
+      this.currentInputText.length - this.cursorPosition
+    );
     const afterMasked = "*".repeat(afterCursorLength);
 
     if (this.terminalCursor) {
@@ -1506,6 +1815,39 @@ class TissueTerminal {
     }
 
     this.refreshCursor();
+  }
+
+  /**
+   * 특별 모드용 문자 입력 (커서 위치 관리)
+   */
+  addCharacterToInputInSpecialMode(char) {
+    // 특별 모드에서는 항상 끝에 추가 (커서도 끝으로)
+    this.currentInputText += char;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 민감한 필드면 마스킹 표시
+    if (this.currentFieldInfo?.sensitive) {
+      this.updateMaskedInputDisplay();
+    } else {
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 특별 모드용 백스페이스 메서드
+   */
+  handleBackspaceInSpecialMode() {
+    if (this.currentInputText.length > 0) {
+      this.currentInputText = this.currentInputText.slice(0, -1);
+      this.cursorPosition = this.currentInputText.length; // 커서를 끝으로
+
+      // 민감한 필드면 마스킹 표시
+      if (this.currentFieldInfo?.sensitive) {
+        this.updateMaskedInputDisplay();
+      } else {
+        this.updateInputDisplay();
+      }
+    }
   }
 
   /**
@@ -1520,14 +1862,6 @@ class TissueTerminal {
   /**
    * 커서 새로고침
    */
-  // refreshCursor() {
-  //   if (this.terminalCursor) {
-  //     this.terminalCursor.style.animation = "none";
-  //     this.terminalCursor.offsetHeight; // 강제 리플로우
-  //     this.terminalCursor.style.animation = "terminalBlink 1s infinite";
-  //   }
-  // }
-
   refreshCursor() {
     if (this.terminalCursor) {
       // 커서 뒤 텍스트가 있으면 커서 다음에 표시
@@ -1739,6 +2073,10 @@ class TissueTerminal {
     const field = fields[this.signupStep];
     this.currentFieldInfo = field;
 
+    this.currentInputText = "";
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+
     // 진행률 표시
     const progress = Math.round((this.signupStep / fields.length) * 100);
     const progressBar =
@@ -1805,6 +2143,7 @@ class TissueTerminal {
   /**
    * 회원가입 중 키 입력 처리
    */
+
   handleSignupKeyPress(event) {
     const field = this.currentFieldInfo;
     if (!field) return;
@@ -1812,10 +2151,7 @@ class TissueTerminal {
     if (event.key === "Enter") {
       this.processSignupInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelSignupProcess();
     } else if (event.key === "Tab" && field.name === "jobType") {
@@ -1826,10 +2162,7 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
@@ -2565,6 +2898,10 @@ class TissueTerminal {
     const field = fields[this.loginStep];
     this.currentFieldInfo = field;
 
+    this.currentInputText = "";
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+
     // this.addHistoryLine(`${field.prompt}:`, "info-msg");
     this.updatePromptForLogin(field);
   }
@@ -2590,10 +2927,7 @@ class TissueTerminal {
     if (event.key === "Enter") {
       this.processLoginInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelLoginProcess();
     } else if (
@@ -2602,10 +2936,7 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
@@ -2953,6 +3284,8 @@ class TissueTerminal {
     }
 
     this.currentInputText = "";
+    this.cursorPosition = 0;
+
     this.updateInputDisplay();
     this.updatePromptForEdit();
   }
@@ -2978,10 +3311,7 @@ class TissueTerminal {
     if (event.key === "Enter") {
       this.processEditInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelEditProcess();
     } else if (event.key === "Tab" && this.editData.field === "jobType") {
@@ -2992,10 +3322,7 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
