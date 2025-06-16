@@ -138,8 +138,8 @@
   --progress-text: #0088cc;
 }
 
-/* Dracula Theme */
-[data-theme="dracula"] {
+/* Nightwing Theme */
+[data-theme="nightwing"] {
   --terminal-bg: #282a36;
   --terminal-text: #f8f8f2;
   --terminal-prompt: #8be9fd;
@@ -255,43 +255,55 @@
   --progress-text: #8080ff;
 }
 
-/* Monokai Theme */
-[data-theme="monokai"] {
-  --terminal-bg: #272822;
-  --terminal-text: #f8f8f2;
-  --terminal-prompt: #66d9ef;
-  --terminal-input: #f8f8f2;
-  --terminal-cursor: #f8f8f0;
-  --ascii-banner: #a6e22e;
-  --version-info: #75715e;
-  --system-info-title: #f8f8f2;
-  --system-info-text: #f8f8f2;
-  --info-label: #e6db74;
-  --info-value: #f8f8f2;
-  --success-msg: #a6e22e;
-  --error-msg: #f92672;
-  --warning-msg: #fd971f;
-  --info-msg: #66d9ef;
-  --system-msg: #75715e;
-  --help-msg: #f8f8f2;
-  --command-highlight: #e6db74;
-  --scrollbar-track: #272822;
-  --scrollbar-thumb: #49483e;
-  --scrollbar-thumb-hover: #75715e;
-  --login-prompt: #a6e22e;
-  --edit-prompt: #ae81ff;
-  --profile-border: #66d9ef;
-  --profile-label: #ae81ff;
-  --profile-value: #f8f8f2;
-  --status-online: #a6e22e;
-  --status-offline: #75715e;
-  --verification-pending: #fd971f;
-  --verification-success: #a6e22e;
-  --verification-failed: #f92672;
-  --selection-bg: #49483e;
-  --selection-text: #f8f8f2;
-  --focus-outline: #66d9ef;
-  --progress-text: #ae81ff;
+/* Dark Crimson Theme */
+[data-theme="dark-crimson"] {
+  --terminal-bg: #1a0f0f;
+  --terminal-text: #f2e6e6;
+  --terminal-prompt: #e63946;
+  --terminal-input: #f2e6e6;
+  --terminal-cursor: #ff6b6b;
+
+  --ascii-banner: #b5179e;
+  --version-info: #a49b9b;
+
+  --system-info-title: #f2e6e6;
+  --system-info-text: #f2e6e6;
+
+  --info-label: #ffb347;
+  --info-value: #f2e6e6;
+
+  --success-msg: #a3e635;
+  --error-msg: #ff4d4d;
+  --warning-msg: #ff9248;
+  --info-msg: #c77dff;
+  --system-msg: #a49b9b;
+  --help-msg: #f2e6e6;
+
+  --command-highlight: #ffb347;
+
+  --scrollbar-track: #1a0f0f;
+  --scrollbar-thumb: #382424;
+  --scrollbar-thumb-hover: #5c3c3c;
+
+  --login-prompt: #a3e635;
+  --edit-prompt: #c77dff;
+
+  --profile-border: #c77dff;
+  --profile-label: #ff92df;
+  --profile-value: #f2e6e6;
+
+  --status-online: #a3e635;
+  --status-offline: #5c3c3c;
+
+  --verification-pending: #ff9248;
+  --verification-success: #a3e635;
+  --verification-failed: #ff4d4d;
+
+  --selection-bg: #382424;
+  --selection-text: #f2e6e6;
+
+  --focus-outline: #ff6b6b;
+  --progress-text: #c77dff;
 }
 
 /* 전체 화면을 터미널로 만들기 위한 기본 리셋 */
