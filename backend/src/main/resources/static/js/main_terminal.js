@@ -1,25 +1,23 @@
 // TODO-1: 매직넘버나 스트링을 상수로 분리
 // TODO-2: 설정값을 서버에서 주입받아서 사용(베너, 버전, author, license, 등...)
-// TODO-3: ✓ vs ✅ 어떤걸 사용? 아니면 마지막만 ✅를 사용할까?
-// TODO-4: ✗ vs ❌
-// TODO-5: handleKeyPress에서 handleSignupKeyPress 대신 handleSpecialModeKeyPress 사용하도록 변경
 // TODO-6: exit 명령어 사용시, 창을 나갈지 물어보는 모달 보여주고, 창 나가기
 // TODO-7: help [command]를 사용하면 자세한 설명 출력하기
 // TODO-8: vi, vim, emac 등의 명령어 사용하면 터미널 처럼 편집기 모드로 들어가짐 -> 여기서 글을 작성해서 저장하면 글이 저장됨
 // TODO-9: ls 명령어를 통해 저장한 글 조회 기능?(50개 까지 보여주기, 페이징 적용)
 // TODO-10: 내가 작성한 글 보는 기능?
 // TODO-11: 모든 API 요청에 대한 공통 함수 만들어서 사용?(credentials: "include" 적용)
-// TODO-12: 테마 추가(라이트모드, 다크모드, 등..)
-// TODO-13: JobType 목록을 서버에서 가져오기/캐싱
 // TODO-14: 필드에 대한 검증 로직을 클라이언트 사이드에서 다시 정의해서 사용하고 있음
 // - 서버사이드에서 규칙을 가져오는 방법은 없을까?(SSOT으로 관리하고 싶음)
 // - properties 파일을 하나 만들어서 규칙을 외부에서 주입하는 방식 고려
-// TOOD-15: 코드 가독성 리팩토링
-// TOOD-16: JS 모듈화
+// TODO-15: 코드 가독성 리팩토링
+// TODO-16: JS 모듈화
+// TODO-17: 영문을 제외한 문자의 입력, 특히 한글같은 조합 문자 입력에 대한 처리
+// - 현재는 한글 중심으로 처리 로직을 만들었지만, 입력 입력에 대해서는 모든 언어가 가능했으면 좋겠음
 
 /**
- * TISSUE Terminal System
- * 완전한 명령어 기반 터미널 인터페이스
+ * TISSUE
+ * Terminal Style UI/UX
+ * 명령어 기반 터미널 인터페이스
  */
 class TissueTerminal {
   constructor() {
@@ -43,6 +41,10 @@ class TissueTerminal {
     this.currentInputText = "";
     this.commandHistory = [];
     this.historyIndex = -1;
+
+    // 한글 조합 상태
+    this.isComposing = false;
+    this.lastInputValue = "";
 
     // 시스템 설정
     this.promptPrefix = "guest@tissue:~$ ";
@@ -223,6 +225,20 @@ class TissueTerminal {
    * 이벤트 리스너 설정
    */
   setupEventListeners() {
+    // input 이벤트로 한글 입력 보완
+    // document.addEventListener("input", (e) => this.handleInputEvent(e), true);
+
+    // IME 이벤트들
+    document.addEventListener("compositionstart", (e) =>
+      this.handleCompositionStart(e)
+    );
+    document.addEventListener("compositionupdate", (e) =>
+      this.handleCompositionUpdate(e)
+    );
+    document.addEventListener("compositionend", (e) =>
+      this.handleCompositionEnd(e)
+    );
+
     // 전역 키보드 이벤트
     document.addEventListener("keydown", (e) => this.handleKeyPress(e), true);
 
@@ -975,11 +991,180 @@ class TissueTerminal {
     document.head.appendChild(style);
   }
 
+  // ======== 한글 입력 처리 ========
+
+  /**
+   * 한글 입력 감지
+   */
+  isKoreanInput(event) {
+    // 한글 자음/모음 유니코드 범위 확인
+    const key = event.key;
+    if (key.length !== 1) return false;
+
+    const code = key.charCodeAt(0);
+
+    // 한글 자음 (ㄱ-ㅎ): U+3131-U+314E
+    // 한글 모음 (ㅏ-ㅣ): U+314F-U+3163
+    // 한글 음절 (가-힣): U+AC00-U+D7A3
+    return (
+      (code >= 0x3131 && code <= 0x3163) || // 자모
+      (code >= 0xac00 && code <= 0xd7a3)
+    ); // 완성된 한글
+  }
+
+  /**
+   * IME 조합 시작
+   */
+  handleCompositionStart(event) {
+    this.isComposing = true;
+    console.log("Composition started");
+
+    this.cleanupPendingInput();
+  }
+
+  /**
+   * 대기 중인 입력 정리
+   */
+  cleanupPendingInput() {
+    // 마지막에 잘못 입력된 한글 자모가 있으면 제거
+    if (this.currentInputText.length > 0) {
+      const lastChar = this.currentInputText[this.currentInputText.length - 1];
+      const lastCharCode = lastChar.charCodeAt(0);
+
+      // 마지막 문자가 한글 자모 (미완성)이면 제거
+      if (lastCharCode >= 0x3131 && lastCharCode <= 0x3163) {
+        console.log("Removing incomplete Korean character:", lastChar);
+        this.currentInputText = this.currentInputText.slice(0, -1);
+        this.cursorPosition = this.currentInputText.length;
+      }
+    }
+  }
+
+  /**
+   * IME(한글) 조합 업데이트
+   */
+  handleCompositionUpdate(event) {
+    if (!this.bootCompleted) return;
+
+    // 조합 중인 텍스트를 임시로 표시
+    const composingText = event.data || "";
+    console.log("Composing:", composingText);
+
+    // 조합 중인 텍스트로 화면 업데이트 (임시)
+    this.updateInputWithComposition(composingText);
+  }
+
+  /**
+   * IME(한글) 조합 완료
+   */
+  handleCompositionEnd(event) {
+    if (!this.bootCompleted) return;
+
+    this.isComposing = false;
+    const finalText = event.data || "";
+
+    console.log("Composition ended with:", finalText);
+
+    // 최종 조합된 텍스트가 있을 때만 추가
+    if (finalText && finalText.trim() !== "") {
+      this.addComposedText(finalText);
+    } else {
+      // 조합이 취소된 경우 화면 정리
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 조합 중인 텍스트(한글)로 화면 업데이트
+   */
+  updateInputWithComposition(composingText) {
+    if (!this.currentInput) return;
+
+    // 기존 텍스트 + 조합 중인 텍스트를 임시로 표시
+    const beforeCursor = this.currentInputText.substring(
+      0,
+      this.cursorPosition
+    );
+    const afterCursor = this.currentInputText.substring(this.cursorPosition);
+
+    // 조합 중인 텍스트는 밑줄로 표시 (시각적 구분)
+    if (this.currentFieldInfo?.sensitive) {
+      // 패스워드 필드는 마스킹
+      this.currentInput.textContent = "*".repeat(
+        beforeCursor.length + composingText.length
+      );
+    } else {
+      // 일반 필드는 조합 중인 텍스트 표시
+      this.currentInput.innerHTML =
+        beforeCursor +
+        `<span style="text-decoration: underline;">${composingText}</span>` +
+        afterCursor;
+    }
+
+    this.refreshCursor();
+  }
+
+  /**
+   * 조합 완료된 텍스트(한글) 추가
+   */
+  addComposedText(finalText) {
+    // 특별 모드에서는 전용 메서드 사용
+    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
+      this.addComposedTextInSpecialMode(finalText);
+      return;
+    }
+
+    // 일반 모드에서는 커서 위치에 삽입
+    const before = this.currentInputText.substring(0, this.cursorPosition);
+    const after = this.currentInputText.substring(this.cursorPosition);
+
+    this.currentInputText = before + finalText + after;
+    this.cursorPosition += finalText.length; // 커서를 조합된 텍스트 길이만큼 이동
+
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 특별 모드에서 조합된 텍스트(한글) 추가
+   */
+  addComposedTextInSpecialMode(finalText) {
+    // 특별 모드에서는 항상 끝에 추가
+    this.currentInputText += finalText;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 민감한 필드면 마스킹 표시
+    if (this.currentFieldInfo?.sensitive) {
+      this.updateMaskedInputDisplay();
+    } else {
+      this.updateInputDisplay();
+    }
+  }
+
   /**
    * 키 입력 처리
    */
   handleKeyPress(event) {
     if (!this.bootCompleted) return;
+
+    // IME 조합 중이면 대부분의 키 이벤트 무시
+    if (this.isComposing) {
+      // 조합 중에는 특수키(ESC, Ctrl+C 등)만 처리
+      if (
+        event.key === "Escape" ||
+        (event.ctrlKey && event.key.toLowerCase() === "c")
+      ) {
+        // 조합 취소 및 특수키 처리
+        this.isComposing = false;
+        this.updateInputDisplay(); // 조합 중인 텍스트 제거
+      }
+      return; // 다른 키는 모두 무시
+    }
+
+    if (this.isKoreanInput(event)) {
+      // 한글 입력이면 keydown 무시하고 composition 이벤트만 처리
+      console.log("Korean input detected, waiting for composition");
+      return;
+    }
 
     // 기본 동작 방지
     event.preventDefault();
@@ -1725,24 +1910,6 @@ class TissueTerminal {
   /**
    * 탭 완성
    */
-  // handleTabCompletion() {
-  //   const input = this.currentInputText.trim();
-  //   if (!input) return;
-
-  //   const commands = Object.keys(this.commands);
-  //   const matches = commands.filter((cmd) => cmd.startsWith(input));
-
-  //   if (matches.length === 1) {
-  //     this.currentInputText = matches[0] + " ";
-  //     this.updateInputDisplay();
-  //   } else if (matches.length > 1) {
-  //     this.addHistoryLine("", "");
-  //     this.addHistoryLine("Available completions:", "info-msg");
-  //     this.addHistoryLine(matches.join("  "), "system-msg");
-  //     this.addHistoryLine("", "");
-  //   }
-  // }
-
   handleTabCompletion() {
     const input = this.currentInputText.trim();
     if (!input) return;
@@ -2986,7 +3153,7 @@ class TissueTerminal {
       );
       this.addHistoryLine("", "");
 
-      this.jobTypeSessionId = Date.now() + Math.random();
+      this.jobTypeSessionId = Date.now() + Math.random(); // JobType 선택 전용 세션 ID 생성
 
       console.log(
         `JobType selection started with session ID: ${this.jobTypeSessionId}`
@@ -2996,7 +3163,7 @@ class TissueTerminal {
         const line = document.createElement("div");
         line.className = "history-line system-msg";
         line.setAttribute("data-jobtype-option", index);
-        line.setAttribute("data-jobtype-session", this.jobTypeSessionId); // DOM 요소에 JobType 선택 전용 세션 ID 추가(시간/날짜 사용)
+        line.setAttribute("data-jobtype-session", this.jobTypeSessionId);
 
         const displayName = jobType.displayName || jobType.name || "Unknown";
         const description = jobType.description || "";
@@ -3720,12 +3887,10 @@ class TissueTerminal {
         }
         // 선택된 항목이 없으면 일반 Enter 처리로 진행
       } else if (event.key === "Escape") {
-        // this.exitJobTypeSelectionMode();
         this.resetJobTypeSelectionState();
         return;
       } else if (event.key.length === 1) {
         // 문자 입력 시 선택 모드 종료하고 직접 입력 모드로
-        // this.exitJobTypeSelectionMode();
         this.resetJobTypeSelectionState();
         this.addCharacterToInputInSpecialMode(event.key);
         return;
@@ -4282,6 +4447,26 @@ class TissueTerminal {
    * 특별 모드 키 입력 처리
    */
   handleSpecialModeKeyPress(event) {
+    // IME(한글) 조합 중이면 특수키만 처리
+    if (this.isComposing) {
+      if (event.ctrlKey && event.key.toLowerCase() === "c") {
+        if (this.signupInProgress) {
+          this.cancelSignupProcess();
+        } else if (this.loginInProgress) {
+          this.cancelLoginProcess();
+        } else if (this.editInProgress) {
+          this.cancelEditProcess();
+        }
+      }
+      return;
+    }
+
+    // 한글 입력 감지
+    if (this.isKoreanInput(event)) {
+      console.log("Korean input in special mode, waiting for composition");
+      return;
+    }
+
     if (this.signupInProgress) {
       this.handleSignupKeyPress(event);
     } else if (this.loginInProgress) {
@@ -4311,9 +4496,6 @@ class TissueTerminal {
     this.editInProgress = false;
     this.editFieldInfo = null;
     this.currentFieldInfo = null;
-
-    // JobType 선택 모드 정리
-    // this.exitJobTypeSelectionMode();
 
     // 이전 JobType 선택 모드 상태 초기화
     this.resetJobTypeSelectionState();
