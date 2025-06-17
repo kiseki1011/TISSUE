@@ -385,7 +385,7 @@ body {
 }
 
 .prompt-prefix {
-  color: var(--terminal-prompt); /* 프롬프트는 파란색 */
+  color: var(--terminal-prompt);
   margin-right: 8px;
   font-weight: 500;
   flex-shrink: 0;
@@ -393,15 +393,15 @@ body {
 
 .current-input {
   white-space: pre;
-  color: var(--terminal-input); /* 사용자 입력은 흰색 */
+  color: var(--terminal-input);
   min-width: 1px;
   word-break: break-all;
 }
 
 /* 터미널 커서 */
 .terminal-cursor {
-  color: var(--terminal-cursor); /* 흰색 문자 */
-  background: transparent; /* 회색 박스 없애기 */
+  color: var(--terminal-cursor);
+  background: transparent;
   animation: terminalBlink 1s step-start infinite;
   display: inline;
 }
@@ -718,6 +718,21 @@ body {
 /* 커서 뒤 텍스트 */
 .after-cursor-text {
   color: var(--terminal-input);
+}
+
+/* JobType 선택 하이라이트 */
+.jobtype-selected {
+  background-color: var(--terminal-prompt, #00aaff) !important;
+  color: var(--terminal-bg, #000000) !important;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* JobType 옵션 라인 호버 효과 */
+.history-line.system-msg:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
 }
 
 /* 사용자 상태 표시 */
