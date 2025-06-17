@@ -48,6 +48,9 @@ class TissueTerminal {
     this.promptPrefix = "guest@tissue:~$ ";
     this.systemName = "TISSUE Terminal";
 
+    // 기본 테마
+    this.DEFAULT_THEME = "solarizedlight";
+
     // 회원가입 관련 상태 변수들
     this.signupInProgress = false;
     this.signupStep = 0;
@@ -79,11 +82,11 @@ class TissueTerminal {
     this.jobTypesLoaded = false;
 
     // 테마 관련 상태
-    this.currentTheme = "dark"; // 기본 테마
+    this.currentTheme = this.DEFAULT_THEME; // 기본 테마 설정
     this.availableThemes = {
       dark: {
         name: "Dark",
-        description: "Classic dark theme (default)",
+        description: "Classic dark theme",
       },
       light: {
         name: "Light",
@@ -156,6 +159,9 @@ class TissueTerminal {
 
       // 이벤트 리스너 설정
       this.setupEventListeners();
+
+      // 초기화 전용 테마 설정
+      this.initializeTheme();
 
       // 부팅 완료
       this.bootCompleted = true;
@@ -728,10 +734,17 @@ class TissueTerminal {
       const savedTheme = localStorage.getItem("tissue-terminal-theme");
       if (savedTheme && this.availableThemes[savedTheme]) {
         this.currentTheme = savedTheme;
+        console.log(`Loaded saved theme: ${savedTheme}`);
+      } else {
+        console.log(
+          `No saved theme found, using defualt theme: ${this.currentTheme}`
+        );
       }
     } catch (error) {
-      console.warn("Failed to load theme, using default theme:", error);
-      this.currentTheme = "dark";
+      console.warn(
+        `Failed to load theme, using default theme: ${this.currentTheme}`,
+        error
+      );
     }
   }
 
@@ -747,7 +760,7 @@ class TissueTerminal {
   }
 
   /**
-   * 테마 적용
+   * 테마 적용 (사용자 액션용)
    */
   applyTheme(themeName) {
     if (!this.availableThemes[themeName]) {
@@ -760,6 +773,9 @@ class TissueTerminal {
     // 현재 테마 업데이트
     this.currentTheme = themeName;
 
+    // 동적 스타일 조정
+    this.adjustDynamicStyles();
+
     // 테마 저장
     this.saveTheme(themeName);
 
@@ -770,6 +786,27 @@ class TissueTerminal {
     );
 
     console.log(`Theme changed to ${themeName}`);
+  }
+
+  /**
+   * 테마 적용 (초기화용)
+   */
+  initializeTheme() {
+    // 유효하지 않은 테마면 기본값으로 복원
+    if (!this.availableThemes[this.currentTheme]) {
+      console.warn(
+        `Invalid theme '${this.currentTheme}', falling back to default: ${this.DEFAULT_THEME}`
+      );
+      this.currentTheme = this.DEFAULT_THEME;
+    }
+
+    // HTML 요소에 data-theme 속성 설정
+    document.documentElement.setAttribute("data-theme", this.currentTheme);
+
+    // 동적 스타일 조정
+    this.adjustDynamicStyles();
+
+    console.log(`Theme initialized: ${this.currentTheme}`);
   }
 
   /**

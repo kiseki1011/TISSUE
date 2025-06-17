@@ -426,7 +426,7 @@ body {
 
 .history-prompt {
   color: var(--terminal-prompt);
-  margin-right: 8px;
+  /* margin-right: 8px; */
 }
 
 .history-command {
