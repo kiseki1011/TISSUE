@@ -319,7 +319,7 @@ class TissueTerminal {
         tabCompletionAvailable: "사용 가능한 자동완성:",
 
         // 회원가입 관련
-        registrationWizard: "TISSUE Registration Wizard",
+        registrationWizard: "TISSUE REGISTRATION WIZARD",
         welcomeRegistration:
           "환영합니다! 이 마법사가 회원가입 과정을 안내해드립니다.",
         canCancelAnytime: "언제든지 Ctrl+C로 회원가입을 취소할 수 있습니다.",
@@ -364,7 +364,7 @@ class TissueTerminal {
         trySignupAgain: "'signup' 명령어로 다시 시도할 수 있습니다.",
 
         // 로그인 관련
-        tissueLogin: "TISSUE Login",
+        tissueLogin: "TISSUE LOGIN",
         enterCredentials: "로그인 자격 증명을 입력해주세요.",
         canCancelLogin: "Ctrl+C로 로그인 과정을 취소할 수 있습니다.",
         loginIdOrEmail: "로그인 ID (또는 이메일)",
@@ -556,7 +556,7 @@ class TissueTerminal {
         tabCompletionAvailable: "Available completions:",
 
         // Signup related
-        registrationWizard: "TISSUE Registration Wizard",
+        registrationWizard: "TISSUE REGISTRATION WIZARD",
         welcomeRegistration:
           "Welcome! This wizard will guide you through the registration process.",
         canCancelAnytime:
@@ -605,7 +605,7 @@ class TissueTerminal {
         trySignupAgain: "You can try again by using the 'signup' command.",
 
         // Login related
-        tissueLogin: "TISSUE Login",
+        tissueLogin: "TISSUE LOGIN",
         enterCredentials: "Please enter your login credentials.",
         canCancelLogin: "Use Ctrl+C to cancel login process.",
         loginIdOrEmail: "Login ID (or Email)",
@@ -638,7 +638,7 @@ class TissueTerminal {
         notLoggedInGuest: "Not logged in (guest session)",
 
         // Profile edit related
-        profileEditMode: "✏️ Profile Edit Mode",
+        profileEditMode: "✏️ PROFILE EDIT MODE",
         editing: "Editing",
         canCancelEditing: "Use Ctrl+C to cancel editing.",
         editUsage: "Usage: edit [field]",
@@ -2617,6 +2617,7 @@ class TissueTerminal {
    * 회원가입 프로세스 완료
    */
   async completeSignupProcess() {
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("processingRegistration"), "info-msg");
     this.addHistoryLine(
@@ -2688,6 +2689,7 @@ class TissueTerminal {
       this.getMessage("registrationComplete"),
       "success-msg"
     );
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("welcomeToTissue"), "success-msg");
     this.addHistoryLine(
