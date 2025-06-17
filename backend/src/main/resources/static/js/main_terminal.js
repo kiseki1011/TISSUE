@@ -1,25 +1,23 @@
 // TODO-1: 매직넘버나 스트링을 상수로 분리
 // TODO-2: 설정값을 서버에서 주입받아서 사용(베너, 버전, author, license, 등...)
-// TODO-3: ✓ vs ✅ 어떤걸 사용? 아니면 마지막만 ✅를 사용할까?
-// TODO-4: ✗ vs ❌
-// TODO-5: handleKeyPress에서 handleSignupKeyPress 대신 handleSpecialModeKeyPress 사용하도록 변경
 // TODO-6: exit 명령어 사용시, 창을 나갈지 물어보는 모달 보여주고, 창 나가기
 // TODO-7: help [command]를 사용하면 자세한 설명 출력하기
 // TODO-8: vi, vim, emac 등의 명령어 사용하면 터미널 처럼 편집기 모드로 들어가짐 -> 여기서 글을 작성해서 저장하면 글이 저장됨
 // TODO-9: ls 명령어를 통해 저장한 글 조회 기능?(50개 까지 보여주기, 페이징 적용)
 // TODO-10: 내가 작성한 글 보는 기능?
 // TODO-11: 모든 API 요청에 대한 공통 함수 만들어서 사용?(credentials: "include" 적용)
-// TODO-12: 테마 추가(라이트모드, 다크모드, 등..)
-// TODO-13: JobType 목록을 서버에서 가져오기/캐싱
 // TODO-14: 필드에 대한 검증 로직을 클라이언트 사이드에서 다시 정의해서 사용하고 있음
 // - 서버사이드에서 규칙을 가져오는 방법은 없을까?(SSOT으로 관리하고 싶음)
 // - properties 파일을 하나 만들어서 규칙을 외부에서 주입하는 방식 고려
-// TOOD-15: 코드 가독성 리팩토링
-// TOOD-16: JS 모듈화
+// TODO-15: 코드 가독성 리팩토링
+// TODO-16: JS 모듈화
+// TODO-17: 영문을 제외한 문자의 입력, 특히 한글같은 조합 문자 입력에 대한 처리
+// - 현재는 한글 중심으로 처리 로직을 만들었지만, 입력 입력에 대해서는 모든 언어가 가능했으면 좋겠음
 
 /**
- * TISSUE Terminal System
- * 완전한 명령어 기반 터미널 인터페이스
+ * TISSUE
+ * Terminal Style UI/UX
+ * 명령어 기반 터미널 인터페이스
  */
 class TissueTerminal {
   constructor() {
@@ -36,14 +34,24 @@ class TissueTerminal {
     this.terminalCursor = null;
     this.focusKeeper = null;
 
+    // 커서 현재 위치
+    this.cursorPosition = 0;
+
     // 입력 상태
     this.currentInputText = "";
     this.commandHistory = [];
     this.historyIndex = -1;
 
+    // 한글 조합 상태
+    this.isComposing = false;
+    this.lastInputValue = "";
+
     // 시스템 설정
     this.promptPrefix = "guest@tissue:~$ ";
     this.systemName = "TISSUE Terminal";
+
+    // 기본 테마
+    this.DEFAULT_THEME = "solarizedlight";
 
     // 회원가입 관련 상태 변수들
     this.signupInProgress = false;
@@ -68,12 +76,52 @@ class TissueTerminal {
     this.editData = {};
     this.editFieldInfo = null;
 
+    // JobType 선택 관련 상태
+    this.jobTypeSelectionMode = false;
+    this.jobTypeOptions = [];
+    this.jobTypeSelectedIndex = -1;
+    this.jobTypeDisplayedOptions = [];
+
+    this.jobTypeSessionId = null; // JobType 재진행 구분을 위한 id
+
     // 언어
     this.currentLanguage = this.detectLanguage(); // 'en' 기본, 한국어 브라우저만 'ko'
 
     // JobType 관련 상태
     this.jobTypes = null;
     this.jobTypesLoaded = false;
+
+    // 테마 관련 상태
+    this.currentTheme = this.DEFAULT_THEME; // 기본 테마 설정
+    this.availableThemes = {
+      dark: {
+        name: "Dark",
+        description: "Classic dark theme",
+      },
+      light: {
+        name: "Light",
+        description: "Bright and clean light theme",
+      },
+      nightwing: {
+        name: "Nightwing",
+        description: "Dark theme with purple accents",
+      },
+      solarizedlight: {
+        name: "Solarized Light",
+        description: "Soft, balanced contrast",
+      },
+      neon: {
+        name: "Neon",
+        description: "Neon tones",
+      },
+      cherryash: {
+        name: "Cherry Ash",
+        description: "Dark with red and orange flair",
+      },
+    };
+
+    // 로컬 스토리지에서 저장된 테마 로드
+    this.loadSavedTheme();
 
     // 다국어 메시지 시스템
     this.messages = this.initializeMessages();
@@ -122,6 +170,9 @@ class TissueTerminal {
       // 이벤트 리스너 설정
       this.setupEventListeners();
 
+      // 초기화 전용 테마 설정
+      this.initializeTheme();
+
       // 부팅 완료
       this.bootCompleted = true;
       this.isInitialized = true;
@@ -140,10 +191,7 @@ class TissueTerminal {
       console.log("Current language: ", terminal.currentLanguage);
       console.log("Browser language: ", navigator.language);
 
-      // 메시지 객체 확인
-      console.log("Messages object:", terminal.messages);
-      console.log("Korean messages exist:", !!terminal.messages?.ko);
-      console.log("English messages exist:", !!terminal.messages?.en);
+      console.log(`Current theme: ${this.currentTheme}`);
     } catch (error) {
       console.error("TISSUE Terminal: Initialization failed", error);
       this.showCriticalError("System initialization failed");
@@ -177,6 +225,20 @@ class TissueTerminal {
    * 이벤트 리스너 설정
    */
   setupEventListeners() {
+    // input 이벤트로 한글 입력 보완
+    // document.addEventListener("input", (e) => this.handleInputEvent(e), true);
+
+    // IME 이벤트들
+    document.addEventListener("compositionstart", (e) =>
+      this.handleCompositionStart(e)
+    );
+    document.addEventListener("compositionupdate", (e) =>
+      this.handleCompositionUpdate(e)
+    );
+    document.addEventListener("compositionend", (e) =>
+      this.handleCompositionEnd(e)
+    );
+
     // 전역 키보드 이벤트
     document.addEventListener("keydown", (e) => this.handleKeyPress(e), true);
 
@@ -199,55 +261,6 @@ class TissueTerminal {
         this.maintainFocus();
       });
     }
-  }
-
-  /**
-   * 키 입력 처리
-   */
-  handleKeyPress(event) {
-    if (!this.bootCompleted) return;
-
-    // 기본 동작 방지
-    event.preventDefault();
-
-    // 기존 로직 계속...
-    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
-      this.handleSpecialModeKeyPress(event);
-      return;
-    }
-
-    // 나머지 키 처리 로직...
-    if (event.key === "Enter") {
-      this.processCommand();
-    } else if (event.key === "Backspace") {
-      this.handleBackspace();
-    } else if (event.key === "ArrowUp") {
-      this.navigateHistory(-1);
-    } else if (event.key === "ArrowDown") {
-      this.navigateHistory(1);
-    } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
-      this.executeCommand("clear");
-    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
-      this.handleCancel();
-    } else if (event.key === "Tab") {
-      this.handleTabCompletion();
-    } else if (
-      event.key.length === 1 &&
-      !event.ctrlKey &&
-      !event.altKey &&
-      !event.metaKey
-    ) {
-      this.addCharacterToInput(event.key);
-    }
-  }
-
-  /**
-   * 브라우저 언어 감지 (영어 기본, 한국어만 특별 처리)
-   */
-  detectLanguage() {
-    const browserLang = navigator.language || navigator.userLanguage;
-    // 한국어인 경우만 'ko', 나머지는 모두 'en' (기본값)
-    return browserLang.startsWith("ko") ? "ko" : "en";
   }
 
   /**
@@ -280,6 +293,21 @@ class TissueTerminal {
         loginAgain: "다시 로그인해주세요",
         checkConnection: "연결을 확인해주세요",
 
+        // 테마 관련
+        themeChanged: "테마가 {0}(으)로 변경되었습니다",
+        themeAlreadyActive: "이미 {0} 테마를 사용 중입니다",
+        themeNotFound: "알 수 없는 테마: {0}",
+        themeApplyFailed: "테마 적용 실패: {0}",
+        themeListTitle: "사용 가능한 테마:",
+        themeUsage: "사용법: theme [테마명]",
+        themeExample: "예시: theme dark",
+        currentTheme: "현재 테마: {0}",
+        themeDescription: "설명: {0}",
+        themeCurrent: "현재",
+        themeTabTip: "팁: 테마명 자동완성은 Tab 키를 사용하세요",
+        helpThemeSection: "테마 예시:",
+        helpTheme: "터미널 테마 변경",
+
         // 명령어 관련
         commandNotFound: "명령어를 찾을 수 없습니다",
         typeHelpForCommands: "'help' 명령어로 사용 가능한 명령어를 확인하세요.",
@@ -288,9 +316,10 @@ class TissueTerminal {
         commandCompletion:
           "Tab으로 명령어 완성, 위/아래 화살표로 명령어 히스토리.",
         goodbye: "안녕히 가세요!",
+        tabCompletionAvailable: "사용 가능한 자동완성:",
 
         // 회원가입 관련
-        registrationWizard: "TISSUE 회원가입 마법사",
+        registrationWizard: "TISSUE REGISTRATION WIZARD",
         welcomeRegistration:
           "환영합니다! 이 마법사가 회원가입 과정을 안내해드립니다.",
         canCancelAnytime: "언제든지 Ctrl+C로 회원가입을 취소할 수 있습니다.",
@@ -335,7 +364,7 @@ class TissueTerminal {
         trySignupAgain: "'signup' 명령어로 다시 시도할 수 있습니다.",
 
         // 로그인 관련
-        tissueLogin: "TISSUE 로그인",
+        tissueLogin: "TISSUE LOGIN",
         enterCredentials: "로그인 자격 증명을 입력해주세요.",
         canCancelLogin: "Ctrl+C로 로그인 과정을 취소할 수 있습니다.",
         loginIdOrEmail: "로그인 ID (또는 이메일)",
@@ -358,7 +387,7 @@ class TissueTerminal {
         // 프로필 관련
         pleaseLoginFirst: "먼저 로그인해주세요",
         loadingProfile: "📋 프로필 정보를 로딩 중...",
-        userProfile: "사용자 프로필",
+        userProfile: "USER PROFILE",
         notSet: "설정되지 않음",
         useEditCommand:
           "'edit [필드명]' 명령어로 프로필 정보를 수정할 수 있습니다.",
@@ -420,6 +449,8 @@ class TissueTerminal {
           "서버에서 직업 유형을 로딩할 수 없습니다. 폴백 목록 사용:",
         usingFallbackList: "네트워크 오류로 인한 폴백 목록 사용:",
         selectFromOptionsAbove: "위 옵션에서 선택해주세요",
+        helpJobTypeSelection:
+          "💡 ↑/↓ 키로 항목을 이동하고, Enter로 선택하거나 직접 입력하세요",
 
         // 검증 오류 메시지
         loginIdValidation:
@@ -455,21 +486,22 @@ class TissueTerminal {
         // 명령어 설명
         commandDescriptions: {
           banner: "시스템 배너와 정보 표시",
-          clear: "터미널 화면 지우기",
+          lang: "언어 변경",
+          theme: "터미널 테마 변경",
           help: "이 도움말 메시지 표시",
           info: "시스템 정보 표시",
           version: "tissue의 현재 버전 표시",
           date: "현재 날짜와 시간 표시",
           echo: "주어진 텍스트 출력",
           whoami: "현재 사용자명 표시",
+          clear: "터미널 화면 지우기",
           exit: "터미널 종료",
+          status: "현재 로그인 상태 표시",
           signup: "새 사용자 계정 생성",
           login: "계정에 로그인",
           logout: "계정에서 로그아웃",
           profile: "프로필 정보 보기",
           edit: "프로필 정보 수정",
-          status: "현재 로그인 상태 표시",
-          lang: "언어 변경",
         },
         noDescriptionAvailable: "설명이 없습니다",
       },
@@ -499,6 +531,20 @@ class TissueTerminal {
         loginAgain: "Please login again",
         checkConnection: "Please check your connection",
 
+        // Theme related
+        themeChanged: "Theme changed to: {0}",
+        themeAlreadyActive: "Already using theme: {0}",
+        themeNotFound: "Unknown theme: {0}",
+        themeApplyFailed: "Failed to apply theme: {0}",
+        themeListTitle: "Available themes:",
+        themeUsage: "Usage: theme [theme-name]",
+        themeExample: "Example: theme dark",
+        currentTheme: "Current theme: {0}",
+        themeDescription: "Description: {0}",
+        themeCurrent: "current",
+        themeTabTip: "Tip: Use Tab key for theme name completion",
+        helpThemeSection: "Theme Examples:",
+
         // Command related
         commandNotFound: "command not found",
         typeHelpForCommands: "Type 'help' to see available commands.",
@@ -507,9 +553,10 @@ class TissueTerminal {
         commandCompletion:
           "Use Tab for command completion, Up/Down arrows for command history.",
         goodbye: "Goodbye!",
+        tabCompletionAvailable: "Available completions:",
 
         // Signup related
-        registrationWizard: "TISSUE Registration Wizard",
+        registrationWizard: "TISSUE REGISTRATION WIZARD",
         welcomeRegistration:
           "Welcome! This wizard will guide you through the registration process.",
         canCancelAnytime:
@@ -558,7 +605,7 @@ class TissueTerminal {
         trySignupAgain: "You can try again by using the 'signup' command.",
 
         // Login related
-        tissueLogin: "TISSUE Login",
+        tissueLogin: "TISSUE LOGIN",
         enterCredentials: "Please enter your login credentials.",
         canCancelLogin: "Use Ctrl+C to cancel login process.",
         loginIdOrEmail: "Login ID (or Email)",
@@ -591,7 +638,7 @@ class TissueTerminal {
         notLoggedInGuest: "Not logged in (guest session)",
 
         // Profile edit related
-        profileEditMode: "✏️ Profile Edit Mode",
+        profileEditMode: "✏️ PROFILE EDIT MODE",
         editing: "Editing",
         canCancelEditing: "Use Ctrl+C to cancel editing.",
         editUsage: "Usage: edit [field]",
@@ -644,6 +691,8 @@ class TissueTerminal {
         usingFallbackList:
           "Network error loading job types. Using fallback list:",
         selectFromOptionsAbove: "Please select from the options above",
+        helpJobTypeSelection:
+          "💡 Use ↑/↓ arrows to navigate, Enter to select, or type directly",
 
         // Validation error messages
         loginIdValidation:
@@ -679,25 +728,557 @@ class TissueTerminal {
         // Command descriptions
         commandDescriptions: {
           banner: "Display system banner and information",
-          clear: "Clear the terminal screen",
+          lang: "Change language",
+          theme: "Change terminal theme",
           help: "Show this help message",
           info: "Display system information",
           version: "Show current version of tissue",
           date: "Display current date and time",
           echo: "Echo the given text",
           whoami: "Display current username",
+          clear: "Clear the terminal screen",
           exit: "Exit the terminal",
+          status: "Show current login status",
           signup: "Create a new user account",
           login: "Sign in to your account",
           logout: "Sign out from your account",
           profile: "View your profile information",
           edit: "Edit profile information",
-          status: "Show current login status",
-          lang: "Change language",
         },
         noDescriptionAvailable: "No description available",
       },
     };
+  }
+
+  /**
+   * 테마 관련 메서드
+   */
+
+  /**
+   * 저장된 테마 로드
+   */
+  loadSavedTheme() {
+    try {
+      const savedTheme = localStorage.getItem("tissue-terminal-theme");
+      if (savedTheme && this.availableThemes[savedTheme]) {
+        this.currentTheme = savedTheme;
+        console.log(`Loaded saved theme: ${savedTheme}`);
+      } else {
+        console.log(
+          `No saved theme found, using defualt theme: ${this.currentTheme}`
+        );
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to load theme, using default theme: ${this.currentTheme}`,
+        error
+      );
+    }
+  }
+
+  /**
+   * 테마 저장
+   */
+  saveTheme(themeName) {
+    try {
+      localStorage.setItem("tissue-terminal-theme", themeName);
+    } catch (error) {
+      console.warn("Failed to save theme:", error);
+    }
+  }
+
+  /**
+   * 테마 적용 (사용자 액션용)
+   */
+  applyTheme(themeName) {
+    if (!this.availableThemes[themeName]) {
+      throw new Error(`Unknown theme: ${themeName}`);
+    }
+
+    // HTML 요소에 data-theme 속성 설정
+    document.documentElement.setAttribute("data-theme", themeName);
+
+    // 현재 테마 업데이트
+    this.currentTheme = themeName;
+
+    // 동적 스타일 조정
+    this.adjustDynamicStyles();
+
+    // 테마 저장
+    this.saveTheme(themeName);
+
+    // 테마 변경 알림
+    this.addHistoryLine(
+      this.getMessage("themeChanged", this.availableThemes[themeName].name),
+      "success-msg"
+    );
+
+    console.log(`Theme changed to ${themeName}`);
+  }
+
+  /**
+   * 테마 적용 (초기화용)
+   */
+  initializeTheme() {
+    // 유효하지 않은 테마면 기본값으로 복원
+    if (!this.availableThemes[this.currentTheme]) {
+      console.warn(
+        `Invalid theme '${this.currentTheme}', falling back to default: ${this.DEFAULT_THEME}`
+      );
+      this.currentTheme = this.DEFAULT_THEME;
+    }
+
+    // HTML 요소에 data-theme 속성 설정
+    document.documentElement.setAttribute("data-theme", this.currentTheme);
+
+    // 동적 스타일 조정
+    this.adjustDynamicStyles();
+
+    console.log(`Theme initialized: ${this.currentTheme}`);
+  }
+
+  /**
+   * 현재 테마 정보 표시
+   */
+  showCurrentTheme() {
+    const theme = this.availableThemes[this.currentTheme];
+    this.addHistoryLine(
+      this.getMessage("currentTheme", theme.name),
+      "info-msg"
+    );
+    // this.addHistoryLine(
+    //   this.getMessage("themeDescription", theme.description),
+    //   "system-msg"
+    // );
+  }
+
+  /**
+   * 사용 가능한 테마 목록 표시
+   */
+  showAvailableThemes() {
+    this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+    this.addHistoryLine("", "");
+
+    Object.entries(this.availableThemes).forEach(([key, theme]) => {
+      const isCurrentTheme = key === this.currentTheme;
+      const prefix = isCurrentTheme ? "→ " : "  ";
+
+      const suffix = isCurrentTheme
+        ? ` (${this.getMessage("themeCurrent")})`
+        : "";
+      const className = isCurrentTheme ? "command-highlight" : "system-msg";
+
+      this.addHistoryLine(
+        `${prefix}${key.padEnd(15)} - ${theme.name}${suffix}`,
+        className
+      );
+      // this.addHistoryLine(`${" ".repeat(17)}${theme.description}`, "help-msg");
+      this.addHistoryLine("", "");
+    });
+
+    // 🔥 getMessage 적용
+    this.addHistoryLine(this.getMessage("themeUsage"), "info-msg");
+    this.addHistoryLine(this.getMessage("themeExample"), "system-msg");
+  }
+
+  /**
+   * 테마 명령어 처리
+   */
+  handleThemeCommand(args) {
+    // 인자가 없으면 현재 테마와 사용 가능한 테마 목록 표시
+    if (args.length === 0) {
+      this.showCurrentTheme();
+      this.addHistoryLine("", "");
+      this.showAvailableThemes();
+      return;
+    }
+
+    const themeName = args[0].toLowerCase();
+
+    // 특별 명령어들
+    if (themeName === "list" || themeName === "ls") {
+      this.showAvailableThemes();
+      return;
+    }
+
+    if (themeName === "current" || themeName === "show") {
+      this.showCurrentTheme();
+      return;
+    }
+
+    if (themeName === "reset") {
+      this.applyTheme("dark");
+      return;
+    }
+
+    if (themeName === "random") {
+      const themeNames = Object.keys(this.availableThemes);
+      const randomTheme =
+        themeNames[Math.floor(Math.random() * themeNames.length)];
+      this.applyTheme(randomTheme);
+      return;
+    }
+
+    // 정확한 매칭만 지원
+    if (this.availableThemes[themeName]) {
+      if (themeName === this.currentTheme) {
+        this.addHistoryLine(
+          this.getMessage(
+            "themeAlreadyActive",
+            this.availableThemes[themeName].name
+          ),
+          "warning-msg"
+        );
+        return;
+      }
+
+      try {
+        this.applyTheme(themeName);
+      } catch (error) {
+        this.addHistoryLine(
+          this.getMessage("themeApplyFailed", error.message),
+          "error-msg"
+        );
+      }
+    } else {
+      // 매칭되는 테마가 없으면 바로 에러 + 목록 표시
+      this.addHistoryLine(
+        this.getMessage("themeNotFound", themeName),
+        "error-msg"
+      );
+      this.addHistoryLine("", "");
+      this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+
+      const themeList = Object.keys(this.availableThemes);
+      this.addHistoryLine(themeList.join(", "), "system-msg");
+      this.addHistoryLine("", "");
+      this.addHistoryLine(this.getMessage("themeTabTip"), "help-msg");
+    }
+  }
+
+  /**
+   * 동적 스타일 조정
+   */
+  adjustDynamicStyles() {
+    // 예: 특정 테마에서만 필요한 추가 스타일 적용
+    const dynamicStyle = document.getElementById("dynamic-theme-style");
+
+    if (dynamicStyle) {
+      dynamicStyle.remove();
+    }
+
+    const style = document.createElement("style");
+    style.id = "dynamic-theme-style";
+
+    // 네온 테마에서 글로우 효과 추가
+    if (this.currentTheme === "neon") {
+      style.textContent = `
+      .ascii-banner {
+        text-shadow: 0 0 10px currentColor;
+      }
+      .terminal-cursor {
+        text-shadow: 0 0 8px currentColor;
+      }
+      .success-msg {
+        text-shadow: 0 0 6px currentColor;
+      }
+      .error-msg {
+        text-shadow: 0 0 6px currentColor;
+      }
+    `;
+    }
+
+    document.head.appendChild(style);
+  }
+
+  // ======== 한글 입력 처리 ========
+
+  /**
+   * 한글 입력 감지
+   */
+  isKoreanInput(event) {
+    // 한글 자음/모음 유니코드 범위 확인
+    const key = event.key;
+    if (key.length !== 1) return false;
+
+    const code = key.charCodeAt(0);
+
+    // 한글 자음 (ㄱ-ㅎ): U+3131-U+314E
+    // 한글 모음 (ㅏ-ㅣ): U+314F-U+3163
+    // 한글 음절 (가-힣): U+AC00-U+D7A3
+    return (
+      (code >= 0x3131 && code <= 0x3163) || // 자모
+      (code >= 0xac00 && code <= 0xd7a3)
+    ); // 완성된 한글
+  }
+
+  /**
+   * IME 조합 시작
+   */
+  handleCompositionStart(event) {
+    this.isComposing = true;
+    console.log("Composition started");
+
+    this.cleanupPendingInput();
+  }
+
+  /**
+   * 대기 중인 입력 정리
+   */
+  cleanupPendingInput() {
+    // 마지막에 잘못 입력된 한글 자모가 있으면 제거
+    if (this.currentInputText.length > 0) {
+      const lastChar = this.currentInputText[this.currentInputText.length - 1];
+      const lastCharCode = lastChar.charCodeAt(0);
+
+      // 마지막 문자가 한글 자모 (미완성)이면 제거
+      if (lastCharCode >= 0x3131 && lastCharCode <= 0x3163) {
+        console.log("Removing incomplete Korean character:", lastChar);
+        this.currentInputText = this.currentInputText.slice(0, -1);
+        this.cursorPosition = this.currentInputText.length;
+      }
+    }
+  }
+
+  /**
+   * IME(한글) 조합 업데이트
+   */
+  handleCompositionUpdate(event) {
+    if (!this.bootCompleted) return;
+
+    // 조합 중인 텍스트를 임시로 표시
+    const composingText = event.data || "";
+    console.log("Composing:", composingText);
+
+    // 조합 중인 텍스트로 화면 업데이트 (임시)
+    this.updateInputWithComposition(composingText);
+  }
+
+  /**
+   * IME(한글) 조합 완료
+   */
+  handleCompositionEnd(event) {
+    if (!this.bootCompleted) return;
+
+    this.isComposing = false;
+    const finalText = event.data || "";
+
+    console.log("Composition ended with:", finalText);
+
+    // 최종 조합된 텍스트가 있을 때만 추가
+    if (finalText && finalText.trim() !== "") {
+      this.addComposedText(finalText);
+    } else {
+      // 조합이 취소된 경우 화면 정리
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 조합 중인 텍스트(한글)로 화면 업데이트
+   */
+  updateInputWithComposition(composingText) {
+    if (!this.currentInput) return;
+
+    // 기존 텍스트 + 조합 중인 텍스트를 임시로 표시
+    const beforeCursor = this.currentInputText.substring(
+      0,
+      this.cursorPosition
+    );
+    const afterCursor = this.currentInputText.substring(this.cursorPosition);
+
+    // 조합 중인 텍스트는 밑줄로 표시 (시각적 구분)
+    if (this.currentFieldInfo?.sensitive) {
+      // 패스워드 필드는 마스킹
+      this.currentInput.textContent = "*".repeat(
+        beforeCursor.length + composingText.length
+      );
+    } else {
+      // 일반 필드는 조합 중인 텍스트 표시
+      this.currentInput.innerHTML =
+        beforeCursor +
+        `<span style="text-decoration: underline;">${composingText}</span>` +
+        afterCursor;
+    }
+
+    this.refreshCursor();
+  }
+
+  /**
+   * 조합 완료된 텍스트(한글) 추가
+   */
+  addComposedText(finalText) {
+    // 특별 모드에서는 전용 메서드 사용
+    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
+      this.addComposedTextInSpecialMode(finalText);
+      return;
+    }
+
+    // 일반 모드에서는 커서 위치에 삽입
+    const before = this.currentInputText.substring(0, this.cursorPosition);
+    const after = this.currentInputText.substring(this.cursorPosition);
+
+    this.currentInputText = before + finalText + after;
+    this.cursorPosition += finalText.length; // 커서를 조합된 텍스트 길이만큼 이동
+
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 특별 모드에서 조합된 텍스트(한글) 추가
+   */
+  addComposedTextInSpecialMode(finalText) {
+    // 특별 모드에서는 항상 끝에 추가
+    this.currentInputText += finalText;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 민감한 필드면 마스킹 표시
+    if (this.currentFieldInfo?.sensitive) {
+      this.updateMaskedInputDisplay();
+    } else {
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 키 입력 처리
+   */
+  handleKeyPress(event) {
+    if (!this.bootCompleted) return;
+
+    // IME 조합 중이면 대부분의 키 이벤트 무시
+    if (this.isComposing) {
+      // 조합 중에는 특수키(ESC, Ctrl+C 등)만 처리
+      if (
+        event.key === "Escape" ||
+        (event.ctrlKey && event.key.toLowerCase() === "c")
+      ) {
+        // 조합 취소 및 특수키 처리
+        this.isComposing = false;
+        this.updateInputDisplay(); // 조합 중인 텍스트 제거
+      }
+      return; // 다른 키는 모두 무시
+    }
+
+    if (this.isKoreanInput(event)) {
+      // 한글 입력이면 keydown 무시하고 composition 이벤트만 처리
+      console.log("Korean input detected, waiting for composition");
+      return;
+    }
+
+    // 기본 동작 방지
+    event.preventDefault();
+
+    // 기존 로직 계속...
+    if (this.signupInProgress || this.loginInProgress || this.editInProgress) {
+      this.handleSpecialModeKeyPress(event);
+      return;
+    }
+
+    // 나머지 키 처리 로직...
+    if (event.key === "Enter") {
+      this.processCommand();
+    } else if (event.key === "Backspace") {
+      this.handleBackspace();
+    } else if (event.key === "ArrowUp") {
+      this.navigateHistory(-1);
+    } else if (event.key === "ArrowDown") {
+      this.navigateHistory(1);
+    } else if (event.key === "ArrowLeft") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("left");
+      } else {
+        this.moveCursorLeft();
+      }
+    } else if (event.key === "ArrowRight") {
+      if (event.ctrlKey || event.metaKey) {
+        this.moveCursorByWord("right");
+      } else {
+        this.moveCursorRight();
+      }
+    } else if (event.key === "Home") {
+      this.moveCursorToStart();
+    } else if (event.key === "End") {
+      this.moveCursorToEnd();
+    } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
+      this.executeCommand("clear");
+    } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+      this.handleCancel();
+    } else if (event.key === "Tab") {
+      this.handleTabCompletion();
+    } else if (
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
+      this.addCharacterToInput(event.key);
+    }
+  }
+
+  /**
+   * 커서 이동 메서드들
+   */
+  moveCursorLeft() {
+    if (this.cursorPosition > 0) {
+      this.cursorPosition--;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorRight() {
+    if (this.cursorPosition < this.currentInputText.length) {
+      this.cursorPosition++;
+      this.updateInputDisplay();
+    }
+  }
+
+  moveCursorToStart() {
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+  }
+
+  moveCursorToEnd() {
+    this.cursorPosition = this.currentInputText.length;
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 단어 단위 커서 이동
+   */
+  moveCursorByWord(direction) {
+    const text = this.currentInputText;
+    let newPosition = this.cursorPosition;
+
+    if (direction === "left") {
+      // 왼쪽으로 단어 단위 이동
+      while (newPosition > 0 && text[newPosition - 1] === " ") {
+        newPosition--; // 공백 건너뛰기
+      }
+      while (newPosition > 0 && text[newPosition - 1] !== " ") {
+        newPosition--; // 단어 끝까지
+      }
+    } else if (direction === "right") {
+      // 오른쪽으로 단어 단위 이동
+      while (newPosition < text.length && text[newPosition] !== " ") {
+        newPosition++; // 현재 단어 끝까지
+      }
+      while (newPosition < text.length && text[newPosition] === " ") {
+        newPosition++; // 공백 건너뛰기
+      }
+    }
+
+    this.cursorPosition = newPosition;
+    this.updateInputDisplay();
+  }
+
+  /**
+   * 브라우저 언어 감지 (영어 기본, 한국어만 특별 처리)
+   */
+  detectLanguage() {
+    const browserLang = navigator.language || navigator.userLanguage;
+    // 한국어인 경우만 'ko', 나머지는 모두 'en' (기본값)
+    return browserLang.startsWith("ko") ? "ko" : "en";
   }
 
   /**
@@ -754,6 +1335,7 @@ class TissueTerminal {
 
     this.historyIndex = -1;
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
 
     // 명령어 실행
@@ -800,6 +1382,11 @@ class TissueTerminal {
     // 베너 출력 명령어
     banner: function () {
       this.displayBanner();
+      return null;
+    },
+
+    theme: function (args) {
+      this.handleThemeCommand(args);
       return null;
     },
 
@@ -1241,25 +1828,62 @@ class TissueTerminal {
   }
 
   /**
-   * 입력에 문자 추가
+   * 입력에 문자 추가(커서 위치 고려)
    */
   addCharacterToInput(char) {
-    this.currentInputText += char;
+    // this.currentInputText += char;
+    // this.updateInputDisplay();
+
+    // 커서 위치에 문자 삽입
+    const before = this.currentInputText.substring(0, this.cursorPosition);
+    const after = this.currentInputText.substring(this.cursorPosition);
+
+    this.currentInputText = before + char + after;
+    this.cursorPosition++; // 커서를 한 칸 앞으로
+
     this.updateInputDisplay();
   }
 
   /**
-   * 백스페이스 처리
+   * 백스페이스 처리(커서 위치 고려)
    */
   handleBackspace() {
-    if (this.currentInputText.length > 0) {
-      this.currentInputText = this.currentInputText.slice(0, -1);
+    // if (this.currentInputText.length > 0) {
+    //   this.currentInputText = this.currentInputText.slice(0, -1);
+    //   this.updateInputDisplay();
+    // }
+
+    if (this.cursorPosition > 0) {
+      const before = this.currentInputText.substring(
+        0,
+        this.cursorPosition - 1
+      );
+      const after = this.currentInputText.substring(this.cursorPosition);
+
+      this.currentInputText = before + after;
+      this.cursorPosition--; // 커서를 한 칸 뒤로
+
       this.updateInputDisplay();
     }
   }
 
   /**
-   * 명령어 히스토리 탐색
+   * Delete 키 처리
+   */
+  handleDelete() {
+    if (this.cursorPosition < this.currentInputText.length) {
+      const before = this.currentInputText.substring(0, this.cursorPosition);
+      const after = this.currentInputText.substring(this.cursorPosition + 1);
+
+      this.currentInputText = before + after;
+      // 커서 위치는 그대로 유지
+
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 명령어 히스토리 탐색 (히스토리 탐색 시 커서를 끝으로 이동)
    */
   navigateHistory(direction) {
     if (this.commandHistory.length === 0) return;
@@ -1278,6 +1902,8 @@ class TissueTerminal {
       this.currentInputText = this.commandHistory[this.historyIndex];
     }
 
+    // 커서를 텍스트 끝으로 이동
+    this.cursorPosition = this.currentInputText.length;
     this.updateInputDisplay();
   }
 
@@ -1288,15 +1914,43 @@ class TissueTerminal {
     const input = this.currentInputText.trim();
     if (!input) return;
 
+    // theme 명령어의 하위 완성
+    if (input.startsWith("theme ")) {
+      const themeInput = input.substring(6); // 'theme ' 이후 부분
+      const themeNames = Object.keys(this.availableThemes);
+      const matches = themeNames.filter((theme) =>
+        theme.startsWith(themeInput)
+      );
+
+      if (matches.length === 1) {
+        this.currentInputText = `theme ${matches[0]}`;
+        this.cursorPosition = this.currentInputText.length;
+        this.updateInputDisplay();
+      } else if (matches.length > 1) {
+        this.addHistoryLine("", "");
+
+        this.addHistoryLine(this.getMessage("themeListTitle"), "info-msg");
+        this.addHistoryLine(matches.join("  "), "system-msg");
+        this.addHistoryLine("", "");
+      }
+      return;
+    }
+
+    // 일반 명령어 완성
     const commands = Object.keys(this.commands);
     const matches = commands.filter((cmd) => cmd.startsWith(input));
 
     if (matches.length === 1) {
       this.currentInputText = matches[0] + " ";
+      this.cursorPosition = this.currentInputText.length;
       this.updateInputDisplay();
     } else if (matches.length > 1) {
       this.addHistoryLine("", "");
-      this.addHistoryLine("Available completions:", "info-msg");
+
+      this.addHistoryLine(
+        this.getMessage("tabCompletionAvailable"),
+        "info-msg"
+      );
       this.addHistoryLine(matches.join("  "), "system-msg");
       this.addHistoryLine("", "");
     }
@@ -1309,26 +1963,42 @@ class TissueTerminal {
     if (this.currentInputText) {
       this.addCommandToHistory(this.currentInputText + "^C");
       this.currentInputText = "";
+      this.cursorPosition = 0; // 커서 위치 초기화
       this.updateInputDisplay();
     }
   }
 
   /**
-   * 입력 표시 업데이트 (수정: 모든 특별 모드 마스킹 처리)
+   * 입력 표시 업데이트(커서 위치 반영)
    */
   updateInputDisplay() {
     if (!this.currentInput) return;
 
-    // 특별 모드 중이고 민감한 필드인 경우 마스킹 처리
+    // 특별 모드 마스킹 처리
     if (
       (this.signupInProgress || this.loginInProgress || this.editInProgress) &&
       this.currentFieldInfo?.sensitive
     ) {
       this.updateMaskedInputDisplay();
-    } else {
-      this.currentInput.textContent = this.currentInputText;
-      this.refreshCursor();
+      return; // 여기서 리턴해서 아래 로직 실행 안함
     }
+
+    const beforeCursor = this.currentInputText.substring(
+      0,
+      this.cursorPosition
+    );
+    const afterCursor = this.currentInputText.substring(this.cursorPosition);
+
+    // 현재 입력 영역에 커서 앞 텍스트만 표시
+    this.currentInput.textContent = beforeCursor;
+
+    // 기존 커서 요소 찾기
+    if (this.terminalCursor) {
+      // 커서 뒤에 숨겨진 텍스트가 있다면 data 속성으로 저장 (화면엔 안 보임)
+      this.terminalCursor.setAttribute("data-after-text", afterCursor);
+    }
+
+    this.refreshCursor();
   }
 
   /**
@@ -1337,10 +2007,72 @@ class TissueTerminal {
   updateMaskedInputDisplay() {
     if (!this.currentInput) return;
 
-    // 실제 입력 텍스트 길이만큼 * 표시
-    const maskedText = "*".repeat(this.currentInputText.length);
-    this.currentInput.textContent = maskedText;
+    // 커서 위치 검증 및 보정
+    if (this.cursorPosition > this.currentInputText.length) {
+      this.cursorPosition = this.currentInputText.length;
+    }
+    if (this.cursorPosition < 0) {
+      this.cursorPosition = 0;
+    }
+
+    // 커서 앞부분만 마스킹해서 표시
+    const beforeCursor = "*".repeat(this.cursorPosition);
+    this.currentInput.textContent = beforeCursor;
+
+    // 커서 뒤 텍스트 정보 저장 (안전하게 처리)
+    const afterCursorLength = Math.max(
+      0,
+      this.currentInputText.length - this.cursorPosition
+    );
+    const afterMasked = "*".repeat(afterCursorLength);
+
+    if (this.terminalCursor) {
+      this.terminalCursor.setAttribute("data-after-text", afterMasked);
+    }
+
     this.refreshCursor();
+  }
+
+  /**
+   * 특별 모드용 문자 입력 (커서 위치 관리)
+   */
+  addCharacterToInputInSpecialMode(char) {
+    // 특별 모드에서는 항상 끝에 추가 (커서도 끝으로)
+    this.currentInputText += char;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 민감한 필드면 마스킹 표시
+    if (this.currentFieldInfo?.sensitive) {
+      this.updateMaskedInputDisplay();
+    } else {
+      this.updateInputDisplay();
+    }
+  }
+
+  /**
+   * 특별 모드용 백스페이스 메서드
+   */
+  handleBackspaceInSpecialMode() {
+    if (this.currentInputText.length > 0) {
+      this.currentInputText = this.currentInputText.slice(0, -1);
+      this.cursorPosition = this.currentInputText.length; // 커서를 끝으로
+
+      // 민감한 필드면 마스킹 표시
+      if (this.currentFieldInfo?.sensitive) {
+        this.updateMaskedInputDisplay();
+      } else {
+        this.updateInputDisplay();
+      }
+    }
+  }
+
+  /**
+   * 명령어 입력 초기화 시 커서 위치도 초기화
+   */
+  resetCurrentInput() {
+    this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
+    this.updateInputDisplay();
   }
 
   /**
@@ -1348,9 +2080,39 @@ class TissueTerminal {
    */
   refreshCursor() {
     if (this.terminalCursor) {
+      // 커서 뒤 텍스트가 있으면 커서 다음에 표시
+      const afterText =
+        this.terminalCursor.getAttribute("data-after-text") || "";
+
+      // 기존 커서 다음 형제 요소들 제거 (afterText 전용)
+      let nextSibling = this.terminalCursor.nextSibling;
+      while (nextSibling) {
+        const toRemove = nextSibling;
+        nextSibling = nextSibling.nextSibling;
+        if (toRemove.className === "after-cursor-text") {
+          toRemove.remove();
+        }
+      }
+
+      // 커서 뒤 텍스트가 있으면 추가
+      if (afterText) {
+        const afterSpan = document.createElement("span");
+        afterSpan.className = "after-cursor-text";
+        afterSpan.textContent = afterText;
+        afterSpan.style.color = "#ffffff"; // 일반 텍스트 색상
+
+        // 커서 바로 다음에 삽입
+        this.terminalCursor.parentNode.insertBefore(
+          afterSpan,
+          this.terminalCursor.nextSibling
+        );
+      }
+
+      // 기존 깜빡임 효과 유지
       this.terminalCursor.style.animation = "none";
       this.terminalCursor.offsetHeight; // 강제 리플로우
-      this.terminalCursor.style.animation = "terminalBlink 1s infinite";
+      this.terminalCursor.style.animation =
+        "terminalBlink 1s step-start infinite";
     }
   }
 
@@ -1499,7 +2261,7 @@ class TissueTerminal {
     this.addHistoryLine("\n", "");
     this.addHistoryLine("=".repeat(50), "info-msg");
     this.addHistoryLine(
-      `                    ${this.getMessage("registrationWizard")}`,
+      `           ${this.getMessage("registrationWizard")}`,
       "success-msg"
     );
     this.addHistoryLine("=".repeat(50), "info-msg");
@@ -1510,7 +2272,7 @@ class TissueTerminal {
     this.addHistoryLine("", "");
     this.addHistoryLine("\n", "");
 
-    setTimeout(() => this.promptNextField(), 500);
+    setTimeout(() => this.promptNextField(), 300);
   }
 
   /**
@@ -1526,6 +2288,10 @@ class TissueTerminal {
 
     const field = fields[this.signupStep];
     this.currentFieldInfo = field;
+
+    this.currentInputText = "";
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
 
     // 진행률 표시
     const progress = Math.round((this.signupStep / fields.length) * 100);
@@ -1586,24 +2352,54 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = `${field.prompt}: `;
-      promptElement.style.color = "#FFD93D";
+      // promptElement.style.color = "#FFD93D"; // --signup-prompt 사용, 노란색 계통으로 css에 정의해서 사용하면 좋을듯
     }
   }
 
   /**
    * 회원가입 중 키 입력 처리
    */
+
   handleSignupKeyPress(event) {
     const field = this.currentFieldInfo;
     if (!field) return;
 
+    // JobType 선택 모드일 때 화살표 처리
+    if (field.name === "jobType" && this.jobTypeSelectionMode) {
+      if (event.key === "ArrowUp") {
+        this.handleJobTypeNavigation("up");
+        return;
+      } else if (event.key === "ArrowDown") {
+        this.handleJobTypeNavigation("down");
+        return;
+      } else if (event.key === "Enter") {
+        if (this.selectCurrentJobType()) {
+          return; // 선택 완료됨
+        }
+        // 선택된 항목이 없으면 일반 Enter 처리로 진행
+      } else if (event.key === "Escape") {
+        // this.exitJobTypeSelectionMode();
+        this.resetJobTypeSelectionState();
+        return;
+      } else if (event.key.length === 1) {
+        // 문자 입력 시 선택 모드 종료하고 직접 입력 모드로
+        // this.exitJobTypeSelectionMode();
+        this.resetJobTypeSelectionState();
+        this.addCharacterToInputInSpecialMode(event.key);
+        return;
+      }
+    }
+
     if (event.key === "Enter") {
       this.processSignupInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
+      // JobType 선택 모드 종료
+      if (field.name === "jobType" && this.jobTypeSelectionMode) {
+        // this.exitJobTypeSelectionMode();
+        this.resetJobTypeSelectionState();
       }
+
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelSignupProcess();
     } else if (event.key === "Tab" && field.name === "jobType") {
@@ -1614,10 +2410,13 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
+      // JobType 선택 모드면 종료하고 직접 입력
+      if (field.name === "jobType" && this.jobTypeSelectionMode) {
+        // this.exitJobTypeSelectionMode();
+        this.resetJobTypeSelectionState();
       }
+
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
@@ -1818,6 +2617,7 @@ class TissueTerminal {
    * 회원가입 프로세스 완료
    */
   async completeSignupProcess() {
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("processingRegistration"), "info-msg");
     this.addHistoryLine(
@@ -1889,6 +2689,7 @@ class TissueTerminal {
       this.getMessage("registrationComplete"),
       "success-msg"
     );
+    this.addHistoryLine("\n", "");
     this.addHistoryLine("", "");
     this.addHistoryLine(this.getMessage("welcomeToTissue"), "success-msg");
     this.addHistoryLine(
@@ -1919,6 +2720,12 @@ class TissueTerminal {
     this.currentFieldInfo = null;
     this.emailVerificationStatus = "none";
 
+    // JobType 선택 모드 정리
+    // this.exitJobTypeSelectionMode();
+
+    // JobType 상태 초기화
+    this.resetJobTypeSelectionState();
+
     if (this.emailPollingInterval) {
       clearInterval(this.emailPollingInterval);
       this.emailPollingInterval = null;
@@ -1934,10 +2741,11 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF";
+      // promptElement.style.color = "#00AAFF";
     }
 
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -1965,7 +2773,7 @@ class TissueTerminal {
     const prompt = document.createElement("span");
     prompt.className = "history-prompt";
     prompt.textContent = this.currentFieldInfo.prompt + ": ";
-    prompt.style.color = "#FFD93D";
+    // prompt.style.color = "#FFD93D";
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";
@@ -2256,6 +3064,11 @@ class TissueTerminal {
    * 직업 유형 검증
    */
   async validateJobType(value) {
+    // 화살표 선택 모드에서는 별도 처리
+    if (this.jobTypeSelectionMode) {
+      return { valid: true };
+    }
+
     if (value.toLowerCase() === "list") {
       await this.showJobTypeOptions();
       return {
@@ -2264,17 +3077,62 @@ class TissueTerminal {
       };
     }
 
-    return { valid: true };
+    // 자동 capitalize 적용
+    const capitalizedValue = this.capitalize(value);
+
+    // JobType 옵션들과 매칭 확인
+    const jobTypes = await this.loadJobTypes();
+
+    const matchedJobType = jobTypes.find((jt) => {
+      // 안전한 속성 접근
+      const displayName = jt.displayName || "";
+      const code = jt.code || "";
+
+      return (
+        displayName.toLowerCase() === capitalizedValue.toLowerCase() ||
+        code.toLowerCase() === capitalizedValue.toLowerCase()
+      );
+    });
+
+    if (matchedJobType) {
+      // 매칭되면 정확한 code 값으로 저장
+      if (this.signupInProgress) {
+        this.signupData.jobType = matchedJobType.code;
+      } else if (this.editInProgress) {
+        this.editData.jobTypeValue = matchedJobType.code;
+      }
+      return { valid: true };
+    }
+
+    return { valid: true }; // 자유 입력도 허용
   }
+
+  /**
+   * capitalize 함수
+   */
+  capitalize(value) {
+    if (!value) return value;
+
+    return value
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  // ========== JobType 관련 메서드들 ==========
 
   /**
    * 직업 옵션 표시
    */
   async showJobTypeOptions() {
     try {
+      // 이전 상태 초기화
+      this.resetJobTypeSelectionState();
+
       this.addHistoryLine(this.getMessage("loadingJobTypes"), "info-msg");
 
       const jobTypes = await this.loadJobTypes();
+      this.jobTypeOptions = jobTypes;
 
       // 로딩 메시지 제거
       const historyLines =
@@ -2288,17 +3146,271 @@ class TissueTerminal {
       }
 
       this.addHistoryLine(this.getMessage("availableJobTypes"), "info-msg");
-      jobTypes.forEach((jobType) => {
-        this.addHistoryLine(
-          `  ${jobType.name.padEnd(20)} - ${jobType.description}`,
-          "system-msg"
-        );
-      });
       this.addHistoryLine("", "");
+
+      // 화살표 네비게이션 안내 추가
+      this.addHistoryLine(
+        this.getMessage("helpJobTypeSelection"),
+        "system-msg"
+      );
+      this.addHistoryLine("", "");
+
+      this.jobTypeSessionId = Date.now() + Math.random(); // JobType 선택 전용 세션 ID 생성
+
+      console.log(
+        `JobType selection started with session ID: ${this.jobTypeSessionId}`
+      );
+
+      jobTypes.forEach((jobType, index) => {
+        const line = document.createElement("div");
+        line.className = "history-line system-msg";
+        line.setAttribute("data-jobtype-option", index);
+        line.setAttribute("data-jobtype-session", this.jobTypeSessionId);
+
+        const displayName = jobType.displayName || jobType.name || "Unknown";
+        const description = jobType.description || "";
+
+        line.textContent = `  ${(index + 1)
+          .toString()
+          .padStart(2)}. ${displayName.padEnd(25)} - ${description}`;
+        this.terminalHistory.appendChild(line);
+      });
+
+      // 선택 모드 활성화
+      this.jobTypeSelectionMode = true;
+      this.jobTypeSelectedIndex = -1;
+
+      this.scrollToShowJobTypeList();
+      this.updateJobTypeSelection();
     } catch (error) {
       console.error("Failed to load job types:", error);
       this.addHistoryLine(this.getMessage("failedToLoadJobTypes"), "error-msg");
       this.addHistoryLine("", "");
+    }
+  }
+
+  /**
+   * JobType 선택 상태 초기화
+   */
+  resetJobTypeSelectionState() {
+    this.jobTypeSelectionMode = false;
+    this.jobTypeOptions = [];
+    this.jobTypeSelectedIndex = -1;
+    this.jobTypeDisplayedOptions = [];
+
+    const existingSelections =
+      this.terminalHistory.querySelectorAll(".jobtype-selected");
+    existingSelections.forEach((element) => {
+      element.classList.remove("jobtype-selected");
+      element.style.backgroundColor = "";
+      element.style.color = "";
+    });
+
+    console.log("JobType selection state reset");
+  }
+
+  /**
+   * JobType 선택 상태 업데이트
+   */
+  updateJobTypeSelection() {
+    if (!this.jobTypeSelectionMode || this.jobTypeOptions.length === 0) return;
+
+    // 기존 선택 표시 제거
+    const existingSelection = this.terminalHistory.querySelector(
+      `.jobtype-selected[data-jobtype-session="${this.jobTypeSessionId}"]`
+    );
+    if (existingSelection) {
+      existingSelection.classList.remove("jobtype-selected");
+      existingSelection.style.backgroundColor = "";
+      existingSelection.style.color = "";
+    }
+
+    // 새로운 선택 표시
+    if (this.jobTypeSelectedIndex >= 0) {
+      const currentSessionOptions = this.terminalHistory.querySelectorAll(
+        `[data-jobtype-option][data-jobtype-session="${this.jobTypeSessionId}"]`
+      );
+
+      if (currentSessionOptions[this.jobTypeSelectedIndex]) {
+        const selectedLine = currentSessionOptions[this.jobTypeSelectedIndex];
+        selectedLine.classList.add("jobtype-selected");
+        selectedLine.style.backgroundColor = "var(--terminal-prompt)";
+        selectedLine.style.color = "var(--terminal-bg)";
+
+        // 선택된 항목으로 스크롤
+        selectedLine.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }
+
+  /**
+   * JobType 화살표 네비게이션 처리
+   */
+  handleJobTypeNavigation(direction) {
+    if (!this.jobTypeSelectionMode || this.jobTypeOptions.length === 0)
+      return false;
+
+    if (direction === "up") {
+      if (this.jobTypeSelectedIndex > 0) {
+        this.jobTypeSelectedIndex--;
+      } else {
+        this.jobTypeSelectedIndex = this.jobTypeOptions.length - 1; // 맨 아래로 순환
+      }
+    } else if (direction === "down") {
+      if (this.jobTypeSelectedIndex < this.jobTypeOptions.length - 1) {
+        this.jobTypeSelectedIndex++;
+      } else {
+        this.jobTypeSelectedIndex = 0; // 맨 위로 순환
+      }
+    }
+
+    this.updateJobTypeSelection();
+    return true; // 네비게이션 처리됨
+  }
+
+  /**
+   * JobType 선택 확정
+   */
+  selectCurrentJobType() {
+    if (!this.jobTypeSelectionMode || this.jobTypeSelectedIndex < 0)
+      return false;
+
+    const selectedJobType = this.jobTypeOptions[this.jobTypeSelectedIndex];
+    if (!selectedJobType) return false;
+
+    const displayName =
+      selectedJobType.displayName || selectedJobType.name || "Unknown";
+
+    // 선택된 JobType을 입력으로 설정
+    this.currentInputText = displayName;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 선택 표시 제거
+    const existingSelection = this.terminalHistory.querySelector(
+      `.jobtype-selected[data-jobtype-session="${this.jobTypeSessionId}"]`
+    );
+    if (existingSelection) {
+      existingSelection.classList.remove("jobtype-selected");
+      existingSelection.style.backgroundColor = "";
+      existingSelection.style.color = "";
+    }
+
+    this.resetJobTypeSelectionState();
+    this.updateInputDisplay();
+
+    // 선택 완료 처리
+    this.processSignupInput();
+    return true; // 선택 처리됨
+  }
+
+  /**
+   * 편집 모드용 JobType 선택 확정
+   */
+  selectCurrentJobTypeForEdit() {
+    if (!this.jobTypeSelectionMode || this.jobTypeSelectedIndex < 0)
+      return false;
+
+    const selectedJobType = this.jobTypeOptions[this.jobTypeSelectedIndex];
+    if (!selectedJobType) return false;
+
+    // 선택된 JobType을 입력으로 설정
+    const displayName =
+      selectedJobType.displayName || selectedJobType.name || "Unknown";
+
+    this.currentInputText = displayName;
+    this.cursorPosition = this.currentInputText.length;
+
+    // 선택 표시 제거
+    const existingSelection = this.terminalHistory.querySelector(
+      `.jobtype-selected[data-jobtype-session="${this.jobTypeSessionId}"]`
+    );
+    if (existingSelection) {
+      existingSelection.classList.remove("jobtype-selected");
+      existingSelection.style.backgroundColor = "";
+      existingSelection.style.color = "";
+    }
+
+    this.resetJobTypeSelectionState();
+    this.updateInputDisplay();
+
+    // 선택 완료 처리
+    this.processEditInput();
+    return true; // 선택 처리됨
+  }
+
+  /**
+   * JobType 선택 모드 종료
+   */
+  exitJobTypeSelectionMode() {
+    this.jobTypeSelectionMode = false;
+    this.jobTypeSelectedIndex = -1;
+
+    // 선택 표시 제거
+    const existingSelection =
+      this.terminalHistory.querySelector(".jobtype-selected");
+    if (existingSelection) {
+      existingSelection.classList.remove("jobtype-selected");
+      existingSelection.style.backgroundColor = "";
+      existingSelection.style.color = "";
+    }
+  }
+
+  /**
+   * JobType 목록으로 스크롤
+   */
+  scrollToShowJobTypeList() {
+    if (!this.jobTypeSessionId) return;
+
+    // DOM 업데이트가 완료될 때까지 약간 대기
+    setTimeout(() => {
+      this.performSmoothScrollToJobTypeList();
+    }, 100); // DOM 렌더링 완료 대기
+  }
+
+  /**
+   * 실제 스크롤 수행
+   */
+  performSmoothScrollToJobTypeList() {
+    const currentSessionOptions = this.terminalHistory.querySelectorAll(
+      `[data-jobtype-option][data-jobtype-session="${this.jobTypeSessionId}"]`
+    );
+
+    if (currentSessionOptions.length === 0) return;
+
+    const firstOption = currentSessionOptions[0];
+    const lastOption = currentSessionOptions[currentSessionOptions.length - 1];
+
+    if (!firstOption || !lastOption) return;
+
+    const terminalRect = this.terminalScreen.getBoundingClientRect();
+    const firstRect = firstOption.getBoundingClientRect();
+    const lastRect = lastOption.getBoundingClientRect();
+
+    const listHeight = lastRect.bottom - firstRect.top;
+    const terminalHeight = this.terminalScreen.clientHeight;
+
+    console.log(`JobType list: ${listHeight}px, terminal: ${terminalHeight}px`);
+
+    // 단일 스크롤 동작
+    if (listHeight > terminalHeight * 0.9) {
+      // 목록이 화면보다 크면 첫 번째 옵션을 화면 상단에
+      firstOption.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+      console.log("Scrolled to list start (large list)");
+    } else {
+      // 목록이 작으면 적절한 위치에 배치
+      const availableSpace = terminalHeight - listHeight;
+      const topPadding = Math.min(availableSpace * 0.3, 100); // 상단 여백을 30% 또는 최대 100px
+
+      // 계산된 위치로 스크롤
+      this.terminalScreen.scrollTo({
+        top: firstOption.offsetTop - topPadding,
+        behavior: "smooth",
+      });
+      console.log("Scrolled to optimal position (small list)");
     }
   }
 
@@ -2352,6 +3464,10 @@ class TissueTerminal {
     const field = fields[this.loginStep];
     this.currentFieldInfo = field;
 
+    this.currentInputText = "";
+    this.cursorPosition = 0;
+    this.updateInputDisplay();
+
     // this.addHistoryLine(`${field.prompt}:`, "info-msg");
     this.updatePromptForLogin(field);
   }
@@ -2363,7 +3479,6 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = `${field.prompt}: `;
-      promptElement.style.color = "#00FF00";
     }
   }
 
@@ -2377,10 +3492,7 @@ class TissueTerminal {
     if (event.key === "Enter") {
       this.processLoginInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelLoginProcess();
     } else if (
@@ -2389,10 +3501,7 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
-      }
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
@@ -2533,10 +3642,11 @@ class TissueTerminal {
         const result = await response.json();
         const profile = result.data;
 
+        this.addHistoryLine("\n", "");
         this.addHistoryLine("", "");
         this.addHistoryLine("=".repeat(50), "info-msg");
         this.addHistoryLine(
-          `                    ${this.getMessage("userProfile")}`,
+          `                   ${this.getMessage("userProfile")}`,
           "success-msg"
         );
         this.addHistoryLine("=".repeat(50), "info-msg");
@@ -2740,6 +3850,8 @@ class TissueTerminal {
     }
 
     this.currentInputText = "";
+    this.cursorPosition = 0;
+
     this.updateInputDisplay();
     this.updatePromptForEdit();
   }
@@ -2751,7 +3863,8 @@ class TissueTerminal {
     const promptElement = this.currentPrompt?.querySelector(".prompt-prefix");
     if (promptElement && this.currentFieldInfo) {
       promptElement.textContent = `${this.currentFieldInfo.prompt}: `;
-      promptElement.style.color = "#FF6B6B"; // 수정 중에는 빨간색
+      promptElement.style.color = "var(--edit-prompt)";
+      // promptElement.style.color = "#FF6B6B";
     }
   }
 
@@ -2762,13 +3875,40 @@ class TissueTerminal {
     const field = this.currentFieldInfo;
     if (!field) return;
 
+    // JobType 선택 모드일 때 화살표 처리
+    if (this.editData.field === "jobType" && this.jobTypeSelectionMode) {
+      if (event.key === "ArrowUp") {
+        this.handleJobTypeNavigation("up");
+        return;
+      } else if (event.key === "ArrowDown") {
+        this.handleJobTypeNavigation("down");
+        return;
+      } else if (event.key === "Enter") {
+        if (this.selectCurrentJobTypeForEdit()) {
+          return; // 선택 완료됨
+        }
+        // 선택된 항목이 없으면 일반 Enter 처리로 진행
+      } else if (event.key === "Escape") {
+        this.resetJobTypeSelectionState();
+        return;
+      } else if (event.key.length === 1) {
+        // 문자 입력 시 선택 모드 종료하고 직접 입력 모드로
+        this.resetJobTypeSelectionState();
+        this.addCharacterToInputInSpecialMode(event.key);
+        return;
+      }
+    }
+
+    // 일반키 처리
     if (event.key === "Enter") {
       this.processEditInput();
     } else if (event.key === "Backspace") {
-      this.handleBackspace();
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
+      // JobType 선택 모드면 종료
+      if (this.editData.field === "jobType" && this.jobTypeSelectionMode) {
+        this.exitJobTypeSelectionMode();
       }
+
+      this.handleBackspaceInSpecialMode();
     } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
       this.cancelEditProcess();
     } else if (event.key === "Tab" && this.editData.field === "jobType") {
@@ -2779,10 +3919,12 @@ class TissueTerminal {
       !event.altKey &&
       !event.metaKey
     ) {
-      this.addCharacterToInput(event.key);
-      if (field.sensitive) {
-        this.updateMaskedInputDisplay();
+      // JobType 선택 모드면 종료하고 직접 입력
+      if (this.editData.field === "jobType" && this.jobTypeSelectionMode) {
+        this.exitJobTypeSelectionMode();
       }
+
+      this.addCharacterToInputInSpecialMode(event.key);
     }
   }
 
@@ -3307,6 +4449,26 @@ class TissueTerminal {
    * 특별 모드 키 입력 처리
    */
   handleSpecialModeKeyPress(event) {
+    // IME(한글) 조합 중이면 특수키만 처리
+    if (this.isComposing) {
+      if (event.ctrlKey && event.key.toLowerCase() === "c") {
+        if (this.signupInProgress) {
+          this.cancelSignupProcess();
+        } else if (this.loginInProgress) {
+          this.cancelLoginProcess();
+        } else if (this.editInProgress) {
+          this.cancelEditProcess();
+        }
+      }
+      return;
+    }
+
+    // 한글 입력 감지
+    if (this.isKoreanInput(event)) {
+      console.log("Korean input in special mode, waiting for composition");
+      return;
+    }
+
     if (this.signupInProgress) {
       this.handleSignupKeyPress(event);
     } else if (this.loginInProgress) {
@@ -3337,6 +4499,9 @@ class TissueTerminal {
     this.editFieldInfo = null;
     this.currentFieldInfo = null;
 
+    // 이전 JobType 선택 모드 상태 초기화
+    this.resetJobTypeSelectionState();
+
     // 메모리에서 민감한 데이터 완전 제거
     if (this.editData.currentPassword) {
       // 메모리에서 완전히 제거
@@ -3361,13 +4526,17 @@ class TissueTerminal {
   /**
    * 프롬프트 복원 메서드들
    */
+  /**
+   * TODO: 복원 메서드들 공통으로 사용해도 괜찮지 않을까?
+   */
   resetPromptAfterLogin() {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF";
+      promptElement.style.color = "var(--terminal-prompt)";
     }
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -3375,9 +4544,10 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF";
+      promptElement.style.color = "var(--terminal-prompt)";
     }
     this.currentInputText = "";
+    this.cursorPosition = 0; // 커서 위치 초기화
     this.updateInputDisplay();
   }
 
@@ -3385,8 +4555,10 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF";
+      promptElement.style.color = "var(--terminal-prompt)";
     }
+
+    this.cursorPosition = 0; // 커서 위치 초기화
   }
 
   /**
@@ -3421,7 +4593,7 @@ class TissueTerminal {
     const prompt = document.createElement("span");
     prompt.className = "history-prompt";
     prompt.textContent = this.currentFieldInfo.prompt + ": ";
-    prompt.style.color = "#00FF00";
+    prompt.style.color = "var(--success-msg)"; // 로그인 필드를 입력하는 텍스트가 화면에 남음
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";
@@ -3445,7 +4617,7 @@ class TissueTerminal {
     } else {
       prompt.textContent = "Input: ";
     }
-    prompt.style.color = "#FF6B6B";
+    prompt.style.color = "var(--edit-prompt)";
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";
