@@ -303,7 +303,7 @@ class TissueTerminal {
         tabCompletionAvailable: "사용 가능한 자동완성:",
 
         // 회원가입 관련
-        registrationWizard: "TISSUE 회원가입 마법사",
+        registrationWizard: "TISSUE Registration Wizard",
         welcomeRegistration:
           "환영합니다! 이 마법사가 회원가입 과정을 안내해드립니다.",
         canCancelAnytime: "언제든지 Ctrl+C로 회원가입을 취소할 수 있습니다.",
@@ -348,7 +348,7 @@ class TissueTerminal {
         trySignupAgain: "'signup' 명령어로 다시 시도할 수 있습니다.",
 
         // 로그인 관련
-        tissueLogin: "TISSUE 로그인",
+        tissueLogin: "TISSUE Login",
         enterCredentials: "로그인 자격 증명을 입력해주세요.",
         canCancelLogin: "Ctrl+C로 로그인 과정을 취소할 수 있습니다.",
         loginIdOrEmail: "로그인 ID (또는 이메일)",
@@ -371,7 +371,7 @@ class TissueTerminal {
         // 프로필 관련
         pleaseLoginFirst: "먼저 로그인해주세요",
         loadingProfile: "📋 프로필 정보를 로딩 중...",
-        userProfile: "사용자 프로필",
+        userProfile: "USER PROFILE",
         notSet: "설정되지 않음",
         useEditCommand:
           "'edit [필드명]' 명령어로 프로필 정보를 수정할 수 있습니다.",
@@ -2094,7 +2094,7 @@ class TissueTerminal {
     this.addHistoryLine("\n", "");
     this.addHistoryLine("=".repeat(50), "info-msg");
     this.addHistoryLine(
-      `                    ${this.getMessage("registrationWizard")}`,
+      `           ${this.getMessage("registrationWizard")}`,
       "success-msg"
     );
     this.addHistoryLine("=".repeat(50), "info-msg");
@@ -2105,7 +2105,7 @@ class TissueTerminal {
     this.addHistoryLine("", "");
     this.addHistoryLine("\n", "");
 
-    setTimeout(() => this.promptNextField(), 500);
+    setTimeout(() => this.promptNextField(), 300);
   }
 
   /**
@@ -2185,7 +2185,7 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = `${field.prompt}: `;
-      promptElement.style.color = "#FFD93D";
+      // promptElement.style.color = "#FFD93D"; // --signup-prompt 사용, 노란색 계통으로 css에 정의해서 사용하면 좋을듯
     }
   }
 
@@ -2572,7 +2572,7 @@ class TissueTerminal {
     const promptElement = this.currentPrompt.querySelector(".prompt-prefix");
     if (promptElement) {
       promptElement.textContent = this.promptPrefix;
-      promptElement.style.color = "#00AAFF";
+      // promptElement.style.color = "#00AAFF";
     }
 
     this.currentInputText = "";
@@ -2604,7 +2604,7 @@ class TissueTerminal {
     const prompt = document.createElement("span");
     prompt.className = "history-prompt";
     prompt.textContent = this.currentFieldInfo.prompt + ": ";
-    prompt.style.color = "#FFD93D";
+    // prompt.style.color = "#FFD93D";
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";
@@ -2894,17 +2894,6 @@ class TissueTerminal {
   /**
    * 직업 유형 검증
    */
-  // async validateJobType(value) {
-  //   if (value.toLowerCase() === "list") {
-  //     await this.showJobTypeOptions();
-  //     return {
-  //       valid: false,
-  //       error: this.getMessage("selectFromOptionsAbove"),
-  //     };
-  //   }
-
-  //   return { valid: true };
-  // }
   async validateJobType(value) {
     // 화살표 선택 모드에서는 별도 처리
     if (this.jobTypeSelectionMode) {
@@ -3003,17 +2992,6 @@ class TissueTerminal {
         `JobType selection started with session ID: ${this.jobTypeSessionId}`
       );
 
-      // 목록 시작 마커 추가
-      const jobTypeListStartElement = document.createElement("div");
-      jobTypeListStartElement.className = "jobtype-list-start";
-      jobTypeListStartElement.setAttribute(
-        "data-jobtype-session",
-        this.jobTypeSessionId
-      ); // DOM 요소에 JobType 선택 전용 세션 ID 추가(시간/날짜 사용)
-      jobTypeListStartElement.style.height = "1px";
-      jobTypeListStartElement.style.visibility = "hidden";
-      this.terminalHistory.appendChild(jobTypeListStartElement);
-
       jobTypes.forEach((jobType, index) => {
         const line = document.createElement("div");
         line.className = "history-line system-msg";
@@ -3028,17 +3006,6 @@ class TissueTerminal {
           .padStart(2)}. ${displayName.padEnd(25)} - ${description}`;
         this.terminalHistory.appendChild(line);
       });
-
-      // 목록 끝 마커 추가
-      const jobTypeListEndElement = document.createElement("div");
-      jobTypeListEndElement.className = "jobtype-list-end";
-      jobTypeListEndElement.setAttribute(
-        "data-jobtype-session",
-        this.jobTypeSessionId
-      );
-      jobTypeListEndElement.style.height = "1px";
-      jobTypeListEndElement.style.visibility = "hidden";
-      this.terminalHistory.appendChild(jobTypeListEndElement);
 
       // 선택 모드 활성화
       this.jobTypeSelectionMode = true;
@@ -3225,57 +3192,56 @@ class TissueTerminal {
   scrollToShowJobTypeList() {
     if (!this.jobTypeSessionId) return;
 
-    const listStart = this.terminalHistory.querySelector(
-      `.jobtype-list-start[data-jobtype-session="${this.jobTypeSessionId}"]`
-    );
-    const listEnd = this.terminalHistory.querySelector(
-      `.jobtype-list-end[data-jobtype-session="${this.jobTypeSessionId}"]`
-    );
-
-    if (!listStart || !listEnd) return;
-
-    const terminalHeight = this.terminalScreen.clientHeight;
-    const startRect = listStart.getBoundingClientRect();
-    const endRect = listEnd.getBoundingClientRect();
-    const listHeight = endRect.bottom - startRect.top;
-
-    console.log(
-      `JobType list height: ${listHeight}px, terminal height: ${terminalHeight}px`
-    );
-
-    if (listHeight > terminalHeight * 0.8) {
-      // 목록이 크면 시작 부분 보이기
-      listStart.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    } else {
-      // 목록이 작으면 중앙에 위치
-      listStart.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-
-    // 추가 조정
+    // DOM 업데이트가 완료될 때까지 약간 대기
     setTimeout(() => {
-      this.ensureJobTypeListVisibility();
-    }, 300);
+      this.performSmoothScrollToJobTypeList();
+    }, 100); // DOM 렌더링 완료 대기
   }
 
-  ensureJobTypeListVisibility() {
-    if (!this.jobTypeSessionId) return;
-
+  /**
+   * 실제 스크롤 수행
+   */
+  performSmoothScrollToJobTypeList() {
     const currentSessionOptions = this.terminalHistory.querySelectorAll(
       `[data-jobtype-option][data-jobtype-session="${this.jobTypeSessionId}"]`
     );
 
-    if (currentSessionOptions.length > 0) {
-      const firstOption = currentSessionOptions[0];
+    if (currentSessionOptions.length === 0) return;
+
+    const firstOption = currentSessionOptions[0];
+    const lastOption = currentSessionOptions[currentSessionOptions.length - 1];
+
+    if (!firstOption || !lastOption) return;
+
+    const terminalRect = this.terminalScreen.getBoundingClientRect();
+    const firstRect = firstOption.getBoundingClientRect();
+    const lastRect = lastOption.getBoundingClientRect();
+
+    const listHeight = lastRect.bottom - firstRect.top;
+    const terminalHeight = this.terminalScreen.clientHeight;
+
+    console.log(`JobType list: ${listHeight}px, terminal: ${terminalHeight}px`);
+
+    // 단일 스크롤 동작
+    if (listHeight > terminalHeight * 0.9) {
+      // 목록이 화면보다 크면 첫 번째 옵션을 화면 상단에
       firstOption.scrollIntoView({
         behavior: "smooth",
         block: "start",
+        inline: "nearest",
       });
+      console.log("Scrolled to list start (large list)");
+    } else {
+      // 목록이 작으면 적절한 위치에 배치
+      const availableSpace = terminalHeight - listHeight;
+      const topPadding = Math.min(availableSpace * 0.3, 100); // 상단 여백을 30% 또는 최대 100px
+
+      // 계산된 위치로 스크롤
+      this.terminalScreen.scrollTo({
+        top: firstOption.offsetTop - topPadding,
+        behavior: "smooth",
+      });
+      console.log("Scrolled to optimal position (small list)");
     }
   }
 
@@ -3507,10 +3473,11 @@ class TissueTerminal {
         const result = await response.json();
         const profile = result.data;
 
+        this.addHistoryLine("\n", "");
         this.addHistoryLine("", "");
         this.addHistoryLine("=".repeat(50), "info-msg");
         this.addHistoryLine(
-          `                    ${this.getMessage("userProfile")}`,
+          `                   ${this.getMessage("userProfile")}`,
           "success-msg"
         );
         this.addHistoryLine("=".repeat(50), "info-msg");
@@ -3727,7 +3694,8 @@ class TissueTerminal {
     const promptElement = this.currentPrompt?.querySelector(".prompt-prefix");
     if (promptElement && this.currentFieldInfo) {
       promptElement.textContent = `${this.currentFieldInfo.prompt}: `;
-      promptElement.style.color = "#FF6B6B";
+      promptElement.style.color = "var(--edit-prompt)";
+      // promptElement.style.color = "#FF6B6B";
     }
   }
 
@@ -4465,7 +4433,7 @@ class TissueTerminal {
     } else {
       prompt.textContent = "Input: ";
     }
-    prompt.style.color = "#FF6B6B";
+    prompt.style.color = "var(--edit-prompt)";
 
     const commandSpan = document.createElement("span");
     commandSpan.className = "history-command";

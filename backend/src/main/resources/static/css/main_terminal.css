@@ -56,6 +56,11 @@
 
   /* 프로그레스 */
   --progress-text: #74c0fc;
+
+  /* 수정 */
+  --edit-prompt: #ff6b6b;
+
+  /* --signup-prompt 추가 */
 }
 
 /* 테마별 색상 정의 */
@@ -97,6 +102,8 @@
   --selection-text: #ffffff;
   --focus-outline: #00aaff;
   --progress-text: #74c0fc;
+  /* --signup-prompt 추가 */
+  /* --edit-prompt 추가 */
 }
 
 /* Light Theme */
@@ -136,6 +143,8 @@
   --selection-text: #000000;
   --focus-outline: #0066cc;
   --progress-text: #0088cc;
+  /* --signup-prompt 추가 */
+  /* --edit-prompt 추가 */
 }
 
 /* Nightwing Theme */
@@ -175,6 +184,8 @@
   --selection-text: #f8f8f2;
   --focus-outline: #8be9fd;
   --progress-text: #bd93f9;
+  /* --signup-prompt 추가 */
+  /* --edit-prompt 추가 */
 }
 
 /* Solarized Light Theme */
@@ -253,6 +264,8 @@
   --selection-text: #00ffff;
   --focus-outline: #ff00ff;
   --progress-text: #8080ff;
+  /* --signup-prompt 추가 */
+  /* --edit-prompt 추가 */
 }
 
 /* Cherry Ash Theme */
@@ -304,6 +317,8 @@
 
   --focus-outline: #ff6b6b;
   --progress-text: #c77dff;
+  /* --signup-prompt 추가 */
+  /* --edit-prompt 추가 */
 }
 
 /* 전체 화면을 터미널로 만들기 위한 기본 리셋 */
@@ -425,8 +440,7 @@ body {
 }
 
 .history-prompt {
-  color: var(--terminal-prompt);
-  /* margin-right: 8px; */
+  color: var(--terminal-prompt); /* 더 어울리는 색은 없을까? */
 }
 
 .history-command {
