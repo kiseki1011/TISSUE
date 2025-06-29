@@ -48,7 +48,7 @@ public class MemberCommandService {
 
 			return MemberResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("회원가입에 실패했습니다.", e);
+			throw new DuplicateResourceException("Failed to signup.", e);
 		}
 	}
 
@@ -79,7 +79,7 @@ public class MemberCommandService {
 			memberEmailVerificationService.clearVerification(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("중복된 Email입니다", e);
+			throw new DuplicateResourceException("Failed to update email. Email already in use.", e);
 		}
 	}
 
@@ -96,7 +96,7 @@ public class MemberCommandService {
 			member.updateUsername(request.newUsername());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("중복된 username입니다", e);
+			throw new DuplicateResourceException("Failed to update username. Username already in use.", e);
 		}
 	}
 
