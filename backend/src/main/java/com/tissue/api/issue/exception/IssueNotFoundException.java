@@ -20,4 +20,12 @@ public class IssueNotFoundException extends ResourceNotFoundException {
 	public IssueNotFoundException(String issueKey, String sprintKey, String workspaceCode) {
 		super(String.format(ISSUE_KEY_SPRINT_KEY_CODE_MESSAGE, issueKey, sprintKey, workspaceCode));
 	}
+
+	public IssueNotFoundException(String issueKey, String workspaceCode, Throwable cause) {
+		super(String.format(ISSUE_KEY_CODE_MESSAGE, issueKey, workspaceCode), cause);
+	}
+
+	public IssueNotFoundException(String issueKey, String sprintKey, String workspaceCode, Throwable cause) {
+		super(String.format(ISSUE_KEY_SPRINT_KEY_CODE_MESSAGE, issueKey, sprintKey, workspaceCode), cause);
+	}
 }

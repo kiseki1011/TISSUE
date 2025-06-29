@@ -14,4 +14,12 @@ public class MemberNotFoundException extends ResourceNotFoundException {
 	public MemberNotFoundException(String identifier) {
 		super(String.format(IDENTIFIER_MESSAGE, identifier));
 	}
+
+	public MemberNotFoundException(Long id, Throwable cause) {
+		super(String.format(ID_MESSAGE, id), cause);
+	}
+
+	public MemberNotFoundException(String identifier, Throwable cause) {
+		super(String.format(IDENTIFIER_MESSAGE, identifier), cause);
+	}
 }
