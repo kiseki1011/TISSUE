@@ -5,7 +5,12 @@ import org.springframework.http.HttpStatus;
 import com.tissue.api.common.exception.TissueException;
 
 public class ExternalServiceException extends TissueException {
+
 	public ExternalServiceException(String message) {
 		super(message, HttpStatus.BAD_GATEWAY);
+	}
+
+	public ExternalServiceException(String message, Throwable cause) {
+		super(message, HttpStatus.BAD_GATEWAY, cause);
 	}
 }
