@@ -18,10 +18,10 @@ import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -55,7 +55,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
 		setGeneratedWorkspaceCode(workspace);

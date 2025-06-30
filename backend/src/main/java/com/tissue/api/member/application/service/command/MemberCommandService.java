@@ -57,7 +57,7 @@ public class MemberCommandService {
 		UpdateMemberProfileRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		updateMemberInfoIfPresent(request, member);
 
@@ -69,7 +69,7 @@ public class MemberCommandService {
 		UpdateMemberEmailRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		memberValidator.validateEmailIsUnique(request.newEmail());
 		memberEmailVerificationService.validateEmailVerified(request.newEmail());
@@ -88,7 +88,7 @@ public class MemberCommandService {
 		UpdateMemberUsernameRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		memberValidator.validateUsernameIsUnique(request.newUsername());
 
@@ -105,7 +105,7 @@ public class MemberCommandService {
 		UpdateMemberPasswordRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 		memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
 		member.updatePassword(passwordEncoder.encode(request.newPassword()));
@@ -125,7 +125,7 @@ public class MemberCommandService {
 		WithdrawMemberRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 		memberValidator.validateMemberPassword(request.password(), memberId);
 		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 

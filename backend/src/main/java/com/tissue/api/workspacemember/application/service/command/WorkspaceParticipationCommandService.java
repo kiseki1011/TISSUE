@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberPermissionValidator;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class WorkspaceParticipationCommandService {
 		Long memberId
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {
 			throw new InvalidOperationException(String.format(

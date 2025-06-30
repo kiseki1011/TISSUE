@@ -21,7 +21,7 @@ public class AuthenticationService {
 	@Transactional
 	public LoginResponse login(LoginRequest request) {
 
-		Member member = memberReader.findMember(request.identifier());
+		Member member = memberReader.findMemberByLoginIdOrEmail(request.identifier());
 
 		memberValidator.validatePasswordMatch(request.password(), member.getPassword());
 
