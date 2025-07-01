@@ -21,7 +21,6 @@ public class MemberReader {
 
 	public Member findMemberByLoginIdOrEmail(String identifier) {
 		return memberRepository.findByIdentifier(identifier)
-			.orElseThrow(() -> new MemberNotFoundException(
-				String.format("Member not found with login ID or email. identifier: %s", identifier)));
+			.orElseThrow(() -> new MemberNotFoundException(identifier));
 	}
 }
