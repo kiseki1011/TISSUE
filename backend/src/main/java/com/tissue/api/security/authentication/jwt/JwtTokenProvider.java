@@ -1,15 +1,28 @@
 package com.tissue.api.security.authentication.jwt;
 
+import static com.tissue.api.security.util.MaskingUtil.*;
+
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.security.authentication.MemberUserDetailsService;
 import com.tissue.api.security.authentication.exception.JwtAuthenticationException;
+import com.tissue.api.security.authentication.exception.JwtCreationException;
+import com.tissue.api.security.authentication.exception.JwtSecretException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -30,93 +43,142 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JwtTokenProvider {
 
+	public static final String CLAIM_NAME_TOKEN_TYPE = "tokenType";
+	public static final String CLAIM_NAME_MEMBER_ID = "memberId";
+	public static final String TOKEN_TYPE_ACCESS = "access";
+	public static final String TOKEN_TYPE_REFRESH = "refresh";
+	public static final String ISSUER = "tissue-api";
+	public static final String CLAIM_NAME_JTI = "jti";
+	public static final int SECRET_KEY_LENGTH = 32;
+
 	private final SecretKey secretKey;
 	private final long accessTokenValidityInSeconds;
 	private final long refreshTokenValidityInSeconds;
+	private final MemberUserDetailsService userDetailsService;
 
 	/**
 	 * 생성자에서 키와 유효시간 초기화
 	 */
+	// TODO: JwtProperties 클래스를 만들어서 사용하는 것을 고려
 	public JwtTokenProvider(
 		@Value("${jwt.secret}") String secret,
 		@Value("${jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
-		@Value("${jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds
+		@Value("${jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
+		MemberUserDetailsService userDetailsService
 	) {
+		this.userDetailsService = userDetailsService;
+
 		// 키 길이 검증
-		// TODO: 예외 타입 변경하기
-		if (secret.length() < 32) {
-			throw new IllegalArgumentException(
+		if (secret.length() < SECRET_KEY_LENGTH) {
+			throw new JwtSecretException(
 				"JWT secret must be at least 256 bits (32 characters) long for security. Current length: "
 					+ secret.length()
 			);
 		}
 
-		// jjwt 0.12.3에서는 키 생성이 더 엄격해짐
-		// UTF-8 인코딩을 명시적으로 사용하여 플랫폼 독립성 보장
-		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 		this.accessTokenValidityInSeconds = accessTokenValidityInSeconds;
 		this.refreshTokenValidityInSeconds = refreshTokenValidityInSeconds;
 
-		log.info("JWT Token Provider initialized with HS256 algorithm");
+		log.info("JWT Token Provider initialized with HS256 algorithm.");
 	}
 
 	/**
-	 * Access Token 생성
+	 * Create Access Token
+	 * - subject: loginId
+	 * - memberId: Primary Key for Member
+	 * - tokenType: "access"
 	 */
-	public String createAccessToken(Long memberId, String loginId) {
-		// Java 8 Time API 사용으로 시간 처리가 더 정확해짐
+	public String createAccessToken(Long memberId, String loginIdentifier) {
 		Instant now = Instant.now();
 		Instant expiration = now.plus(accessTokenValidityInSeconds, ChronoUnit.SECONDS);
 
 		try {
 			return Jwts.builder()
-				// 표준 클레임들 설정
-				.subject(loginId)                           // JWT subject - 사용자 식별자
-				.issuedAt(Date.from(now))                   // 발급 시간
-				.expiration(Date.from(expiration))          // 만료 시간
-				.issuer("tissue-api")                       // 발급자 정보
-
-				// 커스텀 클레임들 설정
-				.claim("memberId", memberId)                // member id
-				.claim("tokenType", "access")        // 토큰 타입
-				.claim("loginId", loginId)                  // login id
-
-				// SecretKey 타입에 따라 자동으로 적절한 알고리즘 선택 (HS256)
-				.signWith(secretKey)
-
-				// 토큰 문자열로 압축
-				.compact();
-
-		} catch (Exception e) {
-			log.error("Failed to create access token for loginId: {}", loginId, e);
-			throw new RuntimeException("Access token creation failed", e);
+				.subject(loginIdentifier) // JWT subject - 사용자 식별자
+				.issuedAt(Date.from(now)) // 발급 시간
+				.expiration(Date.from(expiration)) // 만료 시간
+				.issuer(ISSUER) // 발급자 정보
+				.claim(CLAIM_NAME_MEMBER_ID, memberId) // member id
+				.claim(CLAIM_NAME_TOKEN_TYPE, TOKEN_TYPE_ACCESS) // 토큰 타입
+				.signWith(secretKey) // SecretKey 타입에 따라 자동으로 적절한 알고리즘 선택 (HS256)
+				.compact(); // 토큰 문자열로 압축
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new JwtCreationException(
+				"Failed to create access token for loginIdentifier: " + maskIdentifier(loginIdentifier),
+				e);
 		}
 	}
 
 	/**
 	 * Refresh Token 생성
 	 */
-	public String createRefreshToken(String loginId) {
+	public String createRefreshToken(String loginIdentifier) {
 		Instant now = Instant.now();
 		Instant expiration = now.plus(refreshTokenValidityInSeconds, ChronoUnit.SECONDS);
 
 		try {
 			return Jwts.builder()
-				.subject(loginId)
+				.subject(loginIdentifier)
 				.issuedAt(Date.from(now))
 				.expiration(Date.from(expiration))
-				.issuer("tissue-api")
-
-				// Refresh Token에는 최소한의 정보만 포함
-				.claim("tokenType", "refresh")
-				.claim("jti", java.util.UUID.randomUUID().toString()) // JWT ID - 토큰 순환 시 추적용
-
+				.issuer(ISSUER)
+				.claim(CLAIM_NAME_TOKEN_TYPE, TOKEN_TYPE_REFRESH)
+				.claim(CLAIM_NAME_JTI, UUID.randomUUID().toString()) // JWT ID - 토큰 순환 시 추적용
 				.signWith(secretKey)
 				.compact();
 
-		} catch (Exception e) {
-			log.error("Failed to create refresh token for loginId: {}", loginId, e);
-			throw new RuntimeException("Refresh token creation failed", e);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new JwtCreationException(
+				"Failed to create refresh token for loginIdentifier: " + maskIdentifier(loginIdentifier), e);
+		}
+	}
+
+	/**
+	 * JWT 토큰으로부터 Authentication 객체 생성
+	 *
+	 * 처리 흐름:
+	 * 1. 토큰 유효성 검증 (형식, 서명, 만료시간)
+	 * 2. 토큰에서 사용자 식별자 추출
+	 * 3. UserDetailsService를 통한 사용자 정보 조회 (실시간 상태 확인)
+	 * 4. 완전한 Authentication 객체 생성 및 반환, 검증 실패시 Optional.empty()
+	 */
+	// TODO: token 마스킹을 위한 유틸 클래스 구현 및 사용
+	public Optional<Authentication> getAuthentication(String token) {
+		String loginIdentifier = null;
+
+		try {
+			// 토큰 기본 검증 (형식, 서명, 만료시간, 토큰 타입)
+			if (!validateAccessToken(token)) {
+				log.debug("Token validation failed for token: {}", token);
+				return Optional.empty();
+			}
+
+			// 토큰에서 사용자 식별자 추출
+			loginIdentifier = getLoginIdFromToken(token);
+
+			// 사용자 정보 조회 및 현재 상태 확인
+			// - 이 단계에서 사용자가 탈퇴했거나 비활성화된 경우를 실시간으로 확인
+			UserDetails userDetails = userDetailsService.loadUserByUsername(loginIdentifier);
+
+			// Authentication 객체 생성
+			// - principal: 사용자 정보 (UserDetails 구현체)
+			// - credentials: null (JWT 토큰 자체가 이미 인증 수단이므로)
+			// - authorities: 사용자의 권한 목록
+			UsernamePasswordAuthenticationToken authentication =
+				new UsernamePasswordAuthenticationToken(
+					userDetails,
+					null,  // JWT에서는 비밀번호 필요 없음
+					userDetails.getAuthorities()
+				);
+
+			log.debug("Successfully created authentication for user with loginIdentifier: {}",
+				maskIdentifier(loginIdentifier));
+			return Optional.of(authentication);
+
+		} catch (UsernameNotFoundException e) {
+			throw new JwtAuthenticationException(
+				"Member not found for loginIdentifier: " + maskIdentifier(loginIdentifier), e);
 		}
 	}
 
@@ -127,9 +189,9 @@ public class JwtTokenProvider {
 		try {
 			Claims claims = parseAndValidateClaims(token);
 			return claims.getSubject();
-		} catch (Exception e) {
-			log.warn("Failed to extract loginId from token", e);
-			throw new JwtAuthenticationException("Invalid token: cannot extract loginId", e);
+
+		} catch (JwtException e) {
+			throw new JwtAuthenticationException("Failed to extract loginId from token.", e);
 		}
 	}
 
@@ -140,10 +202,10 @@ public class JwtTokenProvider {
 		try {
 			Claims claims = parseAndValidateClaims(token);
 
-			// 타입 안전성 강화: 명시적 타입 검증
-			Object memberIdClaim = claims.get("memberId");
+			// 타입 검증
+			Object memberIdClaim = claims.get(CLAIM_NAME_MEMBER_ID);
 			if (memberIdClaim == null) {
-				throw new JwtAuthenticationException("Token does not contain memberId claim");
+				throw new JwtAuthenticationException("Token does not contain memberId claim.");
 			}
 
 			// 다양한 숫자 타입 처리 (Integer, Long 등)
@@ -153,9 +215,9 @@ public class JwtTokenProvider {
 
 			throw new JwtAuthenticationException("Invalid memberId claim type: " + memberIdClaim.getClass());
 
-		} catch (Exception e) {
-			log.warn("Failed to extract memberId from token", e);
-			throw new JwtAuthenticationException("Invalid token: cannot extract memberId", e);
+		} catch (JwtException e) {
+			log.warn("Failed to extract memberId from token.", e);
+			throw new JwtAuthenticationException("Cannot extract memberId from token.", e);
 		}
 	}
 
@@ -165,16 +227,18 @@ public class JwtTokenProvider {
 	public String getTokenType(String token) {
 		try {
 			Claims claims = parseAndValidateClaims(token);
-			return claims.get("tokenType", String.class);
-		} catch (Exception e) {
-			log.warn("Failed to extract token type from token", e);
-			throw new JwtAuthenticationException("Invalid token: cannot extract token type", e);
+			return claims.get(CLAIM_NAME_TOKEN_TYPE, String.class);
+
+		} catch (JwtException e) {
+			log.warn("Failed to extract tokenType from token.", e);
+			throw new JwtAuthenticationException("Cannot extract tokenType from token.", e);
 		}
 	}
 
 	/**
 	 * Access Token 유효성 검증
-	 * 검증 항목
+	 *
+	 * 검증 항목:
 	 * 1. 토큰 형식과 서명 유효성
 	 * 2. 만료 시간 확인
 	 * 3. 토큰 타입 확인 (access인지)
@@ -185,15 +249,15 @@ public class JwtTokenProvider {
 			Claims claims = parseAndValidateClaims(token);
 
 			// 토큰 타입 확인
-			String tokenType = claims.get("tokenType", String.class);
-			if (!"access".equals(tokenType)) {
+			String tokenType = claims.get(CLAIM_NAME_TOKEN_TYPE, String.class);
+			if (!Objects.equals(TOKEN_TYPE_ACCESS, tokenType)) {
 				log.debug("Token validation failed: not an access token. Type: {}", tokenType);
 				return false;
 			}
 
 			// 필수 클레임 존재 여부 확인
-			if (claims.getSubject() == null || claims.get("memberId") == null) {
-				log.debug("Token validation failed: missing required claims");
+			if (claims.getSubject() == null || claims.get(CLAIM_NAME_MEMBER_ID) == null) {
+				log.debug("Token validation failed: missing required claims.");
 				return false;
 			}
 
@@ -201,13 +265,10 @@ public class JwtTokenProvider {
 			return true;
 
 		} catch (ExpiredJwtException e) {
-			log.debug("Token validation failed: token expired");
+			log.debug("Access token is expired: {}", e.getMessage());
 			return false;
 		} catch (JwtException e) {
-			log.debug("Token validation failed: {}", e.getMessage());
-			return false;
-		} catch (Exception e) {
-			log.warn("Unexpected error during token validation", e);
+			log.warn("Access token is invalid: {}, token: {}", e.getMessage(), maskToken(token));
 			return false;
 		}
 	}
@@ -219,17 +280,14 @@ public class JwtTokenProvider {
 		try {
 			Claims claims = parseAndValidateClaims(token);
 
-			String tokenType = claims.get("tokenType", String.class);
-			return "refresh".equals(tokenType);
+			String tokenType = claims.get(CLAIM_NAME_TOKEN_TYPE, String.class);
+			return Objects.equals(TOKEN_TYPE_REFRESH, tokenType);
 
 		} catch (ExpiredJwtException e) {
-			log.debug("Refresh token validation failed: token expired");
+			log.info("Refresh token is expired: {}", e.getMessage());
 			return false;
 		} catch (JwtException e) {
-			log.debug("Refresh token validation failed: {}", e.getMessage());
-			return false;
-		} catch (Exception e) {
-			log.warn("Unexpected error during refresh token validation", e);
+			log.warn("Refresh token is invalid: {}, token: {}", e.getMessage(), maskToken(token));
 			return false;
 		}
 	}
@@ -246,8 +304,8 @@ public class JwtTokenProvider {
 			long remainingMillis = expiration.getTime() - System.currentTimeMillis();
 			return Math.max(0, remainingMillis / 1000);
 
-		} catch (Exception e) {
-			log.debug("Failed to calculate token remaining time", e);
+		} catch (JwtException e) {
+			log.debug("Failed to calculate remaining time for token.", e);
 			return 0;
 		}
 	}
@@ -264,21 +322,21 @@ public class JwtTokenProvider {
 				.getPayload();
 
 		} catch (ExpiredJwtException e) {
-			// 만료된 토큰 - 이 예외는 상위 메서드에서 처리
+			// 만료된 토큰 - 상위 메서드에서 처리
+			log.debug("JWT token is expired: {}, token: {}", e.getMessage(), maskToken(token));
 			throw e;
 		} catch (UnsupportedJwtException e) {
-			log.debug("Unsupported JWT token: {}", e.getMessage());
-			throw new JwtAuthenticationException("Unsupported JWT token", e);
+			log.debug("JWT token is unsupported: {}, token: {}", e.getMessage(), maskToken(token));
+			throw new JwtAuthenticationException("Unsupported JWT token.", e);
 		} catch (MalformedJwtException e) {
-			log.debug("Malformed JWT token: {}", e.getMessage());
-			throw new JwtAuthenticationException("Malformed JWT token", e);
+			log.debug("JWT token is malformed: {}, token: {}", e.getMessage(), maskToken(token));
+			throw new JwtAuthenticationException("Malformed JWT token.", e);
 		} catch (SecurityException e) {
-			log.debug("Invalid JWT signature: {}", e.getMessage());
-			throw new JwtAuthenticationException("Invalid JWT signature", e);
+			log.debug("JWT token signature is invalid: {}, token: {}", e.getMessage(), maskToken(token));
+			throw new JwtAuthenticationException("Invalid JWT signature.", e);
 		} catch (IllegalArgumentException e) {
-			log.debug("JWT token compact of handler are invalid: {}", e.getMessage());
-			throw new JwtAuthenticationException("Invalid JWT token", e);
+			log.debug("JWT token is illegal or empty: {}, token: {}", e.getMessage(), maskToken(token));
+			throw new JwtAuthenticationException("Invalid JWT token.", e);
 		}
 	}
-
 }
