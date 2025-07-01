@@ -8,6 +8,7 @@ import com.tissue.api.common.entity.BaseDateEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.member.domain.model.enums.JobType;
+import com.tissue.api.security.authorization.enums.SystemRole;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -29,7 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
-	private static final int MAX_MY_WORKSPACE_COUNT = 10;
+	private static final int MAX_WORKSPACE_COUNT = 10;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +55,9 @@ public class Member extends BaseDateEntity {
 
 	@Enumerated(EnumType.STRING)
 	private JobType jobType;
+
+	@Enumerated(EnumType.STRING)
+	private SystemRole role;
 
 	// TODO: 그냥 필요하면 계산해서 보여주는게 좋지 않을까?
 	@Column(nullable = false)
@@ -82,6 +86,7 @@ public class Member extends BaseDateEntity {
 		this.jobType = jobType;
 		this.name = name;
 		this.birthDate = birthDate;
+		this.role = SystemRole.USER;
 	}
 
 	public void increaseMyWorkspaceCount() {
@@ -118,10 +123,14 @@ public class Member extends BaseDateEntity {
 		this.jobType = jobType;
 	}
 
+	public void updateRole(SystemRole role) {
+		this.role = role;
+	}
+
 	private void validateWorkspaceLimit() {
-		if (this.myWorkspaceCount >= MAX_MY_WORKSPACE_COUNT) {
+		if (this.myWorkspaceCount >= MAX_WORKSPACE_COUNT) {
 			throw new InvalidOperationException(
-				String.format("Max number of workspaces you can own is %d.", MAX_MY_WORKSPACE_COUNT));
+				String.format("Max number of workspaces you can own is %d.", MAX_WORKSPACE_COUNT));
 		}
 	}
 
