@@ -174,6 +174,7 @@ public class JwtTokenProvider {
 
 			log.debug("Successfully created authentication for user with loginIdentifier: {}",
 				maskIdentifier(loginIdentifier));
+
 			return Optional.of(authentication);
 
 		} catch (UsernameNotFoundException e) {
@@ -261,7 +262,6 @@ public class JwtTokenProvider {
 				return false;
 			}
 
-			// 만료 시간은 parseAndValidateClaims에서 이미 확인됨
 			return true;
 
 		} catch (ExpiredJwtException e) {
@@ -325,6 +325,7 @@ public class JwtTokenProvider {
 			// 만료된 토큰 - 상위 메서드에서 처리
 			log.debug("JWT token is expired: {}, token: {}", e.getMessage(), maskToken(token));
 			throw e;
+			// TODO: instanceOf를 사용한 분기문으로 중복 제거? 케이스별로 reason을 추출해서 사용.
 		} catch (UnsupportedJwtException e) {
 			log.debug("JWT token is unsupported: {}, token: {}", e.getMessage(), maskToken(token));
 			throw new JwtAuthenticationException("Unsupported JWT token.", e);
