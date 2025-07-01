@@ -55,6 +55,20 @@ public class MaskingUtil {
 	}
 
 	/**
+	 * Masks the identifier for Member.
+	 * Identifier can be loginId or email.
+	 */
+	public static String maskIdentifier(String identifier) {
+		if (identifier == null || identifier.isBlank()) {
+			return "***";
+		}
+		if (identifier.contains("@")) {
+			return maskEmail(identifier);
+		}
+		return maskLoginId(identifier);
+	}
+
+	/**
 	 * Masks all but the first character of a name.
 	 * Example: John → J***
 	 */
