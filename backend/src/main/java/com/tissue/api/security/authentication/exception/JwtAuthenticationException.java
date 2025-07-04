@@ -1,8 +1,8 @@
 package com.tissue.api.security.authentication.exception;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
+import org.springframework.security.core.AuthenticationException;
 
-public class JwtAuthenticationException extends AuthenticationFailedException {
+public class JwtAuthenticationException extends AuthenticationException {
 
 	public JwtAuthenticationException(String message) {
 		super(message);
