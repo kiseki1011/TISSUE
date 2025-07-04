@@ -5,8 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.member.application.service.command.MemberReader;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.infrastructure.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,15 +25,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberUserDetailsService implements UserDetailsService {
 
-	private final MemberReader memberReader;
+	// private final MemberReader memberReader;
+	private final MemberRepository memberRepository;
+
+	// @Override
+	// public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	// 	Member member = memberReader.findMemberByLoginIdOrEmail(username);
+	// 	return new MemberUserDetails(member);
+	// }
 
 	/**
-	 * 사용자명(여기서는 Member ID)으로 사용자 정보 조회
-	 * JWT 필터에서 토큰으로부터 추출한 사용자 ID를 받아서 처리
+	 * Find by username(in this case loginId or email) extracted from the JWT token
 	 */
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Member member = memberReader.findMemberByLoginIdOrEmail(username);
-		return new MemberUserDetails(member);
+	public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
+		return memberRepository.findByLoginIdOrEmail(identifier)
+			.map(MemberUserDetails::new)
+			.orElseThrow(() -> new UsernameNotFoundException("Member not found for identifier: " + identifier));
 	}
 }

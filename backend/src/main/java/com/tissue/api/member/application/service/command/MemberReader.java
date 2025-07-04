@@ -20,7 +20,7 @@ public class MemberReader {
 	}
 
 	public Member findMemberByLoginIdOrEmail(String identifier) {
-		return memberRepository.findByIdentifier(identifier)
+		return memberRepository.findByLoginIdOrEmail(identifier)
 			.orElseThrow(() -> new MemberNotFoundException(identifier));
 	}
 }
