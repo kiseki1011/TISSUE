@@ -37,6 +37,7 @@ public class MemberUserDetailsService implements UserDetailsService {
 	/**
 	 * Find by username(in this case loginId or email) extracted from the JWT token
 	 */
+	// TODO: Consider using Cache-Based DB Lookup using Redis
 	@Override
 	public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 		return memberRepository.findByLoginIdOrEmail(identifier)
