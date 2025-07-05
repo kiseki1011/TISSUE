@@ -3,6 +3,8 @@ package com.tissue.api.security.authentication;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,6 +33,8 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 	) throws ServletException, IOException {
 		try {
 			filterChain.doFilter(request, response);
+		} catch (AuthenticationException | AccessDeniedException ex) {
+			throw ex;
 		} catch (Exception ex) {
 			handleException(response, ex);
 		}
