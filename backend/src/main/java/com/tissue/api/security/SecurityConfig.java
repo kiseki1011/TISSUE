@@ -2,6 +2,7 @@ package com.tissue.api.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -26,6 +27,7 @@ public class SecurityConfig {
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	private final ApiAccessDeniedHandler apiAccessDeniedHandler;
 
+	// TODO: URL pattern을 properties 또는 yaml로 분리
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
@@ -37,13 +39,18 @@ public class SecurityConfig {
 			// allow endpoints
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(
-					"/api/v1/auth/**",
+					"/api/v1/auth/login",
 					"/api/v1/members/check-*",
 					"/swagger-ui/**",
 					"/actuator/**"
-				).permitAll()
+				)
+				.permitAll()
 				.anyRequest().authenticated()
 			)
+			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(HttpMethod.POST, "/api/v1/members")
+				.permitAll()
+				.anyRequest().authenticated())
 
 			.exceptionHandling(ex -> ex
 				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
