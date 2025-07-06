@@ -39,7 +39,6 @@ public class MemberUserDetails implements UserDetails {
 		this.username = member.getUsername();
 		this.role = member.getRole();
 
-		// Spring Security에 맞는 권한 객체로 변환
 		this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
 	}
 
@@ -49,37 +48,41 @@ public class MemberUserDetails implements UserDetails {
 	}
 
 	/**
-	 * JWT 기반 인증에선 비밀번호를 사용하지 않음.
-	 * 단, UserDetails 인터페이스 구현을 위해 null 또는 암호화된 비밀번호 반환
+	 * JWT does not use passwords
+	 * Return null or "" to implement UserDetails interface
 	 */
 	@Override
 	public String getPassword() {
-		return null; // "****" 또는 "PROTECTED" 반환할까?
+		return null;
 	}
 
 	@Override
 	public String getUsername() {
-		// Security 내부적으로 사용하는 식별자 (로그 추적 등)
+		// identifier that spring security uses internally (logging, etc...)
 		return loginId;
 	}
 
 	@Override
 	public boolean isAccountNonExpired() {
-		return true; // 실무에서는 만료 여부를 별도 필드로 체크
+		// user a seperate field to check account expiration in Member
+		return true;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return true; // 잠금 여부가 있다면 해당 필드 체크
+		// use if account lock is needed
+		return true;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		return true; // 자격 증명 만료 여부 (ex. 비밀번호 유효기간)
+		// use if you need credential expiration
+		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return true; // 탈퇴, 비활성화 여부
+		// use if you need account activation status (probably can use for Member soft delete)
+		return true;
 	}
 }
