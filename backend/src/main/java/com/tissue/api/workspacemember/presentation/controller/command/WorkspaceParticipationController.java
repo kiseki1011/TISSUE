@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
+import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.GetWorkspacesResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
-import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,6 @@ public class WorkspaceParticipationController {
 	 *  - getMyWorkspaceRole: 특정 참여한 워크스페이스에서 내가 가지고 있는 권한 조회하기
 	 */
 
-	@LoginRequired
 	@PostMapping("/{workspaceCode}/members")
 	public ApiResponse<WorkspaceMemberResponse> joinWorkspace(
 		@PathVariable String workspaceCode,
@@ -62,7 +60,6 @@ public class WorkspaceParticipationController {
 		return ApiResponse.ok("Joined workspace", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{workspaceCode}/members")
@@ -78,7 +75,6 @@ public class WorkspaceParticipationController {
 		return ApiResponse.okWithNoContent("Leaved workspace");
 	}
 
-	@LoginRequired
 	@GetMapping
 	public ApiResponse<GetWorkspacesResponse> getWorkspaces(
 		@ResolveLoginMember Long loginMemberId,

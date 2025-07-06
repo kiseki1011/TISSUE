@@ -13,7 +13,6 @@ import com.tissue.api.issue.presentation.controller.dto.request.AddReviewerReque
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveReviewerRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -28,7 +27,6 @@ public class IssueReviewerController {
 
 	private final IssueReviewerCommandService issueReviewerCommandService;
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ApiResponse<IssueReviewerResponse> addReviewer(
@@ -47,7 +45,6 @@ public class IssueReviewerController {
 		return ApiResponse.ok("Reviewer added.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping
 	public ApiResponse<IssueReviewerResponse> removeReviewer(
@@ -67,7 +64,7 @@ public class IssueReviewerController {
 	}
 
 	// TODO: IssueController로 이동하는게 맞지 않을까?
-	@LoginRequired
+
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/reviews")
 	public ApiResponse<IssueResponse> requestReview(

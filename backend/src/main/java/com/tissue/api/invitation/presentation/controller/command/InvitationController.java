@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.PageResponse;
+import com.tissue.api.invitation.application.service.command.InvitationCommandService;
+import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.presentation.controller.query.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
-import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.application.service.query.InvitationQueryService;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ public class InvitationController {
 	private final InvitationCommandService invitationCommandService;
 	private final InvitationQueryService invitationQueryService;
 
-	@LoginRequired
 	@GetMapping
 	public ApiResponse<PageResponse<InvitationDetail>> getMyInvitations(
 		@ResolveLoginMember Long loginMemberId,
@@ -48,7 +46,6 @@ public class InvitationController {
 		return ApiResponse.ok("Found invitations", PageResponse.of(page));
 	}
 
-	@LoginRequired
 	@PostMapping("/{invitationId}/accept")
 	public ApiResponse<InvitationResponse> acceptInvitation(
 		@PathVariable Long invitationId,
@@ -61,7 +58,6 @@ public class InvitationController {
 		return ApiResponse.ok("Invitation Accepted.", response);
 	}
 
-	@LoginRequired
 	@PostMapping("/{invitationId}/reject")
 	public ApiResponse<InvitationResponse> rejectInvitation(
 		@PathVariable Long invitationId,
@@ -74,7 +70,6 @@ public class InvitationController {
 		return ApiResponse.ok("Invitation Rejected.", response);
 	}
 
-	@LoginRequired
 	@DeleteMapping
 	public ApiResponse<Void> deleteInvitations(
 		@ResolveLoginMember Long loginMemberId

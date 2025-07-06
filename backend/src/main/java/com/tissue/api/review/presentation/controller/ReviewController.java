@@ -10,11 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.ReviewResponse;
-import com.tissue.api.review.application.service.command.ReviewCommandService;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -38,7 +37,6 @@ public class ReviewController {
 	 *  - 리뷰 댓글 달기(CommentController에서 진행하는 것이 좋을까?)
 	 */
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -58,7 +56,6 @@ public class ReviewController {
 		return ApiResponse.ok("Review submitted.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{reviewId}")
 	public ApiResponse<ReviewResponse> updateReview(
@@ -77,7 +74,6 @@ public class ReviewController {
 		return ApiResponse.ok("Review updated.", response);
 	}
 
-	// @LoginRequired
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PatchMapping("/{reviewId}/status")
 	// public ApiResponse<ReviewResponse> updateReviewStatus(

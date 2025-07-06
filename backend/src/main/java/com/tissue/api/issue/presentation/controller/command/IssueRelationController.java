@@ -13,7 +13,6 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.application.service.command.IssueRelationCommandService;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueRelationResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -28,7 +27,6 @@ public class IssueRelationController {
 
 	private final IssueRelationCommandService issueRelationCommandService;
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{targetIssueKey}")
 	public ApiResponse<IssueRelationResponse> createRelation(
@@ -49,7 +47,6 @@ public class IssueRelationController {
 		return ApiResponse.ok("Issue relation created.", response);
 	}
 
-	@LoginRequired
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{targetIssueKey}")

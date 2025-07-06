@@ -14,7 +14,6 @@ import com.tissue.api.issue.application.service.command.IssueAssigneeCommandServ
 import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -29,7 +28,6 @@ public class IssueAssigneeController {
 
 	private final IssueAssigneeCommandService issueAssigneeCommandService;
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ApiResponse<IssueAssigneeResponse> addAssignee(
@@ -50,7 +48,6 @@ public class IssueAssigneeController {
 		return ApiResponse.ok("Assignee added.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping
 	public ApiResponse<IssueAssigneeResponse> removeAssignee(

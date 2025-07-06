@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
@@ -38,8 +37,7 @@ public class AuthenticationController {
 		RefreshTokenResponse response = authenticationService.refreshToken(request);
 		return ApiResponse.ok("Token refreshed", response);
 	}
-
-	@LoginRequired
+	
 	@PostMapping("/logout")
 	public ApiResponse<Void> logout() {
 		// Todo: implement token blacklisting if needed!

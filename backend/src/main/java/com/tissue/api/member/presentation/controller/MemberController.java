@@ -23,7 +23,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
@@ -59,7 +58,6 @@ public class MemberController {
 		return ApiResponse.created("Signup successful.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberProfileRequest request,
@@ -70,7 +68,6 @@ public class MemberController {
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
@@ -83,7 +80,6 @@ public class MemberController {
 		return ApiResponse.ok("Member email updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/username")
 	public ApiResponse<MemberResponse> updateMemberUsername(
 		@RequestBody @Valid UpdateMemberUsernameRequest request,
@@ -96,7 +92,6 @@ public class MemberController {
 		return ApiResponse.ok("Member username updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/password")
 	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
@@ -117,7 +112,7 @@ public class MemberController {
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
 	 *  - soft delete으로 변경 시 MemberResponse 사용
 	 */
-	@LoginRequired
+
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
@@ -134,7 +129,7 @@ public class MemberController {
 
 	// TODO: validateMemberPassword를 setTemporaryPermission 내부로 옮겨야 할까?
 	// TODO: permission 관련 API들을 다른 컨트롤러로 분리해야 할까?
-	@LoginRequired
+
 	@PostMapping("/permissions")
 	public ApiResponse<Void> getMemberUpdatePermission(
 		@RequestBody @Valid PermissionRequest request,
@@ -147,7 +142,6 @@ public class MemberController {
 		return ApiResponse.okWithNoContent("Update permission granted.");
 	}
 
-	@LoginRequired
 	@PostMapping("/permissions/refresh")
 	public ApiResponse<Void> refreshMemberUpdatePermission(
 		HttpSession session

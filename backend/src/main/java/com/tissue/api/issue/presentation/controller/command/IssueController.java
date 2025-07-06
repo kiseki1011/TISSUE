@@ -17,7 +17,6 @@ import com.tissue.api.issue.presentation.controller.dto.request.UpdateIssueStatu
 import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -34,7 +33,6 @@ public class IssueController {
 
 	private final IssueCommandService issueCommandService;
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -48,7 +46,6 @@ public class IssueController {
 		return ApiResponse.created("Issue created.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/status")
 	public ApiResponse<IssueResponse> updateIssueStatus(
@@ -67,7 +64,6 @@ public class IssueController {
 		return ApiResponse.ok("Issue status updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<IssueResponse> updateIssueDetail(
@@ -86,7 +82,6 @@ public class IssueController {
 		return ApiResponse.ok("Issue details updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> assignParentIssue(
@@ -105,7 +100,6 @@ public class IssueController {
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> removeParentIssue(
@@ -122,7 +116,6 @@ public class IssueController {
 		return ApiResponse.ok("Parent issue relationship removed.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PostMapping("{issueKey}/watch")
 	public ApiResponse<IssueResponse> watchIssue(
@@ -139,7 +132,6 @@ public class IssueController {
 		return ApiResponse.ok("Watching issue.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("{issueKey}/watch")
 	public ApiResponse<IssueResponse> unwatchIssue(
