@@ -80,15 +80,15 @@ public class JwtTokenProvider {
 	 * - memberId: Primary Key for Member
 	 * - tokenType: "access"
 	 */
-	public String createAccessToken(Long memberId, String loginId) {
-		return createToken(loginId, TokenType.ACCESS, accessTokenValidityInSeconds, memberId);
+	public String createAccessToken(Long memberId, String loginIdentifier) {
+		return createToken(loginIdentifier, TokenType.ACCESS, accessTokenValidityInSeconds, memberId);
 	}
 
 	/**
 	 * Create Refresh Token
 	 */
-	public String createRefreshToken(String loginId) {
-		return createToken(loginId, TokenType.REFRESH, refreshTokenValidityInSeconds, null);
+	public String createRefreshToken(String loginIdentifier) {
+		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, null);
 	}
 
 	private String createToken(

@@ -1,11 +1,13 @@
 package com.tissue.api.security.authentication.application.service;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.application.service.command.MemberReader;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.domain.service.MemberValidator;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.jwt.JwtTokenProvider;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 
@@ -15,16 +17,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-	private final MemberReader memberReader;
-	private final MemberValidator memberValidator;
+	private final AuthenticationManager authenticationManager;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	@Transactional
 	public LoginResponse login(LoginRequest request) {
 
-		Member member = memberReader.findMemberByLoginIdOrEmail(request.identifier());
+		Authentication authentication = authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(request.identifier(), request.password())
+		);
 
-		memberValidator.validatePasswordMatch(request.password(), member.getPassword());
+		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
 
-		return LoginResponse.from(member);
+		String accessToken = jwtTokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getLoginId());
+		String refreshToken = jwtTokenProvider.createRefreshToken(userDetails.getLoginId());
+
+		return LoginResponse.from(accessToken, refreshToken);
 	}
 }
