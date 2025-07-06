@@ -9,7 +9,9 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
+import com.tissue.api.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.api.security.authentication.presentation.dto.response.RefreshTokenResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,16 @@ public class AuthenticationController {
 	public ApiResponse<LoginResponse> login(
 		@Valid @RequestBody LoginRequest loginRequest
 	) {
-		LoginResponse loginResponse = authenticationService.login(loginRequest);
+		LoginResponse response = authenticationService.login(loginRequest);
+		return ApiResponse.ok("Login successful.", response);
+	}
 
-		return ApiResponse.ok("Login successful.", loginResponse);
+	@PostMapping("/token")
+	public ApiResponse<RefreshTokenResponse> refreshToken(
+		@RequestBody RefreshTokenRequest request
+	) {
+		RefreshTokenResponse response = authenticationService.refreshToken(request);
+		return ApiResponse.ok("Token refreshed", response);
 	}
 
 	@LoginRequired
