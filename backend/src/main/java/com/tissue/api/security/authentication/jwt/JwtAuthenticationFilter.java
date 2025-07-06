@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenService jwtTokenService;
 
 	/**
 	 * JWT Authentication
@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = extractTokenFromRequest(request);
 
 		if (StringUtils.hasText(token)) {
-			Authentication authentication = jwtTokenProvider.getAuthentication(token);
+			Authentication authentication = jwtTokenService.getAuthentication(token);
 
 			if (authentication instanceof AbstractAuthenticationToken authToken) {
 				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class JwtTokenService {
 
 	public static final String CLAIM_TOKEN_TYPE = "tokenType";
 	public static final String CLAIM_MEMBER_ID = "memberId";
@@ -51,7 +51,7 @@ public class JwtTokenProvider {
 	/**
 	 * Initialize secret key and validity in constructor
 	 */
-	public JwtTokenProvider(
+	public JwtTokenService(
 		@Value("${jwt.secret}") String secret,
 		@Value("${jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
 		@Value("${jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
