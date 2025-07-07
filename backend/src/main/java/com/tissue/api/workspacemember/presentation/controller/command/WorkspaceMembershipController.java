@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
@@ -60,13 +61,13 @@ public class WorkspaceMembershipController {
 	public ApiResponse<WorkspaceMemberResponse> updateWorkspaceMemberRole(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid UpdateRoleRequest request
 	) {
 		WorkspaceMemberResponse response = workspaceMemberCommandService.updateRole(
 			workspaceCode,
 			memberId,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -78,12 +79,12 @@ public class WorkspaceMembershipController {
 	public ApiResponse<TransferOwnershipResponse> transferWorkspaceOwnership(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
 			workspaceCode,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("The ownership was successfully transfered", response);
@@ -95,12 +96,12 @@ public class WorkspaceMembershipController {
 	public ApiResponse<Void> removeWorkspaceMember(
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		workspaceMemberCommandService.removeWorkspaceMember(
 			workspaceCode,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.okWithNoContent("Member was removed from this workspace");

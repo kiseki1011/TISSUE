@@ -14,7 +14,8 @@ import com.tissue.api.issue.application.service.command.IssueAssigneeCommandServ
 import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -34,7 +35,7 @@ public class IssueAssigneeController {
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AddAssigneeRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		AddAssigneeCommand command = request.toCommand();
 
@@ -42,7 +43,7 @@ public class IssueAssigneeController {
 			code,
 			issueKey,
 			command,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Assignee added.", response);
@@ -54,7 +55,7 @@ public class IssueAssigneeController {
 		@PathVariable String code,
 		@PathVariable String issueKey,
 		@RequestBody @Valid RemoveAssigneeRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		RemoveAssigneeCommand command = request.toCommand();
 
@@ -62,7 +63,7 @@ public class IssueAssigneeController {
 			code,
 			issueKey,
 			command,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Assignee removed.", response);

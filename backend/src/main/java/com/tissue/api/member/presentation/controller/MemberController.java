@@ -23,7 +23,8 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.session.SessionManager;
 import com.tissue.api.security.session.SessionValidator;
 
@@ -61,9 +62,9 @@ public class MemberController {
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberProfileRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateInfo(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
@@ -71,11 +72,11 @@ public class MemberController {
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updateEmail(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member email updated.", response);
 	}
@@ -83,11 +84,11 @@ public class MemberController {
 	@PatchMapping("/username")
 	public ApiResponse<MemberResponse> updateMemberUsername(
 		@RequestBody @Valid UpdateMemberUsernameRequest request,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updateUsername(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member username updated.", response);
 	}
@@ -95,11 +96,11 @@ public class MemberController {
 	@PatchMapping("/password")
 	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updatePassword(request, loginMemberId);
+		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member password updated.", response);
 	}
@@ -116,11 +117,11 @@ public class MemberController {
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		HttpSession session
 	) {
 		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		memberCommandService.withdraw(request, loginMemberId);
+		memberCommandService.withdraw(request, userDetails.getMemberId());
 
 		session.invalidate();
 
@@ -133,10 +134,10 @@ public class MemberController {
 	@PostMapping("/permissions")
 	public ApiResponse<Void> getMemberUpdatePermission(
 		@RequestBody @Valid PermissionRequest request,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		HttpSession session
 	) {
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
+		memberValidator.validateMemberPassword(request.password(), userDetails.getMemberId());
 		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
 
 		return ApiResponse.okWithNoContent("Update permission granted.");

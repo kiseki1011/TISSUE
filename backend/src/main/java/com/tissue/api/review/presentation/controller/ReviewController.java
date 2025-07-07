@@ -14,7 +14,8 @@ import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.review.presentation.dto.request.SubmitReviewRequest;
 import com.tissue.api.review.presentation.dto.request.UpdateReviewRequest;
 import com.tissue.api.review.presentation.dto.response.ReviewResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -44,12 +45,12 @@ public class ReviewController {
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@RequestBody @Valid SubmitReviewRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		ReviewResponse response = reviewCommandService.submitReview(
 			workspaceCode,
 			issueKey,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -62,12 +63,12 @@ public class ReviewController {
 		@PathVariable String workspaceCode,
 		@PathVariable Long reviewId,
 		@RequestBody @Valid UpdateReviewRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		ReviewResponse response = reviewCommandService.updateReview(
 			workspaceCode,
 			reviewId,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 

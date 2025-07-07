@@ -15,7 +15,8 @@ import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -42,14 +43,14 @@ public class ReviewCommentController {
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@Valid @RequestBody CreateReviewCommentRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.createComment(
 			workspaceCode,
 			issueKey,
 			reviewId,
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.created("Comment created.", response);
@@ -63,7 +64,7 @@ public class ReviewCommentController {
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
 		@Valid @RequestBody UpdateReviewCommentRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.updateComment(
 			workspaceCode,
@@ -71,7 +72,7 @@ public class ReviewCommentController {
 			reviewId,
 			commentId,
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Comment updated.", response);
@@ -89,14 +90,14 @@ public class ReviewCommentController {
 		@PathVariable String issueKey,
 		@PathVariable Long reviewId,
 		@PathVariable Long commentId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		ReviewCommentResponse response = reviewCommentCommandService.deleteComment(
 			workspaceCode,
 			issueKey,
 			reviewId,
 			commentId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Comment deleted.", response);

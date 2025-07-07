@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.PageResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
@@ -114,13 +115,13 @@ public class SprintController {
 		@PathVariable String workspaceCode,
 		@PathVariable String sprintKey,
 		@RequestBody @Valid UpdateSprintStatusRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		SprintResponse response = sprintCommandService.updateSprintStatus(
 			workspaceCode,
 			sprintKey,
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 		return ApiResponse.ok("Sprint status updated.", response);
 	}

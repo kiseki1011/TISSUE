@@ -17,7 +17,8 @@ import com.tissue.api.issue.presentation.controller.dto.request.UpdateIssueStatu
 import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -38,10 +39,10 @@ public class IssueController {
 	@PostMapping
 	public ApiResponse<IssueResponse> createIssue(
 		@PathVariable String workspaceCode,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateIssueRequest request
 	) {
-		IssueResponse response = issueCommandService.createIssue(workspaceCode, loginMemberId, request);
+		IssueResponse response = issueCommandService.createIssue(workspaceCode, userDetails.getMemberId(), request);
 
 		return ApiResponse.created("Issue created.", response);
 	}
@@ -51,13 +52,13 @@ public class IssueController {
 	public ApiResponse<IssueResponse> updateIssueStatus(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid UpdateIssueStatusRequest request
 	) {
 		IssueResponse response = issueCommandService.updateIssueStatus(
 			workspaceCode,
 			issueKey,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -69,13 +70,13 @@ public class IssueController {
 	public ApiResponse<IssueResponse> updateIssueDetail(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid UpdateIssueRequest request
 	) {
 		IssueResponse response = issueCommandService.updateIssue(
 			workspaceCode,
 			issueKey,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -87,13 +88,13 @@ public class IssueController {
 	public ApiResponse<IssueResponse> assignParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid AddParentIssueRequest request
 	) {
 		IssueResponse response = issueCommandService.assignParentIssue(
 			workspaceCode,
 			issueKey,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -105,12 +106,12 @@ public class IssueController {
 	public ApiResponse<IssueResponse> removeParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCommandService.removeParentIssue(
 			workspaceCode,
 			issueKey,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Parent issue relationship removed.", response);
@@ -121,12 +122,12 @@ public class IssueController {
 	public ApiResponse<IssueResponse> watchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCommandService.watchIssue(
 			workspaceCode,
 			issueKey,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Watching issue.", response);
@@ -137,12 +138,12 @@ public class IssueController {
 	public ApiResponse<IssueResponse> unwatchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCommandService.unwatchIssue(
 			workspaceCode,
 			issueKey,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Unwatched issue.", response);

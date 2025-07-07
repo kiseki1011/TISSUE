@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
@@ -33,11 +34,11 @@ public class WorkspaceMemberDetailController {
 	public ApiResponse<WorkspaceMemberResponse> updateDisplayName(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid UpdateDisplayNameRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		WorkspaceMemberResponse response = workspaceMemberCommandService.updateDisplayName(
 			workspaceCode,
-			loginMemberId,
+			userDetails.getMemberId(),
 			request
 		);
 
@@ -50,13 +51,13 @@ public class WorkspaceMemberDetailController {
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@PathVariable Long positionId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
 			workspaceCode,
 			positionId,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Position assigned to workspace member.", response);
@@ -68,13 +69,13 @@ public class WorkspaceMemberDetailController {
 		@PathVariable String workspaceCode,
 		@PathVariable Long positionId,
 		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		workspaceMemberCommandService.removePosition(
 			workspaceCode,
 			positionId,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.okWithNoContent("Position removed from workspace member.");
@@ -86,13 +87,13 @@ public class WorkspaceMemberDetailController {
 		@PathVariable String workspaceCode,
 		@PathVariable Long memberId,
 		@PathVariable Long teamId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		WorkspaceMemberResponse response = workspaceMemberCommandService.setTeam(
 			workspaceCode,
 			teamId,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Team assigned to workspace member.", response);
@@ -104,13 +105,13 @@ public class WorkspaceMemberDetailController {
 		@PathVariable String workspaceCode,
 		@PathVariable Long teamId,
 		@PathVariable Long memberId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		workspaceMemberCommandService.removeTeam(
 			workspaceCode,
 			teamId,
 			memberId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.okWithNoContent("Team removed from workspace member.");

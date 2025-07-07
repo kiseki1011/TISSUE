@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
@@ -45,12 +46,12 @@ public class WorkspaceController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<WorkspaceResponse> createWorkspace(
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateWorkspaceRequest request
 	) {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.created("Workspace created.", response);
@@ -87,11 +88,11 @@ public class WorkspaceController {
 	@DeleteMapping("/{workspaceCode}")
 	public ApiResponse<Void> deleteWorkspace(
 		@PathVariable String workspaceCode,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
 		workspaceAuthenticationService.authenticate(request.password(), workspaceCode);
-		workspaceCommandService.deleteWorkspace(workspaceCode, loginMemberId);
+		workspaceCommandService.deleteWorkspace(workspaceCode, userDetails.getMemberId());
 
 		return ApiResponse.okWithNoContent("Workspace deleted.");
 	}
