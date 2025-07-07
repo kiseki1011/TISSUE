@@ -26,6 +26,16 @@ import com.tissue.api.security.authentication.exception.JwtCreationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * TODO: 커스텀 API 코드와 그 메세지를 enum으로 정의해서 사용
+ *   - 어차피 Http 상태 코드는 헤더를 통해 설정.
+ *   - ApiResponse의 필드명 code -> apiCode로 변경
+ *   - apiCode에 커스텀 API 코드를 넣기
+ *   - apiCode를 예외를 통해 전달하면 될 듯
+ *   - apiCode에 맞는 메세지도 같이 정의해놓고, 해당 메세지를 응답 메세지에 사용(예외 메세지를 그대로 응답 메세지에 사용하지 말자)
+ *   - apiCode의 메세지에 대한 국제화를 고려하자(예외 메세지는 그냥 영어로 유지)
+ */
+@SuppressWarnings("checkstyle:ParameterName")
 @Slf4j
 @RequiredArgsConstructor
 @RestControllerAdvice
@@ -75,11 +85,10 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(JwtAuthenticationException.class)
-	@ResponseStatus(HttpStatus.UNAUTHORIZED)
 	public ResponseEntity<ApiResponse<Void>> handleJwtAuth(JwtAuthenticationException e) {
 		log.warn("JWT authentication error: {}", e.getMessage(), e);
 
-		HttpStatus httpStatus = e.getHttpStatus();
+		HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
 
 		return ResponseEntity
 			.status(httpStatus)
