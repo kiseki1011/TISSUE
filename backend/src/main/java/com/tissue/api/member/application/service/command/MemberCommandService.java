@@ -1,6 +1,7 @@
 package com.tissue.api.member.application.service.command;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
