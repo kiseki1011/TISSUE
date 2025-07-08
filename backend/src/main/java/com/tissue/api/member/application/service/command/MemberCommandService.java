@@ -1,6 +1,8 @@
 package com.tissue.api.member.application.service.command;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class MemberCommandService {
 	private final MemberReader memberReader;
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
+	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberEmailVerificationService memberEmailVerificationService;
 
@@ -106,7 +109,12 @@ public class MemberCommandService {
 		Long memberId
 	) {
 		Member member = memberReader.findMemberById(memberId);
-		memberValidator.validateMemberPassword(request.originalPassword(), memberId);
+
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.originalPassword())
+		);
+
+		// memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
 		member.updatePassword(passwordEncoder.encode(request.newPassword()));
 
@@ -126,7 +134,13 @@ public class MemberCommandService {
 		Long memberId
 	) {
 		Member member = memberReader.findMemberById(memberId);
-		memberValidator.validateMemberPassword(request.password(), memberId);
+
+		// memberValidator.validateMemberPassword(request.password(), memberId);
+
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.password())
+		);
+
 		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 
 		memberRepository.delete(member);

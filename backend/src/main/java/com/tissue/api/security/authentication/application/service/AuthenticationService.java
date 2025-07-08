@@ -6,11 +6,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.MemberUserDetailsService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.api.security.authentication.presentation.dto.request.RefreshTokenRequest;
+import com.tissue.api.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.api.security.authentication.presentation.dto.response.RefreshTokenResponse;
 
@@ -41,6 +43,7 @@ public class AuthenticationService {
 
 	@Transactional
 	public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+
 		String refreshToken = request.refreshToken();
 
 		// validate refresh token
@@ -56,5 +59,17 @@ public class AuthenticationService {
 		String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getLoginId());
 
 		return new RefreshTokenResponse(newAccessToken);
+	}
+
+	@Transactional
+	public ElevatedTokenResponse elevatePermission(PermissionRequest request, String loginIdentifier, Long memberId) {
+
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(loginIdentifier, request.password())
+		);
+
+		String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginIdentifier);
+
+		return new ElevatedTokenResponse(elevatedToken);
 	}
 }

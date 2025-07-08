@@ -28,18 +28,26 @@ public class MemberUserDetails implements UserDetails {
 	private final String loginId;
 	private final String email;
 	private final String username;
+	private final String password;
 	private final SystemRole role;
 
 	private final Collection<? extends GrantedAuthority> authorities;
+
+	private boolean elevated;
 
 	public MemberUserDetails(Member member) {
 		this.memberId = member.getId();
 		this.loginId = member.getLoginId();
 		this.email = member.getEmail();
 		this.username = member.getUsername();
+		this.password = member.getPassword();
 		this.role = member.getRole();
 
 		this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
+	}
+
+	public void setElevated(boolean elevated) {
+		this.elevated = elevated;
 	}
 
 	@Override
@@ -47,13 +55,9 @@ public class MemberUserDetails implements UserDetails {
 		return authorities;
 	}
 
-	/**
-	 * JWT does not use passwords
-	 * Return null or "" to implement UserDetails interface
-	 */
 	@Override
 	public String getPassword() {
-		return null;
+		return password;
 	}
 
 	@Override

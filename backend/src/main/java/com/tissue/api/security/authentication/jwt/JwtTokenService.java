@@ -13,10 +13,10 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.MemberUserDetailsService;
 import com.tissue.api.security.authentication.TokenType;
 import com.tissue.api.security.authentication.exception.JwtAuthenticationException;
@@ -37,8 +37,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JwtTokenService {
 
+	// TODO: move constants to a seperate abstract class
 	public static final String CLAIM_TOKEN_TYPE = "tokenType";
 	public static final String CLAIM_MEMBER_ID = "memberId";
+	public static final String CLAIM_ELEVATED = "elevated";
 	public static final String CLAIM_JTI = "jti";
 	public static final String ISSUER = "tissue-api";
 	public static final int SECRET_KEY_LENGTH = 32;
@@ -46,15 +48,18 @@ public class JwtTokenService {
 	private final SecretKey secretKey;
 	private final long accessTokenValidityInSeconds;
 	private final long refreshTokenValidityInSeconds;
+	private final long elevatedTokenValidityInSeconds;
 	private final MemberUserDetailsService userDetailsService;
 
 	/**
 	 * Initialize secret key and validity in constructor
 	 */
+	// TODO: use properties class
 	public JwtTokenService(
 		@Value("${jwt.secret}") String secret,
 		@Value("${jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
 		@Value("${jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
+		@Value("${jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds,
 		MemberUserDetailsService userDetailsService
 	) {
 		this.userDetailsService = userDetailsService;
@@ -70,6 +75,7 @@ public class JwtTokenService {
 		this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 		this.accessTokenValidityInSeconds = accessTokenValidityInSeconds;
 		this.refreshTokenValidityInSeconds = refreshTokenValidityInSeconds;
+		this.elevatedTokenValidityInSeconds = elevatedTokenValidityInSeconds;
 
 		log.info("JwtTokenProvider initialized (HS256)");
 	}
@@ -81,20 +87,28 @@ public class JwtTokenService {
 	 * - tokenType: "access"
 	 */
 	public String createAccessToken(Long memberId, String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.ACCESS, accessTokenValidityInSeconds, memberId);
+		return createToken(loginIdentifier, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId);
 	}
 
 	/**
 	 * Create Refresh Token
 	 */
 	public String createRefreshToken(String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, null);
+		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, false, null);
+	}
+
+	/**
+	 * Create Elevated (Access) Token
+	 */
+	public String createElevatedToken(Long memberId, String loginIdentifier) {
+		return createToken(loginIdentifier, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
 	}
 
 	private String createToken(
 		String subject,
 		TokenType tokenType,
 		long validitySeconds,
+		boolean isElevated,
 		Long memberId
 	) {
 		try {
@@ -106,6 +120,7 @@ public class JwtTokenService {
 				.issuer(ISSUER) // issuer information
 				.claim(CLAIM_TOKEN_TYPE, tokenType.getValue())
 				.claim(CLAIM_MEMBER_ID, memberId)
+				.claim(CLAIM_ELEVATED, isElevated)
 				.signWith(secretKey);
 
 			if (Objects.equals(TokenType.REFRESH, tokenType)) {
@@ -140,7 +155,10 @@ public class JwtTokenService {
 			loginIdentifier = getSubjectFromToken(token);
 
 			// Get MemberUserDetails(check real time status of the member)
-			UserDetails userDetails = userDetailsService.loadUserByUsername(loginIdentifier);
+			MemberUserDetails userDetails = (MemberUserDetails)userDetailsService.loadUserByUsername(loginIdentifier);
+
+			boolean elevated = getElevatedFromToken(token);
+			userDetails.setElevated(elevated);
 
 			// Create Authentication object
 			//  - principal: user's information (UserDetails)
@@ -157,11 +175,21 @@ public class JwtTokenService {
 		}
 	}
 
+	// TODO: Using parseAndValidateClaims(token) is redundant. Might be better to pass claims as the parameter.
+
 	/**
 	 * Extract subject(identifier) from token
 	 */
 	public String getSubjectFromToken(String token) {
 		return parseAndValidateClaims(token).getSubject();
+	}
+
+	/**
+	 * Extract elevated claim from token
+	 */
+	public boolean getElevatedFromToken(String token) {
+		Boolean elevated = parseAndValidateClaims(token).get(CLAIM_ELEVATED, Boolean.class);
+		return elevated != null && elevated;
 	}
 
 	/**

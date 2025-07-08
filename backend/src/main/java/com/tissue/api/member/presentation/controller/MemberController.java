@@ -12,10 +12,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.domain.service.MemberValidator;
-import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
@@ -25,10 +24,7 @@ import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
-import com.tissue.api.security.session.SessionManager;
-import com.tissue.api.security.session.SessionValidator;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -47,8 +43,6 @@ public class MemberController {
 	 */
 	private final MemberCommandService memberCommandService;
 	private final MemberValidator memberValidator;
-	private final SessionManager sessionManager;
-	private final SessionValidator sessionValidator;
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -72,10 +66,13 @@ public class MemberController {
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
-		@CurrentMember MemberUserDetails userDetails,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
 		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member email updated.", response);
@@ -84,10 +81,13 @@ public class MemberController {
 	@PatchMapping("/username")
 	public ApiResponse<MemberResponse> updateMemberUsername(
 		@RequestBody @Valid UpdateMemberUsernameRequest request,
-		@CurrentMember MemberUserDetails userDetails,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
 		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member username updated.", response);
@@ -96,10 +96,13 @@ public class MemberController {
 	@PatchMapping("/password")
 	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
-		@CurrentMember MemberUserDetails userDetails,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
 		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member password updated.", response);
@@ -117,40 +120,16 @@ public class MemberController {
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
-		@CurrentMember MemberUserDetails userDetails,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
 		memberCommandService.withdraw(request, userDetails.getMemberId());
 
-		session.invalidate();
-
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
-	}
-
-	// TODO: validateMemberPassword를 setTemporaryPermission 내부로 옮겨야 할까?
-	// TODO: permission 관련 API들을 다른 컨트롤러로 분리해야 할까?
-
-	@PostMapping("/permissions")
-	public ApiResponse<Void> getMemberUpdatePermission(
-		@RequestBody @Valid PermissionRequest request,
-		@CurrentMember MemberUserDetails userDetails,
-		HttpSession session
-	) {
-		memberValidator.validateMemberPassword(request.password(), userDetails.getMemberId());
-		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
-
-		return ApiResponse.okWithNoContent("Update permission granted.");
-	}
-
-	@PostMapping("/permissions/refresh")
-	public ApiResponse<Void> refreshMemberUpdatePermission(
-		HttpSession session
-	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		sessionManager.refreshPermission(session, PermissionType.MEMBER_UPDATE);
-
-		return ApiResponse.okWithNoContent("Permission refreshed.");
 	}
 
 	/**
@@ -159,7 +138,7 @@ public class MemberController {
 	@GetMapping("/check-loginid")
 	public ApiResponse<Void> checkLoginIdAvailability(@RequestParam String loginId) {
 		memberValidator.validateLoginIdIsUnique(loginId);
-		return ApiResponse.okWithNoContent("Login ID is available");
+		return ApiResponse.okWithNoContent("Login ID is available.");
 	}
 
 	/**
@@ -168,7 +147,7 @@ public class MemberController {
 	@GetMapping("/check-email")
 	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
 		memberValidator.validateEmailIsUnique(email);
-		return ApiResponse.okWithNoContent("Email is available");
+		return ApiResponse.okWithNoContent("Email is available.");
 	}
 
 	/**
@@ -177,6 +156,6 @@ public class MemberController {
 	@GetMapping("/check-username")
 	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
 		memberValidator.validateUsernameIsUnique(username);
-		return ApiResponse.okWithNoContent("Username is available");
+		return ApiResponse.okWithNoContent("Username is available.");
 	}
 }
