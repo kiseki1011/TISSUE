@@ -60,6 +60,7 @@ public class MemberUserDetails implements UserDetails {
 		return password;
 	}
 
+	// TODO: is there no problem with Lombok?
 	@Override
 	public String getUsername() {
 		// identifier that spring security uses internally (logging, etc...)
