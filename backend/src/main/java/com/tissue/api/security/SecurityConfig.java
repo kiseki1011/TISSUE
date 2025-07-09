@@ -49,14 +49,10 @@ public class SecurityConfig {
 					"/api/v1/members/check-*",
 					"/swagger-ui/**",
 					"/actuator/**"
-				)
-				.permitAll()
+				).permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
 				.anyRequest().authenticated()
 			)
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(HttpMethod.POST, "/api/v1/members")
-				.permitAll()
-				.anyRequest().authenticated())
 
 			.exceptionHandling(ex -> ex
 				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -64,12 +60,12 @@ public class SecurityConfig {
 			)
 
 			// place filters in order
-			.addFilterBefore(exceptionHandlerFilter, JwtAuthenticationFilter.class)
+			.addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
