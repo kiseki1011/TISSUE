@@ -4,43 +4,42 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidRequestException;
-import com.tissue.api.security.session.SessionManager;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
 class SelfOrRoleRequiredInterceptorTest {
 
-	@Mock
-	private SessionManager sessionManager;
 	@Mock
 	private WorkspaceMemberReader workspaceMemberReader;
 	@Mock
 	private HttpServletRequest request;
 	@Mock
 	private HttpServletResponse response;
-	@Mock
-	private HttpSession session;
 	@Mock
 	private HandlerMethod handlerMethod;
 
@@ -60,6 +59,11 @@ class SelfOrRoleRequiredInterceptorTest {
 		}
 	}
 
+	@AfterEach
+	void clearSecurityContext() {
+		SecurityContextHolder.clearContext();
+	}
+
 	@Test
 	@DisplayName("annotation이 없으면 true 반환")
 	void preHandle_returnsTrue_ifNoAnnotation() {
@@ -74,17 +78,22 @@ class SelfOrRoleRequiredInterceptorTest {
 	@Test
 	@DisplayName("자기 자신이면 true 반환")
 	void preHandle_returnsTrue_ifIsSelf() {
-
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
 		Long loginMemberId = 100L;
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
 
-		Map<String, String> pathVars = new HashMap<>();
-		pathVars.put("workspaceCode", "WORKSPACE1");
-		pathVars.put("memberId", loginMemberId.toString());
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(loginMemberId);
+
+		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(auth);
+
+		Map<String, String> pathVars = Map.of(
+			"workspaceCode", "WORKSPACE1",
+			"memberId", loginMemberId.toString()
+		);
+
 		when(annotation.memberIdParam()).thenReturn("memberId");
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVars);
 
@@ -99,11 +108,14 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
 		Long loginMemberId = 101L;
 		Long targetMemberId = 202L;
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
+
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(loginMemberId);
+		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		Map<String, String> pathVars = new HashMap<>();
 		pathVars.put("workspaceCode", "WORKSPACE2");
@@ -128,11 +140,14 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
 		Long loginMemberId = 101L;
 		Long targetMemberId = 202L;
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(loginMemberId));
+
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(loginMemberId);
+		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		Map<String, String> pathVars = new HashMap<>();
 		pathVars.put("workspaceCode", "WORKSPACE2");
@@ -153,13 +168,12 @@ class SelfOrRoleRequiredInterceptorTest {
 
 	@Test
 	@DisplayName("로그인 정보 없으면 AuthenticationFailedException")
-	void preHandle_throws_ifNotLoggedIn() {
+	void preHandle_ThrowsException_IfNotLoggedIn() {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.empty());
+		SecurityContextHolder.clearContext();
 
 		assertThatThrownBy(() -> interceptor.preHandle(request, response, handlerMethod))
 			.isInstanceOf(AuthenticationFailedException.class);
@@ -171,11 +185,16 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(1L));
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(123L);
 
+		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(auth);
+
+		// do not include workspaceCode for pathVar
 		Map<String, String> pathVars = new HashMap<>();
+		pathVars.put("memberId", "456"); // add only memberId
 
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVars);
 
@@ -189,13 +208,17 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
 		when(handlerMethod.getMethodAnnotation(SelfOrRoleRequired.class)).thenReturn(annotation);
-		when(request.getSession(false)).thenReturn(session);
 
-		when(sessionManager.getOptionalLoginMemberId(session)).thenReturn(Optional.of(1L));
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(123L);
 
+		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(auth);
+
+		// no not include memberId for pathVar
 		Map<String, String> pathVars = new HashMap<>();
-		pathVars.put("workspaceCode", "WORKSPACE1");
-		when(annotation.memberIdParam()).thenReturn("memberId");
+		pathVars.put("workspaceCode", "TESTCODE"); // add only workspaceCode
+
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVars);
 
 		assertThatThrownBy(() -> interceptor.preHandle(request, response, handlerMethod))
