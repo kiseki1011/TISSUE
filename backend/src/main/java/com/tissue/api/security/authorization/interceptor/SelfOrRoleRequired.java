@@ -10,7 +10,7 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SelfOrRoleRequired {
-	WorkspaceRole role(); // 허용 최소 Role
+	WorkspaceRole role(); // required minimum role
 
-	String memberIdParam() default "memberId"; // 경로 변수 이름 (기본: "memberId")
+	String memberIdParam() default "memberId"; // path variable name
 }

@@ -3,6 +3,8 @@ package com.tissue.api.security.authorization.interceptor;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,10 +13,9 @@ import org.springframework.web.servlet.HandlerMapping;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidRequestException;
-import com.tissue.api.security.session.SessionManager;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoleRequiredInterceptor implements HandlerInterceptor {
 
-	private final SessionManager sessionManager;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
+	public static final String PATH_VAR_WORKSPACE_CODE = "workspaceCode";
+	private final WorkspaceMemberReader workspaceMemberReader;
 
 	private static boolean isNotHandlerMethod(Object handler) {
 		return !(handler instanceof HandlerMethod);
@@ -50,21 +51,23 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 			return true;
 		}
 
-		Long memberId = sessionManager.getOptionalLoginMemberId(request.getSession(false))
-			.orElseThrow(() -> new AuthenticationFailedException("Login is required to access."));
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication == null || !authentication.isAuthenticated()) {
+			throw new AuthenticationFailedException("Authentication required.");
+		}
 
-		Map<String, String> pathVariables =
-			(Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
+		Long loginMemberId = userDetails.getMemberId();
 
-		String workspaceCode = Optional.ofNullable(pathVariables.get("workspaceCode"))
-			.orElseThrow(() -> new InvalidRequestException("workspaceCode path variable is required."));
+		// extract workspaceCode from path variable
+		String workspaceCode = getPathVariable(request, PATH_VAR_WORKSPACE_CODE);
 
-		log.debug("Extracted workspace code from URI: {}", workspaceCode);
+		// TODO: cache WorkspaceMember later
+		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(loginMemberId, workspaceCode);
 
-		// TODO: Reader 사용
-		WorkspaceMember workspaceMember = workspaceMemberRepository
-			.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceCode));
+		// check if workspaceMember has the minimum required role
+		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceCode: {}",
+			loginMemberId, workspaceCode);
 
 		validateRole(workspaceMember, roleRequired);
 
@@ -88,4 +91,24 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		}
 	}
 
+	// private String getPathVariable(HttpServletRequest request, String name) {
+	// 	Map<String, String> pathVars =
+	// 		(Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+	// 	return Optional.ofNullable(pathVars.get(name))
+	// 		.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
+	// }
+
+	private String getPathVariable(HttpServletRequest request, String name) {
+		Object attr = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+
+		if (!(attr instanceof Map<?, ?> rawMap)) {
+			throw new InvalidRequestException("Path variables are not available in this request.");
+		}
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> pathVars = (Map<String, String>)rawMap;
+
+		return Optional.ofNullable(pathVars.get(name))
+			.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
+	}
 }
