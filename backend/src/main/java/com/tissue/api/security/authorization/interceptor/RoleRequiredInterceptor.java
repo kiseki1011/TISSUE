@@ -79,6 +79,7 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
 	}
 
+	// TODO: consider separating to util class
 	private void validateRole(
 		WorkspaceMember workspaceMember,
 		RoleRequired roleRequired
@@ -98,6 +99,7 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 	// 		.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
 	// }
 
+	// TODO: consider separating to util class
 	private String getPathVariable(HttpServletRequest request, String name) {
 		Object attr = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 

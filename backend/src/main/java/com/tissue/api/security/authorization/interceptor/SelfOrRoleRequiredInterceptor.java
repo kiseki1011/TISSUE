@@ -83,6 +83,7 @@ public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 		return true;
 	}
 
+	// TODO: consider separating to util class
 	private void validateRole(
 		WorkspaceMember workspaceMember,
 		SelfOrRoleRequired annotation
@@ -103,6 +104,7 @@ public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 	// 		.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
 	// }
 
+	// TODO: consider separating to util class
 	private String getPathVariable(HttpServletRequest request, String name) {
 		Object attr = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
