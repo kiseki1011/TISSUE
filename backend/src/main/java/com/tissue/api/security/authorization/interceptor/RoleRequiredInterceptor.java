@@ -92,13 +92,6 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		}
 	}
 
-	// private String getPathVariable(HttpServletRequest request, String name) {
-	// 	Map<String, String> pathVars =
-	// 		(Map<String, String>)request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-	// 	return Optional.ofNullable(pathVars.get(name))
-	// 		.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
-	// }
-
 	// TODO: consider separating to util class
 	private String getPathVariable(HttpServletRequest request, String name) {
 		Object attr = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);

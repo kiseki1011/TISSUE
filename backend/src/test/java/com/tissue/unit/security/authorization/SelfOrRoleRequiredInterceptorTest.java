@@ -1,4 +1,4 @@
-package com.tissue.api.security.authorization.interceptor;
+package com.tissue.unit.security.authorization;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,6 +24,8 @@ import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
+import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequiredInterceptor;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
