@@ -15,12 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -121,8 +119,8 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.totalElements(2L)
 			.build();
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(workspaceParticipationQueryService.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
 			.thenReturn(response);
@@ -134,7 +132,6 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		// when & then - 요청 및 전체 JSON 비교 검증
 		mockMvc.perform(get("/api/v1/workspaces")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.param("page", "0")
 				.param("size", "10"))
@@ -150,8 +147,8 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 	@DisplayName("GET /workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 OK를 응답받는다")
 	void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
 			.id(1L)
@@ -181,7 +178,6 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		// when & then
 		mockMvc.perform(get("/api/v1/workspaces")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON)
 				.param("page", "0")
 				.param("size", "10"))
@@ -191,5 +187,4 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 			.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
 
 	}
-
 }

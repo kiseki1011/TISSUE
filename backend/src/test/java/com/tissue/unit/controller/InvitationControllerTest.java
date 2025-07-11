@@ -20,14 +20,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.invitation.presentation.controller.query.InvitationSearchCondition;
 import com.tissue.api.invitation.presentation.dto.response.InvitationDetail;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
-import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
 import com.tissue.support.helper.ControllerTestHelper;
@@ -51,14 +49,13 @@ class InvitationControllerTest extends ControllerTestHelper {
 
 		InvitationResponse response = new InvitationResponse("TESTCODE", invitationId);
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
 		when(invitationCommandService.acceptInvitation(anyLong(), eq(invitationId))).thenReturn(response);
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{invitationId}/accept", invitationId)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Invitation Accepted."))
@@ -72,15 +69,14 @@ class InvitationControllerTest extends ControllerTestHelper {
 		// given
 		Long invalidInvitationId = 999L;
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(invitationCommandService.acceptInvitation(1L, invalidInvitationId))
 			.thenThrow(new ResourceNotFoundException("Invitation was not found for the given code"));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{invalidInvitationId}/accept", invalidInvitationId)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.message").value("Invitation was not found for the given code"))
@@ -93,12 +89,11 @@ class InvitationControllerTest extends ControllerTestHelper {
 		// given
 		Long invitationId = 1L;
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, "1L");
 
 		// when & then
 		mockMvc.perform(post("/api/v1/invitations/{invitationId}/reject", invitationId)
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Invitation Rejected."))

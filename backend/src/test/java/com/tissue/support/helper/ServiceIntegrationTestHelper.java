@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.tissue.api.comment.application.service.command.IssueCommentCommandService;
@@ -58,6 +59,9 @@ import com.tissue.support.util.DatabaseCleaner;
 import jakarta.persistence.EntityManager;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+	"jwt.secret=ThisIsADefaultTestSecretThatIs32Chars"
+})
 @AutoConfigureMockMvc
 public abstract class ServiceIntegrationTestHelper {
 
