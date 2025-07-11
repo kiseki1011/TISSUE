@@ -109,6 +109,16 @@ public class TestDataFixture {
 		);
 	}
 
+	public Member createTestMember(Long id, String loginId) {
+		return memberRepository.save(new MemberBuilderForTest()
+			.id(id)
+			.loginId(loginId)
+			.email(loginId + "@test.com")
+			.username(loginId)
+			.password(passwordEncoder.encode("test1234!"))
+			.build());
+	}
+
 	/**
 	 * Creates and saves a workspace
 	 *

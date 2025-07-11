@@ -5,25 +5,17 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
+import com.tissue.api.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.api.security.authentication.presentation.dto.response.RefreshTokenResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
 class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
-
-	@Autowired
-	private AuthenticationService authenticationService;
-	@Autowired
-	private MemberCommandService memberCommandService;
-	@Autowired
-	private MemberRepository memberRepository;
 
 	@BeforeEach
 	void setup() {
@@ -98,5 +90,24 @@ class AuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		// when & then
 		assertThatThrownBy(() -> authenticationService.login(loginRequest))
 			.isInstanceOf(BadCredentialsException.class);
+	}
+
+	@Test
+	@Transactional
+	@DisplayName("Refresh 토큰이 유효한 경우, 새로운 Access 토큰을 생성할 수 있다")
+	void canCreateNewAccessToken() {
+		// given
+		Member member = testDataFixture.createTestMember(1L, "testuser");
+		entityManager.flush();
+		entityManager.clear();
+
+		String refreshToken = jwtTokenService.createRefreshToken(1L, "testuser");
+
+		// when
+		RefreshTokenResponse response = authenticationService.refreshToken(new RefreshTokenRequest(refreshToken));
+
+		// then
+		assertThat(response.accessToken()).isNotNull();
+		jwtTokenService.validateAccessToken(response.accessToken());
 	}
 }
