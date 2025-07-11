@@ -93,8 +93,8 @@ public class JwtTokenService {
 	/**
 	 * Create Refresh Token
 	 */
-	public String createRefreshToken(String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, false, null);
+	public String createRefreshToken(Long memberId, String loginIdentifier) {
+		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId);
 	}
 
 	/**

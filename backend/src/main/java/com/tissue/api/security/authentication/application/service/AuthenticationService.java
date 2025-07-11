@@ -36,7 +36,7 @@ public class AuthenticationService {
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
 
 		String accessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getLoginId());
-		String refreshToken = jwtTokenService.createRefreshToken(userDetails.getLoginId());
+		String refreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getLoginId());
 
 		return LoginResponse.from(accessToken, refreshToken);
 	}
