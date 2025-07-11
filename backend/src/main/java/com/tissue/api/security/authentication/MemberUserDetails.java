@@ -35,6 +35,7 @@ public class MemberUserDetails implements UserDetails {
 
 	private boolean elevated;
 
+	// TODO: should i consider using a DTO or a factory method instead of directly using Member entity?
 	public MemberUserDetails(Member member) {
 		this.memberId = member.getId();
 		this.loginId = member.getLoginId();

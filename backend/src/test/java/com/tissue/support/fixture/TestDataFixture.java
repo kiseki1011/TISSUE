@@ -122,11 +122,14 @@ public class TestDataFixture {
 		String password,
 		String issueKeyPrefix
 	) {
+		// TODO: change after improving Workspace password logic
+		String encodedPassword = password != null ? passwordEncoder.encode(password) : null;
+
 		return workspaceRepository.save(
 			Workspace.builder()
 				.name(name)
 				.description("description")
-				.password(passwordEncoder.encode(password))
+				.password(encodedPassword)
 				.code(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
 				.issueKeyPrefix(issueKeyPrefix)
 				.build()
