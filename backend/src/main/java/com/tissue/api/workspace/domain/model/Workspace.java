@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
 
-	// Todo: 추후 낙관적 락 적용
+	// Todo: use optimistic locking if needed
 	// @Version
 	// private Long version;
 
@@ -50,6 +50,7 @@ public class Workspace extends BaseEntity {
 
 	private String password;
 
+	// TODO: should i just count it every time i need it and not add the memberCount field?
 	@Column(nullable = false)
 	private int memberCount = 0;
 
@@ -111,8 +112,8 @@ public class Workspace extends BaseEntity {
 
 	/*
 	 * Todo
-	 *  - Workspace의 책임인가?
-	 *  - 그냥 Issue에서 workspace.getKeyPrefix + workspace.getNextIssueNumber로 처리하면 안되나?
+	 *  - is this Workspace's responsibility
+	 *  - should this be done by Issue using "workspace.getKeyPrefix + workspace.getNextIssueNumber"?
 	 */
 	public String getIssueKey() {
 		return String.format("%s-%d", issueKeyPrefix, nextIssueNumber);

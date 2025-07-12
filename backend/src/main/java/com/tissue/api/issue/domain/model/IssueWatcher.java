@@ -35,7 +35,6 @@ public class IssueWatcher extends BaseDateEntity {
 	@JoinColumn(name = "WATCHER_ID", insertable = false, updatable = false)
 	private WorkspaceMember watcher;
 
-	// Todo: BaseDateEntity로 기록하는데, 굳이 필요할까?
 	@Column(nullable = false)
 	private LocalDateTime watchedAt;
 

@@ -66,8 +66,9 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String email;
 
-	// TODO: 캐싱은 추후에 고려
-	//  (클라이언트에서 displayName, username을 한번에 조회하고 조합해서 사용하는 방식 고려
+	//  TODO: consider using a combined value of displayName, username(member's username) to use at the client
+	//   example1: displayName + member.getUsername()
+	//   example2: Make a VO called DisplayUsername
 	// private String displayWithUsername;
 
 	@Builder
@@ -101,7 +102,6 @@ public class WorkspaceMember extends BaseEntity {
 		return workspaceMember;
 	}
 
-	// TODO: increaseMyWorkspaceCount, decreaseMyWorkspaceCount 호출은 어디서 하는 것이 제일 좋을까?
 	public static WorkspaceMember addOwnerWorkspaceMember(
 		Member member,
 		Workspace workspace
@@ -198,7 +198,6 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 	}
 
-	// TODO: increaseMyWorkspaceCount, decreaseMyWorkspaceCount 호출은 어디서 하는 것이 제일 좋을까?
 	public void updateRoleToAdmin() {
 		validateCurrentRoleIsOwner();
 		updateRole(WorkspaceRole.ADMIN);

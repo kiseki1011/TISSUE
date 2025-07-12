@@ -43,20 +43,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * Todo 3
- *  - 동시성 문제 해결을 위해서 이슈 생성에 spring-retry 적용
- *  - Workspace에서 issueKeyPrefix와 nextIssueNumber를 관리하기 때문에,
- *  Workspace에 Optimistic locking을 적용한다
- * Todo 4
- *  - 상태 업데이트는 도메인 이벤트(Domain Event) 발행으로 구현하는 것을 고려
- *  - 상태 변경과 관련된 부가 작업들(알림 발송, 감사 로그 기록 등)을 이벤트 핸들러에서 처리할 수 있어 확장성이 좋아짐
- * Todo 5
- *  - 상태 패턴(State, State Machine Pattern)의 사용 고려
- *  - 상태 변경 규칙을 한 곳에서 명확하게 관리할 수 있고, 새로운 상태나 규칙을 추가하기도 쉬워짐
- * Todo 6
- *  - 이슈 상태 변화에 대한 검증을 그냥 validator 클래스에서 정의해서 서비스에서 진행 고려
- */
 @Entity
 @Getter
 @EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
@@ -120,19 +106,19 @@ public abstract class Issue extends BaseEntity {
 	@JoinColumn(name = "PARENT_ISSUE_ID")
 	private Issue parentIssue;
 
-	// TODO: Set 사용으로 변경
+	// TODO: Use Set collection
 	@OneToMany(mappedBy = "parentIssue")
 	private List<Issue> childIssues = new ArrayList<>();
 
-	// TODO: Set 사용으로 변경
+	// TODO: Use Set collection
 	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueRelation> outgoingRelations = new ArrayList<>();
 
-	// TODO: Set 사용으로 변경
+	// TODO: Use Set collection
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueRelation> incomingRelations = new ArrayList<>();
 
-	// TODO: Set 사용으로 변경
+	// TODO: Use Set collection
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueReviewer> reviewers = new ArrayList<>();
 
@@ -143,7 +129,7 @@ public abstract class Issue extends BaseEntity {
 	@JoinColumn(name = "ISSUE_ID")
 	private Set<IssueWatcher> watchers = new HashSet<>();
 
-	// TODO: Set 사용으로 변경
+	// TODO: Use Set collection
 	@OneToMany(mappedBy = "issue")
 	private List<SprintIssue> sprintIssues = new ArrayList<>();
 
@@ -200,22 +186,22 @@ public abstract class Issue extends BaseEntity {
 	public Set<Long> getSubscriberMemberIds() {
 		Set<Long> memberIds = new HashSet<>();
 
-		// 작성자 ID 추가
+		// add memberId of author
 		if (this.getCreatedBy() != null) {
 			memberIds.add(this.getCreatedBy());
 		}
 
-		// Assignee IDs 추가
+		// add Assignee memberIds
 		assignees.stream()
 			.map(IssueAssignee::getAssigneeMemberId)  // 엔티티 로드 없이 ID 접근
 			.forEach(memberIds::add);
 
-		// Reviewer IDs 추가
+		// add Reviewer memberIds
 		reviewers.stream()
 			.map(IssueReviewer::getReviewerMemberId)  // 엔티티 로드 없이 ID 접근
 			.forEach(memberIds::add);
 
-		// Watcher IDs 추가
+		// add Watcher memberIds
 		watchers.stream()
 			.map(IssueWatcher::getWatcherMemberId)  // 엔티티 로드 없이 ID 접근
 			.forEach(memberIds::add);
@@ -306,7 +292,7 @@ public abstract class Issue extends BaseEntity {
 					status));
 		}
 
-		// 현재 라운드의 모든 리뷰어가 리뷰를 작성했는지 검증
+		// check if all reviewers submitted a reivew for the current round
 		boolean hasIncompleteReviews = reviewers.stream()
 			.noneMatch(reviewer -> reviewer.hasReviewForRound(currentReviewRound));
 
@@ -441,12 +427,6 @@ public abstract class Issue extends BaseEntity {
 		updateTimestamps(newStatus);
 	}
 
-	// TODO: 삭제 API를 상태 변경 API에서 분리하는 경우 사용
-	// public void delete() {
-	// 	validateStatusTransition(DELETED);
-	// 	this.status = DELETED;
-	// }
-
 	public void updatePriority(IssuePriority priority) {
 		this.priority = priority;
 	}
@@ -488,10 +468,9 @@ public abstract class Issue extends BaseEntity {
 	}
 
 	protected void validateStatusTransition(IssueStatus newStatus) {
-		// 기본 상태 전이 검증
 		validateBasicTransition(newStatus);
 
-		// 특수한 상태 전이 검증
+		// validate special status transitions
 		if (newStatus == DONE) {
 			validateTransitionToDone();
 		}
@@ -509,7 +488,7 @@ public abstract class Issue extends BaseEntity {
 		}
 	}
 
-	// TODO: 이슈 상태를 DONE으로 변경하는 로직을 개선할 필요가 있음(리뷰 상태랑 관련된 로직도 개선 필요)
+	// TODO: probably needs logic improvement for changing the status to DONE
 	private void validateTransitionToDone() {
 		if (hasAnyChangesRequested()) {
 			throw new InvalidOperationException("All reviews for current round must be approved or be a comment.");
