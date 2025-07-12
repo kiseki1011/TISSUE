@@ -12,10 +12,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.enums.PermissionType;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.domain.service.MemberValidator;
-import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
@@ -23,12 +22,9 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
-import com.tissue.api.security.session.SessionManager;
-import com.tissue.api.security.session.SessionValidator;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -47,8 +43,6 @@ public class MemberController {
 	 */
 	private final MemberCommandService memberCommandService;
 	private final MemberValidator memberValidator;
-	private final SessionManager sessionManager;
-	private final SessionValidator sessionValidator;
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -59,52 +53,57 @@ public class MemberController {
 		return ApiResponse.created("Signup successful.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping
 	public ApiResponse<MemberResponse> updateMemberInfo(
 		@RequestBody @Valid UpdateMemberProfileRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		MemberResponse response = memberCommandService.updateInfo(request, loginMemberId);
+		MemberResponse response = memberCommandService.updateInfo(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/email")
 	public ApiResponse<MemberResponse> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updateEmail(request, loginMemberId);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
+		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member email updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/username")
 	public ApiResponse<MemberResponse> updateMemberUsername(
 		@RequestBody @Valid UpdateMemberUsernameRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updateUsername(request, loginMemberId);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
+		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member username updated.", response);
 	}
 
-	@LoginRequired
 	@PatchMapping("/password")
 	public ApiResponse<MemberResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		MemberResponse response = memberCommandService.updatePassword(request, loginMemberId);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
+
+		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member password updated.", response);
 	}
@@ -117,45 +116,20 @@ public class MemberController {
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
 	 *  - soft delete으로 변경 시 MemberResponse 사용
 	 */
-	@LoginRequired
+
 	@DeleteMapping
 	public ApiResponse<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		memberCommandService.withdraw(request, loginMemberId);
+		boolean notElevated = !userDetails.isElevated();
+		if (notElevated) {
+			throw new ForbiddenOperationException("Elevated permission required.");
+		}
 
-		session.invalidate();
+		memberCommandService.withdraw(request, userDetails.getMemberId());
 
 		return ApiResponse.okWithNoContent("Member withdrawal successful.");
-	}
-
-	// TODO: validateMemberPassword를 setTemporaryPermission 내부로 옮겨야 할까?
-	// TODO: permission 관련 API들을 다른 컨트롤러로 분리해야 할까?
-	@LoginRequired
-	@PostMapping("/permissions")
-	public ApiResponse<Void> getMemberUpdatePermission(
-		@RequestBody @Valid PermissionRequest request,
-		@ResolveLoginMember Long loginMemberId,
-		HttpSession session
-	) {
-		memberValidator.validateMemberPassword(request.password(), loginMemberId);
-		sessionManager.setTemporaryPermission(session, PermissionType.MEMBER_UPDATE);
-
-		return ApiResponse.okWithNoContent("Update permission granted.");
-	}
-
-	@LoginRequired
-	@PostMapping("/permissions/refresh")
-	public ApiResponse<Void> refreshMemberUpdatePermission(
-		HttpSession session
-	) {
-		sessionValidator.validatePermissionInSession(session, PermissionType.MEMBER_UPDATE);
-		sessionManager.refreshPermission(session, PermissionType.MEMBER_UPDATE);
-
-		return ApiResponse.okWithNoContent("Permission refreshed.");
 	}
 
 	/**
@@ -164,7 +138,7 @@ public class MemberController {
 	@GetMapping("/check-loginid")
 	public ApiResponse<Void> checkLoginIdAvailability(@RequestParam String loginId) {
 		memberValidator.validateLoginIdIsUnique(loginId);
-		return ApiResponse.okWithNoContent("Login ID is available");
+		return ApiResponse.okWithNoContent("Login ID is available.");
 	}
 
 	/**
@@ -173,7 +147,7 @@ public class MemberController {
 	@GetMapping("/check-email")
 	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
 		memberValidator.validateEmailIsUnique(email);
-		return ApiResponse.okWithNoContent("Email is available");
+		return ApiResponse.okWithNoContent("Email is available.");
 	}
 
 	/**
@@ -182,6 +156,6 @@ public class MemberController {
 	@GetMapping("/check-username")
 	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
 		memberValidator.validateUsernameIsUnique(username);
-		return ApiResponse.okWithNoContent("Username is available");
+		return ApiResponse.okWithNoContent("Username is available.");
 	}
 }

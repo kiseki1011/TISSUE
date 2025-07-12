@@ -9,4 +9,8 @@ public class WorkspaceNotFoundException extends ResourceNotFoundException {
 	public WorkspaceNotFoundException(String workspaceCode) {
 		super(String.format(MESSAGE, workspaceCode));
 	}
+
+	public WorkspaceNotFoundException(String workspaceCode, Throwable cause) {
+		super(String.format(MESSAGE, workspaceCode), cause);
+	}
 }

@@ -10,5 +10,5 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RoleRequired {
-	WorkspaceRole role();
+	WorkspaceRole role(); // required minimum role
 }

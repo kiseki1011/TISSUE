@@ -1,12 +1,14 @@
 package com.tissue.support.helper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -37,10 +39,10 @@ import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
 import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.review.presentation.controller.ReviewController;
+import com.tissue.api.security.SecurityConfig;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
+import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
-import com.tissue.api.security.session.SessionManager;
-import com.tissue.api.security.session.SessionValidator;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
@@ -78,15 +80,20 @@ import lombok.extern.slf4j.Slf4j;
 		ReviewController.class,
 		IssueReviewerController.class
 	},
+	excludeAutoConfiguration = SecurityAutoConfiguration.class,
 	excludeFilters = {
 		@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
 			WebMvcConfig.class,
 			HandlerMethodArgumentResolver.class,
-			HandlerInterceptor.class
+			HandlerInterceptor.class,
+			SecurityConfig.class
 		})
 	}
 )
-@Import(value = WebMvcTestConfig.class)
+@TestPropertySource(properties = {
+	"jwt.secret=ThisIsADefaultTestSecretThatIs32Chars"
+})
+@Import(value = {WebMvcTestConfig.class})
 public abstract class ControllerTestHelper {
 
 	@Autowired
@@ -100,12 +107,18 @@ public abstract class ControllerTestHelper {
 	protected WorkspaceCodeParser workspaceCodeParser;
 
 	/**
-	 * Session
+	 * Spring Security
 	 */
 	@MockBean
-	protected SessionManager sessionManager;
-	@MockBean
-	protected SessionValidator sessionValidator;
+	protected JwtTokenService jwtTokenService;
+	// @MockBean
+	// protected JwtAuthenticationFilter jwtAuthenticationFilter;
+	// @MockBean
+	// protected ExceptionHandlerFilter exceptionHandlerFilter;
+	// @MockBean
+	// protected JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	// @MockBean
+	// protected ApiAccessDeniedHandler apiAccessDeniedHandler;
 
 	/**
 	 * Service
@@ -152,8 +165,6 @@ public abstract class ControllerTestHelper {
 	protected IssueReviewerCommandService issueReviewerCommandService;
 	@MockBean
 	protected WorkspaceAuthenticationService workspaceAuthenticationService;
-	// @MockBean
-	// protected NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * Validator

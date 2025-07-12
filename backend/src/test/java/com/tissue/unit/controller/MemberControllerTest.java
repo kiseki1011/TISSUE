@@ -19,19 +19,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.presentation.dto.request.PermissionRequest;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
-import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.support.helper.ControllerTestHelper;
 
 class MemberControllerTest extends ControllerTestHelper {
@@ -40,12 +36,11 @@ class MemberControllerTest extends ControllerTestHelper {
 	@DisplayName("GET /members - 멤버 프로필(상세 정보) 조회에 성공하면 OK")
 	void getMyProfile_success_OK() throws Exception {
 		// given
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		// when & then
 		mockMvc.perform(get("/api/v1/members")
-				.session(session)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Found profile."))
@@ -191,44 +186,6 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("POST /members/permissions - 업데이트 권한 요청에 성공하면 OK")
-	void getUpdateAuthorization_success_OK() throws Exception {
-		// given
-		PermissionRequest request = new PermissionRequest("password1234!");
-
-		doNothing()
-			.when(memberValidator)
-			.validateMemberPassword(anyString(), anyLong());
-
-		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Update permission granted."))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("POST /members/permissions - 업데이트 권한 요청 시 패스워드 검증에 실패하면 UNAUTHORIZED")
-	void getUpdateAuthorization_failPasswordValid_UNAUTHORIZED() throws Exception {
-		// given
-		PermissionRequest request = new PermissionRequest("password1234!");
-
-		doThrow(new AuthenticationFailedException("Password is invalid."))
-			.when(memberValidator)
-			.validateMemberPassword(anyString(), anyLong());
-
-		// when & then
-		mockMvc.perform(post("/api/v1/members/permissions")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isUnauthorized())
-			.andExpect(jsonPath("$.message").value("Password is invalid."))
-			.andDo(print());
-	}
-
-	@Test
 	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
 	void updateMemberInfo_success_OK() throws Exception {
 		// given
@@ -272,7 +229,7 @@ class MemberControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
+			.andExpect(jsonPath("$.message").value("One or more fields have failed validation."))
 			.andExpect(
 				jsonPath("$.data..message").value(messageSource.getMessage("valid.birthdate", null, Locale.ENGLISH)))
 			.andDo(print());
@@ -294,7 +251,7 @@ class MemberControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 업데이트 된 이메일이 포함된다")
+	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 해당 Member의 id가 포함된다")
 	void updateEmail_success_responseDataHasEmail() throws Exception {
 		// given
 		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");

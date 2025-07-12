@@ -12,14 +12,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.position.application.service.command.PositionCommandService;
+import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.presentation.dto.request.CreatePositionRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionColorRequest;
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
-import com.tissue.api.position.application.service.command.PositionCommandService;
-import com.tissue.api.position.application.service.query.PositionQueryService;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -34,7 +33,6 @@ public class PositionController {
 	private final PositionCommandService positionCommandService;
 	private final PositionQueryService positionQueryService;
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -46,7 +44,6 @@ public class PositionController {
 		return ApiResponse.created("Position created.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}")
 	public ApiResponse<PositionResponse> updatePosition(
@@ -58,7 +55,6 @@ public class PositionController {
 		return ApiResponse.ok("Position updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}/color")
 	public ApiResponse<PositionResponse> updatePositionColor(
@@ -70,7 +66,6 @@ public class PositionController {
 		return ApiResponse.ok("Position color updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{positionId}")
@@ -82,7 +77,6 @@ public class PositionController {
 		return ApiResponse.okWithNoContent("Position deleted.");
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping
 	public ApiResponse<GetPositionsResponse> getPositions(

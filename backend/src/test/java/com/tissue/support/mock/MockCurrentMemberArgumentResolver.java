@@ -6,19 +6,16 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
+import com.tissue.support.fixture.MemberBuilderForTest;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
-public class MockLoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
-
-	private final Long loginMemberId;
+public class MockCurrentMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.hasParameterAnnotation(ResolveLoginMember.class)
-			&& parameter.getParameterType().equals(Long.class);
+		return parameter.hasParameterAnnotation(CurrentMember.class);
 	}
 
 	@Override
@@ -28,6 +25,11 @@ public class MockLoginMemberArgumentResolver implements HandlerMethodArgumentRes
 		NativeWebRequest webRequest,
 		WebDataBinderFactory binderFactory
 	) {
-		return loginMemberId;
+		Member mockMember = new MemberBuilderForTest().build();
+
+		MemberUserDetails mockMemberUserDetails = new MemberUserDetails(mockMember);
+		mockMemberUserDetails.setElevated(true);
+
+		return mockMemberUserDetails;
 	}
 }

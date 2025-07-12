@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   push:
-    branches: [ dev ]
+    branches: [dev]
 
 defaults:
   run:
@@ -14,6 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,8 +24,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
 
       # Gradle 라이브러리 캐싱
       - name: Cache Gradle packages
@@ -51,7 +54,7 @@ jobs:
           token: ${{ github.token }}
           min-coverage-overall: 70
           min-coverage-changed-files: 70
-          pass-emoji: ':white_check_mark:'
+          pass-emoji: ":white_check_mark:"
 
       # 빌드 결과에 대한 Slack 알림
       - name: Slack message with build result
@@ -69,4 +72,4 @@ jobs:
         uses: jwgmeligmeyling/checkstyle-github-action@master
         with:
           title: 🔍 Checkstyle Report
-          path: 'backend/build/reports/checkstyle'
+          path: "backend/build/reports/checkstyle"

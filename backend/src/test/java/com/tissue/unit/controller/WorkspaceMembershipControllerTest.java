@@ -204,7 +204,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"));
+			.andExpect(jsonPath("$.message").value("One or more fields have failed validation."));
 
 		verify(workspaceMemberInviteService, never()).inviteMembers(any(), any());
 	}

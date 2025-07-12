@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,21 +14,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequiredInterceptor;
-import com.tissue.api.security.session.SessionManager;
-import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
 import com.tissue.support.fixture.entity.MemberEntityFixture;
 import com.tissue.support.fixture.entity.WorkspaceEntityFixture;
@@ -36,34 +37,26 @@ import com.tissue.support.fixture.entity.WorkspaceMemberEntityFixture;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
 class RoleRequiredInterceptorTest {
 
-	public static final String TEST_URI = "/api/v1/workspaces/TESTCODE";
 	public static final String TEST_WORKSPACE_CODE = "TESTCODE";
 	public static final String TEST_LOGIN_ID = "user123";
 	public static final String TEST_EMAIL = "user123@test.com";
+
 	WorkspaceEntityFixture workspaceEntityFixture;
 	WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
 	MemberEntityFixture memberEntityFixture;
+
 	@Mock
-	private WorkspaceRepository workspaceRepository;
-	@Mock
-	private WorkspaceMemberRepository workspaceMemberRepository;
+	private WorkspaceMemberReader workspaceMemberReader;
 	@Mock
 	private HttpServletRequest request;
 	@Mock
 	private HttpServletResponse response;
 	@Mock
-	private HttpSession session;
-	@Mock
 	private HandlerMethod handlerMethod;
-	@Mock
-	private SessionManager sessionManager;
-	@Mock
-	private WorkspaceCodeParser workspaceCodeParser;
 	@InjectMocks
 	private RoleRequiredInterceptor roleRequiredInterceptor;
 
@@ -108,9 +101,6 @@ class RoleRequiredInterceptorTest {
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class))
 			.thenReturn(mock(RoleRequired.class));
 
-		when(request.getSession(false))
-			.thenReturn(null);
-
 		// when & then
 		assertThatThrownBy(() -> roleRequiredInterceptor.preHandle(request, response, handlerMethod))
 			.isInstanceOf(AuthenticationFailedException.class);
@@ -121,10 +111,10 @@ class RoleRequiredInterceptorTest {
 	void shouldThrow_MemberNotInWorkspaceException_ifMemberDidNotJoinWorkspace() {
 		// given
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
-		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
-			.thenReturn(Optional.empty());
+		setAuthenticatedUser(1L);
+
+		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+			.thenThrow(WorkspaceMemberNotFoundException.class);
 
 		Map<String, String> pathVariables = new HashMap<>();
 		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
@@ -149,13 +139,14 @@ class RoleRequiredInterceptorTest {
 			workspace
 		);
 
+		setAuthenticatedUser(1L);
 		RoleRequired roleRequired = mock(RoleRequired.class);
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
-		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
-			.thenReturn(Optional.of(workspaceMember));
+
+		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+			.thenReturn(workspaceMember);
+
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MANAGER);
 
 		Map<String, String> pathVariables = new HashMap<>();
@@ -181,13 +172,14 @@ class RoleRequiredInterceptorTest {
 			workspace
 		);
 
+		setAuthenticatedUser(1L);
 		RoleRequired roleRequired = mock(RoleRequired.class);
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
-		when(request.getSession(false)).thenReturn(session);
-		when(sessionManager.getOptionalLoginMemberId(any(HttpSession.class))).thenReturn(Optional.of(1L));
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(1L, TEST_WORKSPACE_CODE))
-			.thenReturn(Optional.of(workspaceMember));
+
+		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+			.thenReturn(workspaceMember);
+
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MEMBER);
 
 		Map<String, String> pathVariables = new HashMap<>();
@@ -201,4 +193,12 @@ class RoleRequiredInterceptorTest {
 		assertThat(result).isTrue();
 	}
 
+	private void setAuthenticatedUser(Long memberId) {
+		MemberUserDetails userDetails = mock(MemberUserDetails.class);
+		when(userDetails.getMemberId()).thenReturn(memberId);
+
+		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+			List.of(() -> "ROLE_USER"));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
 }

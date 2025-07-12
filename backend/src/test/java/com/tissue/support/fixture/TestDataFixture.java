@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,6 @@ import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.domain.model.enums.ReviewStatus;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
-import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -109,6 +109,16 @@ public class TestDataFixture {
 		);
 	}
 
+	public Member createTestMember(Long id, String loginId) {
+		return memberRepository.save(new MemberBuilderForTest()
+			.id(id)
+			.loginId(loginId)
+			.email(loginId + "@test.com")
+			.username(loginId)
+			.password(passwordEncoder.encode("test1234!"))
+			.build());
+	}
+
 	/**
 	 * Creates and saves a workspace
 	 *
@@ -122,11 +132,14 @@ public class TestDataFixture {
 		String password,
 		String issueKeyPrefix
 	) {
+		// TODO: change after improving Workspace password logic
+		String encodedPassword = password != null ? passwordEncoder.encode(password) : null;
+
 		return workspaceRepository.save(
 			Workspace.builder()
 				.name(name)
 				.description("description")
-				.password(passwordEncoder.encode(password))
+				.password(encodedPassword)
 				.code(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
 				.issueKeyPrefix(issueKeyPrefix)
 				.build()

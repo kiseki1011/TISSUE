@@ -81,7 +81,11 @@ jacocoTestReport {
                             "**/*Repository*",
                             "**/*Initializer*",
                             "**/*Token*",
-                            "**/*Dto*"
+                            "**/*Dto*",
+                            "**/*PermissionType*",
+                            "**/*MaskingUtil*",
+                            "**/*AuthenticationEntryPoint*",
+                            "**/*AuditorProvider*"
                     ])
                 })
         )
@@ -125,7 +129,11 @@ jacocoTestReport {
                         "**.*Repository*",
                         "**.*Initializer*",
                         "**.*Token*",
-                        "**.*Dto*"
+                        "**.*Dto*",
+                        "**.*PermissionType*",
+                        "**.*MaskingUtil*",
+                        "**.*AuthenticationEntryPoint*",
+                        "**.*AuditorProvider*"
                 ]
             }
         }
@@ -139,7 +147,6 @@ jacocoTestReport {
         implementation 'org.springframework.boot:spring-boot-starter-validation'
         implementation 'org.springframework.boot:spring-boot-starter-aop'
         implementation 'org.springframework.boot:spring-boot-starter-mail'
-        implementation 'org.springframework.security:spring-security-crypto'
         implementation 'org.springframework.retry:spring-retry'
 
         implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -147,6 +154,13 @@ jacocoTestReport {
 
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
+
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+        testImplementation 'org.springframework.security:spring-security-test'
+
+        implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
         runtimeOnly 'com.h2database:h2'
         runtimeOnly 'com.mysql:mysql-connector-j'

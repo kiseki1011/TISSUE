@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.interceptor.LoginRequired;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
+import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
@@ -23,9 +26,6 @@ import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
-import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -43,22 +43,20 @@ public class WorkspaceController {
 	private final WorkspaceQueryService workspaceQueryService;
 	private final WorkspaceAuthenticationService workspaceAuthenticationService;
 
-	@LoginRequired
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<WorkspaceResponse> createWorkspace(
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateWorkspaceRequest request
 	) {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.created("Workspace created.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{workspaceCode}/info")
 	public ApiResponse<WorkspaceResponse> updateWorkspaceInfo(
@@ -73,7 +71,6 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace info updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/password")
 	public ApiResponse<WorkspaceResponse> updateWorkspacePassword(
@@ -86,22 +83,20 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace password updated.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.OWNER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{workspaceCode}")
 	public ApiResponse<Void> deleteWorkspace(
 		@PathVariable String workspaceCode,
-		@ResolveLoginMember Long loginMemberId,
+		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody DeleteWorkspaceRequest request
 	) {
 		workspaceAuthenticationService.authenticate(request.password(), workspaceCode);
-		workspaceCommandService.deleteWorkspace(workspaceCode, loginMemberId);
+		workspaceCommandService.deleteWorkspace(workspaceCode, userDetails.getMemberId());
 
 		return ApiResponse.okWithNoContent("Workspace deleted.");
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{code}")
 	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(
@@ -112,7 +107,6 @@ public class WorkspaceController {
 		return ApiResponse.ok("Workspace found.", response);
 	}
 
-	@LoginRequired
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{code}/key")
 	public ApiResponse<WorkspaceResponse> updateIssueKey(

@@ -17,9 +17,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
-import com.tissue.api.security.session.SessionAttributes;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
@@ -71,7 +69,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
+			.andExpect(jsonPath("$.message").value("One or more fields have failed validation."))
 			.andDo(print());
 	}
 
@@ -175,15 +173,14 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.code(code)
 			.build();
 
-		MockHttpSession session = new MockHttpSession();
-		session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+		// MockHttpSession session = new MockHttpSession();
+		// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
 
 		when(workspaceQueryService.getWorkspaceDetail(code))
 			.thenReturn(workspaceDetail);
 
 		// when & then
-		mockMvc.perform(get("/api/v1/workspaces/{code}", code)
-				.session(session))
+		mockMvc.perform(get("/api/v1/workspaces/{code}", code))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.code").value(code))
 			.andExpect(jsonPath("$.data.name").value("Test Workspace"))

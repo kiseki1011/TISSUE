@@ -14,14 +14,13 @@ public class MemberReader {
 
 	private final MemberRepository memberRepository;
 
-	public Member findMember(Long memberId) {
+	public Member findMemberById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 
-	public Member findMember(String identifier) {
-		return memberRepository.findByIdentifier(identifier)
-			.orElseThrow(() -> new MemberNotFoundException(
-				String.format("Member not found with login ID or email. identifier: %s", identifier)));
+	public Member findMemberByLoginIdOrEmail(String identifier) {
+		return memberRepository.findByLoginIdOrEmail(identifier)
+			.orElseThrow(() -> new MemberNotFoundException(identifier));
 	}
 }

@@ -3,6 +3,8 @@ package com.tissue.support.helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.tissue.api.comment.application.service.command.IssueCommentCommandService;
@@ -29,7 +31,8 @@ import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.review.application.service.command.ReviewCommandService;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
-import com.tissue.api.security.PasswordEncoder;
+import com.tissue.api.security.authentication.application.service.AuthenticationService;
+import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
 import com.tissue.api.sprint.application.service.command.SprintReader;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
@@ -58,6 +61,9 @@ import com.tissue.support.util.DatabaseCleaner;
 import jakarta.persistence.EntityManager;
 
 @SpringBootTest
+@TestPropertySource(properties = {
+	"jwt.secret=ThisIsADefaultTestSecretThatIs32Chars"
+})
 @AutoConfigureMockMvc
 public abstract class ServiceIntegrationTestHelper {
 
@@ -76,8 +82,16 @@ public abstract class ServiceIntegrationTestHelper {
 	protected EntityManager entityManager;
 
 	/**
+	 * Security
+	 */
+	@Autowired
+	protected JwtTokenService jwtTokenService;
+
+	/**
 	 * Service
 	 */
+	@Autowired
+	protected AuthenticationService authenticationService;
 	@Autowired
 	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@Autowired
@@ -116,8 +130,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected TeamCommandService teamCommandService;
 	@Autowired
 	protected TeamReader teamReader;
-	// @Autowired
-	// protected TeamQueryService teamQueryService;
 	@Autowired
 	protected IssueCommandService issueCommandService;
 	@Autowired
@@ -140,8 +152,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	@Autowired
 	protected SprintReader sprintReader;
-	// @Autowired
-	// protected NotificationMessageFactory notificationMessageFactory;
 
 	/**
 	 * Validator

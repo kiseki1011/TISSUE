@@ -10,7 +10,7 @@ public class AuthenticationFailedException extends TissueException {
 		super(message, HttpStatus.UNAUTHORIZED);
 	}
 
-	public AuthenticationFailedException(String messageCode, Object... args) {
-		super(messageCode, args, HttpStatus.UNAUTHORIZED);
+	public AuthenticationFailedException(String message, Throwable cause) {
+		super(message, HttpStatus.UNAUTHORIZED, cause);
 	}
 }

@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,21 +16,17 @@ import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * DB에서 발생하는 예외를 서비스 계층에서 잡아서 핸들링 로직(워크스페이스 코드 재생성) 수행
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -55,7 +52,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
 		setGeneratedWorkspaceCode(workspace);
@@ -79,9 +76,9 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		Long memberId
 	) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
-		// TODO: InternalServerException에 exception도 받을수 있도록 수정
 		throw new InternalServerException(
-			String.format("Failed to solve workspace code collision. Max retry limit: %d", MAX_RETRIES)
+			"Failed to solve workspace code collision after " + MAX_RETRIES + " attempts.",
+			exception
 		);
 	}
 
