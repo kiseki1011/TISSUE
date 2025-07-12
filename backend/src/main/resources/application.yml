@@ -21,6 +21,12 @@ spring:
 
 base-url: http://localhost:8080
 
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: 3600        # 1 hour
+  refresh-token-validity: 604800     # 1 week
+  elevated-token-validity: 300       # 5 minutes
+
 email:
   verification:
     strategy: redis  # or rdb

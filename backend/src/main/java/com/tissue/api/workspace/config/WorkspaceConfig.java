@@ -2,14 +2,14 @@ package com.tissue.api.workspace.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.tissue.api.member.application.service.command.MemberReader;
-import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
 import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;

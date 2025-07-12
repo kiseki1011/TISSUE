@@ -1,6 +1,9 @@
 package com.tissue.api.member.application.service.command;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +18,6 @@ import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest
 import com.tissue.api.member.presentation.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
-import com.tissue.api.security.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class MemberCommandService {
 	private final MemberReader memberReader;
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
+	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberEmailVerificationService memberEmailVerificationService;
 
@@ -48,7 +51,7 @@ public class MemberCommandService {
 
 			return MemberResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("회원가입에 실패했습니다.", e);
+			throw new DuplicateResourceException("Failed to signup.", e);
 		}
 	}
 
@@ -57,7 +60,7 @@ public class MemberCommandService {
 		UpdateMemberProfileRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		updateMemberInfoIfPresent(request, member);
 
@@ -69,7 +72,7 @@ public class MemberCommandService {
 		UpdateMemberEmailRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		memberValidator.validateEmailIsUnique(request.newEmail());
 		memberEmailVerificationService.validateEmailVerified(request.newEmail());
@@ -79,7 +82,7 @@ public class MemberCommandService {
 			memberEmailVerificationService.clearVerification(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("중복된 Email입니다", e);
+			throw new DuplicateResourceException("Failed to update email. Email already in use.", e);
 		}
 	}
 
@@ -88,7 +91,7 @@ public class MemberCommandService {
 		UpdateMemberUsernameRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 
 		memberValidator.validateUsernameIsUnique(request.newUsername());
 
@@ -96,7 +99,7 @@ public class MemberCommandService {
 			member.updateUsername(request.newUsername());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("중복된 username입니다", e);
+			throw new DuplicateResourceException("Failed to update username. Username already in use.", e);
 		}
 	}
 
@@ -105,8 +108,13 @@ public class MemberCommandService {
 		UpdateMemberPasswordRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
-		memberValidator.validateMemberPassword(request.originalPassword(), memberId);
+		Member member = memberReader.findMemberById(memberId);
+
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.originalPassword())
+		);
+
+		// memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
 		member.updatePassword(passwordEncoder.encode(request.newPassword()));
 
@@ -125,8 +133,14 @@ public class MemberCommandService {
 		WithdrawMemberRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMember(memberId);
-		memberValidator.validateMemberPassword(request.password(), memberId);
+		Member member = memberReader.findMemberById(memberId);
+
+		// memberValidator.validateMemberPassword(request.password(), memberId);
+
+		authenticationManager.authenticate(
+			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.password())
+		);
+
 		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
 
 		memberRepository.delete(member);

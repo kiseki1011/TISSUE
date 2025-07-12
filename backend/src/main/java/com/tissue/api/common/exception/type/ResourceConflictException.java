@@ -5,7 +5,12 @@ import org.springframework.http.HttpStatus;
 import com.tissue.api.common.exception.TissueException;
 
 public class ResourceConflictException extends TissueException {
+
 	public ResourceConflictException(String message) {
 		super(message, HttpStatus.CONFLICT);
+	}
+
+	public ResourceConflictException(String message, Throwable cause) {
+		super(message, HttpStatus.CONFLICT, cause);
 	}
 }

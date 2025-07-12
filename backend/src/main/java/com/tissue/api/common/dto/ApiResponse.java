@@ -24,6 +24,10 @@ public record ApiResponse<T>(
 		return new ApiResponse<>(status, message, data);
 	}
 
+	public static <T> ApiResponse<T> failWithNoContent(HttpStatus status, String message) {
+		return new ApiResponse<>(status, message, null);
+	}
+
 	private ApiResponse(HttpStatus status, String message, T data) {
 		this(status.value(), status, message, data);
 	}

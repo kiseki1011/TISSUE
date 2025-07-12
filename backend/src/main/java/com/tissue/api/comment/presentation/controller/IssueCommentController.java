@@ -15,7 +15,8 @@ import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -54,13 +55,13 @@ public class IssueCommentController {
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@Valid @RequestBody CreateIssueCommentRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueCommentResponse response = issueCommentCommandService.createComment(
 			workspaceCode,
 			issueKey,
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.created("Comment created.", response);
@@ -73,14 +74,14 @@ public class IssueCommentController {
 		@PathVariable String issueKey,
 		@PathVariable Long commentId,
 		@Valid @RequestBody UpdateIssueCommentRequest request,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueCommentResponse response = issueCommentCommandService.updateComment(
 			workspaceCode,
 			issueKey,
 			commentId,
 			request,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Comment updated.", response);
@@ -92,13 +93,13 @@ public class IssueCommentController {
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
 		@PathVariable Long commentId,
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueCommentResponse response = issueCommentCommandService.deleteComment(
 			workspaceCode,
 			issueKey,
 			commentId,
-			loginMemberId
+			userDetails.getMemberId()
 		);
 
 		return ApiResponse.ok("Comment deleted.", response);

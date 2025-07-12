@@ -2,19 +2,19 @@ package com.tissue.api.workspace.application.service.command;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.security.PasswordEncoder;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -70,7 +70,7 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
 
-		Member member = memberReader.findMember(memberId);
+		Member member = memberReader.findMemberById(memberId);
 		member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);

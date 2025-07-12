@@ -70,7 +70,7 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have validation errors"))
+			.andExpect(jsonPath("$.message").value("One or more fields have failed validation."))
 			.andDo(print());
 	}
 
@@ -142,7 +142,7 @@ class PositionControllerTest extends ControllerTestHelper {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(invalidRequestJson))
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("Invalid enum value provided"))
+			.andExpect(jsonPath("$.message").value("Invalid enum value provided."))
 			.andExpect(jsonPath("$.data").isEmpty())
 			.andDo(print());
 	}

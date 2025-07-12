@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.presentation.dto.response.query.GetProfileResponse;
-import com.tissue.api.security.authentication.resolver.ResolveLoginMember;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,9 +21,9 @@ public class MemberQueryController {
 
 	@GetMapping
 	public ApiResponse<GetProfileResponse> getProfile(
-		@ResolveLoginMember Long loginMemberId
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		GetProfileResponse response = memberQueryService.getProfile(loginMemberId);
+		GetProfileResponse response = memberQueryService.getProfile(userDetails.getMemberId());
 		return ApiResponse.ok("Found profile.", response);
 	}
 }
