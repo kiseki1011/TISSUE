@@ -1,6 +1,5 @@
 package com.tissue.support.fixture;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -19,14 +18,6 @@ import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueAssignee;
 import com.tissue.api.issue.domain.model.IssueReviewer;
-import com.tissue.api.issue.domain.model.enums.BugSeverity;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.issue.domain.model.types.Bug;
-import com.tissue.api.issue.domain.model.types.Epic;
-import com.tissue.api.issue.domain.model.types.Story;
-import com.tissue.api.issue.domain.model.types.SubTask;
-import com.tissue.api.issue.domain.model.types.Task;
 import com.tissue.api.issue.infrastructure.repository.IssueAssigneeRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
@@ -168,127 +159,127 @@ public class TestDataFixture {
 		return workspaceMemberRepository.save(workspaceMember);
 	}
 
-	/**
-	 * Creates a new issue of the specified type and assigns members to it
-	 *
-	 * @param type The type of the issue (e.g., EPIC, STORY, BUG, TASK, SUB_TASK)
-	 * @param workspace The workspace in which the issue will be created
-	 * @param title The title of the issue
-	 * @param priority The priority level of the issue
-	 * @param dueAt The due date and time for the issue
-	 * @param workspaceMembers A list of workspace members to be assigned to the issue
-	 * @return The created issue
-	 */
-	public Issue createIssueWithAssignees(
-		IssueType type,
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt,
-		List<WorkspaceMember> workspaceMembers
-	) {
-		Issue issue = switch (type) {
-			case EPIC -> createEpic(workspace, title, priority, dueAt);
-			case STORY -> createStory(workspace, title, priority, dueAt);
-			case BUG -> createBug(workspace, title, priority, dueAt);
-			case TASK -> createTask(workspace, title, priority, dueAt);
-			case SUB_TASK -> createSubTask(workspace, title, priority, dueAt);
-		};
+	// /**
+	//  * Creates a new issue of the specified type and assigns members to it
+	//  *
+	//  * @param type The type of the issue (e.g., EPIC, STORY, BUG, TASK, SUB_TASK)
+	//  * @param workspace The workspace in which the issue will be created
+	//  * @param title The title of the issue
+	//  * @param priority The priority level of the issue
+	//  * @param dueAt The due date and time for the issue
+	//  * @param workspaceMembers A list of workspace members to be assigned to the issue
+	//  * @return The created issue
+	//  */
+	// public Issue createIssueWithAssignees(
+	// 	IssueType type,
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt,
+	// 	List<WorkspaceMember> workspaceMembers
+	// ) {
+	// 	Issue issue = switch (type) {
+	// 		case EPIC -> createEpic(workspace, title, priority, dueAt);
+	// 		case STORY -> createStory(workspace, title, priority, dueAt);
+	// 		case BUG -> createBug(workspace, title, priority, dueAt);
+	// 		case TASK -> createTask(workspace, title, priority, dueAt);
+	// 		case SUB_TASK -> createSubTask(workspace, title, priority, dueAt);
+	// 	};
+	//
+	// 	addIssueAssignees(issue, workspaceMembers);
+	//
+	// 	return issueRepository.save(issue);
+	// }
 
-		addIssueAssignees(issue, workspaceMembers);
-
-		return issueRepository.save(issue);
-	}
-
-	public Epic createEpic(
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt
-	) {
-		Epic epic = Epic.builder()
-			.workspace(workspace)
-			.title(title)
-			.content("epic content")
-			.priority(priority)
-			.dueAt(dueAt)
-			.businessGoal("business goal")
-			.build();
-
-		return issueRepository.save(epic);
-	}
-
-	public Story createStory(
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt
-	) {
-		Story story = Story.builder()
-			.workspace(workspace)
-			.title(title)
-			.content("story content")
-			.priority(priority)
-			.dueAt(dueAt)
-			.userStory("user story")
-			.acceptanceCriteria("acceptance criteria")
-			.build();
-
-		return issueRepository.save(story);
-	}
-
-	public Bug createBug(
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt
-	) {
-		Bug bug = Bug.builder()
-			.workspace(workspace)
-			.title(title)
-			.content("bug content")
-			.priority(priority)
-			.dueAt(dueAt)
-			.reproducingSteps("bug reproduce steps")
-			.severity(BugSeverity.MAJOR)
-			.build();
-
-		return issueRepository.save(bug);
-	}
-
-	public Task createTask(
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt
-	) {
-		Task task = Task.builder()
-			.workspace(workspace)
-			.title(title)
-			.content("task content")
-			.priority(priority)
-			.dueAt(dueAt)
-			.build();
-
-		return issueRepository.save(task);
-	}
-
-	public SubTask createSubTask(
-		Workspace workspace,
-		String title,
-		IssuePriority priority,
-		LocalDateTime dueAt
-	) {
-		SubTask subTask = SubTask.builder()
-			.workspace(workspace)
-			.title(title)
-			.content("sub task content")
-			.priority(priority)
-			.dueAt(dueAt)
-			.build();
-
-		return issueRepository.save(subTask);
-	}
+	// public Epic createEpic(
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt
+	// ) {
+	// 	Epic epic = Epic.builder()
+	// 		.workspace(workspace)
+	// 		.title(title)
+	// 		.content("epic content")
+	// 		.priority(priority)
+	// 		.dueAt(dueAt)
+	// 		.businessGoal("business goal")
+	// 		.build();
+	//
+	// 	return issueRepository.save(epic);
+	// }
+	//
+	// public Story createStory(
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt
+	// ) {
+	// 	Story story = Story.builder()
+	// 		.workspace(workspace)
+	// 		.title(title)
+	// 		.content("story content")
+	// 		.priority(priority)
+	// 		.dueAt(dueAt)
+	// 		.userStory("user story")
+	// 		.acceptanceCriteria("acceptance criteria")
+	// 		.build();
+	//
+	// 	return issueRepository.save(story);
+	// }
+	//
+	// public Bug createBug(
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt
+	// ) {
+	// 	Bug bug = Bug.builder()
+	// 		.workspace(workspace)
+	// 		.title(title)
+	// 		.content("bug content")
+	// 		.priority(priority)
+	// 		.dueAt(dueAt)
+	// 		.reproducingSteps("bug reproduce steps")
+	// 		.severity(BugSeverity.MAJOR)
+	// 		.build();
+	//
+	// 	return issueRepository.save(bug);
+	// }
+	//
+	// public Task createTask(
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt
+	// ) {
+	// 	Task task = Task.builder()
+	// 		.workspace(workspace)
+	// 		.title(title)
+	// 		.content("task content")
+	// 		.priority(priority)
+	// 		.dueAt(dueAt)
+	// 		.build();
+	//
+	// 	return issueRepository.save(task);
+	// }
+	//
+	// public SubTask createSubTask(
+	// 	Workspace workspace,
+	// 	String title,
+	// 	IssuePriority priority,
+	// 	LocalDateTime dueAt
+	// ) {
+	// 	SubTask subTask = SubTask.builder()
+	// 		.workspace(workspace)
+	// 		.title(title)
+	// 		.content("sub task content")
+	// 		.priority(priority)
+	// 		.dueAt(dueAt)
+	// 		.build();
+	//
+	// 	return issueRepository.save(subTask);
+	// }
 
 	public List<IssueAssignee> addIssueAssignees(
 		Issue issue,
