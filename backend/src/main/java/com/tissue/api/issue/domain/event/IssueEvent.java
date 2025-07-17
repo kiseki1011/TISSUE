@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
@@ -30,7 +29,7 @@ public abstract class IssueEvent implements DomainEvent {
 	private final String workspaceCode;
 	private final Long issueId;
 	private final String issueKey;
-	private final IssueType issueType;
+	// private final IssueType issueType;
 	private final Long actorMemberId;
 
 	@Override

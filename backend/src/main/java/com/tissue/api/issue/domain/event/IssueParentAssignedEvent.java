@@ -1,7 +1,6 @@
 package com.tissue.api.issue.domain.event;
 
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 
@@ -13,29 +12,28 @@ public class IssueParentAssignedEvent extends IssueEvent {
 	// 부모 이슈 정보
 	private final Long parentIssueId;
 	private final String parentIssueKey;
-	private final IssueType parentIssueType;
+	// private final IssueType parentIssueType;
 
 	// 이전 부모 이슈 정보 (있는 경우)
 	private final Long oldParentIssueId;
 	private final String oldParentIssueKey;
-	private final IssueType oldParentIssueType;
+	// private final IssueType oldParentIssueType;
 
-	// 이슈의 현재 스토리 포인트 (Epic 스토리 포인트 계산용)
-	private final Integer storyPoint;
+	// // 이슈의 현재 스토리 포인트 (Epic 스토리 포인트 계산용)
+	// private final Integer storyPoint;
 
 	private IssueParentAssignedEvent(
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
-		IssueType issueType,
+		// IssueType issueType,
 		Long actorMemberId,
 		Long parentIssueId,
 		String parentIssueKey,
-		IssueType parentIssueType,
+		// IssueType parentIssueType,
 		Long oldParentIssueId,
-		String oldParentIssueKey,
-		IssueType oldParentIssueType,
-		Integer storyPoint
+		String oldParentIssueKey
+		// IssueType oldParentIssueType
 	) {
 		super(
 			NotificationType.ISSUE_PARENT_ASSIGNED,
@@ -43,16 +41,15 @@ public class IssueParentAssignedEvent extends IssueEvent {
 			workspaceCode,
 			issueId,
 			issueKey,
-			issueType,
+			// issueType,
 			actorMemberId
 		);
 		this.parentIssueId = parentIssueId;
 		this.parentIssueKey = parentIssueKey;
-		this.parentIssueType = parentIssueType;
+		// this.parentIssueType = parentIssueType;
 		this.oldParentIssueId = oldParentIssueId;
 		this.oldParentIssueKey = oldParentIssueKey;
-		this.oldParentIssueType = oldParentIssueType;
-		this.storyPoint = storyPoint;
+		// this.oldParentIssueType = oldParentIssueType;
 	}
 
 	/**
@@ -74,29 +71,29 @@ public class IssueParentAssignedEvent extends IssueEvent {
 			childIssue.getId(),
 			childIssue.getIssueKey(),
 			childIssue.getWorkspaceCode(),
-			childIssue.getType(),
+			// childIssue.getType(),
 			actorMemberId,
 			parentIssue.getId(),
 			parentIssue.getIssueKey(),
-			parentIssue.getType(),
+			// parentIssue.getType(),
 			oldParentIssue != null ? oldParentIssue.getId() : null,
-			oldParentIssue != null ? oldParentIssue.getIssueKey() : null,
-			oldParentIssue != null ? oldParentIssue.getType() : null,
-			childIssue.getStoryPoint()
+			oldParentIssue != null ? oldParentIssue.getIssueKey() : null
+			// oldParentIssue != null ? oldParentIssue.getType() : null,
+			// childIssue.getStoryPoint()
 		);
 	}
 
 	/**
 	 * 새 부모 이슈가 Epic인지 확인한다
 	 */
-	public boolean isNewParentEpic() {
-		return parentIssueType == IssueType.EPIC;
-	}
+	// public boolean isNewParentEpic() {
+	// 	return parentIssueType == IssueType.EPIC;
+	// }
 
 	/**
 	 * 이전 부모 이슈가 Epic인지 확인한다
 	 */
-	public boolean wasOldParentEpic() {
-		return oldParentIssueType == IssueType.EPIC;
-	}
+	// public boolean wasOldParentEpic() {
+	// 	return oldParentIssueType == IssueType.EPIC;
+	// }
 }

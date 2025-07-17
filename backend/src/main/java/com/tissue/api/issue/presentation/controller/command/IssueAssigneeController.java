@@ -22,6 +22,7 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+// TODO: Move to IssueAssociateController
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}/assignees")

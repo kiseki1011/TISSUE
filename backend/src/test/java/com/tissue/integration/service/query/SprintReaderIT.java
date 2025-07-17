@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.workspace.domain.model.Workspace;

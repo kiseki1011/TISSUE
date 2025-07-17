@@ -15,10 +15,7 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
-import com.tissue.api.issue.presentation.controller.dto.request.create.CreateEpicRequest;
-import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
-import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.support.helper.ControllerTestHelper;
 

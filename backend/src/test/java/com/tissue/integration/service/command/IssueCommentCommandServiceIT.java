@@ -9,16 +9,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.comment.domain.model.Comment;
 import com.tissue.api.comment.domain.model.IssueComment;
-import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;

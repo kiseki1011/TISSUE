@@ -17,8 +17,6 @@ import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.issue.domain.model.IssueReviewer;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.domain.model.enums.ReviewStatus;

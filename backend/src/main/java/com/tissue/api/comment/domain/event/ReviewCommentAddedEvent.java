@@ -2,7 +2,6 @@ package com.tissue.api.comment.domain.event;
 
 import com.tissue.api.comment.domain.model.ReviewComment;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
@@ -19,7 +18,7 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
-		IssueType issueType,
+		// IssueType issueType,
 		Long actorMemberId,
 		Long reviewId,
 		Long commentId
@@ -30,7 +29,7 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 			workspaceCode,
 			issueId,
 			issueKey,
-			issueType,
+			// issueType,
 			actorMemberId,
 			commentId
 		);
@@ -48,7 +47,7 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
-			issue.getType(),
+			// issue.getType(),
 			actorMemberId,
 			review.getId(),
 			comment.getId()

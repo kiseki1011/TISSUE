@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 
 import lombok.Builder;
 
@@ -13,9 +11,9 @@ import lombok.Builder;
 public record SprintIssueDetail(
 	Long issueId,
 	String issueKey,
-	IssueType type,
+	// IssueType type,
 	String title,
-	IssueStatus status,
+	// IssueStatus status,
 	IssuePriority priority,
 	LocalDateTime createdAt,
 	Long createdBy
@@ -24,9 +22,9 @@ public record SprintIssueDetail(
 		return SprintIssueDetail.builder()
 			.issueId(issue.getId())
 			.issueKey(issue.getIssueKey())
-			.type(issue.getType())
+			// .type(issue.getType())
 			.title(issue.getTitle())
-			.status(issue.getStatus())
+			// .status(issue.getStatus())
 			.priority(issue.getPriority())
 			.createdAt(issue.getCreatedDate())
 			.createdBy(issue.getCreatedBy())

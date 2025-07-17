@@ -1,4 +1,4 @@
-package com.tissue.integration.service.command;
+package com.tissue.api.issue.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -14,12 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.create.CommonIssueCreateFields;
-import com.tissue.api.issue.presentation.controller.dto.request.create.CreateTaskRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.update.CommonIssueUpdateFields;
-import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateStoryRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;

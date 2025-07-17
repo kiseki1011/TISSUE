@@ -1,4 +1,4 @@
-package com.tissue.integration.service.command;
+package com.tissue.api.issue.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -15,8 +15,6 @@ import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.presentation.controller.dto.request.AddReviewerRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveReviewerRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;

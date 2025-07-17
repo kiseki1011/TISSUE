@@ -1,7 +1,6 @@
 package com.tissue.api.issue.domain.event;
 
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 
@@ -13,21 +12,21 @@ public class IssueParentRemovedEvent extends IssueEvent {
 	// 제거된 부모 이슈 정보
 	private final Long removedParentIssueId;
 	private final String removedParentIssueKey;
-	private final IssueType removedParentIssueType;
+	// private final IssueType removedParentIssueType;
 
 	// 자식 이슈의 스토리 포인트 (Epic 스토리 포인트 계산용)
-	private final Integer storyPoint;
+	// private final Integer storyPoint;
 
 	private IssueParentRemovedEvent(
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
-		IssueType issueType,
+		// IssueType issueType,
 		Long actorMemberId,
 		Long removedParentIssueId,
-		String removedParentIssueKey,
-		IssueType removedParentIssueType,
-		Integer storyPoint
+		String removedParentIssueKey
+		// IssueType removedParentIssueType,
+		// Integer storyPoint
 	) {
 		super(
 			NotificationType.ISSUE_PARENT_REMOVED,
@@ -35,13 +34,13 @@ public class IssueParentRemovedEvent extends IssueEvent {
 			workspaceCode,
 			issueId,
 			issueKey,
-			issueType,
+			// issueType,
 			actorMemberId
 		);
 		this.removedParentIssueId = removedParentIssueId;
 		this.removedParentIssueKey = removedParentIssueKey;
-		this.removedParentIssueType = removedParentIssueType;
-		this.storyPoint = storyPoint;
+		// this.removedParentIssueType = removedParentIssueType;
+		// this.storyPoint = storyPoint;
 	}
 
 	/**
@@ -61,19 +60,19 @@ public class IssueParentRemovedEvent extends IssueEvent {
 			childIssue.getId(),
 			childIssue.getIssueKey(),
 			childIssue.getWorkspaceCode(),
-			childIssue.getType(),
+			// childIssue.getType(),
 			actorMemberId,
 			removedParentIssue.getId(),
-			removedParentIssue.getIssueKey(),
-			removedParentIssue.getType(),
-			childIssue.getStoryPoint()
+			removedParentIssue.getIssueKey()
+			// removedParentIssue.getType(),
+			// childIssue.getStoryPoint()
 		);
 	}
 
 	/**
 	 * 제거된 부모 이슈가 Epic인지 확인한다
 	 */
-	public boolean wasRemovedParentEpic() {
-		return removedParentIssueType == IssueType.EPIC;
-	}
+	// public boolean wasRemovedParentEpic() {
+	// 	return removedParentIssueType == IssueType.EPIC;
+	// }
 }

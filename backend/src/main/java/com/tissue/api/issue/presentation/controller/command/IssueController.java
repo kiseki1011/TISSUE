@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.application.service.command.IssueCommandService;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
-import com.tissue.api.issue.presentation.controller.dto.request.UpdateIssueStatusRequest;
-import com.tissue.api.issue.presentation.controller.dto.request.create.CreateIssueRequest;
-import com.tissue.api.issue.presentation.controller.dto.request.update.UpdateIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -47,41 +44,41 @@ public class IssueController {
 		return ApiResponse.created("Issue created.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping("/{issueKey}/status")
-	public ApiResponse<IssueResponse> updateIssueStatus(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid UpdateIssueStatusRequest request
-	) {
-		IssueResponse response = issueCommandService.updateIssueStatus(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId(),
-			request
-		);
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{issueKey}/status")
+	// public ApiResponse<IssueResponse> updateIssueStatus(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateIssueStatusRequest request
+	// ) {
+	// 	IssueResponse response = issueCommandService.updateIssueStatus(
+	// 		workspaceCode,
+	// 		issueKey,
+	// 		userDetails.getMemberId(),
+	// 		request
+	// 	);
+	//
+	// 	return ApiResponse.ok("Issue status updated.", response);
+	// }
 
-		return ApiResponse.ok("Issue status updated.", response);
-	}
-
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping("/{issueKey}")
-	public ApiResponse<IssueResponse> updateIssueDetail(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid UpdateIssueRequest request
-	) {
-		IssueResponse response = issueCommandService.updateIssue(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId(),
-			request
-		);
-
-		return ApiResponse.ok("Issue details updated.", response);
-	}
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{issueKey}")
+	// public ApiResponse<IssueResponse> updateIssueDetail(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateIssueRequest request
+	// ) {
+	// 	IssueResponse response = issueCommandService.updateIssue(
+	// 		workspaceCode,
+	// 		issueKey,
+	// 		userDetails.getMemberId(),
+	// 		request
+	// 	);
+	//
+	// 	return ApiResponse.ok("Issue details updated.", response);
+	// }
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")

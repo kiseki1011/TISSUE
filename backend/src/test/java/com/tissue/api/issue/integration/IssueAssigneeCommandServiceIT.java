@@ -1,4 +1,4 @@
-package com.tissue.integration.service.command;
+package com.tissue.api.issue.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.RemoveAssigneeRequest;

@@ -13,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.presentation.controller.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.AddReviewerRequest;
 import com.tissue.api.member.domain.model.Member;

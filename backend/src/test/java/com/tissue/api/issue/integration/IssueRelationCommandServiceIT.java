@@ -1,4 +1,4 @@
-package com.tissue.integration.service.command;
+package com.tissue.api.issue.integration;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -15,7 +15,6 @@ import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueRelation;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
 import com.tissue.api.issue.domain.model.enums.IssueRelationType;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueRelationResponse;
 import com.tissue.api.member.domain.model.Member;

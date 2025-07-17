@@ -11,12 +11,12 @@ import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: Move to IssueAssociateService
 @Service
 @RequiredArgsConstructor
 public class IssueAssigneeCommandService {
@@ -67,9 +67,9 @@ public class IssueAssigneeCommandService {
 			workspaceCode
 		);
 
-		if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
-			issue.validateIsAssignee(requesterMemberId);
-		}
+		// if (requester.roleIsLowerThan(WorkspaceRole.MANAGER)) {
+		// 	issue.validateIsAssignee(requesterMemberId);
+		// }
 
 		issue.removeAssignee(assignee);
 

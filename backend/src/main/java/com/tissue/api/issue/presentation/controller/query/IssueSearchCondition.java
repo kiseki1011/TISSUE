@@ -4,25 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.enums.IssueStatus;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 
 import jakarta.validation.constraints.Size;
 
 public record IssueSearchCondition(
-	List<IssueStatus> statuses,
-	List<IssueType> types,
+	// List<IssueStatus> statuses,
+	// List<IssueType> types,
 	List<IssuePriority> priorities,
 	@Size(min = 2, message = "{valid.size.keyword}")
 	String keyword
 ) {
 	public IssueSearchCondition {
-		if (statuses == null || statuses.isEmpty()) {
-			statuses = List.of(IssueStatus.TODO, IssueStatus.IN_PROGRESS);
-		}
-		if (types == null) {
-			types = new ArrayList<>();
-		}
+		// if (statuses == null || statuses.isEmpty()) {
+		// 	statuses = List.of(IssueStatus.TODO, IssueStatus.IN_PROGRESS);
+		// }
+		// if (types == null) {
+		// 	types = new ArrayList<>();
+		// }
 		if (priorities == null) {
 			priorities = new ArrayList<>();
 		}
@@ -34,8 +32,8 @@ public record IssueSearchCondition(
 
 	public IssueSearchCondition() {
 		this(
-			List.of(IssueStatus.TODO, IssueStatus.IN_PROGRESS),
-			new ArrayList<>(),
+			// List.of(IssueStatus.TODO, IssueStatus.IN_PROGRESS),
+			// new ArrayList<>(),
 			new ArrayList<>(),
 			null
 		);

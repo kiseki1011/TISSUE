@@ -1,7 +1,6 @@
 package com.tissue.api.issue.domain.event;
 
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssueType;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 
@@ -14,7 +13,7 @@ public class IssueReviewRequestedEvent extends IssueEvent {
 		Long issueId,
 		String issueKey,
 		String workspaceCode,
-		IssueType issueType,
+		// IssueType issueType,
 		Long actorMemberId
 	) {
 		super(
@@ -23,7 +22,7 @@ public class IssueReviewRequestedEvent extends IssueEvent {
 			workspaceCode,
 			issueId,
 			issueKey,
-			issueType,
+			// issueType,
 			actorMemberId
 		);
 	}
@@ -36,7 +35,7 @@ public class IssueReviewRequestedEvent extends IssueEvent {
 			issue.getId(),
 			issue.getIssueKey(),
 			issue.getWorkspaceCode(),
-			issue.getType(),
+			// issue.getType(),
 			actorMemberId
 		);
 	}

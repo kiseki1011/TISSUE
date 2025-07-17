@@ -18,7 +18,6 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.types.Story;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.SprintIssue;
