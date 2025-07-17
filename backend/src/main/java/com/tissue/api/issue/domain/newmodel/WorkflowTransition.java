@@ -33,5 +33,8 @@ public class WorkflowTransition {
 	@Column(nullable = false)
 	private String event; // SSM 전이 트리거 이벤트, ex: "START_PROGRESS", "MARK_DONE"
 
+	@Column(nullable = false)
+	private String label; // 사용자용 UI 라벨
+
 	// private String guardKey;   // ex: "REQUIRES_APPROVAL", "NOT_BLOCKED"
 }

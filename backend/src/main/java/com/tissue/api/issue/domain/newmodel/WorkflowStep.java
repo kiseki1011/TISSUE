@@ -28,7 +28,7 @@ public class WorkflowStep {
 	private String name; // SSM 내부용, ex: "TODO", "IN_PROGRESS"
 
 	@Column(nullable = false)
-	private String label; // 사용자용 UI 라벨, 국제화를 위해 message.properties 사용?
+	private String label; // 사용자용 UI 라벨
 
 	private boolean isFinal;
 
