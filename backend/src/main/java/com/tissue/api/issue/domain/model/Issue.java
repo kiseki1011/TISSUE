@@ -20,7 +20,6 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,8 +27,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -43,12 +40,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "type")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Issue extends BaseEntity {
+public class Issue extends BaseEntity {
 
-	// TODO: consider not hard coding the value
+	// TODO: consider not hard coding the value(read from application.yml?)
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
@@ -117,6 +112,7 @@ public abstract class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueTypeDefinition issueType;
 
+	// TODO: should i change the name to currentStatus? or currentState?
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
