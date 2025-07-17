@@ -1,10 +1,13 @@
 package com.tissue.api.issue.domain.newmodel;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.issue.domain.model.enums.HierarchyLevel;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,6 +36,10 @@ public class IssueTypeDefinition extends BaseEntity {
 	private String color;
 
 	private boolean systemType; // true = built-in default types
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private HierarchyLevel hierarchyLevel;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
