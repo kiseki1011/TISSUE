@@ -15,29 +15,41 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Have I set the UniqueConstraint properly?
+//  A WorkflowDefinition must be unique for each Workspace by label.
 @Entity
 @Getter
-// @EqualsAndHashCode(of = {"name", "issueType", "workspace"}, callSuper = false)
+@Table(uniqueConstraints = {
+	@UniqueConstraint(columnNames = {"workspace_id", "label"})
+})
+@EqualsAndHashCode(of = {"workspace", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowDefinition extends BaseEntity {
-
-	// TODO: EqualsAndHashCode를 name, issueType(IssueTypeDefinition 필드), workspace 기준으로 적용?
-	// TODO: UniqueConstraint를 name, issueType(IssueTypeDefinition 필드), workspace 기준으로 적용?
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private String name;
-
+	// TODO: Should I also add a workspaceCode field for usability?
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
 
+	@Column(nullable = false)
+	private String key; // ex: DEFAULT_AGILE_WORKFLOW, CUSTOM_WORKFLOW_1...
+
+	@Column(nullable = false)
+	private String label; // UI label
+
+	// TODO: Is using a bi-directional relationship good for WorkflowDefinition <-> WorkflowStep, WorkflowTransition?
+	//  Or should I change these to a uni-directional relation?
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkflowStep> steps = new ArrayList<>();
 
@@ -46,6 +58,43 @@ public class WorkflowDefinition extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep initialStep;
+
+	@Builder
+	public WorkflowDefinition(Workspace workspace, String key, String label) {
+		this.workspace = workspace;
+		this.key = key;
+		this.label = label;
+	}
+
+	public void addStep(WorkflowStep step) {
+		steps.add(step);
+		step.setWorkflow(this);
+
+		if (step.isInitialStep()) {
+			updateInitialStep(step);
+		}
+	}
+
+	public void addTransition(WorkflowTransition transition) {
+		transitions.add(transition);
+		transition.setWorkflow(this);
+	}
+
+	public void updateKey(String key) {
+		this.key = key;
+	}
+
+	public void updateLabel(String label) {
+		this.label = label;
+	}
+
+	// TODO: Should i move the conditional statement to this method from addStep?
+	public void updateInitialStep(WorkflowStep initialStep) {
+		// if (initialStep.isInitialStep()) {
+		// 	updateInitialStep(initialStep);
+		// }
+		this.initialStep = initialStep;
+	}
 
 	public List<WorkflowStep> getFinalSteps() {
 		return steps.stream()

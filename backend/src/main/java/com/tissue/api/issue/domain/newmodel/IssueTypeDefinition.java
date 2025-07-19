@@ -1,6 +1,7 @@
 package com.tissue.api.issue.domain.newmodel;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.domain.model.enums.HierarchyLevel;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -13,13 +14,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Have I set the UniqueConstraint properly?
+//  A IssueTypeDefinition must be unique for each Workspace by label.
 @Entity
 @Getter
-// @EqualsAndHashCode(of = {"name", "workspace"}, callSuper = false)
+@Table(uniqueConstraints = {
+	@UniqueConstraint(columnNames = {"workspace_id", "label"})
+})
+@EqualsAndHashCode(of = {"workspace", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueTypeDefinition extends BaseEntity {
 
@@ -27,14 +37,24 @@ public class IssueTypeDefinition extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
-	private String name; // e.g., "Epic", "Bug", "CustomType1"
-
-	private String icon;
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Workspace workspace;
 
 	@Column(nullable = false)
-	private String color;
+	private String key; // ex: "EPIC", "BUG", "CUSTOM_TYPE_1"
 
+	// TODO: Consider using a util that transforms the UI label to name
+	//  - ex: test -> TEST, sub task -> SUB_TASK
+	@Column(nullable = false)
+	private String label; // UI label
+
+	// private String icon;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ColorType color;
+
+	@Column(nullable = false)
 	private boolean systemType; // true = built-in default types
 
 	@Enumerated(EnumType.STRING)
@@ -42,10 +62,46 @@ public class IssueTypeDefinition extends BaseEntity {
 	private HierarchyLevel hierarchyLevel;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private Workspace workspace;
-
-	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowDefinition workflow;
 
-	private boolean isCustom; // true = uses dynamic fields
+	@Builder
+	public IssueTypeDefinition(Workspace workspace, String key, String label, ColorType color,
+		boolean systemType, HierarchyLevel hierarchyLevel, WorkflowDefinition workflow) {
+		this.workspace = workspace;
+		this.key = key;
+		this.label = label;
+
+		// TODO: Should i set color as a random color if the value is null?
+		this.color = color;
+
+		// TODO: Should i set systemType as false if the value is null?
+		this.systemType = systemType;
+		this.hierarchyLevel = hierarchyLevel;
+		this.workflow = workflow;
+	}
+
+	public void updateKey(String key) {
+		this.key = key;
+	}
+
+	public void updateLabel(String label) {
+		this.label = label;
+	}
+
+	public void updateColor(ColorType color) {
+		this.color = color;
+	}
+
+	public void setSystemType(boolean systemType) {
+		this.systemType = systemType;
+	}
+
+	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
+		this.hierarchyLevel = hierarchyLevel;
+	}
+
+	public void setWorkflow(WorkflowDefinition workflow) {
+		this.workflow = workflow;
+	}
 }
+
