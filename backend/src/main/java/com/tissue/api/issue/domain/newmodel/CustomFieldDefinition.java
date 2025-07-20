@@ -1,6 +1,7 @@
 package com.tissue.api.issue.domain.newmodel;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.issue.domain.model.enums.FieldType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
