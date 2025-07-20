@@ -43,8 +43,6 @@ public class IssueTypeDefinition extends BaseEntity {
 	@Column(nullable = false)
 	private String key; // ex: "EPIC", "BUG", "CUSTOM_TYPE_1"
 
-	// TODO: Consider using a util that transforms the UI label to name
-	//  - ex: test -> TEST, sub task -> SUB_TASK
 	@Column(nullable = false)
 	private String label; // UI label
 
@@ -65,19 +63,22 @@ public class IssueTypeDefinition extends BaseEntity {
 	private WorkflowDefinition workflow;
 
 	@Builder
-	public IssueTypeDefinition(Workspace workspace, String key, String label, ColorType color,
-		boolean systemType, HierarchyLevel hierarchyLevel, WorkflowDefinition workflow) {
+	public IssueTypeDefinition(
+		Workspace workspace,
+		String key,
+		String label,
+		ColorType color,
+		HierarchyLevel hierarchyLevel,
+		WorkflowDefinition workflow
+	) {
 		this.workspace = workspace;
 		this.key = key;
 		this.label = label;
-
-		// TODO: Should i set color as a random color if the value is null?
-		this.color = color;
-
-		// TODO: Should i set systemType as false if the value is null?
-		this.systemType = systemType;
+		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
 		this.workflow = workflow;
+
+		this.systemType = false;
 	}
 
 	public void updateKey(String key) {

@@ -40,13 +40,15 @@ public class CustomFieldDefinition extends BaseEntity {
 	@Column(nullable = false)
 	private String label; // UI label
 
-	private String description;
-
 	@Column(nullable = false)
+	private String description = "";
+
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private FieldType fieldType; // TEXT, NUMBER, DATE, ENUM, etc.
 
-	private boolean required;
+	@Column(nullable = false)
+	private boolean required = false;
 
 	// TODO: Should I use a bi-directional relation with IssueTypeDefinition?
 	// TODO: Is @JoinColumn needed or recommended?
@@ -54,15 +56,19 @@ public class CustomFieldDefinition extends BaseEntity {
 	private IssueTypeDefinition issueType;
 
 	@Builder
-	public CustomFieldDefinition(String key, String label, String description,
-		FieldType fieldType, boolean required, IssueTypeDefinition issueType
+	public CustomFieldDefinition(
+		String key,
+		String label,
+		String description,
+		FieldType fieldType,
+		Boolean required,
+		IssueTypeDefinition issueType
 	) {
 		this.key = key;
 		this.label = label;
-		this.description = description;
+		this.description = (description != null) ? description : "";
 		this.fieldType = fieldType;
-		// TODO: Should i set the default value as false if value is null?
-		this.required = required;
+		this.required = (required != null) ? required : false;
 		this.issueType = issueType;
 	}
 
@@ -75,7 +81,7 @@ public class CustomFieldDefinition extends BaseEntity {
 	}
 
 	public void updateDescription(String description) {
-		this.description = description;
+		this.description = (description == null) ? "" : description;
 	}
 
 	public void updateFieldType(FieldType fieldType) {

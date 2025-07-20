@@ -88,12 +88,19 @@ public class WorkflowDefinition extends BaseEntity {
 		this.label = label;
 	}
 
-	// TODO: Should i move the conditional statement to this method from addStep?
-	public void updateInitialStep(WorkflowStep initialStep) {
-		// if (initialStep.isInitialStep()) {
-		// 	updateInitialStep(initialStep);
+	public void updateInitialStep(WorkflowStep newInitialStep) {
+		// TODO: I'll probably validate the newInitialStep at service anyway,
+		//  Is defensive programming needed?
+		// if (!steps.contains(newInitialStep)) {
+		// 	throw new InvalidOperationException("The step must be part of this workflow.");
 		// }
-		this.initialStep = initialStep;
+
+		for (WorkflowStep step : steps) {
+			step.setInitial(false);
+		}
+
+		newInitialStep.setInitial(true);
+		this.initialStep = newInitialStep;
 	}
 
 	public List<WorkflowStep> getFinalSteps() {

@@ -36,15 +36,15 @@ public class WorkflowStep {
 	private WorkflowDefinition workflow;
 
 	@Column(nullable = false)
-	private String key; // used for SSM, ex: "TODO", "IN_PROGRESS"
+	private String key; // used for SSM
 
-	// TODO: consider using a util that transforms the UI label to name
-	//  - ex: in progress -> IN_PROGRESS, in review -> IN_REVIEW
 	@Column(nullable = false)
 	private String label; // UI label
 
-	// TODO: I understand why isFinal is needed, but is isInitial needed too?
+	@Column(nullable = false)
 	private boolean isInitial;
+
+	@Column(nullable = false)
 	private boolean isFinal;
 
 	// TODO: consider adding fields for color, icons, etc...
@@ -54,32 +54,28 @@ public class WorkflowStep {
 		WorkflowDefinition workflow,
 		String key,
 		String label,
-		boolean isInitial,
-		boolean isFinal
+		Boolean isInitial,
+		Boolean isFinal
 	) {
 		this.workflow = workflow;
 		this.key = key;
 		this.label = label;
-		// TODO: should I set isInitial, isFinal as false if value is null?
-		this.isInitial = isInitial;
-		this.isFinal = isFinal;
+		this.isInitial = isInitial != null ? isInitial : false;
+		this.isFinal = isFinal != null ? isFinal : false;
 	}
 
 	public void setWorkflow(WorkflowDefinition workflow) {
 		this.workflow = workflow;
 	}
 
-	public void setIsInitial(boolean isInitial) {
+	// TODO: Dont i need to make the original initial step's "isInitial" value to false?
+	public void setInitial(boolean isInitial) {
 		this.isInitial = isInitial;
 	}
 
-	public void setIsFinal(boolean isFinal) {
+	public void setFinal(boolean isFinal) {
 		this.isFinal = isFinal;
 	}
-
-	// public void updateKey(String key) {
-	// 	this.key = key;
-	// }
 
 	public void updateLabel(String label) {
 		this.label = label;
