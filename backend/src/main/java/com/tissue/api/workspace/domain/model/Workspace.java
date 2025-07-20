@@ -28,18 +28,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
 
-	// Todo: use optimistic locking if needed
+	// Todo: Consider use optimistic locking if needed
 	// @Version
 	// private Long version;
 
+	// TODO: Should i consider using value from application.yml?
 	private static final int MAX_MEMBER_COUNT = 500;
 	private static final String DEFAULT_KEY_PREFIX = "ISSUE";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "WORKSPACE_ID")
+	@Column(name = "workspace_id")
 	private Long id;
 
+	// TODO: Should I use UniqueConstraint instead of "unique = true"?
 	@Column(unique = true, nullable = false)
 	private String code;
 
@@ -50,7 +52,7 @@ public class Workspace extends BaseEntity {
 
 	private String password;
 
-	// TODO: should i just count it every time i need it and not add the memberCount field?
+	// TODO: Should I just count it every time I need it instead of using the memberCount field?
 	@Column(nullable = false)
 	private int memberCount = 0;
 
@@ -112,8 +114,8 @@ public class Workspace extends BaseEntity {
 
 	/*
 	 * Todo
-	 *  - is this Workspace's responsibility
-	 *  - should this be done by Issue using "workspace.getKeyPrefix + workspace.getNextIssueNumber"?
+	 *  - Is this Workspace's responsibility?
+	 *  - Should this be Issue's responsibility, using "workspace.getKeyPrefix + workspace.getNextIssueNumber"?
 	 */
 	public String getIssueKey() {
 		return String.format("%s-%d", issueKeyPrefix, nextIssueNumber);

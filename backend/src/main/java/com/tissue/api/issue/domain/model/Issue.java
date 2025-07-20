@@ -31,19 +31,25 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Have I set the UniqueConstraint properly?
 @Entity
 @Getter
+@Table(uniqueConstraints = {
+	@UniqueConstraint(columnNames = {"workspaceCode", "issueKey"})
+})
 @EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	// TODO: consider not hard coding the value(read from application.yml?)
+	// TODO: should i consider reading the value from application.yml?
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
@@ -51,14 +57,15 @@ public class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	// issue key must be unique for each workspace
+	@Column(nullable = false)
 	private String issueKey;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
+	@Column(nullable = false)
 	private String workspaceCode;
 
 	@Column(nullable = false)
@@ -84,7 +91,7 @@ public class Issue extends BaseEntity {
 	private Integer storyPoint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "PARENT_ISSUE_ID")
+	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
 	@OneToMany(mappedBy = "parentIssue")
@@ -103,7 +110,7 @@ public class Issue extends BaseEntity {
 	private Set<IssueAssignee> assignees = new HashSet<>();
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "ISSUE_ID")
+	@JoinColumn(name = "issue_id")
 	private Set<IssueWatcher> watchers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue")
@@ -112,10 +119,10 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueTypeDefinition issueType;
 
-	// TODO: should i change the name to currentStatus? or currentState?
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
+	// TODO: Is this is a acceptable code? How exactly does this work?
 	// Store dynamic fields in JSON
 	@Column(columnDefinition = "json")
 	@Convert(converter = JsonMapConverter.class)
@@ -137,6 +144,11 @@ public class Issue extends BaseEntity {
 
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
+
+		// TODO: Should I use a uni-directional jpa relation between Workspace and Issue,
+		//  instead of a bi-directional relation?
+		// TODO: If using uni-directional relation, how should I be able to retrieve issues that belong to
+		//  a specific workspace?
 		workspace.getIssues().add(this);
 
 		this.title = title;
@@ -193,6 +205,8 @@ public class Issue extends BaseEntity {
 	public void validateCanRemoveParent() {
 	}
 
+	// TODO: How should I define the logic to automatically update the timestamps
+	//  when the currentStep is a finishing step?
 	// private void updateTimestamps(WorkflowStep newStep) {
 	// }
 
@@ -349,6 +363,9 @@ public class Issue extends BaseEntity {
 			);
 	}
 
+	// TODO: IssueRelation related codes need to be modified after implementing
+	//  custom IssueTypeDefinition, WorkflowDefinition, etc...
+	//  Lets do this later.
 	// private void validateBlockingIssuesAreDone() {
 	// 	List<com.tissue.api.issue.domain.newmodel.Issue> blockingIssues = incomingRelations.stream()
 	// 		.filter(relation -> relation.getRelationType() == IssueRelationType.BLOCKED_BY)

@@ -15,7 +15,8 @@ public class JsonMapConverter implements AttributeConverter<Map<String, Object>,
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	// TODO: improve RuntimeException throwing logic(catch logic)
+	// TODO: Improve throwing logic(catch logic)
+	//  Should throw a more well defined custom exception.
 	@Override
 	public String convertToDatabaseColumn(Map<String, Object> attribute) {
 		try {
