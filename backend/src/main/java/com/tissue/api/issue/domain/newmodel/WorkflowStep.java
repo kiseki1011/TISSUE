@@ -16,8 +16,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Have I set the UniqueConstraint properly?
-//  A WorkflowStep must be unique for each WorkflowDefinition by label.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -36,10 +34,10 @@ public class WorkflowStep {
 	private WorkflowDefinition workflow;
 
 	@Column(nullable = false)
-	private String key; // used for SSM
+	private String key;
 
 	@Column(nullable = false)
-	private String label; // UI label
+	private String label;
 
 	@Column(nullable = false)
 	private boolean isInitial;
@@ -68,7 +66,6 @@ public class WorkflowStep {
 		this.workflow = workflow;
 	}
 
-	// TODO: Dont i need to make the original initial step's "isInitial" value to false?
 	public void setInitial(boolean isInitial) {
 		this.isInitial = isInitial;
 	}

@@ -1,7 +1,8 @@
 package com.tissue.api.issue.domain.newmodel;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -23,8 +24,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Have I set the UniqueConstraint properly?
-//  A WorkflowDefinition must be unique for each Workspace by label.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -38,7 +37,6 @@ public class WorkflowDefinition extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// TODO: Should I also add a workspaceCode field for usability?
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
 
@@ -49,15 +47,13 @@ public class WorkflowDefinition extends BaseEntity {
 	private String key;
 
 	@Column(nullable = false)
-	private String label; // UI label
-
-	// TODO: Is using a bi-directional relationship good for WorkflowDefinition <-> WorkflowStep, WorkflowTransition?
-	//  Or should I change these to a uni-directional relation?
-	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkflowStep> steps = new ArrayList<>();
+	private String label;
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkflowTransition> transitions = new ArrayList<>();
+	private Set<WorkflowStep> steps = new HashSet<>();
+
+	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<WorkflowTransition> transitions = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep initialStep;

@@ -16,14 +16,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Have I set the UniqueConstraint properly?
-//  A WorkflowTransition must be unique for each WorkflowDefinition by label or key.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"workflow_id", "label"})
+	@UniqueConstraint(columnNames = {"workflow_id", "source_step_id", "key"})
 })
-@EqualsAndHashCode(of = {"workflow", "label"}, callSuper = false)
+@EqualsAndHashCode(of = {"workflow", "key"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition {
 
@@ -47,10 +45,8 @@ public class WorkflowTransition {
 	@Column(nullable = false)
 	private String key;
 
-	// TODO: Consider using a util that transforms the UI label to name
-	//  - ex: start progress -> START_PROGRESS
 	@Column(nullable = false)
-	private String label; // UI label
+	private String label;
 
 	// private String guardKey;   // ex: "REQUIRES_APPROVAL", "NOT_BLOCKED"
 
