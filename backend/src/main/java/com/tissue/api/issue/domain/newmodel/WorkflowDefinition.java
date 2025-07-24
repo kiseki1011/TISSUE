@@ -43,7 +43,10 @@ public class WorkflowDefinition extends BaseEntity {
 	private Workspace workspace;
 
 	@Column(nullable = false)
-	private String key; // ex: DEFAULT_AGILE_WORKFLOW, CUSTOM_WORKFLOW_1...
+	private String workspaceCode;
+
+	@Column(nullable = false)
+	private String key;
 
 	@Column(nullable = false)
 	private String label; // UI label
@@ -62,6 +65,7 @@ public class WorkflowDefinition extends BaseEntity {
 	@Builder
 	public WorkflowDefinition(Workspace workspace, String key, String label) {
 		this.workspace = workspace;
+		this.workspaceCode = workspace.getCode();
 		this.key = key;
 		this.label = label;
 	}
@@ -80,7 +84,7 @@ public class WorkflowDefinition extends BaseEntity {
 		transition.setWorkflow(this);
 	}
 
-	public void updateKey(String key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 

@@ -81,6 +81,10 @@ public class WorkflowStep {
 		this.label = label;
 	}
 
+	public void setKey(String key) {
+		this.key = key;
+	}
+
 	public boolean isInitialStep() {
 		return isInitial;
 	}

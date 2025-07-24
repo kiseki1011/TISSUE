@@ -17,13 +17,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 // TODO: Have I set the UniqueConstraint properly?
-//  A WorkflowTransition must be unique for each WorkflowDefinition by label.
+//  A WorkflowTransition must be unique for each WorkflowDefinition by label or key.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"workflow_id", "label"})
 })
-@EqualsAndHashCode(of = {"workflow", "label"}, callSuper = false) // see comment on key
+@EqualsAndHashCode(of = {"workflow", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition {
 
@@ -35,16 +35,17 @@ public class WorkflowTransition {
 	@JoinColumn(name = "workflow_id")
 	private WorkflowDefinition workflow;
 
-	// TODO: shouldn't it be OneToOne for fromStep and toStep?
-	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep fromStep;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep toStep;
-
-	// TODO: Should this field be unique globally? Or only by workflow?
 	@Column(nullable = false)
-	private String key; // SSM trigger event name for transition, ex: "START_PROGRESS", "MARK_DONE"
+	private boolean isMainFlow;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private WorkflowStep sourceStep;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private WorkflowStep targetStep;
+
+	@Column(nullable = false)
+	private String key;
 
 	// TODO: Consider using a util that transforms the UI label to name
 	//  - ex: start progress -> START_PROGRESS
@@ -56,14 +57,16 @@ public class WorkflowTransition {
 	@Builder
 	public WorkflowTransition(
 		WorkflowDefinition workflow,
-		WorkflowStep fromStep,
-		WorkflowStep toStep,
+		Boolean isMainFlow,
+		WorkflowStep sourceStep,
+		WorkflowStep targetStep,
 		String key,
 		String label
 	) {
+		this.isMainFlow = isMainFlow;
 		this.workflow = workflow;
-		this.fromStep = fromStep;
-		this.toStep = toStep;
+		this.sourceStep = sourceStep;
+		this.targetStep = targetStep;
 		this.key = key;
 		this.label = label;
 	}
@@ -72,15 +75,20 @@ public class WorkflowTransition {
 		this.workflow = workflow;
 	}
 
-	public void updateFromStep(WorkflowStep fromStep) {
-		this.fromStep = fromStep;
+	public void updateIsMainFlow(boolean isMainFlow) {
+		// TODO: Should i add validation logic so the main flow will maintain a single straight flow?
+		this.isMainFlow = isMainFlow;
 	}
 
-	public void updateToStep(WorkflowStep toStep) {
-		this.toStep = toStep;
+	public void updateSourceStep(WorkflowStep sourceStep) {
+		this.sourceStep = sourceStep;
 	}
 
-	public void updateKey(String key) {
+	public void updateTargetStep(WorkflowStep targetStep) {
+		this.targetStep = targetStep;
+	}
+
+	public void setKey(String key) {
 		this.key = key;
 	}
 
