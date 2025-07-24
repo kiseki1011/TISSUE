@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
@@ -58,12 +59,20 @@ public class WorkflowDefinition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep initialStep;
 
+	private String description;
+
 	@Builder
-	public WorkflowDefinition(Workspace workspace, String key, String label) {
+	public WorkflowDefinition(
+		Workspace workspace,
+		String key,
+		String label,
+		String description
+	) {
 		this.workspace = workspace;
 		this.workspaceCode = workspace.getCode();
 		this.key = key;
 		this.label = label;
+		this.description = description;
 	}
 
 	public void addStep(WorkflowStep step) {
@@ -89,11 +98,9 @@ public class WorkflowDefinition extends BaseEntity {
 	}
 
 	public void updateInitialStep(WorkflowStep newInitialStep) {
-		// TODO: I'll probably validate the newInitialStep at service anyway,
-		//  Is defensive programming needed?
-		// if (!steps.contains(newInitialStep)) {
-		// 	throw new InvalidOperationException("The step must be part of this workflow.");
-		// }
+		if (!steps.contains(newInitialStep)) {
+			throw new InvalidOperationException("The step must be part of this workflow.");
+		}
 
 		for (WorkflowStep step : steps) {
 			step.setInitial(false);
@@ -101,6 +108,10 @@ public class WorkflowDefinition extends BaseEntity {
 
 		newInitialStep.setInitial(true);
 		this.initialStep = newInitialStep;
+	}
+
+	public void updateDescription(String description) {
+		this.description = description;
 	}
 
 	public List<WorkflowStep> getFinalSteps() {

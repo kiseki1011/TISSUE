@@ -48,6 +48,8 @@ public class WorkflowTransition {
 	@Column(nullable = false)
 	private String label;
 
+	private String description;
+
 	// private String guardKey;   // ex: "REQUIRES_APPROVAL", "NOT_BLOCKED"
 
 	@Builder
@@ -57,7 +59,8 @@ public class WorkflowTransition {
 		WorkflowStep sourceStep,
 		WorkflowStep targetStep,
 		String key,
-		String label
+		String label,
+		String description
 	) {
 		this.isMainFlow = isMainFlow;
 		this.workflow = workflow;
@@ -65,6 +68,7 @@ public class WorkflowTransition {
 		this.targetStep = targetStep;
 		this.key = key;
 		this.label = label;
+		this.description = description;
 	}
 
 	public void setWorkflow(WorkflowDefinition workflow) {
@@ -72,7 +76,8 @@ public class WorkflowTransition {
 	}
 
 	public void updateIsMainFlow(boolean isMainFlow) {
-		// TODO: Should i add validation logic so the main flow will maintain a single straight flow?
+		// TODO: Should I add validation logic so the main flow will maintain a single straight flow?
+		//  If I should, where should i perform the validation? In this Entity? or at the application service layer?
 		this.isMainFlow = isMainFlow;
 	}
 
@@ -90,5 +95,9 @@ public class WorkflowTransition {
 
 	public void updateLabel(String label) {
 		this.label = label;
+	}
+
+	public void updateDescription(String description) {
+		this.description = description;
 	}
 }

@@ -45,6 +45,8 @@ public class WorkflowStep {
 	@Column(nullable = false)
 	private boolean isFinal;
 
+	private String description;
+
 	// TODO: consider adding fields for color, icons, etc...
 
 	@Builder
@@ -53,13 +55,15 @@ public class WorkflowStep {
 		String key,
 		String label,
 		Boolean isInitial,
-		Boolean isFinal
+		Boolean isFinal,
+		String description
 	) {
 		this.workflow = workflow;
 		this.key = key;
 		this.label = label;
 		this.isInitial = isInitial != null ? isInitial : false;
 		this.isFinal = isFinal != null ? isFinal : false;
+		this.description = description;
 	}
 
 	public void setWorkflow(WorkflowDefinition workflow) {
@@ -82,6 +86,10 @@ public class WorkflowStep {
 		this.key = key;
 	}
 
+	public void updateDescription(String description) {
+		this.description = description;
+	}
+
 	public boolean isInitialStep() {
 		return isInitial;
 	}
@@ -89,4 +97,5 @@ public class WorkflowStep {
 	public boolean isFinalStep() {
 		return isFinal;
 	}
+
 }
