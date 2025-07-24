@@ -31,7 +31,10 @@ public class WorkflowController {
 	 *  - add new step and transition to workflow
 	 *  - update workflow(update label)
 	 *  - delete workflow
-	 *  - Dont allow updating and deleting default workflows!
+	 *  - dont allow updating and deleting default workflows!
+	 *  - update step(label, description)
+	 *  - update transition(label, description, sourceStep, targetStep)
+	 *  - delete transition
 	 */
 
 	private final WorkflowService workflowService;
@@ -48,4 +51,67 @@ public class WorkflowController {
 
 		return ApiResponse.created("Workflow created.", res);
 	}
+
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflow(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String workflowKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflow(req.toCommand(workspaceCode, workflowKey));
+	//
+	// 	return ApiResponse.ok("Workflow updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @DeleteMapping("/{workflowKey}")
+	// public ApiResponse<Void> deleteWorkflow(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String workflowKey,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	workflowService.deleteWorkflow(workspaceCode, workflowKey);
+	//
+	// 	return ApiResponse.okWithNoContent("Workflow deleted.");
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}/steps/{stepKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflowStep(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String stepKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowStepRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflowStep(req.toCommand(workspaceCode, stepKey));
+	//
+	// 	return ApiResponse.ok("Workflow step updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}/transitions/{transitionKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflowTransition(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String transitionKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowTransitionRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflowTransition(req.toCommand(workspaceCode, transitionKey));
+	//
+	// 	return ApiResponse.ok("Workflow transition updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @DeleteMapping("/{workflowKey}/transitions/{transitionKey}")
+	// public ApiResponse<Void> deleteWorkflowTransition(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String transitionKey,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	workflowService.deleteWorkflowTransition(workspaceCode, transitionKey);
+	//
+	// 	return ApiResponse.okWithNoContent("Workflow transition deleted.");
+	// }
 }
