@@ -1,9 +1,13 @@
 package com.tissue.api.issue.domain.newmodel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.model.enums.FieldType;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,7 +41,7 @@ public class IssueFieldDefinition extends BaseEntity {
 	private String key;
 
 	@Column(nullable = false)
-	private String label; // UI label
+	private String label;
 
 	@Column(nullable = false)
 	private String description;
@@ -48,6 +52,10 @@ public class IssueFieldDefinition extends BaseEntity {
 
 	@Column(nullable = false)
 	private boolean required;
+
+	@Convert(converter = StringListConverter.class)
+	@Column(columnDefinition = "json")
+	private List<String> allowedOptions = new ArrayList<>();
 
 	// TODO: Should I use a bi-directional relation with IssueTypeDefinition?
 	// TODO: Is @JoinColumn needed or recommended?
@@ -61,7 +69,8 @@ public class IssueFieldDefinition extends BaseEntity {
 		String description,
 		FieldType fieldType,
 		Boolean required,
-		IssueTypeDefinition issueType
+		IssueTypeDefinition issueType,
+		List<String> allowedOptions
 	) {
 		this.key = key;
 		this.label = label;
@@ -69,6 +78,7 @@ public class IssueFieldDefinition extends BaseEntity {
 		this.fieldType = fieldType;
 		this.required = (required != null) ? required : false;
 		this.issueType = issueType;
+		this.allowedOptions = allowedOptions;
 	}
 
 	public void updateKey(String key) {
@@ -89,5 +99,9 @@ public class IssueFieldDefinition extends BaseEntity {
 
 	public void updateRequired(boolean required) {
 		this.required = required;
+	}
+
+	public void updateAllowedOptions(List<String> allowedOptions) {
+		this.allowedOptions = allowedOptions;
 	}
 }
