@@ -22,8 +22,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Have I set the UniqueConstraint properly?
-//  A IssueTypeDefinition must be unique for each Workspace by label.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -41,10 +39,12 @@ public class IssueTypeDefinition extends BaseEntity {
 	private Workspace workspace;
 
 	@Column(nullable = false)
-	private String key; // ex: "EPIC", "BUG", "CUSTOM_TYPE_1"
+	private String key;
 
 	@Column(nullable = false)
-	private String label; // UI label
+	private String label;
+
+	// TODO: consider adding description field?
 
 	// private String icon;
 
@@ -53,7 +53,7 @@ public class IssueTypeDefinition extends BaseEntity {
 	private ColorType color;
 
 	@Column(nullable = false)
-	private boolean systemType; // true = built-in default types
+	private boolean systemType; // true = built-in default type
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
