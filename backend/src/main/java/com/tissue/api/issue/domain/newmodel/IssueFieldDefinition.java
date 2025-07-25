@@ -20,8 +20,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: have i set the UniqueConstraint properly?
-//  A CustomFieldDefinition must be unique for each IssueTypeDefinition by label.
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -29,7 +27,7 @@ import lombok.NoArgsConstructor;
 })
 @EqualsAndHashCode(of = {"issueType", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CustomFieldDefinition extends BaseEntity {
+public class IssueFieldDefinition extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,14 +40,14 @@ public class CustomFieldDefinition extends BaseEntity {
 	private String label; // UI label
 
 	@Column(nullable = false)
-	private String description = "";
+	private String description;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private FieldType fieldType; // TEXT, NUMBER, DATE, ENUM, etc.
 
 	@Column(nullable = false)
-	private boolean required = false;
+	private boolean required;
 
 	// TODO: Should I use a bi-directional relation with IssueTypeDefinition?
 	// TODO: Is @JoinColumn needed or recommended?
@@ -57,7 +55,7 @@ public class CustomFieldDefinition extends BaseEntity {
 	private IssueTypeDefinition issueType;
 
 	@Builder
-	public CustomFieldDefinition(
+	public IssueFieldDefinition(
 		String key,
 		String label,
 		String description,
