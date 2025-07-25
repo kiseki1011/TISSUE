@@ -81,7 +81,7 @@ public class IssueTypeDefinition extends BaseEntity {
 		this.systemType = false;
 	}
 
-	public void updateKey(String key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
