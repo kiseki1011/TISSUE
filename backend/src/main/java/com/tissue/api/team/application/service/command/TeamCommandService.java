@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TeamCommandService {
 
-	private final TeamReader teamReader;
+	private final TeamFinder teamFinder;
 	private final WorkspaceFinder workspaceFinder;
 	private final TeamRepository teamRepository;
 	private final TeamValidator teamValidator;
@@ -50,7 +50,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamRequest request
 	) {
-		Team team = teamReader.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findTeam(teamId, workspaceCode);
 
 		team.updateName(request.name());
 		team.updateDescription(request.description());
@@ -64,7 +64,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamColorRequest request
 	) {
-		Team team = teamReader.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findTeam(teamId, workspaceCode);
 
 		team.updateColor(request.colorType());
 
@@ -76,7 +76,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		Long teamId
 	) {
-		Team team = teamReader.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findTeam(teamId, workspaceCode);
 
 		teamValidator.validateTeamIsUsed(team);
 

@@ -27,7 +27,7 @@ import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.security.authorization.interceptor.RoleRequiredInterceptor;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
@@ -50,7 +50,7 @@ class RoleRequiredInterceptorTest {
 	MemberEntityFixture memberEntityFixture;
 
 	@Mock
-	private WorkspaceMemberReader workspaceMemberReader;
+	private WorkspaceMemberFinder workspaceMemberFinder;
 	@Mock
 	private HttpServletRequest request;
 	@Mock
@@ -113,7 +113,7 @@ class RoleRequiredInterceptorTest {
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(mock(RoleRequired.class));
 		setAuthenticatedUser(1L);
 
-		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+		when(workspaceMemberFinder.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
 			.thenThrow(WorkspaceMemberNotFoundException.class);
 
 		Map<String, String> pathVariables = new HashMap<>();
@@ -144,7 +144,7 @@ class RoleRequiredInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 
-		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+		when(workspaceMemberFinder.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(workspaceMember);
 
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MANAGER);
@@ -177,7 +177,7 @@ class RoleRequiredInterceptorTest {
 
 		when(handlerMethod.getMethodAnnotation(RoleRequired.class)).thenReturn(roleRequired);
 
-		when(workspaceMemberReader.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
+		when(workspaceMemberFinder.findWorkspaceMember(1L, TEST_WORKSPACE_CODE))
 			.thenReturn(workspaceMember);
 
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MEMBER);

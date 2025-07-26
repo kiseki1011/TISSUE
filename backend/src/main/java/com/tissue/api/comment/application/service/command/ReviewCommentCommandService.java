@@ -15,7 +15,7 @@ import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewCommentCommandService {
 
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final IssueFinder issueFinder;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
@@ -48,7 +48,7 @@ public class ReviewCommentCommandService {
 					reviewId, issueKey, workspaceCode))
 			);
 
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment parentComment = request.hasParentComment()
 			? (ReviewComment)commentRepository.findById(request.parentCommentId())
@@ -83,7 +83,7 @@ public class ReviewCommentCommandService {
 		Long memberId
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -103,7 +103,7 @@ public class ReviewCommentCommandService {
 		Long memberId
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 			.orElseThrow(() -> new CommentNotFoundException(commentId));

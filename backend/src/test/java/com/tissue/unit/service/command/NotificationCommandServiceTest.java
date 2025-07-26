@@ -24,7 +24,7 @@ import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +34,7 @@ class NotificationCommandServiceTest {
 	private NotificationRepository notificationRepository;
 
 	@Mock
-	private WorkspaceMemberReader workspaceMemberReader;
+	private WorkspaceMemberFinder workspaceMemberFinder;
 
 	@InjectMocks
 	private NotificationCommandService notificationCommandService;
@@ -62,9 +62,9 @@ class NotificationCommandServiceTest {
 		// 액터 모의 설정
 		WorkspaceMember actor = mock(WorkspaceMember.class);
 		when(actor.getDisplayName()).thenReturn("TestUser");
-		when(workspaceMemberReader.findWorkspaceMember(actorId, workspaceCode)).thenReturn(actor);
+		when(workspaceMemberFinder.findWorkspaceMember(actorId, workspaceCode)).thenReturn(actor);
 		WorkspaceMember receiver = mock(WorkspaceMember.class);
-		when(workspaceMemberReader.findWorkspaceMember(receiverId, workspaceCode)).thenReturn(receiver);
+		when(workspaceMemberFinder.findWorkspaceMember(receiverId, workspaceCode)).thenReturn(receiver);
 		when(receiver.getEmail()).thenReturn("receiver_email");
 
 		// when

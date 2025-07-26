@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class SprintReader {
+public class SprintFinder {
 
 	private final SprintRepository sprintRepository;
 

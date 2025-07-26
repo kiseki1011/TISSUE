@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PositionReader {
+public class PositionFinder {
 
 	private final PositionRepository positionRepository;
 

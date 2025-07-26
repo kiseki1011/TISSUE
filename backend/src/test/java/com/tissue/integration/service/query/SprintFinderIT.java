@@ -18,7 +18,7 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-public class SprintReaderIT extends ServiceIntegrationTestHelper {
+public class SprintFinderIT extends ServiceIntegrationTestHelper {
 
 	Workspace workspace;
 	WorkspaceMember owner;
@@ -96,7 +96,7 @@ public class SprintReaderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		Sprint foundSprint = sprintReader.findSprint(sprint.getSprintKey(), workspace.getCode());
+		Sprint foundSprint = sprintFinder.findSprint(sprint.getSprintKey(), workspace.getCode());
 
 		// then
 		assertThat(foundSprint.getSprintKey()).isEqualTo(sprint.getSprintKey());
@@ -123,7 +123,7 @@ public class SprintReaderIT extends ServiceIntegrationTestHelper {
 		sprint.addIssue(issue2);
 
 		// when
-		Sprint foundSprint = sprintReader.findSprintWithIssues(sprint.getSprintKey(), workspace.getCode());
+		Sprint foundSprint = sprintFinder.findSprintWithIssues(sprint.getSprintKey(), workspace.getCode());
 
 		// then
 		assertThat(foundSprint.getSprintKey()).isEqualTo(sprint.getSprintKey());

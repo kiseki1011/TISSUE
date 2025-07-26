@@ -11,7 +11,7 @@ import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationCommandService {
 
 	private final NotificationRepository notificationRepository;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 
 	@Transactional
 	public Notification createNotification(
@@ -29,12 +29,12 @@ public class NotificationCommandService {
 		Long receiverMemberId,
 		NotificationMessage message
 	) {
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(
 			event.getActorMemberId(),
 			event.getWorkspaceCode()
 		);
 
-		WorkspaceMember receiver = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember receiver = workspaceMemberFinder.findWorkspaceMember(
 			receiverMemberId,
 			event.getWorkspaceCode()
 		);

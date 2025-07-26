@@ -10,7 +10,7 @@ import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
-import com.tissue.api.position.application.service.command.PositionReader;
+import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
@@ -50,7 +50,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected PositionCommandService positionCommandService;
 	@Autowired
-	protected PositionReader positionReader;
+	protected PositionFinder positionFinder;
 
 	/**
 	 * Repository

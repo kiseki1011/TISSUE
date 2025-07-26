@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MemberReader {
+public class MemberFinder {
 
 	private final MemberRepository memberRepository;
 

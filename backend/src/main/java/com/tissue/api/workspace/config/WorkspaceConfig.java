@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.tissue.api.member.application.service.command.MemberReader;
+import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateService;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceConfig {
 
-	private final MemberReader memberReader;
+	private final MemberFinder memberFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
@@ -35,7 +35,7 @@ public class WorkspaceConfig {
 	@Bean
 	public WorkspaceCreateService workspaceCreateService() {
 		return new WorkspaceCreateRetryOnCodeCollisionService(
-			memberReader,
+			memberFinder,
 			workspaceRepository,
 			workspaceMemberRepository,
 			workspaceCodeGenerator,

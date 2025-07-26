@@ -26,7 +26,7 @@ import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequiredInterceptor;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -37,7 +37,7 @@ import jakarta.servlet.http.HttpServletResponse;
 class SelfOrRoleRequiredInterceptorTest {
 
 	@Mock
-	private WorkspaceMemberReader workspaceMemberReader;
+	private WorkspaceMemberFinder workspaceMemberFinder;
 	@Mock
 	private HttpServletRequest request;
 	@Mock
@@ -128,7 +128,7 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		// 권한 충분한 워크스페이스 멤버 모킹
 		TestWorkspaceMember member = new TestWorkspaceMember(WorkspaceRole.MANAGER);
-		when(workspaceMemberReader.findWorkspaceMember(loginMemberId, "WORKSPACE2"))
+		when(workspaceMemberFinder.findWorkspaceMember(loginMemberId, "WORKSPACE2"))
 			.thenReturn(member);
 
 		boolean result = interceptor.preHandle(request, response, handlerMethod);
@@ -160,7 +160,7 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		// 권한 낮은 멤버 모킹
 		TestWorkspaceMember member = new TestWorkspaceMember(WorkspaceRole.MEMBER);
-		when(workspaceMemberReader.findWorkspaceMember(loginMemberId, "WORKSPACE2"))
+		when(workspaceMemberFinder.findWorkspaceMember(loginMemberId, "WORKSPACE2"))
 			.thenReturn(member);
 
 		assertThatThrownBy(() -> interceptor.preHandle(request, response, handlerMethod))

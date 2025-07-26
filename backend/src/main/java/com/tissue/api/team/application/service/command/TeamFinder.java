@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TeamReader {
+public class TeamFinder {
 
 	private final TeamRepository teamRepository;
 

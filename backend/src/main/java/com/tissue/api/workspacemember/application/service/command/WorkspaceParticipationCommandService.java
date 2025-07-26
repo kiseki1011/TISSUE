@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.application.service.command.MemberReader;
+import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
@@ -27,8 +27,8 @@ public class WorkspaceParticipationCommandService {
 	 *  - leaveWorkspace: 워크스페이스 떠나기(현재 OWNER 상태면 불가능)
 	 */
 	private final WorkspaceFinder workspaceFinder;
-	private final MemberReader memberReader;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final MemberFinder memberFinder;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberPermissionValidator workspaceMemberPermissionValidator;
 
@@ -48,7 +48,7 @@ public class WorkspaceParticipationCommandService {
 		Long memberId
 	) {
 		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {
 			throw new InvalidOperationException(String.format(
@@ -72,7 +72,7 @@ public class WorkspaceParticipationCommandService {
 		String workspaceCode,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		workspaceMember.validateCanLeaveWorkspace();
 

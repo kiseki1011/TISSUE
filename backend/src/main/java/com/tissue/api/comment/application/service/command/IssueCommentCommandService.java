@@ -13,7 +13,7 @@ import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueCommentCommandService {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final CommentRepository commentRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -36,7 +36,7 @@ public class IssueCommentCommandService {
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		IssueComment parentComment = request.hasParentComment()
 			? (IssueComment)commentRepository.findById(request.parentCommentId())
@@ -67,7 +67,7 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
 				commentId,
@@ -89,7 +89,7 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
 				commentId,

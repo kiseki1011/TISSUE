@@ -10,7 +10,7 @@ import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueReviewerCommandService {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -33,12 +33,12 @@ public class IssueReviewerCommandService {
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(
 			command.memberId(),
 			workspaceCode
 		);
 
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(
 			requesterMemberId,
 			workspaceCode
 		);
@@ -61,7 +61,7 @@ public class IssueReviewerCommandService {
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(
 			command.memberId(),
 			workspaceCode
 		);

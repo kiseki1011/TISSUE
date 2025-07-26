@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.message.SimpleNotificationMessageFactory;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,12 +17,12 @@ import lombok.RequiredArgsConstructor;
 public class NotificationConfig {
 
 	private final MessageSource messageSource;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final NotificationContentArgumentsFormatter argumentFormatter;
 
 	@Bean
 	public NotificationMessageFactory notificationMessageFactory() {
-		return new SimpleNotificationMessageFactory(messageSource, workspaceMemberReader, argumentFormatter);
+		return new SimpleNotificationMessageFactory(messageSource, workspaceMemberFinder, argumentFormatter);
 	}
 
 	// TODO(고민중): 사용할 EmailClient 구현체 선택? notification 도메인은 별도의 모듈로 분리 예정?

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,7 @@ public class ReviewCommandService {
 
 	private final ReviewReader reviewReader;
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;
 	private final ApplicationEventPublisher eventPublisher;

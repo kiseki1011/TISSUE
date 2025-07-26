@@ -11,7 +11,7 @@ import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueAssigneeResponse;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueAssigneeCommandService {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -34,7 +34,7 @@ public class IssueAssigneeCommandService {
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember assignee = workspaceMemberFinder.findWorkspaceMember(
 			command.memberId(),
 			workspaceCode
 		);
@@ -57,12 +57,12 @@ public class IssueAssigneeCommandService {
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember assignee = workspaceMemberFinder.findWorkspaceMember(
 			command.memberId(),
 			workspaceCode
 		);
 
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(
 			requesterMemberId,
 			workspaceCode
 		);

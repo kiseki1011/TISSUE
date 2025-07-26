@@ -11,7 +11,7 @@ import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class PositionReaderIT extends ServiceIntegrationTestHelper {
+class PositionFinderIT extends ServiceIntegrationTestHelper {
 
 	Workspace workspace;
 

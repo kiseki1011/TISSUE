@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SprintCommandService {
 
-	private final SprintReader sprintReader;
+	private final SprintFinder sprintFinder;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceFinder workspaceFinder;
 	private final IssueFinder issueFinder;
@@ -60,7 +60,7 @@ public class SprintCommandService {
 		String sprintKey,
 		AddSprintIssuesRequest request
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		List<Issue> issues = issueFinder.findIssues(request.issueKeys(), workspaceCode);
 
@@ -77,7 +77,7 @@ public class SprintCommandService {
 		String sprintKey,
 		UpdateSprintRequest request
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
@@ -101,7 +101,7 @@ public class SprintCommandService {
 		UpdateSprintStatusRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateStatus(request.newStatus());
 
@@ -121,7 +121,7 @@ public class SprintCommandService {
 		RemoveSprintIssueRequest request
 	) {
 		Issue issue = issueFinder.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.removeIssue(issue);
 

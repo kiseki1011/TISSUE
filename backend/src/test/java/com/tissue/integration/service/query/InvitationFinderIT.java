@@ -21,7 +21,7 @@ import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class InvitationReaderIT extends ServiceIntegrationTestHelper {
+class InvitationFinderIT extends ServiceIntegrationTestHelper {
 
 	@AfterEach
 	public void tearDown() {

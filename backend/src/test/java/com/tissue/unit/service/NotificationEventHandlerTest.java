@@ -12,7 +12,7 @@ import com.tissue.api.notification.application.service.command.NotificationProce
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,7 +25,7 @@ class NotificationEventHandlerTest {
 	private IssueFinder issueFinder;
 
 	@Mock
-	private WorkspaceMemberReader workspaceMemberReader;
+	private WorkspaceMemberFinder workspaceMemberFinder;
 
 	@Mock
 	private WorkspaceMemberRepository workspaceMemberRepository;

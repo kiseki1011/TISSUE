@@ -11,7 +11,7 @@ import com.tissue.api.issue.domain.service.validator.CircularDependencyValidator
 import com.tissue.api.issue.infrastructure.repository.IssueRelationRepository;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueRelationResponse;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueRelationCommandService {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final IssueRelationRepository relationRepository;
 	private final CircularDependencyValidator circularDependencyValidator;
 
@@ -35,7 +35,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		// TODO: IssueAuthorizationService로 로직 분리, 호출
 		// TODO: IssueAuthorizationInterceptor에서 IssueAuthorizationService를 호출하는 형태로 구현?
@@ -62,7 +62,7 @@ public class IssueRelationCommandService {
 	) {
 		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
 		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		// TODO: IssueAuthorizationService로 로직 분리, 호출
 		// TODO: IssueAuthorizationInterceptor에서 IssueAuthorizationService를 호출하는 형태로 구현?

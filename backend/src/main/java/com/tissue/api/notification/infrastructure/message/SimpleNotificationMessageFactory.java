@@ -10,7 +10,7 @@ import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class SimpleNotificationMessageFactory implements NotificationMessageFactory {
 
 	private final MessageSource messageSource;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final NotificationContentArgumentsFormatter argumentFormatter;
 
 	@Override
@@ -33,7 +33,7 @@ public class SimpleNotificationMessageFactory implements NotificationMessageFact
 		String contentKey = "notification." + event.getNotificationType().name() + ".content";
 
 		// 기본 파라미터 준비
-		WorkspaceMember actor = workspaceMemberReader.findWorkspaceMember(
+		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(
 			event.getActorMemberId(),
 			event.getWorkspaceCode()
 		);

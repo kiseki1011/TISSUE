@@ -12,7 +12,7 @@ import com.tissue.api.comment.application.service.command.ReviewCommentCommandSe
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.invitation.application.service.command.InvitationCommandService;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
-import com.tissue.api.invitation.application.service.reader.InvitationReader;
+import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.issue.application.service.command.IssueAssigneeCommandService;
 import com.tissue.api.issue.application.service.command.IssueCommandService;
@@ -26,7 +26,7 @@ import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
-import com.tissue.api.position.application.service.command.PositionReader;
+import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.review.application.service.command.ReviewCommandService;
@@ -34,12 +34,12 @@ import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
-import com.tissue.api.sprint.application.service.command.SprintReader;
+import com.tissue.api.sprint.application.service.command.SprintFinder;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
 import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
-import com.tissue.api.team.application.service.command.TeamReader;
+import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
@@ -51,7 +51,7 @@ import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
@@ -97,7 +97,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceMemberInviteService workspaceMemberInviteService;
 	@Autowired
-	protected WorkspaceMemberReader workspaceMemberReader;
+	protected WorkspaceMemberFinder workspaceMemberFinder;
 	@Autowired
 	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
 	@Autowired
@@ -119,17 +119,17 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected InvitationQueryService invitationQueryService;
 	@Autowired
-	protected InvitationReader invitationReader;
+	protected InvitationFinder invitationFinder;
 	@Autowired
 	protected PositionCommandService positionCommandService;
 	@Autowired
 	protected PositionQueryService positionQueryService;
 	@Autowired
-	protected PositionReader positionReader;
+	protected PositionFinder positionFinder;
 	@Autowired
 	protected TeamCommandService teamCommandService;
 	@Autowired
-	protected TeamReader teamReader;
+	protected TeamFinder teamFinder;
 	@Autowired
 	protected IssueCommandService issueCommandService;
 	@Autowired
@@ -151,7 +151,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	@Autowired
-	protected SprintReader sprintReader;
+	protected SprintFinder sprintFinder;
 
 	/**
 	 * Validator

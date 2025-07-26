@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.position.domain.model.Position;
-import com.tissue.api.position.application.service.command.PositionReader;
+import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.team.domain.model.Team;
-import com.tissue.api.team.application.service.command.TeamReader;
+import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
@@ -26,9 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkspaceMemberCommandService {
 
-	private final WorkspaceMemberReader workspaceMemberReader;
-	private final PositionReader positionReader;
-	private final TeamReader teamReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final PositionFinder positionFinder;
+	private final TeamFinder teamFinder;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberPermissionValidator workspaceMemberPermissionValidator;
 	private final ApplicationEventPublisher eventPublisher;
@@ -39,7 +39,7 @@ public class WorkspaceMemberCommandService {
 		Long memberId,
 		UpdateDisplayNameRequest request
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		workspaceMember.updateDisplayName(request.displayName());
 		workspaceMemberRepository.saveAndFlush(workspaceMember);
@@ -54,8 +54,8 @@ public class WorkspaceMemberCommandService {
 		Long requesterMemberId,
 		UpdateRoleRequest request
 	) {
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMemberPermissionValidator.validateCanUpdateRole(requester, target);
 
@@ -76,8 +76,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long loginMemberId
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMember.addPosition(position);
 
@@ -91,8 +91,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long loginMemberId
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMember.removePosition(position);
 	}
@@ -104,8 +104,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long loginMemberId
 	) {
-		Team team = teamReader.findTeam(teamId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		Team team = teamFinder.findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMember.addTeam(team);
 
@@ -119,8 +119,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long loginMemberId
 	) {
-		Team team = teamReader.findTeam(teamId, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		Team team = teamFinder.findTeam(teamId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMember.removeTeam(team);
 	}
@@ -131,8 +131,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long requesterMemberId
 	) {
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		requester.updateRoleToAdmin();
 		target.updateRoleToOwner();
@@ -146,8 +146,8 @@ public class WorkspaceMemberCommandService {
 		Long targetMemberId,
 		Long requesterMemberId
 	) {
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberReader.findWorkspaceMember(targetMemberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
 
 		workspaceMemberPermissionValidator.validateCanRemoveWorkspaceMember(requester, target);
 

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.global.config.webmvc.WebMvcConfig;
 import com.tissue.api.invitation.application.service.command.InvitationCommandService;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
-import com.tissue.api.invitation.application.service.reader.InvitationReader;
+import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.application.service.command.IssueCommandService;
@@ -33,7 +33,7 @@ import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.controller.MemberController;
 import com.tissue.api.member.presentation.controller.MemberQueryController;
 import com.tissue.api.position.application.service.command.PositionCommandService;
-import com.tissue.api.position.application.service.command.PositionReader;
+import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
@@ -150,11 +150,11 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected InvitationQueryService invitationQueryService;
 	@MockBean
-	protected InvitationReader invitationReader;
+	protected InvitationFinder invitationFinder;
 	@MockBean
 	protected PositionCommandService positionCommandService;
 	@MockBean
-	protected PositionReader positionReader;
+	protected PositionFinder positionFinder;
 	@MockBean
 	protected PositionQueryService positionQueryService;
 	@MockBean

@@ -1,4 +1,4 @@
-package com.tissue.api.invitation.application.service.reader;
+package com.tissue.api.invitation.application.service.finder;
 
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class InvitationReader {
+public class InvitationFinder {
 
 	private final InvitationRepository invitationRepository;
 

@@ -15,7 +15,7 @@ import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 
 	public static final String PATH_VAR_WORKSPACE_CODE = "workspaceCode";
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 
 	private static boolean isNotHandlerMethod(Object handler) {
 		return !(handler instanceof HandlerMethod);
@@ -72,7 +72,7 @@ public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 		}
 
 		// TODO: cache WorkspaceMember later
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(loginMemberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(loginMemberId, workspaceCode);
 
 		// check if workspaceMember has the minimum required role
 		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceCode: {}",

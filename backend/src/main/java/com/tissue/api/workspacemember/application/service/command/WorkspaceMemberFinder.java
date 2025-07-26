@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceMemberReader {
+public class WorkspaceMemberFinder {
 
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 

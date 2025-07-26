@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
-	private final PositionReader positionReader;
+	private final PositionFinder positionFinder;
 	private final WorkspaceFinder workspaceFinder;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
@@ -52,7 +52,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -67,7 +67,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -79,7 +79,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 

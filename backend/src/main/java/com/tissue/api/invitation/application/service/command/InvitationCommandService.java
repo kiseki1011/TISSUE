@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.invitation.application.service.reader.InvitationReader;
+import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.invitation.domain.service.InvitationValidator;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvitationCommandService {
 
-	private final InvitationReader invitationReader;
+	private final InvitationFinder invitationFinder;
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
@@ -75,7 +75,7 @@ public class InvitationCommandService {
 		Long memberId,
 		Long invitationId
 	) {
-		Invitation invitation = invitationReader.findPendingInvitation(invitationId);
+		Invitation invitation = invitationFinder.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
 		// TODO: InvitationValidator를 InvitationValidationService로 이름 바꾸기?

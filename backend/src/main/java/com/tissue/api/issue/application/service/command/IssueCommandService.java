@@ -12,7 +12,7 @@ import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class IssueCommandService {
 
 	private final IssueFinder issueFinder;
 	private final WorkspaceFinder workspaceFinder;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final IssueRepository issueRepository;
 
 	private final ApplicationEventPublisher eventPublisher;
@@ -118,7 +118,7 @@ public class IssueCommandService {
 	) {
 		Issue childIssue = issueFinder.findIssue(issueKey, workspaceCode);
 		Issue parentIssue = issueFinder.findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		Issue oldParentIssue = childIssue.getParentIssue();
 
@@ -138,7 +138,7 @@ public class IssueCommandService {
 		Long memberId
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		Issue oldParentIssue = issue.getParentIssue();
 
@@ -160,7 +160,7 @@ public class IssueCommandService {
 		Long memberId
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.addWatcher(workspaceMember);
 
@@ -174,7 +174,7 @@ public class IssueCommandService {
 		Long memberId
 	) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.removeWatcher(workspaceMember);
 

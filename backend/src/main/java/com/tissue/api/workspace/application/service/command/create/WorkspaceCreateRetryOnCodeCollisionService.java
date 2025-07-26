@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.application.service.command.MemberReader;
+import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
-	private final MemberReader memberReader;
+	private final MemberFinder memberFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceCodeGenerator workspaceCodeGenerator;
@@ -52,7 +52,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
 		setGeneratedWorkspaceCode(workspace);
