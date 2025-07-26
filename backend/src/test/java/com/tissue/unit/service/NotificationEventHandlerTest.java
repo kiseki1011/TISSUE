@@ -5,7 +5,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
@@ -22,7 +22,7 @@ class NotificationEventHandlerTest {
 	private NotificationCommandService notificationService;
 
 	@Mock
-	private IssueReader issueReader;
+	private IssueFinder issueFinder;
 
 	@Mock
 	private WorkspaceMemberReader workspaceMemberReader;

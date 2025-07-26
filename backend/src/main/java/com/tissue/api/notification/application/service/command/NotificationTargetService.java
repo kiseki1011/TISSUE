@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationTargetService {
 
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 
 	/**
 	 * Retrieve all members in the workspace as notification targets.
@@ -33,7 +33,7 @@ public class NotificationTargetService {
 	 */
 	public List<WorkspaceMember> getIssueSubscriberTargets(String issueKey, String workspaceCode) {
 
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> subscriberIds = issue.getSubscriberMemberIds();
 
 		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, subscriberIds);
@@ -44,7 +44,7 @@ public class NotificationTargetService {
 	 */
 	public List<WorkspaceMember> getIssueReviewerTargets(String issueKey, String workspaceCode) {
 
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> reviewerIds = issue.getReviewerMemberIds();
 
 		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, reviewerIds);

@@ -7,12 +7,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.sprint.domain.model.Sprint;
-import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
+import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
@@ -20,8 +20,8 @@ import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +32,7 @@ public class SprintCommandService {
 	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceReader workspaceReader;
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -62,7 +62,7 @@ public class SprintCommandService {
 	) {
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
-		List<Issue> issues = issueReader.findIssues(request.issueKeys(), workspaceCode);
+		List<Issue> issues = issueFinder.findIssues(request.issueKeys(), workspaceCode);
 
 		for (Issue issue : issues) {
 			sprint.addIssue(issue);
@@ -120,7 +120,7 @@ public class SprintCommandService {
 		String sprintKey,
 		RemoveSprintIssueRequest request
 	) {
-		Issue issue = issueReader.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
+		Issue issue = issueFinder.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
 		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
 
 		sprint.removeIssue(issue);

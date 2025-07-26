@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.domain.model.Issue;
@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandService {
 
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceReader workspaceReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRepository issueRepository;
@@ -116,8 +116,8 @@ public class IssueCommandService {
 		Long memberId,
 		AddParentIssueRequest request
 	) {
-		Issue childIssue = issueReader.findIssue(issueKey, workspaceCode);
-		Issue parentIssue = issueReader.findIssue(request.parentIssueKey(), workspaceCode);
+		Issue childIssue = issueFinder.findIssue(issueKey, workspaceCode);
+		Issue parentIssue = issueFinder.findIssue(request.parentIssueKey(), workspaceCode);
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		Issue oldParentIssue = childIssue.getParentIssue();
@@ -137,7 +137,7 @@ public class IssueCommandService {
 		String issueKey,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		Issue oldParentIssue = issue.getParentIssue();
@@ -159,7 +159,7 @@ public class IssueCommandService {
 		String issueKey,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.addWatcher(workspaceMember);
@@ -173,7 +173,7 @@ public class IssueCommandService {
 		String issueKey,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		issue.removeWatcher(workspaceMember);

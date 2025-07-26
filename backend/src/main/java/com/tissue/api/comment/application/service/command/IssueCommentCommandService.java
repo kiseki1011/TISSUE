@@ -11,10 +11,10 @@ import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommentCommandService {
 
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final CommentRepository commentRepository;
 	private final ApplicationEventPublisher eventPublisher;
@@ -34,7 +34,7 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 

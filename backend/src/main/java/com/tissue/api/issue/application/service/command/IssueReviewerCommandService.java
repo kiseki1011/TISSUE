@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.AddReviewerCommand;
 import com.tissue.api.issue.application.dto.RemoveReviewerCommand;
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueReviewerResponse;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueReviewerCommandService {
 
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -31,7 +31,7 @@ public class IssueReviewerCommandService {
 		AddReviewerCommand command,
 		Long requesterMemberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			command.memberId(),
@@ -59,7 +59,7 @@ public class IssueReviewerCommandService {
 		RemoveReviewerCommand command,
 		Long requesterMemberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember reviewer = workspaceMemberReader.findWorkspaceMember(
 			command.memberId(),

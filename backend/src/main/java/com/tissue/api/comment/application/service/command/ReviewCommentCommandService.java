@@ -11,12 +11,12 @@ import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommentCommandService {
 
 	private final WorkspaceMemberReader workspaceMemberReader;
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final CommentRepository commentRepository;
 	private final ReviewRepository reviewRepository;
 	private final ApplicationEventPublisher eventPublisher;
@@ -38,7 +38,7 @@ public class ReviewCommentCommandService {
 		CreateReviewCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		// Todo: ReviewNotFoundException을 만들까? 근데 issueKey, workspaceCode 정보가 필요할까?
 		Review review = reviewRepository.findByIdAndIssueKeyAndWorkspaceCode(reviewId, issueKey, workspaceCode)
@@ -82,7 +82,7 @@ public class ReviewCommentCommandService {
 		UpdateReviewCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
@@ -102,7 +102,7 @@ public class ReviewCommentCommandService {
 		Long commentId,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)

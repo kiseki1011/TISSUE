@@ -3,7 +3,7 @@ package com.tissue.api.issue.application.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueRelation;
 import com.tissue.api.issue.domain.model.enums.IssueRelationType;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueRelationCommandService {
 
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRelationRepository relationRepository;
 	private final CircularDependencyValidator circularDependencyValidator;
@@ -33,8 +33,8 @@ public class IssueRelationCommandService {
 		Long memberId,
 		CreateIssueRelationRequest request
 	) {
-		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		// TODO: IssueAuthorizationService로 로직 분리, 호출
@@ -60,8 +60,8 @@ public class IssueRelationCommandService {
 		String targetIssueKey,
 		Long memberId
 	) {
-		Issue sourceIssue = issueReader.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueReader.findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
+		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
 		WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
 
 		// TODO: IssueAuthorizationService로 로직 분리, 호출

@@ -3,7 +3,7 @@ package com.tissue.api.review.application.service.command;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewCommandService {
 
 	private final ReviewReader reviewReader;
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final ReviewRepository reviewRepository;
 	private final IssueReviewerRepository issueReviewerRepository;

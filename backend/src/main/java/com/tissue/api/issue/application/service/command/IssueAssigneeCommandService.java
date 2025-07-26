@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.AddAssigneeCommand;
 import com.tissue.api.issue.application.dto.RemoveAssigneeCommand;
-import com.tissue.api.issue.application.service.reader.IssueReader;
+import com.tissue.api.issue.application.service.reader.IssueFinder;
 import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.model.Issue;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueAssigneeCommandService {
 
-	private final IssueReader issueReader;
+	private final IssueFinder issueFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -32,7 +32,7 @@ public class IssueAssigneeCommandService {
 		AddAssigneeCommand command,
 		Long requesterMemberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
 			command.memberId(),
@@ -55,7 +55,7 @@ public class IssueAssigneeCommandService {
 		RemoveAssigneeCommand command,
 		Long requesterMemberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
 		WorkspaceMember assignee = workspaceMemberReader.findWorkspaceMember(
 			command.memberId(),
