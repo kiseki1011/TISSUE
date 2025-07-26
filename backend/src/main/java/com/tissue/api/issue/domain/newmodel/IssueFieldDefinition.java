@@ -41,9 +41,6 @@ public class IssueFieldDefinition extends BaseEntity {
 	private String key;
 
 	@Column(nullable = false)
-	private String fieldKey;
-
-	@Column(nullable = false)
 	private String label;
 
 	@Column(nullable = false)
@@ -68,7 +65,6 @@ public class IssueFieldDefinition extends BaseEntity {
 	@Builder
 	public IssueFieldDefinition(
 		String key,
-		String fieldKey,
 		String label,
 		String description,
 		FieldType fieldType,
@@ -77,7 +73,6 @@ public class IssueFieldDefinition extends BaseEntity {
 		List<String> allowedOptions
 	) {
 		this.key = key;
-		this.fieldKey = fieldKey;
 		this.label = label;
 		this.description = (description != null) ? description : "";
 		this.fieldType = fieldType;
@@ -88,10 +83,6 @@ public class IssueFieldDefinition extends BaseEntity {
 
 	public void setKey(String key) {
 		this.key = key;
-	}
-
-	public void setFieldKey(String fieldKey) {
-		this.fieldKey = fieldKey;
 	}
 
 	public void updateLabel(String label) {
