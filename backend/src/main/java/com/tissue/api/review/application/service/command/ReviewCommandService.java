@@ -3,7 +3,7 @@ package com.tissue.api.review.application.service.command;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.application.service.reader.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;

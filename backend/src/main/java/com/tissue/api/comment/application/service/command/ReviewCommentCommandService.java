@@ -11,7 +11,7 @@ import com.tissue.api.comment.presentation.dto.request.CreateReviewCommentReques
 import com.tissue.api.comment.presentation.dto.request.UpdateReviewCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.ReviewCommentResponse;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.issue.application.service.reader.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.infrastructure.repository.ReviewRepository;

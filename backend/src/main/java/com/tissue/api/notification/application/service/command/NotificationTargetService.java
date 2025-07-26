@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.application.service.reader.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;

@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.AddAssigneeCommand;
 import com.tissue.api.issue.application.dto.RemoveAssigneeCommand;
-import com.tissue.api.issue.application.service.reader.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.model.Issue;
