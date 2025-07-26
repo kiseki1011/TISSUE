@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issue.application.service.command.IssueTypeService;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueFieldRequest;
 import com.tissue.api.issue.presentation.controller.dto.request.CreateIssueTypeRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueFieldResponse;
@@ -50,7 +51,7 @@ public class IssueTypeController {
 	) {
 		IssueTypeResponse response = issueTypeService.createIssueType(request.toCommand(workspaceCode));
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Custom issue type created", response));
+			.body(ApiResponse.created("Custom issue type created.", response));
 	}
 
 	@PostMapping("/{issueTypeKey}/fields")
@@ -62,6 +63,6 @@ public class IssueTypeController {
 	) {
 		IssueFieldResponse response = issueTypeService.createIssueField(request.toCommand(workspaceCode, issueTypeKey));
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Custom issue field created", response));
+			.body(ApiResponse.created("Custom issue field created.", response));
 	}
 }

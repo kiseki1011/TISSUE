@@ -53,7 +53,7 @@ public class IssueTypeDefinition extends BaseEntity {
 	private ColorType color;
 
 	@Column(nullable = false)
-	private boolean systemType; // true = built-in default type
+	private boolean systemType;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -77,11 +77,14 @@ public class IssueTypeDefinition extends BaseEntity {
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
 		this.workflow = workflow;
-
 		this.systemType = false;
 	}
 
 	public void setKey(String key) {
+		// TODO: Should I make the key immutable?
+		// if (this.key != null) {
+		// 	throw new IllegalStateException("Key is already set");
+		// }
 		this.key = key;
 	}
 
@@ -93,16 +96,16 @@ public class IssueTypeDefinition extends BaseEntity {
 		this.color = color;
 	}
 
-	public void setSystemType(boolean systemType) {
-		this.systemType = systemType;
-	}
-
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
 		this.hierarchyLevel = hierarchyLevel;
 	}
 
 	public void setWorkflow(WorkflowDefinition workflow) {
 		this.workflow = workflow;
+	}
+
+	public void setDefaultSystemType() {
+		this.systemType = true;
 	}
 }
 
