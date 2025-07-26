@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceCommandService {
 
 	private final MemberReader memberReader;
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceValidator workspaceValidator;
@@ -33,7 +33,7 @@ public class WorkspaceCommandService {
 		UpdateWorkspaceInfoRequest request,
 		String workspaceCode
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		updateWorkspaceInfoIfPresent(request, workspace);
 
@@ -45,7 +45,7 @@ public class WorkspaceCommandService {
 		UpdateWorkspacePasswordRequest request,
 		String workspaceCode
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
 		workspace.updatePassword(encodedUpdatePassword);
@@ -68,7 +68,7 @@ public class WorkspaceCommandService {
 		String workspaceCode,
 		Long memberId
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Member member = memberReader.findMemberById(memberId);
 		member.decreaseMyWorkspaceCount();
@@ -81,7 +81,7 @@ public class WorkspaceCommandService {
 		String workspaceCode,
 		UpdateIssueKeyRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
 		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());

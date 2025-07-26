@@ -45,7 +45,7 @@ import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
@@ -138,7 +138,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
 	@MockBean
-	protected WorkspaceReader workspaceReader;
+	protected WorkspaceFinder workspaceFinder;
 	@MockBean
 	protected WorkspaceQueryService workspaceQueryService;
 	@MockBean

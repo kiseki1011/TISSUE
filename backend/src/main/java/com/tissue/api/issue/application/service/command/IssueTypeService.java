@@ -18,7 +18,7 @@ import com.tissue.api.issue.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueTypeRepository;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueFieldResponse;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueTypeResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueTypeService {
 
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final IssueTypeRepository issueTypeRepository;
 	private final IssueFieldRepository issueFieldRepository;
 	private final WorkflowFinder workflowFinder;
@@ -35,7 +35,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse createIssueType(CreateIssueTypeCommand cmd) {
-		Workspace workspace = workspaceReader.findWorkspace(cmd.workspaceCode());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 		WorkflowDefinition workflow = workflowFinder.findWorkflow(cmd.workspaceCode(), cmd.workflowKey());
 
 		IssueTypeDefinition issueType = issueTypeRepository.saveAndFlush(IssueTypeDefinition.builder()

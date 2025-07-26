@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.application.service.command.MemberReader;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -26,7 +26,7 @@ public class WorkspaceParticipationCommandService {
 	 * Todo
 	 *  - leaveWorkspace: 워크스페이스 떠나기(현재 OWNER 상태면 불가능)
 	 */
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final MemberReader memberReader;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -47,7 +47,7 @@ public class WorkspaceParticipationCommandService {
 		String workspaceCode,
 		Long memberId
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 		Member member = memberReader.findMemberById(memberId);
 
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode)) {

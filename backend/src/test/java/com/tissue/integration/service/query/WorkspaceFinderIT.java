@@ -16,7 +16,7 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceReaderIT extends ServiceIntegrationTestHelper {
+class WorkspaceFinderIT extends ServiceIntegrationTestHelper {
 
 	Member member1;
 	Workspace workspace1;

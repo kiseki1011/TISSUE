@@ -20,7 +20,7 @@ import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class SprintCommandService {
 
 	private final SprintReader sprintReader;
 	private final SprintRepository sprintRepository;
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final IssueFinder issueFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -40,7 +40,7 @@ public class SprintCommandService {
 		String workspaceCode,
 		CreateSprintRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Sprint sprint = Sprint.builder()
 			.title(request.title())

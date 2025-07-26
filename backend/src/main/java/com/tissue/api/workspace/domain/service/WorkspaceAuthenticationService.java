@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
@@ -14,12 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceAuthenticationService {
 
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final PasswordEncoder passwordEncoder;
 
 	public void authenticate(String rawPassword, String workspaceCode) {
 
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		if (workspace.getPassword() == null) {
 			return;

@@ -16,7 +16,7 @@ import com.tissue.api.issue.domain.service.validator.WorkflowValidator;
 import com.tissue.api.issue.domain.util.KeyGenerator;
 import com.tissue.api.issue.infrastructure.repository.WorkflowRepository;
 import com.tissue.api.issue.presentation.controller.dto.response.WorkflowResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.EntityManager;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkflowService {
 
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkflowRepository workflowRepository;
 	private final WorkflowValidator workflowValidator;
 	private final EntityManager em;
@@ -37,7 +37,7 @@ public class WorkflowService {
 	public WorkflowResponse createWorkflow(CreateWorkflowCommand cmd) {
 
 		workflowValidator.validateCommand(cmd);
-		Workspace workspace = workspaceReader.findWorkspace(cmd.workspaceCode());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 
 		// TODO: I wonder if I understand right how the persistance in JPA works
 		//  - am i using em.flush() right?

@@ -11,7 +11,7 @@ import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.presentation.controller.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueCommandService {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberReader workspaceMemberReader;
 	private final IssueRepository issueRepository;
 

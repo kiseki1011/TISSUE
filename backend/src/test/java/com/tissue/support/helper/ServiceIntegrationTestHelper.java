@@ -43,7 +43,7 @@ import com.tissue.api.team.application.service.command.TeamReader;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
@@ -103,7 +103,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceParticipationCommandService workspaceParticipationCommandService;
 	@Autowired
-	protected WorkspaceReader workspaceReader;
+	protected WorkspaceFinder workspaceFinder;
 	@Autowired
 	protected WorkspaceQueryService workspaceQueryService;
 	@Autowired

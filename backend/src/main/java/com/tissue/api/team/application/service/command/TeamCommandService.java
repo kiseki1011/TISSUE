@@ -11,8 +11,8 @@ import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TeamCommandService {
 
 	private final TeamReader teamReader;
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final TeamRepository teamRepository;
 	private final TeamValidator teamValidator;
 
@@ -32,7 +32,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Team team = Team.builder()
 			.name(request.name())
