@@ -1,6 +1,7 @@
 package com.tissue.api.issue.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -122,11 +123,9 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
-	// TODO: Is this is a acceptable code? How exactly does this work?
-	// Store dynamic fields in JSON
 	@Column(columnDefinition = "json")
 	@Convert(converter = JsonMapConverter.class)
-	private Map<String, Object> customFields;
+	private Map<String, Object> customFields = new HashMap<>();
 
 	@Builder
 	protected Issue(
