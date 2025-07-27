@@ -1,11 +1,11 @@
 package com.tissue.api.issue.presentation.controller.command;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
@@ -41,17 +41,16 @@ public class WorkflowController {
 
 	private final WorkflowService workflowService;
 
-	// TODO: Use
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<WorkflowResponse> createWorkflow(
+	public ResponseEntity<ApiResponse<WorkflowResponse>> createWorkflow(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid CreateWorkflowRequest req
+		@RequestBody @Valid CreateWorkflowRequest request
 	) {
-		WorkflowResponse res = workflowService.createWorkflow(req.toCommand(workspaceCode));
-		return ApiResponse.created("Workflow created.", res);
+		WorkflowResponse response = workflowService.createWorkflow(request.toCommand(workspaceCode));
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(ApiResponse.created("Workflow created.", response));
 	}
 
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
