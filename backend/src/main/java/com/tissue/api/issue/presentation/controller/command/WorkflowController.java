@@ -27,18 +27,21 @@ public class WorkflowController {
 
 	/**
 	 * TODO
-	 *  - create workflow
 	 *  - add new step and transition to workflow
 	 *  - update workflow(update label)
 	 *  - delete workflow
-	 *  - dont allow updating and deleting default workflows!
+	 *  - dont allow deleting/updating default workflows(and the steps and transitions inside)!
 	 *  - update step(label, description)
 	 *  - update transition(label, description, sourceStep, targetStep)
-	 *  - delete transition
+	 *  - needs to apply Spring State Machine
+	 *  - set guard for transitions
+	 *  - DONE
+	 *  - create workflow
 	 */
 
 	private final WorkflowService workflowService;
 
+	// TODO: Use
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -48,7 +51,6 @@ public class WorkflowController {
 		@RequestBody @Valid CreateWorkflowRequest req
 	) {
 		WorkflowResponse res = workflowService.createWorkflow(req.toCommand(workspaceCode));
-
 		return ApiResponse.created("Workflow created.", res);
 	}
 

@@ -39,6 +39,9 @@ public class IssueTypeDefinition extends BaseEntity {
 	private Workspace workspace;
 
 	@Column(nullable = false)
+	private String workspaceCode;
+
+	@Column(nullable = false)
 	private String key;
 
 	@Column(nullable = false)
@@ -72,6 +75,7 @@ public class IssueTypeDefinition extends BaseEntity {
 		WorkflowDefinition workflow
 	) {
 		this.workspace = workspace;
+		this.workspaceCode = workspace.getCode();
 		this.key = key;
 		this.label = label;
 		this.color = color != null ? color : ColorType.getRandomColor();

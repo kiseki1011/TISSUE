@@ -15,13 +15,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkflowValidator {
 
-	/**
-	 * TODO
-	 *  - validation if main flow of a WorkflowDefinition is a single straight line
-	 *  - i wonder if i can just encapsulate validation logic inside the entities
-	 *  (WorkflowDefinition, WorkflowStep, WorkflowTransition)
-	 */
-
+	// TODO: Needs validation if main flow of a WorkflowDefinition is a single straight line
+	// TODO: I wonder if i can just encapsulate validation logic inside the entities?
+	//  (WorkflowDefinition, WorkflowStep, WorkflowTransition) If possible, is it a good design?
 	public void validateCommand(CreateWorkflowCommand cmd) {
 		Set<String> stepLabels = new HashSet<>();
 		int initialCount = 0;

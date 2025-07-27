@@ -68,7 +68,7 @@ public class WorkflowTransition {
 		this.targetStep = targetStep;
 		this.key = key;
 		this.label = label;
-		this.description = description;
+		this.description = description != null ? description : "";
 	}
 
 	public void setWorkflow(WorkflowDefinition workflow) {

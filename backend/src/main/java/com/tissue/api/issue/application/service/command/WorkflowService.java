@@ -39,17 +39,17 @@ public class WorkflowService {
 		workflowValidator.validateCommand(cmd);
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 
-		// TODO: I wonder if I understand right how the persistance in JPA works
-		//  - am i using em.flush() right?
-		//  - how exactly does persisting WorkflowStep, WorkflowTransition with cascade work?
-		//  - i wonder if i can remove the flush() code by using a KeySequence instead of the entity's id
+		// TODO: Am I using saveAndFlush() or em.flush() in the right way?
+		// TODO: How exactly does persisting WorkflowStep, WorkflowTransition with cascade work?
+		//  - Im curious if ids for the WorkflowStep or WorkflowTransition after the loop and flush is available,
+		//  even if im not explicitly calling save.
+		// TODO: I wonder if i should make and use a KeySequence instead of the entity's id, or using id is good enough?
 		try {
 			WorkflowDefinition workflow = WorkflowDefinition.builder()
 				.workspace(workspace)
 				.label(cmd.label())
 				.build();
-			workflowRepository.save(workflow);
-			em.flush();
+			workflowRepository.saveAndFlush(workflow);
 
 			workflow.setKey(KeyGenerator.generateWorkflowKey(workflow.getId()));
 
@@ -69,6 +69,7 @@ public class WorkflowService {
 
 			stepsBuffer.forEach(step -> step.setKey(KeyGenerator.generateStepKey(step.getId())));
 
+			// TODO: Is using indexes a good decision?
 			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitions()) {
 				WorkflowStep sourceStep = stepsBuffer.get(t.sourceIndex());
 				WorkflowStep targetStep = stepsBuffer.get(t.targetIndex());
@@ -85,8 +86,7 @@ public class WorkflowService {
 			em.flush();
 
 			workflow.getTransitions().forEach(t -> t.setKey(KeyGenerator.generateTransitionKey(t.getId())));
-			workflow = workflowRepository.save(workflow);
-			em.flush();
+			workflow = workflowRepository.saveAndFlush(workflow);
 
 			return WorkflowResponse.from(workflow);
 
