@@ -11,12 +11,12 @@ public record CreateWorkflowRequest(
 ) {
 	public CreateWorkflowCommand toCommand(String workspaceCode) {
 		List<CreateWorkflowCommand.StepCommand> stepCommands = steps.stream()
-			.map(s -> new CreateWorkflowCommand.StepCommand(s.label(), s.isInitial(), s.isFinal()))
+			.map(s -> new CreateWorkflowCommand.StepCommand(s.tempKey(), s.label(), s.isInitial(), s.isFinal()))
 			.toList();
 
 		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitions.stream()
-			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.isMainFlow(), t.sourceStepIndex(),
-				t.targetStepIndex()))
+			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.isMainFlow(), t.sourceTempKey(),
+				t.targetTempKey()))
 			.toList();
 
 		return CreateWorkflowCommand.builder()

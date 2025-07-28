@@ -1,7 +1,7 @@
 package com.tissue.api.issue.application.service.command;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -39,11 +39,6 @@ public class WorkflowService {
 		workflowValidator.validateCommand(cmd);
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 
-		// TODO: Am I using saveAndFlush() or em.flush() in the right way?
-		// TODO: How exactly does persisting WorkflowStep, WorkflowTransition with cascade work?
-		//  - Im curious if ids for the WorkflowStep or WorkflowTransition after the loop and flush is available,
-		//  even if im not explicitly calling save.
-		// TODO: I wonder if i should make and use a KeySequence instead of the entity's id, or using id is good enough?
 		try {
 			WorkflowDefinition workflow = WorkflowDefinition.builder()
 				.workspace(workspace)
@@ -53,8 +48,8 @@ public class WorkflowService {
 
 			workflow.setKey(KeyGenerator.generateWorkflowKey(workflow.getId()));
 
-			List<WorkflowStep> stepsBuffer = new ArrayList<>();
-
+			// Step mapping using tempKey
+			Map<String, WorkflowStep> stepMap = new HashMap<>();
 			for (CreateWorkflowCommand.StepCommand s : cmd.steps()) {
 				WorkflowStep step = WorkflowStep.builder()
 					.workflow(workflow)
@@ -63,16 +58,15 @@ public class WorkflowService {
 					.isFinal(s.isFinal())
 					.build();
 				workflow.addStep(step);
-				stepsBuffer.add(step);
+				stepMap.put(s.tempKey(), step);
 			}
 			em.flush();
 
-			stepsBuffer.forEach(step -> step.setKey(KeyGenerator.generateStepKey(step.getId())));
+			stepMap.values().forEach(step -> step.setKey(KeyGenerator.generateStepKey(step.getId())));
 
-			// TODO: Is using indexes a good decision?
 			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitions()) {
-				WorkflowStep sourceStep = stepsBuffer.get(t.sourceIndex());
-				WorkflowStep targetStep = stepsBuffer.get(t.targetIndex());
+				WorkflowStep sourceStep = stepMap.get(t.sourceTempKey());
+				WorkflowStep targetStep = stepMap.get(t.targetTempKey());
 
 				WorkflowTransition transition = WorkflowTransition.builder()
 					.workflow(workflow)

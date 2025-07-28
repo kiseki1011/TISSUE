@@ -11,9 +11,9 @@ public record CreateWorkflowCommand(
 	List<StepCommand> steps,
 	List<TransitionCommand> transitions
 ) {
-	public record StepCommand(String label, boolean isInitial, boolean isFinal) {
+	public record StepCommand(String tempKey, String label, boolean isInitial, boolean isFinal) {
 	}
 
-	public record TransitionCommand(String label, boolean isMainFlow, int sourceIndex, int targetIndex) {
+	public record TransitionCommand(String label, boolean isMainFlow, String sourceTempKey, String targetTempKey) {
 	}
 }
