@@ -7,7 +7,7 @@ public record IssueTypeResponse(
 	String issueTypeKey
 ) {
 	// TODO: Should i just use issueTypeDefinition.getWorkspace().getCode()?
-	//  - I'll probably have to solve N+1 problems using join fetch
+	//  - Do i have to solve N+1 problems using join fetch?
 	public static IssueTypeResponse from(String workspaceCode, IssueTypeDefinition issueTypeDefinition) {
 		return new IssueTypeResponse(workspaceCode, issueTypeDefinition.getKey());
 	}

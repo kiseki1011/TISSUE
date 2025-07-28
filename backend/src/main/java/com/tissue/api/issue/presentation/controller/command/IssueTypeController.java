@@ -29,12 +29,10 @@ public class IssueTypeController {
 
 	/**
 	 * TODO
-	 *  - create custom issue type(IssueTypeDefinition) o
 	 *  - update custom issue type
 	 *  - delete custom issue type
 	 *  - prevent deletion of default system issue types
 	 *  <p>
-	 *  - create custom issue field(IssueFieldDefinition) o
 	 *  - update custom issue field
 	 *  - delete custom issue field
 	 *  - prevent deletion of default system issue fields

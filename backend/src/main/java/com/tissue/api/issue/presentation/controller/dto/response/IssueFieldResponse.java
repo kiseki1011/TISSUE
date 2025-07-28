@@ -20,7 +20,6 @@ public record IssueFieldResponse(
 			.workspaceCode(workspaceCode)
 			.issueTypeKey(issueTypeKey)
 			.issueFieldKey(issueFieldDefinition.getKey())
-			.issueFieldFieldKey(issueFieldDefinition.getFieldKey())
 			.build();
 	}
 }

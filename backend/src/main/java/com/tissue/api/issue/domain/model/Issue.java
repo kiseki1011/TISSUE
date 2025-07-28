@@ -205,7 +205,7 @@ public class Issue extends BaseEntity {
 	}
 
 	// TODO: How should I define the logic to automatically update the timestamps
-	//  when the currentStep is a finishing step?
+	//  when the currentStep is a finalStep?
 	// private void updateTimestamps(WorkflowStep newStep) {
 	// }
 

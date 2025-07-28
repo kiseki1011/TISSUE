@@ -35,8 +35,6 @@ public class WorkflowController {
 	 *  - update transition(label, description, sourceStep, targetStep)
 	 *  - needs to apply Spring State Machine
 	 *  - set guard for transitions
-	 *  - DONE
-	 *  - create workflow
 	 */
 
 	private final WorkflowService workflowService;
