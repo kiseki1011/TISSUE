@@ -11,15 +11,12 @@ public record IssueFieldResponse(
 	String issueFieldKey,
 	String issueFieldFieldKey
 ) {
-	public static IssueFieldResponse from(
-		String workspaceCode,
-		String issueTypeKey,
-		IssueFieldDefinition issueFieldDefinition
-	) {
+	// TODO: Use Join Fetch to solve additional query
+	public static IssueFieldResponse from(IssueFieldDefinition issueField) {
 		return IssueFieldResponse.builder()
-			.workspaceCode(workspaceCode)
-			.issueTypeKey(issueTypeKey)
-			.issueFieldKey(issueFieldDefinition.getKey())
+			.workspaceCode(issueField.getWorkspaceCode())
+			.issueTypeKey(issueField.getIssueType().getKey())
+			.issueFieldKey(issueField.getKey())
 			.build();
 	}
 }

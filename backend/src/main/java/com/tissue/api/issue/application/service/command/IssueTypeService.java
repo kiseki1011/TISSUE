@@ -13,7 +13,6 @@ import com.tissue.api.issue.domain.model.enums.FieldType;
 import com.tissue.api.issue.domain.newmodel.IssueFieldDefinition;
 import com.tissue.api.issue.domain.newmodel.IssueTypeDefinition;
 import com.tissue.api.issue.domain.newmodel.WorkflowDefinition;
-import com.tissue.api.issue.domain.util.KeyGenerator;
 import com.tissue.api.issue.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueTypeRepository;
 import com.tissue.api.issue.presentation.controller.dto.response.IssueFieldResponse;
@@ -38,7 +37,7 @@ public class IssueTypeService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 		WorkflowDefinition workflow = workflowFinder.findWorkflow(cmd.workspaceCode(), cmd.workflowKey());
 
-		IssueTypeDefinition issueType = issueTypeRepository.saveAndFlush(IssueTypeDefinition.builder()
+		IssueTypeDefinition issueType = issueTypeRepository.save(IssueTypeDefinition.builder()
 			.workspace(workspace)
 			.label(cmd.label())
 			.color(cmd.color())
@@ -46,12 +45,7 @@ public class IssueTypeService {
 			.workflow(workflow)
 			.build());
 
-		// TODO: Should i use the KeyGenerator's static method in the service(here) or encapsulate inside setKey()?
-		issueType.setKey(KeyGenerator.generateIssueTypeKey(issueType.getId()));
-
-		// TODO: Should i pass the issueType only, and set the values in IssueTypeResponse.from() like
-		//  issueType.getWorkspace().getWorkspaceCode()?
-		return IssueTypeResponse.from(cmd.workspaceCode(), issueType);
+		return IssueTypeResponse.from(issueType);
 	}
 
 	@Transactional
@@ -82,10 +76,6 @@ public class IssueTypeService {
 			.allowedOptions(cmd.allowedOptions())
 			.build());
 
-		issueField.setKey(KeyGenerator.generateFieldKey(issueField.getId()));
-
-		// TODO: Should i just pass the issueField only, and set the values in IssueFieldResponse.from() like
-		//  issueField.getIssueType().getWorkspace().getWorkspaceCode(), issueField.getIssueType().getIssueTypeKey()?
-		return IssueFieldResponse.from(cmd.workspaceCode(), cmd.issueTypeKey(), issueField);
+		return IssueFieldResponse.from(issueField);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.model.enums.FieldType;
+import com.tissue.api.issue.domain.util.KeyGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -16,6 +17,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -62,6 +64,13 @@ public class IssueFieldDefinition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueTypeDefinition issueType;
 
+	@PostPersist
+	private void assignKey() {
+		if (key == null && id != null) {
+			key = KeyGenerator.generateIssueFieldKey(id);
+		}
+	}
+
 	@Builder
 	public IssueFieldDefinition(
 		String key,
@@ -81,8 +90,8 @@ public class IssueFieldDefinition extends BaseEntity {
 		this.allowedOptions = allowedOptions;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public String getWorkspaceCode() {
+		return issueType.getWorkspaceCode();
 	}
 
 	public void updateLabel(String label) {

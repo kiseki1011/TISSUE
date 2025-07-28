@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain.newmodel;
 
+import com.tissue.api.issue.domain.util.KeyGenerator;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -29,6 +32,7 @@ public class WorkflowStep {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	// TODO: Should I use uni or bi directional relation with WorkflowDefinition?
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workflow_id")
 	private WorkflowDefinition workflow;
@@ -48,6 +52,13 @@ public class WorkflowStep {
 	private String description;
 
 	// TODO: consider adding fields for color, icons, etc...
+
+	@PostPersist
+	private void assignKey() {
+		if (key == null && id != null) {
+			key = KeyGenerator.generateStepKey(id);
+		}
+	}
 
 	@Builder
 	public WorkflowStep(

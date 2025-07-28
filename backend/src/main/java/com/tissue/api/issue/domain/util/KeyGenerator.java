@@ -12,8 +12,8 @@ public class KeyGenerator {
 		return KeyPrefix.CUSTOM_ISSUE_TYPE.prefix() + "_" + id;
 	}
 
-	public static String generateFieldKey(long id) {
-		return KeyPrefix.CUSTOM_FIELD.prefix() + "_" + id;
+	public static String generateIssueFieldKey(long id) {
+		return KeyPrefix.CUSTOM_ISSUE_FIELD.prefix() + "_" + id;
 	}
 
 	public static String generateWorkflowKey(long id) {

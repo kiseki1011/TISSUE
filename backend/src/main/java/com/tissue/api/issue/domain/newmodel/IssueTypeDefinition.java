@@ -3,6 +3,7 @@ package com.tissue.api.issue.domain.newmodel;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.domain.model.enums.HierarchyLevel;
+import com.tissue.api.issue.domain.util.KeyGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;
@@ -14,6 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -39,9 +41,6 @@ public class IssueTypeDefinition extends BaseEntity {
 	private Workspace workspace;
 
 	@Column(nullable = false)
-	private String workspaceCode;
-
-	@Column(nullable = false)
 	private String key;
 
 	@Column(nullable = false)
@@ -65,6 +64,13 @@ public class IssueTypeDefinition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowDefinition workflow;
 
+	@PostPersist
+	private void assignKey() {
+		if (key == null && id != null) {
+			key = KeyGenerator.generateIssueTypeKey(id);
+		}
+	}
+
 	@Builder
 	public IssueTypeDefinition(
 		Workspace workspace,
@@ -75,7 +81,6 @@ public class IssueTypeDefinition extends BaseEntity {
 		WorkflowDefinition workflow
 	) {
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
 		this.key = key;
 		this.label = label;
 		this.color = color != null ? color : ColorType.getRandomColor();
@@ -84,12 +89,8 @@ public class IssueTypeDefinition extends BaseEntity {
 		this.systemType = false;
 	}
 
-	public void setKey(String key) {
-		// TODO: Should I make the key immutable?
-		// if (this.key != null) {
-		// 	throw new IllegalStateException("Key is already set");
-		// }
-		this.key = key;
+	public String getWorkspaceCode() {
+		return workspace.getCode();
 	}
 
 	public void updateLabel(String label) {

@@ -6,9 +6,8 @@ public record IssueTypeResponse(
 	String workspaceCode,
 	String issueTypeKey
 ) {
-	// TODO: Should i just use issueTypeDefinition.getWorkspace().getCode()?
-	//  - Do i have to solve N+1 problems using join fetch?
-	public static IssueTypeResponse from(String workspaceCode, IssueTypeDefinition issueTypeDefinition) {
-		return new IssueTypeResponse(workspaceCode, issueTypeDefinition.getKey());
+	// TODO: Use Join Fetch to solve additional query
+	public static IssueTypeResponse from(IssueTypeDefinition issueType) {
+		return new IssueTypeResponse(issueType.getWorkspaceCode(), issueType.getKey());
 	}
 }

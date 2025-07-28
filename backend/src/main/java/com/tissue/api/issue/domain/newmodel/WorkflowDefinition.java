@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.domain.util.KeyGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
@@ -17,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -60,6 +62,13 @@ public class WorkflowDefinition extends BaseEntity {
 	private WorkflowStep initialStep;
 
 	private String description;
+
+	@PostPersist
+	private void assignKey() {
+		if (key == null && id != null) {
+			key = KeyGenerator.generateWorkflowKey(id);
+		}
+	}
 
 	@Builder
 	public WorkflowDefinition(
