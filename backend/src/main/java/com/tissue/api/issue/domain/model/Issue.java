@@ -1,9 +1,7 @@
 package com.tissue.api.issue.domain.model;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,7 +10,6 @@ import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.enums.IssuePriority;
 import com.tissue.api.issue.domain.newmodel.IssueTypeDefinition;
-import com.tissue.api.issue.domain.newmodel.JsonMapConverter;
 import com.tissue.api.issue.domain.newmodel.WorkflowStep;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -20,7 +17,6 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -49,7 +45,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	// TODO: should i consider reading the value from application.yml?
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
@@ -122,9 +117,9 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
-	@Column(columnDefinition = "json")
-	@Convert(converter = JsonMapConverter.class)
-	private Map<String, Object> customFields = new HashMap<>();
+	// @Column(columnDefinition = "json")
+	// @Convert(converter = JsonMapConverter.class)
+	// private Map<String, Object> customFields = new HashMap<>();
 
 	@Builder
 	protected Issue(
