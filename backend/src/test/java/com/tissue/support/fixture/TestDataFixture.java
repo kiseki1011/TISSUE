@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.domain.model.Comment;
 import com.tissue.api.comment.domain.model.IssueComment;
-import com.tissue.api.comment.domain.model.ReviewComment;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.invitation.domain.model.Invitation;
@@ -23,9 +22,6 @@ import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.review.domain.model.Review;
-import com.tissue.api.review.domain.model.enums.ReviewStatus;
-import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -41,8 +37,8 @@ public class TestDataFixture {
 
 	@Autowired
 	private final IssueRepository issueRepository;
-	@Autowired
-	private final ReviewRepository reviewRepository;
+	// @Autowired
+	// private final ReviewRepository reviewRepository;
 	@Autowired
 	private final IssueReviewerRepository issueReviewerRepository;
 	@Autowired
@@ -323,18 +319,18 @@ public class TestDataFixture {
 		return issueReviewerRepository.save(reviewer);
 	}
 
-	public Review createReview(
-		IssueReviewer issueReviewer,
-		String title,
-		ReviewStatus status
-	) {
-		return reviewRepository.save(Review.builder()
-			.issueReviewer(issueReviewer)
-			.title(title)
-			.content("review content")
-			.status(status)
-			.build());
-	}
+	// public Review createReview(
+	// 	IssueReviewer issueReviewer,
+	// 	String title,
+	// 	ReviewStatus status
+	// ) {
+	// 	return reviewRepository.save(Review.builder()
+	// 		.issueReviewer(issueReviewer)
+	// 		.title(title)
+	// 		.content("review content")
+	// 		.status(status)
+	// 		.build());
+	// }
 
 	public IssueComment createIssueComment(
 		Issue issue,
@@ -350,19 +346,19 @@ public class TestDataFixture {
 			.build());
 	}
 
-	public ReviewComment createReviewComment(
-		Review review,
-		String content,
-		WorkspaceMember author,
-		Comment parentComment
-	) {
-		return commentRepository.save(ReviewComment.builder()
-			.review(review)
-			.content(content)
-			.author(author)
-			.parentComment(parentComment)
-			.build());
-	}
+	// public ReviewComment createReviewComment(
+	// 	Review review,
+	// 	String content,
+	// 	WorkspaceMember author,
+	// 	Comment parentComment
+	// ) {
+	// 	return commentRepository.save(ReviewComment.builder()
+	// 		.review(review)
+	// 		.content(content)
+	// 		.author(author)
+	// 		.parentComment(parentComment)
+	// 		.build());
+	// }
 
 	public Invitation createInvitation(
 		Workspace workspace,

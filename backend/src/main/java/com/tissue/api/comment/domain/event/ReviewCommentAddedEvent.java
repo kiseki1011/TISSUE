@@ -1,11 +1,8 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.comment.domain.model.ReviewComment;
-import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
-import com.tissue.api.review.domain.model.Review;
 
 import lombok.Getter;
 
@@ -37,22 +34,22 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 		this.reviewId = reviewId;
 	}
 
-	public static ReviewCommentAddedEvent createEvent(
-		Issue issue,
-		Review review,
-		ReviewComment comment,
-		Long actorMemberId
-	) {
-		return new ReviewCommentAddedEvent(
-			issue.getId(),
-			issue.getIssueKey(),
-			issue.getWorkspaceCode(),
-			// issue.getType(),
-			actorMemberId,
-			review.getId(),
-			comment.getId()
-		);
-	}
+	// public static ReviewCommentAddedEvent createEvent(
+	// 	Issue issue,
+	// 	Review review,
+	// 	ReviewComment comment,
+	// 	Long actorMemberId
+	// ) {
+	// 	return new ReviewCommentAddedEvent(
+	// 		issue.getId(),
+	// 		issue.getIssueKey(),
+	// 		issue.getWorkspaceCode(),
+	// 		// issue.getType(),
+	// 		actorMemberId,
+	// 		review.getId(),
+	// 		comment.getId()
+	// 	);
+	// }
 
 	@Override
 	public EntityReference createEntityReference() {

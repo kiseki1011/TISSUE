@@ -3,8 +3,6 @@ package com.tissue.api.review.presentation.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.review.application.service.command.ReviewCommandService;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -12,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/reviews")
 public class ReviewController {
 
-	private final ReviewCommandService reviewCommandService;
+	// private final ReviewCommandService reviewCommandService;
 
 	/*
 	 * Todo

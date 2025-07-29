@@ -11,8 +11,8 @@ import com.tissue.api.comment.application.service.command.IssueCommentCommandSer
 import com.tissue.api.comment.application.service.command.ReviewCommentCommandService;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
+import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.issue.application.service.command.IssueAssigneeCommandService;
 import com.tissue.api.issue.application.service.command.IssueCommandService;
@@ -29,8 +29,6 @@ import com.tissue.api.position.application.service.command.PositionCommandServic
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
-import com.tissue.api.review.application.service.command.ReviewCommandService;
-import com.tissue.api.review.infrastructure.repository.ReviewRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.sprint.application.service.command.SprintCommandService;
@@ -50,8 +48,8 @@ import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
@@ -134,8 +132,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected IssueRelationCommandService issueRelationCommandService;
-	@Autowired
-	protected ReviewCommandService reviewCommandService;
+	// @Autowired
+	// protected ReviewCommandService reviewCommandService;
 	@Autowired
 	protected IssueReviewerCommandService issueReviewerCommandService;
 	@Autowired
@@ -180,8 +178,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected TeamRepository teamRepository;
 	@Autowired
 	protected IssueRepository issueRepository;
-	@Autowired
-	protected ReviewRepository reviewRepository;
+	// @Autowired
+	// protected ReviewRepository reviewRepository;
 	@Autowired
 	protected IssueReviewerRepository issueReviewerRepository;
 	@Autowired

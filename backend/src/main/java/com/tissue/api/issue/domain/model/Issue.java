@@ -40,7 +40,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Have I set the UniqueConstraint properly?
 @Entity
 @Getter
 @Table(uniqueConstraints = {

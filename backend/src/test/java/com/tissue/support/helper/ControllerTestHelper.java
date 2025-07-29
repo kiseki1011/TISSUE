@@ -16,8 +16,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.global.config.webmvc.WebMvcConfig;
 import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
+import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.application.service.command.IssueCommandService;
@@ -37,8 +37,6 @@ import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.presentation.controller.PositionController;
-import com.tissue.api.review.application.service.command.ReviewCommandService;
-import com.tissue.api.review.presentation.controller.ReviewController;
 import com.tissue.api.security.SecurityConfig;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
@@ -77,7 +75,7 @@ import lombok.extern.slf4j.Slf4j;
 		MemberQueryController.class,
 		PositionController.class,
 		IssueController.class,
-		ReviewController.class,
+		// ReviewController.class,
 		IssueReviewerController.class
 	},
 	excludeAutoConfiguration = SecurityAutoConfiguration.class,
@@ -159,8 +157,8 @@ public abstract class ControllerTestHelper {
 	protected PositionQueryService positionQueryService;
 	@MockBean
 	protected IssueCommandService issueCommandService;
-	@MockBean
-	protected ReviewCommandService reviewCommandService;
+	// @MockBean
+	// protected ReviewCommandService reviewCommandService;
 	@MockBean
 	protected IssueReviewerCommandService issueReviewerCommandService;
 	@MockBean

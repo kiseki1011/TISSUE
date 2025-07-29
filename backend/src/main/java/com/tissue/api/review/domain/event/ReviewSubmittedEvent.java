@@ -1,11 +1,9 @@
 package com.tissue.api.review.domain.event;
 
 import com.tissue.api.issue.domain.event.IssueEvent;
-import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
-import com.tissue.api.review.domain.model.Review;
 import com.tissue.api.review.domain.model.enums.ReviewStatus;
 
 import lombok.Getter;
@@ -39,21 +37,21 @@ public class ReviewSubmittedEvent extends IssueEvent {
 		this.reviewStatus = reviewStatus;
 	}
 
-	public static ReviewSubmittedEvent createEvent(
-		Issue issue,
-		Long actorMemberId,
-		Review review
-	) {
-		return new ReviewSubmittedEvent(
-			issue.getId(),
-			issue.getIssueKey(),
-			issue.getWorkspaceCode(),
-			// issue.getType(),
-			actorMemberId,
-			review.getId(),
-			review.getStatus()
-		);
-	}
+	// public static ReviewSubmittedEvent createEvent(
+	// 	Issue issue,
+	// 	Long actorMemberId,
+	// 	Review review
+	// ) {
+	// 	return new ReviewSubmittedEvent(
+	// 		issue.getId(),
+	// 		issue.getIssueKey(),
+	// 		issue.getWorkspaceCode(),
+	// 		// issue.getType(),
+	// 		actorMemberId,
+	// 		review.getId(),
+	// 		review.getStatus()
+	// 	);
+	// }
 
 	@Override
 	public EntityReference createEntityReference() {
