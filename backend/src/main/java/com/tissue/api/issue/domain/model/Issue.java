@@ -45,6 +45,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
+	// TODO: Use application.yml for value
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
@@ -52,7 +53,6 @@ public class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// issue key must be unique for each workspace
 	@Column(nullable = false)
 	private String issueKey;
 
@@ -116,10 +116,6 @@ public class Issue extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
-
-	// @Column(columnDefinition = "json")
-	// @Convert(converter = JsonMapConverter.class)
-	// private Map<String, Object> customFields = new HashMap<>();
 
 	@Builder
 	protected Issue(
@@ -198,8 +194,7 @@ public class Issue extends BaseEntity {
 	public void validateCanRemoveParent() {
 	}
 
-	// TODO: How should I define the logic to automatically update the timestamps
-	//  when the currentStep is a finalStep?
+	// TODO: Should updating timestamps(startedAt, resolvedAt) be called on the service?
 	// private void updateTimestamps(WorkflowStep newStep) {
 	// }
 
