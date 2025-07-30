@@ -14,13 +14,13 @@ import com.tissue.api.invitation.application.service.command.InvitationCommandSe
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.issue.application.service.command.IssueAssigneeCommandService;
-import com.tissue.api.issue.application.service.command.IssueCommandService;
-import com.tissue.api.issue.application.service.command.IssueRelationCommandService;
-import com.tissue.api.issue.application.service.command.IssueReviewerCommandService;
-import com.tissue.api.issue.domain.service.validator.CircularDependencyValidator;
-import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
+import com.tissue.api.issue.base.application.service.IssueRelationService;
+import com.tissue.api.issue.base.application.service.IssueService;
+import com.tissue.api.issue.base.domain.service.CircularDependencyValidator;
+import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
+import com.tissue.api.issue.collaborator.application.service.IssueCollaboratorService;
+import com.tissue.api.issue.collaborator.application.service.IssueReviewerService;
+import com.tissue.api.issue.collaborator.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -129,15 +129,15 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected TeamFinder teamFinder;
 	@Autowired
-	protected IssueCommandService issueCommandService;
+	protected IssueService issueService;
 	@Autowired
-	protected IssueRelationCommandService issueRelationCommandService;
+	protected IssueRelationService issueRelationService;
 	// @Autowired
 	// protected ReviewCommandService reviewCommandService;
 	@Autowired
-	protected IssueReviewerCommandService issueReviewerCommandService;
+	protected IssueReviewerService issueReviewerService;
 	@Autowired
-	protected IssueAssigneeCommandService issueAssigneeCommandService;
+	protected IssueCollaboratorService issueCollaboratorService;
 	@Autowired
 	protected IssueCommentCommandService issueCommentCommandService;
 	@Autowired

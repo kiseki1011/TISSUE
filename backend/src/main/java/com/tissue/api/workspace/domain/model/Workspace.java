@@ -6,7 +6,7 @@ import java.util.List;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.invitation.domain.model.Invitation;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;

@@ -11,8 +11,8 @@ import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
-import com.tissue.api.issue.application.service.finder.IssueFinder;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.base.application.finder.IssueFinder;
+import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 

@@ -1,6 +1,6 @@
 package com.tissue.api.review.domain.event;
 
-import com.tissue.api.issue.domain.event.IssueEvent;
+import com.tissue.api.issue.base.domain.event.IssueEvent;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;

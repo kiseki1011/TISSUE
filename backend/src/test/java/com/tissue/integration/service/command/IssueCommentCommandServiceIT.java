@@ -17,7 +17,7 @@ import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.base.domain.enums.IssuePriority;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;

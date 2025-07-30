@@ -2,8 +2,8 @@ package com.tissue.api.sprint.presentation.dto.response;
 
 import java.time.LocalDateTime;
 
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.enums.IssuePriority;
+import com.tissue.api.issue.base.domain.enums.IssuePriority;
+import com.tissue.api.issue.base.domain.model.Issue;
 
 import lombok.Builder;
 

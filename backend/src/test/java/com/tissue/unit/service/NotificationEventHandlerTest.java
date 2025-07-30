@@ -5,7 +5,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.issue.application.service.finder.IssueFinder;
+import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
