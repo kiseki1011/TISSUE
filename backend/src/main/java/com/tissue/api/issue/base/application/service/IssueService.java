@@ -1,17 +1,26 @@
 package com.tissue.api.issue.base.application.service;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
+import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.base.domain.model.Issue;
+import com.tissue.api.issue.base.domain.model.IssueFieldValue;
+import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
+import com.tissue.api.issue.base.domain.service.IssueFieldSchemaValidator;
+import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.base.presentation.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -39,31 +48,41 @@ import lombok.RequiredArgsConstructor;
 public class IssueService {
 
 	private final IssueFinder issueFinder;
+	private final IssueTypeFinder issueTypeFinder;
 	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final IssueRepository issueRepository;
+	private final IssueFieldValueRepository fieldValueRepository;
+	private final IssueFieldSchemaValidator fieldValidator;
 
 	private final ApplicationEventPublisher eventPublisher;
 
-	// @Transactional
-	// public IssueResponse createIssue(
-	// 	String workspaceCode,
-	// 	Long memberId,
-	// 	CreateIssueRequest request
-	// ) {
-	// 	Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
-	//
-	// 	Issue issue = request.toIssue(workspace);
-	// 	Issue savedIssue = issueRepository.save(issue);
-	//
-	// 	watchIssue(workspaceCode, savedIssue.getIssueKey(), memberId);
-	//
-	// 	eventPublisher.publishEvent(
-	// 		IssueCreatedEvent.createEvent(issue, memberId)
-	// 	);
-	//
-	// 	return IssueResponse.from(savedIssue);
-	// }
+	@Transactional
+	public IssueResponse createIssue(CreateIssueCommand cmd) {
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
+		IssueTypeDefinition issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
+
+		Issue issue = Issue.builder()
+			.workspace(workspace)
+			.issueType(issueType)
+			.title(cmd.title())
+			.content(cmd.content())
+			.summary(cmd.summary())
+			.priority(cmd.priority())
+			.dueAt(cmd.dueAt())
+			.build();
+
+		issueRepository.save(issue);
+
+		List<IssueFieldValue> values = fieldValidator.validateAndExtract(cmd.customFields(), issueType, issue);
+		fieldValueRepository.saveAll(values);
+
+		// TODO: Should I get the memberId from the controller, or use the audit info like now?
+		WorkspaceMember creator = workspaceMemberFinder.findWorkspaceMember(issue.getCreatedBy(), workspace.getCode());
+		issue.addWatcher(creator);
+
+		return IssueResponse.from(issue);
+	}
 
 	// @Transactional
 	// public IssueResponse updateIssue(
