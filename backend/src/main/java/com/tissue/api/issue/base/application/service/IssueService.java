@@ -105,37 +105,15 @@ public class IssueService {
 		}
 
 		if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
-			List<IssueFieldValue> updates = fieldSchemaValidator.validateAndApplyPartialUpdate(
-				cmd.customFields(), issue
+			List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPartialUpdate(
+				cmd.customFields(),
+				issue
 			);
-			fieldValueRepository.saveAll(updates);
+			fieldValueRepository.saveAll(updateValues);
 		}
 
 		return IssueResponse.from(issue);
 	}
-
-	// @Transactional
-	// public IssueResponse updateIssue(
-	// 	String workspaceCode,
-	// 	String issueKey,
-	// 	Long memberId,
-	// 	UpdateIssueRequest request
-	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
-	//
-	// 	issue.validateIssueTypeMatch(request.getType());
-	//
-	// 	Integer oldStoryPoint = issue.getStoryPoint();
-	//
-	// 	request.updateNonNullFields(issue);
-	//
-	// 	eventPublisher.publishEvent(
-	// 		IssueUpdatedEvent.createEvent(issue, oldStoryPoint, memberId)
-	// 	);
-	//
-	// 	return IssueResponse.from(issue);
-	// }
 
 	// @Transactional
 	// public IssueResponse updateIssueStatus(
