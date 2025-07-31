@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
+import com.tissue.api.issue.base.application.dto.UpdateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
@@ -51,9 +52,10 @@ public class IssueService {
 	private final IssueTypeFinder issueTypeFinder;
 	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final IssueFieldSchemaValidator fieldSchemaValidator;
+
 	private final IssueRepository issueRepository;
 	private final IssueFieldValueRepository fieldValueRepository;
-	private final IssueFieldSchemaValidator fieldValidator;
 
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -62,7 +64,7 @@ public class IssueService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 		IssueTypeDefinition issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
 
-		Issue issue = Issue.builder()
+		Issue issue = issueRepository.save(Issue.builder()
 			.workspace(workspace)
 			.issueType(issueType)
 			.title(cmd.title())
@@ -70,16 +72,44 @@ public class IssueService {
 			.summary(cmd.summary())
 			.priority(cmd.priority())
 			.dueAt(cmd.dueAt())
-			.build();
+			.build());
 
-		issueRepository.save(issue);
-
-		List<IssueFieldValue> values = fieldValidator.validateAndExtract(cmd.customFields(), issueType, issue);
+		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
 		fieldValueRepository.saveAll(values);
 
 		// TODO: Should I get the memberId from the controller, or use the audit info like now?
 		WorkspaceMember creator = workspaceMemberFinder.findWorkspaceMember(issue.getCreatedBy(), workspace.getCode());
 		issue.addWatcher(creator);
+
+		return IssueResponse.from(issue);
+	}
+
+	@Transactional
+	public IssueResponse updateIssue(UpdateIssueCommand cmd) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
+
+		if (cmd.title() != null) {
+			issue.updateTitle(cmd.title());
+		}
+		if (cmd.content() != null) {
+			issue.updateContent(cmd.content());
+		}
+		if (cmd.summary() != null) {
+			issue.updateSummary(cmd.summary());
+		}
+		if (cmd.priority() != null) {
+			issue.updatePriority(cmd.priority());
+		}
+		if (cmd.dueAt() != null) {
+			issue.updateDueAt(cmd.dueAt());
+		}
+
+		if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
+			List<IssueFieldValue> updates = fieldSchemaValidator.validateAndApplyPartialUpdate(
+				cmd.customFields(), issue
+			);
+			fieldValueRepository.saveAll(updates);
+		}
 
 		return IssueResponse.from(issue);
 	}

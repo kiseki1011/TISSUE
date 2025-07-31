@@ -3,6 +3,7 @@ package com.tissue.api.issue.base.domain.model;
 import java.time.LocalDate;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,14 +18,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueFieldValue extends BaseEntity { // TODO: Do I need auditing for this entity too?
+public class IssueFieldValue extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	// TODO: If Issue is deleted all the related values should be deleted too.
-	// TODO: But Im considering using soft delete for Issue, or just manage Issue by status(step)
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Issue issue;
@@ -51,5 +49,18 @@ public class IssueFieldValue extends BaseEntity { // TODO: Do I need auditing fo
 			case DATE -> val.dateValue = LocalDate.parse(value.toString());
 		}
 		return val;
+	}
+
+	public void updateValue(Object value) {
+		if (value == null) {
+			return;
+		}
+
+		switch (field.getFieldType()) {
+			case TEXT, ENUM -> this.stringValue = value.toString();
+			case NUMBER -> this.numberValue = ((Number)value).intValue();
+			case DATE -> this.dateValue = LocalDate.parse(value.toString());
+			default -> throw new InvalidCustomFieldException("Unsupported field type: " + field.getFieldType());
+		}
 	}
 }
