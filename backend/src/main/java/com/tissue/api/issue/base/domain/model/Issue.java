@@ -119,6 +119,7 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
+	// TODO: Consider using a static factory method and keep the contstructor clean
 	@Builder
 	protected Issue(
 		Workspace workspace,
@@ -149,6 +150,8 @@ public class Issue extends BaseEntity {
 		this.dueAt = dueAt;
 		this.storyPoint = storyPoint;
 		this.issueType = issueType;
+
+		this.currentStep = issueType.getWorkflow().getInitialStep();
 	}
 
 	public void updateTitle(String title) {
@@ -173,6 +176,10 @@ public class Issue extends BaseEntity {
 
 	public void updatePriority(IssuePriority priority) {
 		this.priority = priority;
+	}
+
+	public void moveToStep(WorkflowStep step) {
+		this.currentStep = step;
 	}
 
 	public void updateParentIssue(Issue parentIssue) {
