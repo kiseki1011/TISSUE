@@ -7,9 +7,7 @@ import com.tissue.api.issue.base.domain.enums.FieldType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 
-@Builder
 public record CreateIssueFieldRequest(
 	@NotBlank(message = "{valid.notblank}")
 	String label,

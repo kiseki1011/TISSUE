@@ -6,6 +6,7 @@ import java.util.Map;
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.base.domain.enums.IssuePriority;
 
+// TODO: Add validation annotations
 public record CreateIssueRequest(
 	String title,
 	String content,
