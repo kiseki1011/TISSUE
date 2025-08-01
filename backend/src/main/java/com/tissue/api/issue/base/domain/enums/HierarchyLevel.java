@@ -17,6 +17,10 @@ public enum HierarchyLevel {
 		this.level = level;
 	}
 
+	public boolean isInvalidParentFor(HierarchyLevel child) {
+		return !isOneLevelAbove(child);
+	}
+
 	public boolean isOneLevelAbove(HierarchyLevel other) {
 		return this.level == other.level + 1;
 	}

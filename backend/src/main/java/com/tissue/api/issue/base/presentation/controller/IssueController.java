@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.base.application.service.IssueService;
-import com.tissue.api.issue.base.presentation.dto.request.AddParentIssueRequest;
+import com.tissue.api.issue.base.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.request.UpdateIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueResponse;
@@ -75,21 +75,15 @@ public class IssueController {
 	// 	return ApiResponse.ok("Issue status updated.", response);
 	// }
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueResponse> assignParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid AddParentIssueRequest request
+		@RequestBody @Valid AssignParentIssueRequest request,
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.assignParentIssue(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId(),
-			request
-		);
-
+		IssueResponse response = issueService.assignParentIssue(request.toCommand(workspaceCode, issueKey));
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 

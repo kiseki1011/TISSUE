@@ -6,11 +6,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.base.application.dto.AssignParentIssueCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.base.application.dto.UpdateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
-import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
 import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
@@ -18,7 +18,6 @@ import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
 import com.tissue.api.issue.base.domain.service.IssueFieldSchemaValidator;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.base.presentation.dto.request.AddParentIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -137,25 +136,13 @@ public class IssueService {
 	// }
 
 	@Transactional
-	public IssueResponse assignParentIssue(
-		String workspaceCode,
-		String issueKey,
-		Long memberId,
-		AddParentIssueRequest request
-	) {
-		Issue childIssue = issueFinder.findIssue(issueKey, workspaceCode);
-		Issue parentIssue = issueFinder.findIssue(request.parentIssueKey(), workspaceCode);
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	public IssueResponse assignParentIssue(AssignParentIssueCommand cmd) {
+		Issue child = issueFinder.findIssue(cmd.childIssueKey(), cmd.workspaceCode());
+		Issue parent = issueFinder.findIssue(cmd.parentIssueKey(), cmd.workspaceCode());
 
-		Issue oldParentIssue = childIssue.getParentIssue();
+		child.assignParentIssue(parent);
 
-		childIssue.updateParentIssue(parentIssue);
-
-		eventPublisher.publishEvent(
-			IssueParentAssignedEvent.createEvent(childIssue, parentIssue, oldParentIssue, memberId)
-		);
-
-		return IssueResponse.from(childIssue);
+		return IssueResponse.from(child);
 	}
 
 	@Transactional
@@ -171,7 +158,7 @@ public class IssueService {
 
 		// sub-task의 부모 제거 방지용 로직
 		issue.validateCanRemoveParent();
-		issue.removeParentRelationship();
+		issue.removeParentIssue();
 
 		eventPublisher.publishEvent(
 			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, memberId)

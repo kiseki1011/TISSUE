@@ -8,6 +8,7 @@ import java.util.Set;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.base.domain.enums.IssuePriority;
 import com.tissue.api.issue.collaborator.domain.model.IssueAssignee;
 import com.tissue.api.issue.collaborator.domain.model.IssueReviewer;
@@ -182,15 +183,17 @@ public class Issue extends BaseEntity {
 		this.currentStep = step;
 	}
 
-	public void updateParentIssue(Issue parentIssue) {
-		validateParentIssue(parentIssue);
-		removeParentRelationship();
+	public void assignParentIssue(Issue newParent) {
+		validateParentIssue(newParent);
+		removeParentIssue();
 
-		this.parentIssue = parentIssue;
-		parentIssue.getChildIssues().add(this);
+		this.parentIssue = newParent;
+		if (newParent != null) {
+			newParent.childIssues.add(this);
+		}
 	}
 
-	public void removeParentRelationship() {
+	public void removeParentIssue() {
 		if (parentIssue != null) {
 			parentIssue.getChildIssues().remove(this);
 			parentIssue = null;
@@ -198,8 +201,31 @@ public class Issue extends BaseEntity {
 	}
 
 	public void validateParentIssue(Issue parentIssue) {
+		if (parentIssue == null) {
+			throw new InvalidOperationException("Parent issue cannot be null.");
+		}
+
+		boolean isDifferentWorkspace = !this.workspaceCode.equals(parentIssue.workspaceCode);
+		if (isDifferentWorkspace) {
+			throw new InvalidOperationException("Parent must belong to the same workspace.");
+		}
+
+		if (this.equals(parentIssue)) {
+			throw new InvalidOperationException("An issue cannot be its own parent.");
+		}
+
+		HierarchyLevel parentLevel = parentIssue.getIssueType().getHierarchyLevel();
+		HierarchyLevel childLevel = this.issueType.getHierarchyLevel();
+
+		if (parentLevel.isInvalidParentFor(childLevel)) {
+			throw new InvalidOperationException(
+				"Parent must be exactly one level above the child. Parent: %s (%d), Child: %s (%d)"
+					.formatted(parentIssue.getIssueType().getLabel(), parentLevel.getLevel(),
+						this.issueType.getLabel(), childLevel.getLevel()));
+		}
 	}
 
+	// TODO: Will I need this in the future to constraint creating stand-alone SubTasks?
 	public void validateCanRemoveParent() {
 	}
 
