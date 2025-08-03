@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.collaborator.application.dto.AddAssigneeCommand;
+import com.tissue.api.issue.collaborator.application.dto.AddWatcherCommand;
 import com.tissue.api.issue.collaborator.application.dto.RemoveAssigneeCommand;
+import com.tissue.api.issue.collaborator.application.dto.RemoveWatcherCommand;
 import com.tissue.api.issue.collaborator.application.service.IssueCollaboratorService;
 import com.tissue.api.issue.collaborator.presentation.dto.request.AddAssigneeRequest;
 import com.tissue.api.issue.collaborator.presentation.dto.request.RemoveAssigneeRequest;
 import com.tissue.api.issue.collaborator.presentation.dto.response.IssueAssigneeResponse;
+import com.tissue.api.issue.collaborator.presentation.dto.response.IssueCollaboratorResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -22,16 +25,15 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-// TODO: Move to IssueAssociateController
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}/assignees")
+@RequestMapping("/api/v1/workspaces/{code}/issues/{issueKey}")
 public class IssueCollaboratorController {
 
 	private final IssueCollaboratorService issueCollaboratorService;
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PostMapping
+	@PostMapping("/assignees")
 	public ApiResponse<IssueAssigneeResponse> addAssignee(
 		@PathVariable String code,
 		@PathVariable String issueKey,
@@ -51,7 +53,7 @@ public class IssueCollaboratorController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@DeleteMapping
+	@DeleteMapping("/assignees")
 	public ApiResponse<IssueAssigneeResponse> removeAssignee(
 		@PathVariable String code,
 		@PathVariable String issueKey,
@@ -68,5 +70,33 @@ public class IssueCollaboratorController {
 		);
 
 		return ApiResponse.ok("Assignee removed.", response);
+	}
+
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@PostMapping("{issueKey}/watch")
+	public ApiResponse<IssueCollaboratorResponse> watchIssue(
+		@PathVariable String workspaceCode,
+		@PathVariable String issueKey,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueCollaboratorResponse response = issueCollaboratorService.watchIssue(
+			new AddWatcherCommand(workspaceCode, issueKey, userDetails.getMemberId())
+		);
+
+		return ApiResponse.ok("Watching issue.", response);
+	}
+
+	@RoleRequired(role = WorkspaceRole.VIEWER)
+	@DeleteMapping("{issueKey}/watch")
+	public ApiResponse<IssueCollaboratorResponse> unwatchIssue(
+		@PathVariable String workspaceCode,
+		@PathVariable String issueKey,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueCollaboratorResponse response = issueCollaboratorService.unwatchIssue(
+			new RemoveWatcherCommand(workspaceCode, issueKey, userDetails.getMemberId())
+		);
+
+		return ApiResponse.ok("Unwatched issue.", response);
 	}
 }

@@ -8,9 +8,12 @@ import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.collaborator.application.dto.AddAssigneeCommand;
+import com.tissue.api.issue.collaborator.application.dto.AddWatcherCommand;
 import com.tissue.api.issue.collaborator.application.dto.RemoveAssigneeCommand;
+import com.tissue.api.issue.collaborator.application.dto.RemoveWatcherCommand;
 import com.tissue.api.issue.collaborator.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.collaborator.presentation.dto.response.IssueAssigneeResponse;
+import com.tissue.api.issue.collaborator.presentation.dto.response.IssueCollaboratorResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -78,5 +81,35 @@ public class IssueCollaboratorService {
 		);
 
 		return IssueAssigneeResponse.from(assignee, issueKey);
+	}
+
+	@Transactional
+	public IssueCollaboratorResponse watchIssue(
+		AddWatcherCommand cmd
+	) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(
+			cmd.memberId(),
+			cmd.workspaceCode()
+		);
+
+		issue.addWatcher(workspaceMember);
+
+		return IssueCollaboratorResponse.from(issue, cmd.memberId());
+	}
+
+	@Transactional
+	public IssueCollaboratorResponse unwatchIssue(
+		RemoveWatcherCommand cmd
+	) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(
+			cmd.memberId(),
+			cmd.workspaceCode()
+		);
+
+		issue.removeWatcher(workspaceMember);
+
+		return IssueCollaboratorResponse.from(issue, cmd.memberId());
 	}
 }

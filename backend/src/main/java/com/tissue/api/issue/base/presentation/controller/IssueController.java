@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issue.base.application.dto.RemoveParentIssueCommand;
 import com.tissue.api.issue.base.application.service.IssueService;
 import com.tissue.api.issue.base.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueRequest;
@@ -33,8 +34,8 @@ public class IssueController {
 
 	private final IssueService issueService;
 
-	@PostMapping
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PostMapping
 	public ResponseEntity<ApiResponse<IssueResponse>> createIssue(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid CreateIssueRequest request,
@@ -45,8 +46,8 @@ public class IssueController {
 			.body(ApiResponse.created("Issue created.", response));
 	}
 
-	@PatchMapping("/{issueKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}")
 	public ApiResponse<IssueResponse> updateIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
@@ -57,26 +58,8 @@ public class IssueController {
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{issueKey}/status")
-	// public ApiResponse<IssueResponse> updateIssueStatus(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String issueKey,
-	// 	@CurrentMember MemberUserDetails userDetails,
-	// 	@RequestBody @Valid UpdateIssueStatusRequest request
-	// ) {
-	// 	IssueResponse response = issueCommandService.updateIssueStatus(
-	// 		workspaceCode,
-	// 		issueKey,
-	// 		userDetails.getMemberId(),
-	// 		request
-	// 	);
-	//
-	// 	return ApiResponse.ok("Issue status updated.", response);
-	// }
-
-	@PatchMapping("/{issueKey}/parent")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> assignParentIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
@@ -94,44 +77,16 @@ public class IssueController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.removeParentIssue(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId()
-		);
-
-		return ApiResponse.ok("Parent issue relationship removed.", response);
+		IssueResponse response = issueService.removeParentIssue(new RemoveParentIssueCommand(workspaceCode, issueKey));
+		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PostMapping("{issueKey}/watch")
-	public ApiResponse<IssueResponse> watchIssue(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueResponse response = issueService.watchIssue(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId()
-		);
+	// TODO: Progress Issue(Update Issue's WorkflowStep)
+	//  Should this API be placed inside IssueController or WorkflowController?
 
-		return ApiResponse.ok("Watching issue.", response);
-	}
+	// TODO: Soft delete Issue
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@DeleteMapping("{issueKey}/watch")
-	public ApiResponse<IssueResponse> unwatchIssue(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueResponse response = issueService.unwatchIssue(
-			workspaceCode,
-			issueKey,
-			userDetails.getMemberId()
-		);
-
-		return ApiResponse.ok("Unwatched issue.", response);
-	}
+	// TODO(Later):
+	//  - Clone Issue
+	//  - Move(or clone) Issue to different Workspace
 }

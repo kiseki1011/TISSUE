@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.base.application.dto.AssignParentIssueCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
+import com.tissue.api.issue.base.application.dto.RemoveParentIssueCommand;
 import com.tissue.api.issue.base.application.dto.UpdateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
-import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
@@ -146,51 +146,16 @@ public class IssueService {
 	}
 
 	@Transactional
-	public IssueResponse removeParentIssue(
-		String workspaceCode,
-		String issueKey,
-		Long memberId
-	) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	public IssueResponse removeParentIssue(RemoveParentIssueCommand cmd) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
 
-		Issue oldParentIssue = issue.getParentIssue();
+		// TODO: Need to implement a way to turn on/off requiring a parent.
+		//  To put it easy, I need a way to allow or disallow stand-alone creation of Issues.
+		//  For example, I dont want to allow making a SubTask without a parent.
+		//  How should i implement this, so the user can add this gaurd on a IssueTypeDefinition at runtime?
+		// issue.validateCanRemoveParent();
 
-		// sub-task의 부모 제거 방지용 로직
-		issue.validateCanRemoveParent();
 		issue.removeParentIssue();
-
-		eventPublisher.publishEvent(
-			IssueParentRemovedEvent.createEvent(issue, oldParentIssue, memberId)
-		);
-
-		return IssueResponse.from(issue);
-	}
-
-	@Transactional
-	public IssueResponse watchIssue(
-		String workspaceCode,
-		String issueKey,
-		Long memberId
-	) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
-
-		issue.addWatcher(workspaceMember);
-
-		return IssueResponse.from(issue);
-	}
-
-	@Transactional
-	public IssueResponse unwatchIssue(
-		String workspaceCode,
-		String issueKey,
-		Long memberId
-	) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
-
-		issue.removeWatcher(workspaceMember);
 
 		return IssueResponse.from(issue);
 	}
