@@ -56,7 +56,7 @@ public class WorkflowStep {
 	@PostPersist
 	private void assignKey() {
 		if (key == null && id != null) {
-			key = KeyGenerator.generateStepKey(id);
+			key = KeyGenerator.generateStatusKey(id);
 		}
 	}
 

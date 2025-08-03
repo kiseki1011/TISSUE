@@ -14,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
@@ -36,7 +36,6 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	private final MemberFinder memberFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final PasswordEncoder passwordEncoder;
 	private final WorkspaceValidator workspaceValidator;
 
@@ -88,7 +87,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	}
 
 	private void setGeneratedWorkspaceCode(Workspace workspace) {
-		String generatedCode = workspaceCodeGenerator.generateWorkspaceCode();
+		String generatedCode = WorkspaceKeyGenerator.generateWorkspaceKeySuffix();
 		workspace.setCode(generatedCode);
 	}
 

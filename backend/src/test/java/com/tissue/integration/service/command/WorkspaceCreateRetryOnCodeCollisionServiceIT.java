@@ -10,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.tissue.api.common.exception.type.InternalServerException;
+import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
@@ -20,7 +20,7 @@ import com.tissue.support.helper.ServiceIntegrationTestHelper;
 class WorkspaceCreateRetryOnCodeCollisionServiceIT extends ServiceIntegrationTestHelper {
 
 	@MockBean
-	private WorkspaceCodeGenerator workspaceCodeGenerator;
+	private WorkspaceKeyGenerator workspaceKeyGenerator;
 
 	@AfterEach
 	void tearDown() {
@@ -44,7 +44,7 @@ class WorkspaceCreateRetryOnCodeCollisionServiceIT extends ServiceIntegrationTes
 			.build();
 
 		// assume the generated workspace code is always duplicate
-		when(workspaceCodeGenerator.generateWorkspaceCode()).thenReturn("DUPLICATECODE");
+		when(workspaceKeyGenerator.generateWorkspaceKeySuffix()).thenReturn("DUPLICATECODE");
 
 		// create workspace that has the duplicate code as workspace code
 		workspaceRepository.save(Workspace.builder()
@@ -57,6 +57,6 @@ class WorkspaceCreateRetryOnCodeCollisionServiceIT extends ServiceIntegrationTes
 		assertThatThrownBy(() -> workspaceCreateService.createWorkspace(request, member.getId()))
 			.isInstanceOf(InternalServerException.class);
 
-		verify(workspaceCodeGenerator, times(5)).generateWorkspaceCode();
+		verify(workspaceKeyGenerator, times(5)).generateWorkspaceKeySuffix();
 	}
 }
