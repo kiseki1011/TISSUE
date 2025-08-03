@@ -1,6 +1,6 @@
 package com.tissue.api.issue.workflow.domain.model;
 
-import com.tissue.api.issue.base.domain.util.KeyGenerator;
+import com.tissue.api.global.key.KeyGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

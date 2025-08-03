@@ -2,9 +2,9 @@ package com.tissue.api.issue.base.domain.model;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
-import com.tissue.api.issue.base.domain.util.KeyGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;

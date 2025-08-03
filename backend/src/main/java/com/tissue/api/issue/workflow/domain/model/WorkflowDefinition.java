@@ -6,7 +6,7 @@ import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.base.domain.util.KeyGenerator;
+import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;

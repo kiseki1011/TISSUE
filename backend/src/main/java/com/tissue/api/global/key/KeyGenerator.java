@@ -1,4 +1,4 @@
-package com.tissue.api.issue.base.domain.util;
+package com.tissue.api.global.key;
 
 import com.tissue.api.issue.base.domain.enums.KeyPrefix;
 

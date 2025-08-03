@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.StringListConverter;
 import com.tissue.api.issue.base.domain.enums.FieldType;
-import com.tissue.api.issue.base.domain.util.KeyGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
