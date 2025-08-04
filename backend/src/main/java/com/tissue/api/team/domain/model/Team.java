@@ -73,7 +73,7 @@ public class Team extends BaseEntity {
 		this.name = name;
 		this.description = description;
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
+		this.workspaceCode = workspace.getKey();
 		this.color = color;
 	}
 

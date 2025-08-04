@@ -91,7 +91,7 @@ public class IssueTypeDefinition extends BaseEntity {
 	}
 
 	public String getWorkspaceCode() {
-		return workspace.getCode();
+		return workspace.getKey();
 	}
 
 	public void updateLabel(String label) {

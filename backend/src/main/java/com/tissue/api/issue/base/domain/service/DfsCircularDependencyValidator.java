@@ -23,7 +23,7 @@ public class DfsCircularDependencyValidator implements CircularDependencyValidat
 
 		// 캐시 확인
 		Set<String> cachedDependencies = dependencyCache.get(cacheKey);
-		if (cachedDependencies != null && cachedDependencies.contains(targetIssue.getIssueKey())) {
+		if (cachedDependencies != null && cachedDependencies.contains(targetIssue.getKey())) {
 			throw new InvalidOperationException("Circular dependency detected in blocking chain.");
 		}
 
@@ -47,7 +47,7 @@ public class DfsCircularDependencyValidator implements CircularDependencyValidat
 	 * Collects all reachable issues using DFS.
 	 */
 	private void collectReachableIssues(Issue current, Set<Issue> visited, Set<String> reachableIssues) {
-		reachableIssues.add(current.getIssueKey());
+		reachableIssues.add(current.getKey());
 
 		for (IssueRelation relation : current.getOutgoingRelations()) {
 			if (relation.getRelationType() != IssueRelationType.BLOCKS) {
@@ -68,6 +68,6 @@ public class DfsCircularDependencyValidator implements CircularDependencyValidat
 	 * Creates cache key.
 	 */
 	private String generateCacheKey(Issue issue) {
-		return issue.getWorkspaceCode() + ":" + issue.getIssueKey();
+		return issue.getWorkspaceCode() + ":" + issue.getKey();
 	}
 }

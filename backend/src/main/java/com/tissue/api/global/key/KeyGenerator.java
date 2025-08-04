@@ -10,8 +10,8 @@ public class KeyGenerator {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKSPACE, WorkspaceKeyGenerator.generateWorkspaceKeySuffix());
 	}
 
-	public static String generateIssueKey(long issueNumber) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE, issueNumber);
+	public static String generateIssueKey(String prefix, long issueNumber) {
+		return KeyPrefixPolicy.format(prefix.toUpperCase(), issueNumber);
 	}
 
 	public static String generateSprintKey(long sprintNumber) {

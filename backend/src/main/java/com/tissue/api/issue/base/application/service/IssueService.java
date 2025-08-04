@@ -77,7 +77,7 @@ public class IssueService {
 		fieldValueRepository.saveAll(values);
 
 		// TODO: Should I get the memberId from the controller, or use the audit info like now?
-		WorkspaceMember creator = workspaceMemberFinder.findWorkspaceMember(issue.getCreatedBy(), workspace.getCode());
+		WorkspaceMember creator = workspaceMemberFinder.findWorkspaceMember(issue.getCreatedBy(), workspace.getKey());
 		issue.addWatcher(creator);
 
 		return IssueResponse.from(issue);

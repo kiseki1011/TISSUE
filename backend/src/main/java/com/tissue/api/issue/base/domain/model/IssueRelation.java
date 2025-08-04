@@ -94,7 +94,7 @@ public class IssueRelation extends BaseEntity {
 		if (hasRelation) {
 			throw new InvalidOperationException(String.format(
 				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s",
-				sourceIssue.getIssueKey(), targetIssue.getIssueKey()));
+				sourceIssue.getKey(), targetIssue.getKey()));
 		}
 	}
 

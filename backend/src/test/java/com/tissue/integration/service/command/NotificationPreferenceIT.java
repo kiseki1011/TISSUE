@@ -102,14 +102,14 @@ public class NotificationPreferenceIT {
 		NotificationType type = NotificationType.ISSUE_CREATED;
 
 		// 알림 끄기
-		preferenceService.updatePreference(workspace.getCode(), member.getId(),
+		preferenceService.updatePreference(workspace.getKey(), member.getId(),
 			new UpdateNotificationPreferenceRequest(type, false));
 
 		NotificationMessage message = new NotificationMessage("test", "test");
 
 		// when
 		Notification notification = notificationCommandService.createNotification(
-			new DummyEvent(member.getId(), workspace.getCode(), type),
+			new DummyEvent(member.getId(), workspace.getKey(), type),
 			member.getId(),
 			message
 		);

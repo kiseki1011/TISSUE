@@ -6,6 +6,6 @@ public record WorkspaceResponse(
 	String workspaceCode
 ) {
 	public static WorkspaceResponse from(Workspace workspace) {
-		return new WorkspaceResponse(workspace.getCode());
+		return new WorkspaceResponse(workspace.getKey());
 	}
 }

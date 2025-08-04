@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
@@ -26,7 +25,6 @@ public class WorkspaceCommandService {
 	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public WorkspaceResponse updateWorkspaceInfo(
@@ -83,7 +81,6 @@ public class WorkspaceCommandService {
 	) {
 		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
-		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
 		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		return WorkspaceResponse.from(workspace);

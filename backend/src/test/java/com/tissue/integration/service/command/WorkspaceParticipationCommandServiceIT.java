@@ -37,12 +37,12 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 
 		// when
 		WorkspaceMemberResponse response = workspaceParticipationCommandService.joinWorkspace(
-			workspace.getCode(),
+			workspace.getKey(),
 			member.getId()
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.memberId()).isEqualTo(member.getId());
 		assertThat(response).isNotNull();
 	}
@@ -58,7 +58,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceParticipationCommandService.joinWorkspace(workspace.getCode(), member.getId()))
+			() -> workspaceParticipationCommandService.joinWorkspace(workspace.getKey(), member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 

@@ -20,10 +20,10 @@ import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
-import com.tissue.api.issue.collaborator.application.service.IssueReviewerService;
 import com.tissue.api.issue.base.application.service.IssueService;
 import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.base.presentation.controller.IssueController;
+import com.tissue.api.issue.collaborator.application.service.IssueReviewerService;
 import com.tissue.api.issue.collaborator.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.issue.collaborator.presentation.controller.IssueReviewerController;
 import com.tissue.api.member.application.service.command.MemberCommandService;
@@ -47,7 +47,6 @@ import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.controller.command.WorkspaceController;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
@@ -169,8 +168,6 @@ public abstract class ControllerTestHelper {
 	 */
 	@MockBean
 	protected MemberValidator memberValidator;
-	@MockBean
-	protected WorkspaceValidator workspaceValidator;
 
 	/**
 	 * Repository

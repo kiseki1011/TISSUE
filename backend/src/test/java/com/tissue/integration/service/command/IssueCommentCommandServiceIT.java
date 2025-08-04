@@ -85,14 +85,14 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.createComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			request,
 			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 
 		Comment comment = commentRepository.findById(1L).get();
@@ -117,14 +117,14 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.createComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			replyCommentRequest,
 			workspaceMember1.getId()
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 
 		Comment comment = commentRepository.findById(2L).get();
@@ -157,7 +157,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		assertThatThrownBy(() -> issueCommentCommandService.createComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			request,
 			workspaceMember1.getId()
@@ -179,7 +179,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		IssueCommentResponse response = issueCommentCommandService.updateComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			comment.getId(),
 			request,
@@ -187,7 +187,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 
 		Comment updatedComment = commentRepository.findById(1L).get();
@@ -211,7 +211,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueCommentCommandService.updateComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			comment.getId(),
 			request,
@@ -232,7 +232,7 @@ class IssueCommentCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		issueCommentCommandService.deleteComment(
-			workspace.getCode(),
+			workspace.getKey(),
 			issue.getIssueKey(),
 			comment.getId(),
 			workspaceMember1.getId()

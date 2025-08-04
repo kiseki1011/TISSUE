@@ -46,11 +46,11 @@ class PositionFinderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		positionCommandService.createPosition(workspace.getCode(), request1);
-		positionCommandService.createPosition(workspace.getCode(), request2);
-		positionCommandService.createPosition(workspace.getCode(), request3);
+		positionCommandService.createPosition(workspace.getKey(), request1);
+		positionCommandService.createPosition(workspace.getKey(), request2);
+		positionCommandService.createPosition(workspace.getKey(), request3);
 
-		GetPositionsResponse response = positionQueryService.getPositions(workspace.getCode());
+		GetPositionsResponse response = positionQueryService.getPositions(workspace.getKey());
 
 		// then
 		Assertions.assertThat(response.positions().get(0).name()).isEqualTo("Backend Dev");

@@ -101,7 +101,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when - source issue BLOCKS target issue
 		IssueRelationResponse response = issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId(),
@@ -109,13 +109,13 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.sourceIssueKey()).isEqualTo(sourceIssue.getIssueKey());
 		assertThat(response.targetIssueKey()).isEqualTo(targetIssue.getIssueKey());
 
 		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			sourceIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		IssueRelation relation = findSourceIssue.getOutgoingRelations().get(0);
@@ -135,7 +135,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		IssueRelationResponse response = issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId(),
@@ -147,12 +147,12 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			sourceIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		Issue findTargetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			targetIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		assertThat(findSourceIssue.getOutgoingRelations()).hasSize(1);
@@ -171,7 +171,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 		// sourceIssue.updateCreatedByWorkspaceMember(requesterWorkspaceMemberId);
 
 		issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId(),
@@ -183,7 +183,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId(),
@@ -202,7 +202,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			sourceIssue.getIssueKey(),
 			member1.getId(),
@@ -220,7 +220,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// create issue relation between issue A-B
 		issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
@@ -243,7 +243,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// create issue relation between issue B-C
 		issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetIssue.getIssueKey(),
 			targetIssueC.getIssueKey(),
 			member1.getId(),
@@ -252,7 +252,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then - try to create issue relation between issue C-A
 		assertThatThrownBy(() -> issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetIssueC.getIssueKey(),
 			sourceIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
@@ -270,7 +270,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		issueRelationService.removeRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId()
@@ -279,12 +279,12 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			sourceIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		Issue findTargetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			targetIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		assertThat(findSourceIssue.getOutgoingRelations()).isEmpty();
@@ -301,7 +301,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		issueRelationService.removeRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId()
@@ -310,12 +310,12 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Issue findSourceIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			sourceIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		Issue findTargetIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 			targetIssue.getIssueKey(),
-			workspace.getCode()
+			workspace.getKey()
 		).get();
 
 		assertThat(findSourceIssue.getOutgoingRelations()).isEmpty();
@@ -336,7 +336,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// source issue BLOCKS target issue (A -> B)
 		IssueRelationResponse response = issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			member1.getId(),
@@ -361,7 +361,7 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// source issue BLOCKS target issue (A -> B)
 		issueRelationService.createRelation(
-			workspace.getCode(),
+			workspace.getKey(),
 			sourceIssue.getIssueKey(),
 			targetIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
@@ -379,8 +379,8 @@ class IssueRelationServiceIT extends ServiceIntegrationTestHelper {
 
 		// issue C BLOCKS source issue (C -> A)
 		issueRelationService.createRelation(
-			workspace.getCode(),
-			issueC.getIssueKey(),
+			workspace.getKey(),
+			issueC.getKey(),
 			sourceIssue.getIssueKey(),
 			requesterWorkspaceMemberId,
 			new CreateIssueRelationRequest(IssueRelationType.BLOCKS)

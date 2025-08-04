@@ -65,10 +65,10 @@ class WorkspaceFinderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspace.getCode());
+		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(workspace.getKey());
 
 		// then
-		assertThat(response.getCode()).isEqualTo(workspace.getCode());
+		assertThat(response.getCode()).isEqualTo(workspace.getKey());
 		assertThat(response.getName()).isEqualTo("test workspace");
 	}
 

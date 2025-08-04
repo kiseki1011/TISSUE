@@ -47,8 +47,8 @@ public class WorkspaceMember extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
+	// @Column(name = "WORKSPACE_CODE", nullable = false)
+	// private String workspaceCode;
 
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
@@ -82,9 +82,10 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 		this.displayName = member.getUsername();
 		this.email = member.getEmail();
-		this.workspaceCode = workspace.getCode();
+		// this.workspaceCode = workspace.getKey();
 	}
 
+	// TODO: Should i make this private?
 	public static WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -119,6 +120,10 @@ public class WorkspaceMember extends BaseEntity {
 		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 	}
 
+	public String getWorkspaceKey() {
+		return workspace.getKey();
+	}
+
 	// @Deprecated
 	// public void removeFromWorkspace() {
 	// 	boolean notDeleted = !this.isDeleted();
@@ -149,6 +154,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.workspace.getWorkspaceMembers().remove(this);
 	}
 
+	// TODO: Move Position and Team related code to each domain
 	public void addPosition(Position position) {
 		validatePositionBelongsToWorkspace(position);
 
@@ -223,10 +229,10 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	private void validatePositionBelongsToWorkspace(Position position) {
-		if (!position.getWorkspaceCode().equals(workspaceCode)) {
+		if (!position.getWorkspaceCode().equals(getWorkspaceKey())) {
 			throw new InvalidOperationException(String.format(
 				"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
-				position.getWorkspaceCode(), workspaceCode));
+				position.getWorkspaceCode(), getWorkspaceKey()));
 		}
 	}
 
@@ -243,7 +249,7 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	private void validateTeamBelongsToWorkspace(Team team) {
-		boolean teamWorkspaceCodeNotMatch = !team.getWorkspaceCode().equals(workspaceCode);
+		boolean teamWorkspaceCodeNotMatch = !team.getWorkspaceCode().equals(getWorkspaceKey());
 
 		if (teamWorkspaceCodeNotMatch) {
 			throw new InvalidOperationException(

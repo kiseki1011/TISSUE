@@ -78,7 +78,7 @@ public class WorkflowDefinition extends BaseEntity {
 		String description
 	) {
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
+		this.workspaceCode = workspace.getKey();
 		this.key = key;
 		this.label = label;
 		this.description = description;

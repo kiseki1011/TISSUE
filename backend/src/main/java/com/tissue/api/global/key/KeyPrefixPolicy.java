@@ -14,8 +14,12 @@ public class KeyPrefixPolicy {
 	public static final String STATUS = "STATUS";
 	public static final String TRANSITION = "TRANSITION";
 
+	/**
+	 * Issue can use "ISSUE" as prefix for key
+	 */
 	public static final Set<String> RESERVED_PREFIXES = Set.of(
-		WORKSPACE, ISSUE, SPRINT, ISSUE_TYPE, ISSUE_FIELD, WORKFLOW, STATUS, TRANSITION, "WORKSPACE", "WORKFLOW"
+		WORKSPACE, SPRINT, ISSUE_TYPE, ISSUE_FIELD, WORKFLOW, STATUS, TRANSITION, "WORKSPACE", "WORKFLOW"
+		// , ISSUE
 	);
 
 	public static boolean isReserved(String prefix) {

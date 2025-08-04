@@ -45,7 +45,7 @@ public class IssueReviewerAddedEvent extends IssueEvent {
 	) {
 		return new IssueReviewerAddedEvent(
 			issue.getId(),
-			issue.getIssueKey(),
+			issue.getKey(),
 			issue.getWorkspaceCode(),
 			// issue.getType(),
 			actor.getMember().getId(),

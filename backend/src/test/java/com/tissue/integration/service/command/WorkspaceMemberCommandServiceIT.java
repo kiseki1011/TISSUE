@@ -67,7 +67,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		entityManager.flush();
 
 		// when
-		workspaceMemberCommandService.removeWorkspaceMember(workspace.getCode(), targetMember.getId(),
+		workspaceMemberCommandService.removeWorkspaceMember(workspace.getKey(), targetMember.getId(),
 			requesterMember.getId());
 
 		// then
@@ -90,7 +90,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceMemberCommandService.removeWorkspaceMember(workspace.getCode(), invalidMemberId,
+			() -> workspaceMemberCommandService.removeWorkspaceMember(workspace.getKey(), invalidMemberId,
 				requesterMember.getId()))
 			.isInstanceOf(WorkspaceMemberNotFoundException.class);
 	}
@@ -110,7 +110,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		WorkspaceMemberResponse response = workspaceMemberCommandService.updateRole(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetMember.getId(),
 			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
@@ -135,7 +135,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
-			workspace.getCode(),
+			workspace.getKey(),
 			requesterMember.getId(),
 			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
@@ -161,7 +161,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetMember.getId(),
 			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.OWNER)
@@ -185,7 +185,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetMember.getId(),
 			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.MANAGER)
@@ -207,7 +207,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> workspaceMemberCommandService.updateRole(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetMember.getId(),
 			requesterMember.getId(),
 			new UpdateRoleRequest(WorkspaceRole.OWNER)
@@ -230,7 +230,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
-			workspace.getCode(),
+			workspace.getKey(),
 			targetMember.getId(),
 			requesterMember.getId()
 		);
@@ -249,7 +249,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		WorkspaceMemberResponse response = workspaceMemberCommandService.updateDisplayName(
-			workspace.getCode(),
+			workspace.getKey(),
 			member.getId(),
 			new UpdateDisplayNameRequest("newDisplayName")
 		);
@@ -285,7 +285,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When
 		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			position.getId(),
 			member.getId(),
 			member.getId()
@@ -293,7 +293,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// Then
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 	}
 
 	@Test
@@ -327,7 +327,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// assign position1 to workspace member
 		workspaceMemberCommandService.setPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			position1.getId(),
 			member.getId(),
 			member.getId()
@@ -335,7 +335,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when - assign another position(position2) to workspace member
 		WorkspaceMemberResponse response = workspaceMemberCommandService.setPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			position2.getId(),
 			member.getId(),
 			member.getId()
@@ -344,7 +344,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		// TODO: PositionResponse인 response1, response2의 positionId 검증
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 
 		WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
 		assertThat(updatedMember.getWorkspaceMemberPositions().size()).isEqualTo(2L);
@@ -364,7 +364,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When & Then
 		assertThatThrownBy(() -> workspaceMemberCommandService.setPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			999L, // invalid position id
 			member.getId(),
 			member.getId()
@@ -395,7 +395,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When
 		WorkspaceMemberResponse response = workspaceMemberCommandService.setTeam(
-			workspace.getCode(),
+			workspace.getKey(),
 			team.getId(),
 			member.getId(),
 			member.getId()
@@ -403,7 +403,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// Then
 		assertThat(response.memberId()).isEqualTo(member.getId());
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 
 		WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
 		assertThat(workspaceMember.getWorkspaceMemberTeams().get(0).getTeam().getName()).isEqualTo("Payment Team");

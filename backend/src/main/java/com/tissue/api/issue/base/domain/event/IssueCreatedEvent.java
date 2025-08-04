@@ -33,7 +33,7 @@ public class IssueCreatedEvent extends IssueEvent {
 	) {
 		return new IssueCreatedEvent(
 			issue.getId(),
-			issue.getIssueKey(),
+			issue.getKey(),
 			issue.getWorkspaceCode(),
 			// issue.getType(),
 			triggeredByWorkspaceMemberId

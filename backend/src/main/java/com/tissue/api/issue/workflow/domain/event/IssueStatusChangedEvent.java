@@ -60,14 +60,14 @@ public class IssueStatusChangedEvent extends IssueEvent {
 
 		return new IssueStatusChangedEvent(
 			issue.getId(),
-			issue.getIssueKey(),
+			issue.getKey(),
 			issue.getWorkspaceCode(),
 			// issue.getType(),
 			actorMemberId,
 			// oldStatus,
 			// issue.getStatus(),
 			parentIssue != null ? parentIssue.getId() : null,
-			parentIssue != null ? parentIssue.getIssueKey() : null
+			parentIssue != null ? parentIssue.getKey() : null
 			// parentIssue != null ? parentIssue.getType() : null,
 			// issue.getStoryPoint()
 		);

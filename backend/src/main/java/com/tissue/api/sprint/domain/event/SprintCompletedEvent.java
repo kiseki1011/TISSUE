@@ -41,7 +41,7 @@ public class SprintCompletedEvent extends SprintEvent {
 	) {
 		return new SprintCompletedEvent(
 			sprint.getId(),
-			sprint.getSprintKey(),
+			sprint.getKey(),
 			sprint.getWorkspaceCode(),
 			actorMemberId,
 			sprint.getStartDate(),

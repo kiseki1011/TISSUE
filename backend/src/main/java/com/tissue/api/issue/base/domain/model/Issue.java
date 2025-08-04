@@ -42,9 +42,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"workspaceCode", "issueKey"})
+	@UniqueConstraint(columnNames = {"key", "workspace"})
 })
-@EqualsAndHashCode(of = {"issueKey", "workspaceCode"}, callSuper = false)
+@EqualsAndHashCode(of = {"key", "workspace"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
@@ -57,14 +57,11 @@ public class Issue extends BaseEntity {
 	private Long id;
 
 	@Column(nullable = false)
-	private String issueKey;
+	private String key;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
-
-	@Column(nullable = false)
-	private String workspaceCode;
 
 	@Column(nullable = false)
 	private String title;
@@ -120,7 +117,6 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
 
-	// TODO: Consider using a static factory method and keep the contstructor clean
 	@Builder
 	protected Issue(
 		Workspace workspace,
@@ -132,18 +128,9 @@ public class Issue extends BaseEntity {
 		LocalDateTime dueAt,
 		Integer storyPoint
 	) {
-		this.issueKey = workspace.getIssueKey();
-		workspace.increaseNextIssueNumber();
+		this.key = workspace.generateCurrentIssueKey();
 
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
-
-		// TODO: Should I use a uni-directional jpa relation between Workspace and Issue,
-		//  instead of a bi-directional relation?
-		// TODO: If using uni-directional relation, how should I be able to retrieve issues that belong to
-		//  a specific workspace?
-		workspace.getIssues().add(this);
-
 		this.title = title;
 		this.content = content;
 		this.summary = summary;
@@ -151,8 +138,11 @@ public class Issue extends BaseEntity {
 		this.dueAt = dueAt;
 		this.storyPoint = storyPoint;
 		this.issueType = issueType;
-
 		this.currentStep = issueType.getWorkflow().getInitialStep();
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
 	}
 
 	public void updateTitle(String title) {
@@ -205,7 +195,7 @@ public class Issue extends BaseEntity {
 			throw new InvalidOperationException("Parent issue cannot be null.");
 		}
 
-		boolean isDifferentWorkspace = !this.workspaceCode.equals(parentIssue.workspaceCode);
+		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
 			throw new InvalidOperationException("Parent must belong to the same workspace.");
 		}
@@ -297,7 +287,7 @@ public class Issue extends BaseEntity {
 		if (isNotAssignee) {
 			throw new ForbiddenOperationException(
 				String.format("Must be an assignee of this issue. workspace code: %s, issue key: %s, member id: %d",
-					workspaceCode, issueKey, memberId));
+					getWorkspaceKey(), key, memberId));
 		}
 	}
 
@@ -324,12 +314,12 @@ public class Issue extends BaseEntity {
 	}
 
 	private void validateBelongsToWorkspace(WorkspaceMember workspaceMember) {
-		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceCode().equals(workspaceCode);
+		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceKey().equals(getWorkspaceKey());
 
 		if (hasDifferentWorkspaceCode) {
 			throw new InvalidOperationException(String.format(
 				"Assignee must belong to this workspace. expected: %s , actual: %s",
-				workspaceMember.getWorkspaceCode(), workspaceCode));
+				workspaceMember.getWorkspaceKey(), getWorkspaceKey()));
 		}
 	}
 

@@ -45,7 +45,6 @@ import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
@@ -156,8 +155,6 @@ public abstract class ServiceIntegrationTestHelper {
 	 */
 	@Autowired
 	protected MemberValidator memberValidator;
-	@Autowired
-	protected WorkspaceValidator workspaceValidator;
 	@Autowired
 	protected CircularDependencyValidator circularDependencyValidator;
 

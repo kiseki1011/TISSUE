@@ -40,7 +40,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		// then
 		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 	}
 
 	@Test

@@ -35,10 +35,10 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		member.increaseMyWorkspaceCount(); // increase workspace count of member
 
 		// when
-		workspaceCommandService.deleteWorkspace(workspace.getCode(), member.getId());
+		workspaceCommandService.deleteWorkspace(workspace.getKey(), member.getId());
 
 		// then
-		assertThat(workspaceRepository.findByCode(workspace.getCode())).isEmpty();
+		assertThat(workspaceRepository.findByCode(workspace.getKey())).isEmpty();
 	}
 
 	@Test
@@ -74,11 +74,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		// when
 		WorkspaceResponse response = workspaceCommandService.updateWorkspaceInfo(
 			request,
-			workspace.getCode()
+			workspace.getKey()
 		);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 
 		Workspace foundWorkspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 		assertThat(foundWorkspace.getName()).isEqualTo("updated workspace name");
@@ -100,13 +100,13 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		workspaceCommandService.updateWorkspaceInfo(request, workspace.getCode());
+		workspaceCommandService.updateWorkspaceInfo(request, workspace.getKey());
 
 		// then
-		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getName())
+		assertThat(workspaceRepository.findByCode(workspace.getKey()).get().getName())
 			.isEqualTo("updated workspace name");
 
-		assertThat(workspaceRepository.findByCode(workspace.getCode()).get().getDescription())
+		assertThat(workspaceRepository.findByCode(workspace.getKey()).get().getDescription())
 			.isEqualTo("description");
 	}
 
@@ -124,11 +124,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("test1234!", "updated1234!");
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getKey());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getKey()).get().getPassword();
 
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
 	}
@@ -147,11 +147,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest(null, "updated1234!");
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getKey());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getKey()).get().getPassword();
 
 		assertThat(passwordEncoder.matches("updated1234!", updatedPassword)).isTrue();
 	}
@@ -170,11 +170,11 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateWorkspacePasswordRequest request = new UpdateWorkspacePasswordRequest("password1234!", null);
 
 		// when
-		workspaceCommandService.updateWorkspacePassword(request, workspace.getCode());
+		workspaceCommandService.updateWorkspacePassword(request, workspace.getKey());
 		entityManager.flush();
 
 		// then
-		String updatedPassword = workspaceRepository.findByCode(workspace.getCode()).get().getPassword();
+		String updatedPassword = workspaceRepository.findByCode(workspace.getKey()).get().getPassword();
 		assertThat(updatedPassword).isNull();
 	}
 
@@ -191,10 +191,10 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("UPDATEPREFIX");
 
 		// when
-		WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getCode(), request);
+		WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getKey(), request);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 
 		Workspace foundWorkspace = workspaceRepository.findByCode(response.workspaceCode()).get();
 		assertThat(foundWorkspace.getIssueKeyPrefix()).isEqualTo("UPDATEPREFIX");
@@ -214,7 +214,7 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 		int memberWorkspaceCount = member.getMyWorkspaceCount();
 
 		// when
-		workspaceCommandService.deleteWorkspace(workspace.getCode(), member.getId());
+		workspaceCommandService.deleteWorkspace(workspace.getKey(), member.getId());
 
 		// then
 		assertThat(memberWorkspaceCount).isEqualTo(1);

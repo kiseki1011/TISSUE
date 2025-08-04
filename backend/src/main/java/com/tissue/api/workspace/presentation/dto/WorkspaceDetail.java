@@ -48,7 +48,7 @@ public class WorkspaceDetail {
 	public static WorkspaceDetail from(Workspace workspace) {
 		return WorkspaceDetail.builder()
 			.id(workspace.getId())
-			.code(workspace.getCode())
+			.code(workspace.getKey())
 			.name(workspace.getName())
 			.description(workspace.getDescription())
 			.memberCount(workspace.getMemberCount())

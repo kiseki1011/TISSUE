@@ -96,10 +96,10 @@ public class SprintFinderIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		Sprint foundSprint = sprintFinder.findSprint(sprint.getSprintKey(), workspace.getCode());
+		Sprint foundSprint = sprintFinder.findSprint(sprint.getKey(), workspace.getKey());
 
 		// then
-		assertThat(foundSprint.getSprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(foundSprint.getKey()).isEqualTo(sprint.getKey());
 	}
 
 	/**
@@ -123,10 +123,10 @@ public class SprintFinderIT extends ServiceIntegrationTestHelper {
 		sprint.addIssue(issue2);
 
 		// when
-		Sprint foundSprint = sprintFinder.findSprintWithIssues(sprint.getSprintKey(), workspace.getCode());
+		Sprint foundSprint = sprintFinder.findSprintWithIssues(sprint.getKey(), workspace.getKey());
 
 		// then
-		assertThat(foundSprint.getSprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(foundSprint.getKey()).isEqualTo(sprint.getKey());
 		assertThat(foundSprint.getSprintIssues()).isNotEmpty();
 	}
 }

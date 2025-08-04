@@ -69,15 +69,15 @@ public class IssueParentAssignedEvent extends IssueEvent {
 	) {
 		return new IssueParentAssignedEvent(
 			childIssue.getId(),
-			childIssue.getIssueKey(),
+			childIssue.getKey(),
 			childIssue.getWorkspaceCode(),
 			// childIssue.getType(),
 			actorMemberId,
 			parentIssue.getId(),
-			parentIssue.getIssueKey(),
+			parentIssue.getKey(),
 			// parentIssue.getType(),
 			oldParentIssue != null ? oldParentIssue.getId() : null,
-			oldParentIssue != null ? oldParentIssue.getIssueKey() : null
+			oldParentIssue != null ? oldParentIssue.getKey() : null
 			// oldParentIssue != null ? oldParentIssue.getType() : null,
 			// childIssue.getStoryPoint()
 		);

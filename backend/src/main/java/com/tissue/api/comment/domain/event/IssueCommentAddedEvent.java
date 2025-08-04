@@ -38,7 +38,7 @@ public class IssueCommentAddedEvent extends CommentEvent {
 	) {
 		return new IssueCommentAddedEvent(
 			issue.getId(),
-			issue.getIssueKey(),
+			issue.getKey(),
 			issue.getWorkspaceCode(),
 			// issue.getType(),
 			actorMemberId,

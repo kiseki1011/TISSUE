@@ -36,14 +36,14 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("member1");
 
 		// send invitation
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when
 		InvitationResponse response = invitationCommandService.acceptInvitation(member.getId(), 1L);
 
 		// then
 		assertThat(response).isNotNull();
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.invitationId()).isEqualTo(invitationId);
 	}
 
@@ -55,7 +55,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 		Member member = testDataFixture.createMember("member1");
 
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when
 		invitationCommandService.acceptInvitation(member.getId(), invitationId);
@@ -74,7 +74,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 		Member member = testDataFixture.createMember("member1");
 
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when
 		invitationCommandService.acceptInvitation(member.getId(), invitationId);
@@ -95,7 +95,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 		Member member = testDataFixture.createMember("member1");
 
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when & then
 		assertThatThrownBy(() -> invitationCommandService.acceptInvitation(member.getId(), invalidInvitationId))
@@ -110,7 +110,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 		Member member = testDataFixture.createMember("member1");
 
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// reject invitation - invitation status is changed to REJECTED
 		invitationCommandService.rejectInvitation(member.getId(), invitationId);
@@ -128,7 +128,7 @@ class InvitationCommandServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", null, null);
 		Member member = testDataFixture.createMember("member1");
 
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), InviteMembersRequest.of(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), InviteMembersRequest.of(Set.of("member1")));
 
 		// when
 		invitationCommandService.rejectInvitation(member.getId(), invitationId);

@@ -15,8 +15,8 @@ public record IssueRelationResponse(
 	public static IssueRelationResponse from(Issue sourceIssue, Issue targetIssue, IssueRelation relation) {
 		return IssueRelationResponse.builder()
 			.workspaceCode(sourceIssue.getWorkspaceCode())
-			.sourceIssueKey(sourceIssue.getIssueKey())
-			.targetIssueKey(targetIssue.getIssueKey())
+			.sourceIssueKey(sourceIssue.getKey())
+			.targetIssueKey(targetIssue.getKey())
 			.issueRelationId(relation.getId())
 			.build();
 	}

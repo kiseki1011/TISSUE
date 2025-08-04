@@ -26,7 +26,7 @@ public class PositionQueryServiceIT extends ServiceIntegrationTestHelper {
 	void canCreatePosition() {
 		// Given
 		positionCommandService.createPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			new CreatePositionRequest(
 				"Backend Developer",
 				null
@@ -34,7 +34,7 @@ public class PositionQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		positionCommandService.createPosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			new CreatePositionRequest(
 				"Frontend Developer",
 				null
@@ -42,7 +42,7 @@ public class PositionQueryServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		Set<ColorType> usedColors = positionQueryService.getUsedColors(workspace.getCode());
+		Set<ColorType> usedColors = positionQueryService.getUsedColors(workspace.getKey());
 
 		// Then
 		// TODO: usedColors에 생성한 포지션들의 색이 포함되는지 검증

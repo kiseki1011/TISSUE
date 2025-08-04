@@ -24,7 +24,7 @@ class WorkspaceAuthenticationServiceIT extends ServiceIntegrationTestHelper {
 		Workspace workspace = testDataFixture.createWorkspace("test workspace", "test1234!", null);
 
 		// when & then
-		assertThatThrownBy(() -> workspaceAuthenticationService.authenticate("invalidPassword", workspace.getCode()))
+		assertThatThrownBy(() -> workspaceAuthenticationService.authenticate("invalidPassword", workspace.getKey()))
 			.isInstanceOf(AuthenticationFailedException.class);
 	}
 }

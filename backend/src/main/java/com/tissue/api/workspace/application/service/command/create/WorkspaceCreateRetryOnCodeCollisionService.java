@@ -18,7 +18,6 @@ import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
@@ -37,8 +36,9 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
 
+	// TODO: Make CreateWorkspaceCommand
+	// TODO: Consider moving workspace creation to WorkspaceService?
 	@Override
 	@Retryable(
 		retryFor = {DataIntegrityViolationException.class},
@@ -54,12 +54,15 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		Member member = memberFinder.findMemberById(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
-		setGeneratedWorkspaceCode(workspace);
+		setGeneratedWorkspaceKey(workspace);
 		setEncodedPasswordIfPresent(request, workspace);
-		setIssueKeyPrefix(request, workspace);
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
+		// TODO: Is it possible to encapsulate the WorkspaceMember adding logic
+		//  in the Workspace constructor(or factory method)?
+		//  Or should I just explicitly call it in the service?
 		workspaceMemberRepository.save(addOwnerWorkspaceMember(
 			member,
 			savedWorkspace
@@ -76,19 +79,14 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
 		throw new InternalServerException(
-			"Failed to solve workspace code collision after " + MAX_RETRIES + " attempts.",
+			"Failed to solve workspace code collision after %d attempts.".formatted(MAX_RETRIES),
 			exception
 		);
 	}
 
-	private void setIssueKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
-		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
-	}
-
-	private void setGeneratedWorkspaceCode(Workspace workspace) {
-		String generatedCode = WorkspaceKeyGenerator.generateWorkspaceKeySuffix();
-		workspace.setCode(generatedCode);
+	private void setGeneratedWorkspaceKey(Workspace workspace) {
+		String generatedKeySuffix = WorkspaceKeyGenerator.generateWorkspaceKeySuffix();
+		workspace.setKey(generatedKeySuffix);
 	}
 
 	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request, Workspace workspace) {

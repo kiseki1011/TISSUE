@@ -59,14 +59,9 @@ public class Sprint extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
-
+	// TODO: Use @UniqueConstraint?
 	@Column(nullable = false, unique = true)
-	private String sprintKey;
-
-	@Column(nullable = false)
-	private Integer number;
+	private String key;
 
 	@OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SprintIssue> sprintIssues = new ArrayList<>();
@@ -81,17 +76,13 @@ public class Sprint extends BaseEntity {
 	) {
 		validateDates(plannedStartDate, plannedEndDate);
 
-		this.number = workspace.getNextSprintNumber();
-		this.sprintKey = String.format("SPRINT-%d", this.number);
-		workspace.increaseNextSprintNumber();
-
+		this.key = workspace.generateSprintKey();
 		this.title = title;
 		this.goal = goal;
 		this.plannedStartDate = plannedStartDate;
 		this.plannedEndDate = plannedEndDate;
 		this.status = SprintStatus.PLANNING;
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
 	}
 
 	public void updateTitle(String title) {
@@ -189,7 +180,7 @@ public class Sprint extends BaseEntity {
 			throw new InvalidOperationException("Can only add issues to PLANNING or ACTIVE sprint.");
 		}
 
-		boolean notEqualWorkspaceCode = !issue.getWorkspaceCode().equals(this.workspaceCode);
+		boolean notEqualWorkspaceCode = !issue.getWorkspaceKey().equals(workspace.getKey());
 		if (notEqualWorkspaceCode) {
 			throw new InvalidOperationException("Cannot add issue from different workspace to sprint.");
 		}

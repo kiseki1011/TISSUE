@@ -49,7 +49,7 @@ public class SprintDDayCountdownEvent extends SprintEvent {
 	) {
 		return new SprintDDayCountdownEvent(
 			sprint.getId(),
-			sprint.getSprintKey(),
+			sprint.getKey(),
 			sprint.getWorkspaceCode(),
 			triggeredByWorkspaceMemberId,
 			dDay

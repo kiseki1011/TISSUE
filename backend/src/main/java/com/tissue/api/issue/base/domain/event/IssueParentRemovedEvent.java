@@ -58,12 +58,12 @@ public class IssueParentRemovedEvent extends IssueEvent {
 	) {
 		return new IssueParentRemovedEvent(
 			childIssue.getId(),
-			childIssue.getIssueKey(),
+			childIssue.getKey(),
 			childIssue.getWorkspaceCode(),
 			// childIssue.getType(),
 			actorMemberId,
 			removedParentIssue.getId(),
-			removedParentIssue.getIssueKey()
+			removedParentIssue.getKey()
 			// removedParentIssue.getType(),
 			// childIssue.getStoryPoint()
 		);

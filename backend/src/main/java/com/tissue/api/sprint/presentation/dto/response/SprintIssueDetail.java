@@ -21,7 +21,7 @@ public record SprintIssueDetail(
 	public static SprintIssueDetail from(Issue issue) {
 		return SprintIssueDetail.builder()
 			.issueId(issue.getId())
-			.issueKey(issue.getIssueKey())
+			.issueKey(issue.getKey())
 			// .type(issue.getType())
 			.title(issue.getTitle())
 			// .status(issue.getStatus())

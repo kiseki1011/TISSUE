@@ -7,6 +7,6 @@ public record IssueResponse(
 	String issueKey
 ) {
 	public static IssueResponse from(Issue issue) {
-		return new IssueResponse(issue.getWorkspaceCode(), issue.getIssueKey());
+		return new IssueResponse(issue.getWorkspaceCode(), issue.getKey());
 	}
 }

@@ -48,7 +48,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		PositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
+		PositionResponse createResponse = positionCommandService.createPosition(workspace.getKey(), request);
 
 		// Then
 		Position position = positionRepository.findById(createResponse.positionId()).get();
@@ -68,7 +68,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// When
-		PositionResponse createResponse = positionCommandService.createPosition(workspace.getCode(), request);
+		PositionResponse createResponse = positionCommandService.createPosition(workspace.getKey(), request);
 
 		// Then
 		Position position = positionRepository.findById(createResponse.positionId()).orElseThrow();
@@ -99,7 +99,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// When
 		PositionResponse response = positionCommandService.updatePosition(
-			workspace.getCode(),
+			workspace.getKey(),
 			position.getId(),
 			request
 		);
@@ -127,7 +127,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		PositionResponse response = positionCommandService.updatePositionColor(
-			workspace.getCode(),
+			workspace.getKey(),
 			position.getId(),
 			request
 		);
@@ -162,7 +162,7 @@ class PositionCommandServiceIT extends ServiceIntegrationTestHelper {
 		workspaceMember.addPosition(position);
 
 		// When & Then
-		assertThatThrownBy(() -> positionCommandService.deletePosition(workspace.getCode(), position.getId()))
+		assertThatThrownBy(() -> positionCommandService.deletePosition(workspace.getKey(), position.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 

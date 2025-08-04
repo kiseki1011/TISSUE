@@ -14,7 +14,7 @@ public record IssueReviewerResponse(
 	public static IssueReviewerResponse from(Issue issue, WorkspaceMember workspaceMember) {
 		return IssueReviewerResponse.builder()
 			.workspaceCode(issue.getWorkspaceCode())
-			.issueKey(issue.getIssueKey())
+			.issueKey(issue.getKey())
 			.reviewerMemberId(workspaceMember.getMember().getId())
 			.build();
 	}

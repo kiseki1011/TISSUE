@@ -108,10 +108,10 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		SprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse response = sprintCommandService.createSprint(workspace.getKey(), request);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
 			response.sprintKey(),
@@ -133,7 +133,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		SprintResponse response = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse response = sprintCommandService.createSprint(workspace.getKey(), request);
 
 		// then
 		assertThat(response.sprintKey()).isEqualTo("SPRINT-1");
@@ -144,7 +144,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 	void whenCreatingSprint_SprintKeyNumberIncreasesByOne() {
 		// given
 		SprintResponse firstSprintResponse = sprintCommandService.createSprint(
-			workspace.getCode(),
+			workspace.getKey(),
 			CreateSprintRequest.builder()
 				.title("first sprint")
 				.goal("first sprint")
@@ -161,7 +161,7 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 			.build();
 
 		// when
-		SprintResponse secondSprintResponse = sprintCommandService.createSprint(workspace.getCode(), request);
+		SprintResponse secondSprintResponse = sprintCommandService.createSprint(workspace.getKey(), request);
 
 		// then
 		assertThat(firstSprintResponse.sprintKey()).isEqualTo("SPRINT-1");
@@ -187,20 +187,20 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.addIssues(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			request
 		);
 
 		// then
-		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(response.sprintKey()).isEqualTo(sprint.getKey());
 
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
 			response.sprintKey(),
 			response.workspaceCode()
 		).get();
 
-		assertThat(foundSprint.getSprintIssues().stream().map(SprintIssue::getIssue).map(Issue::getIssueKey).toList())
+		assertThat(foundSprint.getSprintIssues().stream().map(SprintIssue::getIssue).map(Issue::getKey).toList())
 			.isEqualTo(List.of(issue1.getIssueKey(), issue2.getIssueKey()));
 	}
 
@@ -222,8 +222,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.addIssues(
-				workspace.getCode(),
-				sprint.getSprintKey(),
+				workspace.getKey(),
+				sprint.getKey(),
 				request
 			)
 		).isInstanceOf(ResourceNotFoundException.class);
@@ -247,15 +247,15 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		sprintCommandService.removeIssue(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			new RemoveSprintIssueRequest(issue1.getIssueKey())
 		);
 
 		// then
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
-				sprint.getSprintKey(),
-				workspace.getCode())
+				sprint.getKey(),
+				workspace.getKey())
 			.get();
 
 		assertThat(foundSprint.getSprintIssues().get(0).getIssue()).isEqualTo(issue2);
@@ -280,13 +280,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprint(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			request
 		);
 
 		// then
-		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(response.sprintKey()).isEqualTo(sprint.getKey());
 
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
 			response.sprintKey(),
@@ -316,13 +316,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprint(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			request
 		);
 
 		// then
-		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(response.sprintKey()).isEqualTo(sprint.getKey());
 
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
 			response.sprintKey(),
@@ -352,13 +352,13 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprint(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			request
 		);
 
 		// then
-		assertThat(response.sprintKey()).isEqualTo(sprint.getSprintKey());
+		assertThat(response.sprintKey()).isEqualTo(sprint.getKey());
 
 		Sprint foundSprint = sprintRepository.findBySprintKeyAndWorkspaceCode(
 			response.sprintKey(),
@@ -389,8 +389,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.updateSprint(
-				workspace.getCode(),
-				sprint.getSprintKey(),
+				workspace.getKey(),
+				sprint.getKey(),
 				request
 			)
 		).isInstanceOf(InvalidOperationException.class);
@@ -412,8 +412,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprintStatus(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
 			currentWorkspaceMemberId
 		);
@@ -443,8 +443,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprintStatus(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			new UpdateSprintStatusRequest(SprintStatus.CANCELLED),
 			currentWorkspaceMemberId
 		);
@@ -474,8 +474,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.updateSprintStatus(
-				workspace.getCode(),
-				sprint.getSprintKey(),
+				workspace.getKey(),
+				sprint.getKey(),
 				new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
 				currentWorkspaceMemberId
 			)
@@ -498,8 +498,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.updateSprintStatus(
-				workspace.getCode(),
-				sprint.getSprintKey(),
+				workspace.getKey(),
+				sprint.getKey(),
 				new UpdateSprintStatusRequest(SprintStatus.PLANNING),
 				currentWorkspaceMemberId
 			)
@@ -525,8 +525,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when
 		SprintResponse response = sprintCommandService.updateSprintStatus(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			new UpdateSprintStatusRequest(status),
 			currentWorkspaceMemberId
 		);
@@ -560,8 +560,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.updateSprintStatus(
-			workspace.getCode(),
-			sprint.getSprintKey(),
+			workspace.getKey(),
+			sprint.getKey(),
 			new UpdateSprintStatusRequest(SprintStatus.PLANNING),
 			currentWorkspaceMemberId
 		)).isInstanceOf(InvalidOperationException.class);
@@ -594,8 +594,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.updateSprintStatus(
-				workspace.getCode(),
-				sprint2.getSprintKey(),
+				workspace.getKey(),
+				sprint2.getKey(),
 				new UpdateSprintStatusRequest(SprintStatus.ACTIVE),
 				currentWorkspaceMemberId
 			)
@@ -624,8 +624,8 @@ public class SprintCommandServiceIT extends ServiceIntegrationTestHelper {
 
 		// when & then
 		assertThatThrownBy(() -> sprintCommandService.removeIssue(
-				workspace.getCode(),
-				sprint.getSprintKey(),
+				workspace.getKey(),
+				sprint.getKey(),
 				new RemoveSprintIssueRequest(issue1.getIssueKey())
 			)
 		).isInstanceOf(InvalidOperationException.class);

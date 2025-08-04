@@ -42,10 +42,10 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		Member member = testDataFixture.createMember("member1");
 
 		// when
-		workspaceMemberInviteService.inviteMembers(workspace.getCode(), new InviteMembersRequest(Set.of("member1")));
+		workspaceMemberInviteService.inviteMembers(workspace.getKey(), new InviteMembersRequest(Set.of("member1")));
 
 		// then
-		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberId(workspace.getCode(), member.getId())
+		Invitation invitation = invitationRepository.findByWorkspaceCodeAndMemberId(workspace.getKey(), member.getId())
 			.get();
 
 		assertThat(invitation.getStatus()).isEqualTo(InvitationStatus.PENDING);
@@ -63,7 +63,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
+		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getKey(), request);
 
 		// then
 		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
@@ -88,10 +88,10 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		);
 
 		// when
-		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getCode(), request);
+		InviteMembersResponse response = workspaceMemberInviteService.inviteMembers(workspace.getKey(), request);
 
 		// then
-		assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 		assertThat(response.invitedMemberIds().size()).isEqualTo(1);
 	}
 
@@ -110,7 +110,7 @@ class WorkspaceMemberInviteServiceIT extends ServiceIntegrationTestHelper {
 		InviteMembersRequest request = new InviteMembersRequest(Set.of("member1"));
 
 		// when & then
-		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMembers(workspace.getCode(), request))
+		assertThatThrownBy(() -> workspaceMemberInviteService.inviteMembers(workspace.getKey(), request))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 }
