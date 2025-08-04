@@ -14,7 +14,7 @@ import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
-import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
+import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.domain.service.IssueFieldSchemaValidator;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
@@ -61,7 +61,7 @@ public class IssueService {
 	@Transactional
 	public IssueResponse createIssue(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
-		IssueTypeDefinition issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
+		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
 
 		Issue issue = issueRepository.save(Issue.builder()
 			.workspace(workspace)

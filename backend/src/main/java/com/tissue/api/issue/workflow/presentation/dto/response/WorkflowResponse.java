@@ -1,12 +1,12 @@
 package com.tissue.api.issue.workflow.presentation.dto.response;
 
-import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
+import com.tissue.api.issue.workflow.domain.model.Workflow;
 
 public record WorkflowResponse(
 	String workspaceCode,
 	String key
 ) {
-	public static WorkflowResponse from(WorkflowDefinition workflowDefinition) {
-		return new WorkflowResponse(workflowDefinition.getWorkspaceCode(), workflowDefinition.getKey());
+	public static WorkflowResponse from(Workflow workflow) {
+		return new WorkflowResponse(workflow.getWorkspaceCode(), workflow.getKey());
 	}
 }

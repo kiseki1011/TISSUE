@@ -28,7 +28,7 @@ public class IssueFieldValue extends BaseEntity {
 	private Issue issue;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
-	private IssueFieldDefinition field;
+	private IssueField field;
 
 	private String stringValue;
 	private Integer numberValue;
@@ -36,7 +36,7 @@ public class IssueFieldValue extends BaseEntity {
 
 	public static IssueFieldValue of(
 		Issue issue,
-		IssueFieldDefinition field,
+		IssueField field,
 		Object value
 	) {
 		IssueFieldValue val = new IssueFieldValue();

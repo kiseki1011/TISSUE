@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 })
 @EqualsAndHashCode(of = {"issueType", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueFieldDefinition extends BaseEntity {
+public class IssueField extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +63,7 @@ public class IssueFieldDefinition extends BaseEntity {
 	// TODO: Should I use a bi-directional relation with IssueTypeDefinition?
 	// TODO: Is @JoinColumn needed or recommended?
 	@ManyToOne(fetch = FetchType.LAZY)
-	private IssueTypeDefinition issueType;
+	private IssueType issueType;
 
 	@PostPersist
 	private void assignKey() {
@@ -73,13 +73,13 @@ public class IssueFieldDefinition extends BaseEntity {
 	}
 
 	@Builder
-	public IssueFieldDefinition(
+	public IssueField(
 		String key,
 		String label,
 		String description,
 		FieldType fieldType,
 		Boolean required,
-		IssueTypeDefinition issueType,
+		IssueType issueType,
 		List<String> allowedOptions
 	) {
 		this.key = key;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.base.domain.model.Issue;
-import com.tissue.api.issue.base.domain.model.IssueFieldDefinition;
+import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
@@ -30,10 +30,10 @@ public class IssueFieldSchemaValidator {
 		Map<String, Object> input,
 		Issue issue
 	) {
-		List<IssueFieldDefinition> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		List<IssueField> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
 		List<IssueFieldValue> values = new ArrayList<>();
 
-		for (IssueFieldDefinition field : fields) {
+		for (IssueField field : fields) {
 			Object value = input.get(field.getKey());
 
 			validateSingleField(field, value);
@@ -54,9 +54,9 @@ public class IssueFieldSchemaValidator {
 			.collect(Collectors.toMap(val -> val.getField().getKey(), Function.identity()));
 
 		// Load field definitions
-		List<IssueFieldDefinition> issueFields = issueFieldRepository.findByIssueType(issue.getIssueType());
-		Map<String, IssueFieldDefinition> fieldMap = issueFields.stream()
-			.collect(Collectors.toMap(IssueFieldDefinition::getKey, Function.identity()));
+		List<IssueField> issueFields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		Map<String, IssueField> fieldMap = issueFields.stream()
+			.collect(Collectors.toMap(IssueField::getKey, Function.identity()));
 
 		List<IssueFieldValue> result = new ArrayList<>();
 
@@ -64,7 +64,7 @@ public class IssueFieldSchemaValidator {
 			String key = entry.getKey();
 			Object newValue = entry.getValue();
 
-			IssueFieldDefinition field = fieldMap.get(key);
+			IssueField field = fieldMap.get(key);
 			if (field == null) {
 				throw new InvalidCustomFieldException("Unknown custom field: '%s'".formatted(key));
 			}
@@ -84,7 +84,7 @@ public class IssueFieldSchemaValidator {
 		return result;
 	}
 
-	private void validateSingleField(IssueFieldDefinition field, Object value) {
+	private void validateSingleField(IssueField field, Object value) {
 		if (field.isRequired() && (value == null || value.toString().isBlank())) {
 			throw new InvalidCustomFieldException("Field '%s' is required.".formatted(field.getKey()));
 		}
@@ -101,13 +101,13 @@ public class IssueFieldSchemaValidator {
 		}
 	}
 
-	private void validateTextField(IssueFieldDefinition field, Object value) {
+	private void validateTextField(IssueField field, Object value) {
 		if (!(value instanceof String)) {
 			throw new InvalidCustomFieldException("Field '%s' must be a string.".formatted(field.getKey()));
 		}
 	}
 
-	private void validateEnumField(IssueFieldDefinition field, Object value) {
+	private void validateEnumField(IssueField field, Object value) {
 		if (!(value instanceof String)) {
 			throw new InvalidCustomFieldException("Field '%s' must be a string enum.".formatted(field.getKey()));
 		}
@@ -117,13 +117,13 @@ public class IssueFieldSchemaValidator {
 		}
 	}
 
-	private void validateNumberField(IssueFieldDefinition field, Object value) {
+	private void validateNumberField(IssueField field, Object value) {
 		if (!(value instanceof Number)) {
 			throw new InvalidCustomFieldException("Field '%s' must be a number.".formatted(field.getKey()));
 		}
 	}
 
-	private void validateDateField(IssueFieldDefinition field, Object value) {
+	private void validateDateField(IssueField field, Object value) {
 		try {
 			LocalDate.parse(value.toString());
 		} catch (DateTimeParseException e) {

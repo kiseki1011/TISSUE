@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 })
 @EqualsAndHashCode(of = {"workspace", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkflowDefinition extends BaseEntity {
+public class Workflow extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,7 +71,7 @@ public class WorkflowDefinition extends BaseEntity {
 	}
 
 	@Builder
-	public WorkflowDefinition(
+	public Workflow(
 		Workspace workspace,
 		String key,
 		String label,

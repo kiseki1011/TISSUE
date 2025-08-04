@@ -3,7 +3,7 @@ package com.tissue.api.issue.base.application.finder;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
+import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.infrastructure.repository.IssueTypeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ public class IssueTypeFinder {
 
 	private final IssueTypeRepository issueTypeRepository;
 
-	public IssueTypeDefinition findIssueType(
+	public IssueType findIssueType(
 		String workspaceCode,
 		String key
 	) {

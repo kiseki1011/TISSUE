@@ -10,11 +10,11 @@ import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.domain.enums.FieldType;
-import com.tissue.api.issue.base.domain.model.IssueFieldDefinition;
-import com.tissue.api.issue.base.domain.model.IssueTypeDefinition;
+import com.tissue.api.issue.base.domain.model.IssueField;
+import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueTypeRepository;
-import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
+import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.issue.base.presentation.dto.response.IssueTypeResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
@@ -35,9 +35,9 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse createIssueType(CreateIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
-		WorkflowDefinition workflow = workflowFinder.findWorkflow(cmd.workspaceCode(), cmd.workflowKey());
+		Workflow workflow = workflowFinder.findWorkflow(cmd.workspaceCode(), cmd.workflowKey());
 
-		IssueTypeDefinition issueType = issueTypeRepository.save(IssueTypeDefinition.builder()
+		IssueType issueType = issueTypeRepository.save(IssueType.builder()
 			.workspace(workspace)
 			.label(cmd.label())
 			.color(cmd.color())
@@ -50,7 +50,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueFieldResponse createIssueField(CreateIssueFieldCommand cmd) {
-		IssueTypeDefinition issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
+		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
 
 		// TODO: Should i move this logic(unique check) into a separate API?
 		boolean labelExists = issueFieldRepository.existsByIssueTypeAndLabel(issueType, cmd.label());
@@ -67,7 +67,7 @@ public class IssueTypeService {
 		}
 
 		// TODO: Why use Boolean.TRUE.equals?
-		IssueFieldDefinition issueField = issueFieldRepository.saveAndFlush(IssueFieldDefinition.builder()
+		IssueField issueField = issueFieldRepository.saveAndFlush(IssueField.builder()
 			.label(cmd.label())
 			.description(cmd.description())
 			.fieldType(cmd.fieldType())

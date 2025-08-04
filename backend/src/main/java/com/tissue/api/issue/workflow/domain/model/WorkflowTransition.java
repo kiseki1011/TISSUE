@@ -35,7 +35,7 @@ public class WorkflowTransition {
 	// TODO: Should I use uni or bi directional relation with WorkflowDefinition?
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workflow_id")
-	private WorkflowDefinition workflow;
+	private Workflow workflow;
 
 	@Column(nullable = false)
 	private boolean isMainFlow;
@@ -65,7 +65,7 @@ public class WorkflowTransition {
 
 	@Builder
 	public WorkflowTransition(
-		WorkflowDefinition workflow,
+		Workflow workflow,
 		Boolean isMainFlow,
 		WorkflowStep sourceStep,
 		WorkflowStep targetStep,
@@ -82,7 +82,7 @@ public class WorkflowTransition {
 		this.description = description != null ? description : "";
 	}
 
-	public void setWorkflow(WorkflowDefinition workflow) {
+	public void setWorkflow(Workflow workflow) {
 		this.workflow = workflow;
 	}
 

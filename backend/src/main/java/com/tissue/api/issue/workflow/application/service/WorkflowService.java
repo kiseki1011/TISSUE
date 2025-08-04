@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
-import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
+import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.issue.workflow.domain.model.WorkflowStep;
 import com.tissue.api.issue.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.issue.workflow.domain.service.WorkflowValidator;
@@ -37,7 +37,7 @@ public class WorkflowService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 
 		try {
-			WorkflowDefinition workflow = workflowRepository.save(WorkflowDefinition.builder()
+			Workflow workflow = workflowRepository.save(Workflow.builder()
 				.workspace(workspace)
 				.label(cmd.label())
 				.build());

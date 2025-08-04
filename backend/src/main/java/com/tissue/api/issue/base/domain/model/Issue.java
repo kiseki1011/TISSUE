@@ -112,7 +112,7 @@ public class Issue extends BaseEntity {
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private IssueTypeDefinition issueType;
+	private IssueType issueType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStep currentStep;
@@ -120,7 +120,7 @@ public class Issue extends BaseEntity {
 	@Builder
 	protected Issue(
 		Workspace workspace,
-		IssueTypeDefinition issueType,
+		IssueType issueType,
 		String title,
 		String content,
 		String summary,

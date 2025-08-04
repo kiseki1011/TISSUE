@@ -4,9 +4,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
+import com.tissue.api.issue.workflow.domain.model.Workflow;
 
-public interface WorkflowRepository extends JpaRepository<WorkflowDefinition, Long> {
+public interface WorkflowRepository extends JpaRepository<Workflow, Long> {
 
-	Optional<WorkflowDefinition> findByWorkspaceCodeAndKey(String workspaceCode, String key);
+	Optional<Workflow> findByWorkspaceCodeAndKey(String workspaceCode, String key);
 }

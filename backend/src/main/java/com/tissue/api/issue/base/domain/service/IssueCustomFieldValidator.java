@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.tissue.api.common.dto.FieldErrorDto;
 import com.tissue.api.common.exception.type.FieldValidationException;
 import com.tissue.api.issue.base.domain.model.Issue;
-import com.tissue.api.issue.base.domain.model.IssueFieldDefinition;
+import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
@@ -36,11 +36,11 @@ public class IssueCustomFieldValidator {
 		Map<String, Object> input,
 		Issue issue
 	) {
-		List<IssueFieldDefinition> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		List<IssueField> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
 		List<IssueFieldValue> values = new ArrayList<>();
 		List<FieldErrorDto> errors = new ArrayList<>();
 
-		for (IssueFieldDefinition field : fields) {
+		for (IssueField field : fields) {
 			Object value = input.get(field.getKey());
 
 			FieldErrorDto error = validateField(field, value);
@@ -69,9 +69,9 @@ public class IssueCustomFieldValidator {
 			.collect(Collectors.toMap(val -> val.getField().getKey(), Function.identity()));
 
 		// Load definitions
-		List<IssueFieldDefinition> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
-		Map<String, IssueFieldDefinition> fieldMap = fields.stream()
-			.collect(Collectors.toMap(IssueFieldDefinition::getKey, Function.identity()));
+		List<IssueField> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		Map<String, IssueField> fieldMap = fields.stream()
+			.collect(Collectors.toMap(IssueField::getKey, Function.identity()));
 
 		List<IssueFieldValue> result = new ArrayList<>();
 		List<FieldErrorDto> errors = new ArrayList<>();
@@ -80,7 +80,7 @@ public class IssueCustomFieldValidator {
 			String key = entry.getKey();
 			Object newValue = entry.getValue();
 
-			IssueFieldDefinition field = fieldMap.get(key);
+			IssueField field = fieldMap.get(key);
 			if (field == null) {
 				errors.add(new FieldErrorDto(key, valueOrNull(newValue), "Unknown custom field."));
 				continue;
@@ -109,7 +109,7 @@ public class IssueCustomFieldValidator {
 		return result;
 	}
 
-	private FieldErrorDto validateField(IssueFieldDefinition field, Object value) {
+	private FieldErrorDto validateField(IssueField field, Object value) {
 		if (field.isRequired() && (value == null || value.toString().isBlank())) {
 			return error(field, value, "This field is required.");
 		}
@@ -126,14 +126,14 @@ public class IssueCustomFieldValidator {
 		};
 	}
 
-	private FieldErrorDto validateText(IssueFieldDefinition field, Object value) {
+	private FieldErrorDto validateText(IssueField field, Object value) {
 		if (!(value instanceof String)) {
 			return error(field, value, "Must be a string.");
 		}
 		return null;
 	}
 
-	private FieldErrorDto validateEnum(IssueFieldDefinition field, Object value) {
+	private FieldErrorDto validateEnum(IssueField field, Object value) {
 		if (!(value instanceof String s)) {
 			return error(field, value, "Must be a string.");
 		}
@@ -143,14 +143,14 @@ public class IssueCustomFieldValidator {
 		return null;
 	}
 
-	private FieldErrorDto validateNumber(IssueFieldDefinition field, Object value) {
+	private FieldErrorDto validateNumber(IssueField field, Object value) {
 		if (!(value instanceof Number)) {
 			return error(field, value, "Must be a number.");
 		}
 		return null;
 	}
 
-	private FieldErrorDto validateDate(IssueFieldDefinition field, Object value) {
+	private FieldErrorDto validateDate(IssueField field, Object value) {
 		try {
 			LocalDate.parse(value.toString());
 			return null;
@@ -159,7 +159,7 @@ public class IssueCustomFieldValidator {
 		}
 	}
 
-	private FieldErrorDto error(IssueFieldDefinition field, Object value, String message) {
+	private FieldErrorDto error(IssueField field, Object value, String message) {
 		return new FieldErrorDto(field.getKey(), valueOrNull(value), message);
 	}
 

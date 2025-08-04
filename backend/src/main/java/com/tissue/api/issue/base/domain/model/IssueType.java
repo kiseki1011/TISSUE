@@ -4,7 +4,7 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
-import com.tissue.api.issue.workflow.domain.model.WorkflowDefinition;
+import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;
@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 })
 @EqualsAndHashCode(of = {"workspace", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueTypeDefinition extends BaseEntity {
+public class IssueType extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +63,7 @@ public class IssueTypeDefinition extends BaseEntity {
 	private HierarchyLevel hierarchyLevel;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowDefinition workflow;
+	private Workflow workflow;
 
 	@PostPersist
 	private void assignKey() {
@@ -73,13 +73,13 @@ public class IssueTypeDefinition extends BaseEntity {
 	}
 
 	@Builder
-	public IssueTypeDefinition(
+	public IssueType(
 		Workspace workspace,
 		String key,
 		String label,
 		ColorType color,
 		HierarchyLevel hierarchyLevel,
-		WorkflowDefinition workflow
+		Workflow workflow
 	) {
 		this.workspace = workspace;
 		this.key = key;
@@ -106,7 +106,7 @@ public class IssueTypeDefinition extends BaseEntity {
 		this.hierarchyLevel = hierarchyLevel;
 	}
 
-	public void setWorkflow(WorkflowDefinition workflow) {
+	public void setWorkflow(Workflow workflow) {
 		this.workflow = workflow;
 	}
 
