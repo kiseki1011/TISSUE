@@ -30,11 +30,11 @@ public class WorkflowController {
 	 *  - add new step and transition to workflow
 	 *  - update workflow(update label)
 	 *  - delete workflow
-	 *  - dont allow deleting/updating default workflows(and the steps and transitions inside)!
+	 *  - dont allow deleting/updating default workflows(and the statusRequests and transitionRequests inside)!
 	 *  - update step(label, description)
 	 *  - update transition(label, description, sourceStep, targetStep)
 	 *  - needs to apply Spring State Machine
-	 *  - set guard for transitions
+	 *  - set guard for transitionRequests
 	 */
 
 	private final WorkflowService workflowService;
@@ -77,7 +77,7 @@ public class WorkflowController {
 	// }
 	//
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{workflowKey}/steps/{stepKey}")
+	// @PatchMapping("/{workflowKey}/statusRequests/{stepKey}")
 	// public ApiResponse<WorkflowResponse> updateWorkflowStep(
 	// 	@PathVariable String workspaceCode,
 	// 	@PathVariable String stepKey,
@@ -90,7 +90,7 @@ public class WorkflowController {
 	// }
 	//
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{workflowKey}/transitions/{transitionKey}")
+	// @PatchMapping("/{workflowKey}/transitionRequests/{transitionKey}")
 	// public ApiResponse<WorkflowResponse> updateWorkflowTransition(
 	// 	@PathVariable String workspaceCode,
 	// 	@PathVariable String transitionKey,
@@ -103,7 +103,7 @@ public class WorkflowController {
 	// }
 	//
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @DeleteMapping("/{workflowKey}/transitions/{transitionKey}")
+	// @DeleteMapping("/{workflowKey}/transitionRequests/{transitionKey}")
 	// public ApiResponse<Void> deleteWorkflowTransition(
 	// 	@PathVariable String workspaceCode,
 	// 	@PathVariable String transitionKey,

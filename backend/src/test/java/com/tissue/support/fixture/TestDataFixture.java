@@ -236,7 +236,7 @@ public class TestDataFixture {
 	// 		.content("bug content")
 	// 		.priority(priority)
 	// 		.dueAt(dueAt)
-	// 		.reproducingSteps("bug reproduce steps")
+	// 		.reproducingSteps("bug reproduce statusRequests")
 	// 		.severity(BugSeverity.MAJOR)
 	// 		.build();
 	//

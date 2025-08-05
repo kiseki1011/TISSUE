@@ -23,7 +23,7 @@ public class WorkflowValidator {
 		int initialCount = 0;
 		int finalCount = 0;
 
-		for (CreateWorkflowCommand.StepCommand step : cmd.steps()) {
+		for (CreateWorkflowCommand.StatusCommand step : cmd.statuses()) {
 			if (!stepLabels.add(step.label())) {
 				throw new DuplicateResourceException("Duplicate step label: " + step.label());
 			}

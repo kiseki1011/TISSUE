@@ -6,15 +6,15 @@ import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 
 public record CreateWorkflowRequest(
 	String label,
-	List<StepRequest> steps,
-	List<TransitionRequest> transitions
+	List<StatusRequest> statusRequests,
+	List<TransitionRequest> transitionRequests
 ) {
 	public CreateWorkflowCommand toCommand(String workspaceCode) {
-		List<CreateWorkflowCommand.StepCommand> stepCommands = steps.stream()
-			.map(s -> new CreateWorkflowCommand.StepCommand(s.tempKey(), s.label(), s.isInitial(), s.isFinal()))
+		List<CreateWorkflowCommand.StatusCommand> statusCommands = statusRequests.stream()
+			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), s.label(), s.isInitial(), s.isFinal()))
 			.toList();
 
-		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitions.stream()
+		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitionRequests.stream()
 			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.isMainFlow(), t.sourceTempKey(),
 				t.targetTempKey()))
 			.toList();
@@ -22,7 +22,7 @@ public record CreateWorkflowRequest(
 		return CreateWorkflowCommand.builder()
 			.workspaceCode(workspaceCode)
 			.label(label)
-			.steps(stepCommands)
+			.steps(statusCommands)
 			.transitions(transitionCommands)
 			.build();
 	}

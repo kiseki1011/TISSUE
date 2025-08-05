@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -41,10 +42,10 @@ public class WorkflowTransition {
 	private boolean isMainFlow;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep sourceStep;
+	private WorkflowStatus sourceStep;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep targetStep;
+	private WorkflowStatus targetStep;
 
 	@Column(nullable = false)
 	private String key;
@@ -53,8 +54,6 @@ public class WorkflowTransition {
 	private String label;
 
 	private String description;
-
-	// private String guardKey;   // ex: "REQUIRES_APPROVAL", "NOT_BLOCKED"
 
 	@PostPersist
 	private void assignKey() {
@@ -67,8 +66,8 @@ public class WorkflowTransition {
 	public WorkflowTransition(
 		Workflow workflow,
 		Boolean isMainFlow,
-		WorkflowStep sourceStep,
-		WorkflowStep targetStep,
+		WorkflowStatus sourceStep,
+		WorkflowStatus targetStep,
 		String key,
 		String label,
 		String description
@@ -92,11 +91,11 @@ public class WorkflowTransition {
 		this.isMainFlow = isMainFlow;
 	}
 
-	public void updateSourceStep(WorkflowStep sourceStep) {
+	public void updateSourceStep(WorkflowStatus sourceStep) {
 		this.sourceStep = sourceStep;
 	}
 
-	public void updateTargetStep(WorkflowStep targetStep) {
+	public void updateTargetStep(WorkflowStatus targetStep) {
 		this.targetStep = targetStep;
 	}
 

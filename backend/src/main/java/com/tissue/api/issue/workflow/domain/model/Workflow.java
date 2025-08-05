@@ -27,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -53,13 +54,13 @@ public class Workflow extends BaseEntity {
 	private String label;
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<WorkflowStep> steps = new HashSet<>();
+	private Set<WorkflowStatus> statuses = new HashSet<>();
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkflowTransition> transitions = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep initialStep;
+	private WorkflowStatus initialStatus;
 
 	private String description;
 
@@ -84,12 +85,12 @@ public class Workflow extends BaseEntity {
 		this.description = description;
 	}
 
-	public void addStep(WorkflowStep step) {
-		steps.add(step);
-		step.setWorkflow(this);
+	public void addStatus(WorkflowStatus status) {
+		statuses.add(status);
+		status.setWorkflow(this);
 
-		if (step.isInitialStep()) {
-			updateInitialStep(step);
+		if (status.isInitialStatus()) {
+			updateInitialStatus(status);
 		}
 	}
 
@@ -106,26 +107,26 @@ public class Workflow extends BaseEntity {
 		this.label = label;
 	}
 
-	public void updateInitialStep(WorkflowStep newInitialStep) {
-		if (!steps.contains(newInitialStep)) {
+	public void updateInitialStatus(WorkflowStatus newInitialStatus) {
+		if (!statuses.contains(newInitialStatus)) {
 			throw new InvalidOperationException("The step must be part of this workflow.");
 		}
 
-		for (WorkflowStep step : steps) {
-			step.setInitial(false);
+		for (WorkflowStatus status : statuses) {
+			status.setInitial(false);
 		}
 
-		newInitialStep.setInitial(true);
-		this.initialStep = newInitialStep;
+		newInitialStatus.setInitial(true);
+		this.initialStatus = newInitialStatus;
 	}
 
 	public void updateDescription(String description) {
 		this.description = description;
 	}
 
-	public List<WorkflowStep> getFinalSteps() {
-		return steps.stream()
-			.filter(WorkflowStep::isFinal)
+	public List<WorkflowStatus> getFinalStatuses() {
+		return statuses.stream()
+			.filter(WorkflowStatus::isFinal)
 			.toList();
 	}
 }

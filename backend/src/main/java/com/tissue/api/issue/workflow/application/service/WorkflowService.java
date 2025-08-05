@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
-import com.tissue.api.issue.workflow.domain.model.WorkflowStep;
+import com.tissue.api.issue.workflow.domain.model.WorkflowStatus;
 import com.tissue.api.issue.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.issue.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.issue.workflow.infrastructure.repository.WorkflowRepository;
@@ -43,27 +43,27 @@ public class WorkflowService {
 				.build());
 
 			// Step mapping using tempKey
-			Map<String, WorkflowStep> stepMap = new HashMap<>();
-			for (CreateWorkflowCommand.StepCommand s : cmd.steps()) {
-				WorkflowStep step = WorkflowStep.builder()
+			Map<String, WorkflowStatus> statusMap = new HashMap<>();
+			for (CreateWorkflowCommand.StatusCommand s : cmd.statuses()) {
+				WorkflowStatus status = WorkflowStatus.builder()
 					.workflow(workflow)
 					.label(s.label())
 					.isInitial(s.isInitial())
 					.isFinal(s.isFinal())
 					.build();
-				workflow.addStep(step);
-				stepMap.put(s.tempKey(), step);
+				workflow.addStatus(status);
+				statusMap.put(s.tempKey(), status);
 			}
 
 			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitions()) {
-				WorkflowStep sourceStep = stepMap.get(t.sourceTempKey());
-				WorkflowStep targetStep = stepMap.get(t.targetTempKey());
+				WorkflowStatus sourceStatus = statusMap.get(t.sourceTempKey());
+				WorkflowStatus targetStatus = statusMap.get(t.targetTempKey());
 
 				WorkflowTransition transition = WorkflowTransition.builder()
 					.workflow(workflow)
 					.isMainFlow(t.isMainFlow())
-					.sourceStep(sourceStep)
-					.targetStep(targetStep)
+					.sourceStep(sourceStatus)
+					.targetStep(targetStatus)
 					.label(t.label())
 					.build();
 				workflow.addTransition(transition);
@@ -73,7 +73,7 @@ public class WorkflowService {
 
 		} catch (DataIntegrityViolationException e) {
 			log.info("Failed due to duplicate label.", e);
-			throw new DuplicateResourceException("Duplicate label is not allowed for workflows or steps.", e);
+			throw new DuplicateResourceException("Duplicate label is not allowed for workflows or statuses.", e);
 		}
 	}
 }

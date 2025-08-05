@@ -13,7 +13,7 @@ import com.tissue.api.issue.base.domain.enums.IssuePriority;
 import com.tissue.api.issue.collaborator.domain.model.IssueAssignee;
 import com.tissue.api.issue.collaborator.domain.model.IssueReviewer;
 import com.tissue.api.issue.collaborator.domain.model.IssueWatcher;
-import com.tissue.api.issue.workflow.domain.model.WorkflowStep;
+import com.tissue.api.issue.workflow.domain.model.WorkflowStatus;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -39,10 +39,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"key", "workspace"})
+	@UniqueConstraint(columnNames = {"key", "workspace_id"})
 })
 @EqualsAndHashCode(of = {"key", "workspace"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -115,7 +116,7 @@ public class Issue extends BaseEntity {
 	private IssueType issueType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStep currentStep;
+	private WorkflowStatus currentStatus;
 
 	@Builder
 	protected Issue(
@@ -138,7 +139,7 @@ public class Issue extends BaseEntity {
 		this.dueAt = dueAt;
 		this.storyPoint = storyPoint;
 		this.issueType = issueType;
-		this.currentStep = issueType.getWorkflow().getInitialStep();
+		this.currentStatus = issueType.getWorkflow().getInitialStatus();
 	}
 
 	public String getWorkspaceKey() {
@@ -169,8 +170,8 @@ public class Issue extends BaseEntity {
 		this.priority = priority;
 	}
 
-	public void moveToStep(WorkflowStep step) {
-		this.currentStep = step;
+	public void moveToStep(WorkflowStatus step) {
+		this.currentStatus = step;
 	}
 
 	public void assignParentIssue(Issue newParent) {

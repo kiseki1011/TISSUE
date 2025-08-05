@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 })
 @EqualsAndHashCode(of = {"workflow", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkflowStep {
+public class WorkflowStatus {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,7 +62,7 @@ public class WorkflowStep {
 	}
 
 	@Builder
-	public WorkflowStep(
+	public WorkflowStatus(
 		Workflow workflow,
 		String key,
 		String label,
@@ -101,12 +102,11 @@ public class WorkflowStep {
 		this.description = description;
 	}
 
-	public boolean isInitialStep() {
+	public boolean isInitialStatus() {
 		return isInitial;
 	}
 
-	public boolean isFinalStep() {
+	public boolean isFinalStatus() {
 		return isFinal;
 	}
-
 }
