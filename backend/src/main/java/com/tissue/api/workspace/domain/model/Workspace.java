@@ -29,11 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
 
-	// Todo: Consider using optimistic locking if needed
-	// @Version
-	// private Long version;
-
-	// TODO: Should i consider using value from application.yml?
+	// TODO: Use application.yml
 	private static final int MAX_MEMBER_COUNT = 500;
 
 	@Id
@@ -41,20 +37,16 @@ public class Workspace extends BaseEntity {
 	@Column(name = "workspace_id")
 	private Long id;
 
-	// TODO: Should I use UniqueConstraint instead of "unique = true"?
 	@Column(unique = true, nullable = false)
 	private String key;
 
 	@Column(nullable = false)
 	private String name;
+
 	@Column(nullable = false)
 	private String description;
 
 	private String password;
-
-	// TODO: Should I just count it every time I need it instead of using the memberCount field?
-	@Column(nullable = false)
-	private int memberCount = 0;
 
 	@Column(nullable = false)
 	private String issueKeyPrefix;
@@ -74,6 +66,7 @@ public class Workspace extends BaseEntity {
 	@OneToMany(mappedBy = "workspace")
 	private List<Sprint> sprints = new ArrayList<>();
 
+	// TODO: Consider keeping the constructor clean and move validation logic to factory method
 	@Builder
 	public Workspace(
 		String key,
@@ -82,6 +75,9 @@ public class Workspace extends BaseEntity {
 		String password,
 		String issueKeyPrefix
 	) {
+		// TODO: Should i call the validateMemberLimit at the WorkspaceMember constructor or factory method?
+		//  Call it like workspace.validateMemberLimit()
+		// validateMemberLimit();
 		this.key = key;
 		this.name = name;
 		this.description = description;
@@ -138,16 +134,6 @@ public class Workspace extends BaseEntity {
 		this.sprintNumber++;
 	}
 
-	public void increaseMemberCount() {
-		validateMemberLimit();
-		this.memberCount++;
-	}
-
-	public void decreaseMemberCount() {
-		validatePositiveMemberCount();
-		this.memberCount--;
-	}
-
 	public boolean hasActiveSprintExcept(Sprint excludedSprint) {
 		return sprints.stream()
 			.filter(sprint -> !sprint.equals(excludedSprint))
@@ -159,17 +145,14 @@ public class Workspace extends BaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
-	private void validateMemberLimit() {
-		if (memberCount >= MAX_MEMBER_COUNT) {
+	public void validateMemberLimit() {
+		if (getMemberCount() >= MAX_MEMBER_COUNT) {
 			throw new InvalidOperationException(
-				"Maximum number of workspace members reached. Workspace member limit: %d"
-					.formatted(MAX_MEMBER_COUNT));
+				"Maximum number of members reached. Workspace member limit: %d".formatted(MAX_MEMBER_COUNT));
 		}
 	}
 
-	private void validatePositiveMemberCount() {
-		if (memberCount <= 0) {
-			throw new InvalidOperationException("Number of workspace members cannot go below 1.");
-		}
+	public int getMemberCount() {
+		return workspaceMembers.size();
 	}
 }

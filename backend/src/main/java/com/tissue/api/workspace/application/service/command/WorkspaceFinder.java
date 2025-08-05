@@ -16,8 +16,13 @@ public class WorkspaceFinder {
 
 	private final WorkspaceRepository workspaceRepository;
 
-	public Workspace findWorkspace(String workspaceCode) {
-		return workspaceRepository.findByCode(workspaceCode)
-			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
+	public Workspace findWorkspace(String workspaceKey) {
+		return workspaceRepository.findByKey(workspaceKey)
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
+	}
+
+	public Workspace findWorkspaceWithMembers(String workspaceKey) {
+		return workspaceRepository.findByKeyWithWorkspaceMembers(workspaceKey)
+			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
 	}
 }

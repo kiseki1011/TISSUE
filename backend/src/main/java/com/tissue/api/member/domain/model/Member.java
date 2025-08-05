@@ -30,6 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
+	// TODO: Use application.yml
 	private static final int MAX_WORKSPACE_COUNT = 10;
 
 	@Id
@@ -59,16 +60,13 @@ public class Member extends BaseDateEntity {
 	@Enumerated(EnumType.STRING)
 	private SystemRole role;
 
-	// TODO: should i just count it when i need it?
-	@Column(nullable = false)
-	private int myWorkspaceCount = 0;
-
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
 
+	// TODO: Move workspace count validation to constructor or factory method
 	@Builder
 	public Member(
 		String loginId,
@@ -89,14 +87,8 @@ public class Member extends BaseDateEntity {
 		this.role = SystemRole.USER;
 	}
 
-	public void increaseMyWorkspaceCount() {
-		validateWorkspaceLimit();
-		this.myWorkspaceCount++;
-	}
-
-	public void decreaseMyWorkspaceCount() {
-		validatePositiveMyWorkspaceCount();
-		this.myWorkspaceCount--;
+	public int getWorkspaceCount() {
+		return workspaceMembers.size();
 	}
 
 	public void updateEmail(String email) {
@@ -127,16 +119,10 @@ public class Member extends BaseDateEntity {
 		this.role = role;
 	}
 
-	private void validateWorkspaceLimit() {
-		if (this.myWorkspaceCount >= MAX_WORKSPACE_COUNT) {
+	public void validateWorkspaceLimit() {
+		if (getWorkspaceCount() >= MAX_WORKSPACE_COUNT) {
 			throw new InvalidOperationException(
-				String.format("Max number of workspaces you can own is %d.", MAX_WORKSPACE_COUNT));
-		}
-	}
-
-	private void validatePositiveMyWorkspaceCount() {
-		if (this.myWorkspaceCount <= 0) {
-			throw new InvalidOperationException("Number of workspaces you can own cannot go below 0.");
+				String.format("Max number of workspaces a member can have is %d.", MAX_WORKSPACE_COUNT));
 		}
 	}
 }

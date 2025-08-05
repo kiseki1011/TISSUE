@@ -19,6 +19,11 @@ public class MemberFinder {
 			.orElseThrow(() -> new MemberNotFoundException(memberId));
 	}
 
+	public Member findMemberWithWorkspaces(Long memberId) {
+		return memberRepository.findByIdWithWorkspaceMembers(memberId)
+			.orElseThrow(() -> new MemberNotFoundException(memberId));
+	}
+
 	public Member findMemberByLoginIdOrEmail(String identifier) {
 		return memberRepository.findByLoginIdOrEmail(identifier)
 			.orElseThrow(() -> new MemberNotFoundException(identifier));

@@ -33,7 +33,7 @@ public record GetProfileResponse(
 			.jobType(member.getJobType())
 			.joinedAt(member.getCreatedDate())
 			.lastModifiedAt(member.getLastModifiedDate())
-			.ownedWorkspaceCount(member.getMyWorkspaceCount())
+			.ownedWorkspaceCount(member.getWorkspaceCount())
 			.build();
 	}
 }

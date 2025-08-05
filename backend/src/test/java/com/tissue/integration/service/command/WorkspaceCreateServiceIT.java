@@ -38,7 +38,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		Workspace workspace = workspaceRepository.findByKey(response.workspaceCode()).get();
 
 		assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
 	}
@@ -77,7 +77,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		Workspace workspace = workspaceRepository.findByKey(response.workspaceCode()).get();
 		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getRole()).isEqualTo(WorkspaceRole.OWNER);
 
 		WorkspaceMember workspaceMember = workspaceMemberRepository.findById(1L).get();
@@ -101,7 +101,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		Workspace workspace = workspaceRepository.findByKey(response.workspaceCode()).get();
 		assertThat(workspace.getWorkspaceMembers().stream().findFirst().get().getDisplayName())
 			.isNotNull();
 
@@ -125,7 +125,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 
 		// then
 		Member updatedMember = memberRepository.findById(member.getId()).get();
-		assertThat(updatedMember.getMyWorkspaceCount()).isEqualTo(1);
+		assertThat(updatedMember.getWorkspaceCount()).isEqualTo(1);
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		Workspace workspace = workspaceRepository.findByKey(response.workspaceCode()).get();
 
 		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("ISSUE");
 	}
@@ -189,7 +189,7 @@ class WorkspaceCreateServiceIT extends ServiceIntegrationTestHelper {
 		WorkspaceResponse response = workspaceCreateService.createWorkspace(request, member.getId());
 
 		// then
-		Workspace workspace = workspaceRepository.findByCode(response.workspaceCode()).get();
+		Workspace workspace = workspaceRepository.findByKey(response.workspaceCode()).get();
 
 		assertThat(workspace.getIssueKeyPrefix()).isEqualTo("TESTPREFIX");
 	}

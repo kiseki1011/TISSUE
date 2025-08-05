@@ -69,7 +69,7 @@ public class WorkspaceCommandService {
 		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Member member = memberFinder.findMemberById(memberId);
-		member.decreaseMyWorkspaceCount();
+		// member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);
 	}

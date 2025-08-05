@@ -127,6 +127,7 @@ public class MemberCommandService {
 	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
 	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 *  - 탈퇴하는 경우 기존에 참가하던 Workspace에 대한 처리는 어떻게?
 	 */
 	@Transactional
 	public void withdraw(

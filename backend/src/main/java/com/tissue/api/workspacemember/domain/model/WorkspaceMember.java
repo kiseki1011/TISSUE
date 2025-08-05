@@ -47,9 +47,6 @@ public class WorkspaceMember extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	// @Column(name = "WORKSPACE_CODE", nullable = false)
-	// private String workspaceCode;
-
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
 
@@ -82,10 +79,10 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = role;
 		this.displayName = member.getUsername();
 		this.email = member.getEmail();
-		// this.workspaceCode = workspace.getKey();
 	}
 
 	// TODO: Should i make this private?
+	// TODO: Should i make this a instance method?
 	public static WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -100,6 +97,9 @@ public class WorkspaceMember extends BaseEntity {
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
 
+		member.validateWorkspaceLimit();
+		workspace.validateMemberLimit();
+
 		return workspaceMember;
 	}
 
@@ -107,8 +107,6 @@ public class WorkspaceMember extends BaseEntity {
 		Member member,
 		Workspace workspace
 	) {
-		member.increaseMyWorkspaceCount();
-		workspace.increaseMemberCount();
 		return createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
 	}
 
@@ -116,7 +114,6 @@ public class WorkspaceMember extends BaseEntity {
 		Member member,
 		Workspace workspace
 	) {
-		workspace.increaseMemberCount();
 		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
 	}
 
@@ -124,34 +121,64 @@ public class WorkspaceMember extends BaseEntity {
 		return workspace.getKey();
 	}
 
-	// @Deprecated
-	// public void removeFromWorkspace() {
-	// 	boolean notDeleted = !this.isDeleted();
-	//
-	// 	if (notDeleted) {
-	// 		this.workspace.decreaseMemberCount();
-	// 		this.softDelete();
-	// 	}
-	// }
-	//
-	// @Deprecated
-	// public void restoreMembership() {
-	// 	if (this.isDeleted()) {
-	// 		this.workspace.increaseMemberCount();
-	// 		this.restore();
-	// 	}
-	// }
+	// TODO: For WorkspaceMember removal should i use hard-delete?
+	//  Im thinking about what would happen to exisiting resources (Issue, Sprint, Comment, etc...)
+	//  if the WorkspaceMember is kicked out of the Workspace.
 
 	public void validateCanLeaveWorkspace() {
 		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("OWNER는 워크스페이스를 나갈 수 없습니다.");
+			throw new InvalidOperationException("Cannot leave workspace if OWNER.");
 		}
 	}
 
 	public void remove() {
-		this.workspace.decreaseMemberCount();
 		this.member.getWorkspaceMembers().remove(this);
 		this.workspace.getWorkspaceMembers().remove(this);
+	}
+
+	public void updateRole(WorkspaceRole role) {
+		validateUpdateToOwnerRole(role);
+		this.role = role;
+	}
+
+	public void updateRoleToAdmin() {
+		validateCurrentRoleIsOwner();
+		updateRole(WorkspaceRole.ADMIN);
+	}
+
+	public void updateRoleToOwner() {
+		validateCurrentRoleIsNotOwner();
+		this.role = WorkspaceRole.OWNER;
+	}
+
+	public void updateDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public boolean roleIsHigherThan(WorkspaceRole role) {
+		return this.role.isHigherThan(role);
+	}
+
+	public boolean roleIsLowerThan(WorkspaceRole role) {
+		return this.role.isLowerThan(role);
+	}
+
+	private void validateUpdateToOwnerRole(WorkspaceRole newRole) {
+		if (newRole == WorkspaceRole.OWNER) {
+			throw new InvalidOperationException("Cannot directly change to OWNER role. Use ownership transfer.");
+		}
+	}
+
+	private void validateCurrentRoleIsOwner() {
+		if (this.role != WorkspaceRole.OWNER) {
+			throw new InvalidOperationException("Current role must be OWNER.");
+		}
+	}
+
+	private void validateCurrentRoleIsNotOwner() {
+		if (this.role == WorkspaceRole.OWNER) {
+			throw new InvalidOperationException("Current role cannot be OWNER.");
+		}
 	}
 
 	// TODO: Move Position and Team related code to each domain
@@ -199,35 +226,6 @@ public class WorkspaceMember extends BaseEntity {
 		workspaceMemberTeams.remove(workspaceMemberTeam);
 	}
 
-	public void updateRole(WorkspaceRole role) {
-		validateUpdateToOwnerRole(role);
-		this.role = role;
-	}
-
-	public void updateRoleToAdmin() {
-		validateCurrentRoleIsOwner();
-		updateRole(WorkspaceRole.ADMIN);
-		this.member.decreaseMyWorkspaceCount();
-	}
-
-	public void updateRoleToOwner() {
-		validateCurrentRoleIsNotOwner();
-		this.role = WorkspaceRole.OWNER;
-		this.member.increaseMyWorkspaceCount();
-	}
-
-	public void updateDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
-
-	public boolean roleIsHigherThan(WorkspaceRole role) {
-		return this.role.isHigherThan(role);
-	}
-
-	public boolean roleIsLowerThan(WorkspaceRole role) {
-		return this.role.isLowerThan(role);
-	}
-
 	private void validatePositionBelongsToWorkspace(Position position) {
 		if (!position.getWorkspaceCode().equals(getWorkspaceKey())) {
 			throw new InvalidOperationException(String.format(
@@ -256,24 +254,6 @@ public class WorkspaceMember extends BaseEntity {
 				String.format(
 					"Team does not belong to this workspace. team workspace code: %s, current workspace code: %s",
 					team.getWorkspaceCode(), workspace));
-		}
-	}
-
-	private void validateUpdateToOwnerRole(WorkspaceRole newRole) {
-		if (newRole == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Cannot directly change to OWNER role. Use ownership transfer.");
-		}
-	}
-
-	private void validateCurrentRoleIsOwner() {
-		if (this.role != WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role must be OWNER.");
-		}
-	}
-
-	private void validateCurrentRoleIsNotOwner() {
-		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role cannot be OWNER.");
 		}
 	}
 }
