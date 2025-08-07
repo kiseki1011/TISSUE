@@ -14,8 +14,8 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces/{workspaceCode}/members")
 public class WorkspaceMembershipController {
 
-	private final WorkspaceMemberCommandService workspaceMemberCommandService;
+	private final WorkspaceMemberService workspaceMemberService;
 	private final WorkspaceMemberInviteService workspaceMemberInviteService;
 
 	/**
@@ -64,7 +64,7 @@ public class WorkspaceMembershipController {
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid UpdateRoleRequest request
 	) {
-		WorkspaceMemberResponse response = workspaceMemberCommandService.updateRole(
+		WorkspaceMemberResponse response = workspaceMemberService.updateRole(
 			workspaceCode,
 			memberId,
 			userDetails.getMemberId(),
@@ -81,7 +81,7 @@ public class WorkspaceMembershipController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		TransferOwnershipResponse response = workspaceMemberCommandService.transferWorkspaceOwnership(
+		TransferOwnershipResponse response = workspaceMemberService.transferWorkspaceOwnership(
 			workspaceCode,
 			memberId,
 			userDetails.getMemberId()
@@ -98,7 +98,7 @@ public class WorkspaceMembershipController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberCommandService.removeWorkspaceMember(
+		workspaceMemberService.removeWorkspaceMember(
 			workspaceCode,
 			memberId,
 			userDetails.getMemberId()

@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoleRequiredInterceptor implements HandlerInterceptor {
 
-	public static final String PATH_VAR_WORKSPACE_CODE = "workspaceCode";
+	public static final String PATH_VAR_WORKSPACE_KEY = "workspaceKey";
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 
 	private static boolean isNotHandlerMethod(Object handler) {
@@ -60,14 +60,14 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		Long loginMemberId = userDetails.getMemberId();
 
 		// extract workspaceCode from path variable
-		String workspaceCode = getPathVariable(request, PATH_VAR_WORKSPACE_CODE);
+		String workspaceKey = getPathVariable(request, PATH_VAR_WORKSPACE_KEY);
 
 		// TODO: cache WorkspaceMember later
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(loginMemberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(loginMemberId, workspaceKey);
 
 		// check if workspaceMember has the minimum required role
-		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceCode: {}",
-			loginMemberId, workspaceCode);
+		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceKey: {}",
+			loginMemberId, workspaceKey);
 
 		validateRole(workspaceMember, roleRequired);
 

@@ -22,7 +22,7 @@ public record CreateWorkflowRequest(
 		return CreateWorkflowCommand.builder()
 			.workspaceCode(workspaceCode)
 			.label(label)
-			.steps(statusCommands)
+			.statuses(statusCommands)
 			.transitions(transitionCommands)
 			.build();
 	}

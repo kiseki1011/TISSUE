@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 @Table(
 	uniqueConstraints = {
 		@UniqueConstraint(
-			name = "UK_WORKSPACE_MEMBER_POSITION",
-			columnNames = {"WORKSPACE_MEMBER_ID", "POSITION_ID"})
+			name = "uk_workspace_member_position",
+			columnNames = {"workspace_member_id", "position_id"})
 	}
 )
 @Getter
@@ -36,11 +36,11 @@ public class WorkspaceMemberPosition extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_MEMBER_ID", nullable = false)
+	@JoinColumn(name = "workspace_member_id", nullable = false)
 	private WorkspaceMember workspaceMember;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "POSITION_ID", nullable = false)
+	@JoinColumn(name = "position_id", nullable = false)
 	private Position position;
 
 	@Builder

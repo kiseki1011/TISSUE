@@ -8,14 +8,14 @@ import com.tissue.api.invitation.application.service.command.InvitationCommandSe
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionFinder;
+import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberCommandService;
 import com.tissue.support.fixture.api.LoginApiFixture;
 import com.tissue.support.fixture.api.MemberApiFixture;
 import com.tissue.support.util.DatabaseCleaner;
@@ -40,7 +40,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	protected WorkspaceMemberService workspaceMemberService;
 	@Autowired
 	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
 	@Autowired

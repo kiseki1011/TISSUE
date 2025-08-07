@@ -47,7 +47,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	@DisplayName("DELETE /workspaces/{code}/members/{memberId} - 워크스페이스에서 멤버를 추방하는데 성공하면 200을 응답받는다")
 	void test13() throws Exception {
 		// given
-		doNothing().when(workspaceMemberCommandService)
+		doNothing().when(workspaceMemberService)
 			.removeWorkspaceMember(anyString(), anyLong(), anyLong());
 
 		// when & then
@@ -76,7 +76,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(workspaceMember);
 
-		when(workspaceMemberCommandService.updateDisplayName(
+		when(workspaceMemberService.updateDisplayName(
 			anyString(),
 			anyLong(),
 			any(UpdateDisplayNameRequest.class))
@@ -109,7 +109,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(target);
 
-		when(workspaceMemberCommandService.updateRole(
+		when(workspaceMemberService.updateRole(
 			anyString(),
 			anyLong(),
 			anyLong(),
@@ -144,7 +144,7 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 
 		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(target);
 
-		when(workspaceMemberCommandService.updateRole(
+		when(workspaceMemberService.updateRole(
 			anyString(),
 			anyLong(),
 			anyLong(),

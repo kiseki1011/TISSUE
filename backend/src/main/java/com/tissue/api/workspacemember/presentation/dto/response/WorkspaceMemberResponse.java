@@ -7,6 +7,6 @@ public record WorkspaceMemberResponse(
 	Long memberId
 ) {
 	public static WorkspaceMemberResponse from(WorkspaceMember workspaceMember) {
-		return new WorkspaceMemberResponse(workspaceMember.getWorkspaceCode(), workspaceMember.getMember().getId());
+		return new WorkspaceMemberResponse(workspaceMember.getWorkspaceKey(), workspaceMember.getMember().getId());
 	}
 }

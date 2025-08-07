@@ -1,8 +1,6 @@
 package com.tissue.api.workspacemember.domain.model;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -47,11 +45,12 @@ public class WorkspaceMember extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
+	// TODO: 양방향 관계를 사용하는게 좋나? 아니면 단방향을 사용하는게 더 좋은가?
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
 
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
+	private Set<WorkspaceMemberTeam> workspaceMemberTeams = new HashSet<>();
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -121,6 +120,10 @@ public class WorkspaceMember extends BaseEntity {
 		return workspace.getKey();
 	}
 
+	public Long getMemberId() {
+		return member.getId();
+	}
+
 	// TODO: For WorkspaceMember removal should i use hard-delete?
 	//  Im thinking about what would happen to exisiting resources (Issue, Sprint, Comment, etc...)
 	//  if the WorkspaceMember is kicked out of the Workspace.
@@ -155,6 +158,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.displayName = displayName;
 	}
 
+	// TODO: Should this be WorkspaceMember's responsibility? Or WorkspaceRole enum's responsibility?
 	public boolean roleIsHigherThan(WorkspaceRole role) {
 		return this.role.isHigherThan(role);
 	}
@@ -181,79 +185,19 @@ public class WorkspaceMember extends BaseEntity {
 		}
 	}
 
-	// TODO: Move Position and Team related code to each domain
 	public void addPosition(Position position) {
-		validatePositionBelongsToWorkspace(position);
-
-		WorkspaceMemberPosition.builder()
-			.workspaceMember(this)
-			.position(position)
-			.build();
+		this.workspaceMemberPositions.add(new WorkspaceMemberPosition(this, position));
 	}
 
 	public void removePosition(Position position) {
-		WorkspaceMemberPosition workspaceMemberPosition = workspaceMemberPositions.stream()
-			.filter(wmp -> wmp.getPosition().equals(position))
-			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException(
-				String.format(
-					"Position '%s' is not assigned to this workspace member. workspaceMemberId: %d, positionId: %d",
-					position.getName(), id, position.getId())
-			));
-
-		workspaceMemberPositions.remove(workspaceMemberPosition);
+		this.workspaceMemberPositions.removeIf(wmp -> wmp.getPosition().equals(position));
 	}
 
 	public void addTeam(Team team) {
-		validateTeamBelongsToWorkspace(team);
-		validateDuplicateAssignedTeam(team);
-
-		WorkspaceMemberTeam.builder()
-			.workspaceMember(this)
-			.team(team)
-			.build();
+		this.workspaceMemberTeams.add(new WorkspaceMemberTeam(this, team));
 	}
 
 	public void removeTeam(Team team) {
-		WorkspaceMemberTeam workspaceMemberTeam = workspaceMemberTeams.stream()
-			.filter(wmp -> wmp.getTeam().equals(team))
-			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException(
-				String.format("Team '%s' is not assigned to this workspace member. workspaceMemberId: %d, teamId: %d",
-					team.getName(), id, team.getId())
-			));
-
-		workspaceMemberTeams.remove(workspaceMemberTeam);
-	}
-
-	private void validatePositionBelongsToWorkspace(Position position) {
-		if (!position.getWorkspaceCode().equals(getWorkspaceKey())) {
-			throw new InvalidOperationException(String.format(
-				"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
-				position.getWorkspaceCode(), getWorkspaceKey()));
-		}
-	}
-
-	private void validateDuplicateAssignedTeam(Team team) {
-		boolean isAlreadyAssigned = workspaceMemberTeams.stream()
-			.anyMatch(wmt -> wmt.getTeam().equals(team));
-
-		if (isAlreadyAssigned) {
-			throw new InvalidOperationException(
-				String.format(
-					"Team '%s' is already assigned to this workspace member. workspace member id: %d, team id: %d",
-					team.getName(), id, team.getId()));
-		}
-	}
-
-	private void validateTeamBelongsToWorkspace(Team team) {
-		boolean teamWorkspaceCodeNotMatch = !team.getWorkspaceCode().equals(getWorkspaceKey());
-
-		if (teamWorkspaceCodeNotMatch) {
-			throw new InvalidOperationException(
-				String.format(
-					"Team does not belong to this workspace. team workspace code: %s, current workspace code: %s",
-					team.getWorkspaceCode(), workspace));
-		}
+		this.workspaceMemberTeams.removeIf(wmp -> wmp.getTeam().equals(team));
 	}
 }

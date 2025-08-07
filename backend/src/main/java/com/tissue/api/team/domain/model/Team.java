@@ -31,8 +31,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(uniqueConstraints = {
 	@UniqueConstraint(
-		name = "UK_WORKSPACE_TEAM_NAME",
-		columnNames = {"WORKSPACE_CODE", "name"}
+		name = "uk_workspace_team_name",
+		columnNames = {"workspace_id", "name"}
 	)
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,26 +40,25 @@ public class Team extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "TEAM_ID")
+	@Column(name = "team_id")
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(name = "name", nullable = false)
 	private String name;
 
-	@Column(nullable = false)
+	// TODO: should i allow null for description
+	@Column(name = "description")
 	private String description;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name = "color", nullable = false)
 	private ColorType color;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
-
+	// TODO: Should i use Set, and override EqualsAndHashCode as {"workspaceMember", "team"}?
 	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
 
@@ -73,7 +72,6 @@ public class Team extends BaseEntity {
 		this.name = name;
 		this.description = description;
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getKey();
 		this.color = color;
 	}
 
@@ -87,5 +85,9 @@ public class Team extends BaseEntity {
 
 	public void updateColor(ColorType color) {
 		this.color = color;
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
 	}
 }
