@@ -15,6 +15,7 @@ import com.tissue.api.workspacemember.application.dto.AssignPositionCommand;
 import com.tissue.api.workspacemember.application.dto.AssignTeamCommand;
 import com.tissue.api.workspacemember.application.dto.RemovePositionCommand;
 import com.tissue.api.workspacemember.application.dto.RemoveTeamCommand;
+import com.tissue.api.workspacemember.application.dto.UpdateDisplayNameCommand;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.AssignPositionRequest;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/members")
-public class WorkspaceMemberDetailController {
+public class WorkspaceMemberController {
 
 	private final WorkspaceMemberService workspaceMemberService;
 
@@ -44,9 +45,7 @@ public class WorkspaceMemberDetailController {
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		WorkspaceMemberResponse response = workspaceMemberService.updateDisplayName(
-			workspaceKey,
-			userDetails.getMemberId(),
-			request
+			new UpdateDisplayNameCommand(workspaceKey, userDetails.getMemberId(), request.displayName())
 		);
 
 		return ApiResponse.ok("Display name updated.", response);

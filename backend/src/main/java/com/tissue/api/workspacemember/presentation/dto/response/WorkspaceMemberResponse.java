@@ -3,7 +3,7 @@ package com.tissue.api.workspacemember.presentation.dto.response;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 public record WorkspaceMemberResponse(
-	String workspaceCode,
+	String workspaceKey,
 	Long memberId
 ) {
 	public static WorkspaceMemberResponse from(WorkspaceMember workspaceMember) {

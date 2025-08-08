@@ -1,6 +1,5 @@
 package com.tissue.api.workspacemember.application.service.command;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,14 +11,14 @@ import com.tissue.api.workspacemember.application.dto.AssignPositionCommand;
 import com.tissue.api.workspacemember.application.dto.AssignTeamCommand;
 import com.tissue.api.workspacemember.application.dto.RemovePositionCommand;
 import com.tissue.api.workspacemember.application.dto.RemoveTeamCommand;
+import com.tissue.api.workspacemember.application.dto.RemoveWorkspaceMemberCommand;
+import com.tissue.api.workspacemember.application.dto.TransferOwnershipCommand;
+import com.tissue.api.workspacemember.application.dto.UpdateDisplayNameCommand;
+import com.tissue.api.workspacemember.application.dto.UpdateRoleCommand;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberPermissionValidator;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberValidator;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateDisplayNameRequest;
-import com.tissue.api.workspacemember.presentation.dto.request.UpdateRoleRequest;
-import com.tissue.api.workspacemember.presentation.dto.response.TransferOwnershipResponse;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -36,40 +35,28 @@ public class WorkspaceMemberService {
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceMemberValidator workspaceMemberValidator;
 	private final WorkspaceMemberPermissionValidator workspaceMemberPermissionValidator;
-	private final ApplicationEventPublisher eventPublisher;
+	// private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
-	public WorkspaceMemberResponse updateDisplayName(
-		String workspaceCode,
-		Long memberId,
-		UpdateDisplayNameRequest request
-	) {
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	public WorkspaceMemberResponse updateDisplayName(UpdateDisplayNameCommand cmd) {
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
 
-		workspaceMember.updateDisplayName(request.displayName());
-		workspaceMemberRepository.saveAndFlush(workspaceMember);
+		workspaceMember.updateDisplayName(cmd.displayName());
 
 		return WorkspaceMemberResponse.from(workspaceMember);
 	}
 
 	@Transactional
-	public WorkspaceMemberResponse updateRole(
-		String workspaceCode,
-		Long targetMemberId,
-		Long requesterMemberId,
-		UpdateRoleRequest request
-	) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
+	public WorkspaceMemberResponse updateRole(UpdateRoleCommand cmd) {
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
 
+		// TODO: validateCanUpdateRole checks the WorkspaceRole hierarchy or if the target is yourself.
+		//  Should I move this permission related logic to the controller?
+		//  Or is there a way to use Spring-security for this?
 		workspaceMemberPermissionValidator.validateCanUpdateRole(requester, target);
 
-		WorkspaceRole oldRole = target.getRole();
-		target.updateRole(request.updateWorkspaceRole());
-
-		// eventPublisher.publishEvent(
-		// 	WorkspaceMemberRoleChangedEvent.createEvent(target, oldRole, requesterMemberId)
-		// );
+		target.updateRole(cmd.role());
 
 		return WorkspaceMemberResponse.from(target);
 	}
@@ -115,28 +102,20 @@ public class WorkspaceMemberService {
 	}
 
 	@Transactional
-	public TransferOwnershipResponse transferWorkspaceOwnership(
-		String workspaceCode,
-		Long targetMemberId,
-		Long requesterMemberId
-	) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
+	public WorkspaceMemberResponse transferOwnership(TransferOwnershipCommand cmd) {
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
 
 		requester.updateRoleToAdmin();
 		target.updateRoleToOwner();
 
-		return TransferOwnershipResponse.from(requester, target);
+		return WorkspaceMemberResponse.from(target);
 	}
 
 	@Transactional
-	public void removeWorkspaceMember(
-		String workspaceCode,
-		Long targetMemberId,
-		Long requesterMemberId
-	) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(requesterMemberId, workspaceCode);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(targetMemberId, workspaceCode);
+	public void removeWorkspaceMember(RemoveWorkspaceMemberCommand cmd) {
+		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
 
 		workspaceMemberPermissionValidator.validateCanRemoveWorkspaceMember(requester, target);
 
