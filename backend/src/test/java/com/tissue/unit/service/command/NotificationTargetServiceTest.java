@@ -70,10 +70,10 @@ public class NotificationTargetServiceTest {
 		WorkspaceMember specificWorkspaceMember = WorkspaceMember.createWorkspaceMember(specificMember, workspace,
 			WorkspaceRole.MEMBER);
 
-		when(workspaceMemberRepository.findAdminsByWorkspaceCode(workspaceCode))
+		when(workspaceMemberRepository.findAdminsByWorkspaceKey(workspaceCode))
 			.thenReturn(new HashSet<>(List.of(adminMember)));
 
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(specificMemberId, workspaceCode))
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceKey(specificMemberId, workspaceCode))
 			.thenReturn(Optional.of(specificWorkspaceMember));
 
 		// when
@@ -112,10 +112,10 @@ public class NotificationTargetServiceTest {
 
 		WorkspaceMember adminMember = WorkspaceMember.createWorkspaceMember(admin, workspace, WorkspaceRole.ADMIN);
 
-		when(workspaceMemberRepository.findAdminsByWorkspaceCode(workspaceCode))
+		when(workspaceMemberRepository.findAdminsByWorkspaceKey(workspaceCode))
 			.thenReturn(Set.of(adminMember));
 
-		when(workspaceMemberRepository.findByMemberIdAndWorkspaceCode(nonExistentMemberId, workspaceCode))
+		when(workspaceMemberRepository.findByMemberIdAndWorkspaceKey(nonExistentMemberId, workspaceCode))
 			.thenReturn(Optional.empty());
 
 		// when

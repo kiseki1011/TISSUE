@@ -17,28 +17,28 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
 
 	Page<WorkspaceMember> findByMemberId(Long memberId, Pageable pageable);
 
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long memberId, String workspaceCode);
+	Optional<WorkspaceMember> findByMemberIdAndWorkspaceKey(Long memberId, String workspaceKey);
 
 	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
 
-	Optional<WorkspaceMember> findByIdAndWorkspaceCode(Long workspaceMemberId, String workspaceCode);
+	Optional<WorkspaceMember> findByIdAndWorkspaceKey(Long workspaceMemberId, String workspaceKey);
 
 	boolean existsByMemberIdAndRole(Long id, WorkspaceRole role);
 
-	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+	boolean existsByMemberIdAndWorkspaceKey(Long id, String workspaceKey);
 
-	List<WorkspaceMember> findAllByWorkspaceCodeAndMemberIdIn(String workspaceCode, Set<Long> memberIdList);
+	List<WorkspaceMember> findAllByWorkspaceKeyAndMemberIdIn(String workspaceKey, Set<Long> memberIdList);
 
-	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
+	List<WorkspaceMember> findAllByWorkspaceKey(String workspaceKey);
 
-	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspaceCode = :workspaceCode AND wm.role IN ('ADMIN', 'OWNER')")
-	Set<WorkspaceMember> findAdminsByWorkspaceCode(@Param("workspaceCode") String workspaceCode);
+	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspace.key = :workspaceKey AND wm.role IN ('ADMIN', 'OWNER')")
+	Set<WorkspaceMember> findAdminsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "
-		+ "AND wm.workspace.code = :workspaceCode")
-	Optional<WorkspaceMember> findByMemberIdentifierAndWorkspaceCode(
+		+ "AND wm.workspace.key = :workspaceKey")
+	Optional<WorkspaceMember> findByMemberIdentifierAndWorkspaceKey(
 		@Param("identifier") String identifier,
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceKey
 	);
 }

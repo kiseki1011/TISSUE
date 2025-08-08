@@ -59,7 +59,6 @@ public class Sprint extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	// TODO: Use @UniqueConstraint?
 	@Column(nullable = false, unique = true)
 	private String key;
 
@@ -83,6 +82,10 @@ public class Sprint extends BaseEntity {
 		this.plannedEndDate = plannedEndDate;
 		this.status = SprintStatus.PLANNING;
 		this.workspace = workspace;
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
 	}
 
 	public void updateTitle(String title) {
@@ -122,6 +125,7 @@ public class Sprint extends BaseEntity {
 		}
 	}
 
+	// TODO: Move to validator
 	private void validateStatusTransition(SprintStatus newStatus) {
 		if (this.status == newStatus) {
 			throw new InvalidOperationException(
@@ -174,6 +178,7 @@ public class Sprint extends BaseEntity {
 		this.sprintIssues.removeIf(si -> si.getIssue().equals(issue));
 	}
 
+	// TODO: Consider moving to validator
 	private void validateCanAddIssue(Issue issue) {
 		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
 		if (notRequiredStatus) {

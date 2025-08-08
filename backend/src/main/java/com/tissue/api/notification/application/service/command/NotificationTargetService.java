@@ -24,7 +24,7 @@ public class NotificationTargetService {
 	 * Retrieve all members in the workspace as notification targets.
 	 */
 	public List<WorkspaceMember> getWorkspaceWideMemberTargets(String workspaceCode) {
-		return workspaceMemberRepository.findAllByWorkspaceCode(workspaceCode);
+		return workspaceMemberRepository.findAllByWorkspaceKey(workspaceCode);
 	}
 
 	/**
@@ -36,7 +36,7 @@ public class NotificationTargetService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> subscriberIds = issue.getSubscriberMemberIds();
 
-		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, subscriberIds);
+		return workspaceMemberRepository.findAllByWorkspaceKeyAndMemberIdIn(workspaceCode, subscriberIds);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class NotificationTargetService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> reviewerIds = issue.getReviewerMemberIds();
 
-		return workspaceMemberRepository.findAllByWorkspaceCodeAndMemberIdIn(workspaceCode, reviewerIds);
+		return workspaceMemberRepository.findAllByWorkspaceKeyAndMemberIdIn(workspaceCode, reviewerIds);
 	}
 
 	/**
@@ -55,9 +55,9 @@ public class NotificationTargetService {
 	 */
 	public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
 
-		Set<WorkspaceMember> targets = workspaceMemberRepository.findAdminsByWorkspaceCode(workspaceCode);
+		Set<WorkspaceMember> targets = workspaceMemberRepository.findAdminsByWorkspaceKey(workspaceCode);
 
-		workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
+		workspaceMemberRepository.findByMemberIdAndWorkspaceKey(memberId, workspaceCode)
 			.ifPresent(targets::add);
 
 		return targets;
@@ -70,7 +70,7 @@ public class NotificationTargetService {
 
 		Set<WorkspaceMember> target = new HashSet<>();
 
-		workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
+		workspaceMemberRepository.findByMemberIdAndWorkspaceKey(memberId, workspaceCode)
 			.ifPresent(target::add);
 
 		return target;

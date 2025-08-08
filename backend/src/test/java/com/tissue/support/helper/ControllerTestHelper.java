@@ -54,7 +54,7 @@ import com.tissue.api.workspacemember.application.service.command.WorkspaceMembe
 import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
 import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
-import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceMemberDetailController;
+import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceMemberController;
 import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceMembershipController;
 import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceParticipationController;
 import com.tissue.support.config.WebMvcTestConfig;
@@ -69,7 +69,7 @@ import lombok.extern.slf4j.Slf4j;
 		WorkspaceController.class,
 		WorkspaceMembershipController.class,
 		WorkspaceParticipationController.class,
-		WorkspaceMemberDetailController.class,
+		WorkspaceMemberController.class,
 		MemberController.class,
 		MemberQueryController.class,
 		PositionController.class,

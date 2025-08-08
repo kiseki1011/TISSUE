@@ -40,7 +40,7 @@ public class WorkspaceParticipationCommandService {
 
 		// TODO: If im already join fetched WorkspaceMembers in the persistence context,
 		//  can't i just check the List<WorkspaceMembers> to see if it exists without using workspaceMemberRepository?
-		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceKey)) {
+		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceKey(memberId, workspaceKey)) {
 			throw new InvalidOperationException(String.format(
 				"Member already joined this workspace. memberId: %d, workspaceCode: %s",
 				memberId, workspaceKey)
