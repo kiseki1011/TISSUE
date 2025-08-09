@@ -18,6 +18,7 @@ import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
@@ -36,9 +37,11 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final WorkspacePolicy workspacePolicy;
 
 	// TODO: Make CreateWorkspaceCommand
 	// TODO: Consider moving workspace creation to WorkspaceService?
+	// TODO: Refactor for readability
 	@Override
 	@Retryable(
 		retryFor = {DataIntegrityViolationException.class},
@@ -60,13 +63,13 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 
 		Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
-		// TODO: Is it possible to encapsulate the WorkspaceMember adding logic
-		//  in the Workspace constructor(or factory method)?
-		//  Or should I just explicitly call it in the service?
-		workspaceMemberRepository.save(addOwnerWorkspaceMember(
-			member,
-			savedWorkspace
-		));
+		workspaceMemberRepository.save(
+			addOwnerWorkspaceMember(
+				member,
+				savedWorkspace,
+				workspacePolicy
+			)
+		);
 
 		return WorkspaceResponse.from(savedWorkspace);
 	}

@@ -9,6 +9,7 @@ import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.persistence.CascadeType;
@@ -82,11 +83,15 @@ public class WorkspaceMember extends BaseEntity {
 
 	// TODO: Should i make this private?
 	// TODO: Should i make this a instance method?
-	public static WorkspaceMember createWorkspaceMember(
+	private static WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
-		WorkspaceRole role
+		WorkspaceRole role,
+		WorkspacePolicy workspacePolicy
 	) {
+		member.validateWorkspaceLimit();
+		workspace.validateCanAddMember(workspacePolicy);
+
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
 			.member(member)
 			.workspace(workspace)
@@ -96,24 +101,23 @@ public class WorkspaceMember extends BaseEntity {
 		member.getWorkspaceMembers().add(workspaceMember);
 		workspace.getWorkspaceMembers().add(workspaceMember);
 
-		member.validateWorkspaceLimit();
-		workspace.validateMemberLimit();
-
 		return workspaceMember;
 	}
 
 	public static WorkspaceMember addOwnerWorkspaceMember(
 		Member member,
-		Workspace workspace
+		Workspace workspace,
+		WorkspacePolicy workspacePolicy
 	) {
-		return createWorkspaceMember(member, workspace, WorkspaceRole.OWNER);
+		return createWorkspaceMember(member, workspace, WorkspaceRole.OWNER, workspacePolicy);
 	}
 
 	public static WorkspaceMember addWorkspaceMember(
 		Member member,
-		Workspace workspace
+		Workspace workspace,
+		WorkspacePolicy workspacePolicy
 	) {
-		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
+		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, workspacePolicy);
 	}
 
 	public String getWorkspaceKey() {
@@ -124,9 +128,10 @@ public class WorkspaceMember extends BaseEntity {
 		return member.getId();
 	}
 
-	// TODO: For WorkspaceMember removal should i use hard-delete?
+	// TODO: For WorkspaceMember removal should I use hard-delete?
 	//  Im thinking about what would happen to exisiting resources (Issue, Sprint, Comment, etc...)
 	//  if the WorkspaceMember is kicked out of the Workspace.
+	//  If soft-delete is recommended, how should I implement it?
 
 	public void validateCanLeaveWorkspace() {
 		if (this.role == WorkspaceRole.OWNER) {

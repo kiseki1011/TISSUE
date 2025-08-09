@@ -59,7 +59,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		WorkspaceMemberResponse response = WorkspaceMemberResponse.from(workspaceMember);
 
-		when(workspaceParticipationCommandService.joinWorkspace(eq(workspaceCode), anyLong()))
+		when(workspaceParticipationService.joinWorkspace(eq(workspaceCode), anyLong()))
 			.thenReturn(response);
 
 		// when & then
@@ -80,7 +80,7 @@ class WorkspaceParticipationControllerTest extends ControllerTestHelper {
 
 		JoinWorkspaceRequest request = new JoinWorkspaceRequest(invalidPassword);
 
-		when(workspaceParticipationCommandService.joinWorkspace(eq("TESTCODE"), anyLong()))
+		when(workspaceParticipationService.joinWorkspace(eq("TESTCODE"), anyLong()))
 			.thenThrow(new AuthenticationFailedException("Workspace password is invalid."));
 
 		// when & then

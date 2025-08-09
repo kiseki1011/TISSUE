@@ -14,7 +14,7 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
 import com.tissue.support.helper.ServiceIntegrationTestHelper;
 
-class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelper {
+class WorkspaceParticipationServiceIT extends ServiceIntegrationTestHelper {
 
 	Workspace workspace;
 
@@ -36,7 +36,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 		Member member = testDataFixture.createMember("tester");
 
 		// when
-		WorkspaceMemberResponse response = workspaceParticipationCommandService.joinWorkspace(
+		WorkspaceMemberResponse response = workspaceParticipationService.joinWorkspace(
 			workspace.getKey(),
 			member.getId()
 		);
@@ -58,7 +58,7 @@ class WorkspaceParticipationCommandServiceIT extends ServiceIntegrationTestHelpe
 
 		// when & then
 		assertThatThrownBy(
-			() -> workspaceParticipationCommandService.joinWorkspace(workspace.getKey(), member.getId()))
+			() -> workspaceParticipationService.joinWorkspace(workspace.getKey(), member.getId()))
 			.isInstanceOf(InvalidOperationException.class);
 	}
 

@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.service.InvitationValidator;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
@@ -26,6 +27,7 @@ public class InvitationCommandService {
 	private final InvitationRepository invitationRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final InvitationValidator invitationValidator;
+	private final WorkspacePolicy workspacePolicy;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -38,7 +40,8 @@ public class InvitationCommandService {
 
 		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
 			invitation.getMember(),
-			invitation.getWorkspace()
+			invitation.getWorkspace(),
+			workspacePolicy
 		);
 
 		workspaceMemberRepository.save(workspaceMember);

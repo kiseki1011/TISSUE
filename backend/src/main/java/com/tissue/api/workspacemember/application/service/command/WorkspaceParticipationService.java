@@ -1,7 +1,5 @@
 package com.tissue.api.workspacemember.application.service.command;
 
-import static com.tissue.api.workspacemember.domain.model.WorkspaceMember.*;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +9,7 @@ import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;
@@ -19,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class WorkspaceParticipationCommandService {
+public class WorkspaceParticipationService {
 
 	// Todo: Leave Workspace (cannot leave if OWNER)
 	// TODO: Should the Workspace participation related APIs be in the WorkspaceMemberController?
@@ -27,6 +26,7 @@ public class WorkspaceParticipationCommandService {
 	private final MemberFinder memberFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final WorkspacePolicy workspacePolicy;
 
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -47,7 +47,12 @@ public class WorkspaceParticipationCommandService {
 			);
 		}
 
-		WorkspaceMember workspaceMember = addWorkspaceMember(member, workspace);
+		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
+			member,
+			workspace,
+			workspacePolicy
+		);
+
 		workspaceMemberRepository.save(workspaceMember);
 
 		// eventPublisher.publishEvent(

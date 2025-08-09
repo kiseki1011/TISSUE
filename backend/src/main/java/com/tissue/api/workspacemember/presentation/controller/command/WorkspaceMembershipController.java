@@ -35,6 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/members")
 public class WorkspaceMembershipController {
 
+	/**
+	 * TODO
+	 *  - Leave Workspace API is in WorkspaceParticipationController
+	 *  - Should I integrate WorkspaceMembershipController to WorkspaceParticipationController?
+	 */
+
 	private final WorkspaceMemberService workspaceMemberService;
 	private final WorkspaceMemberInviteService workspaceMemberInviteService;
 

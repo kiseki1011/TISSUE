@@ -10,6 +10,7 @@ import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -28,9 +29,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
-
-	// TODO: Use application.yml
-	private static final int MAX_MEMBER_COUNT = 500;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,9 +73,6 @@ public class Workspace extends BaseEntity {
 		String password,
 		String issueKeyPrefix
 	) {
-		// TODO: Should i call the validateMemberLimit at the WorkspaceMember constructor or factory method?
-		//  Call it like workspace.validateMemberLimit()
-		// validateMemberLimit();
 		this.key = key;
 		this.name = name;
 		this.description = description;
@@ -96,7 +91,6 @@ public class Workspace extends BaseEntity {
 		}
 
 		newPrefix = newPrefix.toUpperCase();
-		// TODO: Should I make isReserved() a validation method? (Throw instead of returning boolean)
 		if (KeyPrefixPolicy.isReserved(newPrefix)) {
 			throw new InvalidOperationException("Cannot use reserved key prefix: " + newPrefix);
 		}
@@ -145,11 +139,8 @@ public class Workspace extends BaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
-	public void validateMemberLimit() {
-		if (getMemberCount() >= MAX_MEMBER_COUNT) {
-			throw new InvalidOperationException(
-				"Maximum number of members reached. Workspace member limit: %d".formatted(MAX_MEMBER_COUNT));
-		}
+	public void validateCanAddMember(WorkspacePolicy workspacePolicy) {
+		workspacePolicy.validateMemberLimit(this);
 	}
 
 	public int getMemberCount() {

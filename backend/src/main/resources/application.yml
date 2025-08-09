@@ -34,11 +34,26 @@ email:
     failure-url: ${base-url}/members/email-verification/fail
     verification-url: ${base-url}/api/v1/members/email-verification/verify
 
+# move issue under tissue
 api:
   issue:
     circular-dependency-cache:
       size: 1000
       duration: 1
+
+tissue:
+  workspace:
+    max-member-count: 500
+    # max-teams-per-member: 3
+    # max-positions-per-member: 3
+    # max-issue-count: 10000000
+    # max-sprint-count: 1000000
+    # max-issue-field-count: 10000
+    # max-issue-type-count: 10000
+  member:
+  # max-workspace-count: 20
+  issue:
+  # max-field-per-issue-type: 50
 
 logging:
   level:
