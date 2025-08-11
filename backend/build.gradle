@@ -25,6 +25,8 @@ repositories {
     mavenCentral()
 }
 
+ext { ssmVersion = '4.0.1' }
+
 checkstyle {
     maxWarnings = 0
     configFile = file("${rootDir}/config/checkstyle/naver-checkstyle-rules.xml")
@@ -149,6 +151,10 @@ jacocoTestReport {
         implementation 'org.springframework.boot:spring-boot-starter-mail'
         implementation 'org.springframework.retry:spring-retry'
 
+        implementation 'org.springframework.statemachine:spring-statemachine-starter'
+        implementation 'org.springframework.statemachine:spring-statemachine-data-redis'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
         implementation 'org.springframework.boot:spring-boot-starter-cache'
         implementation 'com.github.ben-manes.caffeine:caffeine:3.1.2'
 
@@ -171,6 +177,12 @@ jacocoTestReport {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testCompileOnly 'org.projectlombok:lombok:1.18.34'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.statemachine:spring-statemachine-bom:${ssmVersion}"
+        }
     }
 
     tasks.named('test') {
