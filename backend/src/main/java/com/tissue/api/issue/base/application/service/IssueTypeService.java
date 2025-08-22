@@ -43,6 +43,7 @@ public class IssueTypeService {
 		IssueType issueType = issueTypeRepository.save(IssueType.builder()
 			.workspace(workspace)
 			.label(cmd.label())
+			.description(cmd.description())
 			.color(cmd.color())
 			.hierarchyLevel(cmd.hierarchyLevel())
 			.workflow(workflow)

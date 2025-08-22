@@ -9,6 +9,7 @@ import lombok.Builder;
 public record CreateIssueTypeCommand(
 	String workspaceKey,
 	String label,
+	String description,
 	ColorType color,
 	HierarchyLevel hierarchyLevel,
 	String workflowKey

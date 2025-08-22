@@ -48,8 +48,7 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private String label;
 
-	// TODO: consider adding description field?
-	// private String description;
+	private String description;
 
 	// private String icon;
 
@@ -79,6 +78,7 @@ public class IssueType extends BaseEntity {
 		Workspace workspace,
 		String key,
 		String label,
+		String description,
 		ColorType color,
 		HierarchyLevel hierarchyLevel,
 		Workflow workflow
@@ -86,6 +86,7 @@ public class IssueType extends BaseEntity {
 		this.workspace = workspace;
 		this.key = key;
 		this.label = label;
+		this.description = description;
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
 		this.workflow = workflow;
@@ -96,12 +97,26 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
+	public void updateAppearance(String label, String description, ColorType color) {
+		updateLabel(label);
+		updateDescription(description);
+		updateColor(color);
+	}
+
 	public void updateLabel(String label) {
-		this.label = label;
+		if (label != null) {
+			this.label = label;
+		}
+	}
+
+	public void updateDescription(String description) {
+		this.description = description;
 	}
 
 	public void updateColor(ColorType color) {
-		this.color = color;
+		if (color != null) {
+			this.color = color;
+		}
 	}
 
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
@@ -112,7 +127,7 @@ public class IssueType extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	public void setDefaultSystemType() {
+	public void setAsDefaultSystemType() {
 		this.systemType = true;
 	}
 }
