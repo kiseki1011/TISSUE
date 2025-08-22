@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.issue.base.domain.model.Issue;
+import com.tissue.api.issue.base.domain.model.IssueType;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
@@ -22,10 +23,10 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 	 */
 	@Query("SELECT i FROM Issue i "
 		+ "LEFT JOIN FETCH i.childIssues "
-		+ "WHERE i.workspaceCode = :workspaceCode "
+		+ "WHERE i.workspaceKey = :workspaceKey "
 		+ "AND i.id = :issueId")
 	Optional<Issue> findByWorkspaceCodeAndIdWithChildren(
-		@Param("workspaceCode") String workspaceCode,
+		@Param("workspaceKey") String workspaceCode,
 		@Param("issueId") Long issueId
 	);
 
@@ -33,12 +34,12 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 		+ "JOIN FETCH i.sprintIssues si "
 		+ "JOIN FETCH si.sprint s "
 		+ "WHERE s.sprintKey = :sprintKey "
-		+ "AND s.workspaceCode = :workspaceCode "
+		+ "AND s.workspaceKey = :workspaceKey "
 		+ "AND i.issueKey = :issueKey")
 	Optional<Issue> findIssueInSprint(
 		@Param("sprintKey") String sprintKey,
 		@Param("issueKey") String issueKey,
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceCode
 	);
 
 	List<Issue> findByIssueKeyInAndWorkspaceCode(Collection<String> issueKeys, String workspaceCode);
@@ -48,4 +49,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
 	 * 추후 이슈 목록 조회 기능 구현 시 사용할 수 있습니다.
 	 */
 	Page<Issue> findByWorkspaceCode(String workspaceCode, Pageable pageable);
+
+	boolean existsByIssueType(IssueType issueType);
 }

@@ -35,7 +35,7 @@ public class Review extends BaseEntity {
 	// private int reviewRound;
 	//
 	// @Column(nullable = false)
-	// private String workspaceCode;
+	// private String workspaceKey;
 	//
 	// @Column
 	// private String issueKey;
@@ -52,7 +52,7 @@ public class Review extends BaseEntity {
 	// 	this.title = title;
 	// 	this.content = content;
 	// 	this.reviewRound = issueReviewer.getIssue().getCurrentReviewRound();
-	// 	this.workspaceCode = issueReviewer.getIssue().getWorkspaceCode();
+	// 	this.workspaceKey = issueReviewer.getIssue().getWorkspaceCode();
 	// 	this.issueKey = issueReviewer.getIssue().getIssueKey();
 	// }
 	//

@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/notifications/preferences")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/notifications/preferences")
 public class NotificationPreferenceController {
 
 	private final NotificationPreferenceService preferenceService;

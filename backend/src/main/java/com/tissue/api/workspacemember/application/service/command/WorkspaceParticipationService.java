@@ -42,7 +42,7 @@ public class WorkspaceParticipationService {
 		//  can't i just check the List<WorkspaceMembers> to see if it exists without using workspaceMemberRepository?
 		if (workspaceMemberRepository.existsByMemberIdAndWorkspaceKey(memberId, workspaceKey)) {
 			throw new InvalidOperationException(String.format(
-				"Member already joined this workspace. memberId: %d, workspaceCode: %s",
+				"Member already joined this workspace. memberId: %d, workspaceKey: %s",
 				memberId, workspaceKey)
 			);
 		}

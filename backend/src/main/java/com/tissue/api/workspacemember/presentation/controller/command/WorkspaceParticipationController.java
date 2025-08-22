@@ -46,7 +46,7 @@ public class WorkspaceParticipationController {
 	 *  - getMyWorkspaceRole: 특정 참여한 워크스페이스에서 내가 가지고 있는 권한 조회하기
 	 */
 
-	@PostMapping("/{workspaceCode}/members")
+	@PostMapping("/{workspaceKey}/members")
 	public ApiResponse<WorkspaceMemberResponse> joinWorkspace(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails,
@@ -63,7 +63,7 @@ public class WorkspaceParticipationController {
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping("/{workspaceCode}/members")
+	@DeleteMapping("/{workspaceKey}/members")
 	public ApiResponse<Void> leaveWorkspace(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails

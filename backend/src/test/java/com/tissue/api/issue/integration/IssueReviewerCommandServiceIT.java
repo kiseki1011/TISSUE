@@ -79,7 +79,7 @@ class IssueReviewerCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	);
 	//
 	// 	// then
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getCode());
 	// 	assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 	// 	assertThat(response.reviewerMemberId()).isEqualTo(member2.getId());
 	// }

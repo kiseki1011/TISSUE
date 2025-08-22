@@ -137,42 +137,42 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	// @DisplayName("POST /workspaces/{code}/members/invite - 워크스페이스 멤버 초대 성공")
 	// void inviteMembers_Success() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	InviteMembersRequest request = InviteMembersRequest.of(Set.of("dummy1", "dummy2"));
 	//
 	// 	// invited member IDs (직접 생성)
 	// 	List<Long> invitedMemberIds = List.of(1L, 2L);
-	// 	InviteMembersResponse response = new InviteMembersResponse(workspaceCode, invitedMemberIds);
+	// 	InviteMembersResponse response = new InviteMembersResponse(workspaceKey, invitedMemberIds);
 	//
 	// 	// mock behavior 설정
-	// 	when(workspaceMemberInviteService.inviteMembers(eq(workspaceCode), eq(request)))
+	// 	when(workspaceMemberInviteService.inviteMembers(eq(workspaceKey), eq(request)))
 	// 		.thenReturn(response);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isOk())
 	// 		.andExpect(jsonPath("$.code").value("200"))
 	// 		.andExpect(jsonPath("$.message").value("Members invited"))
-	// 		.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+	// 		.andExpect(jsonPath("$.data.workspaceKey").value(workspaceKey))
 	// 		.andExpect(jsonPath("$.data.invitedMemberIds").isArray())
 	// 		.andExpect(jsonPath("$.data.invitedMemberIds.length()").value(2))
 	// 		.andDo(print());
 	//
-	// 	verify(workspaceMemberInviteService).inviteMembers(workspaceCode, request);
+	// 	verify(workspaceMemberInviteService).inviteMembers(workspaceKey, request);
 	// }
 	//
 	// @Test
 	// @DisplayName("POST /workspaces/{code}/members/invite - 비어있는 멤버 목록으로 초대 요청 시 요청 검증 실패")
 	// void inviteMembers_Fail_EmptyMemberList() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	Set<String> memberIdentifiers = new HashSet<>();
 	// 	InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isBadRequest())
@@ -185,15 +185,15 @@ class WorkspaceMembershipControllerTest extends ControllerTestHelper {
 	// @DisplayName("POST /workspaces/{code}/members/invite - 모든 멤버 식별자가 초대 대상에서 제외되면 예외가 발생한다")
 	// void inviteMembers_ifAllIdentifiersExcluded_throwsException() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	Set<String> memberIdentifiers = Set.of("excludedMember1", "excludedMember2", "excludedMember3");
 	// 	InviteMembersRequest request = InviteMembersRequest.of(memberIdentifiers);
 	//
-	// 	when(workspaceMemberInviteService.inviteMembers(workspaceCode, request))
+	// 	when(workspaceMemberInviteService.inviteMembers(workspaceKey, request))
 	// 		.thenThrow(new InvalidOperationException("No members were available for invitation."));
 	//
 	// 	// when & then
-	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceCode)
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members/invite", workspaceKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isBadRequest())

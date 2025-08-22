@@ -117,7 +117,7 @@ class RoleRequiredInterceptorTest {
 			.thenThrow(WorkspaceMemberNotFoundException.class);
 
 		Map<String, String> pathVariables = new HashMap<>();
-		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		pathVariables.put("workspaceKey", TEST_WORKSPACE_CODE);
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when & then
@@ -150,7 +150,7 @@ class RoleRequiredInterceptorTest {
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MANAGER);
 
 		Map<String, String> pathVariables = new HashMap<>();
-		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		pathVariables.put("workspaceKey", TEST_WORKSPACE_CODE);
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when & then
@@ -183,7 +183,7 @@ class RoleRequiredInterceptorTest {
 		when(roleRequired.role()).thenReturn(WorkspaceRole.MEMBER);
 
 		Map<String, String> pathVariables = new HashMap<>();
-		pathVariables.put("workspaceCode", TEST_WORKSPACE_CODE);
+		pathVariables.put("workspaceKey", TEST_WORKSPACE_CODE);
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVariables);
 
 		// when

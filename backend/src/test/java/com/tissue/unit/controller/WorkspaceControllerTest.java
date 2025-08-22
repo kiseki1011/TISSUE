@@ -104,7 +104,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{workspaceCode}/info - 워크스페이스 정보 수정 요청에 성공하면 OK를 응답한다")
+	@DisplayName("PATCH /workspaces/{workspaceKey}/info - 워크스페이스 정보 수정 요청에 성공하면 OK를 응답한다")
 	void updateWorkspaceContent_shouldReturnUpdatedContent() throws Exception {
 		// given
 		UpdateWorkspaceInfoRequest request = new UpdateWorkspaceInfoRequest("New Title", "New Description");
@@ -125,12 +125,12 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/info", workspaceCode)
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceKey}/info", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Workspace info updated."))
-			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.workspaceKey").value(workspaceCode))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
@@ -138,7 +138,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("DELETE /workspaces/{workspaceCode} - 워크스페이스 삭제 요청에 성공하면 OK")
+	@DisplayName("DELETE /workspaces/{workspaceKey} - 워크스페이스 삭제 요청에 성공하면 OK")
 	void deleteWorkspace_shouldReturnSuccess() throws Exception {
 		// given
 		DeleteWorkspaceRequest request = new DeleteWorkspaceRequest("password1234!");
@@ -151,7 +151,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 		// 	.thenReturn();
 
 		// when & then
-		mockMvc.perform(delete("/api/v1/workspaces/{workspaceCode}", "TESTCODE")
+		mockMvc.perform(delete("/api/v1/workspaces/{workspaceKey}", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isNoContent())
@@ -190,7 +190,7 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{workspaceCode}/key - 이슈 키 접두사(issue key prefix) 수정에 성공하면 OK")
+	@DisplayName("PATCH /workspaces/{workspaceKey}/key - 이슈 키 접두사(issue key prefix) 수정에 성공하면 OK")
 	void updateWorkspaceIssueKeyPrefix_shouldReturnOK() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("TESTPREFIX");
@@ -203,12 +203,12 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 			.thenReturn(response);
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/key", workspaceCode)
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceKey}/key", workspaceCode)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.message").value("Issue key prefix updated."))
-			.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+			.andExpect(jsonPath("$.data.workspaceKey").value(workspaceCode))
 			.andDo(print());
 
 		verify(workspaceCommandService, times(1))
@@ -216,13 +216,13 @@ class WorkspaceControllerTest extends ControllerTestHelper {
 	}
 
 	@Test
-	@DisplayName("PATCH /workspaces/{workspaceCode}/key - 이슈 키 접두사(issue key prefix) 수정 요청에 영문자를 사용하지 않으면 검증을 실패한다")
+	@DisplayName("PATCH /workspaces/{workspaceKey}/key - 이슈 키 접두사(issue key prefix) 수정 요청에 영문자를 사용하지 않으면 검증을 실패한다")
 	void updateWorkspaceIssueKeyPrefix_failsRequestValidation() throws Exception {
 		// given
 		UpdateIssueKeyRequest request = new UpdateIssueKeyRequest("잘못된접두사");
 
 		// when & then
-		mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/key", "TESTCODE")
+		mockMvc.perform(patch("/api/v1/workspaces/{workspaceKey}/key", "TESTCODE")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest())

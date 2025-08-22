@@ -1,15 +1,10 @@
-package com.tissue.api.issue.base.application.dto;
+package com.tissue.api.issue.base.presentation.dto.request;
 
 import java.util.List;
 
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
-import lombok.Builder;
-
-@Builder
-public record CreateIssueFieldCommand(
-	String workspaceKey,
-	String issueTypeKey,
+public record UpdateIssueFieldRequest(
 	String label,
 	String description,
 	FieldType fieldType,

@@ -128,7 +128,7 @@ class ReviewCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	);
 	//
 	// 	// then
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getCode());
 	// 	assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 	// }
 	//

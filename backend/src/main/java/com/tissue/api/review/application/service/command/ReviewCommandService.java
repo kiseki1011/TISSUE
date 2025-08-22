@@ -17,16 +17,16 @@ public class ReviewCommandService {
 
 	// @Transactional
 	// public ReviewResponse submitReview(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long requesterMemberId,
 	// 	SubmitReviewRequest request
 	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
 	//
 	// 	WorkspaceMember reviewerWorkspaceMember = workspaceMemberReader.findWorkspaceMember(
 	// 		requesterMemberId,
-	// 		workspaceCode
+	// 		workspaceKey
 	// 	);
 	//
 	// 	IssueReviewer reviewer = findReviewer(issueKey, reviewerWorkspaceMember);
@@ -48,7 +48,7 @@ public class ReviewCommandService {
 	//
 	// @Transactional
 	// public ReviewResponse updateReview(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	Long reviewId,
 	// 	Long reviewerMemberId,
 	// 	UpdateReviewRequest request

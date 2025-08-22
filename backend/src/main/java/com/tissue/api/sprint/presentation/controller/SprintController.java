@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/sprints")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/sprints")
 public class SprintController {
 
 	private final SprintCommandService sprintCommandService;

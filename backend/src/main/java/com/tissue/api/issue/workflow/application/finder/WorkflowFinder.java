@@ -21,6 +21,6 @@ public class WorkflowFinder {
 		// TODO: Consider making a custom exception WorkflowNotFoundException
 		return workflowRepository.findByWorkspaceCodeAndKey(workspaceCode, key)
 			.orElseThrow(() -> new ResourceNotFoundException(
-				"Workflow not found: workspaceCode=" + workspaceCode + ", key=" + key));
+				"Workflow not found: workspaceKey=" + workspaceCode + ", key=" + key));
 	}
 }

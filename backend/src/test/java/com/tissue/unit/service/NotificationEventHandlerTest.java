@@ -49,12 +49,12 @@ class NotificationEventHandlerTest {
 	// @DisplayName("이슈 생성 이벤트 발생 시 워크스페이스 멤버들에게 알림이 처리되어야 함")
 	// void handleIssueCreated_ShouldProcessNotificationForAllWorkspaceMembers() {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	Long actorId = 123L;
 	//
 	// 	Issue issue = mock(Issue.class);
 	// 	when(issue.getIssueKey()).thenReturn("ISSUE-1");
-	// 	when(issue.getWorkspaceCode()).thenReturn(workspaceCode);
+	// 	when(issue.getWorkspaceCode()).thenReturn(workspaceKey);
 	// 	when(issue.getType()).thenReturn(IssueType.STORY);
 	//
 	// 	IssueCreatedEvent event = IssueCreatedEvent.createEvent(issue, actorId);
@@ -65,7 +65,7 @@ class NotificationEventHandlerTest {
 	// 	when(wm2.getMember()).thenReturn(mock(Member.class));
 	// 	List<WorkspaceMember> members = List.of(wm1, wm2);
 	//
-	// 	when(targetService.getWorkspaceWideMemberTargets(workspaceCode)).thenReturn(members);
+	// 	when(targetService.getWorkspaceWideMemberTargets(workspaceKey)).thenReturn(members);
 	//
 	// 	NotificationMessage msg = new NotificationMessage("title", "body");
 	// 	when(notificationMessageFactory.createMessage(event)).thenReturn(msg);

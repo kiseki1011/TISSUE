@@ -16,23 +16,23 @@ public class ReviewCommentCommandService {
 
 	// @Transactional
 	// public ReviewCommentResponse createComment(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long reviewId,
 	// 	CreateReviewCommentRequest request,
 	// 	Long memberId
 	// ) {
-	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
+	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 	//
-	// 	// Todo: ReviewNotFoundException을 만들까? 근데 issueKey, workspaceCode 정보가 필요할까?
-	// 	Review review = reviewRepository.findByIdAndIssueKeyAndWorkspaceCode(reviewId, issueKey, workspaceCode)
+	// 	// Todo: ReviewNotFoundException을 만들까? 근데 issueKey, workspaceKey 정보가 필요할까?
+	// 	Review review = reviewRepository.findByIdAndIssueKeyAndWorkspaceCode(reviewId, issueKey, workspaceKey)
 	// 		.orElseThrow(
 	// 			() -> new ResourceNotFoundException(String.format(
 	// 				"Review was not found with review id: %d, issue key: %s, workspace code: %s",
-	// 				reviewId, issueKey, workspaceCode))
+	// 				reviewId, issueKey, workspaceKey))
 	// 		);
 	//
-	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 	//
 	// 	ReviewComment parentComment = request.hasParentComment()
 	// 		? (ReviewComment)commentRepository.findById(request.parentCommentId())
@@ -53,15 +53,15 @@ public class ReviewCommentCommandService {
 
 	// @Transactional
 	// public ReviewCommentResponse updateComment(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long reviewId,
 	// 	Long commentId,
 	// 	UpdateReviewCommentRequest request,
 	// 	Long memberId
 	// ) {
-	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 	//
 	// 	ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 	// 		.orElseThrow(() -> new CommentNotFoundException(commentId));
@@ -74,14 +74,14 @@ public class ReviewCommentCommandService {
 
 	// @Transactional
 	// public ReviewCommentResponse deleteComment(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long reviewId,
 	// 	Long commentId,
 	// 	Long memberId
 	// ) {
-	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
-	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
+	// 	Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+	// 	WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 	//
 	// 	ReviewComment comment = commentRepository.findByIdAndReview_IdAndReview_IssueKey(commentId, reviewId, issueKey)
 	// 		.orElseThrow(() -> new CommentNotFoundException(commentId));

@@ -8,7 +8,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	// @DisplayName("POST /workspaces/{code}/issues - 이슈 생성 요청에서 제목이 비어있으면 유효성 검사를 실패해서 BAD_REQUEST를 응답한다")
 	// void createEpic_fails_ifTitleIsEmpty() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	//
 	// 	CreateEpicRequest request = CreateEpicRequest.builder()
 	// 		.common(CommonIssueCreateFields.builder()
@@ -22,7 +22,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	// 		.build();
 	//
 	// 	// when & then
-	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/issues", workspaceCode)
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/issues", workspaceKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isBadRequest())
@@ -33,7 +33,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	// @DisplayName("POST /workspaces/{code}/issues - 에픽 이슈 생성에 성공하면 에픽 생성 응답을 응답 데이터로 받는다")
 	// void createEpic_ValidRequest_ReturnsCreatedResponse() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	String issueKey = "ISSUE-1";
 	//
 	// 	CreateEpicRequest request = CreateEpicRequest.builder()
@@ -47,17 +47,17 @@ class IssueControllerTest extends ControllerTestHelper {
 	// 		.businessGoal("Business Goal")
 	// 		.build();
 	//
-	// 	IssueResponse response = new IssueResponse(workspaceCode, issueKey);
+	// 	IssueResponse response = new IssueResponse(workspaceKey, issueKey);
 	//
 	// 	when(issueService.createIssue(anyString(), anyLong(), any(CreateIssueRequest.class)))
 	// 		.thenReturn(response);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/issues", workspaceCode)
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/issues", workspaceKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isCreated())
-	// 		.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+	// 		.andExpect(jsonPath("$.data.workspaceKey").value(workspaceKey))
 	// 		.andExpect(jsonPath("$.data.issueKey").value(issueKey))
 	// 		.andExpect(jsonPath("$.message").value("Issue created."));
 	// }
@@ -66,7 +66,7 @@ class IssueControllerTest extends ControllerTestHelper {
 	// @DisplayName("PATCH /workspaces/{code}/issues/{issueKey} - 이슈 정보 업데이트에 성공하면 OK를 응답한다")
 	// void updateIssue_Success() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "TESTCODE";
+	// 	String workspaceKey = "TESTCODE";
 	// 	String issueKey = "TEST-123";
 	// 	LocalDateTime now = LocalDateTime.now();
 	// 	LocalDateTime dueAt = LocalDateTime.now();
@@ -83,22 +83,22 @@ class IssueControllerTest extends ControllerTestHelper {
 	// 		.acceptanceCriteria("Updated Acceptance Criteria")
 	// 		.build();
 	//
-	// 	IssueResponse response = new IssueResponse(workspaceCode, issueKey);
+	// 	IssueResponse response = new IssueResponse(workspaceKey, issueKey);
 	//
-	// 	when(issueService.updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
+	// 	when(issueService.updateIssue(eq(workspaceKey), eq(issueKey), anyLong(), eq(request)))
 	// 		.thenReturn(response);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}", workspaceCode, issueKey)
+	// 	mockMvc.perform(patch("/api/v1/workspaces/{code}/issues/{issueKey}", workspaceKey, issueKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isOk())
 	// 		.andExpect(jsonPath("$.message").value("Issue details updated."))
 	// 		.andExpect(jsonPath("$.data.issueKey").value(issueKey))
-	// 		.andExpect(jsonPath("$.data.workspaceCode").value(workspaceCode))
+	// 		.andExpect(jsonPath("$.data.workspaceKey").value(workspaceKey))
 	// 		.andDo(print());
 	//
-	// 	verify(issueService).updateIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request));
+	// 	verify(issueService).updateIssue(eq(workspaceKey), eq(issueKey), anyLong(), eq(request));
 	// }
 	//
 	// @Test
@@ -132,23 +132,23 @@ class IssueControllerTest extends ControllerTestHelper {
 	// @DisplayName("PATCH /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 등록에 성공하면 OK를 응답한다")
 	// void assignParentIssue() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "WORKSPACE";
+	// 	String workspaceKey = "WORKSPACE";
 	// 	String issueKey = "ISSUE-1";
 	// 	String parentIssueKey = "ISSUE-999";
 	// 	AssignParentIssueRequest request = new AssignParentIssueRequest(parentIssueKey);
 	//
-	// 	IssueResponse response = new IssueResponse(workspaceCode, issueKey);
+	// 	IssueResponse response = new IssueResponse(workspaceKey, issueKey);
 	//
-	// 	when(issueService.assignParentIssue(eq(workspaceCode), eq(issueKey), anyLong(), eq(request)))
+	// 	when(issueService.assignParentIssue(eq(workspaceKey), eq(issueKey), anyLong(), eq(request)))
 	// 		.thenReturn(response);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(patch("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/parent", workspaceCode, issueKey)
+	// 	mockMvc.perform(patch("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent", workspaceKey, issueKey)
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.content(objectMapper.writeValueAsString(request)))
 	// 		.andExpect(status().isOk())
 	// 		.andExpect(jsonPath("$.message").value("Parent issue assigned."))
-	// 		.andExpect(jsonPath("$.data.workspaceCode").value(response.workspaceCode()))
+	// 		.andExpect(jsonPath("$.data.workspaceKey").value(response.workspaceKey()))
 	// 		.andExpect(jsonPath("$.data.issueKey").value(response.issueKey()))
 	// 		.andDo(print());
 	// }
@@ -157,16 +157,16 @@ class IssueControllerTest extends ControllerTestHelper {
 	// @DisplayName("DELETE /workspaces/{code}/issues/{issueKey}/parent - 이슈의 부모 이슈 해제에 성공하면 OK를 응답한다")
 	// void removeParentIssue_fromStory() throws Exception {
 	// 	// given
-	// 	String workspaceCode = "WORKSPACE";
+	// 	String workspaceKey = "WORKSPACE";
 	// 	String issueKey = "ISSUE-1";
 	//
-	// 	IssueResponse response = new IssueResponse(workspaceCode, issueKey);
+	// 	IssueResponse response = new IssueResponse(workspaceKey, issueKey);
 	//
-	// 	when(issueService.removeParentIssue(eq(workspaceCode), eq(issueKey), anyLong()))
+	// 	when(issueService.removeParentIssue(eq(workspaceKey), eq(issueKey), anyLong()))
 	// 		.thenReturn(response);
 	//
 	// 	// when & then
-	// 	mockMvc.perform(delete("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/parent", workspaceCode, issueKey)
+	// 	mockMvc.perform(delete("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/parent", workspaceKey, issueKey)
 	// 			.contentType(MediaType.APPLICATION_JSON))
 	// 		.andExpect(status().isOk())
 	// 		.andExpect(jsonPath("$.message").value("Parent issue relationship removed."))

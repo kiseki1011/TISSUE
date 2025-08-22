@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues")
 public class IssueController {
 
 	private final IssueService issueService;

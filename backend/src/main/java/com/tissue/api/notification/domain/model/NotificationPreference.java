@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "UK_NOTIFICATION_PREF",
-			columnNames = {"receiverMemberId", "workspaceCode", "type", "channel"})
+			columnNames = {"receiverMemberId", "workspaceKey", "type", "channel"})
 	}
 )
 public class NotificationPreference {

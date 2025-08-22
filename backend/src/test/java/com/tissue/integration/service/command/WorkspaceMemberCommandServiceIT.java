@@ -17,8 +17,8 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	databaseCleaner.execute();
 	// }
 	//
-	// private WorkspaceMember findWorkspaceMember(String workspaceCode, Long memberId) {
-	// 	return workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceCode)
+	// private WorkspaceMember findWorkspaceMember(String workspaceKey, Long memberId) {
+	// 	return workspaceMemberRepository.findByMemberIdAndWorkspaceCode(memberId, workspaceKey)
 	// 		.orElseThrow(() -> new ResourceNotFoundException("WorkspaceMember not found"));
 	// }
 	//
@@ -95,7 +95,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	// then
 	// 	assertThat(response.memberId()).isEqualTo(targetMember.getId());
 	//
-	// 	WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+	// 	WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceKey(), response.memberId());
 	// 	assertThat(workspaceMember.getRole()).isEqualTo(WorkspaceRole.MANAGER);
 	// }
 	//
@@ -233,7 +233,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	// then
 	// 	assertThat(response.memberId()).isEqualTo(member.getId());
 	//
-	// 	WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+	// 	WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceKey(), response.memberId());
 	// 	assertThat(updatedMember.getDisplayName()).isEqualTo("newDisplayName");
 	// }
 	//
@@ -269,7 +269,7 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	// Then
 	// 	assertThat(response.memberId()).isEqualTo(member.getId());
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getKey());
 	// }
 	//
 	// @Test
@@ -320,9 +320,9 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	// then
 	// 	// TODO: PositionResponse인 response1, response2의 positionId 검증
 	// 	assertThat(response.memberId()).isEqualTo(member.getId());
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getKey());
 	//
-	// 	WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+	// 	WorkspaceMember updatedMember = findWorkspaceMember(response.workspaceKey(), response.memberId());
 	// 	assertThat(updatedMember.getWorkspaceMemberPositions().size()).isEqualTo(2L);
 	// }
 	//
@@ -379,9 +379,9 @@ class WorkspaceMemberCommandServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	// Then
 	// 	assertThat(response.memberId()).isEqualTo(member.getId());
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getKey());
 	//
-	// 	WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceCode(), response.memberId());
+	// 	WorkspaceMember workspaceMember = findWorkspaceMember(response.workspaceKey(), response.memberId());
 	// 	assertThat(workspaceMember.getWorkspaceMemberTeams().get(0).getTeam().getName()).isEqualTo("Payment Team");
 	// }
 }

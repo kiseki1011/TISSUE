@@ -59,7 +59,7 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
 		Long loginMemberId = userDetails.getMemberId();
 
-		// extract workspaceCode from path variable
+		// extract workspaceKey from path variable
 		String workspaceKey = getPathVariable(request, PATH_VAR_WORKSPACE_KEY);
 
 		// TODO: cache WorkspaceMember later

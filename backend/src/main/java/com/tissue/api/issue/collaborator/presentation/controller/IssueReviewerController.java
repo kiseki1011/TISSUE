@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 // TODO: Move to IssueAssociateController
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/reviewers")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviewers")
 public class IssueReviewerController {
 
 	private final IssueReviewerService issueReviewerService;
@@ -67,12 +67,12 @@ public class IssueReviewerController {
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PostMapping("/reviews")
 	// public ApiResponse<IssueResponse> requestReview(
-	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String workspaceKey,
 	// 	@PathVariable String issueKey,
 	// 	@CurrentMember MemberUserDetails userDetails
 	// ) {
 	// 	IssueResponse response = issueReviewerCommandService.requestReview(
-	// 		workspaceCode,
+	// 		workspaceKey,
 	// 		issueKey,
 	// 		userDetails.getMemberId()
 	// 	);

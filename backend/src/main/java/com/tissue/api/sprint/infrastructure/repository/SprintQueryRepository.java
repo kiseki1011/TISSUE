@@ -18,14 +18,14 @@ public interface SprintQueryRepository extends JpaRepository<Sprint, Long> {
 	@Query("SELECT s FROM Sprint s "
 		+ "LEFT JOIN FETCH s.sprintIssues si "
 		+ "LEFT JOIN FETCH si.issue "
-		+ "WHERE s.sprintKey = :sprintKey AND s.workspaceCode = :workspaceCode")
+		+ "WHERE s.sprintKey = :sprintKey AND s.workspaceKey = :workspaceKey")
 	Optional<Sprint> findBySprintKeyAndWorkspaceCodeWithIssues(
 		@Param("sprintKey") String sprintKey,
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceCode
 	);
 
 	@Query("SELECT s FROM Sprint s "
-		+ "WHERE s.workspaceCode = :workspaceCode "
+		+ "WHERE s.workspaceKey = :workspaceKey "
 		+ "AND (:#{#condition.statuses == null || #condition.statuses.isEmpty()} = true "
 		+ "     OR s.status IN :#{#condition.statuses}) "
 		+ "AND (:#{#condition.keyword} IS NULL "
@@ -33,7 +33,7 @@ public interface SprintQueryRepository extends JpaRepository<Sprint, Long> {
 		+ "     OR LOWER(s.title) LIKE LOWER(CONCAT('%', :#{#condition.keyword}, '%')) "
 		+ "     OR LOWER(s.goal) LIKE LOWER(CONCAT('%', :#{#condition.keyword}, '%')))")
 	Page<Sprint> findSprintPageByWorkspaceCode(
-		@Param("workspaceCode") String workspaceCode,
+		@Param("workspaceKey") String workspaceCode,
 		@Param("condition") SprintSearchCondition condition,
 		Pageable pageable
 	);
@@ -41,7 +41,7 @@ public interface SprintQueryRepository extends JpaRepository<Sprint, Long> {
 	@Query("SELECT si.issue FROM Sprint s "
 		+ "JOIN s.sprintIssues si "
 		+ "WHERE s.sprintKey = :sprintKey "
-		+ "AND s.workspaceCode = :workspaceCode "
+		+ "AND s.workspaceKey = :workspaceKey "
 		+ "AND (:#{#condition.statuses == null || #condition.statuses.isEmpty()} = true"
 		+ " OR si.issue.status IN :#{#condition.statuses}) "
 		+ "AND (:#{#condition.types == null || #condition.types.isEmpty()} = true"
@@ -54,7 +54,7 @@ public interface SprintQueryRepository extends JpaRepository<Sprint, Long> {
 		+ "    OR LOWER(FUNCTION('TO_CHAR', si.issue.content)) LIKE LOWER(CONCAT('%', :#{#condition.keyword}, '%')))")
 	Page<Issue> findIssuesInSprint(
 		@Param("sprintKey") String sprintKey,
-		@Param("workspaceCode") String workspaceCode,
+		@Param("workspaceKey") String workspaceCode,
 		@Param("condition") SprintIssueSearchCondition condition,
 		Pageable pageable
 	);

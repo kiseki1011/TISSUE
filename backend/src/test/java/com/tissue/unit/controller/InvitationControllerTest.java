@@ -136,7 +136,7 @@ class InvitationControllerTest extends ControllerTestHelper {
 			.andExpect(jsonPath("$.message").value("Found invitations"))
 			.andExpect(jsonPath("$.data.content", hasSize(2)))
 			.andExpect(jsonPath("$.data.content[0].invitationId").value(1))
-			.andExpect(jsonPath("$.data.content[0].workspaceCode").value("TESTCODE1"))
+			.andExpect(jsonPath("$.data.content[0].workspaceKey").value("TESTCODE1"))
 			.andExpect(jsonPath("$.data.content[0].status").value("PENDING"))
 			.andExpect(jsonPath("$.data.pageInfo.totalElements").value(2))
 			.andDo(print());

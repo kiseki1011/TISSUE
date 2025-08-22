@@ -49,6 +49,7 @@ public class IssueType extends BaseEntity {
 	private String label;
 
 	// TODO: consider adding description field?
+	// private String description;
 
 	// private String icon;
 

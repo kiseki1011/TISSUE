@@ -116,13 +116,13 @@ public class IssueService {
 
 	// @Transactional
 	// public IssueResponse updateIssueStatus(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long memberId,
 	// 	UpdateIssueStatusRequest request
 	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
-	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
+	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceKey);
 	//
 	// 	IssueStatus oldStatus = issue.getStatus();
 	//
@@ -162,11 +162,11 @@ public class IssueService {
 
 	// @Transactional
 	// public void softDeleteIssue(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long requesterWorkspaceMemberId
 	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
 	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(requesterWorkspaceMemberId);
 	//
 	// 	IssueStatus oldStatus = issue.getStatus();

@@ -17,9 +17,9 @@ public record CreateIssueTypeRequest(
 	@NotBlank(message = "{valid.notblank}")
 	String workflowKey
 ) {
-	public CreateIssueTypeCommand toCommand(String workspaceCode) {
+	public CreateIssueTypeCommand toCommand(String workspaceKey) {
 		return CreateIssueTypeCommand.builder()
-			.workspaceCode(workspaceCode)
+			.workspaceKey(workspaceKey)
 			.label(label)
 			.color(color)
 			.hierarchyLevel(hierarchyLevel)

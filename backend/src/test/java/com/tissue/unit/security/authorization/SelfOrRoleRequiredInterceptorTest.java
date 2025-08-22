@@ -92,7 +92,7 @@ class SelfOrRoleRequiredInterceptorTest {
 		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		Map<String, String> pathVars = Map.of(
-			"workspaceCode", "WORKSPACE1",
+			"workspaceKey", "WORKSPACE1",
 			"memberId", loginMemberId.toString()
 		);
 
@@ -120,7 +120,7 @@ class SelfOrRoleRequiredInterceptorTest {
 		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		Map<String, String> pathVars = new HashMap<>();
-		pathVars.put("workspaceCode", "WORKSPACE2");
+		pathVars.put("workspaceKey", "WORKSPACE2");
 		pathVars.put("memberId", targetMemberId.toString());
 		when(annotation.memberIdParam()).thenReturn("memberId");
 		when(annotation.role()).thenReturn(WorkspaceRole.MANAGER);
@@ -152,7 +152,7 @@ class SelfOrRoleRequiredInterceptorTest {
 		SecurityContextHolder.getContext().setAuthentication(auth);
 
 		Map<String, String> pathVars = new HashMap<>();
-		pathVars.put("workspaceCode", "WORKSPACE2");
+		pathVars.put("workspaceKey", "WORKSPACE2");
 		pathVars.put("memberId", targetMemberId.toString());
 		when(annotation.memberIdParam()).thenReturn("memberId");
 		when(annotation.role()).thenReturn(WorkspaceRole.MANAGER);
@@ -182,7 +182,7 @@ class SelfOrRoleRequiredInterceptorTest {
 	}
 
 	@Test
-	@DisplayName("workspaceCode 없으면 InvalidRequestException")
+	@DisplayName("workspaceKey 없으면 InvalidRequestException")
 	void preHandle_throws_ifNoWorkspaceCode() {
 
 		SelfOrRoleRequired annotation = mock(SelfOrRoleRequired.class);
@@ -194,7 +194,7 @@ class SelfOrRoleRequiredInterceptorTest {
 		Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, List.of(() -> "ROLE_USER"));
 		SecurityContextHolder.getContext().setAuthentication(auth);
 
-		// do not include workspaceCode for pathVar
+		// do not include workspaceKey for pathVar
 		Map<String, String> pathVars = new HashMap<>();
 		pathVars.put("memberId", "456"); // add only memberId
 
@@ -219,7 +219,7 @@ class SelfOrRoleRequiredInterceptorTest {
 
 		// no not include memberId for pathVar
 		Map<String, String> pathVars = new HashMap<>();
-		pathVars.put("workspaceCode", "TESTCODE"); // add only workspaceCode
+		pathVars.put("workspaceKey", "TESTCODE"); // add only workspaceKey
 
 		when(request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)).thenReturn(pathVars);
 

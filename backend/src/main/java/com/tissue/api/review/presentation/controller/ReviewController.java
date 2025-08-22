@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/reviews")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviews")
 public class ReviewController {
 
 	// private final ReviewCommandService reviewCommandService;
@@ -25,13 +25,13 @@ public class ReviewController {
 	// @ResponseStatus(HttpStatus.CREATED)
 	// @PostMapping
 	// public ApiResponse<ReviewResponse> submitReview(
-	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String workspaceKey,
 	// 	@PathVariable String issueKey,
 	// 	@RequestBody @Valid SubmitReviewRequest request,
 	// 	@CurrentMember MemberUserDetails userDetails
 	// ) {
 	// 	ReviewResponse response = reviewCommandService.submitReview(
-	// 		workspaceCode,
+	// 		workspaceKey,
 	// 		issueKey,
 	// 		userDetails.getMemberId(),
 	// 		request
@@ -43,13 +43,13 @@ public class ReviewController {
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// @PatchMapping("/{reviewId}")
 	// public ApiResponse<ReviewResponse> updateReview(
-	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String workspaceKey,
 	// 	@PathVariable Long reviewId,
 	// 	@RequestBody @Valid UpdateReviewRequest request,
 	// 	@CurrentMember MemberUserDetails userDetails
 	// ) {
 	// 	ReviewResponse response = reviewCommandService.updateReview(
-	// 		workspaceCode,
+	// 		workspaceKey,
 	// 		reviewId,
 	// 		userDetails.getMemberId(),
 	// 		request

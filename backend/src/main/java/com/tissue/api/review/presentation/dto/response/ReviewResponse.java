@@ -10,7 +10,7 @@ public record ReviewResponse(
 ) {
 	// public static ReviewResponse from(Review review) {
 	// 	return ReviewResponse.builder()
-	// 		.workspaceCode(review.getWorkspaceCode())
+	// 		.workspaceKey(review.getWorkspaceCode())
 	// 		.issueKey(review.getIssueKey())
 	// 		.reviewId(review.getId())
 	// 		.build();

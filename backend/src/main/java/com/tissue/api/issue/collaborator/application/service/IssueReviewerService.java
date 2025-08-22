@@ -67,7 +67,7 @@ public class IssueReviewerService {
 
 		// WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(
 		// 	requesterMemberId,
-		// 	workspaceCode
+		// 	workspaceKey
 		// );
 
 		issue.removeReviewer(reviewer);
@@ -78,11 +78,11 @@ public class IssueReviewerService {
 	// TODO: IssueService 또는 IssueReviewService로 이동 고려
 	// @Transactional
 	// public IssueResponse requestReview(
-	// 	String workspaceCode,
+	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long requesterMemberId
 	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
 	//
 	// 	// TODO: Authorization Service의 책임으로 옮기기?
 	// 	// issue.validateIsAssignee(requesterMemberId);

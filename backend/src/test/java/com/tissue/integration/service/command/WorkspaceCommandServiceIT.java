@@ -66,9 +66,9 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	);
 	//
 	// 	// then
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getKey());
 	//
-	// 	Workspace foundWorkspace = workspaceRepository.findByKey(response.workspaceCode()).get();
+	// 	Workspace foundWorkspace = workspaceRepository.findByKey(response.workspaceKey()).get();
 	// 	assertThat(foundWorkspace.getName()).isEqualTo("updated workspace name");
 	// }
 	//
@@ -182,9 +182,9 @@ class WorkspaceCommandServiceIT extends ServiceIntegrationTestHelper {
 	// 	WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(workspace.getKey(), request);
 	//
 	// 	// then
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getKey());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getKey());
 	//
-	// 	Workspace foundWorkspace = workspaceRepository.findByKey(response.workspaceCode()).get();
+	// 	Workspace foundWorkspace = workspaceRepository.findByKey(response.workspaceKey()).get();
 	// 	assertThat(foundWorkspace.getIssueKeyPrefix()).isEqualTo("UPDATEPREFIX");
 	// }
 	//

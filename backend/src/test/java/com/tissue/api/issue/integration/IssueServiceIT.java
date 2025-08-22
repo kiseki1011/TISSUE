@@ -84,7 +84,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	// 	// then
 	// 	Issue issue = issueRepository.findById(1L).orElseThrow();
 	//
-	// 	assertThat(response.workspaceCode()).isEqualTo(issue.getWorkspaceCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(issue.getWorkspaceCode());
 	// 	assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
 	//
 	// 	assertThat(issue.getTitle()).isEqualTo("test issue");
@@ -113,7 +113,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	// then
 	// 	assertThat(response.issueKey()).isEqualTo("ISSUE-1");
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getCode());
 	// }
 	//
 	// @Test
@@ -183,7 +183,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	// then
 	// 	assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getCode());
 	// }
 	//
 	// @Test
@@ -216,11 +216,11 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	// then
 	// 	assertThat(response.issueKey()).isEqualTo(issue.getIssueKey());
-	// 	assertThat(response.workspaceCode()).isEqualTo(issue.getWorkspaceCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(issue.getWorkspaceCode());
 	//
 	// 	Issue updatedIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 	// 		response.issueKey(),
-	// 		response.workspaceCode()
+	// 		response.workspaceKey()
 	// 	).get();
 	//
 	// 	assertThat(updatedIssue.getSummary()).isNull();
@@ -262,7 +262,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	//
 	// 	Issue updatedIssue = issueRepository.findByIssueKeyAndWorkspaceCode(
 	// 		response.issueKey(),
-	// 		response.workspaceCode()
+	// 		response.workspaceKey()
 	// 	).get();
 	//
 	// 	assertThat(updatedIssue.getTitle()).isEqualTo("original title");
@@ -332,7 +332,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	// 	// then
 	// 	Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(
 	// 		response.issueKey(),
-	// 		response.workspaceCode()
+	// 		response.workspaceKey()
 	// 	).get();
 	//
 	// 	assertThat(issue.getParentIssue().getIssueKey()).isEqualTo(parentIssue.getIssueKey());
@@ -489,7 +489,7 @@ class IssueServiceIT extends ServiceIntegrationTestHelper {
 	// 	);
 	//
 	// 	// then
-	// 	assertThat(response.workspaceCode()).isEqualTo(workspace.getCode());
+	// 	assertThat(response.workspaceKey()).isEqualTo(workspace.getCode());
 	// 	assertThat(response.issueKey()).isEqualTo(childIssue.getIssueKey());
 	//
 	// 	Issue issue = issueRepository.findByIssueKeyAndWorkspaceCode(

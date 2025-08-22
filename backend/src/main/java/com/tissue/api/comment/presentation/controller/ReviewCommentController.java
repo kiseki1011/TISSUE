@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceCode}/issues/{issueKey}/reviews/{reviewId}/comments")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}/reviews/{reviewId}/comments")
 public class ReviewCommentController {
 
 	private final ReviewCommentCommandService reviewCommentCommandService;

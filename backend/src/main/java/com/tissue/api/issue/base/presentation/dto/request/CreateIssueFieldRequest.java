@@ -18,9 +18,9 @@ public record CreateIssueFieldRequest(
 	Boolean required,
 	List<String> allowedOptions
 ) {
-	public CreateIssueFieldCommand toCommand(String workspaceCode, String issueTypeKey) {
+	public CreateIssueFieldCommand toCommand(String workspaceKey, String issueTypeKey) {
 		return CreateIssueFieldCommand.builder()
-			.workspaceCode(workspaceCode)
+			.workspaceKey(workspaceKey)
 			.issueTypeKey(issueTypeKey)
 			.label(label)
 			.description(description)

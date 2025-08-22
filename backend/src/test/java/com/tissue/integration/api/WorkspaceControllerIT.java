@@ -56,7 +56,7 @@ class WorkspaceControllerIT extends RestAssuredTestHelper {
 			.post("/api/v1/workspaces")
 			.then()
 			.statusCode(HttpStatus.CREATED.value())
-			.body("data.workspaceCode", hasLength(8))
+			.body("data.workspaceKey", hasLength(8))
 			.extract().response();
 	}
 
