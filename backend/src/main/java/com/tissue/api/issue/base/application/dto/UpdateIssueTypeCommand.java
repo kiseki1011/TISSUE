@@ -9,6 +9,7 @@ public record UpdateIssueTypeCommand(
 	String workspaceKey,
 	String issueTypeKey,
 	String label,
+	String description,
 	ColorType color
 ) {
 }

@@ -80,7 +80,7 @@ public class IssueTypeController {
 	}
 
 	// TODO: Do not allow deletion if there are issues using the specific type
-	// TODO: Prevent delettion of system issue type
+	// TODO: Prevent deletion of system issue type
 	@DeleteMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> deleteIssueType(

@@ -25,7 +25,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
 @Table(uniqueConstraints = {
@@ -104,9 +103,7 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateLabel(String label) {
-		if (label != null) {
-			this.label = label;
-		}
+		this.label = label;
 	}
 
 	public void updateDescription(String description) {
@@ -114,9 +111,7 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateColor(ColorType color) {
-		if (color != null) {
-			this.color = color;
-		}
+		this.color = color;
 	}
 
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {

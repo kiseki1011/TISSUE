@@ -56,19 +56,7 @@ public class IssueTypeService {
 	public IssueTypeResponse updateIssueType(UpdateIssueTypeCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 
-		// TODO: Should I extract the if-statement logic to a private method?
-		//  Or should I encapsulate this logic in the UpdateIssueTypeCommand and simply call it here?
-		//  Or should I make a update method in the IssueType entity that updates the value that are not null?
-		//  I wonder what the best practice is in designing a update API
-		if (cmd.label() != null) {
-			issueType.updateLabel(cmd.label());
-		}
-		if (cmd.color() != null) {
-			issueType.updateColor(cmd.color());
-		}
-		// if (cmd.description() != null) {
-		// 	issueType.updateDescription(cmd.description());
-		// }
+		issueType.updateAppearance(cmd.label(), cmd.description(), cmd.color());
 
 		return IssueTypeResponse.from(issueType);
 	}
@@ -77,9 +65,7 @@ public class IssueTypeService {
 	public void deleteIssueType(String workspaceKey, String issueTypeKey) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
 
-		// TODO: IssueType should not be in use. Also it should not be a system type.
-		// Find if there are Issues that use the specific IssueType. If true, throw exception
-		// Check if entity is a system-type. If true, throw exception
+		// TODO: The specific IssueType should not be in use. Also it should not be a system type.
 		if (issueRepository.existsByIssueType(issueType)) {
 			throw new InvalidOperationException("Cannot delete if issue exists for this issue type. issueKey: '%s'"
 				.formatted(issueTypeKey));
@@ -90,7 +76,6 @@ public class IssueTypeService {
 				.formatted(issueTypeKey));
 		}
 
-		// TODO: Should i use soft-delete?
 		issueTypeRepository.delete(issueType);
 	}
 
