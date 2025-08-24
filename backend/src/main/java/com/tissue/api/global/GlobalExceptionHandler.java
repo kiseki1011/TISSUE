@@ -2,6 +2,7 @@ package com.tissue.api.global;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -95,6 +96,18 @@ public class GlobalExceptionHandler {
 	// 		.status(httpStatus)
 	// 		.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
 	// }
+
+	// DB constraint violation (null/unique/fk/etc)
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		// TODO: Branch HttpStatus on cause
+		log.warn("Data integrity violation: {}", ex.getMessage(), ex);
+
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+			.body(ApiResponse.failWithNoContent(HttpStatus.UNPROCESSABLE_ENTITY, "Data integrity violation."));
+	}
+
+	// TODO: Handle OptimisticLockException
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
