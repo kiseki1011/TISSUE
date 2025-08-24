@@ -47,6 +47,7 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private String label;
 
+	@Column(nullable = false)
 	private String description;
 
 	// private String icon;
@@ -85,7 +86,7 @@ public class IssueType extends BaseEntity {
 		this.workspace = workspace;
 		this.key = key;
 		this.label = label;
-		this.description = description;
+		this.description = (description != null) ? description : "";
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
 		this.workflow = workflow;
@@ -107,7 +108,7 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateDescription(String description) {
-		this.description = description;
+		this.description = (description == null) ? "" : description;
 	}
 
 	public void updateColor(ColorType color) {

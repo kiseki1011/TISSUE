@@ -3,6 +3,9 @@ package com.tissue.api.issue.base.domain.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.StringListConverter;
@@ -17,6 +20,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -51,7 +55,7 @@ public class IssueField extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private FieldType fieldType; // TEXT, NUMBER, DATE, ENUM, etc.
+	private FieldType fieldType;
 
 	@Column(nullable = false)
 	private boolean required;
@@ -60,9 +64,9 @@ public class IssueField extends BaseEntity {
 	@Column(columnDefinition = "json")
 	private List<String> allowedOptions = new ArrayList<>();
 
-	// TODO: Should I use a bi-directional relation with IssueTypeDefinition?
-	// TODO: Is @JoinColumn needed or recommended?
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "issue_type_id", nullable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private IssueType issueType;
 
 	@PostPersist

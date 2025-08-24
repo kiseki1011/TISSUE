@@ -65,14 +65,14 @@ public class IssueTypeService {
 	public void deleteIssueType(String workspaceKey, String issueTypeKey) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
 
-		// TODO: The specific IssueType should not be in use. Also it should not be a system type.
-		if (issueRepository.existsByIssueType(issueType)) {
-			throw new InvalidOperationException("Cannot delete if issue exists for this issue type. issueKey: '%s'"
+		// TODO: Move to IssueTypeValidator
+		if (issueType.isSystemType()) {
+			throw new InvalidOperationException("Cannot delete system(default) issue types. issueKey: '%s'"
 				.formatted(issueTypeKey));
 		}
-		if (issueType.isSystemType()) {
-			// Should I use ForbiddenOperationException?
-			throw new InvalidOperationException("Cannot delete system(default) issue types. issueKey: '%s'"
+
+		if (issueRepository.existsByIssueType(issueType)) {
+			throw new InvalidOperationException("Cannot delete if issue exists for this issue type. issueKey: '%s'"
 				.formatted(issueTypeKey));
 		}
 
@@ -83,7 +83,7 @@ public class IssueTypeService {
 	public IssueFieldResponse createIssueField(CreateIssueFieldCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 
-		// TODO: Should i move this logic(unique check) into a separate API?
+		// TODO: Move to IssueTypeValidator
 		boolean labelExists = issueFieldRepository.existsByIssueTypeAndLabel(issueType, cmd.label());
 		if (labelExists) {
 			throw new DuplicateResourceException(
@@ -97,6 +97,7 @@ public class IssueTypeService {
 			}
 		}
 
+		// TODO: Do I need to use saveAndFlush?
 		IssueField issueField = issueFieldRepository.saveAndFlush(IssueField.builder()
 			.label(cmd.label())
 			.description(cmd.description())
