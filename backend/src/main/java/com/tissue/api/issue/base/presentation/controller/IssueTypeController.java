@@ -32,19 +32,11 @@ public class IssueTypeController {
 
 	/**
 	 * TODO
-	 *  - update custom issue type
-	 *    - do not allow change of HierarchyLevel, Workflow
-	 *  - delete custom issue type
-	 *    - do not allow deletion if there are issues using the specific type
-	 *  - prevent deletion of default system issue types
-	 *  <p>
 	 *  - update custom issue field
-	 *    - do not allow to change the type of the field
+	 *    - do not allow to change the FieldType of the field
 	 *  - delete custom issue field
-	 *    - do not allow deletion if there is a value using the specific field
-	 *  - prevent deletion of default system issue fields
-	 *  <p>
-	 *  - refactor to use IssueFieldService
+	 *    - do not allow deletion if there is a value using the specific field?
+	 *    - or allow the field deletion and delete the values of the field via cascade?
 	 *  <p>
 	 * TODO(In Consideration)
 	 *  - HierarchyLevel update using validation
@@ -79,8 +71,6 @@ public class IssueTypeController {
 		return ApiResponse.ok("Custom issue type updated.", response);
 	}
 
-	// TODO: Do not allow deletion if there are issues using the specific type
-	// TODO: Prevent deletion of system issue type
 	@DeleteMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> deleteIssueType(
@@ -106,8 +96,8 @@ public class IssueTypeController {
 	}
 
 	// TODO: Do not allow to change the type of the field
-	// TODO: Consider separating the allowedOptions update to a different API
-	//  Instead of replacing the whole allowedOptions field, consider adding or removing the item on the list
+	// TODO: Instead of replacing the whole allowedOptions field, should I consider
+	//  add/remove/update of the item on the allowedOptions
 	// @PatchMapping("/{issueTypeKey}/fields/{issueFieldKey}")
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// public ApiResponse<IssueFieldResponse> updateField(
@@ -121,7 +111,7 @@ public class IssueTypeController {
 	// }
 
 	// TODO: Do not allow deletion if there is a value using the specific field
-	// TODO: Prevent deletion of default system issue fields
+	//  or should I just allow the field deletion and delete the values of the field via cascade?
 	// @DeleteMapping("/{issueTypeKey}/fields/{issueFieldKey}")
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
 	// public ApiResponse<IssueFieldResponse> deleteField(

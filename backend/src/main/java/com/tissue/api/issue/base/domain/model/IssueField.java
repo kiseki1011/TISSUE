@@ -27,7 +27,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,7 +35,6 @@ import lombok.NoArgsConstructor;
 @Table(uniqueConstraints = {
 	@UniqueConstraint(columnNames = {"issueType_id", "label"})
 })
-@EqualsAndHashCode(of = {"issueType", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueField extends BaseEntity {
 

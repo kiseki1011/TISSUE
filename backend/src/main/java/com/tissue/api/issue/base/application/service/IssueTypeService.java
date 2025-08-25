@@ -71,6 +71,7 @@ public class IssueTypeService {
 				.formatted(issueTypeKey));
 		}
 
+		// TODO: Move to IssueTypeValidator
 		if (issueRepository.existsByIssueType(issueType)) {
 			throw new InvalidOperationException("Cannot delete if issue exists for this issue type. issueKey: '%s'"
 				.formatted(issueTypeKey));
@@ -91,6 +92,7 @@ public class IssueTypeService {
 					+ ", issueType label=" + issueType.getLabel());
 		}
 
+		// TODO: Move to IssueTypeValidator
 		if (cmd.fieldType() == FieldType.ENUM) {
 			if (cmd.allowedOptions() == null || cmd.allowedOptions().isEmpty()) {
 				throw new InvalidOperationException("ENUM fields must define at least one allowed option.");
@@ -109,4 +111,7 @@ public class IssueTypeService {
 
 		return IssueFieldResponse.from(issueField);
 	}
+
+	// TODO: Add updateIssueField
+	// TODO: Add deleteIssueField
 }
