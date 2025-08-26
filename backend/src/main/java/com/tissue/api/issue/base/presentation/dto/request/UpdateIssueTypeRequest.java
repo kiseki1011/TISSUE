@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UpdateIssueTypeRequest(
 	@NotBlank(message = "{valid.notblank}") String label,
-	String description,
+	@NotBlank(message = "{valid.notblank}") String description,
 	@NotNull(message = "{valid.notnull}") ColorType color
 ) {
 	public UpdateIssueTypeCommand toCommand(String workspaceKey, String issueTypeKey) {
