@@ -2,6 +2,7 @@ package com.tissue.api.issue.base.domain.model;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
@@ -15,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -36,7 +38,8 @@ public class IssueType extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
 	@Column(nullable = false)
@@ -61,7 +64,8 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private HierarchyLevel hierarchyLevel;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "workflow_id", nullable = false)
 	private Workflow workflow;
 
 	@PostPersist
@@ -83,8 +87,8 @@ public class IssueType extends BaseEntity {
 	) {
 		this.workspace = workspace;
 		this.key = key;
-		this.label = label;
-		this.description = (description != null) ? description : "";
+		this.label = TextNormalizer.nfc(label).strip();
+		this.description = TextNormalizer.stripToEmpty(description);
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
 		this.workflow = workflow;
@@ -95,18 +99,18 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
-	public void updateAppearance(String label, String description, ColorType color) {
+	public void updateMetaData(String label, String description, ColorType color) {
 		updateLabel(label);
 		updateDescription(description);
 		updateColor(color);
 	}
 
 	public void updateLabel(String label) {
-		this.label = label;
+		this.label = TextNormalizer.nfc(label).strip();
 	}
 
 	public void updateDescription(String description) {
-		this.description = (description == null) ? "" : description;
+		this.description = TextNormalizer.stripToEmpty(description);
 	}
 
 	public void updateColor(ColorType color) {

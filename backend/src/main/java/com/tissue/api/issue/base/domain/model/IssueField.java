@@ -7,6 +7,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.util.CollectionNormalizer;
+import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.issue.base.domain.StringListConverter;
 import com.tissue.api.issue.base.domain.enums.FieldType;
@@ -58,6 +60,8 @@ public class IssueField extends BaseEntity {
 	@Column(nullable = false)
 	private boolean required;
 
+	// TODO: Consider making and using entity EnumFieldOption
+	//  IssueField(1) <- (N)EnumFieldOption
 	@Convert(converter = StringListConverter.class)
 	@Column(columnDefinition = "json")
 	private List<String> allowedOptions = new ArrayList<>();
@@ -85,35 +89,57 @@ public class IssueField extends BaseEntity {
 		List<String> allowedOptions
 	) {
 		this.key = key;
-		this.label = label;
-		this.description = (description != null) ? description : "";
+		this.label = TextNormalizer.nfc(label).strip();
+		this.description = TextNormalizer.stripToEmpty(description);
 		this.fieldType = fieldType;
 		this.required = (required != null) ? required : false;
 		this.issueType = issueType;
-		this.allowedOptions = allowedOptions;
+
+		// if (fieldType == FieldType.ENUM) {
+		// 	IssueFieldRules.requireNonEmpty(allowedOptions);
+		// }
+		this.allowedOptions = (fieldType == FieldType.ENUM)
+			? CollectionNormalizer.normalizeOptions(allowedOptions)
+			: List.of();
+
 	}
 
 	public String getWorkspaceCode() {
 		return issueType.getWorkspaceCode();
 	}
 
+	public void updateMetaData(String label, String description, Boolean required) {
+		updateLabel(label);
+		updateDescription(description);
+		updateRequired(required);
+	}
+
 	public void updateLabel(String label) {
-		this.label = label;
+		this.label = TextNormalizer.nfc(label).strip();
 	}
 
 	public void updateDescription(String description) {
-		this.description = (description == null) ? "" : description;
+		this.description = TextNormalizer.stripToEmpty(description);
+	}
+
+	public void updateRequired(Boolean required) {
+		// IssueFieldRules.requireNonNull(required);
+		this.required = required;
 	}
 
 	public void updateFieldType(FieldType fieldType) {
 		this.fieldType = fieldType;
 	}
 
-	public void updateRequired(boolean required) {
-		this.required = required;
-	}
-
-	public void updateAllowedOptions(List<String> allowedOptions) {
-		this.allowedOptions = allowedOptions;
+	/**
+	 * Replace allowedOptions
+	 */
+	public void updateOptions(List<String> options) {
+		if (this.fieldType != FieldType.ENUM) {
+			this.allowedOptions = List.of();
+			return;
+		}
+		// IssueFieldRules.requireNonEmpty(options);
+		this.allowedOptions = CollectionNormalizer.normalizeOptions(options);
 	}
 }
