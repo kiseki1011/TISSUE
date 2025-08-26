@@ -3,19 +3,17 @@ package com.tissue.api.issue.base.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.base.application.service.IssueTypeService;
-import com.tissue.api.issue.base.presentation.dto.request.CreateIssueFieldRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueTypeRequest;
 import com.tissue.api.issue.base.presentation.dto.request.UpdateIssueTypeRequest;
-import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.issue.base.presentation.dto.response.IssueTypeResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -31,13 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class IssueTypeController {
 
 	/**
-	 * TODO
-	 *  - update custom issue field
-	 *    - do not allow to change the FieldType of the field
-	 *  - delete custom issue field
-	 *    - do not allow deletion if there is a value using the specific field?
-	 *    - or allow the field deletion and delete the values of the field via cascade?
-	 *  <p>
 	 * TODO(In Consideration)
 	 *  - HierarchyLevel update using validation
 	 *  or increase/decrease HierarchyLevel of the whole IssueTypes by 1
@@ -58,10 +49,10 @@ public class IssueTypeController {
 			.body(ApiResponse.created("Custom issue type created.", response));
 	}
 
-	// TODO: Do not allow to change HierachyLevel, Workflow
-	@PatchMapping("/{issueTypeKey}")
+	// TODO: Dont allow HierachyLevel, Workflow update
+	@PutMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> updateIssueType(
+	public ApiResponse<IssueTypeResponse> updateIssueTypeMetaData(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueTypeKey,
 		@CurrentMember MemberUserDetails userDetails,
@@ -81,45 +72,4 @@ public class IssueTypeController {
 		issueTypeService.deleteIssueType(workspaceKey, issueTypeKey);
 		return ApiResponse.okWithNoContent("Custom issue type deleted.");
 	}
-
-	// TODO: Consider making and using IssueFieldService
-	@PostMapping("/{issueTypeKey}/fields")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> createField(
-		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@RequestBody @Valid CreateIssueFieldRequest request
-	) {
-		IssueFieldResponse response = issueTypeService.createIssueField(request.toCommand(workspaceKey, issueTypeKey));
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Custom issue field created.", response));
-	}
-
-	// TODO: Do not allow to change the type of the field
-	// TODO: Instead of replacing the whole allowedOptions field, should I consider
-	//  add/remove/update of the item on the allowedOptions
-	// @PatchMapping("/{issueTypeKey}/fields/{issueFieldKey}")
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// public ApiResponse<IssueFieldResponse> updateField(
-	// 	@PathVariable String workspaceKey,
-	// 	@PathVariable String issueTypeKey,
-	// 	@PathVariable String issueFieldKey,
-	// 	@RequestBody @Valid UpdateIssueFieldRequest request
-	// ) {
-	// 	IssueFieldResponse response = issueTypeService.updateIssueField(request.toCommand(workspaceKey, issueTypeKey));
-	// 	return ApiResponse.ok("Custom issue field updated.", response);
-	// }
-
-	// TODO: Do not allow deletion if there is a value using the specific field
-	//  or should I just allow the field deletion and delete the values of the field via cascade?
-	// @DeleteMapping("/{issueTypeKey}/fields/{issueFieldKey}")
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// public ApiResponse<IssueFieldResponse> deleteField(
-	// 	@PathVariable String workspaceKey,
-	// 	@PathVariable String issueTypeKey,
-	// 	@PathVariable String issueFieldKey
-	// ) {
-	// 	IssueFieldResponse response = issueTypeService.deleteIssueField(request.toCommand(workspaceKey, issueTypeKey));
-	// 	return ApiResponse.ok("Custom issue field deleted.", response);
-	// }
 }
