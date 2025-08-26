@@ -14,13 +14,9 @@ public class IssueTypeFinder {
 
 	private final IssueTypeRepository issueTypeRepository;
 
-	public IssueType findIssueType(
-		String workspaceCode,
-		String key
-	) {
-		// TODO: Consider making a custom exception IssueTypeNotFoundException
-		return issueTypeRepository.findByWorkspaceCodeAndKey(workspaceCode, key)
+	public IssueType findIssueType(String workspaceKey, String key) {
+		return issueTypeRepository.findByWorkspace_KeyAndKey(workspaceKey, key)
 			.orElseThrow(() -> new ResourceNotFoundException(
-				"IssueTypeDefinition not found: workspaceKey=" + workspaceCode + ", key=" + key));
+				"IssueType not found: workspaceKey=" + workspaceKey + ", key=" + key));
 	}
 }
