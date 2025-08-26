@@ -1,4 +1,14 @@
 package com.tissue.api.issue.base.application.dto;
 
-public record UpdateIssueFieldCommand() {
+import lombok.Builder;
+
+@Builder
+public record UpdateIssueFieldCommand(
+	String workspaceKey,
+	String issueTypeKey,
+	String issueFieldKey,
+	String label,
+	String description,
+	Boolean required
+) {
 }

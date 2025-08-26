@@ -1,14 +1,22 @@
 package com.tissue.api.issue.base.presentation.dto.request;
 
-import java.util.List;
+import com.tissue.api.issue.base.application.dto.UpdateIssueFieldCommand;
 
-import com.tissue.api.issue.base.domain.enums.FieldType;
+import jakarta.validation.constraints.NotBlank;
 
 public record UpdateIssueFieldRequest(
-	String label,
-	String description,
-	FieldType fieldType,
-	Boolean required,
-	List<String> allowedOptions
+	@NotBlank(message = "{valid.notblank}") String label,
+	@NotBlank(message = "{valid.notblank}") String description,
+	@NotBlank(message = "{valid.notblank}") Boolean required
 ) {
+	public UpdateIssueFieldCommand toCommand(String workspaceKey, String issueTypeKey, String issueFieldKey) {
+		return UpdateIssueFieldCommand.builder()
+			.workspaceKey(workspaceKey)
+			.issueTypeKey(issueTypeKey)
+			.issueFieldKey(issueFieldKey)
+			.label(label)
+			.description(description)
+			.required(required)
+			.build();
+	}
 }
