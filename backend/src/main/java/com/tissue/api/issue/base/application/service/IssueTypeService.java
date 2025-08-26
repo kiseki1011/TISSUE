@@ -28,7 +28,7 @@ public class IssueTypeService {
 	private final IssueTypeFinder issueTypeFinder;
 
 	@Transactional
-	public IssueTypeResponse createIssueType(CreateIssueTypeCommand cmd) {
+	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(cmd.workspaceKey(), cmd.workflowKey());
 
@@ -45,14 +45,14 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public IssueTypeResponse updateIssueType(UpdateIssueTypeCommand cmd) {
+	public IssueTypeResponse updateMetaData(UpdateIssueTypeCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		issueType.updateMetaData(cmd.label(), cmd.description(), cmd.color());
 		return IssueTypeResponse.from(issueType);
 	}
 
 	@Transactional
-	public void deleteIssueType(String workspaceKey, String issueTypeKey) {
+	public void delete(String workspaceKey, String issueTypeKey) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
 		issueTypeValidator.ensureDeletable(issueType);
 		issueTypeRepository.delete(issueType);

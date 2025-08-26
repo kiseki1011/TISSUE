@@ -25,7 +25,7 @@ public class IssueFieldService {
 	private final IssueFieldValidator issueFieldValidator;
 
 	@Transactional
-	public IssueFieldResponse createIssueField(CreateIssueFieldCommand cmd) {
+	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
@@ -43,7 +43,7 @@ public class IssueFieldService {
 	}
 
 	@Transactional
-	public IssueFieldResponse updateIssueField(UpdateIssueFieldCommand cmd) {
+	public IssueFieldResponse updateMetaData(UpdateIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 

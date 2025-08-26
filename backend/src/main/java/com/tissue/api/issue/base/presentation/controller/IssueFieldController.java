@@ -44,14 +44,14 @@ public class IssueFieldController {
 
 	@PostMapping("/{issueTypeKey}/fields")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> createField(
+	public ResponseEntity<ApiResponse<IssueFieldResponse>> createIssueField(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueTypeKey,
 		@RequestBody @Valid CreateIssueFieldRequest request
 	) {
-		IssueFieldResponse response = issueFieldService.createIssueField(request.toCommand(workspaceKey, issueTypeKey));
+		IssueFieldResponse response = issueFieldService.create(request.toCommand(workspaceKey, issueTypeKey));
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Custom issue field created.", response));
+			.body(ApiResponse.created("Issue field created.", response));
 	}
 
 	// TODO: Do not allow to change the type of the field
@@ -59,23 +59,23 @@ public class IssueFieldController {
 	//  add/remove/update of the item on the allowedOptions
 	@PutMapping("/{issueTypeKey}/fields/{issueFieldKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> updateField(
+	public ApiResponse<IssueFieldResponse> updateIssueFieldMetaData(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueTypeKey,
 		@PathVariable String issueFieldKey,
 		@RequestBody @Valid UpdateIssueFieldRequest request
 	) {
-		IssueFieldResponse response = issueFieldService.updateIssueField(
+		IssueFieldResponse response = issueFieldService.updateMetaData(
 			request.toCommand(workspaceKey, issueTypeKey, issueFieldKey)
 		);
-		return ApiResponse.ok("Custom issue field updated.", response);
+		return ApiResponse.ok("Issue field updated.", response);
 	}
 
 	// TODO: Do not allow deletion if there is a value using the specific field
 	//  or should I just allow the field deletion and delete the values of the field via cascade?
 	// @DeleteMapping("/{issueTypeKey}/fields/{issueFieldKey}")
 	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// public ApiResponse<IssueFieldResponse> deleteField(
+	// public ApiResponse<IssueFieldResponse> deleteIssueField(
 	// 	@PathVariable String workspaceKey,
 	// 	@PathVariable String issueTypeKey,
 	// 	@PathVariable String issueFieldKey
