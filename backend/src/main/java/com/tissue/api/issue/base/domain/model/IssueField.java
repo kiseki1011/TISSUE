@@ -1,20 +1,14 @@
 package com.tissue.api.issue.base.domain.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.global.key.KeyGenerator;
-import com.tissue.api.issue.base.domain.StringListConverter;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -60,11 +54,9 @@ public class IssueField extends BaseEntity {
 	@Column(nullable = false)
 	private boolean required;
 
-	// TODO: Consider making and using entity EnumFieldOption
-	//  IssueField(1) <- (N)EnumFieldOption
-	@Convert(converter = StringListConverter.class)
-	@Column(columnDefinition = "json")
-	private List<String> allowedOptions = new ArrayList<>();
+	// TODO: Should i make use a bi-directional relation with EnumFieldOption?
+	//  IssueField <-> Collection<EnumFieldOption>
+	//  If using bi-directional, should I use Set or List?
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "issue_type_id", nullable = false)
@@ -85,23 +77,15 @@ public class IssueField extends BaseEntity {
 		String description,
 		FieldType fieldType,
 		Boolean required,
-		IssueType issueType,
-		List<String> allowedOptions
+		IssueType issueType
 	) {
 		this.key = key;
+		// TODO: use TextPreconditions for non-null validation
 		this.label = TextNormalizer.nfc(label).strip();
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.fieldType = fieldType;
 		this.required = (required != null) ? required : false;
 		this.issueType = issueType;
-
-		// if (fieldType == FieldType.ENUM) {
-		// 	IssueFieldRules.requireNonEmpty(allowedOptions);
-		// }
-		this.allowedOptions = (fieldType == FieldType.ENUM)
-			? CollectionNormalizer.normalizeOptions(allowedOptions)
-			: List.of();
-
 	}
 
 	public String getWorkspaceCode() {
@@ -115,6 +99,7 @@ public class IssueField extends BaseEntity {
 	}
 
 	public void updateLabel(String label) {
+		// TODO: use TextPreconditions.requireNonNull
 		this.label = TextNormalizer.nfc(label).strip();
 	}
 
@@ -128,18 +113,7 @@ public class IssueField extends BaseEntity {
 	}
 
 	public void updateFieldType(FieldType fieldType) {
+		// IssueFieldRules.requireNonNull(fieldType)
 		this.fieldType = fieldType;
-	}
-
-	/**
-	 * Replace allowedOptions
-	 */
-	public void updateOptions(List<String> options) {
-		if (this.fieldType != FieldType.ENUM) {
-			this.allowedOptions = List.of();
-			return;
-		}
-		// IssueFieldRules.requireNonEmpty(options);
-		this.allowedOptions = CollectionNormalizer.normalizeOptions(options);
 	}
 }

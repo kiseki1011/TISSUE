@@ -36,7 +36,6 @@ public class IssueFieldService {
 			.fieldType(cmd.fieldType())
 			.required(Boolean.TRUE.equals(cmd.required()))
 			.issueType(issueType)
-			.allowedOptions(cmd.allowedOptions())
 			.build());
 
 		return IssueFieldResponse.from(issueField);
