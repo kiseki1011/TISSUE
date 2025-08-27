@@ -113,28 +113,7 @@ public class IssueService {
 
 		return IssueResponse.from(issue);
 	}
-
-	// @Transactional
-	// public IssueResponse updateIssueStatus(
-	// 	String workspaceKey,
-	// 	String issueKey,
-	// 	Long memberId,
-	// 	UpdateIssueStatusRequest request
-	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
-	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceKey);
-	//
-	// 	IssueStatus oldStatus = issue.getStatus();
-	//
-	// 	issue.updateStatus(request.status());
-	//
-	// 	eventPublisher.publishEvent(
-	// 		IssueStatusChangedEvent.createEvent(issue, oldStatus, memberId)
-	// 	);
-	//
-	// 	return IssueResponse.from(issue);
-	// }
-
+	
 	@Transactional
 	public IssueResponse assignParentIssue(AssignParentIssueCommand cmd) {
 		Issue child = issueFinder.findIssue(cmd.childIssueKey(), cmd.workspaceCode());
@@ -159,6 +138,27 @@ public class IssueService {
 
 		return IssueResponse.from(issue);
 	}
+
+	// @Transactional
+	// public IssueResponse updateIssueStatus(
+	// 	String workspaceKey,
+	// 	String issueKey,
+	// 	Long memberId,
+	// 	UpdateIssueStatusRequest request
+	// ) {
+	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
+	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceKey);
+	//
+	// 	IssueStatus oldStatus = issue.getStatus();
+	//
+	// 	issue.updateStatus(request.status());
+	//
+	// 	eventPublisher.publishEvent(
+	// 		IssueStatusChangedEvent.createEvent(issue, oldStatus, memberId)
+	// 	);
+	//
+	// 	return IssueResponse.from(issue);
+	// }
 
 	// @Transactional
 	// public void softDeleteIssue(

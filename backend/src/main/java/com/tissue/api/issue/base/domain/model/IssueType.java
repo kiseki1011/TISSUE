@@ -87,6 +87,7 @@ public class IssueType extends BaseEntity {
 	) {
 		this.workspace = workspace;
 		this.key = key;
+		// TODO: use TextPreconditions, IssueTypeRules for non-null validation
 		this.label = TextNormalizer.nfc(label).strip();
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.color = color != null ? color : ColorType.getRandomColor();
@@ -106,6 +107,7 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateLabel(String label) {
+		// TODO: use TextPreconditions.requireNonNull
 		this.label = TextNormalizer.nfc(label).strip();
 	}
 
@@ -114,18 +116,21 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateColor(ColorType color) {
+		// IssueTypeRules.requireNonNull(color);
 		this.color = color;
 	}
 
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
+		// IssueTypeRules.requireNonNull(hierarchyLevel);
 		this.hierarchyLevel = hierarchyLevel;
 	}
 
 	public void setWorkflow(Workflow workflow) {
+		// IssueTypeRules.requireNonNull(workflow);
 		this.workflow = workflow;
 	}
 
-	public void setAsDefaultSystemType() {
+	public void setAsSystemType() {
 		this.systemType = true;
 	}
 }

@@ -53,9 +53,6 @@ public class EnumFieldOption extends BaseEntity {
 	@Column(nullable = false)
 	private int position; // 정렬
 
-	// @Column(nullable = false)
-	// private boolean archived;
-
 	// private String color;
 
 	@PostPersist
@@ -84,12 +81,4 @@ public class EnumFieldOption extends BaseEntity {
 	public void movePositionTo(int position) {
 		this.position = position;
 	}
-
-	// public void archive() {
-	// 	this.archived = true;
-	// }
-
-	// public void restore() {
-	// 	this.archived = false;
-	// }
 }
