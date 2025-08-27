@@ -26,6 +26,10 @@ public class KeyGenerator {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE_FIELD, id);
 	}
 
+	public static String generateEnumFieldOptionKey(long id) {
+		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE_ENUM_FIELD_OPTION, id);
+	}
+
 	public static String generateWorkflowKey(long id) {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKFLOW, id);
 	}

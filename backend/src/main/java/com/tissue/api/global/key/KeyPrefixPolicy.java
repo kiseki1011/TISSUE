@@ -10,6 +10,7 @@ public class KeyPrefixPolicy {
 	public static final String SPRINT = "SPRINT";
 	public static final String ISSUE_TYPE = "TYPE";
 	public static final String ISSUE_FIELD = "FIELD";
+	public static final String ISSUE_ENUM_FIELD_OPTION = "OPTION";
 	public static final String WORKFLOW = "WF";
 	public static final String STATUS = "STATUS";
 	public static final String TRANSITION = "TRANSITION";
@@ -18,7 +19,8 @@ public class KeyPrefixPolicy {
 	 * Issue can use "ISSUE" as prefix for key
 	 */
 	public static final Set<String> RESERVED_PREFIXES = Set.of(
-		WORKSPACE, SPRINT, ISSUE_TYPE, ISSUE_FIELD, WORKFLOW, STATUS, TRANSITION, "WORKSPACE", "WORKFLOW"
+		WORKSPACE, SPRINT, ISSUE_TYPE, ISSUE_FIELD, WORKFLOW, STATUS, TRANSITION, ISSUE_ENUM_FIELD_OPTION,
+		"WORKSPACE", "WORKFLOW"
 		// , ISSUE
 	);
 
