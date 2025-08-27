@@ -1,6 +1,6 @@
 package com.tissue.api.common.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,7 +18,7 @@ public abstract class BaseDateEntity {
 
 	@CreatedDate
 	@Column(updatable = false)
-	private LocalDateTime createdDate;
+	private Instant createdDate;
 	@LastModifiedDate
-	private LocalDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 }
