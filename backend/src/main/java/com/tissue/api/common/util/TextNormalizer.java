@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TextNormalizer {
 
+	public static String normalizeText(String value) {
+		return nfc(stripToEmpty(value));
+	}
+
 	/**
 	 * Returns an empty string if the input is null;
 	 * otherwise returns the input with leading and trailing Unicode whitespace removed.
