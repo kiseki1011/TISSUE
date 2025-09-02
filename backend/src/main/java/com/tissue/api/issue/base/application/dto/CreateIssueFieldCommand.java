@@ -14,6 +14,6 @@ public record CreateIssueFieldCommand(
 	String description,
 	FieldType fieldType,
 	Boolean required,
-	List<String> allowedOptions
+	List<String> initialOptions
 ) {
 }

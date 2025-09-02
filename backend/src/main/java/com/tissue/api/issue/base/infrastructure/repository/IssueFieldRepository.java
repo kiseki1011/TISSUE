@@ -10,13 +10,13 @@ import com.tissue.api.issue.base.domain.model.IssueType;
 
 public interface IssueFieldRepository extends JpaRepository<IssueField, Long> {
 
-	boolean existsByIssueTypeAndLabel(IssueType issueType, String label);
-
-	boolean existsByIssueTypeAndLabelAndIdNot(IssueType type, String label, Long excludeId);
-
-	List<IssueField> findByIssueType(IssueType issueType);
-
 	Optional<IssueField> findByIssueTypeAndKey(IssueType issueType, String key);
 
 	Optional<IssueField> findByKey(String key);
+
+	List<IssueField> findByIssueType(IssueType issueType);
+
+	boolean existsByIssueTypeAndLabel(IssueType issueType, String label);
+
+	boolean existsByIssueTypeAndLabelAndIdNot(IssueType issueType, String label, Long excludeId);
 }

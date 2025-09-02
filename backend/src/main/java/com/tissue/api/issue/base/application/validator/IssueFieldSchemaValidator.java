@@ -1,4 +1,4 @@
-package com.tissue.api.issue.base.domain.service;
+package com.tissue.api.issue.base.application.validator;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -8,39 +8,49 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
+import com.tissue.api.issue.base.domain.enums.FieldType;
+import com.tissue.api.issue.base.domain.model.EnumFieldOption;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
+import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class IssueFieldSchemaValidator {
 
-	private final IssueFieldRepository issueFieldRepository;
-	private final IssueFieldValueRepository issueFieldValueRepository;
+	private final IssueFieldRepository issueFieldRepo;
+	private final IssueFieldValueRepository issueFieldValueRepo;
+	private final EnumFieldOptionRepository optionRepo;
 
 	public List<IssueFieldValue> validateAndExtract(
 		Map<String, Object> input,
 		Issue issue
 	) {
-		List<IssueField> fields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		List<IssueField> fields = issueFieldRepo.findByIssueType(issue.getIssueType());
 		List<IssueFieldValue> values = new ArrayList<>();
 
 		for (IssueField field : fields) {
-			Object value = input.get(field.getKey());
+			Object raw = input.get(field.getKey());
+			validateSingleField(field, raw);
 
-			validateSingleField(field, value);
+			EnumFieldOption opt = null;
+			Object converted = raw;
 
-			values.add(IssueFieldValue.of(issue, field, value));
+			if (field.getFieldType() == FieldType.ENUM) {
+				opt = resolveEnumOption(field, raw);
+				converted = opt.getLabel(); // remove if not using cache
+			}
+
+			values.add(IssueFieldValue.of(issue, field, converted, opt));
 		}
-
 		return values;
 	}
 
@@ -49,12 +59,12 @@ public class IssueFieldSchemaValidator {
 		Issue issue
 	) {
 		// Load existing values
-		List<IssueFieldValue> existingValues = issueFieldValueRepository.findByIssue(issue);
+		List<IssueFieldValue> existingValues = issueFieldValueRepo.findByIssue(issue);
 		Map<String, IssueFieldValue> existingMap = existingValues.stream()
 			.collect(Collectors.toMap(val -> val.getField().getKey(), Function.identity()));
 
 		// Load field definitions
-		List<IssueField> issueFields = issueFieldRepository.findByIssueType(issue.getIssueType());
+		List<IssueField> issueFields = issueFieldRepo.findByIssueType(issue.getIssueType());
 		Map<String, IssueField> fieldMap = issueFields.stream()
 			.collect(Collectors.toMap(IssueField::getKey, Function.identity()));
 

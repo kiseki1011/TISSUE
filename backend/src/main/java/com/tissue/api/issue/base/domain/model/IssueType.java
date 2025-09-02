@@ -1,5 +1,7 @@
 package com.tissue.api.issue.base.domain.model;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.TextNormalizer;
@@ -16,11 +18,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,9 +30,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"workspace_id", "label"})
-})
+@SQLRestriction("archived = false")
+@Table(
+	// uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "label"})},
+	indexes = @Index(name = "idx_issue_type_workspace_label", columnList = "workspace_id,label")
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueType extends BaseEntity {
 
@@ -42,7 +46,7 @@ public class IssueType extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false)
+	@Column(nullable = false, updatable = false, unique = true)
 	private String key;
 
 	@Column(nullable = false)
@@ -57,9 +61,6 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private ColorType color;
 
-	@Column(nullable = false)
-	private boolean systemType;
-
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private HierarchyLevel hierarchyLevel;
@@ -67,6 +68,9 @@ public class IssueType extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "workflow_id", nullable = false)
 	private Workflow workflow;
+
+	@Column(nullable = false)
+	private boolean systemType;
 
 	@PostPersist
 	private void assignKey() {
@@ -88,7 +92,7 @@ public class IssueType extends BaseEntity {
 		this.workspace = workspace;
 		this.key = key;
 		// TODO: use TextPreconditions, IssueTypeRules for non-null validation
-		this.label = TextNormalizer.nfc(label).strip();
+		this.label = TextNormalizer.normalizeText(label);
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
@@ -107,8 +111,8 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateLabel(String label) {
-		// TODO: use TextPreconditions.requireNonNull
-		this.label = TextNormalizer.nfc(label).strip();
+		// TODO: TextPreconditions.requireNonNull(label);
+		this.label = TextNormalizer.normalizeText(label);
 	}
 
 	public void updateDescription(String description) {
@@ -116,17 +120,17 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateColor(ColorType color) {
-		// IssueTypeRules.requireNonNull(color);
+		// TODO: requireNonNull(color);
 		this.color = color;
 	}
 
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
-		// IssueTypeRules.requireNonNull(hierarchyLevel);
+		// TODO: requireNonNull(hierarchyLevel);
 		this.hierarchyLevel = hierarchyLevel;
 	}
 
 	public void setWorkflow(Workflow workflow) {
-		// IssueTypeRules.requireNonNull(workflow);
+		// TODO: requireNonNull(workflow);
 		this.workflow = workflow;
 	}
 

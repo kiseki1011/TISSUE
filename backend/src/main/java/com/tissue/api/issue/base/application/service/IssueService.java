@@ -2,7 +2,6 @@ package com.tissue.api.issue.base.application.service;
 
 import java.util.List;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,10 +11,10 @@ import com.tissue.api.issue.base.application.dto.RemoveParentIssueCommand;
 import com.tissue.api.issue.base.application.dto.UpdateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
+import com.tissue.api.issue.base.application.validator.IssueFieldSchemaValidator;
 import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 import com.tissue.api.issue.base.domain.model.IssueType;
-import com.tissue.api.issue.base.domain.service.IssueFieldSchemaValidator;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.base.presentation.dto.response.IssueResponse;
@@ -55,8 +54,6 @@ public class IssueService {
 
 	private final IssueRepository issueRepository;
 	private final IssueFieldValueRepository fieldValueRepository;
-
-	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public IssueResponse createIssue(CreateIssueCommand cmd) {
@@ -113,7 +110,7 @@ public class IssueService {
 
 		return IssueResponse.from(issue);
 	}
-	
+
 	@Transactional
 	public IssueResponse assignParentIssue(AssignParentIssueCommand cmd) {
 		Issue child = issueFinder.findIssue(cmd.childIssueKey(), cmd.workspaceCode());

@@ -2,6 +2,7 @@ package com.tissue.api.issue.base.domain.model;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.util.TextNormalizer;
@@ -16,11 +17,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,9 +29,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"issueType_id", "label"})
-})
+@SQLRestriction("archived = false")
+@Table(
+	// uniqueConstraints = {@UniqueConstraint(columnNames = {"issueType_id", "label"})},
+	indexes = {
+		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label"),
+		@Index(name = "idx_issue_field_key", columnList = "key", unique = true)
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueField extends BaseEntity {
 
@@ -38,7 +44,7 @@ public class IssueField extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, updatable = false, unique = true)
 	private String key;
 
 	@Column(nullable = false)
@@ -53,10 +59,6 @@ public class IssueField extends BaseEntity {
 
 	@Column(nullable = false)
 	private boolean required;
-
-	// TODO: Should i make use a bi-directional relation with EnumFieldOption?
-	//  IssueField <-> Collection<EnumFieldOption>
-	//  If using bi-directional, should I use Set or List?
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "issue_type_id", nullable = false)
@@ -80,11 +82,11 @@ public class IssueField extends BaseEntity {
 		IssueType issueType
 	) {
 		this.key = key;
-		// TODO: use TextPreconditions for non-null validation
-		this.label = TextNormalizer.nfc(label).strip();
+		// TODO: use TextPreconditions or a XxxRules class for non-null validation
+		this.label = TextNormalizer.normalizeText(label);
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.fieldType = fieldType;
-		this.required = (required != null) ? required : false;
+		this.required = Boolean.TRUE.equals(required);
 		this.issueType = issueType;
 	}
 
@@ -99,8 +101,8 @@ public class IssueField extends BaseEntity {
 	}
 
 	public void updateLabel(String label) {
-		// TODO: use TextPreconditions.requireNonNull
-		this.label = TextNormalizer.nfc(label).strip();
+		// TODO: TextPreconditions.requireNonNull(label);
+		this.label = TextNormalizer.normalizeText(label);
 	}
 
 	public void updateDescription(String description) {
@@ -108,12 +110,15 @@ public class IssueField extends BaseEntity {
 	}
 
 	public void updateRequired(Boolean required) {
-		// IssueFieldRules.requireNonNull(required);
-		this.required = required;
+		this.required = Boolean.TRUE.equals(required);
 	}
 
 	public void updateFieldType(FieldType fieldType) {
-		// IssueFieldRules.requireNonNull(fieldType)
+		// TODO: requireNonNull(fieldType);
 		this.fieldType = fieldType;
+	}
+
+	public void delete() {
+		archive();
 	}
 }

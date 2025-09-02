@@ -53,6 +53,7 @@ tissue:
   member:
   # max-workspace-count: 20
   issue:
+    max-enum-options: 100
   # max-field-per-issue-type: 50
 
 logging:

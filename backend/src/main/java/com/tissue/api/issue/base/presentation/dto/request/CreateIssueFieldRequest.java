@@ -16,7 +16,7 @@ public record CreateIssueFieldRequest(
 	FieldType fieldType,
 	@NotNull(message = "{valid.notnull}")
 	Boolean required,
-	List<String> allowedOptions
+	List<String> initialOptions
 ) {
 	public CreateIssueFieldCommand toCommand(String workspaceKey, String issueTypeKey) {
 		return CreateIssueFieldCommand.builder()
@@ -26,7 +26,7 @@ public record CreateIssueFieldRequest(
 			.description(description)
 			.fieldType(fieldType)
 			.required(required)
-			.allowedOptions(allowedOptions)
+			.initialOptions(initialOptions)
 			.build();
 	}
 }

@@ -1,4 +1,4 @@
-package com.tissue.api.issue.base.domain.service;
+package com.tissue.api.issue.base.application.validator;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -31,7 +31,6 @@ public class IssueCustomFieldValidator {
 	private final IssueFieldRepository issueFieldRepository;
 	private final IssueFieldValueRepository issueFieldValueRepository;
 
-	// TODO: Find a way to improve or simplify logic.
 	public List<IssueFieldValue> validateAndExtract(
 		Map<String, Object> input,
 		Issue issue
