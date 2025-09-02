@@ -1,15 +1,19 @@
 package com.tissue.api.issue.base.domain.model;
 
-import java.time.LocalDate;
+import java.time.Instant;
+
+import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@SQLRestriction("archived = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueFieldValue extends BaseEntity {
 
@@ -30,37 +35,51 @@ public class IssueFieldValue extends BaseEntity {
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private IssueField field;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "enum_option_id")
+	private EnumFieldOption enumOption;
+
 	private String stringValue;
 	private Integer numberValue;
-	private LocalDate dateValue;
+	private Instant dateValue;
 
-	public static IssueFieldValue of(
-		Issue issue,
-		IssueField field,
-		Object value
-	) {
-		IssueFieldValue val = new IssueFieldValue();
-		val.issue = issue;
-		val.field = field;
-
-		switch (field.getFieldType()) {
-			case TEXT, ENUM -> val.stringValue = value.toString();
-			case NUMBER -> val.numberValue = ((Number)value).intValue();
-			case DATE -> val.dateValue = LocalDate.parse(value.toString());
-		}
-		return val;
+	public static IssueFieldValue of(Issue issue, IssueField field, Object value) {
+		IssueFieldValue issueFieldValue = new IssueFieldValue();
+		issueFieldValue.issue = issue;
+		issueFieldValue.field = field;
+		issueFieldValue.apply(value);
+		return issueFieldValue;
 	}
 
 	public void updateValue(Object value) {
+		if (field.isRequired() && value == null) {
+			throw new InvalidOperationException("This field is required.");
+		}
 		if (value == null) {
+			clearValue();
 			return;
 		}
+		apply(value);
+	}
 
+	private void apply(Object value) {
 		switch (field.getFieldType()) {
-			case TEXT, ENUM -> this.stringValue = value.toString();
+			case TEXT -> this.stringValue = (String)value;
 			case NUMBER -> this.numberValue = ((Number)value).intValue();
-			case DATE -> this.dateValue = LocalDate.parse(value.toString());
-			default -> throw new InvalidCustomFieldException("Unsupported field type: " + field.getFieldType());
+			case DATE -> this.dateValue = (Instant)value;
+			case ENUM -> {
+				EnumFieldOption opt = (EnumFieldOption)value;
+				this.enumOption = opt;
+				this.stringValue = opt.getLabel();
+			}
+			default -> throw new InvalidCustomFieldException("Unsupported: " + field.getFieldType());
 		}
+	}
+
+	public void clearValue() {
+		this.stringValue = null;
+		this.numberValue = null;
+		this.dateValue = null;
+		this.enumOption = null;
 	}
 }
