@@ -42,6 +42,8 @@ api:
       duration: 1
 
 tissue:
+  member:
+  # max-workspace-count: 20
   workspace:
     max-member-count: 500
     # max-teams-per-member: 3
@@ -50,11 +52,17 @@ tissue:
     # max-sprint-count: 1000000
     # max-issue-field-count: 10000
     # max-issue-type-count: 10000
-  member:
-  # max-workspace-count: 20
   issue:
-    max-enum-options: 100
-  # max-field-per-issue-type: 50
+    type:
+    # max-field-per-issue-type: 50
+    field:
+      max-enum-options: 100 # Max number of options a custom ENUM type field can have
+      decimal:
+        scale: 6           # normalize 시 소수 자릿수
+        rounding: HALF_UP  # HALF_UP / HALF_EVEN ...
+        digits:
+          integer: 14      # 최대 정수부 자리수
+          fraction: 6      # 최대 소수부 자리수
 
 logging:
   level:

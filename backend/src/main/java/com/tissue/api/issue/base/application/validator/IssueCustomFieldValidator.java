@@ -119,7 +119,7 @@ public class IssueCustomFieldValidator {
 		return switch (field.getFieldType()) {
 			case TEXT -> validateText(field, value);
 			case ENUM -> validateEnum(field, value);
-			case NUMBER -> validateNumber(field, value);
+			case INTEGER -> validateNumber(field, value);
 			case DATE -> validateDate(field, value);
 			default -> error(field, value, "Unsupported field type.");
 		};

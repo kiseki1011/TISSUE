@@ -1,5 +1,6 @@
 package com.tissue.api.issue.base.domain.model;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import org.hibernate.annotations.SQLRestriction;
@@ -40,7 +41,8 @@ public class IssueFieldValue extends BaseEntity {
 	private EnumFieldOption enumOption;
 
 	private String stringValue;
-	private Integer numberValue;
+	private Integer integerValue;
+	private BigDecimal decimalValue;
 	private Instant dateValue;
 
 	public static IssueFieldValue of(Issue issue, IssueField field, Object value) {
@@ -63,9 +65,11 @@ public class IssueFieldValue extends BaseEntity {
 	}
 
 	private void apply(Object value) {
+		clearValue();
 		switch (field.getFieldType()) {
 			case TEXT -> this.stringValue = (String)value;
-			case NUMBER -> this.numberValue = ((Number)value).intValue();
+			case INTEGER -> this.integerValue = (Integer)value;
+			case DECIMAL -> this.decimalValue = (BigDecimal)value;
 			case DATE -> this.dateValue = (Instant)value;
 			case ENUM -> {
 				EnumFieldOption opt = (EnumFieldOption)value;
@@ -78,7 +82,8 @@ public class IssueFieldValue extends BaseEntity {
 
 	public void clearValue() {
 		this.stringValue = null;
-		this.numberValue = null;
+		this.integerValue = null;
+		this.decimalValue = null;
 		this.dateValue = null;
 		this.enumOption = null;
 	}
