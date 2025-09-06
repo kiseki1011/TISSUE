@@ -3,6 +3,7 @@ package com.tissue.api.issue.base.application.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -48,9 +49,7 @@ public class IssueFieldService {
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 
-		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
-
-		// TODO: IssueFieldFactory를 만들어서 생성 책임 분리 고려 (검증도 해당 생성 메서드에 캡슐화)
+		// TODO: IssueFieldFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		IssueField issueField = issueFieldRepo.save(IssueField.builder()
 			.label(cmd.label())
 			.description(cmd.description())
@@ -58,6 +57,8 @@ public class IssueFieldService {
 			.required(Boolean.TRUE.equals(cmd.required()))
 			.issueType(issueType)
 			.build());
+
+		issueFieldValidator.ensureUniqueLabel(issueType, issueField.getLabel());
 
 		if (issueField.getFieldType() == FieldType.ENUM) {
 			List<String> normalized = normalizeInitialOptions(cmd.initialOptions());
@@ -72,8 +73,9 @@ public class IssueFieldService {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 
-		issueFieldValidator.ensureUniqueLabel(type, cmd.label(), field.getId());
 		field.updateMetaData(cmd.label(), cmd.description(), cmd.required());
+
+		issueFieldValidator.ensureUniqueLabel(type, field.getLabel(), field.getId());
 
 		return IssueFieldResponse.from(field);
 	}
@@ -83,7 +85,7 @@ public class IssueFieldService {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 
-		issueFieldValidator.ensureNotInUse(field);
+		issueFieldValidator.ensureDeletable(field);
 		field.delete();
 
 		return IssueFieldResponse.from(field);
@@ -92,16 +94,19 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
-		optionValidator.ensureLabelUnique(field, cmd.label());
 
 		int nextPosition = optionRepo.countByField(field);
 		issueFieldPolicy.ensureCanAddOption(nextPosition);
 
-		optionRepo.save(EnumFieldOption.builder()
+		EnumFieldOption option = EnumFieldOption.builder()
 			.field(field)
 			.label(cmd.label())
 			.position(nextPosition)
-			.build());
+			.build();
+
+		optionValidator.ensureLabelUnique(field, option.getLabel());
+
+		optionRepo.save(option);
 
 		return IssueFieldResponse.from(field);
 	}
@@ -111,7 +116,7 @@ public class IssueFieldService {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
 		EnumFieldOption option = findOption(field, cmd.optionKey());
 
-		boolean labelHasChanged = !option.getLabel().equals(cmd.newLabel());
+		boolean labelHasChanged = !Objects.equals(option.getLabel(), cmd.newLabel());
 		if (labelHasChanged) {
 			optionValidator.ensureLabelUnique(field, cmd.newLabel());
 			option.rename(cmd.newLabel());

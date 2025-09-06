@@ -30,7 +30,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(cmd.workspaceKey(), cmd.workflowKey());
+		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowKey());
 
 		IssueType issueType = issueTypeRepository.save(IssueType.builder()
 			.workspace(workspace)
@@ -41,13 +41,20 @@ public class IssueTypeService {
 			.workflow(workflow)
 			.build());
 
+		issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
+
 		return IssueTypeResponse.from(issueType);
 	}
 
 	@Transactional
 	public IssueTypeResponse updateMetaData(UpdateIssueTypeCommand cmd) {
-		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
+
 		issueType.updateMetaData(cmd.label(), cmd.description(), cmd.color());
+
+		issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
+
 		return IssueTypeResponse.from(issueType);
 	}
 

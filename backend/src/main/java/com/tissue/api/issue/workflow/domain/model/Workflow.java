@@ -45,9 +45,6 @@ public class Workflow extends BaseEntity {
 	private Workspace workspace;
 
 	@Column(nullable = false)
-	private String workspaceCode;
-
-	@Column(nullable = false)
 	private String key;
 
 	@Column(nullable = false)
@@ -79,7 +76,6 @@ public class Workflow extends BaseEntity {
 		String description
 	) {
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getKey();
 		this.key = key;
 		this.label = label;
 		this.description = description;

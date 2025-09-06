@@ -58,7 +58,7 @@ public class IssueService {
 	@Transactional
 	public IssueResponse createIssue(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
-		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceCode(), cmd.issueTypeKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
 
 		Issue issue = issueRepository.save(Issue.builder()
 			.workspace(workspace)

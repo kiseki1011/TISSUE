@@ -14,4 +14,6 @@ public interface IssueTypeRepository extends JpaRepository<IssueType, Long> {
 	boolean existsByWorkspaceAndLabelAndIdNot(Workspace workspace, String label, Long excludeId);
 
 	Optional<IssueType> findByWorkspace_KeyAndKey(String workspaceKey, String key);
+
+	Optional<IssueType> findByWorkspaceAndKey(Workspace workspace, String key);
 }

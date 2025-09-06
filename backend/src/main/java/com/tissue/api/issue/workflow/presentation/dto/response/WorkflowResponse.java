@@ -7,6 +7,6 @@ public record WorkflowResponse(
 	String key
 ) {
 	public static WorkflowResponse from(Workflow workflow) {
-		return new WorkflowResponse(workflow.getWorkspaceCode(), workflow.getKey());
+		return new WorkflowResponse(workflow.getWorkspace().getKey(), workflow.getKey());
 	}
 }
