@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
@@ -20,7 +19,6 @@ public class IssueFieldValidator {
 	private final IssueFieldValueRepository fieldValueRepo;
 
 	public void ensureUniqueLabel(IssueType type, String label) {
-		label = TextNormalizer.normalizeText(label);
 		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel(type, label);
 		if (duplicated) {
 			throw new ResourceConflictException("Field label already exists for this issue type.");
@@ -28,7 +26,6 @@ public class IssueFieldValidator {
 	}
 
 	public void ensureUniqueLabel(IssueType type, String label, Long excludeId) {
-		label = TextNormalizer.normalizeText(label);
 		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabelAndIdNot(type, label, excludeId);
 		if (duplicated) {
 			throw new ResourceConflictException("Field label already exists for this issue type.");
