@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.issue.base.domain.model.EnumFieldOption;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
@@ -23,7 +22,6 @@ public class EnumFieldOptionValidator {
 	private final EnumFieldOptionRepository optionRepo;
 
 	public void ensureLabelUnique(IssueField field, String label) {
-		label = TextNormalizer.normalizeText(label);
 		if (optionRepo.existsByFieldAndLabel(field, label)) {
 			throw new ResourceConflictException("Option label already exists in this field.");
 		}
