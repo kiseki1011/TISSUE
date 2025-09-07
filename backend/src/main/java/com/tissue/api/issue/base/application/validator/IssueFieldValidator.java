@@ -25,13 +25,6 @@ public class IssueFieldValidator {
 		}
 	}
 
-	public void ensureUniqueLabel(IssueType type, String label, Long excludeId) {
-		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabelAndIdNot(type, label, excludeId);
-		if (duplicated) {
-			throw new ResourceConflictException("Field label already exists for this issue type.");
-		}
-	}
-
 	public void ensureDeletable(IssueField field) {
 		ensureNotInUse(field);
 	}

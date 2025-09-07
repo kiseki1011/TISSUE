@@ -49,6 +49,7 @@ public class IssueFieldValue extends BaseEntity {
 		IssueFieldValue issueFieldValue = new IssueFieldValue();
 		issueFieldValue.issue = issue;
 		issueFieldValue.field = field;
+		// TODO: required 검사를 여기서 할까?
 		issueFieldValue.apply(value);
 		return issueFieldValue;
 	}
@@ -72,9 +73,7 @@ public class IssueFieldValue extends BaseEntity {
 			case DECIMAL -> this.decimalValue = (BigDecimal)value;
 			case DATE -> this.dateValue = (Instant)value;
 			case ENUM -> {
-				EnumFieldOption opt = (EnumFieldOption)value;
-				this.enumOption = opt;
-				this.stringValue = opt.getLabel();
+				this.enumOption = (EnumFieldOption)value;
 			}
 			default -> throw new InvalidCustomFieldException("Unsupported: " + field.getFieldType());
 		}
