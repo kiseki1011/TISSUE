@@ -1,5 +1,7 @@
 package com.tissue.api.issue.base.application.service;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,9 +53,13 @@ public class IssueTypeService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
 
-		issueType.updateMetaData(cmd.label(), cmd.description(), cmd.color());
+		issueType.updateMetaData(cmd.description(), cmd.color());
 
-		issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
+		boolean labelHasChanged = !Objects.equals(issueType.getLabel(), cmd.label());
+		if (labelHasChanged) {
+			issueType.rename(cmd.label());
+			issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
+		}
 
 		return IssueTypeResponse.from(issueType);
 	}
@@ -62,6 +68,6 @@ public class IssueTypeService {
 	public void delete(String workspaceKey, String issueTypeKey) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
 		issueTypeValidator.ensureDeletable(issueType);
-		issueTypeRepository.delete(issueType);
+		issueType.softDelete();
 	}
 }

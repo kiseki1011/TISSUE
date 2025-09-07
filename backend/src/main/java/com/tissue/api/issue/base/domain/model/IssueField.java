@@ -94,13 +94,12 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceCode();
 	}
 
-	public void updateMetaData(String label, String description, Boolean required) {
-		updateLabel(label);
+	public void updateMetaData(String description, Boolean required) {
 		updateDescription(description);
 		updateRequired(required);
 	}
 
-	public void updateLabel(String label) {
+	public void rename(String label) {
 		// TODO: TextPreconditions.requireNonNull(label);
 		this.label = TextNormalizer.normalizeText(label);
 	}
@@ -118,7 +117,7 @@ public class IssueField extends BaseEntity {
 		this.fieldType = fieldType;
 	}
 
-	public void delete() {
+	public void softDelete() {
 		archive();
 	}
 }

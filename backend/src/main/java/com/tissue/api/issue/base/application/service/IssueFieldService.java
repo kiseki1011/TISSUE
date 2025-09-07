@@ -73,9 +73,13 @@ public class IssueFieldService {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 
-		field.updateMetaData(cmd.label(), cmd.description(), cmd.required());
+		field.updateMetaData(cmd.description(), cmd.required());
 
-		issueFieldValidator.ensureUniqueLabel(type, field.getLabel(), field.getId());
+		boolean labelChanged = !Objects.equals(field.getLabel(), cmd.label());
+		if (labelChanged) {
+			field.rename(cmd.label());
+			issueFieldValidator.ensureUniqueLabel(type, field.getLabel());
+		}
 
 		return IssueFieldResponse.from(field);
 	}
@@ -86,7 +90,7 @@ public class IssueFieldService {
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 
 		issueFieldValidator.ensureDeletable(field);
-		field.delete();
+		field.softDelete();
 
 		return IssueFieldResponse.from(field);
 	}
@@ -95,18 +99,17 @@ public class IssueFieldService {
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
 
+		// TODO: EnumFieldOptionFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		int nextPosition = optionRepo.countByField(field);
 		issueFieldPolicy.ensureCanAddOption(nextPosition);
 
-		EnumFieldOption option = EnumFieldOption.builder()
+		EnumFieldOption option = optionRepo.save(EnumFieldOption.builder()
 			.field(field)
 			.label(cmd.label())
 			.position(nextPosition)
-			.build();
+			.build());
 
 		optionValidator.ensureLabelUnique(field, option.getLabel());
-
-		optionRepo.save(option);
 
 		return IssueFieldResponse.from(field);
 	}
@@ -116,10 +119,10 @@ public class IssueFieldService {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
 		EnumFieldOption option = findOption(field, cmd.optionKey());
 
-		boolean labelHasChanged = !Objects.equals(option.getLabel(), cmd.newLabel());
-		if (labelHasChanged) {
-			optionValidator.ensureLabelUnique(field, cmd.newLabel());
+		boolean labelChanged = !Objects.equals(option.getLabel(), cmd.newLabel());
+		if (labelChanged) {
 			option.rename(cmd.newLabel());
+			optionValidator.ensureLabelUnique(field, option.getLabel());
 		}
 
 		return IssueFieldResponse.from(field);
@@ -131,7 +134,7 @@ public class IssueFieldService {
 		EnumFieldOption option = findOption(field, cmd.optionKey());
 
 		optionValidator.ensureNotInUse(option);
-		option.delete();
+		option.softDelete();
 
 		return IssueFieldResponse.from(field);
 	}
@@ -192,5 +195,4 @@ public class IssueFieldService {
 			newPosition++;
 		}
 	}
-
 }

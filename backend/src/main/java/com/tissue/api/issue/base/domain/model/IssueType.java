@@ -104,13 +104,12 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
-	public void updateMetaData(String label, String description, ColorType color) {
-		updateLabel(label);
+	public void updateMetaData(String description, ColorType color) {
 		updateDescription(description);
 		updateColor(color);
 	}
 
-	public void updateLabel(String label) {
+	public void rename(String label) {
 		// TODO: TextPreconditions.requireNonNull(label);
 		this.label = TextNormalizer.normalizeText(label);
 	}
@@ -136,6 +135,10 @@ public class IssueType extends BaseEntity {
 
 	public void setAsSystemType() {
 		this.systemType = true;
+	}
+
+	public void softDelete() {
+		archive();
 	}
 }
 

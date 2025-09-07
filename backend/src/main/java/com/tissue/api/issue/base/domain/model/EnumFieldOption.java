@@ -45,7 +45,6 @@ public class EnumFieldOption extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "issue_field_id", nullable = false)
-	// @OnDelete(action = OnDeleteAction.CASCADE)
 	private IssueField field;
 
 	@Column(nullable = false, updatable = false, unique = true)
@@ -86,7 +85,7 @@ public class EnumFieldOption extends BaseEntity {
 		this.position = position;
 	}
 
-	public void delete() {
+	public void softDelete() {
 		archive();
 	}
 }
