@@ -2,6 +2,9 @@ package com.tissue.api.issue.base.application.validator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 
 import org.springframework.stereotype.Component;
@@ -23,98 +26,55 @@ public class IssueFieldSchemaParser {
 
 	/**
 	 * Converts 'rawInput' into a domain value based on the field type.
-	 * - TEXT    -> String (expects a JSON string)
-	 * - INTEGER -> Integer (expects an integer-like number)
-	 * - DECIMAL -> BigDecimal (expects a decimal number)
-	 * - DATE    -> Instant (expects an ISO-8601 string)
-	 * - ENUM    -> EnumFieldOption (expects an option 'key', not a label)
+	 * - TEXT        -> String (expects a JSON string)
+	 * - INTEGER     -> Integer (expects an integer-like number)
+	 * - DECIMAL     -> BigDecimal (expects a decimal number)
+	 * - TIMESTAMP   -> Instant (expects an ISO-8601 string)
+	 * - DATE        -> LocalDate
+	 * - ENUM        -> EnumFieldOption (expects an option 'key', not a label)
 	 */
-	public Object toDomainValue(IssueField field, Object rawInput) {
+	public Object toDomainValue(IssueField field, Object raw) {
 		return switch (field.getFieldType()) {
-			case TEXT -> parseTextValue(field, rawInput);
-			case INTEGER -> parseIntegerValue(field, rawInput);
-			case DECIMAL -> parseDecimalValue(field, rawInput);
-			case DATE -> parseInstantValue(field, rawInput);
-			case ENUM -> findEnumOptionByKey(field, rawInput);
+			case TEXT -> parseTextValue(field, raw);
+			case INTEGER -> parseIntegerValue(field, raw);
+			case DECIMAL -> parseDecimalValue(field, raw);
+			case TIMESTAMP -> parseInstantValue(field, raw);
+			case DATE -> parseDateValue(field, raw);
+			case ENUM -> findEnumOptionByKey(field, raw);
 			default -> throw new InvalidCustomFieldException(
 				"Unsupported field type: " + field.getFieldType()
 			);
 		};
 	}
 
-	private String parseTextValue(IssueField field, Object rawInput) {
-		if (rawInput instanceof String stringValue) {
-			return stringValue;
+	private String parseTextValue(IssueField field, Object raw) {
+		if (raw instanceof String s) {
+			return s;
 		}
 		throw new InvalidCustomFieldException(
 			"Field '%s' must be a string.".formatted(field.getKey())
 		);
 	}
 
-	private Integer parseIntegerValue(IssueField field, Object rawInput) {
-		if (rawInput instanceof Integer integerValue) {
-			return integerValue;
+	private Integer parseIntegerValue(IssueField field, Object raw) {
+		if (raw instanceof Integer i) {
+			return i;
 		}
-		if (rawInput instanceof Long longValue) {
-			return convertLongToInt(field, longValue);
+		if (raw instanceof Long l) {
+			return convertToIntExact(field, l);
 		}
-		if (rawInput instanceof Number numberValue) {
-			return convertWholeNumberToInt(field, numberValue);
-		}
-		if (rawInput instanceof String stringValue) {
-			return parseIntegerFromString(field, stringValue);
+		if (raw instanceof String s) {
+			return parseIntegerFromString(field, s);
 		}
 		throw new InvalidCustomFieldException(
 			"Field '%s' must be an integer.".formatted(field.getKey())
 		);
 	}
 
-	/**
-	 * Converts long to int;
-	 * throws if out of 32-bit range.
-	 */
-	private Integer convertLongToInt(IssueField field, long longValue) {
-		try {
-			return Math.toIntExact(longValue);
-		} catch (ArithmeticException ex) {
-			throw new InvalidCustomFieldException(
-				"Field '%s' integer is out of 32-bit range.".formatted(field.getKey())
-			);
-		}
-	}
-
-	/**
-	 * Converts a Number to int if it represents an integral value (e.g., 3.0 → 3).
-	 * Rejects fractional numbers (e.g., 3.14).
-	 */
-	private Integer convertWholeNumberToInt(IssueField field, Number numberValue) {
-		double doubleValue = numberValue.doubleValue();
-		if (Double.isFinite(doubleValue) && Math.floor(doubleValue) == doubleValue) {
-			return (int)doubleValue;
-		}
-		throw new InvalidCustomFieldException(
-			"Field '%s' must be an integer.".formatted(field.getKey())
-		);
-	}
-
-	/**
-	 * Parses decimal string as 32-bit integer;
-	 * throws on invalid format or overflow.
-	 */
-	private Integer parseIntegerFromString(IssueField field, String stringValue) {
-		try {
-			return Integer.parseInt(stringValue);
-		} catch (NumberFormatException ex) {
-			throw new InvalidCustomFieldException(
-				"Field '%s' must be an integer.".formatted(field.getKey())
-			);
-		}
-	}
-
-	private BigDecimal parseDecimalValue(IssueField field, Object rawInput) {
+	private BigDecimal parseDecimalValue(IssueField field, Object raw) {
 		BigDecimal value;
 
-		switch (rawInput) {
+		switch (raw) {
 			case BigDecimal bigDecimalValue -> value = bigDecimalValue;
 			case Number numberValue -> value = new BigDecimal(numberValue.toString());
 			case String stringValue -> value = parseBigDecimalFromString(field, stringValue);
@@ -128,12 +88,78 @@ public class IssueFieldSchemaParser {
 	}
 
 	/**
+	 * Converts long to int;
+	 * throws if out of 32-bit range.
+	 */
+	private Integer convertToIntExact(IssueField field, long longVal) {
+		try {
+			return Math.toIntExact(longVal);
+		} catch (ArithmeticException ex) {
+			throw new InvalidCustomFieldException(
+				"Field '%s' integer is out of 32-bit range.".formatted(field.getKey())
+			);
+		}
+	}
+
+	private Instant parseInstantValue(IssueField field, Object raw) {
+		if (raw instanceof String s) {
+			return parseInstantFromIsoString(field, s);
+		}
+		throw new InvalidCustomFieldException(
+			"Field '%s' must be ISO-8601 string.".formatted(field.getKey())
+		);
+	}
+
+	private LocalDate parseDateValue(IssueField field, Object raw) {
+		if (raw instanceof String s) {
+			try {
+				return LocalDate.parse(s);
+			} catch (DateTimeParseException e) {
+				throw new InvalidCustomFieldException("must be yyyy-MM-dd");
+			}
+		}
+		if (raw instanceof Number n) {
+			Instant inst = Instant.ofEpochMilli(n.longValue());
+			return LocalDateTime.ofInstant(inst, ZoneOffset.UTC).toLocalDate();
+		}
+		throw new InvalidCustomFieldException("must be yyyy-MM-dd or epoch millis");
+	}
+
+	/**
+	 * Looks up an enum option by key in the given field;
+	 * rejects non-string input.
+	 */
+	private EnumFieldOption findEnumOptionByKey(IssueField field, Object raw) {
+		if (raw instanceof String optionKey) {
+			return optionRepo.findByFieldAndKey(field, optionKey)
+				.orElseThrow(() -> new InvalidCustomFieldException(
+					"Unknown enum option key for field '%s': %s".formatted(field.getKey(), optionKey)
+				));
+		}
+		throw new InvalidCustomFieldException("Field '%s' must be an enum key string.".formatted(field.getKey()));
+	}
+
+	/**
+	 * Parses decimal string as 32-bit integer;
+	 * throws on invalid format or overflow.
+	 */
+	private Integer parseIntegerFromString(IssueField field, String stringVal) {
+		try {
+			return Integer.parseInt(stringVal);
+		} catch (NumberFormatException ex) {
+			throw new InvalidCustomFieldException(
+				"Field '%s' must be an integer.".formatted(field.getKey())
+			);
+		}
+	}
+
+	/**
 	 * Parse String to BigDecimal;
 	 * throws on invalid format.
 	 */
-	private BigDecimal parseBigDecimalFromString(IssueField field, String stringValue) {
+	private BigDecimal parseBigDecimalFromString(IssueField field, String stringVal) {
 		try {
-			return new BigDecimal(stringValue);
+			return new BigDecimal(stringVal);
 		} catch (NumberFormatException ex) {
 			throw new InvalidCustomFieldException(
 				"Field '%s' must be a decimal number.".formatted(field.getKey())
@@ -141,40 +167,17 @@ public class IssueFieldSchemaParser {
 		}
 	}
 
-	private Instant parseInstantValue(IssueField field, Object rawInput) {
-		if (rawInput instanceof String stringValue) {
-			return parseInstantFromIsoString(field, stringValue);
-		}
-		throw new InvalidCustomFieldException(
-			"Field '%s' must be ISO-8601 string.".formatted(field.getKey())
-		);
-	}
-
 	/**
 	 * Parses an ISO-8601 string into an Instant;
 	 * throws if the format is invalid.
 	 */
-	private Instant parseInstantFromIsoString(IssueField field, String stringValue) {
+	private Instant parseInstantFromIsoString(IssueField field, String stringVal) {
 		try {
-			return Instant.parse(stringValue);
+			return Instant.parse(stringVal);
 		} catch (DateTimeParseException ex) {
 			throw new InvalidCustomFieldException(
 				"Field '%s' must be ISO-8601 string.".formatted(field.getKey())
 			);
 		}
-	}
-
-	/**
-	 * Looks up an enum option by key in the given field;
-	 * rejects non-string input.
-	 */
-	private EnumFieldOption findEnumOptionByKey(IssueField field, Object rawInput) {
-		if (rawInput instanceof String optionKey) {
-			return optionRepo.findByFieldAndKey(field, optionKey)
-				.orElseThrow(() -> new InvalidCustomFieldException(
-					"Unknown enum option key for field '%s': %s".formatted(field.getKey(), optionKey)
-				));
-		}
-		throw new InvalidCustomFieldException("Field '%s' must be an enum key string.".formatted(field.getKey()));
 	}
 }

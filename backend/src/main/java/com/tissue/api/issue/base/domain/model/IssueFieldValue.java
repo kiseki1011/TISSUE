@@ -2,6 +2,7 @@ package com.tissue.api.issue.base.domain.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 import org.hibernate.annotations.SQLRestriction;
 
@@ -16,15 +17,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: archived=false 대상으로 issue_id, issue_field_id 대상 유니크 제약 추후에 설정(Postgres DDL)
 @Entity
 @Getter
 @SQLRestriction("archived = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueFieldValue extends BaseEntity {
+
+	@Version
+	private Long version;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,21 +49,25 @@ public class IssueFieldValue extends BaseEntity {
 	private String stringValue;
 	private Integer integerValue;
 	private BigDecimal decimalValue;
-	private Instant dateValue;
+	private Instant timestampValue;
+	private LocalDate dateValue;
+
+	private IssueFieldValue(Issue issue, IssueField field) {
+		this.issue = issue;
+		this.field = field;
+	}
 
 	public static IssueFieldValue of(Issue issue, IssueField field, Object value) {
-		IssueFieldValue issueFieldValue = new IssueFieldValue();
-		issueFieldValue.issue = issue;
-		issueFieldValue.field = field;
-		// TODO: required 검사를 여기서 할까?
+		IssueFieldValue issueFieldValue = new IssueFieldValue(issue, field);
+
+		ensureValuePresentRequired(value, field);
 		issueFieldValue.apply(value);
+
 		return issueFieldValue;
 	}
 
 	public void updateValue(Object value) {
-		if (field.isRequired() && value == null) {
-			throw new InvalidOperationException("This field is required.");
-		}
+		ensureValuePresentRequired(value, this.field);
 		if (value == null) {
 			clearValue();
 			return;
@@ -71,7 +81,8 @@ public class IssueFieldValue extends BaseEntity {
 			case TEXT -> this.stringValue = (String)value;
 			case INTEGER -> this.integerValue = (Integer)value;
 			case DECIMAL -> this.decimalValue = (BigDecimal)value;
-			case DATE -> this.dateValue = (Instant)value;
+			case TIMESTAMP -> this.timestampValue = (Instant)value;
+			case DATE -> this.dateValue = (LocalDate)value;
 			case ENUM -> {
 				this.enumOption = (EnumFieldOption)value;
 			}
@@ -83,7 +94,18 @@ public class IssueFieldValue extends BaseEntity {
 		this.stringValue = null;
 		this.integerValue = null;
 		this.decimalValue = null;
+		this.timestampValue = null;
 		this.dateValue = null;
 		this.enumOption = null;
+	}
+
+	private static void ensureValuePresentRequired(Object value, IssueField field) {
+		if (field.isRequired() && (value == null || isBlankString(value))) {
+			throw new InvalidOperationException("This field is required.");
+		}
+	}
+
+	private static boolean isBlankString(Object value) {
+		return (value instanceof String s) && s.isBlank();
 	}
 }
