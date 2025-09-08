@@ -82,7 +82,6 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	// TODO: Should i make this private?
-	// TODO: Should i make this a instance method?
 	private static WorkspaceMember createWorkspaceMember(
 		Member member,
 		Workspace workspace,
@@ -90,7 +89,7 @@ public class WorkspaceMember extends BaseEntity {
 		WorkspacePolicy workspacePolicy
 	) {
 		member.validateWorkspaceLimit();
-		workspace.validateCanAddMember(workspacePolicy);
+		workspace.ensureCanAddMember(workspacePolicy);
 
 		WorkspaceMember workspaceMember = WorkspaceMember.builder()
 			.member(member)
@@ -132,7 +131,6 @@ public class WorkspaceMember extends BaseEntity {
 	//  Im thinking about what would happen to exisiting resources (Issue, Sprint, Comment, etc...)
 	//  if the WorkspaceMember is kicked out of the Workspace.
 	//  If soft-delete is recommended, how should I implement it?
-
 	public void validateCanLeaveWorkspace() {
 		if (this.role == WorkspaceRole.OWNER) {
 			throw new InvalidOperationException("Cannot leave workspace if OWNER.");

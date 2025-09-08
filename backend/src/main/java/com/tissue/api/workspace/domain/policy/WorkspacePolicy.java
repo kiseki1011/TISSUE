@@ -6,7 +6,7 @@ import com.tissue.api.workspace.domain.model.Workspace;
 public record WorkspacePolicy(
 	int maxMemberCount
 ) {
-	public void validateMemberLimit(Workspace workspace) {
+	public void ensureWithinMemberLimit(Workspace workspace) {
 		if (workspace.getMemberCount() >= maxMemberCount) {
 			throw new InvalidOperationException("Maximum number of members reached: %d".formatted(maxMemberCount));
 		}

@@ -64,7 +64,6 @@ public class Workspace extends BaseEntity {
 	@OneToMany(mappedBy = "workspace")
 	private List<Sprint> sprints = new ArrayList<>();
 
-	// TODO: Consider keeping the constructor clean and move validation logic to factory method
 	@Builder
 	public Workspace(
 		String key,
@@ -84,7 +83,8 @@ public class Workspace extends BaseEntity {
 		this.key = key;
 	}
 
-	// TODO: Issue key prefix must be at least 3 characters (only en)
+	// TODO: Issue key prefix must be 3 ~ 24 characters (only en)
+	//  Use WorkspacePolicy.ensureKeyPrefixValidLength
 	public void updateIssueKeyPrefix(String newPrefix) {
 		if (newPrefix == null) {
 			newPrefix = KeyPrefixPolicy.ISSUE;
@@ -139,8 +139,8 @@ public class Workspace extends BaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
-	public void validateCanAddMember(WorkspacePolicy workspacePolicy) {
-		workspacePolicy.validateMemberLimit(this);
+	public void ensureCanAddMember(WorkspacePolicy workspacePolicy) {
+		workspacePolicy.ensureWithinMemberLimit(this);
 	}
 
 	public int getMemberCount() {
