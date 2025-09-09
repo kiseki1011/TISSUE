@@ -13,11 +13,11 @@ import jakarta.validation.constraints.Size;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Size(
-	min = 4, max = 24,
-	message = "{valid.size.id}"
+	max = 32,
+	message = "{valid.size.label}"
 )
-public @interface IdSize {
-	String message() default "{valid.size.id}";
+public @interface LabelSize {
+	String message() default "{valid.size.label}";
 
 	Class<?>[] groups() default {};
 
