@@ -18,7 +18,7 @@ public class CollectionNormalizer {
 			return List.of();
 		}
 		return options.stream()
-			.map(TextNormalizer::normalizeText)
+			.map(TextNormalizer::normalizeLabel)
 			.filter(s -> !s.isEmpty())
 			.distinct()
 			.toList();

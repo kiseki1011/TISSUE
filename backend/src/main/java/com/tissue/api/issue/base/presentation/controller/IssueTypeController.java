@@ -32,14 +32,13 @@ public class IssueTypeController {
 	 * TODO(In Consideration)
 	 *  - HierarchyLevel update using validation
 	 *  or increase/decrease HierarchyLevel of the whole IssueTypes by 1
-	 *  - Workflow update using validation
-	 *  or provide Issue migration
+	 *  - Workflow update using validation or provide Issue migration
 	 */
 	private final IssueTypeService issueTypeService;
 
 	@PostMapping
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueTypeResponse>> createIssueType(
+	public ResponseEntity<ApiResponse<IssueTypeResponse>> create(
 		@PathVariable String workspaceKey,
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateIssueTypeRequest request
@@ -52,7 +51,7 @@ public class IssueTypeController {
 	// TODO: Dont allow HierachyLevel, Workflow update
 	@PutMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> updateIssueTypeMetaData(
+	public ApiResponse<IssueTypeResponse> updateMetaData(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueTypeKey,
 		@CurrentMember MemberUserDetails userDetails,
@@ -64,12 +63,12 @@ public class IssueTypeController {
 
 	@DeleteMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<Void> deleteIssueType(
+	public ApiResponse<Void> softDelete(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueTypeKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		issueTypeService.delete(workspaceKey, issueTypeKey);
+		issueTypeService.softDelete(workspaceKey, issueTypeKey);
 		return ApiResponse.okWithNoContent("Custom issue type deleted.");
 	}
 }

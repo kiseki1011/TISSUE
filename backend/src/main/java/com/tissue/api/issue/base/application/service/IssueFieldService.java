@@ -9,11 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.issue.base.application.dto.AddOptionCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
-import com.tissue.api.issue.base.application.dto.DeleteOptionCommand;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
 import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 import com.tissue.api.issue.base.application.dto.UpdateIssueFieldCommand;
@@ -61,8 +59,8 @@ public class IssueFieldService {
 		issueFieldValidator.ensureUniqueLabel(issueType, issueField.getLabel());
 
 		if (issueField.getFieldType() == FieldType.ENUM) {
-			List<String> normalized = normalizeInitialOptions(cmd.initialOptions());
-			persistInitialEnumOptions(issueField, normalized);
+			issueFieldPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
+			persistInitialEnumOptions(issueField, cmd.initialOptions());
 		}
 
 		return IssueFieldResponse.from(issueField);
@@ -85,7 +83,7 @@ public class IssueFieldService {
 	}
 
 	@Transactional
-	public IssueFieldResponse delete(DeleteIssueFieldCommand cmd) {
+	public IssueFieldResponse softDelete(DeleteIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldKey());
 
@@ -129,17 +127,6 @@ public class IssueFieldService {
 	}
 
 	@Transactional
-	public IssueFieldResponse deleteOption(DeleteOptionCommand cmd) {
-		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
-		EnumFieldOption option = findOption(field, cmd.optionKey());
-
-		optionValidator.ensureNotInUse(option);
-		option.softDelete();
-
-		return IssueFieldResponse.from(field);
-	}
-
-	@Transactional
 	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
 
@@ -148,6 +135,22 @@ public class IssueFieldService {
 		optionValidator.ensureValidReorder(active, cmd.orderKeys());
 
 		applyNewOrder(active, cmd.orderKeys());
+
+		return IssueFieldResponse.from(field);
+	}
+
+	@Transactional
+	public IssueFieldResponse softDeleteOption(
+		String workspaceKey,
+		String issueTypeKey,
+		String issueFieldKey,
+		String optionKey
+	) {
+		IssueField field = findIssueField(workspaceKey, issueTypeKey, issueFieldKey);
+		EnumFieldOption option = findOption(field, optionKey);
+
+		optionValidator.ensureNotInUse(option);
+		option.softDelete();
 
 		return IssueFieldResponse.from(field);
 	}
@@ -166,17 +169,10 @@ public class IssueFieldService {
 		return optionRepo.findByFieldOrderByPositionAsc(field);
 	}
 
-	private List<String> normalizeInitialOptions(List<String> rawOptions) {
-		List<String> normalized = CollectionNormalizer.normalizeOptions(rawOptions);
-		issueFieldPolicy.ensureOptionsWithinLimit(normalized.size());
-		return normalized;
-	}
-
 	private void persistInitialEnumOptions(IssueField field, List<String> labels) {
 		int pos = 0;
 		List<EnumFieldOption> options = new ArrayList<>(labels.size());
 		for (String label : labels) {
-			// optionValidator.ensureLabelUnique(field, label);
 			options.add(new EnumFieldOption(field, label, pos++));
 		}
 		optionRepo.saveAll(options);

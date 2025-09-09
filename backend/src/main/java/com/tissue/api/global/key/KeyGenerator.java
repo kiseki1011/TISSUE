@@ -11,7 +11,7 @@ public class KeyGenerator {
 	}
 
 	public static String generateIssueKey(String prefix, long issueNumber) {
-		return KeyPrefixPolicy.format(prefix.toUpperCase(), issueNumber);
+		return KeyPrefixPolicy.format(prefix, issueNumber);
 	}
 
 	public static String generateSprintKey(long sprintNumber) {

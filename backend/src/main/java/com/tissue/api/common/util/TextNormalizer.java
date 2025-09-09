@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TextNormalizer {
 
-	public static String normalizeText(String value) {
+	public static String normalizeLabel(String value) {
 		return nfc(stripToEmpty(value));
 	}
 

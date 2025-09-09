@@ -2,9 +2,9 @@ package com.tissue.api.issue.base.domain.model;
 
 import org.hibernate.annotations.SQLRestriction;
 
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.PrefixedKeyEntity;
 import com.tissue.api.common.util.TextNormalizer;
-import com.tissue.api.global.key.KeyGenerator;
+import com.tissue.api.global.key.KeyPrefixPolicy;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PostPersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
@@ -34,10 +34,11 @@ import lombok.NoArgsConstructor;
 		@Index(name = "idx_option_field_position", columnList = "issue_field_id,position")
 	}
 )
-public class EnumFieldOption extends BaseEntity {
+public class EnumFieldOption extends PrefixedKeyEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "field_option_seq_gen")
+	@SequenceGenerator(name = "field_option_seq_gen", sequenceName = "field_option_seq", allocationSize = 50)
 	private Long id;
 
 	@Version
@@ -58,11 +59,14 @@ public class EnumFieldOption extends BaseEntity {
 
 	// private ColorType color;
 
-	@PostPersist
-	private void assignKey() {
-		if (key == null && id != null) {
-			key = KeyGenerator.generateEnumFieldOptionKey(id);
-		}
+	@Override
+	protected void setKey(String key) {
+		this.key = key;
+	}
+
+	@Override
+	protected String keyPrefix() {
+		return KeyPrefixPolicy.ISSUE_ENUM_FIELD_OPTION;
 	}
 
 	@Builder
@@ -71,14 +75,16 @@ public class EnumFieldOption extends BaseEntity {
 		String label,
 		Integer position
 	) {
+		// TODO: Should I use TextPreconditions or DomainPreconditions for non-null validation?
+		//  example: requireNonNull(obj);
 		this.field = field;
-		this.label = TextNormalizer.normalizeText(label);
+		this.label = TextNormalizer.normalizeLabel(label);
 		this.position = (position == null) ? 0 : position;
 	}
 
 	public void rename(String label) {
 		// TODO: TextPreconditions.requireNotNull(label);
-		this.label = TextNormalizer.normalizeText(label);
+		this.label = TextNormalizer.normalizeLabel(label);
 	}
 
 	public void movePositionTo(int position) {

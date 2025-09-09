@@ -2,10 +2,10 @@ package com.tissue.api.issue.base.domain.model;
 
 import org.hibernate.annotations.SQLRestriction;
 
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.PrefixedKeyEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.TextNormalizer;
-import com.tissue.api.global.key.KeyGenerator;
+import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -21,7 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PostPersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,10 +36,11 @@ import lombok.NoArgsConstructor;
 	indexes = @Index(name = "idx_issue_type_workspace_label", columnList = "workspace_id,label")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueType extends BaseEntity {
+public class IssueType extends PrefixedKeyEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_type_seq_gen")
+	@SequenceGenerator(name = "issue_type_seq_gen", sequenceName = "issue_type_seq", allocationSize = 50)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -72,11 +73,14 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private boolean systemType;
 
-	@PostPersist
-	private void assignKey() {
-		if (key == null && id != null) {
-			key = KeyGenerator.generateIssueTypeKey(id);
-		}
+	@Override
+	protected void setKey(String key) {
+		this.key = key;
+	}
+
+	@Override
+	protected String keyPrefix() {
+		return KeyPrefixPolicy.ISSUE_TYPE;
 	}
 
 	@Builder
@@ -89,10 +93,12 @@ public class IssueType extends BaseEntity {
 		HierarchyLevel hierarchyLevel,
 		Workflow workflow
 	) {
+		// TODO: Should I use TextPreconditions or DomainPreconditions for non-null validation?
+		//  example: requireNonNull(obj);
 		this.workspace = workspace;
 		this.key = key;
-		// TODO: use TextPreconditions, IssueTypeRules for non-null validation
-		this.label = TextNormalizer.normalizeText(label);
+
+		this.label = TextNormalizer.normalizeLabel(label);
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.color = color != null ? color : ColorType.getRandomColor();
 		this.hierarchyLevel = hierarchyLevel;
@@ -104,14 +110,14 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
+	public void rename(String label) {
+		// TODO: TextPreconditions.requireNonNull(label);
+		this.label = TextNormalizer.normalizeLabel(label);
+	}
+
 	public void updateMetaData(String description, ColorType color) {
 		updateDescription(description);
 		updateColor(color);
-	}
-
-	public void rename(String label) {
-		// TODO: TextPreconditions.requireNonNull(label);
-		this.label = TextNormalizer.normalizeText(label);
 	}
 
 	public void updateDescription(String description) {

@@ -4,9 +4,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLRestriction;
 
-import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.entity.PrefixedKeyEntity;
 import com.tissue.api.common.util.TextNormalizer;
-import com.tissue.api.global.key.KeyGenerator;
+import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
 import jakarta.persistence.Column;
@@ -20,7 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PostPersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -38,10 +38,11 @@ import lombok.NoArgsConstructor;
 	}
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueField extends BaseEntity {
+public class IssueField extends PrefixedKeyEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_field_seq_gen")
+	@SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
 	private Long id;
 
 	@Column(nullable = false, updatable = false, unique = true)
@@ -65,11 +66,14 @@ public class IssueField extends BaseEntity {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private IssueType issueType;
 
-	@PostPersist
-	private void assignKey() {
-		if (key == null && id != null) {
-			key = KeyGenerator.generateIssueFieldKey(id);
-		}
+	@Override
+	protected void setKey(String key) {
+		this.key = key;
+	}
+
+	@Override
+	protected String keyPrefix() {
+		return KeyPrefixPolicy.ISSUE_FIELD;
 	}
 
 	@Builder
@@ -82,8 +86,9 @@ public class IssueField extends BaseEntity {
 		IssueType issueType
 	) {
 		this.key = key;
-		// TODO: use TextPreconditions or a XxxRules class for non-null validation
-		this.label = TextNormalizer.normalizeText(label);
+		// TODO: Should I use TextPreconditions or DomainPreconditions for non-null validation?
+		//  example: requireNonNull(obj);
+		this.label = TextNormalizer.normalizeLabel(label);
 		this.description = TextNormalizer.stripToEmpty(description);
 		this.fieldType = fieldType;
 		this.required = Boolean.TRUE.equals(required);
@@ -101,7 +106,7 @@ public class IssueField extends BaseEntity {
 
 	public void rename(String label) {
 		// TODO: TextPreconditions.requireNonNull(label);
-		this.label = TextNormalizer.normalizeText(label);
+		this.label = TextNormalizer.normalizeLabel(label);
 	}
 
 	public void updateDescription(String description) {

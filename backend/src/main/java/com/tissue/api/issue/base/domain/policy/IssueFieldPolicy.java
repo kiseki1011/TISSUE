@@ -2,6 +2,7 @@ package com.tissue.api.issue.base.domain.policy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
@@ -13,8 +14,8 @@ public record IssueFieldPolicy(
 	int maxIntegerDigits,
 	int maxFractionDigits
 ) {
-	public void ensureOptionsWithinLimit(int size) {
-		if (size > maxEnumOptions) {
+	public void ensureOptionsWithinLimit(List<String> options) {
+		if (options.size() > maxEnumOptions) {
 			throw new InvalidOperationException("Too many options. max=" + maxEnumOptions);
 		}
 	}

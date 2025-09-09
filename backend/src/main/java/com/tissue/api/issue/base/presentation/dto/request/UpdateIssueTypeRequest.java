@@ -1,6 +1,7 @@
 package com.tissue.api.issue.base.presentation.dto.request;
 
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.issue.base.application.dto.UpdateIssueTypeCommand;
 
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +16,7 @@ public record UpdateIssueTypeRequest(
 		return UpdateIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
 			.issueTypeKey(issueTypeKey)
-			.label(label)
+			.label(TextNormalizer.normalizeLabel(label))
 			.description(description)
 			.color(color)
 			.build();

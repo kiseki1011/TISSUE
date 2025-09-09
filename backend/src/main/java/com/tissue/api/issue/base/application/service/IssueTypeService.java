@@ -65,7 +65,7 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public void delete(String workspaceKey, String issueTypeKey) {
+	public void softDelete(String workspaceKey, String issueTypeKey) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
 		issueTypeValidator.ensureDeletable(issueType);
 		issueType.softDelete();
