@@ -47,6 +47,8 @@ public class IssueFieldService {
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
 		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeKey());
 
+		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
+
 		// TODO: IssueFieldFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		IssueField issueField = issueFieldRepo.save(IssueField.builder()
 			.label(cmd.label())
@@ -55,8 +57,6 @@ public class IssueFieldService {
 			.required(Boolean.TRUE.equals(cmd.required()))
 			.issueType(issueType)
 			.build());
-
-		issueFieldValidator.ensureUniqueLabel(issueType, issueField.getLabel());
 
 		if (issueField.getFieldType() == FieldType.ENUM) {
 			issueFieldPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
@@ -75,8 +75,8 @@ public class IssueFieldService {
 
 		boolean labelChanged = !Objects.equals(field.getLabel(), cmd.label());
 		if (labelChanged) {
+			issueFieldValidator.ensureUniqueLabel(type, cmd.label());
 			field.rename(cmd.label());
-			issueFieldValidator.ensureUniqueLabel(type, field.getLabel());
 		}
 
 		return IssueFieldResponse.from(field);
@@ -97,17 +97,17 @@ public class IssueFieldService {
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeKey(), cmd.issueFieldKey());
 
+		optionValidator.ensureLabelUnique(field, cmd.label());
+
 		// TODO: EnumFieldOptionFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		int nextPosition = optionRepo.countByField(field);
 		issueFieldPolicy.ensureCanAddOption(nextPosition);
 
-		EnumFieldOption option = optionRepo.save(EnumFieldOption.builder()
+		optionRepo.save(EnumFieldOption.builder()
 			.field(field)
 			.label(cmd.label())
 			.position(nextPosition)
 			.build());
-
-		optionValidator.ensureLabelUnique(field, option.getLabel());
 
 		return IssueFieldResponse.from(field);
 	}
@@ -119,8 +119,8 @@ public class IssueFieldService {
 
 		boolean labelChanged = !Objects.equals(option.getLabel(), cmd.newLabel());
 		if (labelChanged) {
+			optionValidator.ensureLabelUnique(field, cmd.newLabel());
 			option.rename(cmd.newLabel());
-			optionValidator.ensureLabelUnique(field, option.getLabel());
 		}
 
 		return IssueFieldResponse.from(field);
