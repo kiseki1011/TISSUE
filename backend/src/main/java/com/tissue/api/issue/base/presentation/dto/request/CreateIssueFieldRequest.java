@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.common.util.TextNormalizer;
+import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
@@ -12,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record CreateIssueFieldRequest(
 	@NotBlank(message = "{valid.notblank}") String label,
-	String description,
+	@StandardText String description,
 	@NotNull(message = "{valid.notnull}") FieldType fieldType,
 	@NotNull(message = "{valid.notnull}") Boolean required,
 	List<String> initialOptions
