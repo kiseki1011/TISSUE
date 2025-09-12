@@ -98,7 +98,7 @@ dependencyManagement {
 
 test {
     useJUnitPlatform()
-    exclude '**/deprecated_test/**'
+    exclude '**/deprecated/**'
 }
 
 ext.jacocoExcludesClass = [
