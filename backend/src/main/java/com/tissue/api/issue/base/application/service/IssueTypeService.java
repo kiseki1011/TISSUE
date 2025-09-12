@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.UpdateIssueTypeCommand;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
@@ -34,6 +35,8 @@ public class IssueTypeService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowKey());
 
+		issueTypeValidator.ensureUniqueLabel(workspace, TextNormalizer.normalizeLabel(cmd.label()));
+
 		IssueType issueType = issueTypeRepository.save(IssueType.builder()
 			.workspace(workspace)
 			.label(cmd.label())
@@ -42,8 +45,6 @@ public class IssueTypeService {
 			.hierarchyLevel(cmd.hierarchyLevel())
 			.workflow(workflow)
 			.build());
-
-		issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
 
 		return IssueTypeResponse.from(issueType);
 	}
@@ -57,8 +58,8 @@ public class IssueTypeService {
 
 		boolean labelHasChanged = !Objects.equals(issueType.getLabel(), cmd.label());
 		if (labelHasChanged) {
+			issueTypeValidator.ensureUniqueLabel(workspace, TextNormalizer.normalizeLabel(cmd.label()));
 			issueType.rename(cmd.label());
-			issueTypeValidator.ensureUniqueLabel(workspace, issueType.getLabel());
 		}
 
 		return IssueTypeResponse.from(issueType);
