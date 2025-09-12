@@ -15,6 +15,9 @@ java {
     }
 }
 
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -25,173 +28,171 @@ repositories {
     mavenCentral()
 }
 
+
 ext { ssmVersion = '4.0.1' }
 
 checkstyle {
     maxWarnings = 0
-    configFile = file("${rootDir}/config/checkstyle/naver-checkstyle-rules.xml")
+    config = resources.text.fromFile("${rootDir}/config/checkstyle/naver-checkstyle-rules.xml")
     configProperties = ["suppressionFile": "${rootDir}/config/checkstyle/naver-checkstyle-suppressions.xml"]
     toolVersion = "10.18.0"
     ignoreFailures = true // pass build even if checkstyle validation fails
 }
 
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
-
-tasks.withType(Checkstyle).configureEach {
+checkstyleMain {
     reports {
-        xml.required = true
-        html.required = true
+        xml.required.set(true)
+        html.required.set(true)
     }
 }
+
+checkstyleTest {
+    reports {
+        xml.required.set(false)
+        html.required.set(false)
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.retry:spring-retry'
+
+    implementation 'org.springframework.statemachine:spring-statemachine-starter'
+    implementation 'org.springframework.statemachine:spring-statemachine-data-redis'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation 'io.rest-assured:rest-assured:5.5.6'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.statemachine:spring-statemachine-bom:${ssmVersion}"
+    }
+}
+
+test {
+    useJUnitPlatform()
+    exclude '**/deprecated_test/**'
+}
+
+ext.jacocoExcludesClass = [
+        "com.tissue.api.**.domain.**",
+        "com.tissue.api.**.dto.**",
+        "**.*Application*",
+        "**.*Request*",
+        "**.*Response*",
+        "**.*Exception*",
+        "**.*Key*",
+        "**.*Base62Encoder*",
+        "**.*WorkspaceCodeGenerator*",
+        "**.*Attributes*",
+        "**.CheckCodeDuplicationService",
+        "**.*Controller*",
+        "**.Team*",
+        "**.Message*",
+        "**.*Checker*",
+        "**.*Condition*",
+        "**.*Reader*",
+        "**.*Handler*",
+        "**.*Entity*",
+        "**.RandomNicknameGenerator*",
+        "**.*Client*",
+        "**.*Repository*",
+        "**.*Initializer*",
+        "**.*Token*",
+        "**.*Dto*",
+        "**.*PermissionType*",
+        "**.*MaskingUtil*",
+        "**.*AuthenticationEntryPoint*",
+        "**.*AuditorProvider*"
+]
+
+ext.jacocoExcludesPath = jacocoExcludesClass.collect { it.replace('.', '/') }
+        .collect { it.replace('**/*', '**/*') }
+        .collect { it.replace('/**/', '/**/') }
 
 jacoco {
     toolVersion = "0.8.10"
 }
 
+def jacocoEnabled = !project.hasProperty('skipJacoco')
+
+// Report
 jacocoTestReport {
+    enabled = jacocoEnabled
+    dependsOn tasks.test
+
     reports {
-        xml.required = true
+        xml.required = true;
         html.required = true
     }
 
-    afterEvaluate {
-        classDirectories.setFrom(
-                files(classDirectories.files.collect {
-                    fileTree(dir: it, excludes: [
-                            "com.tissue/api/**/domain/**",
-                            "com.tissue/api/**/dto/**",
-                            "**/*Application*",
-                            "**/*Request*",
-                            "**/*Response*",
-                            "**/*Exception*",
-                            "**/*Key*",
-                            "**/*Base62Encoder*",
-                            "**/*WorkspaceCodeGenerator*",
-                            "**/*Attributes*",
-                            "**/CheckCodeDuplicationService",
-                            "**/*Controller*",
-                            "**/Team*",
-                            "**/Message*",
-                            "**/*Checker*",
-                            "**/*Condition",
-                            "**/*Reader",
-                            "**/*Handler",
-                            "**/*Entity",
-                            "**/RandomNicknameGenerator*",
-                            "**/*Client*",
-                            "**/*Repository*",
-                            "**/*Initializer*",
-                            "**/*Token*",
-                            "**/*Dto*",
-                            "**/*PermissionType*",
-                            "**/*MaskingUtil*",
-                            "**/*AuthenticationEntryPoint*",
-                            "**/*AuditorProvider*"
-                    ])
-                })
-        )
-        finalizedBy(jacocoTestCoverageVerification)
-    }
-
-    jacocoTestCoverageVerification {
-        violationRules {
-            rule {
-                enabled = true
-                element = 'CLASS'
-
-                limit {
-                    counter = 'LINE'
-                    value = 'COVEREDRATIO'
-                    minimum = 0.60
-                }
-
-                excludes = [
-                        "com.tissue.api.**.domain.**",
-                        "com.tissue.api.**.dto.**",
-                        "**.*Application*",
-                        "**.*Request*",
-                        "**.*Response*",
-                        "**.*Exception*",
-                        "**.*Key*",
-                        "**.*Base62Encoder*",
-                        "**.*WorkspaceCodeGenerator*",
-                        "**.*Attributes*",
-                        "**.CheckCodeDuplicationService",
-                        "**.*Controller*",
-                        "**.Team*",
-                        "**.Message*",
-                        "**.*Checker*",
-                        "**.*Condition",
-                        "**.*Reader",
-                        "**.*Handler",
-                        "**.*Entity",
-                        "**.RandomNicknameGenerator*",
-                        "**.*Client*",
-                        "**.*Repository*",
-                        "**.*Initializer*",
-                        "**.*Token*",
-                        "**.*Dto*",
-                        "**.*PermissionType*",
-                        "**.*MaskingUtil*",
-                        "**.*AuthenticationEntryPoint*",
-                        "**.*AuditorProvider*"
-                ]
+    classDirectories.setFrom(
+            files(sourceSets.main.output).asFileTree.matching {
+                exclude jacocoExcludesPath
             }
+    )
+    sourceDirectories.setFrom files(sourceSets.main.allSource)
+
+    executionData.setFrom(
+            fileTree(
+                    dir: layout.buildDirectory.asFile.get(),
+                    includes: ['jacoco/*.exec', 'outputs/unit_test_code_coverage/*coverage.ec']
+            )
+    )
+}
+
+// Verification
+jacocoTestCoverageVerification {
+    enabled = jacocoEnabled
+    dependsOn tasks.test
+    classDirectories.setFrom(
+            files(sourceSets.main.output).asFileTree.matching {
+                exclude jacocoExcludesPath
+            }
+    )
+    violationRules {
+        rule {
+            enabled = true
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.60
+            }
+            excludes = jacocoExcludesClass
         }
     }
+}
 
-    dependencies {
-        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-        implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-        implementation 'org.springframework.boot:spring-boot-starter-web'
-        implementation 'org.springframework.boot:spring-boot-starter-validation'
-        implementation 'org.springframework.boot:spring-boot-starter-aop'
-        implementation 'org.springframework.boot:spring-boot-starter-mail'
-        implementation 'org.springframework.retry:spring-retry'
-
-        implementation 'org.springframework.statemachine:spring-statemachine-starter'
-        implementation 'org.springframework.statemachine:spring-statemachine-data-redis'
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-        implementation 'org.springframework.boot:spring-boot-starter-cache'
-        implementation 'com.github.ben-manes.caffeine:caffeine:3.1.2'
-
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
-
-        implementation 'org.springframework.boot:spring-boot-starter-security'
-        testImplementation 'org.springframework.security:spring-security-test'
-
-        implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-
-        runtimeOnly 'com.h2database:h2'
-        runtimeOnly 'com.mysql:mysql-connector-j'
-
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'io.rest-assured:rest-assured:5.1.1'
-
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-        testCompileOnly 'org.projectlombok:lombok:1.18.34'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
-    }
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.statemachine:spring-statemachine-bom:${ssmVersion}"
-        }
-    }
-
-    tasks.named('test') {
-        useJUnitPlatform()
-        finalizedBy jacocoTestReport
-    }
-
-    tasks.named('jacocoTestReport') {
-        dependsOn 'test'
-        dependsOn 'compileJava'
+check {
+    if (jacocoEnabled) {
+        dependsOn jacocoTestReport, jacocoTestCoverageVerification
     }
 }
