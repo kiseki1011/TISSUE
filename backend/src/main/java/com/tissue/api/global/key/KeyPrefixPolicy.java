@@ -23,18 +23,18 @@ public class KeyPrefixPolicy {
 		"WORKSPACE", "WORKFLOW", "OPTION"
 	);
 
-	// TODO: Use TextNormalizer.uppperCase?
+	// TODO: Make and use TextNormalizer.uppperCase?
 	// TODO: Should i throw if prefix is a reserved prefix? (Change the name to ensureNotReserved)
 	public static boolean isReserved(String prefix) {
 		return RESERVED_PREFIXES.contains(prefix.toUpperCase(Locale.ENGLISH));
 	}
 
-	// TODO: Use TextNormalizer.uppperCase?
+	// TODO: Make and use TextNormalizer.uppperCase?
 	public static String format(String prefix, long identifier) {
 		return prefix.toUpperCase(Locale.ENGLISH) + "-" + identifier;
 	}
 
-	// TODO: Use TextNormalizer.uppperCase?
+	// TODO: Make and use TextNormalizer.uppperCase?
 	public static String format(String prefix, String identifier) {
 		return prefix.toUpperCase(Locale.ENGLISH) + "-" + identifier;
 	}
