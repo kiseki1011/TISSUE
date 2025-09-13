@@ -1,11 +1,12 @@
 package com.tissue.api.issue.base.domain.model;
 
+import java.util.Objects;
+
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.PrefixedKeyEntity;
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
@@ -86,13 +87,15 @@ public class IssueField extends PrefixedKeyEntity {
 		IssueType issueType
 	) {
 		this.key = key;
-		// TODO: Should I use TextPreconditions or DomainPreconditions for non-null validation?
-		//  example: requireNonNull(obj);
-		this.label = TextNormalizer.normalizeLabel(label);
-		this.description = TextNormalizer.stripToEmpty(description);
-		this.fieldType = fieldType;
+		// TODO: Should I use DomainPreconditions for non-null validation?
+		//  예시: DomainPreconditions.requireNotNull, requireNotBlank, ...
+		// TODO: Should I use TextNormalizer normaliztion methods I defined, to normalize in the constructor?
+		//  예시: TextNormalizer.normalizeLabel, nfc, strip, ...
+		this.label = Objects.requireNonNull(label);
+		this.description = Objects.requireNonNull(description);
+		this.fieldType = Objects.requireNonNull(fieldType);
 		this.required = Boolean.TRUE.equals(required);
-		this.issueType = issueType;
+		this.issueType = Objects.requireNonNull(issueType);
 	}
 
 	public String getWorkspaceCode() {
@@ -104,13 +107,13 @@ public class IssueField extends PrefixedKeyEntity {
 		updateRequired(required);
 	}
 
+	// TODO: update 메서드들에도 생성자 처럼 DomainPreconditions, TextNormalizer 사용을 고려해야할까?
 	public void rename(String label) {
-		// TODO: TextPreconditions.requireNonNull(label);
-		this.label = TextNormalizer.normalizeLabel(label);
+		this.label = Objects.requireNonNull(label);
 	}
 
 	public void updateDescription(String description) {
-		this.description = TextNormalizer.stripToEmpty(description);
+		this.description = Objects.requireNonNull(description);
 	}
 
 	public void updateRequired(Boolean required) {
@@ -118,8 +121,7 @@ public class IssueField extends PrefixedKeyEntity {
 	}
 
 	public void updateFieldType(FieldType fieldType) {
-		// TODO: requireNonNull(fieldType);
-		this.fieldType = fieldType;
+		this.fieldType = Objects.requireNonNull(fieldType);
 	}
 
 	public void softDelete() {

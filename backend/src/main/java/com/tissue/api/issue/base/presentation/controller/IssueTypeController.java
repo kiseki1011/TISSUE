@@ -44,6 +44,7 @@ public class IssueTypeController {
 		@RequestBody @Valid CreateIssueTypeRequest request
 	) {
 		IssueTypeResponse response = issueTypeService.create(request.toCommand(workspaceKey));
+
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Custom issue type created.", response));
 	}
@@ -58,6 +59,7 @@ public class IssueTypeController {
 		@RequestBody @Valid UpdateIssueTypeRequest request
 	) {
 		IssueTypeResponse response = issueTypeService.updateMetaData(request.toCommand(workspaceKey, issueTypeKey));
+
 		return ApiResponse.ok("Custom issue type updated.", response);
 	}
 
@@ -69,6 +71,7 @@ public class IssueTypeController {
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		issueTypeService.softDelete(workspaceKey, issueTypeKey);
+
 		return ApiResponse.okWithNoContent("Custom issue type deleted.");
 	}
 }

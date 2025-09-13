@@ -32,10 +32,8 @@ public class IssueFieldController {
 
 	/**
 	 * TODO
-	 *  - add(create) field option
-	 *    - design it to allow batch creation?
-	 *  - delete field option
-	 *    - allow batch delete
+	 *  - add(create) field option -> allow batch creation?
+	 *  - delete field option -> allow batch delete?
 	 */
 	private final IssueFieldService issueFieldService;
 
@@ -52,7 +50,6 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Issue field created.", response));
 	}
 
-	// TODO: Do not allow to change the type of the field
 	@PutMapping("/{issueTypeKey}/fields/{issueFieldKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> updateIssueFieldMetaData(
