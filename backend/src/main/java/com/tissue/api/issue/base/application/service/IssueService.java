@@ -36,11 +36,8 @@ import lombok.RequiredArgsConstructor;
  *  - Move updateIssueStatus method to WorkflowService
  *  <p>
  *  Needed use-case methods
- *  - Issue Create
  *  - Issue Update(meta-data update)
  *  - Issue Soft-Delete
- *  - Set Parent Issue Relation
- *  - Remove Parent Issue Relation
  */
 @Service
 @RequiredArgsConstructor

@@ -49,7 +49,6 @@ public class IssueFieldService {
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
 
-		// TODO: IssueFieldFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		IssueField issueField = issueFieldRepo.save(IssueField.builder()
 			.label(cmd.label())
 			.description(cmd.description())
@@ -99,7 +98,6 @@ public class IssueFieldService {
 
 		optionValidator.ensureLabelUnique(field, cmd.label());
 
-		// TODO: EnumFieldOptionFactory를 만들어서 생성 책임 분리 고려 (검증을 포함한 과정을 해당 생성 메서드에 캡슐화)
 		int nextPosition = optionRepo.countByField(field);
 		issueFieldPolicy.ensureCanAddOption(nextPosition);
 
