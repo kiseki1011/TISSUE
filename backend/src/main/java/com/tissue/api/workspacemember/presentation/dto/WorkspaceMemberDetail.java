@@ -1,6 +1,6 @@
 package com.tissue.api.workspacemember.presentation.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -12,8 +12,8 @@ public record WorkspaceMemberDetail(
 	Long workspaceMemberId,
 	String nickname,
 	WorkspaceRole workspaceRole,
-	LocalDateTime joinedWorkspaceAt,
-	LocalDateTime updatedAt
+	Instant joinedWorkspaceAt,
+	Instant updatedAt
 ) {
 	public static WorkspaceMemberDetail from(WorkspaceMember workspaceMember) {
 		return WorkspaceMemberDetail.builder()

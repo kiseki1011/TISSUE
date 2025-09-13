@@ -47,7 +47,7 @@ public class IssueType extends PrefixedKeyEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false, updatable = false, unique = true)
+	@Column(name = "issue_type_key", nullable = false, updatable = false, unique = true)
 	private String key;
 
 	@Column(nullable = false)

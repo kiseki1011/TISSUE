@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class IssueComment extends Comment {
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ISSUE_ID", nullable = false)
+	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 
 	@Builder

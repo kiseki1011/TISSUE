@@ -38,7 +38,7 @@ public class WorkflowStatus {
 	@JoinColumn(name = "workflow_id")
 	private Workflow workflow;
 
-	@Column(nullable = false)
+	@Column(name = "wf_status_key", nullable = false)
 	private String key;
 
 	@Column(nullable = false)

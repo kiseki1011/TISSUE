@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceQueryRepository;
 import com.tissue.api.workspace.exception.WorkspaceNotFoundException;
+import com.tissue.api.workspace.infrastructure.repository.WorkspaceQueryRepository;
 import com.tissue.api.workspace.presentation.dto.WorkspaceDetail;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class WorkspaceQueryService {
 	@Transactional(readOnly = true)
 	public WorkspaceDetail getWorkspaceDetail(String workspaceCode) {
 
-		Workspace workspace = workspaceQueryRepository.findByCode(workspaceCode)
+		Workspace workspace = workspaceQueryRepository.findByKey(workspaceCode)
 			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceCode));
 
 		return WorkspaceDetail.from(workspace);

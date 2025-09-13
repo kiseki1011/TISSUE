@@ -12,7 +12,7 @@ public record IssueCommentResponse(
 ) {
 	public static IssueCommentResponse from(IssueComment comment) {
 		return IssueCommentResponse.builder()
-			.workspaceCode(comment.getIssue().getWorkspaceCode())
+			.workspaceCode(comment.getIssue().getWorkspaceKey())
 			.issueKey(comment.getIssue().getKey())
 			.commentId(comment.getId())
 			.build();

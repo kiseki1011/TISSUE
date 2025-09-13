@@ -1,7 +1,7 @@
 package com.tissue.api.member.presentation.dto.response.query;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
@@ -20,8 +20,8 @@ public record GetProfileResponse(
 
 	int ownedWorkspaceCount,
 
-	LocalDateTime joinedAt,
-	LocalDateTime lastModifiedAt
+	Instant joinedAt,
+	Instant lastModifiedAt
 ) {
 	public static GetProfileResponse from(Member member) {
 		return GetProfileResponse.builder()

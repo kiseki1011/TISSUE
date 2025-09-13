@@ -22,13 +22,13 @@ public class TeamQueryService {
 
 	@Transactional(readOnly = true)
 	public GetTeamsResponse getTeams(String workspaceCode) {
-		List<Team> teams = teamQueryRepository.findAllByWorkspaceCodeOrderByCreatedDateAsc(workspaceCode);
+		List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedDateAsc(workspaceCode);
 		return GetTeamsResponse.from(teams);
 	}
 
 	@Transactional(readOnly = true)
 	public Set<ColorType> getUsedColors(String workspaceCode) {
-		List<Team> teams = teamQueryRepository.findAllByWorkspaceCode(workspaceCode);
+		List<Team> teams = teamQueryRepository.findAllByWorkspace_Key(workspaceCode);
 		return teams.stream()
 			.map(Team::getColor)
 			.collect(Collectors.toSet());

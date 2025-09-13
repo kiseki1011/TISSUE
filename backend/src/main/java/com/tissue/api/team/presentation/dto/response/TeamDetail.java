@@ -1,6 +1,6 @@
 package com.tissue.api.team.presentation.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.team.domain.model.Team;
@@ -15,8 +15,8 @@ public record TeamDetail(
 	String description,
 	ColorType color,
 
-	LocalDateTime createdAt,
-	LocalDateTime updatedAt
+	Instant createdAt,
+	Instant updatedAt
 ) {
 	public static TeamDetail from(Team team) {
 		return TeamDetail.builder()

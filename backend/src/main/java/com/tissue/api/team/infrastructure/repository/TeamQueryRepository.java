@@ -8,7 +8,7 @@ import com.tissue.api.team.domain.model.Team;
 
 public interface TeamQueryRepository extends JpaRepository<Team, Long> {
 
-	List<Team> findAllByWorkspaceCodeOrderByCreatedDateAsc(String workspaceCode);
+	List<Team> findAllByWorkspace_KeyOrderByCreatedDateAsc(String workspaceKey);
 
-	List<Team> findAllByWorkspaceCode(String workspaceCode);
+	List<Team> findAllByWorkspace_Key(String workspaceKey);
 }

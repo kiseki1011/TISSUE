@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import com.tissue.api.sprint.domain.model.Sprint;
@@ -14,11 +14,11 @@ public record SprintDetail(
 	String sprintKey,
 	String title,
 	String goal,
-	LocalDateTime plannedStartDate,
-	LocalDateTime plannedEndDate,
+	Instant plannedStartDate,
+	Instant plannedEndDate,
 	SprintStatus status,
 	List<String> issueKeys,
-	LocalDateTime createdAt,
+	Instant createdAt,
 	Long createdBy
 ) {
 	public static SprintDetail from(Sprint sprint) {

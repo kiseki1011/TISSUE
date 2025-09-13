@@ -39,11 +39,11 @@ public class WorkspaceMember extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "MEMBER_ID", nullable = false)
+	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
 	// TODO: 양방향 관계를 사용하는게 좋나? 아니면 단방향을 사용하는게 더 좋은가?

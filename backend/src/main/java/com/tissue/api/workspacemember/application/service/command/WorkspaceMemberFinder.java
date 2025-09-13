@@ -24,7 +24,7 @@ public class WorkspaceMemberFinder {
 	// TODO: introduce caching
 	@Transactional(readOnly = true)
 	public WorkspaceMember findWorkspaceMember(Long memberId, String workspaceKey) {
-		return workspaceMemberRepository.findByMemberIdAndWorkspaceKey(memberId, workspaceKey)
+		return workspaceMemberRepository.findByMember_IdAndWorkspace_Key(memberId, workspaceKey)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
 	}
 }

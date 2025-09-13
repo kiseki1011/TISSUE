@@ -32,7 +32,7 @@ public class SprintStartedEvent extends SprintEvent {
 		return new SprintStartedEvent(
 			sprint.getId(),
 			sprint.getKey(),
-			sprint.getWorkspaceCode(),
+			sprint.getWorkspaceKey(),
 			actorMemberId
 		);
 	}

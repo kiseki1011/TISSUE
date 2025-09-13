@@ -15,7 +15,7 @@ public class PositionFinder {
 	private final PositionRepository positionRepository;
 
 	public Position findPosition(Long positionId, String workspaceCode) {
-		return positionRepository.findByIdAndWorkspaceCode(positionId, workspaceCode)
+		return positionRepository.findByIdAndWorkspace_Key(positionId, workspaceCode)
 			.orElseThrow(() -> new ResourceNotFoundException(String.format(
 				"Position was not found with positionId: %d, workspaceKey: %s",
 				positionId, workspaceCode)));

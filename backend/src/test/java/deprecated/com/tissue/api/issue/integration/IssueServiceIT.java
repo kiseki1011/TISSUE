@@ -1,65 +1,56 @@
 package deprecated.com.tissue.api.issue.integration;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
-
 import deprecated.com.tissue.support.helper.ServiceIntegrationTestHelper;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class IssueServiceIT extends ServiceIntegrationTestHelper {
 
-	Workspace workspace;
-	WorkspaceMember owner;
-	WorkspaceMember workspaceMember1;
-	WorkspaceMember workspaceMember2;
-
-	Member ownerMember;
-	Member member1;
-	Member member2;
-
-	@BeforeEach
-	void setUp() {
-		// create workspace
-		workspace = testDataFixture.createWorkspace(
-			"test workspace",
-			null,
-			null
-		);
-
-		// create member
-		ownerMember = testDataFixture.createMember("owner");
-		member1 = testDataFixture.createMember("member1");
-		member2 = testDataFixture.createMember("member2");
-
-		// add workspace members
-		owner = testDataFixture.createWorkspaceMember(
-			ownerMember,
-			workspace,
-			WorkspaceRole.OWNER
-		);
-		workspaceMember1 = testDataFixture.createWorkspaceMember(
-			member1,
-			workspace,
-			WorkspaceRole.MEMBER
-		);
-		workspaceMember2 = testDataFixture.createWorkspaceMember(
-			member2,
-			workspace,
-			WorkspaceRole.MEMBER
-		);
-	}
-
-	@AfterEach
-	public void tearDown() {
-		databaseCleaner.execute();
-	}
+	// Workspace workspace;
+	// WorkspaceMember owner;
+	// WorkspaceMember workspaceMember1;
+	// WorkspaceMember workspaceMember2;
+	//
+	// Member ownerMember;
+	// Member member1;
+	// Member member2;
+	//
+	// @BeforeEach
+	// void setUp() {
+	// 	// create workspace
+	// 	workspace = testDataFixture.createWorkspace(
+	// 		"test workspace",
+	// 		null,
+	// 		null
+	// 	);
+	//
+	// 	// create member
+	// 	ownerMember = testDataFixture.createMember("owner");
+	// 	member1 = testDataFixture.createMember("member1");
+	// 	member2 = testDataFixture.createMember("member2");
+	//
+	// 	// add workspace members
+	// 	owner = testDataFixture.createWorkspaceMember(
+	// 		ownerMember,
+	// 		workspace,
+	// 		WorkspaceRole.OWNER
+	// 	);
+	// 	workspaceMember1 = testDataFixture.createWorkspaceMember(
+	// 		member1,
+	// 		workspace,
+	// 		WorkspaceRole.MEMBER
+	// 	);
+	// 	workspaceMember2 = testDataFixture.createWorkspaceMember(
+	// 		member2,
+	// 		workspace,
+	// 		WorkspaceRole.MEMBER
+	// 	);
+	// }
+	//
+	// @AfterEach
+	// public void tearDown() {
+	// 	databaseCleaner.execute();
+	// }
 
 	// @Test
 	// @Transactional

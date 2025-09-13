@@ -48,7 +48,7 @@ public class EnumFieldOption extends PrefixedKeyEntity {
 	@JoinColumn(name = "issue_field_id", nullable = false)
 	private IssueField field;
 
-	@Column(nullable = false, updatable = false, unique = true)
+	@Column(name = "field_option_key", nullable = false, updatable = false, unique = true)
 	private String key;
 
 	@Column(nullable = false)

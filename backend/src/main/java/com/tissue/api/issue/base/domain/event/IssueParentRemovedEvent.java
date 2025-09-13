@@ -59,7 +59,7 @@ public class IssueParentRemovedEvent extends IssueEvent {
 		return new IssueParentRemovedEvent(
 			childIssue.getId(),
 			childIssue.getKey(),
-			childIssue.getWorkspaceCode(),
+			childIssue.getWorkspaceKey(),
 			// childIssue.getType(),
 			actorMemberId,
 			removedParentIssue.getId(),

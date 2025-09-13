@@ -15,24 +15,20 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
 
-	Page<WorkspaceMember> findByMemberId(Long memberId, Pageable pageable);
+	Page<WorkspaceMember> findByMember_Id(Long memberId, Pageable pageable);
 
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceKey(Long memberId, String workspaceKey);
+	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
+	boolean existsByMember_IdAndRole(Long memberId, WorkspaceRole role);
 
-	Optional<WorkspaceMember> findByIdAndWorkspaceKey(Long workspaceMemberId, String workspaceKey);
+	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 
-	boolean existsByMemberIdAndRole(Long id, WorkspaceRole role);
+	List<WorkspaceMember> findAllByWorkspace_KeyAndMember_IdIn(String workspaceKey, Set<Long> memberIdList);
 
-	boolean existsByMemberIdAndWorkspaceKey(Long id, String workspaceKey);
-
-	List<WorkspaceMember> findAllByWorkspaceKeyAndMemberIdIn(String workspaceKey, Set<Long> memberIdList);
-
-	List<WorkspaceMember> findAllByWorkspaceKey(String workspaceKey);
+	List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
 	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspace.key = :workspaceKey AND wm.role IN ('ADMIN', 'OWNER')")
-	Set<WorkspaceMember> findAdminsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+	Set<WorkspaceMember> findAdminsByWorkspace_Key(@Param("workspaceKey") String workspaceKey);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "

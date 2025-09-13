@@ -39,7 +39,7 @@ public class IssueAssignedEvent extends IssueEvent {
 		return new IssueAssignedEvent(
 			issue.getId(),
 			issue.getKey(),
-			issue.getWorkspaceCode(),
+			issue.getWorkspaceKey(),
 			// issue.getType(),
 			actorMemberId,
 			assignedMemberId

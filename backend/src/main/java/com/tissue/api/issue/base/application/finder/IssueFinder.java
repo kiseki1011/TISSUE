@@ -22,7 +22,7 @@ public class IssueFinder {
 		String issueKey,
 		String workspaceCode
 	) {
-		return issueRepository.findByIssueKeyAndWorkspaceCode(issueKey, workspaceCode)
+		return issueRepository.findByKeyAndWorkspace_Key(issueKey, workspaceCode)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, workspaceCode));
 	}
 
@@ -30,7 +30,7 @@ public class IssueFinder {
 		Collection<String> issueKeys,
 		String workspaceCode
 	) {
-		List<Issue> issues = issueRepository.findByIssueKeyInAndWorkspaceCode(issueKeys, workspaceCode);
+		List<Issue> issues = issueRepository.findByKeyInAndWorkspace_Key(issueKeys, workspaceCode);
 
 		if (issues.size() != issueKeys.size()) {
 			throw new ResourceNotFoundException("Some issues do not exist.");

@@ -99,6 +99,6 @@ public class IssueRelation extends BaseEntity {
 	}
 
 	public String getWorkspaceCode() {
-		return sourceIssue.getWorkspaceCode();
+		return sourceIssue.getWorkspaceKey();
 	}
 }

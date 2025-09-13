@@ -24,7 +24,7 @@ public class NotificationTargetService {
 	 * Retrieve all members in the workspace as notification targets.
 	 */
 	public List<WorkspaceMember> getWorkspaceWideMemberTargets(String workspaceCode) {
-		return workspaceMemberRepository.findAllByWorkspaceKey(workspaceCode);
+		return workspaceMemberRepository.findAllByWorkspace_Key(workspaceCode);
 	}
 
 	/**
@@ -36,7 +36,7 @@ public class NotificationTargetService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> subscriberIds = issue.getSubscriberMemberIds();
 
-		return workspaceMemberRepository.findAllByWorkspaceKeyAndMemberIdIn(workspaceCode, subscriberIds);
+		return workspaceMemberRepository.findAllByWorkspace_KeyAndMember_IdIn(workspaceCode, subscriberIds);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class NotificationTargetService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 		Set<Long> reviewerIds = issue.getReviewerMemberIds();
 
-		return workspaceMemberRepository.findAllByWorkspaceKeyAndMemberIdIn(workspaceCode, reviewerIds);
+		return workspaceMemberRepository.findAllByWorkspace_KeyAndMember_IdIn(workspaceCode, reviewerIds);
 	}
 
 	/**
@@ -55,9 +55,9 @@ public class NotificationTargetService {
 	 */
 	public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
 
-		Set<WorkspaceMember> targets = workspaceMemberRepository.findAdminsByWorkspaceKey(workspaceCode);
+		Set<WorkspaceMember> targets = workspaceMemberRepository.findAdminsByWorkspace_Key(workspaceCode);
 
-		workspaceMemberRepository.findByMemberIdAndWorkspaceKey(memberId, workspaceCode)
+		workspaceMemberRepository.findByMember_IdAndWorkspace_Key(memberId, workspaceCode)
 			.ifPresent(targets::add);
 
 		return targets;
@@ -70,7 +70,7 @@ public class NotificationTargetService {
 
 		Set<WorkspaceMember> target = new HashSet<>();
 
-		workspaceMemberRepository.findByMemberIdAndWorkspaceKey(memberId, workspaceCode)
+		workspaceMemberRepository.findByMember_IdAndWorkspace_Key(memberId, workspaceCode)
 			.ifPresent(target::add);
 
 		return target;

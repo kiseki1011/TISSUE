@@ -35,7 +35,7 @@ public class MemberJoinedWorkspaceEvent extends WorkspaceEvent {
 		WorkspaceMember workspaceMember
 	) {
 		return new MemberJoinedWorkspaceEvent(
-			workspaceMember.getWorkspaceCode(),
+			workspaceMember.getWorkspaceKey(),
 			workspaceMember.getId(),
 			workspaceMember.getDisplayName(),
 			workspaceMember.getRole()

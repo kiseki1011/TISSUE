@@ -63,7 +63,7 @@ public class IssueUpdatedEvent extends IssueEvent {
 		return new IssueUpdatedEvent(
 			issue.getId(),
 			issue.getKey(),
-			issue.getWorkspaceCode(),
+			issue.getWorkspaceKey(),
 			// issue.getType(),
 			triggeredByWorkspaceMemberId,
 			issue.getTitle()

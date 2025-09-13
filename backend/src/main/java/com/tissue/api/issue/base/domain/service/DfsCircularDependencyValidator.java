@@ -68,6 +68,6 @@ public class DfsCircularDependencyValidator implements CircularDependencyValidat
 	 * Creates cache key.
 	 */
 	private String generateCacheKey(Issue issue) {
-		return issue.getWorkspaceCode() + ":" + issue.getKey();
+		return issue.getWorkspaceKey() + ":" + issue.getKey();
 	}
 }

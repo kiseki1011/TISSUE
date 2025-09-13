@@ -70,7 +70,7 @@ public class IssueParentAssignedEvent extends IssueEvent {
 		return new IssueParentAssignedEvent(
 			childIssue.getId(),
 			childIssue.getKey(),
-			childIssue.getWorkspaceCode(),
+			childIssue.getWorkspaceKey(),
 			// childIssue.getType(),
 			actorMemberId,
 			parentIssue.getId(),

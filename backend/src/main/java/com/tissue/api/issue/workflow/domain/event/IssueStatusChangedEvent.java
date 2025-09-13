@@ -61,7 +61,7 @@ public class IssueStatusChangedEvent extends IssueEvent {
 		return new IssueStatusChangedEvent(
 			issue.getId(),
 			issue.getKey(),
-			issue.getWorkspaceCode(),
+			issue.getWorkspaceKey(),
 			// issue.getType(),
 			actorMemberId,
 			// oldStatus,

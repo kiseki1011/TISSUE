@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.domain.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
@@ -11,16 +11,16 @@ import lombok.Getter;
 @Getter
 public class SprintCompletedEvent extends SprintEvent {
 
-	private final LocalDateTime sprintStartedAt;
-	private final LocalDateTime sprintCompletedAt;
+	private final Instant sprintStartedAt;
+	private final Instant sprintCompletedAt;
 
 	public SprintCompletedEvent(
 		Long sprintId,
 		String sprintKey,
 		String workspaceCode,
 		Long actorMemberId,
-		LocalDateTime sprintStartedAt,
-		LocalDateTime sprintCompletedAt
+		Instant sprintStartedAt,
+		Instant sprintCompletedAt
 	) {
 		super(
 			NotificationType.SPRINT_COMPLETED,
@@ -42,7 +42,7 @@ public class SprintCompletedEvent extends SprintEvent {
 		return new SprintCompletedEvent(
 			sprint.getId(),
 			sprint.getKey(),
-			sprint.getWorkspaceCode(),
+			sprint.getWorkspaceKey(),
 			actorMemberId,
 			sprint.getStartDate(),
 			sprint.getEndDate()

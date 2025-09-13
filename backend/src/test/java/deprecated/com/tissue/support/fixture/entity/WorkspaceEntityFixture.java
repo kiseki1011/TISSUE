@@ -6,7 +6,7 @@ public class WorkspaceEntityFixture {
 
 	public Workspace createWorkspace(String code) {
 		return Workspace.builder()
-			.code(code)
+			.key(code)
 			.name("test name")
 			.description("test description")
 			.password("workspace1234!")

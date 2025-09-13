@@ -73,7 +73,7 @@ public class IssueCollaboratorController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@PostMapping("{issueKey}/watch")
+	@PostMapping("/watch")
 	public ApiResponse<IssueCollaboratorResponse> watchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,
@@ -87,7 +87,7 @@ public class IssueCollaboratorController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
-	@DeleteMapping("{issueKey}/watch")
+	@DeleteMapping("/unwatch")
 	public ApiResponse<IssueCollaboratorResponse> unwatchIssue(
 		@PathVariable String workspaceCode,
 		@PathVariable String issueKey,

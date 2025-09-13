@@ -35,7 +35,7 @@ public class Workspace extends BaseEntity {
 	@Column(name = "workspace_id")
 	private Long id;
 
-	@Column(unique = true, nullable = false)
+	@Column(name = "workspace_key", unique = true, nullable = false)
 	private String key;
 
 	@Column(nullable = false)

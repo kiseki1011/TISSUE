@@ -18,7 +18,7 @@ public class SprintFinder {
 		String sprintKey,
 		String workspaceCode
 	) {
-		return sprintRepository.findBySprintKeyAndWorkspaceCode(sprintKey, workspaceCode)
+		return sprintRepository.findByKeyAndWorkspace_Key(sprintKey, workspaceCode)
 			.orElseThrow(() -> new ResourceNotFoundException(
 				String.format("Sprint was not found with sprint key(%s) and workspace code(%s)",
 					sprintKey, workspaceCode))

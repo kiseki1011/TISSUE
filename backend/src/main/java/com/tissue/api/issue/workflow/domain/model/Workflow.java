@@ -44,7 +44,7 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
 
-	@Column(nullable = false)
+	@Column(name = "workflow_key", nullable = false)
 	private String key;
 
 	@Column(nullable = false)

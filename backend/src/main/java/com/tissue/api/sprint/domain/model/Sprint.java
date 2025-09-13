@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,13 +43,13 @@ public class Sprint extends BaseEntity {
 	private String goal;
 
 	@Column(nullable = false)
-	private LocalDateTime plannedStartDate;
+	private Instant plannedStartDate;
 
 	@Column(nullable = false)
-	private LocalDateTime plannedEndDate;
+	private Instant plannedEndDate;
 
-	private LocalDateTime startDate;
-	private LocalDateTime endDate;
+	private Instant startDate;
+	private Instant endDate;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -59,7 +59,7 @@ public class Sprint extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false, unique = true)
+	@Column(name = "sprint_key", nullable = false, unique = true)
 	private String key;
 
 	@OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,8 +69,8 @@ public class Sprint extends BaseEntity {
 	public Sprint(
 		String title,
 		String goal,
-		LocalDateTime plannedStartDate,
-		LocalDateTime plannedEndDate,
+		Instant plannedStartDate,
+		Instant plannedEndDate,
 		Workspace workspace
 	) {
 		validateDates(plannedStartDate, plannedEndDate);
@@ -96,13 +96,13 @@ public class Sprint extends BaseEntity {
 		this.goal = goal;
 	}
 
-	private void validateDates(LocalDateTime startDate, LocalDateTime endDate) {
+	private void validateDates(Instant startDate, Instant endDate) {
 		if (endDate.isBefore(startDate)) {
 			throw new InvalidOperationException("Sprint end date cannot be before start date.");
 		}
 	}
 
-	public void updateDates(LocalDateTime startDate, LocalDateTime endDate) {
+	public void updateDates(Instant startDate, Instant endDate) {
 		validateDates(startDate, endDate);
 		this.plannedStartDate = startDate;
 		this.plannedEndDate = endDate;
@@ -117,11 +117,11 @@ public class Sprint extends BaseEntity {
 
 	private void updateTimestamps(SprintStatus newStatus) {
 		if (newStatus == SprintStatus.ACTIVE) {
-			startDate = LocalDateTime.now();
+			startDate = Instant.now();
 			return;
 		}
 		if (newStatus == SprintStatus.COMPLETED) {
-			endDate = LocalDateTime.now();
+			endDate = Instant.now();
 		}
 	}
 
@@ -142,7 +142,7 @@ public class Sprint extends BaseEntity {
 				}
 
 				boolean newStatusIsActive = newStatus == SprintStatus.ACTIVE;
-				if (newStatusIsActive && LocalDateTime.now().isAfter(plannedEndDate)) {
+				if (newStatusIsActive && Instant.now().isAfter(plannedEndDate)) {
 					throw new InvalidOperationException("Cannot start sprint after planned end date.");
 				}
 

@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,40 +13,24 @@ import com.tissue.api.issue.base.domain.model.IssueType;
 
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
-	Optional<Issue> findByIssueKeyAndWorkspaceCode(String issueKey, String workspaceCode);
+	Optional<Issue> findByKeyAndWorkspace_Key(String issueKey, String workspaceKey);
 
-	/**
-	 * 워크스페이스 코드와 이슈 ID로 이슈와 그 하위 이슈들을 함께 조회합니다.
-	 * 부모 이슈 설정 시 N+1 문제를 방지하기 위해 fetch join을 사용합니다.
-	 */
-	@Query("SELECT i FROM Issue i "
-		+ "LEFT JOIN FETCH i.childIssues "
-		+ "WHERE i.workspaceKey = :workspaceKey "
-		+ "AND i.id = :issueId")
-	Optional<Issue> findByWorkspaceCodeAndIdWithChildren(
-		@Param("workspaceKey") String workspaceCode,
-		@Param("issueId") Long issueId
-	);
-
-	@Query("SELECT i FROM Issue i "
-		+ "JOIN FETCH i.sprintIssues si "
-		+ "JOIN FETCH si.sprint s "
-		+ "WHERE s.sprintKey = :sprintKey "
-		+ "AND s.workspaceKey = :workspaceKey "
-		+ "AND i.issueKey = :issueKey")
+	@Query("""
+		select distinct i
+		from Issue i
+		join fetch i.sprintIssues si
+		join fetch si.sprint s
+		where s.key = :sprintKey
+		  and s.workspace.key = :workspaceKey
+		  and i.key = :issueKey
+		""")
 	Optional<Issue> findIssueInSprint(
 		@Param("sprintKey") String sprintKey,
 		@Param("issueKey") String issueKey,
-		@Param("workspaceKey") String workspaceCode
+		@Param("workspaceKey") String workspaceKey
 	);
 
-	List<Issue> findByIssueKeyInAndWorkspaceCode(Collection<String> issueKeys, String workspaceCode);
-
-	/**
-	 * 워크스페이스의 이슈들을 페이징하여 조회합니다.
-	 * 추후 이슈 목록 조회 기능 구현 시 사용할 수 있습니다.
-	 */
-	Page<Issue> findByWorkspaceCode(String workspaceCode, Pageable pageable);
+	List<Issue> findByKeyInAndWorkspace_Key(Collection<String> issueKeys, String workspaceKey);
 
 	boolean existsByIssueType(IssueType issueType);
 }

@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.application.service.command;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -82,9 +82,9 @@ public class SprintCommandService {
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
-		LocalDateTime startDate =
+		Instant startDate =
 			request.plannedStartDate() != null ? request.plannedStartDate() : sprint.getPlannedStartDate();
-		LocalDateTime endDate =
+		Instant endDate =
 			request.plannedEndDate() != null ? request.plannedEndDate() : sprint.getPlannedEndDate();
 
 		if (request.plannedStartDate() != null || request.plannedEndDate() != null) {

@@ -1,9 +1,9 @@
 package com.tissue.api.invitation.presentation.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.model.Invitation;
 
 import lombok.Builder;
 
@@ -13,7 +13,7 @@ public record InvitationDetail(
 	String workspaceCode,
 	Long invitedBy,
 	InvitationStatus status,
-	LocalDateTime invitedAt
+	Instant invitedAt
 ) {
 	public static InvitationDetail from(Invitation invitation) {
 		return InvitationDetail.builder()

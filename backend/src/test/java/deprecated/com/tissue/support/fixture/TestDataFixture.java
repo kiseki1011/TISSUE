@@ -2,7 +2,6 @@ package deprecated.com.tissue.support.fixture;
 
 import java.util.List;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -65,73 +63,73 @@ public class TestDataFixture {
 	 * @param issueKeyPrefix The prefix for generating issue keys
 	 * @return The created Workspace
 	 */
-	public Workspace createWorkspaceWithMembers(
-		int numberOfMembers,
-		String workspacePassword,
-		String issueKeyPrefix
-	) {
-		Member owner = createMember("owner");
-
-		Workspace workspace = createWorkspace("test workspace", workspacePassword, issueKeyPrefix);
-
-		createWorkspaceMember(owner, workspace, WorkspaceRole.OWNER);
-
-		for (int i = 0; i < numberOfMembers; i++) {
-			Member member = createMember("member" + i);
-			createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
-		}
-
-		return workspace;
-	}
-
-	public Member createMember(String loginId) {
-		return memberRepository.save(
-			Member.builder()
-				.loginId(loginId)
-				.email(loginId + "@test.com")
-				.username(loginId + "Username")
-				.password(passwordEncoder.encode("test1234!"))
-				.name("Gildong Hong")
-				.build()
-		);
-	}
-
-	public Member createTestMember(Long id, String loginId) {
-		return memberRepository.save(new MemberBuilderForTest()
-			.id(id)
-			.loginId(loginId)
-			.email(loginId + "@test.com")
-			.username(loginId)
-			.password(passwordEncoder.encode("test1234!"))
-			.build());
-	}
-
-	/**
-	 * Creates and saves a workspace
-	 *
-	 * @param name The name of the workspace
-	 * @param password The password of the workspace (null is allowed, pass null if not exist, encrypt if exist)
-	 * @param issueKeyPrefix The prefix for generating issue keys
-	 * @return The created Workspace
-	 */
-	public Workspace createWorkspace(
-		String name,
-		String password,
-		String issueKeyPrefix
-	) {
-		// TODO: change after improving Workspace password logic
-		String encodedPassword = password != null ? passwordEncoder.encode(password) : null;
-
-		return workspaceRepository.save(
-			Workspace.builder()
-				.name(name)
-				.description("description")
-				.password(encodedPassword)
-				.code(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
-				.issueKeyPrefix(issueKeyPrefix)
-				.build()
-		);
-	}
+	// public Workspace createWorkspaceWithMembers(
+	// 	int numberOfMembers,
+	// 	String workspacePassword,
+	// 	String issueKeyPrefix
+	// ) {
+	// 	Member owner = createMember("owner");
+	//
+	// 	Workspace workspace = createWorkspace("test workspace", workspacePassword, issueKeyPrefix);
+	//
+	// 	createWorkspaceMember(owner, workspace, WorkspaceRole.OWNER);
+	//
+	// 	for (int i = 0; i < numberOfMembers; i++) {
+	// 		Member member = createMember("member" + i);
+	// 		createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER);
+	// 	}
+	//
+	// 	return workspace;
+	// }
+	//
+	// public Member createMember(String loginId) {
+	// 	return memberRepository.save(
+	// 		Member.builder()
+	// 			.loginId(loginId)
+	// 			.email(loginId + "@test.com")
+	// 			.username(loginId + "Username")
+	// 			.password(passwordEncoder.encode("test1234!"))
+	// 			.name("Gildong Hong")
+	// 			.build()
+	// 	);
+	// }
+	//
+	// public Member createTestMember(Long id, String loginId) {
+	// 	return memberRepository.save(new MemberBuilderForTest()
+	// 		.id(id)
+	// 		.loginId(loginId)
+	// 		.email(loginId + "@test.com")
+	// 		.username(loginId)
+	// 		.password(passwordEncoder.encode("test1234!"))
+	// 		.build());
+	// }
+	//
+	// /**
+	//  * Creates and saves a workspace
+	//  *
+	//  * @param name The name of the workspace
+	//  * @param password The password of the workspace (null is allowed, pass null if not exist, encrypt if exist)
+	//  * @param issueKeyPrefix The prefix for generating issue keys
+	//  * @return The created Workspace
+	//  */
+	// public Workspace createWorkspace(
+	// 	String name,
+	// 	String password,
+	// 	String issueKeyPrefix
+	// ) {
+	// 	// TODO: change after improving Workspace password logic
+	// 	String encodedPassword = password != null ? passwordEncoder.encode(password) : null;
+	//
+	// 	return workspaceRepository.save(
+	// 		Workspace.builder()
+	// 			.name(name)
+	// 			.description("description")
+	// 			.password(encodedPassword)
+	// 			.key(RandomStringUtils.randomAlphanumeric(8)) // 워크스페이스의 8자리 코드 (Base62, 중복 비허용)
+	// 			.issueKeyPrefix(issueKeyPrefix)
+	// 			.build()
+	// 	);
+	// }
 
 	/**
 	 * Creates and saves a WorkspaceMember
@@ -141,19 +139,19 @@ public class TestDataFixture {
 	 * @param role The WorkspaceRole of the member
 	 * @return The created WorkspaceMember
 	 */
-	public WorkspaceMember createWorkspaceMember(
-		Member member,
-		Workspace workspace,
-		WorkspaceRole role
-	) {
-		WorkspaceMember workspaceMember = WorkspaceMember.createWorkspaceMember(
-			member,
-			workspace,
-			role
-		);
-
-		return workspaceMemberRepository.save(workspaceMember);
-	}
+	// public WorkspaceMember createWorkspaceMember(
+	// 	Member member,
+	// 	Workspace workspace,
+	// 	WorkspaceRole role
+	// ) {
+	// 	WorkspaceMember workspaceMember = WorkspaceMember.createWorkspaceMember(
+	// 		member,
+	// 		workspace,
+	// 		role
+	// 	);
+	//
+	// 	return workspaceMemberRepository.save(workspaceMember);
+	// }
 
 	// /**
 	//  * Creates a new issue of the specified type and assigns members to it
@@ -276,7 +274,6 @@ public class TestDataFixture {
 	//
 	// 	return issueRepository.save(subTask);
 	// }
-
 	public List<IssueAssignee> addIssueAssignees(
 		Issue issue,
 		List<WorkspaceMember> workspaceMembers

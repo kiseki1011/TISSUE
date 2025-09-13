@@ -40,7 +40,7 @@ public class IssueUnassignedEvent extends IssueEvent {
 		return new IssueUnassignedEvent(
 			issue.getId(),
 			issue.getKey(),
-			issue.getWorkspaceCode(),
+			issue.getWorkspaceKey(),
 			// issue.getType(),
 			actorMemberId,
 			assigneeMemberId

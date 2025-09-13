@@ -12,7 +12,7 @@ public record IssueAssigneeResponse(
 ) {
 	public static IssueAssigneeResponse from(WorkspaceMember assignee, String issueKey) {
 		return IssueAssigneeResponse.builder()
-			.workspaceCode(assignee.getWorkspaceCode())
+			.workspaceCode(assignee.getWorkspaceKey())
 			.issueKey(issueKey)
 			.memberId(assignee.getMember().getId())
 			.build();

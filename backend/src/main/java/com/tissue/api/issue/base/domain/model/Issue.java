@@ -43,7 +43,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"key", "workspace_id"})
+	@UniqueConstraint(columnNames = {"issue_key", "workspace_id"})
 })
 @EqualsAndHashCode(of = {"key", "workspace"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -57,7 +57,7 @@ public class Issue extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(name = "issue_key", nullable = false)
 	private String key;
 
 	@ManyToOne(fetch = FetchType.LAZY)

@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.issue.base.domain.enums.IssuePriority;
 import com.tissue.api.issue.base.domain.model.Issue;
@@ -15,7 +15,7 @@ public record SprintIssueDetail(
 	String title,
 	// IssueStatus status,
 	IssuePriority priority,
-	LocalDateTime createdAt,
+	Instant createdAt,
 	Long createdBy
 ) {
 	public static SprintIssueDetail from(Issue issue) {

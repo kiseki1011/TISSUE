@@ -8,6 +8,6 @@ public record IssueCollaboratorResponse(
 	Long memberId
 ) {
 	public static IssueCollaboratorResponse from(Issue issue, Long memberId) {
-		return new IssueCollaboratorResponse(issue.getWorkspaceCode(), issue.getKey(), memberId);
+		return new IssueCollaboratorResponse(issue.getWorkspaceKey(), issue.getKey(), memberId);
 	}
 }

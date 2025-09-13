@@ -1,13 +1,10 @@
 package com.tissue.api.position.validator;
 
-import java.util.Objects;
-
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
-import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,12 +23,12 @@ public class PositionValidator {
 		}
 	}
 
-	public void validatePositionAvailability(Position position, Workspace workspace) {
-		boolean keyNotMatch = !Objects.equals(position.getWorkspaceCode(), workspace.getKey());
-		if (keyNotMatch) {
-			throw new InvalidOperationException(String.format(
-				"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
-				position.getWorkspaceCode(), workspace.getKey()));
-		}
-	}
+	// public void validatePositionAvailability(Position position, Workspace workspace) {
+	// 	boolean keyNotMatch = !Objects.equals(position.getWorkspaceCode(), workspace.getKey());
+	// 	if (keyNotMatch) {
+	// 		throw new InvalidOperationException(String.format(
+	// 			"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
+	// 			position.getWorkspaceCode(), workspace.getKey()));
+	// 	}
+	// }
 }

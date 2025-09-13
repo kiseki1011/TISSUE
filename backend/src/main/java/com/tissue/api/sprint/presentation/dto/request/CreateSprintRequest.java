@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.common.validator.annotation.size.text.LongText;
 import com.tissue.api.common.validator.annotation.size.text.ShortText;
@@ -24,10 +24,10 @@ public record CreateSprintRequest(
 
 	@NotNull(message = "{valid.notnull}")
 	@FutureOrPresent(message = "{valid.startdate}")
-	LocalDateTime plannedStartDate,
+	Instant plannedStartDate,
 
 	@NotNull(message = "{valid.notnull}")
 	@Future(message = "{valid.enddate}")
-	LocalDateTime plannedEndDate
+	Instant plannedEndDate
 ) {
 }

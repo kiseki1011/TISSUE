@@ -15,7 +15,7 @@ public class TeamFinder {
 	private final TeamRepository teamRepository;
 
 	public Team findTeam(Long teamId, String workspaceCode) {
-		return teamRepository.findByIdAndWorkspaceCode(teamId, workspaceCode)
+		return teamRepository.findByIdAndWorkspace_Key(teamId, workspaceCode)
 			.orElseThrow(() -> new ResourceNotFoundException(String.format(
 				"Team was not found with teamId: %d, workspaceKey: %s",
 				teamId, workspaceCode)));

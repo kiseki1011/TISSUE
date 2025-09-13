@@ -47,7 +47,7 @@ public class WorkflowTransition {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStep;
 
-	@Column(nullable = false)
+	@Column(name = "wf_transition_key", nullable = false)
 	private String key;
 
 	@Column(nullable = false)

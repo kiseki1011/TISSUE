@@ -34,7 +34,7 @@ public class IssueCreatedEvent extends IssueEvent {
 		return new IssueCreatedEvent(
 			issue.getId(),
 			issue.getKey(),
-			issue.getWorkspaceCode(),
+			issue.getWorkspaceKey(),
 			// issue.getType(),
 			triggeredByWorkspaceMemberId
 		);

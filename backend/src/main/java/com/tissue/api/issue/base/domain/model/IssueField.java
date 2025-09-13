@@ -45,7 +45,7 @@ public class IssueField extends PrefixedKeyEntity {
 	@SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
 	private Long id;
 
-	@Column(nullable = false, updatable = false, unique = true)
+	@Column(name = "issue_field_key", nullable = false, updatable = false, unique = true)
 	private String key;
 
 	@Column(nullable = false)

@@ -76,9 +76,9 @@ public class SimpleNotificationMessageFactory implements NotificationMessageFact
 
 			case ISSUE_REVIEWER_ADDED -> argumentFormatter.createReviewerAddedArgs(event, actorNickname);
 
-			case ISSUE_REVIEW_SUBMITTED -> argumentFormatter.createReviewSubmittedArgs(event, actorNickname);
-
-			case REVIEW_COMMENT_ADDED -> argumentFormatter.createReviewCommentAddedArgs(event, actorNickname);
+			// case ISSUE_REVIEW_SUBMITTED -> argumentFormatter.createReviewSubmittedArgs(event, actorNickname);
+			//
+			// case REVIEW_COMMENT_ADDED -> argumentFormatter.createReviewCommentAddedArgs(event, actorNickname);
 
 			case SPRINT_STARTED -> argumentFormatter.createSprintStartedArgs(event.getEntityKey());
 

@@ -1,16 +1,9 @@
 package com.tissue.api.review.domain.model;
 
-import com.tissue.api.common.entity.BaseEntity;
-
-import jakarta.persistence.Entity;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review extends BaseEntity {
+// @Entity
+// @Getter
+// @NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Review { // extends BaseEntity
 
 	// @Id
 	// @GeneratedValue(strategy = GenerationType.IDENTITY)
