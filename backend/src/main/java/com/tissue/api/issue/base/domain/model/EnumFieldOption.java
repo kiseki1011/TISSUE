@@ -3,7 +3,7 @@ package com.tissue.api.issue.base.domain.model;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.PrefixedKeyEntity;
-import com.tissue.api.common.util.TextNormalizer;
+import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.global.key.KeyPrefixPolicy;
 
 import jakarta.persistence.Column;
@@ -57,8 +57,6 @@ public class EnumFieldOption extends PrefixedKeyEntity {
 	@Column(nullable = false)
 	private int position;
 
-	// private ColorType color;
-
 	@Override
 	protected void setKey(String key) {
 		this.key = key;
@@ -75,16 +73,13 @@ public class EnumFieldOption extends PrefixedKeyEntity {
 		String label,
 		Integer position
 	) {
-		// TODO: Should I use TextPreconditions or DomainPreconditions for non-null validation?
-		//  example: requireNonNull(obj);
-		this.field = field;
-		this.label = TextNormalizer.normalizeLabel(label);
+		this.field = DomainPreconditions.requireNotNull(field, "issueField");
+		this.label = DomainPreconditions.requireNotBlank(label, "label");
 		this.position = (position == null) ? 0 : position;
 	}
 
 	public void rename(String label) {
-		// TODO: TextPreconditions.requireNotNull(label);
-		this.label = TextNormalizer.normalizeLabel(label);
+		this.label = DomainPreconditions.requireNotBlank(label, "label");
 	}
 
 	public void movePositionTo(int position) {

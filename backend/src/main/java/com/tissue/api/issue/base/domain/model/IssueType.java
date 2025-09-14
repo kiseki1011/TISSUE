@@ -6,6 +6,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.PrefixedKeyEntity;
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
@@ -94,28 +95,23 @@ public class IssueType extends PrefixedKeyEntity {
 		HierarchyLevel hierarchyLevel,
 		Workflow workflow
 	) {
-		// TODO: Should I use DomainPreconditions for non-null validation?
-		//  예시: DomainPreconditions.requireNotNull, requireNotBlank, ...
-		// TODO: Should I use TextNormalizer normaliztion methods I defined, to normalize in the constructor?
-		//  예시: TextNormalizer.normalizeLabel, nfc, strip, ...
-		this.workspace = Objects.requireNonNull(workspace);
+		this.workspace = Objects.requireNonNull(workspace, "Field workspace must not be null.");
 		this.key = key;
-
-		this.label = Objects.requireNonNull(label);
-		this.description = Objects.requireNonNull(description);
-		this.color = color != null ? color : ColorType.getRandomColor();
-		this.hierarchyLevel = Objects.requireNonNull(hierarchyLevel);
-		this.workflow = Objects.requireNonNull(workflow);
+		this.label = DomainPreconditions.requireNotBlank(label, "label");
+		this.description = DomainPreconditions.nullToEmpty(description);
+		this.color = DomainPreconditions.requireNotNull(color, "color");
+		this.hierarchyLevel = DomainPreconditions.requireNotNull(hierarchyLevel, "hierarchyLevel");
+		this.workflow = DomainPreconditions.requireNotNull(workflow, "workflow");
 		this.systemType = false;
 	}
 
 	public String getWorkspaceCode() {
 		return workspace.getKey();
 	}
-	
+
 	// TODO: update 메서드들에도 생성자 처럼 DomainPreconditions, TextNormalizer 사용을 고려해야할까?
 	public void rename(String label) {
-		this.label = Objects.requireNonNull(label);
+		this.label = DomainPreconditions.requireNotBlank(label, "label");
 	}
 
 	public void updateMetaData(String description, ColorType color) {
@@ -124,19 +120,19 @@ public class IssueType extends PrefixedKeyEntity {
 	}
 
 	public void updateDescription(String description) {
-		this.description = Objects.requireNonNull(description);
+		this.description = DomainPreconditions.nullToEmpty(description);
 	}
 
 	public void updateColor(ColorType color) {
-		this.color = Objects.requireNonNull(color);
+		this.color = DomainPreconditions.requireNotNull(color, "color");
 	}
 
 	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
-		this.hierarchyLevel = Objects.requireNonNull(hierarchyLevel);
+		this.hierarchyLevel = DomainPreconditions.requireNotNull(hierarchyLevel, "hierarchyLevel");
 	}
 
 	public void setWorkflow(Workflow workflow) {
-		this.workflow = Objects.requireNonNull(workflow);
+		this.workflow = DomainPreconditions.requireNotNull(workflow, "workflow");
 	}
 
 	public void setAsSystemType() {
