@@ -5,9 +5,9 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
-import com.tissue.api.issue.base.application.dto.UpdateIssueTypeCommand;
+import com.tissue.api.issue.base.application.dto.PatchIssueTypeCommand;
+import com.tissue.api.issue.base.application.dto.RenameIssueTypeCommand;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.IssueTypeValidator;
 import com.tissue.api.issue.base.domain.model.IssueType;
@@ -35,7 +35,7 @@ public class IssueTypeService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowKey());
 
-		issueTypeValidator.ensureUniqueLabel(workspace, TextNormalizer.normalizeLabel(cmd.label()));
+		issueTypeValidator.ensureUniqueLabel(workspace, cmd.label());
 
 		IssueType issueType = issueTypeRepository.save(IssueType.builder()
 			.workspace(workspace)
@@ -50,17 +50,26 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public IssueTypeResponse updateMetaData(UpdateIssueTypeCommand cmd) {
+	public IssueTypeResponse rename(RenameIssueTypeCommand cmd) {
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
+
+		if (labelUnchanged(issueType, cmd.label())) {
+			return IssueTypeResponse.from(issueType);
+		}
+
+		issueTypeValidator.ensureUniqueLabel(workspace, cmd.label());
+		issueType.rename(cmd.label());
+
+		return IssueTypeResponse.from(issueType);
+	}
+
+	@Transactional
+	public IssueTypeResponse update(PatchIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
 
 		issueType.updateMetaData(cmd.description(), cmd.color());
-
-		boolean labelHasChanged = !Objects.equals(issueType.getLabel(), cmd.label());
-		if (labelHasChanged) {
-			issueTypeValidator.ensureUniqueLabel(workspace, TextNormalizer.normalizeLabel(cmd.label()));
-			issueType.rename(cmd.label());
-		}
 
 		return IssueTypeResponse.from(issueType);
 	}
@@ -71,5 +80,9 @@ public class IssueTypeService {
 
 		issueTypeValidator.ensureDeletable(issueType);
 		issueType.softDelete();
+	}
+
+	private boolean labelUnchanged(IssueType it, String newLabel) {
+		return Objects.equals(it.getLabel(), newLabel);
 	}
 }
