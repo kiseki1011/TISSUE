@@ -49,7 +49,9 @@ public class IssueTypeController {
 			.body(ApiResponse.created("Custom issue type created.", response));
 	}
 
-	// TODO: Dont allow HierachyLevel, Workflow update
+	// Don't allow HierachyLevel, Workflow update
+	// TODO: 업데이트를 PUT 방식이 아니라 JsonNullable을 사용한 PATCH 방식으로 설계할까?
+	// TODO: 필드가 String인 경우 클라이언트에서는 웬만하면 null을 넘기는게 아니라, 빈값을 넘기도록 유도하는게 좋을까?
 	@PutMapping("/{issueTypeKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueTypeResponse> updateMetaData(
