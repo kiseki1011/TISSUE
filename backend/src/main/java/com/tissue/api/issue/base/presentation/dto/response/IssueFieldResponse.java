@@ -7,16 +7,14 @@ import lombok.Builder;
 @Builder
 public record IssueFieldResponse(
 	String workspaceCode,
-	String issueTypeKey,
-	String issueFieldKey,
-	String issueFieldFieldKey
+	Long issueTypeId,
+	Long issueFieldId
 ) {
-	// TODO: Use Join Fetch to solve additional query
 	public static IssueFieldResponse from(IssueField issueField) {
 		return IssueFieldResponse.builder()
 			.workspaceCode(issueField.getWorkspaceCode())
-			.issueTypeKey(issueField.getIssueType().getKey())
-			.issueFieldKey(issueField.getKey())
+			.issueTypeId(issueField.getIssueType().getId())
+			.issueFieldId(issueField.getId())
 			.build();
 	}
 }

@@ -11,11 +11,11 @@ public record UpdateIssueFieldRequest(
 	String description,
 	@NotNull(message = "{valid.notblank}") Boolean required
 ) {
-	public UpdateIssueFieldCommand toCommand(String workspaceKey, String issueTypeKey, String issueFieldKey) {
+	public UpdateIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return UpdateIssueFieldCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
-			.issueFieldKey(issueFieldKey)
+			.issueTypeId(issueTypeId)
+			.issueFieldId(issueFieldId)
 			.label(TextNormalizer.normalizeLabel(label))
 			.description(description)
 			.required(required)

@@ -9,7 +9,7 @@ import lombok.Builder;
 @Builder
 public record CreateIssueFieldCommand(
 	String workspaceKey,
-	String issueTypeKey,
+	Long issueTypeId,
 	String label,
 	String description,
 	FieldType fieldType,

@@ -8,11 +8,11 @@ import jakarta.validation.constraints.NotBlank;
 public record AddOptionRequest(
 	@NotBlank(message = "{valid.notblank}") String label
 ) {
-	public AddOptionCommand toCommand(String workspaceKey, String issueTypeKey, String issueFieldKey) {
+	public AddOptionCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return AddOptionCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
-			.issueFieldKey(issueFieldKey)
+			.issueTypeId(issueTypeId)
+			.issueFieldId(issueFieldId)
 			.label(TextNormalizer.normalizeLabel(label))
 			.build();
 	}

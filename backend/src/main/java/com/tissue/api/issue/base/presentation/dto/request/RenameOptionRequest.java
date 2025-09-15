@@ -10,15 +10,15 @@ public record RenameOptionRequest(
 ) {
 	public RenameOptionCommand toCommand(
 		String workspaceKey,
-		String issueTypeKey,
-		String issueFieldKey,
-		String optionKey
+		Long issueTypeId,
+		Long issueFieldId,
+		Long optionId
 	) {
 		return RenameOptionCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
-			.issueFieldKey(issueFieldKey)
-			.optionKey(optionKey)
+			.issueTypeId(issueTypeId)
+			.issueFieldId(issueFieldId)
+			.optionId(optionId)
 			.newLabel(TextNormalizer.normalizeLabel(newLabel))
 			.build();
 	}

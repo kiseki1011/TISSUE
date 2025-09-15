@@ -7,8 +7,8 @@ import lombok.Builder;
 @Builder
 public record ReorderOptionsCommand(
 	String workspaceKey,
-	String issueTypeKey,
-	String issueFieldKey,
-	List<String> orderKeys
+	Long issueTypeId,
+	Long issueFieldId,
+	List<Long> orderedIds
 ) {
 }

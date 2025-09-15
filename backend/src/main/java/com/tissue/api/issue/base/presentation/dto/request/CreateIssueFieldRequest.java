@@ -18,10 +18,10 @@ public record CreateIssueFieldRequest(
 	@NotNull(message = "{valid.notnull}") Boolean required,
 	List<String> initialOptions
 ) {
-	public CreateIssueFieldCommand toCommand(String workspaceKey, String issueTypeKey) {
+	public CreateIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId) {
 		return CreateIssueFieldCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
+			.issueTypeId(issueTypeId)
 			.label(TextNormalizer.normalizeLabel(label))
 			.description(description)
 			.fieldType(fieldType)

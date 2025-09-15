@@ -5,8 +5,8 @@ import lombok.Builder;
 @Builder
 public record UpdateIssueFieldCommand(
 	String workspaceKey,
-	String issueTypeKey,
-	String issueFieldKey,
+	Long issueTypeId,
+	Long issueFieldId,
 	String label,
 	String description,
 	Boolean required

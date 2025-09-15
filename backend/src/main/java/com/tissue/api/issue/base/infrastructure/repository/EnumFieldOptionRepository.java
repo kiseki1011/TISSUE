@@ -12,9 +12,7 @@ import com.tissue.api.issue.base.domain.model.IssueField;
 
 public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption, Long> {
 
-	Optional<EnumFieldOption> findByFieldAndKey(IssueField field, String key);
-
-	Optional<EnumFieldOption> findByFieldAndLabel(IssueField field, String label);
+	Optional<EnumFieldOption> findByFieldAndId(IssueField field, Long id);
 
 	List<EnumFieldOption> findByFieldOrderByPositionAsc(IssueField field);
 

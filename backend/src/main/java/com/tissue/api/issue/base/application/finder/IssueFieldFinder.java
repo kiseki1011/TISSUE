@@ -15,13 +15,13 @@ public class IssueFieldFinder {
 
 	private final IssueFieldRepository issueFieldRepo;
 
-	public IssueField findIssueField(String key) {
-		return issueFieldRepo.findByKey(key)
+	public IssueField findIssueField(Long id) {
+		return issueFieldRepo.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Issue field not found."));
 	}
 
-	public IssueField findIssueField(IssueType issueType, String key) {
-		return issueFieldRepo.findByIssueTypeAndKey(issueType, key)
+	public IssueField findIssueField(IssueType issueType, Long id) {
+		return issueFieldRepo.findByIssueTypeAndId(issueType, id)
 			.orElseThrow(() -> new ResourceNotFoundException("Issue field not found."));
 	}
 }

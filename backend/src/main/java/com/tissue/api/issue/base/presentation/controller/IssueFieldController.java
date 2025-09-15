@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issue-types")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issuetypes/{issueTypeId}")
 @RequiredArgsConstructor
 public class IssueFieldController {
 
@@ -37,103 +37,102 @@ public class IssueFieldController {
 	 */
 	private final IssueFieldService issueFieldService;
 
-	@PostMapping("/{issueTypeId}/fields")
+	@PostMapping("/fields")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> createIssueField(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
+		@PathVariable Long issueTypeId,
 		@RequestBody @Valid CreateIssueFieldRequest request
 	) {
-		IssueFieldResponse response = issueFieldService.create(request.toCommand(workspaceKey, issueTypeKey));
+		IssueFieldResponse response = issueFieldService.create(
+			request.toCommand(workspaceKey, issueTypeId));
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Issue field created.", response));
 	}
 
-	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}")
+	@PutMapping("/fields/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> updateIssueFieldMetaData(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey,
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
 		@RequestBody @Valid UpdateIssueFieldRequest request
 	) {
 		IssueFieldResponse response = issueFieldService.updateMetaData(
-			request.toCommand(workspaceKey, issueTypeKey, issueFieldKey));
+			request.toCommand(workspaceKey, issueTypeId, id));
 
 		return ApiResponse.ok("Issue field updated.", response);
 	}
 
-	@DeleteMapping("/{issueTypeId}/fields/{issueFieldKey}")
+	@DeleteMapping("/fields/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> softDeleteIssueField(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id
 	) {
 		IssueFieldResponse response = issueFieldService.softDelete(
-			new DeleteIssueFieldCommand(workspaceKey, issueTypeKey, issueFieldKey));
+			new DeleteIssueFieldCommand(workspaceKey, issueTypeId, id));
 
 		return ApiResponse.ok("Issue field deleted.", response);
 	}
 
-	@PostMapping("/{issueTypeId}/fields/{issueFieldKey}/options")
+	@PostMapping("/fields/{id}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> addEnumFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey,
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
 		@RequestBody @Valid AddOptionRequest request
 	) {
 		IssueFieldResponse response = issueFieldService.addOption(
-			request.toCommand(workspaceKey, issueTypeKey, issueFieldKey));
+			request.toCommand(workspaceKey, issueTypeId, id));
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Option for ENUM type issue field added.", response));
 	}
 
-	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}/options/{optionKey}")
+	@PutMapping("/fields/{id}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> renameEnumFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey,
-		@PathVariable String optionKey,
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
+		@PathVariable Long optionId,
 		@RequestBody @Valid RenameOptionRequest request
 	) {
 		IssueFieldResponse response = issueFieldService.renameOption(
-			request.toCommand(workspaceKey, issueTypeKey, issueFieldKey, optionKey));
+			request.toCommand(workspaceKey, issueTypeId, id, optionId));
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Option for ENUM type issue field renamed.", response));
 	}
 
-	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}/options")
+	@PutMapping("/fields/{id}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> reorderEnumFieldOptions(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey,
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
 		@RequestBody @Valid ReorderOptionsRequest request
 	) {
 		IssueFieldResponse response = issueFieldService.reorderOptions(
-			request.toCommand(workspaceKey, issueTypeKey, issueFieldKey));
+			request.toCommand(workspaceKey, issueTypeId, id));
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Options for ENUM type issue field reordered.", response));
 	}
 
-	@DeleteMapping("/{issueTypeId}/fields/{issueFieldKey}/options/{optionKey}")
+	@DeleteMapping("/fields/{id}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> softDeleteEnumFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
-		@PathVariable String issueFieldKey,
-		@PathVariable String optionKey,
-		@RequestBody @Valid RenameOptionRequest request
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
+		@PathVariable Long optionId
 	) {
-		IssueFieldResponse response = issueFieldService.softDeleteOption(workspaceKey, issueTypeKey, issueFieldKey,
-			optionKey);
+		IssueFieldResponse response = issueFieldService.softDeleteOption(workspaceKey, issueTypeId, id, optionId);
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Option for ENUM type issue field deleted.", response));

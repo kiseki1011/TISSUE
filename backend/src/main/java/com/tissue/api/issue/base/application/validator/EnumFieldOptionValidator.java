@@ -35,28 +35,28 @@ public class EnumFieldOptionValidator {
 
 	// TODO: EnumFieldOptions라는 일급객체를 사용하도록 리팩토링하는 경우,
 	//  아래 메서드들을 EnumFieldOptions로 이동
-	public void ensureValidReorder(List<EnumFieldOption> active, List<String> orderKeys) {
-		ensureSameSize(active, orderKeys);
-		ensureNoDuplicates(orderKeys);
-		ensureKeysMatch(active, orderKeys);
+	public void ensureValidReorder(List<EnumFieldOption> active, List<Long> orderedIds) {
+		ensureSameSize(active, orderedIds);
+		ensureNoDuplicates(orderedIds);
+		ensureKeysMatch(active, orderedIds);
 	}
 
-	private void ensureSameSize(List<EnumFieldOption> active, List<String> orderKeys) {
-		if (orderKeys.size() != active.size()) {
+	private void ensureSameSize(List<EnumFieldOption> active, List<Long> orderedIds) {
+		if (orderedIds.size() != active.size()) {
 			throw new InvalidOperationException("Order size mismatch.");
 		}
 	}
 
-	private void ensureNoDuplicates(List<String> orderKeys) {
-		Set<String> uniq = new HashSet<>(orderKeys);
-		if (uniq.size() != orderKeys.size()) {
+	private void ensureNoDuplicates(List<Long> orderedIds) {
+		Set<Long> uniq = new HashSet<>(orderedIds);
+		if (uniq.size() != orderedIds.size()) {
 			throw new InvalidOperationException("Order contains duplicates.");
 		}
 	}
 
-	private void ensureKeysMatch(List<EnumFieldOption> active, List<String> orderKeys) {
-		Set<String> provided = new HashSet<>(orderKeys);
-		Set<String> existing = extractKeys(active);
+	private void ensureKeysMatch(List<EnumFieldOption> active, List<Long> orderedIds) {
+		Set<Long> provided = new HashSet<>(orderedIds);
+		Set<Long> existing = extractIds(active);
 
 		boolean keysNotMatch = !existing.equals(provided);
 		if (keysNotMatch) {
@@ -64,9 +64,9 @@ public class EnumFieldOptionValidator {
 		}
 	}
 
-	private Set<String> extractKeys(List<EnumFieldOption> options) {
+	private Set<Long> extractIds(List<EnumFieldOption> options) {
 		return options.stream()
-			.map(EnumFieldOption::getKey)
+			.map(EnumFieldOption::getId)
 			.collect(Collectors.toSet());
 	}
 }

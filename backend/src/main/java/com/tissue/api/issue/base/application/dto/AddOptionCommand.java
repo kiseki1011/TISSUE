@@ -5,8 +5,8 @@ import lombok.Builder;
 @Builder
 public record AddOptionCommand(
 	String workspaceKey,
-	String issueTypeKey,
-	String issueFieldKey,
+	Long issueTypeId,
+	Long issueFieldId,
 	String label
 ) {
 }

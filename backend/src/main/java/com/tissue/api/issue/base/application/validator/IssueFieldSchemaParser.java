@@ -52,7 +52,7 @@ public class IssueFieldSchemaParser {
 			return s;
 		}
 		throw new InvalidCustomFieldException(
-			"Field '%s' must be a string.".formatted(field.getKey())
+			"Field(id: '%d') must be a string.".formatted(field.getId())
 		);
 	}
 
@@ -67,7 +67,7 @@ public class IssueFieldSchemaParser {
 			return parseIntegerFromString(field, s);
 		}
 		throw new InvalidCustomFieldException(
-			"Field '%s' must be an integer.".formatted(field.getKey())
+			"Field(id: '%d') must be an integer.".formatted(field.getId())
 		);
 	}
 
@@ -79,11 +79,11 @@ public class IssueFieldSchemaParser {
 			case Number numberValue -> value = new BigDecimal(numberValue.toString());
 			case String stringValue -> value = parseBigDecimalFromString(field, stringValue);
 			default -> throw new InvalidCustomFieldException(
-				"Field '%s' must be a decimal number.".formatted(field.getKey())
+				"Field(id: '%d') must be a decimal number.".formatted(field.getId())
 			);
 		}
 
-		issueFieldPolicy.ensureDigits(value, field.getKey());
+		issueFieldPolicy.ensureDigits(value, field.getId());
 		return issueFieldPolicy.normalizeDecimal(value);
 	}
 
@@ -96,7 +96,7 @@ public class IssueFieldSchemaParser {
 			return Math.toIntExact(longVal);
 		} catch (ArithmeticException ex) {
 			throw new InvalidCustomFieldException(
-				"Field '%s' integer is out of 32-bit range.".formatted(field.getKey())
+				"Field(id: '%d') integer is out of 32-bit range.".formatted(field.getId())
 			);
 		}
 	}
@@ -106,7 +106,7 @@ public class IssueFieldSchemaParser {
 			return parseInstantFromIsoString(field, s);
 		}
 		throw new InvalidCustomFieldException(
-			"Field '%s' must be ISO-8601 string.".formatted(field.getKey())
+			"Field(id: '%d') must be ISO-8601 string.".formatted(field.getId())
 		);
 	}
 
@@ -130,13 +130,13 @@ public class IssueFieldSchemaParser {
 	 * rejects non-string input.
 	 */
 	private EnumFieldOption findEnumOptionByKey(IssueField field, Object raw) {
-		if (raw instanceof String optionKey) {
-			return optionRepo.findByFieldAndKey(field, optionKey)
+		if (raw instanceof Long optionId) {
+			return optionRepo.findByFieldAndId(field, optionId)
 				.orElseThrow(() -> new InvalidCustomFieldException(
-					"Unknown enum option key for field '%s': %s".formatted(field.getKey(), optionKey)
+					"Unknown enum option(id: '%d') for field: %s".formatted(optionId, field.getId())
 				));
 		}
-		throw new InvalidCustomFieldException("Field '%s' must be an enum key string.".formatted(field.getKey()));
+		throw new InvalidCustomFieldException("Field(id: '%d') must be an enum key string.".formatted(field.getId()));
 	}
 
 	/**
@@ -148,7 +148,7 @@ public class IssueFieldSchemaParser {
 			return Integer.parseInt(stringVal);
 		} catch (NumberFormatException ex) {
 			throw new InvalidCustomFieldException(
-				"Field '%s' must be an integer.".formatted(field.getKey())
+				"Field(id: '%d') must be an integer.".formatted(field.getId())
 			);
 		}
 	}
@@ -162,7 +162,7 @@ public class IssueFieldSchemaParser {
 			return new BigDecimal(stringVal);
 		} catch (NumberFormatException ex) {
 			throw new InvalidCustomFieldException(
-				"Field '%s' must be a decimal number.".formatted(field.getKey())
+				"Field(id: '%d') must be a decimal number.".formatted(field.getId())
 			);
 		}
 	}
@@ -176,7 +176,7 @@ public class IssueFieldSchemaParser {
 			return Instant.parse(stringVal);
 		} catch (DateTimeParseException ex) {
 			throw new InvalidCustomFieldException(
-				"Field '%s' must be ISO-8601 string.".formatted(field.getKey())
+				"Field(id: '%d') must be ISO-8601 string.".formatted(field.getId())
 			);
 		}
 	}

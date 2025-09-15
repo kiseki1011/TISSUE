@@ -4,9 +4,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLRestriction;
 
-import com.tissue.api.common.entity.PrefixedKeyEntity;
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.util.DomainPreconditions;
-import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 
 import jakarta.persistence.Column;
@@ -20,7 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -33,20 +31,17 @@ import lombok.NoArgsConstructor;
 @Table(
 	// uniqueConstraints = {@UniqueConstraint(columnNames = {"issueType_id", "label"})},
 	indexes = {
-		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label"),
-		@Index(name = "idx_issue_field_key", columnList = "key", unique = true)
+		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label")
 	}
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueField extends PrefixedKeyEntity {
+public class IssueField extends BaseEntity {
 
+	// @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_field_seq_gen")
+	// @SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_field_seq_gen")
-	@SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	@Column(name = "issue_field_key", nullable = false, updatable = false, unique = true)
-	private String key;
 
 	@Column(nullable = false)
 	private String label;
@@ -66,26 +61,14 @@ public class IssueField extends PrefixedKeyEntity {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private IssueType issueType;
 
-	@Override
-	protected void setKey(String key) {
-		this.key = key;
-	}
-
-	@Override
-	protected String keyPrefix() {
-		return KeyPrefixPolicy.ISSUE_FIELD;
-	}
-
 	@Builder
 	public IssueField(
-		String key,
 		String label,
 		String description,
 		FieldType fieldType,
 		Boolean required,
 		IssueType issueType
 	) {
-		this.key = key;
 		this.label = DomainPreconditions.requireNotBlank(label, "label");
 		this.description = DomainPreconditions.nullToEmpty(description);
 		this.fieldType = DomainPreconditions.requireNotNull(fieldType, "fieldType");

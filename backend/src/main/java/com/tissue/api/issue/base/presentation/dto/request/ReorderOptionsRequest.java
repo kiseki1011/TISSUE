@@ -8,11 +8,11 @@ public record ReorderOptionsRequest(
 	// @NotEmpty(message = "{valid.notempty}")
 	List<String> orderKeys
 ) {
-	public ReorderOptionsCommand toCommand(String workspaceKey, String issueTypeKey, String issueFieldKey) {
+	public ReorderOptionsCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return ReorderOptionsCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
-			.issueFieldKey(issueFieldKey)
+			.issueTypeId(issueTypeId)
+			.issueFieldId(issueFieldId)
 			.orderKeys(orderKeys)
 			.build();
 	}
