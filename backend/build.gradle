@@ -67,6 +67,8 @@ dependencies {
     implementation 'org.springframework.statemachine:spring-statemachine-data-redis'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.7'
+
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
