@@ -8,10 +8,10 @@ import jakarta.validation.constraints.NotBlank;
 public record RenameIssueTypeRequest(
 	@NotBlank(message = "{valid.notblank}") String label
 ) {
-	public RenameIssueTypeCommand toCommand(String workspaceKey, Long issueTypeId) {
+	public RenameIssueTypeCommand toCommand(String workspaceKey, Long id) {
 		return RenameIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeId)
+			.id(id)
 			.label(TextNormalizer.normalizeLabel(label))
 			.build();
 	}
