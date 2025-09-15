@@ -15,7 +15,6 @@ import com.tissue.api.issue.base.application.dto.RemoveParentIssueCommand;
 import com.tissue.api.issue.base.application.service.IssueService;
 import com.tissue.api.issue.base.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueRequest;
-import com.tissue.api.issue.base.presentation.dto.request.UpdateIssueRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -37,47 +36,47 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ResponseEntity<ApiResponse<IssueResponse>> createIssue(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.createIssue(request.toCommand(workspaceCode));
+		IssueResponse response = issueService.createIssue(request.toCommand(workspaceKey));
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Issue created.", response));
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PatchMapping("/{issueKey}")
-	public ApiResponse<IssueResponse> updateIssue(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@RequestBody @Valid UpdateIssueRequest request,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueResponse response = issueService.updateIssue(request.toCommand(workspaceCode, issueKey));
-		return ApiResponse.ok("Issue updated.", response);
-	}
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{issueKey}")
+	// public ApiResponse<IssueResponse> updateIssue(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@RequestBody @Valid UpdateIssueRequest request,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	IssueResponse response = issueService.updateIssue(request.toCommand(workspaceCode, issueKey));
+	// 	return ApiResponse.ok("Issue updated.", response);
+	// }
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> assignParentIssue(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AssignParentIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.assignParentIssue(request.toCommand(workspaceCode, issueKey));
+		IssueResponse response = issueService.assignParentIssue(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> removeParentIssue(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.removeParentIssue(new RemoveParentIssueCommand(workspaceCode, issueKey));
+		IssueResponse response = issueService.removeParentIssue(new RemoveParentIssueCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 

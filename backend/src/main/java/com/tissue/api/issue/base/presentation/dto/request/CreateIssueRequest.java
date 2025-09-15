@@ -6,25 +6,24 @@ import java.util.Map;
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.base.domain.enums.IssuePriority;
 
-// TODO: Add validation annotations
 public record CreateIssueRequest(
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDateTime dueAt,
-	String issueTypeKey,
-	Map<String, Object> customFields
+	Long issueTypeId,
+	Map<Long, Object> customFields
 ) {
-	public CreateIssueCommand toCommand(String workspaceCode) {
+	public CreateIssueCommand toCommand(String workspaceKey) {
 		return CreateIssueCommand.builder()
-			.workspaceCode(workspaceCode)
+			.workspaceKey(workspaceKey)
 			.title(title)
 			.content(content)
 			.summary(summary)
 			.priority(priority)
 			.dueAt(dueAt)
-			.issueTypeKey(issueTypeKey)
+			.issueTypeId(issueTypeId)
 			.customFields(customFields)
 			.build();
 	}

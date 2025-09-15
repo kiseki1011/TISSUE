@@ -24,45 +24,45 @@ public class IssueFieldSchemaValidator {
 	private final IssueFieldValueRepository issueFieldValueRepo;
 	private final IssueFieldSchemaParser schemaParser;
 
-	public List<IssueFieldValue> validateAndExtract(Map<String, Object> inputByKey, Issue issue) {
-		List<IssueField> fieldDefinitions = issueFieldRepo.findByIssueType(issue.getIssueType());
-		List<IssueFieldValue> resultValues = new ArrayList<>(fieldDefinitions.size());
+	public List<IssueFieldValue> validateAndExtract(Map<Long, Object> inputById, Issue issue) {
+		List<IssueField> issueFields = issueFieldRepo.findByIssueType(issue.getIssueType());
+		List<IssueFieldValue> resultValues = new ArrayList<>(issueFields.size());
 
-		for (IssueField fieldDefinition : fieldDefinitions) {
-			String fieldKey = fieldDefinition.getKey();
-			Object rawInput = inputByKey.get(fieldKey);
+		for (IssueField field : issueFields) {
+			Long fieldId = field.getId();
+			Object rawInput = inputById.get(fieldId);
 
-			ensureRequiredValuePresent(fieldDefinition, rawInput);
+			ensureRequiredValuePresent(field, rawInput);
 
 			// 값이 없으면(선택 필드) 스킵
 			if (rawInput == null || isBlankString(rawInput)) {
 				continue;
 			}
 
-			Object domainValue = schemaParser.toDomainValue(fieldDefinition, rawInput);
-			resultValues.add(IssueFieldValue.of(issue, fieldDefinition, domainValue));
+			Object domainValue = schemaParser.toDomainValue(field, rawInput);
+			resultValues.add(IssueFieldValue.of(issue, field, domainValue));
 		}
 
 		return resultValues;
 	}
 
-	public List<IssueFieldValue> validateAndApplyPartialUpdate(Map<String, Object> inputByKey, Issue issue) {
-		Map<String, IssueField> fieldMap = loadFieldMap(issue);
-		Map<String, IssueFieldValue> existingValueMap = loadExistingValueMap(issue);
+	public List<IssueFieldValue> validateAndApplyPartialUpdate(Map<Long, Object> inputById, Issue issue) {
+		Map<Long, IssueField> fieldMap = loadFieldMap(issue);
+		Map<Long, IssueFieldValue> existingValueMap = loadExistingValueMap(issue);
 
-		List<IssueFieldValue> valuesToPersist = new ArrayList<>(inputByKey.size());
+		List<IssueFieldValue> valuesToPersist = new ArrayList<>(inputById.size());
 
-		for (Map.Entry<String, Object> entry : inputByKey.entrySet()) {
-			String fieldKey = entry.getKey();
+		for (Map.Entry<Long, Object> entry : inputById.entrySet()) {
+			Long fieldId = entry.getKey();
 			Object rawInput = entry.getValue();
 
-			IssueField fieldDefinition = requireKnownField(fieldMap, fieldKey);
+			IssueField fieldDefinition = requireKnownField(fieldMap, fieldId);
 
 			ensureRequiredValuePresent(fieldDefinition, rawInput);
 
 			// null/blank → 값 삭제
 			if (rawInput == null || isBlankString(rawInput)) {
-				IssueFieldValue existing = existingValueMap.get(fieldKey);
+				IssueFieldValue existing = existingValueMap.get(fieldId);
 				if (existing != null) {
 					existing.clearValue();
 					valuesToPersist.add(existing);
@@ -72,7 +72,7 @@ public class IssueFieldSchemaValidator {
 
 			Object domainValue = schemaParser.toDomainValue(fieldDefinition, rawInput);
 
-			IssueFieldValue value = existingValueMap.get(fieldKey);
+			IssueFieldValue value = existingValueMap.get(fieldId);
 			if (value == null) {
 				value = IssueFieldValue.of(issue, fieldDefinition, domainValue);
 			} else {
@@ -93,27 +93,27 @@ public class IssueFieldSchemaValidator {
 			return;
 		}
 		if (rawInput == null) {
-			throw new InvalidCustomFieldException("Field '%s' is required.".formatted(field.getKey()));
+			throw new InvalidCustomFieldException("Field(id: '%d') is required.".formatted(field.getId()));
 		}
 		if (isBlankString(rawInput)) {
-			throw new InvalidCustomFieldException("Field '%s' is required.".formatted(field.getKey()));
+			throw new InvalidCustomFieldException("Field(id: '%d') is required.".formatted(field.getId()));
 		}
 	}
 
-	private Map<String, IssueField> loadFieldMap(Issue issue) {
+	private Map<Long, IssueField> loadFieldMap(Issue issue) {
 		return issueFieldRepo.findByIssueType(issue.getIssueType()).stream()
-			.collect(Collectors.toMap(IssueField::getKey, it -> it));
+			.collect(Collectors.toMap(IssueField::getId, it -> it));
 	}
 
-	private Map<String, IssueFieldValue> loadExistingValueMap(Issue issue) {
+	private Map<Long, IssueFieldValue> loadExistingValueMap(Issue issue) {
 		return issueFieldValueRepo.findByIssue(issue).stream()
-			.collect(Collectors.toMap(val -> val.getField().getKey(), it -> it));
+			.collect(Collectors.toMap(val -> val.getField().getId(), it -> it));
 	}
 
-	private IssueField requireKnownField(Map<String, IssueField> fieldMap, String fieldKey) {
-		IssueField field = fieldMap.get(fieldKey);
+	private IssueField requireKnownField(Map<Long, IssueField> fieldMap, Long fieldId) {
+		IssueField field = fieldMap.get(fieldId);
 		if (field == null) {
-			throw new InvalidCustomFieldException("Unknown custom field: '%s'".formatted(fieldKey));
+			throw new InvalidCustomFieldException("Unknown custom field(id: '%d')".formatted(fieldId));
 		}
 		return field;
 	}

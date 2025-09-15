@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.base.application.dto.AssignParentIssueCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.base.application.dto.RemoveParentIssueCommand;
-import com.tissue.api.issue.base.application.dto.UpdateIssueCommand;
 import com.tissue.api.issue.base.application.finder.IssueFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.IssueFieldSchemaValidator;
@@ -54,8 +53,8 @@ public class IssueService {
 
 	@Transactional
 	public IssueResponse createIssue(CreateIssueCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
-		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
 
 		Issue issue = issueRepository.save(Issue.builder()
 			.workspace(workspace)
@@ -77,36 +76,36 @@ public class IssueService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
-	public IssueResponse updateIssue(UpdateIssueCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
-
-		if (cmd.title() != null) {
-			issue.updateTitle(cmd.title());
-		}
-		if (cmd.content() != null) {
-			issue.updateContent(cmd.content());
-		}
-		if (cmd.summary() != null) {
-			issue.updateSummary(cmd.summary());
-		}
-		if (cmd.priority() != null) {
-			issue.updatePriority(cmd.priority());
-		}
-		if (cmd.dueAt() != null) {
-			issue.updateDueAt(cmd.dueAt());
-		}
-
-		if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
-			List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPartialUpdate(
-				cmd.customFields(),
-				issue
-			);
-			fieldValueRepository.saveAll(updateValues);
-		}
-
-		return IssueResponse.from(issue);
-	}
+	// @Transactional
+	// public IssueResponse updateIssue(UpdateIssueCommand cmd) {
+	// 	Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
+	//
+	// 	if (cmd.title() != null) {
+	// 		issue.updateTitle(cmd.title());
+	// 	}
+	// 	if (cmd.content() != null) {
+	// 		issue.updateContent(cmd.content());
+	// 	}
+	// 	if (cmd.summary() != null) {
+	// 		issue.updateSummary(cmd.summary());
+	// 	}
+	// 	if (cmd.priority() != null) {
+	// 		issue.updatePriority(cmd.priority());
+	// 	}
+	// 	if (cmd.dueAt() != null) {
+	// 		issue.updateDueAt(cmd.dueAt());
+	// 	}
+	//
+	// 	if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
+	// 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPartialUpdate(
+	// 			cmd.customFields(),
+	// 			issue
+	// 		);
+	// 		fieldValueRepository.saveAll(updateValues);
+	// 	}
+	//
+	// 	return IssueResponse.from(issue);
+	// }
 
 	@Transactional
 	public IssueResponse assignParentIssue(AssignParentIssueCommand cmd) {
