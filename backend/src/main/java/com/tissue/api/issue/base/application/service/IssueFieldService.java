@@ -49,20 +49,22 @@ public class IssueFieldService {
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
 
-		IssueField issueField = issueFieldRepo.save(IssueField.builder()
-			.label(cmd.label())
-			.description(cmd.description())
-			.fieldType(cmd.fieldType())
-			.required(Boolean.TRUE.equals(cmd.required()))
-			.issueType(issueType)
-			.build());
+		IssueField issueField = IssueField.create(
+			cmd.label(),
+			cmd.description(),
+			cmd.fieldType(),
+			cmd.required(),
+			issueType
+		);
 
-		if (issueField.getFieldType() == FieldType.ENUM) {
+		IssueField savedField = issueFieldRepo.save(issueField);
+
+		if (savedField.getFieldType() == FieldType.ENUM) {
 			issueFieldPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
-			persistInitialEnumOptions(issueField, cmd.initialOptions());
+			persistInitialEnumOptions(savedField, cmd.initialOptions());
 		}
 
-		return IssueFieldResponse.from(issueField);
+		return IssueFieldResponse.from(savedField);
 	}
 
 	@Transactional
@@ -101,11 +103,8 @@ public class IssueFieldService {
 		int nextPosition = optionRepo.countByField(field);
 		issueFieldPolicy.ensureCanAddOption(nextPosition);
 
-		optionRepo.save(EnumFieldOption.builder()
-			.field(field)
-			.label(cmd.label())
-			.position(nextPosition)
-			.build());
+		EnumFieldOption option = EnumFieldOption.create(field, cmd.label(), nextPosition);
+		optionRepo.save(option);
 
 		return IssueFieldResponse.from(field);
 	}
@@ -171,7 +170,7 @@ public class IssueFieldService {
 		int pos = 0;
 		List<EnumFieldOption> options = new ArrayList<>(labels.size());
 		for (String label : labels) {
-			options.add(new EnumFieldOption(field, label, pos++));
+			options.add(EnumFieldOption.create(field, label, pos++));
 		}
 		optionRepo.saveAll(options);
 	}

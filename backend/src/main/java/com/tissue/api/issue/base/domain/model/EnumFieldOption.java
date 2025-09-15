@@ -54,7 +54,7 @@ public class EnumFieldOption extends BaseEntity {
 	private int position;
 
 	@Builder
-	public EnumFieldOption(
+	private EnumFieldOption(
 		IssueField field,
 		String label,
 		Integer position
@@ -62,6 +62,14 @@ public class EnumFieldOption extends BaseEntity {
 		this.field = DomainPreconditions.requireNotNull(field, "issueField");
 		this.label = DomainPreconditions.requireNotBlank(label, "label");
 		this.position = (position == null) ? 0 : position;
+	}
+
+	public static EnumFieldOption create(IssueField field, String label, Integer position) {
+		return EnumFieldOption.builder()
+			.field(field)
+			.label(label)
+			.position(position)
+			.build();
 	}
 
 	public void rename(String label) {

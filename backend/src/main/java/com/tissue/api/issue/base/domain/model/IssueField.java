@@ -62,7 +62,7 @@ public class IssueField extends BaseEntity {
 	private IssueType issueType;
 
 	@Builder
-	public IssueField(
+	private IssueField(
 		String label,
 		String description,
 		FieldType fieldType,
@@ -74,6 +74,18 @@ public class IssueField extends BaseEntity {
 		this.fieldType = DomainPreconditions.requireNotNull(fieldType, "fieldType");
 		this.required = Boolean.TRUE.equals(required);
 		this.issueType = DomainPreconditions.requireNotNull(issueType, "issueType");
+	}
+
+	public static IssueField create(String label, String description, FieldType fieldType, Boolean required,
+		IssueType issueType
+	) {
+		return IssueField.builder()
+			.label(label)
+			.description(description)
+			.fieldType(fieldType)
+			.required(required)
+			.issueType(issueType)
+			.build();
 	}
 
 	public String getWorkspaceCode() {

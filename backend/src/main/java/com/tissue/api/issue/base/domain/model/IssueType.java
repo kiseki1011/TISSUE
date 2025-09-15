@@ -72,7 +72,7 @@ public class IssueType extends BaseEntity {
 	private boolean systemType;
 
 	@Builder
-	public IssueType(
+	private IssueType(
 		Workspace workspace,
 		String label,
 		String description,

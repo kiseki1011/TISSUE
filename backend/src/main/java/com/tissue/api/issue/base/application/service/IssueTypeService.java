@@ -38,16 +38,18 @@ public class IssueTypeService {
 
 		issueTypeValidator.ensureUniqueLabel(workspace, cmd.label());
 
-		IssueType issueType = issueTypeRepository.save(IssueType.builder()
-			.workspace(workspace)
-			.label(cmd.label())
-			.description(cmd.description())
-			.color(cmd.color())
-			.hierarchyLevel(cmd.hierarchyLevel())
-			.workflow(workflow)
-			.build());
+		IssueType issueType = IssueType.create(
+			workspace,
+			cmd.label(),
+			cmd.description(),
+			cmd.color(),
+			cmd.hierarchyLevel(),
+			workflow
+		);
 
-		return IssueTypeResponse.from(issueType);
+		IssueType savedType = issueTypeRepository.save(issueType);
+
+		return IssueTypeResponse.from(savedType);
 	}
 
 	@Transactional
