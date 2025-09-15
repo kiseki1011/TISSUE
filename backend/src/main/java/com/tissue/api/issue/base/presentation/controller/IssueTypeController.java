@@ -71,7 +71,7 @@ public class IssueTypeController {
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid PatchIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.update(request.toCommand(workspaceKey, issueTypeKey));
+		IssueTypeResponse response = issueTypeService.patch(request.toCommand(workspaceKey, issueTypeKey));
 		return ApiResponse.ok("Issue type updated.", response);
 	}
 

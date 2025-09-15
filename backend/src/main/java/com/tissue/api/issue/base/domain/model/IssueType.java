@@ -109,14 +109,8 @@ public class IssueType extends PrefixedKeyEntity {
 		return workspace.getKey();
 	}
 
-	// TODO: update 메서드들에도 생성자 처럼 DomainPreconditions, TextNormalizer 사용을 고려해야할까?
 	public void rename(String label) {
 		this.label = DomainPreconditions.requireNotBlank(label, "label");
-	}
-
-	public void updateMetaData(String description, ColorType color) {
-		updateDescription(description);
-		updateColor(color);
 	}
 
 	public void updateDescription(String description) {

@@ -1,15 +1,16 @@
 package com.tissue.api.issue.base.application.dto;
 
+import org.openapitools.jackson.nullable.JsonNullable;
+
 import com.tissue.api.common.enums.ColorType;
 
 import lombok.Builder;
 
 @Builder
-public record UpdateIssueTypeCommand(
+public record PatchIssueTypeCommand(
 	String workspaceKey,
 	String issueTypeKey,
-	String label,
-	String description,
-	ColorType color
+	JsonNullable<String> description,
+	JsonNullable<ColorType> color
 ) {
 }

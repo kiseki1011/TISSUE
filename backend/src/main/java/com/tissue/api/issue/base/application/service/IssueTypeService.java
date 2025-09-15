@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.RenameIssueTypeCommand;
@@ -65,11 +66,12 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public IssueTypeResponse update(PatchIssueTypeCommand cmd) {
+	public IssueTypeResponse patch(PatchIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
 
-		issueType.updateMetaData(cmd.description(), cmd.color());
+		Patchers.apply(cmd.description(), issueType::updateDescription);
+		Patchers.apply(cmd.color(), issueType::updateColor);
 
 		return IssueTypeResponse.from(issueType);
 	}
