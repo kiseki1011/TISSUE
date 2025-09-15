@@ -14,6 +14,7 @@ import com.tissue.api.issue.base.application.dto.AddOptionCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.PatchIssueFieldCommand;
+import com.tissue.api.issue.base.application.dto.RenameIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
 import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 import com.tissue.api.issue.base.application.finder.IssueFieldFinder;
@@ -68,20 +69,20 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(savedField);
 	}
 
-	// @Transactional
-	// public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
-	// 	IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-	// 	IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
-	//
-	// 	if (labelUnchanged(field, cmd.label())) {
-	// 		return IssueFieldResponse.from(field);
-	// 	}
-	//
-	// 	issueFieldValidator.ensureUniqueLabel(type, cmd.label());
-	// 	field.rename(cmd.label());
-	//
-	// 	return IssueFieldResponse.from(field);
-	// }
+	@Transactional
+	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
+		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
+
+		if (labelUnchanged(field, cmd.label())) {
+			return IssueFieldResponse.from(field);
+		}
+
+		issueFieldValidator.ensureUniqueLabel(type, cmd.label());
+		field.rename(cmd.label());
+
+		return IssueFieldResponse.from(field);
+	}
 
 	@Transactional
 	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {

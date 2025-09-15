@@ -3,6 +3,7 @@ package com.tissue.api.issue.base.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +17,7 @@ import com.tissue.api.issue.base.application.service.IssueFieldService;
 import com.tissue.api.issue.base.presentation.dto.request.AddOptionRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueFieldRequest;
 import com.tissue.api.issue.base.presentation.dto.request.PatchIssueFieldRequest;
+import com.tissue.api.issue.base.presentation.dto.request.RenameIssueFieldRequest;
 import com.tissue.api.issue.base.presentation.dto.request.RenameOptionRequest;
 import com.tissue.api.issue.base.presentation.dto.request.ReorderOptionsRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
@@ -51,7 +53,21 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Issue field created.", response));
 	}
 
-	@PutMapping("/fields/{id}")
+	@PutMapping("/fields/{id}/rename")
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	public ApiResponse<IssueFieldResponse> renameIssueField(
+		@PathVariable String workspaceKey,
+		@PathVariable Long issueTypeId,
+		@PathVariable Long id,
+		@RequestBody @Valid RenameIssueFieldRequest request
+	) {
+		IssueFieldResponse response = issueFieldService.rename(
+			request.toCommand(workspaceKey, issueTypeId, id));
+
+		return ApiResponse.ok("Issue field renamed.", response);
+	}
+
+	@PatchMapping("/fields/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> patchIssueField(
 		@PathVariable String workspaceKey,
