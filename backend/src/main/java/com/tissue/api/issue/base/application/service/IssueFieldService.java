@@ -9,12 +9,13 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.base.application.dto.AddOptionCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
+import com.tissue.api.issue.base.application.dto.PatchIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
 import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
-import com.tissue.api.issue.base.application.dto.UpdateIssueFieldCommand;
 import com.tissue.api.issue.base.application.finder.IssueFieldFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.EnumFieldOptionValidator;
@@ -67,18 +68,28 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(savedField);
 	}
 
+	// @Transactional
+	// public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
+	// 	IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
+	// 	IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
+	//
+	// 	if (labelUnchanged(field, cmd.label())) {
+	// 		return IssueFieldResponse.from(field);
+	// 	}
+	//
+	// 	issueFieldValidator.ensureUniqueLabel(type, cmd.label());
+	// 	field.rename(cmd.label());
+	//
+	// 	return IssueFieldResponse.from(field);
+	// }
+
 	@Transactional
-	public IssueFieldResponse updateMetaData(UpdateIssueFieldCommand cmd) {
+	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
 		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
 
-		field.updateMetaData(cmd.description(), cmd.required());
-
-		boolean labelChanged = !Objects.equals(field.getLabel(), cmd.label());
-		if (labelChanged) {
-			issueFieldValidator.ensureUniqueLabel(type, cmd.label());
-			field.rename(cmd.label());
-		}
+		Patchers.apply(cmd.description(), field::updateDescription);
+		Patchers.apply(cmd.required(), field::setRequired);
 
 		return IssueFieldResponse.from(field);
 	}
@@ -150,6 +161,10 @@ public class IssueFieldService {
 		option.softDelete();
 
 		return IssueFieldResponse.from(field);
+	}
+
+	private boolean labelUnchanged(IssueField field, String newLabel) {
+		return Objects.equals(field.getLabel(), newLabel);
 	}
 
 	private IssueField findIssueField(String workspaceKey, Long typeId, Long fieldId) {

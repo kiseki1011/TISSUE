@@ -92,11 +92,6 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceCode();
 	}
 
-	public void updateMetaData(String description, Boolean required) {
-		updateDescription(description);
-		updateRequired(required);
-	}
-
 	public void rename(String label) {
 		this.label = DomainPreconditions.requireNotBlank(label, "label");
 	}
@@ -105,7 +100,7 @@ public class IssueField extends BaseEntity {
 		this.description = DomainPreconditions.nullToEmpty(description);
 	}
 
-	public void updateRequired(Boolean required) {
+	public void setRequired(Boolean required) {
 		this.required = Boolean.TRUE.equals(required);
 	}
 

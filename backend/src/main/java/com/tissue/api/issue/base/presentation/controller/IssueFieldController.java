@@ -15,9 +15,9 @@ import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
 import com.tissue.api.issue.base.application.service.IssueFieldService;
 import com.tissue.api.issue.base.presentation.dto.request.AddOptionRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueFieldRequest;
+import com.tissue.api.issue.base.presentation.dto.request.PatchIssueFieldRequest;
 import com.tissue.api.issue.base.presentation.dto.request.RenameOptionRequest;
 import com.tissue.api.issue.base.presentation.dto.request.ReorderOptionsRequest;
-import com.tissue.api.issue.base.presentation.dto.request.UpdateIssueFieldRequest;
 import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
@@ -53,13 +53,13 @@ public class IssueFieldController {
 
 	@PutMapping("/fields/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> updateIssueFieldMetaData(
+	public ApiResponse<IssueFieldResponse> patchIssueField(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
-		@RequestBody @Valid UpdateIssueFieldRequest request
+		@RequestBody @Valid PatchIssueFieldRequest request
 	) {
-		IssueFieldResponse response = issueFieldService.updateMetaData(
+		IssueFieldResponse response = issueFieldService.patch(
 			request.toCommand(workspaceKey, issueTypeId, id));
 
 		return ApiResponse.ok("Issue field updated.", response);
