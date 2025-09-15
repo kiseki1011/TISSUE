@@ -6,14 +6,14 @@ import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 
 public record ReorderOptionsRequest(
 	// @NotEmpty(message = "{valid.notempty}")
-	List<String> orderKeys
+	List<Long> orderedIds
 ) {
 	public ReorderOptionsCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return ReorderOptionsCommand.builder()
 			.workspaceKey(workspaceKey)
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
-			.orderKeys(orderKeys)
+			.orderedIds(orderedIds)
 			.build();
 	}
 }
