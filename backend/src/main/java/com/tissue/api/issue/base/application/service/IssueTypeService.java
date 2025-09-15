@@ -53,7 +53,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse rename(RenameIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.id());
 
 		if (labelUnchanged(issueType, cmd.label())) {
 			return IssueTypeResponse.from(issueType);
@@ -68,7 +68,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse patch(PatchIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeKey());
+		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.id());
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
 		Patchers.apply(cmd.color(), issueType::updateColor);
@@ -77,8 +77,8 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public void softDelete(String workspaceKey, String issueTypeKey) {
-		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, issueTypeKey);
+	public void softDelete(String workspaceKey, Long id) {
+		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, id);
 
 		issueTypeValidator.ensureDeletable(issueType);
 		issueType.softDelete();

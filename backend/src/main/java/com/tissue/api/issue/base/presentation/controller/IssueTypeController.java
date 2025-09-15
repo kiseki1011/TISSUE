@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issue-types")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/issuetypes")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
@@ -50,39 +50,39 @@ public class IssueTypeController {
 			.body(ApiResponse.created("Issue type created.", response));
 	}
 
-	@PutMapping("/{issueTypeKey}/rename")
+	@PutMapping("/{id}/rename")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueTypeResponse> rename(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
+		@PathVariable Long id,
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid RenameIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.rename(request.toCommand(workspaceKey, issueTypeKey));
+		IssueTypeResponse response = issueTypeService.rename(request.toCommand(workspaceKey, id));
 		return ApiResponse.ok("Issue type renamed.", response);
 	}
 
 	// Don't allow HierachyLevel, Workflow update
-	@PatchMapping("/{issueTypeKey}")
+	@PatchMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueTypeResponse> update(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
+		@PathVariable Long id,
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid PatchIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.patch(request.toCommand(workspaceKey, issueTypeKey));
+		IssueTypeResponse response = issueTypeService.patch(request.toCommand(workspaceKey, id));
 		return ApiResponse.ok("Issue type updated.", response);
 	}
 
-	@DeleteMapping("/{issueTypeKey}")
+	@DeleteMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<Void> softDelete(
 		@PathVariable String workspaceKey,
-		@PathVariable String issueTypeKey,
+		@PathVariable Long id,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		issueTypeService.softDelete(workspaceKey, issueTypeKey);
+		issueTypeService.softDelete(workspaceKey, id);
 		return ApiResponse.okWithNoContent("Issue type deleted.");
 	}
 }

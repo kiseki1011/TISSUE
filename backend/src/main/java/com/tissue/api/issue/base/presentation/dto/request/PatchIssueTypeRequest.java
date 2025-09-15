@@ -12,10 +12,10 @@ public record PatchIssueTypeRequest(
 	JsonNullable<@Size(max = 255) String> description,
 	JsonNullable<@NotNull ColorType> color
 ) {
-	public PatchIssueTypeCommand toCommand(String workspaceKey, String issueTypeKey) {
+	public PatchIssueTypeCommand toCommand(String workspaceKey, Long id) {
 		return PatchIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
-			.issueTypeKey(issueTypeKey)
+			.id(id)
 			.description(description)
 			.color(color)
 			.build();

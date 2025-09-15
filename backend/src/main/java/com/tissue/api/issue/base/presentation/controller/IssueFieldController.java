@@ -37,7 +37,7 @@ public class IssueFieldController {
 	 */
 	private final IssueFieldService issueFieldService;
 
-	@PostMapping("/{issueTypeKey}/fields")
+	@PostMapping("/{issueTypeId}/fields")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> createIssueField(
 		@PathVariable String workspaceKey,
@@ -50,7 +50,7 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Issue field created.", response));
 	}
 
-	@PutMapping("/{issueTypeKey}/fields/{issueFieldKey}")
+	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> updateIssueFieldMetaData(
 		@PathVariable String workspaceKey,
@@ -64,7 +64,7 @@ public class IssueFieldController {
 		return ApiResponse.ok("Issue field updated.", response);
 	}
 
-	@DeleteMapping("/{issueTypeKey}/fields/{issueFieldKey}")
+	@DeleteMapping("/{issueTypeId}/fields/{issueFieldKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ApiResponse<IssueFieldResponse> softDeleteIssueField(
 		@PathVariable String workspaceKey,
@@ -77,7 +77,7 @@ public class IssueFieldController {
 		return ApiResponse.ok("Issue field deleted.", response);
 	}
 
-	@PostMapping("/{issueTypeKey}/fields/{issueFieldKey}/options")
+	@PostMapping("/{issueTypeId}/fields/{issueFieldKey}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> addEnumFieldOption(
 		@PathVariable String workspaceKey,
@@ -92,7 +92,7 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Option for ENUM type issue field added.", response));
 	}
 
-	@PutMapping("/{issueTypeKey}/fields/{issueFieldKey}/options/{optionKey}")
+	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}/options/{optionKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> renameEnumFieldOption(
 		@PathVariable String workspaceKey,
@@ -108,7 +108,7 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Option for ENUM type issue field renamed.", response));
 	}
 
-	@PutMapping("/{issueTypeKey}/fields/{issueFieldKey}/options")
+	@PutMapping("/{issueTypeId}/fields/{issueFieldKey}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> reorderEnumFieldOptions(
 		@PathVariable String workspaceKey,
@@ -123,7 +123,7 @@ public class IssueFieldController {
 			.body(ApiResponse.created("Options for ENUM type issue field reordered.", response));
 	}
 
-	@DeleteMapping("/{issueTypeKey}/fields/{issueFieldKey}/options/{optionKey}")
+	@DeleteMapping("/{issueTypeId}/fields/{issueFieldKey}/options/{optionKey}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> softDeleteEnumFieldOption(
 		@PathVariable String workspaceKey,

@@ -15,15 +15,15 @@ public class IssueTypeFinder {
 
 	private final IssueTypeRepository issueTypeRepository;
 
-	public IssueType findIssueType(String workspaceKey, String key) {
-		return issueTypeRepository.findByWorkspace_KeyAndKey(workspaceKey, key)
+	public IssueType findIssueType(String workspaceKey, Long id) {
+		return issueTypeRepository.findByWorkspace_KeyAndId(workspaceKey, id)
 			.orElseThrow(() -> new ResourceNotFoundException(
-				"IssueType not found: workspaceKey=" + workspaceKey + ", key=" + key));
+				"IssueType not found: workspaceKey=" + workspaceKey + ", key=" + id));
 	}
 
-	public IssueType findIssueType(Workspace workspace, String key) {
-		return issueTypeRepository.findByWorkspaceAndKey(workspace, key)
+	public IssueType findIssueType(Workspace workspace, Long id) {
+		return issueTypeRepository.findByWorkspaceAndId(workspace, id)
 			.orElseThrow(() -> new ResourceNotFoundException(
-				"IssueType not found: workspaceKey=" + workspace.getKey() + ", key=" + key));
+				"IssueType not found: workspaceKey=" + workspace.getKey() + ", key=" + id));
 	}
 }
