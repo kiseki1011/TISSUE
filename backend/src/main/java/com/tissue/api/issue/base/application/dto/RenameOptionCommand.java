@@ -8,6 +8,6 @@ public record RenameOptionCommand(
 	Long issueTypeId,
 	Long issueFieldId,
 	Long optionId,
-	String newLabel
+	String label
 ) {
 }
