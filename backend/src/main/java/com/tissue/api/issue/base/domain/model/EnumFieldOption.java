@@ -47,7 +47,7 @@ public class EnumFieldOption extends BaseEntity {
 	@JoinColumn(name = "issue_field_id", nullable = false)
 	private IssueField field;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 32)
 	private String label;
 
 	@Column(nullable = false)

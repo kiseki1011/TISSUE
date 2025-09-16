@@ -43,7 +43,7 @@ public class IssueField extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 32)
 	private String label;
 
 	@Column(nullable = false)

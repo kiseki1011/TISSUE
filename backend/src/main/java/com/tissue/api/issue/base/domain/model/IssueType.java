@@ -48,7 +48,7 @@ public class IssueType extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 32)
 	private String label;
 
 	@Column(nullable = false)
