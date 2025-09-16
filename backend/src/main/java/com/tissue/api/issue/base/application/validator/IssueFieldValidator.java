@@ -29,7 +29,7 @@ public class IssueFieldValidator {
 		ensureNotInUse(field);
 	}
 
-	public void ensureNotInUse(IssueField field) {
+	private void ensureNotInUse(IssueField field) {
 		boolean fieldInUse = fieldValueRepo.existsByField(field);
 		if (fieldInUse) {
 			throw new InvalidOperationException("Field is in use.");

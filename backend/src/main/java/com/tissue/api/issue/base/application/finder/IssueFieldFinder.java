@@ -1,5 +1,7 @@
 package com.tissue.api.issue.base.application.finder;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
@@ -15,13 +17,17 @@ public class IssueFieldFinder {
 
 	private final IssueFieldRepository issueFieldRepo;
 
-	public IssueField findIssueField(Long id) {
+	public IssueField findById(Long id) {
 		return issueFieldRepo.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Issue field not found."));
 	}
 
-	public IssueField findIssueField(IssueType issueType, Long id) {
+	public IssueField findByTypeAndId(IssueType issueType, Long id) {
 		return issueFieldRepo.findByIssueTypeAndId(issueType, id)
 			.orElseThrow(() -> new ResourceNotFoundException("Issue field not found."));
+	}
+
+	public List<IssueField> findByIssueType(IssueType issueType) {
+		return issueFieldRepo.findByIssueType(issueType);
 	}
 }

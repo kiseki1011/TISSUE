@@ -71,7 +71,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
+		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
 
 		if (labelUnchanged(field.getLabel(), cmd.label())) {
 			return IssueFieldResponse.from(field);
@@ -86,7 +86,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
+		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
 
 		Patchers.apply(cmd.description(), field::updateDescription);
 		Patchers.apply(cmd.required(), field::setRequired);
@@ -97,7 +97,10 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse softDelete(DeleteIssueFieldCommand cmd) {
 		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findIssueField(type, cmd.issueFieldId());
+		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
+
+		EnumFieldOptions options = EnumFieldOptions.fromActiveOrdered(field, findActiveOptions(field));
+		options.softDeleteAll();
 
 		issueFieldValidator.ensureDeletable(field);
 		field.softDelete();
@@ -168,7 +171,7 @@ public class IssueFieldService {
 
 	private IssueField findIssueField(String workspaceKey, Long typeId, Long fieldId) {
 		IssueType type = issueTypeFinder.findIssueType(workspaceKey, typeId);
-		return issueFieldFinder.findIssueField(type, fieldId);
+		return issueFieldFinder.findByTypeAndId(type, fieldId);
 	}
 
 	private EnumFieldOption findOption(IssueField field, Long optionId) {
