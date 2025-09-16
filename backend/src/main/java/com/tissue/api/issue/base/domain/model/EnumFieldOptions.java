@@ -17,8 +17,8 @@ public final class EnumFieldOptions {
 	private EnumFieldOptions(IssueField field, List<EnumFieldOption> activeOrdered) {
 		this.field = Objects.requireNonNull(field, "field");
 		this.active = List.copyOf(Objects.requireNonNull(activeOrdered, "active"));
-		assertSameField();
-		assertNonDecreasingOrder();
+		ensureSameField();
+		ensureNonDecreasingOrder();
 	}
 
 	public static EnumFieldOptions fromActiveOrdered(IssueField field, List<EnumFieldOption> activeOrdered) {
@@ -33,16 +33,10 @@ public final class EnumFieldOptions {
 		return active.stream().map(EnumFieldOption::getId).toList();
 	}
 
-	public boolean isAlignedWith(List<Long> orderedKeys) {
-		if (orderedKeys == null || orderedKeys.size() != active.size()) {
-			return false;
+	public void softDeleteAll() {
+		for (EnumFieldOption o : active) {
+			o.softDelete();
 		}
-		for (int i = 0; i < active.size(); i++) {
-			if (!Objects.equals(active.get(i).getId(), orderedKeys.get(i))) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public void resequenceTo(List<Long> orderedKeys) {
@@ -53,10 +47,16 @@ public final class EnumFieldOptions {
 		applyIndices(orderedKeys);
 	}
 
-	public void softDeleteAll() {
-		for (EnumFieldOption o : active) {
-			o.softDelete();
+	private boolean isAlignedWith(List<Long> orderedKeys) {
+		if (orderedKeys == null || orderedKeys.size() != active.size()) {
+			return false;
 		}
+		for (int i = 0; i < active.size(); i++) {
+			if (!Objects.equals(active.get(i).getId(), orderedKeys.get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public int nextIndex() {
@@ -88,7 +88,7 @@ public final class EnumFieldOptions {
 		}
 	}
 
-	private void assertSameField() {
+	private void ensureSameField() {
 		Long fid = field.getId();
 		for (EnumFieldOption o : active) {
 			if (!Objects.equals(o.getField().getId(), fid)) {
@@ -97,7 +97,7 @@ public final class EnumFieldOptions {
 		}
 	}
 
-	private void assertNonDecreasingOrder() {
+	private void ensureNonDecreasingOrder() {
 		for (int i = 1; i < active.size(); i++) {
 			if (active.get(i - 1).getPosition() > active.get(i).getPosition()) {
 				throw new IllegalStateException("Active options must be ordered by position (non-decreasing).");
