@@ -111,7 +111,7 @@ public class IssueFieldController {
 
 	@PutMapping("/fields/{id}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> renameEnumFieldOption(
+	public ApiResponse<IssueFieldResponse> renameEnumFieldOption(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
@@ -121,13 +121,12 @@ public class IssueFieldController {
 		IssueFieldResponse response = issueFieldService.renameOption(
 			request.toCommand(workspaceKey, issueTypeId, id, optionId));
 
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Option for ENUM type issue field renamed.", response));
+		return ApiResponse.ok("Option for ENUM type issue field renamed.", response);
 	}
 
 	@PutMapping("/fields/{id}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> reorderEnumFieldOptions(
+	public ApiResponse<IssueFieldResponse> reorderEnumFieldOptions(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
@@ -136,13 +135,12 @@ public class IssueFieldController {
 		IssueFieldResponse response = issueFieldService.reorderOptions(
 			request.toCommand(workspaceKey, issueTypeId, id));
 
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Options for ENUM type issue field reordered.", response));
+		return ApiResponse.ok("Options for ENUM type issue field reordered.", response);
 	}
 
 	@DeleteMapping("/fields/{id}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> softDeleteEnumFieldOption(
+	public ApiResponse<IssueFieldResponse> softDeleteEnumFieldOption(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
@@ -150,7 +148,6 @@ public class IssueFieldController {
 	) {
 		IssueFieldResponse response = issueFieldService.softDeleteOption(workspaceKey, issueTypeId, id, optionId);
 
-		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Option for ENUM type issue field deleted.", response));
+		return ApiResponse.ok("Option for ENUM type issue field deleted.", response);
 	}
 }
