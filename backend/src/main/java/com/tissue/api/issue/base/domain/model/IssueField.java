@@ -85,8 +85,8 @@ public class IssueField extends BaseEntity {
 			.build();
 	}
 
-	public String getWorkspaceCode() {
-		return issueType.getWorkspaceCode();
+	public String getWorkspaceKey() {
+		return issueType.getWorkspaceKey();
 	}
 
 	public void rename(String label) {

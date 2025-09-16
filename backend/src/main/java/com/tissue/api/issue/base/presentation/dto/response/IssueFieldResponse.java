@@ -6,13 +6,13 @@ import lombok.Builder;
 
 @Builder
 public record IssueFieldResponse(
-	String workspaceCode,
+	String workspaceKey,
 	Long issueTypeId,
 	Long issueFieldId
 ) {
 	public static IssueFieldResponse from(IssueField issueField) {
 		return IssueFieldResponse.builder()
-			.workspaceCode(issueField.getWorkspaceCode())
+			.workspaceKey(issueField.getWorkspaceKey())
 			.issueTypeId(issueField.getIssueType().getId())
 			.issueFieldId(issueField.getId())
 			.build();

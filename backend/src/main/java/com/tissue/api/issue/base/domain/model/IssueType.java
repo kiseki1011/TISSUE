@@ -102,7 +102,7 @@ public class IssueType extends BaseEntity {
 			.build();
 	}
 
-	public String getWorkspaceCode() {
+	public String getWorkspaceKey() {
 		return workspace.getKey();
 	}
 
