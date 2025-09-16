@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 
+import jakarta.validation.constraints.NotEmpty;
+
 public record ReorderOptionsRequest(
-	// @NotEmpty(message = "{valid.notempty}")
+	@NotEmpty(message = "{valid.notempty}")
 	List<Long> orderedIds
 ) {
 	public ReorderOptionsCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {

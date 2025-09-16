@@ -1,12 +1,13 @@
 package com.tissue.api.issue.base.presentation.dto.request;
 
 import com.tissue.api.common.util.TextNormalizer;
+import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
 
 import jakarta.validation.constraints.NotBlank;
 
 public record RenameOptionRequest(
-	@NotBlank(message = "{valid.notblank}") String newLabel
+	@NotBlank(message = "{valid.notblank}") @LabelSize String label
 ) {
 	public RenameOptionCommand toCommand(
 		String workspaceKey,
@@ -19,7 +20,7 @@ public record RenameOptionRequest(
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
 			.optionId(optionId)
-			.newLabel(TextNormalizer.normalizeLabel(newLabel))
+			.label(TextNormalizer.normalizeLabel(label))
 			.build();
 	}
 }
