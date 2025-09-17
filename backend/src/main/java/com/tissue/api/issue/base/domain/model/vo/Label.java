@@ -6,7 +6,6 @@ import static com.tissue.api.common.util.TextNormalizer.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,10 +13,9 @@ import lombok.ToString;
 
 @Embeddable
 @Getter
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 @EqualsAndHashCode(of = "normalized")
-@ToString(of = "display")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Label {
 
 	@Column(name = "label", nullable = false, length = 32)
@@ -25,6 +23,11 @@ public class Label {
 
 	@Column(name = "label_normalized", nullable = false, length = 32)
 	private String normalized;
+
+	private Label(String display, String normalized) {
+		this.display = display;
+		this.normalized = normalized;
+	}
 
 	public static Label of(String raw) {
 		String checked = requireNotNull(raw, "label");
