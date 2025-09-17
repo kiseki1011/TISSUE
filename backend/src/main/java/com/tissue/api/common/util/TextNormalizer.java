@@ -2,6 +2,7 @@ package com.tissue.api.common.util;
 
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.Objects;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -10,10 +11,16 @@ import lombok.NoArgsConstructor;
 public class TextNormalizer {
 
 	public static String normalizeLabel(String value) {
-		return nfc(stripToEmpty(value));
+		Objects.requireNonNull(value);
+		return nfc(value.strip());
 	}
 
-	public static String stripToEmpty(String value) {
+	public static String normalizeForUniq(String value) {
+		Objects.requireNonNull(value);
+		return lower(nfc(value.strip()));
+	}
+
+	public static String stripNullToEmpty(String value) {
 		return value == null ? "" : value.strip();
 	}
 
@@ -21,11 +28,11 @@ public class TextNormalizer {
 		return (value == null || value.isBlank()) ? null : value;
 	}
 
-	public static String nfc(String value) {
-		return value == null ? null : Normalizer.normalize(value, Normalizer.Form.NFC);
+	public static String lower(String value) {
+		return value.toLowerCase(Locale.ROOT);
 	}
 
-	public static String lower(String value) {
-		return value == null ? null : value.toLowerCase(Locale.ROOT);
+	private static String nfc(String value) {
+		return Normalizer.normalize(value, Normalizer.Form.NFC);
 	}
 }
