@@ -16,7 +16,7 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 
 	List<EnumFieldOption> findByFieldOrderByPositionAsc(IssueField field);
 
-	boolean existsByFieldAndLabel(IssueField field, String label);
+	boolean existsByFieldAndLabel_Normalized(IssueField field, String label);
 
 	int countByField(IssueField field);
 

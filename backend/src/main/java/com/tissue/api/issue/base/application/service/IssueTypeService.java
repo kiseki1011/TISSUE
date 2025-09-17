@@ -17,6 +17,7 @@ import com.tissue.api.issue.base.domain.model.EnumFieldOption;
 import com.tissue.api.issue.base.domain.model.EnumFieldOptions;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueTypeRepository;
 import com.tissue.api.issue.base.presentation.dto.response.IssueTypeResponse;
@@ -92,11 +93,9 @@ public class IssueTypeService {
 
 		issueTypeValidator.ensureDeletable(issueType);
 
-		// TODO: 계단식으로 전파되는 soft-delete의 구현을 더 효율적으로 못하나?
-		//  현재의 nested for 문이 과연 최선일까 고민이 됨.
-		//  IssueType -> List<IssueField> -> List<EnumFieldOption>에 많아봤자 100개가 안 넘어갈 것 같은데.
 		List<IssueField> fields = issueFieldFinder.findByIssueType(issueType);
 
+		// TODO: Batch-delete으로 구현하는게 더 효율적
 		for (IssueField field : fields) {
 			EnumFieldOptions options = EnumFieldOptions.fromActiveOrdered(field, findActiveOptions(field));
 			options.softDeleteAll();
@@ -106,7 +105,7 @@ public class IssueTypeService {
 		issueType.softDelete();
 	}
 
-	private boolean labelUnchanged(IssueType it, String newLabel) {
+	private boolean labelUnchanged(IssueType it, Label newLabel) {
 		return Objects.equals(it.getLabel(), newLabel);
 	}
 

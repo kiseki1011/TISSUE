@@ -15,8 +15,8 @@ public final class EnumFieldOptions {
 	private final List<EnumFieldOption> active;
 
 	private EnumFieldOptions(IssueField field, List<EnumFieldOption> activeOrdered) {
-		this.field = Objects.requireNonNull(field, "field");
-		this.active = List.copyOf(Objects.requireNonNull(activeOrdered, "active"));
+		this.field = Objects.requireNonNull(field);
+		this.active = List.copyOf(Objects.requireNonNull(activeOrdered));
 		ensureSameField();
 		ensureNonDecreasingOrder();
 	}

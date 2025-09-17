@@ -1,8 +1,8 @@
 package com.tissue.api.issue.base.presentation.dto.request;
 
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issue.base.application.dto.RenameIssueTypeCommand;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -13,7 +13,7 @@ public record RenameIssueTypeRequest(
 		return RenameIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
 			.id(id)
-			.label(TextNormalizer.normalizeLabel(label))
+			.label(Label.of(label))
 			.build();
 	}
 }

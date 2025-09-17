@@ -3,15 +3,18 @@ package com.tissue.api.issue.base.domain.model;
 import java.util.Objects;
 
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,9 +30,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
 @Table(
 	// uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "label"})},
@@ -42,14 +47,16 @@ public class IssueType extends BaseEntity {
 	// @SequenceGenerator(name = "issue_type_seq_gen", sequenceName = "issue_type_seq", allocationSize = 50)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ToString.Include
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false, length = 32)
-	private String label;
+	@Embedded
+	@ToString.Include
+	private Label label;
 
 	@Column(nullable = false)
 	private String description;
@@ -74,14 +81,14 @@ public class IssueType extends BaseEntity {
 	@Builder
 	private IssueType(
 		Workspace workspace,
-		String label,
+		Label label,
 		String description,
 		ColorType color,
 		HierarchyLevel hierarchyLevel,
 		Workflow workflow
 	) {
 		this.workspace = Objects.requireNonNull(workspace);
-		this.label = DomainPreconditions.requireNotBlank(label, "label");
+		this.label = Objects.requireNonNull(label);
 		this.description = DomainPreconditions.nullToEmpty(description);
 		this.color = DomainPreconditions.requireNotNull(color, "color");
 		this.hierarchyLevel = DomainPreconditions.requireNotNull(hierarchyLevel, "hierarchyLevel");
@@ -89,8 +96,13 @@ public class IssueType extends BaseEntity {
 		this.systemType = false;
 	}
 
-	public static IssueType create(Workspace workspace, String label, String description, ColorType color,
-		HierarchyLevel hierarchyLevel, Workflow workflow
+	public static IssueType create(
+		Workspace workspace,
+		Label label,
+		@Nullable String description,
+		ColorType color,
+		HierarchyLevel hierarchyLevel,
+		Workflow workflow
 	) {
 		return IssueType.builder()
 			.workspace(workspace)
@@ -106,8 +118,8 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
-	public void rename(String label) {
-		this.label = DomainPreconditions.requireNotBlank(label, "label");
+	public void rename(Label label) {
+		this.label = Objects.requireNonNull(label);
 	}
 
 	public void updateDescription(String description) {

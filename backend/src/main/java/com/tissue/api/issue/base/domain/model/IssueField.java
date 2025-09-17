@@ -1,12 +1,17 @@
 package com.tissue.api.issue.base.domain.model;
 
+import java.util.Objects;
+
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.issue.base.domain.enums.FieldType;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,9 +27,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
 @Table(
 	// uniqueConstraints = {@UniqueConstraint(columnNames = {"issueType_id", "label"})},
@@ -39,10 +46,12 @@ public class IssueField extends BaseEntity {
 	// @SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ToString.Include
 	private Long id;
 
-	@Column(nullable = false, length = 32)
-	private String label;
+	@Embedded
+	@ToString.Include
+	private Label label;
 
 	@Column(nullable = false)
 	private String description;
@@ -60,20 +69,24 @@ public class IssueField extends BaseEntity {
 
 	@Builder
 	private IssueField(
-		String label,
+		Label label,
 		String description,
 		FieldType fieldType,
 		Boolean required,
 		IssueType issueType
 	) {
-		this.label = DomainPreconditions.requireNotBlank(label, "label");
+		this.label = Objects.requireNonNull(label);
 		this.description = DomainPreconditions.nullToEmpty(description);
 		this.fieldType = DomainPreconditions.requireNotNull(fieldType, "fieldType");
 		this.required = Boolean.TRUE.equals(required);
 		this.issueType = DomainPreconditions.requireNotNull(issueType, "issueType");
 	}
 
-	public static IssueField create(String label, String description, FieldType fieldType, Boolean required,
+	public static IssueField create(
+		Label label,
+		@Nullable String description,
+		FieldType fieldType,
+		Boolean required,
 		IssueType issueType
 	) {
 		return IssueField.builder()
@@ -89,8 +102,8 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceKey();
 	}
 
-	public void rename(String label) {
-		this.label = DomainPreconditions.requireNotBlank(label, "label");
+	public void rename(Label label) {
+		this.label = Objects.requireNonNull(label);
 	}
 
 	public void updateDescription(String description) {

@@ -6,6 +6,7 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldValueRepository;
 
@@ -18,10 +19,10 @@ public class IssueFieldValidator {
 	private final IssueFieldRepository issueFieldRepo;
 	private final IssueFieldValueRepository fieldValueRepo;
 
-	public void ensureUniqueLabel(IssueType type, String label) {
-		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel(type, label);
+	public void ensureUniqueLabel(IssueType type, Label label) {
+		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel_Normalized(type, label.getNormalized());
 		if (duplicated) {
-			throw new ResourceConflictException("Field label already exists for this issue type.");
+			throw new ResourceConflictException("Label already exists for this issue type.");
 		}
 	}
 

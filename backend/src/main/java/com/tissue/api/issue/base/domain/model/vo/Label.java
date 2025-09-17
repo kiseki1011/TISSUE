@@ -13,12 +13,13 @@ import lombok.ToString;
 
 @Embeddable
 @Getter
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(of = "normalized")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Label {
 
 	@Column(name = "label", nullable = false, length = 32)
+	@ToString.Include
 	private String display;
 
 	@Column(name = "label_normalized", nullable = false, length = 32)

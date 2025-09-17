@@ -1,5 +1,7 @@
 package com.tissue.api.issue.base.application.dto;
 
+import com.tissue.api.issue.base.domain.model.vo.Label;
+
 import lombok.Builder;
 
 @Builder
@@ -8,6 +10,6 @@ public record RenameOptionCommand(
 	Long issueTypeId,
 	Long issueFieldId,
 	Long optionId,
-	String label
+	Label label
 ) {
 }

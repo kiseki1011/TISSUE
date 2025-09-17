@@ -14,5 +14,5 @@ public interface IssueFieldRepository extends JpaRepository<IssueField, Long> {
 
 	List<IssueField> findByIssueType(IssueType issueType);
 
-	boolean existsByIssueTypeAndLabel(IssueType issueType, String label);
+	boolean existsByIssueTypeAndLabel_Normalized(IssueType issueType, String label);
 }

@@ -24,6 +24,7 @@ import com.tissue.api.issue.base.domain.model.EnumFieldOption;
 import com.tissue.api.issue.base.domain.model.EnumFieldOptions;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.base.domain.policy.IssueFieldPolicy;
 import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
@@ -165,7 +166,7 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(field);
 	}
 
-	private boolean labelUnchanged(String currentLabel, String newLabel) {
+	private boolean labelUnchanged(Label currentLabel, Label newLabel) {
 		return Objects.equals(currentLabel, newLabel);
 	}
 
@@ -187,7 +188,7 @@ public class IssueFieldService {
 		int pos = 0;
 		List<EnumFieldOption> options = new ArrayList<>(labels.size());
 		for (String label : labels) {
-			options.add(EnumFieldOption.create(field, label, pos++));
+			options.add(EnumFieldOption.create(field, Label.of(label), pos++));
 		}
 		optionRepo.saveAll(options);
 	}

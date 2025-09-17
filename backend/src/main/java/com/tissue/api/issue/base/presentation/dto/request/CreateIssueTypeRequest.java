@@ -1,11 +1,11 @@
 package com.tissue.api.issue.base.presentation.dto.request;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.util.TextNormalizer;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +20,7 @@ public record CreateIssueTypeRequest(
 	public CreateIssueTypeCommand toCommand(String workspaceKey) {
 		return CreateIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
-			.label(TextNormalizer.normalizeLabel(label))
+			.label(Label.of(label))
 			.description(description)
 			.color(color)
 			.hierarchyLevel(hierarchyLevel)

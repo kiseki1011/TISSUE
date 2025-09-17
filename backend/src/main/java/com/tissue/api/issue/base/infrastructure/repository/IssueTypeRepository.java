@@ -9,9 +9,7 @@ import com.tissue.api.workspace.domain.model.Workspace;
 
 public interface IssueTypeRepository extends JpaRepository<IssueType, Long> {
 
-	boolean existsByWorkspaceAndLabel(Workspace workspace, String label);
-
-	boolean existsByWorkspaceAndLabelAndIdNot(Workspace workspace, String label, Long excludeId);
+	boolean existsByWorkspaceAndLabel_Normalized(Workspace workspace, String label);
 
 	Optional<IssueType> findByWorkspace_KeyAndId(String workspaceKey, Long id);
 
