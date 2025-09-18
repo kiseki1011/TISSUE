@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
 import com.tissue.api.issue.base.application.service.IssueFieldService;
 import com.tissue.api.issue.base.presentation.dto.request.AddOptionRequest;
 import com.tissue.api.issue.base.presentation.dto.request.CreateIssueFieldRequest;
@@ -44,13 +43,11 @@ public class IssueFieldController {
 	public ResponseEntity<ApiResponse<IssueFieldResponse>> createIssueField(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
-		@RequestBody @Valid CreateIssueFieldRequest request
+		@RequestBody @Valid CreateIssueFieldRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.create(
-			request.toCommand(workspaceKey, issueTypeId));
-
+		IssueFieldResponse res = issueFieldService.create(req.toCommand(workspaceKey, issueTypeId));
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Issue field created.", response));
+			.body(ApiResponse.created("Issue field created.", res));
 	}
 
 	@PutMapping("/fields/{id}/rename")
@@ -59,12 +56,10 @@ public class IssueFieldController {
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
-		@RequestBody @Valid RenameIssueFieldRequest request
+		@RequestBody @Valid RenameIssueFieldRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.rename(
-			request.toCommand(workspaceKey, issueTypeId, id));
-
-		return ApiResponse.ok("Issue field renamed.", response);
+		IssueFieldResponse res = issueFieldService.rename(req.toCommand(workspaceKey, issueTypeId, id));
+		return ApiResponse.ok("Issue field renamed.", res);
 	}
 
 	@PatchMapping("/fields/{id}")
@@ -73,12 +68,10 @@ public class IssueFieldController {
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
-		@RequestBody @Valid PatchIssueFieldRequest request
+		@RequestBody @Valid PatchIssueFieldRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.patch(
-			request.toCommand(workspaceKey, issueTypeId, id));
-
-		return ApiResponse.ok("Issue field updated.", response);
+		IssueFieldResponse res = issueFieldService.patch(req.toCommand(workspaceKey, issueTypeId, id));
+		return ApiResponse.ok("Issue field updated.", res);
 	}
 
 	@DeleteMapping("/fields/{id}")
@@ -88,10 +81,8 @@ public class IssueFieldController {
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id
 	) {
-		IssueFieldResponse response = issueFieldService.softDelete(
-			new DeleteIssueFieldCommand(workspaceKey, issueTypeId, id));
-
-		return ApiResponse.ok("Issue field deleted.", response);
+		IssueFieldResponse res = issueFieldService.softDelete(workspaceKey, issueTypeId, id);
+		return ApiResponse.ok("Issue field archived.", res);
 	}
 
 	@PostMapping("/fields/{id}/options")
@@ -100,13 +91,11 @@ public class IssueFieldController {
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
-		@RequestBody @Valid AddOptionRequest request
+		@RequestBody @Valid AddOptionRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.addOption(
-			request.toCommand(workspaceKey, issueTypeId, id));
-
+		IssueFieldResponse res = issueFieldService.addOption(req.toCommand(workspaceKey, issueTypeId, id));
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Option for ENUM type issue field added.", response));
+			.body(ApiResponse.created("Option for ENUM type issue field added.", res));
 	}
 
 	@PutMapping("/fields/{id}/options/{optionId}")
@@ -116,12 +105,10 @@ public class IssueFieldController {
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
 		@PathVariable Long optionId,
-		@RequestBody @Valid RenameOptionRequest request
+		@RequestBody @Valid RenameOptionRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.renameOption(
-			request.toCommand(workspaceKey, issueTypeId, id, optionId));
-
-		return ApiResponse.ok("Option for ENUM type issue field renamed.", response);
+		IssueFieldResponse res = issueFieldService.renameOption(req.toCommand(workspaceKey, issueTypeId, id, optionId));
+		return ApiResponse.ok("Option for ENUM type issue field renamed.", res);
 	}
 
 	@PutMapping("/fields/{id}/options")
@@ -130,12 +117,10 @@ public class IssueFieldController {
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
-		@RequestBody @Valid ReorderOptionsRequest request
+		@RequestBody @Valid ReorderOptionsRequest req
 	) {
-		IssueFieldResponse response = issueFieldService.reorderOptions(
-			request.toCommand(workspaceKey, issueTypeId, id));
-
-		return ApiResponse.ok("Options for ENUM type issue field reordered.", response);
+		IssueFieldResponse res = issueFieldService.reorderOptions(req.toCommand(workspaceKey, issueTypeId, id));
+		return ApiResponse.ok("Options for ENUM type issue field reordered.", res);
 	}
 
 	@DeleteMapping("/fields/{id}/options/{optionId}")
@@ -146,8 +131,7 @@ public class IssueFieldController {
 		@PathVariable Long id,
 		@PathVariable Long optionId
 	) {
-		IssueFieldResponse response = issueFieldService.softDeleteOption(workspaceKey, issueTypeId, id, optionId);
-
-		return ApiResponse.ok("Option for ENUM type issue field deleted.", response);
+		IssueFieldResponse res = issueFieldService.softDeleteOption(workspaceKey, issueTypeId, id, optionId);
+		return ApiResponse.ok("Option for ENUM type issue field archived.", res);
 	}
 }

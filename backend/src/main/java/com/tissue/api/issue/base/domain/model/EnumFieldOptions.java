@@ -33,12 +33,6 @@ public final class EnumFieldOptions {
 		return active.stream().map(EnumFieldOption::getId).toList();
 	}
 
-	public void softDeleteAll() {
-		for (EnumFieldOption o : active) {
-			o.softDelete();
-		}
-	}
-
 	public void resequenceTo(List<Long> orderedKeys) {
 		ensurePermutationOf(orderedKeys);
 		if (isAlignedWith(orderedKeys)) {

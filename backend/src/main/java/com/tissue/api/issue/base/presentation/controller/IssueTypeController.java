@@ -77,12 +77,12 @@ public class IssueTypeController {
 
 	@DeleteMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<Void> softDelete(
+	public ApiResponse<IssueTypeResponse> softDelete(
 		@PathVariable String workspaceKey,
 		@PathVariable Long id,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		issueTypeService.softDelete(workspaceKey, id);
-		return ApiResponse.okWithNoContent("Issue type deleted.");
+		IssueTypeResponse response = issueTypeService.softDelete(workspaceKey, id);
+		return ApiResponse.ok("Issue type archived.", response);
 	}
 }

@@ -10,15 +10,14 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.base.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.RenameIssueTypeCommand;
-import com.tissue.api.issue.base.application.finder.IssueFieldFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.IssueTypeValidator;
 import com.tissue.api.issue.base.domain.model.EnumFieldOption;
-import com.tissue.api.issue.base.domain.model.EnumFieldOptions;
 import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
+import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.infrastructure.repository.IssueTypeRepository;
 import com.tissue.api.issue.base.presentation.dto.response.IssueTypeResponse;
 import com.tissue.api.issue.workflow.application.finder.WorkflowFinder;
@@ -33,12 +32,12 @@ import lombok.RequiredArgsConstructor;
 public class IssueTypeService {
 
 	private final WorkspaceFinder workspaceFinder;
-	private final IssueTypeRepository issueTypeRepository;
+	private final IssueTypeRepository issueTypeRepo;
+	private final IssueFieldRepository issueFieldRepo;
 	private final EnumFieldOptionRepository optionRepo;
 	private final IssueTypeValidator issueTypeValidator;
 	private final WorkflowFinder workflowFinder;
 	private final IssueTypeFinder issueTypeFinder;
-	private final IssueFieldFinder issueFieldFinder;
 
 	@Transactional
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
@@ -56,7 +55,7 @@ public class IssueTypeService {
 			workflow
 		);
 
-		IssueType savedType = issueTypeRepository.save(issueType);
+		IssueType savedType = issueTypeRepo.save(issueType);
 
 		return IssueTypeResponse.from(savedType);
 	}
@@ -88,21 +87,16 @@ public class IssueTypeService {
 	}
 
 	@Transactional
-	public void softDelete(String workspaceKey, Long id) {
+	public IssueTypeResponse softDelete(String workspaceKey, Long id) {
 		IssueType issueType = issueTypeFinder.findIssueType(workspaceKey, id);
 
 		issueTypeValidator.ensureDeletable(issueType);
 
-		List<IssueField> fields = issueFieldFinder.findByIssueType(issueType);
-
-		// TODO: Batch-delete으로 구현하는게 더 효율적
-		for (IssueField field : fields) {
-			EnumFieldOptions options = EnumFieldOptions.fromActiveOrdered(field, findActiveOptions(field));
-			options.softDeleteAll();
-			field.softDelete();
-		}
-
+		optionRepo.softDeleteByIssueType(issueType);
+		issueFieldRepo.softDeleteByIssueType(issueType);
 		issueType.softDelete();
+
+		return IssueTypeResponse.from(issueType);
 	}
 
 	private boolean labelUnchanged(IssueType it, Label newLabel) {

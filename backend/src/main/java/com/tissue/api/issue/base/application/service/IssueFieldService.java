@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.base.application.dto.AddOptionCommand;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
-import com.tissue.api.issue.base.application.dto.DeleteIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.PatchIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.RenameIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
@@ -96,14 +95,13 @@ public class IssueFieldService {
 	}
 
 	@Transactional
-	public IssueFieldResponse softDelete(DeleteIssueFieldCommand cmd) {
-		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
-
-		EnumFieldOptions options = EnumFieldOptions.fromActiveOrdered(field, findActiveOptions(field));
-		options.softDeleteAll();
+	public IssueFieldResponse softDelete(String workspaceKey, Long issueTypeId, Long issueFieldId) {
+		IssueType type = issueTypeFinder.findIssueType(workspaceKey, issueTypeId);
+		IssueField field = issueFieldFinder.findByTypeAndId(type, issueFieldId);
 
 		issueFieldValidator.ensureDeletable(field);
+
+		optionRepo.softDeleteByField(field);
 		field.softDelete();
 
 		return IssueFieldResponse.from(field);
