@@ -27,6 +27,7 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 		+ "where v.enumOption = :option")
 	boolean isInUse(@Param("option") EnumFieldOption option);
 
+	// TODO: EnumFieldOption @Version 적용 후, 배치 업데이트 메서드에 o.version=o.version+1 추가
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update EnumFieldOption o "
 		+ "set o.archived = true, "
