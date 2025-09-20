@@ -11,11 +11,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateIssueTypeRequest(
-	@NotBlank(message = "{valid.notblank}") @LabelSize String label,
+	@NotBlank @LabelSize String label,
 	@StandardText String description,
-	@NotNull(message = "{valid.notnull}") ColorType color,
-	@NotNull(message = "{valid.notnull}") HierarchyLevel hierarchyLevel,
-	@NotBlank(message = "{valid.notblank}") String workflowKey
+	@NotNull ColorType color,
+	@NotNull HierarchyLevel hierarchyLevel,
+	@NotBlank String workflowKey
 ) {
 	public CreateIssueTypeCommand toCommand(String workspaceKey) {
 		return CreateIssueTypeCommand.builder()

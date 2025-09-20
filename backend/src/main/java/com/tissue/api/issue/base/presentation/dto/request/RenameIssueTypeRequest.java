@@ -7,7 +7,7 @@ import com.tissue.api.issue.base.domain.model.vo.Label;
 import jakarta.validation.constraints.NotBlank;
 
 public record RenameIssueTypeRequest(
-	@NotBlank(message = "{valid.notblank}") @LabelSize String label
+	@NotBlank @LabelSize String label
 ) {
 	public RenameIssueTypeCommand toCommand(String workspaceKey, Long id) {
 		return RenameIssueTypeCommand.builder()
