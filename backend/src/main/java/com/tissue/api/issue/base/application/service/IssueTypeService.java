@@ -1,6 +1,5 @@
 package com.tissue.api.issue.base.application.service;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -12,8 +11,6 @@ import com.tissue.api.issue.base.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issue.base.application.dto.RenameIssueTypeCommand;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.IssueTypeValidator;
-import com.tissue.api.issue.base.domain.model.EnumFieldOption;
-import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueType;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionRepository;
@@ -101,9 +98,5 @@ public class IssueTypeService {
 
 	private boolean labelUnchanged(IssueType it, Label newLabel) {
 		return Objects.equals(it.getLabel(), newLabel);
-	}
-
-	private List<EnumFieldOption> findActiveOptions(IssueField field) {
-		return optionRepo.findByFieldOrderByPositionAsc(field);
 	}
 }

@@ -20,10 +20,6 @@ public class TextNormalizer {
 		return lower(nfc(value.strip()));
 	}
 
-	public static String stripNullToEmpty(String value) {
-		return value == null ? "" : value.strip();
-	}
-
 	public static String blankToNull(String value) {
 		return (value == null || value.isBlank()) ? null : value;
 	}
