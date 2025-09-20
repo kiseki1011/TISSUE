@@ -18,18 +18,6 @@ public class KeyGenerator {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.SPRINT, sprintNumber);
 	}
 
-	public static String generateIssueTypeKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE_TYPE, id);
-	}
-
-	public static String generateIssueFieldKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE_FIELD, id);
-	}
-
-	public static String generateEnumFieldOptionKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.ISSUE_ENUM_FIELD_OPTION, id);
-	}
-
 	public static String generateWorkflowKey(long id) {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKFLOW, id);
 	}
