@@ -51,6 +51,7 @@ public class IssueField extends BaseEntity {
 	private Long id;
 
 	@Version
+	@ToString.Include
 	private Long version;
 
 	@Embedded

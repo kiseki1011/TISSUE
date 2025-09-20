@@ -48,6 +48,7 @@ public class EnumFieldOption extends BaseEntity {
 	private Long id;
 
 	@Version
+	@ToString.Include
 	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
