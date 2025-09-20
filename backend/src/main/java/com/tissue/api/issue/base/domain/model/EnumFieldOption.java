@@ -44,6 +44,7 @@ public class EnumFieldOption extends BaseEntity {
 	// @SequenceGenerator(name = "field_option_seq_gen", sequenceName = "field_option_seq", allocationSize = 50)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ToString.Include
 	private Long id;
 
 	@Version

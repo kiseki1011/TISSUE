@@ -23,6 +23,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,6 +49,9 @@ public class IssueField extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@ToString.Include
 	private Long id;
+
+	@Version
+	private Long version;
 
 	@Embedded
 	@ToString.Include
@@ -106,7 +110,7 @@ public class IssueField extends BaseEntity {
 		this.label = Objects.requireNonNull(label);
 	}
 
-	public void updateDescription(String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = DomainPreconditions.nullToEmpty(description);
 	}
 
