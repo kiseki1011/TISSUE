@@ -4,12 +4,11 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 import com.tissue.api.issue.base.application.dto.PatchIssueFieldCommand;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record PatchIssueFieldRequest(
 	JsonNullable<@Size(max = 255) String> description,
-	JsonNullable<@NotNull Boolean> required
+	JsonNullable<Boolean> required
 ) {
 	public PatchIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return PatchIssueFieldCommand.builder()

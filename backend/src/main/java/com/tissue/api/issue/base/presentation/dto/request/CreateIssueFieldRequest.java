@@ -2,19 +2,21 @@ package com.tissue.api.issue.base.presentation.dto.request;
 
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
 import com.tissue.api.issue.base.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record CreateIssueFieldRequest(
 	@NotBlank @LabelSize String label,
-	@StandardText String description,
+	@Nullable @Size(max = 255) String description,
 	@NotNull FieldType fieldType,
 	@NotNull Boolean required,
 	List<String> initialOptions
