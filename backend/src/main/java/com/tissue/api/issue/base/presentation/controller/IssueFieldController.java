@@ -40,7 +40,7 @@ public class IssueFieldController {
 
 	@PostMapping("/fields")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> createIssueField(
+	public ResponseEntity<ApiResponse<IssueFieldResponse>> create(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@RequestBody @Valid CreateIssueFieldRequest req
@@ -52,7 +52,7 @@ public class IssueFieldController {
 
 	@PutMapping("/fields/{id}/rename")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> renameIssueField(
+	public ApiResponse<IssueFieldResponse> rename(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,
@@ -64,7 +64,7 @@ public class IssueFieldController {
 
 	@PatchMapping("/fields/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> patchIssueField(
+	public ApiResponse<IssueFieldResponse> patchMetaData(
 		@PathVariable String workspaceKey,
 		@PathVariable Long issueTypeId,
 		@PathVariable Long id,

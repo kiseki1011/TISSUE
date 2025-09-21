@@ -65,7 +65,7 @@ public class IssueTypeController {
 	// Don't allow HierachyLevel, Workflow update
 	@PatchMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> update(
+	public ApiResponse<IssueTypeResponse> patchMetaData(
 		@PathVariable String workspaceKey,
 		@PathVariable Long id,
 		@CurrentMember MemberUserDetails userDetails,
