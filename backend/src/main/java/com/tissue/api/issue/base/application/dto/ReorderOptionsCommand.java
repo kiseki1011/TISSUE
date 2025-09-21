@@ -9,6 +9,6 @@ public record ReorderOptionsCommand(
 	String workspaceKey,
 	Long issueTypeId,
 	Long issueFieldId,
-	List<Long> orderedIds
+	List<Long> targetOrderedIds
 ) {
 }

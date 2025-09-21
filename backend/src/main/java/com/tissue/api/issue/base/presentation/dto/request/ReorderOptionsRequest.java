@@ -7,14 +7,14 @@ import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 import jakarta.validation.constraints.NotEmpty;
 
 public record ReorderOptionsRequest(
-	@NotEmpty List<Long> orderedIds
+	@NotEmpty List<Long> targetOrderedIds
 ) {
 	public ReorderOptionsCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
 		return ReorderOptionsCommand.builder()
 			.workspaceKey(workspaceKey)
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
-			.orderedIds(orderedIds)
+			.targetOrderedIds(targetOrderedIds)
 			.build();
 	}
 }

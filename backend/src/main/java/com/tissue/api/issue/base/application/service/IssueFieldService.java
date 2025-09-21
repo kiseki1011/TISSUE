@@ -29,6 +29,7 @@ import com.tissue.api.issue.base.infrastructure.repository.EnumFieldOptionReposi
 import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,7 @@ public class IssueFieldService {
 	private final IssueFieldValidator issueFieldValidator;
 	private final EnumFieldOptionValidator optionValidator;
 	private final IssueFieldPolicy issueFieldPolicy;
+	private final EntityManager entityManager;
 
 	@Transactional
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
@@ -107,6 +109,9 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(field);
 	}
 
+	// TODO: Add retry logic for DataIntegrityViolationException
+	//  - Catch the exception of the unique constraint (field_id, position)
+	//  - Concurrent request might cause duplicate position
 	@Transactional
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
@@ -141,8 +146,14 @@ public class IssueFieldService {
 	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
 
-		EnumFieldOptions options = EnumFieldOptions.fromActiveOrdered(field, findActiveOptions(field));
-		options.resequenceTo(cmd.orderedIds());
+		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field, findActiveOptions(field));
+
+		options.ensureExactActiveIds(cmd.targetOrderedIds());
+		options.bumpPositions();
+
+		entityManager.flush();
+
+		options.reorderTo(cmd.targetOrderedIds());
 
 		return IssueFieldResponse.from(field);
 	}

@@ -11,74 +11,77 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 
 public final class EnumFieldOptions {
 
+	private static final int DEFAULT_OFFSET = 1_000_000;
+
 	private final IssueField field;
 	private final List<EnumFieldOption> active;
 
-	private EnumFieldOptions(IssueField field, List<EnumFieldOption> activeOrdered) {
+	private EnumFieldOptions(IssueField field, List<EnumFieldOption> currentOptions) {
 		this.field = Objects.requireNonNull(field);
-		this.active = List.copyOf(Objects.requireNonNull(activeOrdered));
+		this.active = List.copyOf(Objects.requireNonNull(currentOptions));
 		ensureSameField();
 		ensureNonDecreasingOrder();
 	}
 
-	public static EnumFieldOptions fromActiveOrdered(IssueField field, List<EnumFieldOption> activeOrdered) {
-		return new EnumFieldOptions(field, activeOrdered);
+	public static EnumFieldOptions fromCurrentOptions(IssueField field, List<EnumFieldOption> currentOptions) {
+		return new EnumFieldOptions(field, currentOptions);
 	}
 
-	public int count() {
-		return active.size();
+	public void ensureExactActiveIds(List<Long> orderedIds) {
+		Objects.requireNonNull(orderedIds, "orderedIds");
+		ensureSameSizeAsActive(orderedIds);
+		ensureNoNullElements(orderedIds);
+		ensureNoDuplicateIds(orderedIds);
+		ensureValidActiveIds(orderedIds);
 	}
 
-	public List<Long> keys() {
-		return active.stream().map(EnumFieldOption::getId).toList();
-	}
-
-	public void resequenceTo(List<Long> orderedKeys) {
-		ensurePermutationOf(orderedKeys);
-		if (isAlignedWith(orderedKeys)) {
-			return;
-		}
-		applyIndices(orderedKeys);
-	}
-
-	private boolean isAlignedWith(List<Long> orderedKeys) {
-		if (orderedKeys == null || orderedKeys.size() != active.size()) {
-			return false;
-		}
-		for (int i = 0; i < active.size(); i++) {
-			if (!Objects.equals(active.get(i).getId(), orderedKeys.get(i))) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public int nextIndex() {
-		return active.isEmpty() ? 0 : active.get(active.size() - 1).getPosition() + 1;
-	}
-
-	private void ensurePermutationOf(List<Long> orderedKeys) {
-		Objects.requireNonNull(orderedKeys, "orderedKeys");
-		if (orderedKeys.size() != active.size()) {
-			throw new InvalidOperationException("Order size mismatch.");
-		}
-		Set<Long> uniq = new HashSet<>(orderedKeys);
-		if (uniq.size() != orderedKeys.size()) {
-			throw new InvalidOperationException("Order contains duplicates.");
-		}
-		if (!uniq.equals(new HashSet<>(keys()))) {
-			throw new InvalidOperationException("Order keys must match exactly.");
+	public void bumpPositions() {
+		for (EnumFieldOption o : active) {
+			o.movePositionTo(o.getPosition() + DEFAULT_OFFSET);
 		}
 	}
 
-	private void applyIndices(List<Long> orderedKeys) {
+	public void reorderTo(List<Long> orderedIds) {
 		Map<Long, EnumFieldOption> byId = active.stream()
 			.collect(Collectors.toMap(EnumFieldOption::getId, x -> x));
-		for (int idx = 0; idx < orderedKeys.size(); idx++) {
-			EnumFieldOption option = byId.get(orderedKeys.get(idx));
-			if (option.getPosition() != idx) {
-				option.movePositionTo(idx);
+		for (int i = 0; i < orderedIds.size(); i++) {
+			Long id = orderedIds.get(i);
+			EnumFieldOption option = byId.get(id);
+			if (option == null) {
+				throw new InvalidOperationException("Unknown option id: " + id);
 			}
+			if (option.getPosition() != i) {
+				option.movePositionTo(i);
+			}
+		}
+	}
+
+	private void ensureSameSizeAsActive(List<Long> orderedIds) {
+		if (orderedIds.size() != active.size()) {
+			throw new InvalidOperationException("Order size mismatch.");
+		}
+	}
+
+	private void ensureNoNullElements(List<Long> orderedIds) {
+		if (orderedIds.contains(null)) {
+			throw new InvalidOperationException("Order contains null id.");
+		}
+	}
+
+	private void ensureNoDuplicateIds(List<Long> orderedIds) {
+		Set<Long> uniq = new HashSet<>(orderedIds);
+		if (uniq.size() != orderedIds.size()) {
+			throw new InvalidOperationException("Order contains duplicates.");
+		}
+	}
+
+	private void ensureValidActiveIds(List<Long> orderedIds) {
+		Set<Long> actual = active.stream()
+			.map(EnumFieldOption::getId)
+			.collect(Collectors.toSet());
+		Set<Long> uniq = new HashSet<>(orderedIds);
+		if (!uniq.equals(actual)) {
+			throw new InvalidOperationException("Order keys must match the active option set exactly.");
 		}
 	}
 
