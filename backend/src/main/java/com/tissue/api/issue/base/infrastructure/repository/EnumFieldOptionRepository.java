@@ -27,11 +27,11 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 		+ "where v.enumOption = :option")
 	boolean isInUse(@Param("option") EnumFieldOption option);
 
-	// TODO: EnumFieldOption @Version 적용 후, 배치 업데이트 메서드에 o.version=o.version+1 추가
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update EnumFieldOption o "
 		+ "set o.archived = true, "
-		+ "o.updatedAt = CURRENT_TIMESTAMP "
+		+ "o.updatedAt = CURRENT_TIMESTAMP, "
+		+ "o.version = o.version + 1 "
 		+ "where o.field = :field "
 		+ "and o.archived = false")
 	int softDeleteByField(@Param("field") IssueField field);
@@ -39,7 +39,8 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update EnumFieldOption o "
 		+ "set o.archived = true, "
-		+ "o.updatedAt = CURRENT_TIMESTAMP "
+		+ "o.updatedAt = CURRENT_TIMESTAMP, "
+		+ "o.version = o.version + 1 "
 		+ "where o.field in "
 		+ "(select f from IssueField f "
 		+ "where f.issueType = :issueType) "

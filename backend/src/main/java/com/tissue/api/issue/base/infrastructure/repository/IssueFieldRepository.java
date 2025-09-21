@@ -19,11 +19,11 @@ public interface IssueFieldRepository extends JpaRepository<IssueField, Long> {
 
 	boolean existsByIssueTypeAndLabel_Normalized(IssueType issueType, String label);
 
-	// TODO: IssueField @Version 적용 후, 배치 업데이트 메서드에 o.version=o.version+1 추가
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update IssueField f "
 		+ "set f.archived = true, "
-		+ "f.updatedAt = CURRENT_TIMESTAMP "
+		+ "f.updatedAt = CURRENT_TIMESTAMP, "
+		+ "f.version = f.version + 1 "
 		+ "where f.issueType = :issueType "
 		+ "and f.archived = false")
 	int softDeleteByIssueType(@Param("issueType") IssueType issueType);
