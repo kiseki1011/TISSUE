@@ -193,11 +193,11 @@ public class IssueFieldService {
 		return optionRepo.findByFieldOrderByPositionAsc(field);
 	}
 
-	private void saveInitialEnumOptions(IssueField field, List<String> labels) {
+	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {
 		int pos = 0;
 		List<EnumFieldOption> options = new ArrayList<>(labels.size());
-		for (String label : labels) {
-			options.add(EnumFieldOption.create(field, Label.of(label), pos++));
+		for (Label label : labels) {
+			options.add(EnumFieldOption.create(field, label, pos++));
 		}
 		optionRepo.saveAll(options);
 	}

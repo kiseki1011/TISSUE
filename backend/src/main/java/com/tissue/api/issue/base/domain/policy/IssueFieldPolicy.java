@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 public record IssueFieldPolicy(
 	int maxEnumOptions,
@@ -14,7 +15,7 @@ public record IssueFieldPolicy(
 	int maxIntegerDigits,
 	int maxFractionDigits
 ) {
-	public void ensureOptionsWithinLimit(List<String> options) {
+	public void ensureOptionsWithinLimit(List<Label> options) {
 		if (options.size() > maxEnumOptions) {
 			throw new InvalidOperationException("Too many options. max=" + maxEnumOptions);
 		}
