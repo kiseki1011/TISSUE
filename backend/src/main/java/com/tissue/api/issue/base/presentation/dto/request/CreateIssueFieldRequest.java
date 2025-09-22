@@ -19,7 +19,7 @@ public record CreateIssueFieldRequest(
 	@Nullable @Size(max = 255) String description,
 	@NotNull FieldType fieldType,
 	@NotNull Boolean required,
-	@Nullable @Size(max = 100) List<@NotBlank @Size(max = 32) String> initialOptions
+	@Nullable @Size(max = 100) List<@NotBlank @LabelSize String> initialOptions
 ) {
 	public CreateIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId) {
 		return CreateIssueFieldCommand.builder()

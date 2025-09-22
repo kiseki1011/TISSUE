@@ -9,7 +9,11 @@ import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.Size;
 
-@Target({ElementType.FIELD})
+@Target({
+	ElementType.FIELD,
+	ElementType.TYPE_USE,
+	ElementType.RECORD_COMPONENT
+})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Size(
