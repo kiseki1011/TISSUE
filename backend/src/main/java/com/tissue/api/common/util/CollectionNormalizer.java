@@ -1,6 +1,12 @@
 package com.tissue.api.common.util;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.springframework.lang.Nullable;
+
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -8,18 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CollectionNormalizer {
 
-	/**
-	 * If the collection is null returns an empty list;
-	 * otherwise returns a collection where leading and trailing Unicode whitespace of each string is removed,
-	 * and preserves order.
-	 */
-	public static List<String> normalizeOptions(List<String> options) {
-		if (options == null) {
-			return List.of();
-		}
-		return options.stream()
-			.map(TextNormalizer::normalizeLabel)
-			.filter(s -> !s.isEmpty())
+	public static List<Label> toUniqueLabels(@Nullable List<String> raw) {
+		return Optional.ofNullable(raw).orElseGet(List::of).stream()
+			.filter(Objects::nonNull)
+			.filter(s -> !s.isBlank())
+			.map(Label::of)
 			.distinct()
 			.toList();
 	}
