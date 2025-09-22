@@ -1,13 +1,12 @@
 package com.tissue.api.issue.base.domain.model;
 
-import java.util.Objects;
+import static com.tissue.api.common.util.DomainPreconditions.*;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
@@ -31,16 +30,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
-@Getter
-@ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
 @Table(
-	// uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "label"})},
 	indexes = @Index(name = "idx_issue_type_workspace_label", columnList = "workspace_id,label")
 )
+@Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueType extends BaseEntity {
 
@@ -63,7 +62,7 @@ public class IssueType extends BaseEntity {
 	@ToString.Include
 	private Label label;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String description;
 
 	// private String icon;
@@ -83,7 +82,7 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private boolean systemType;
 
-	@Builder
+	@Builder(access = AccessLevel.PRIVATE)
 	private IssueType(
 		Workspace workspace,
 		Label label,
@@ -92,27 +91,27 @@ public class IssueType extends BaseEntity {
 		HierarchyLevel hierarchyLevel,
 		Workflow workflow
 	) {
-		this.workspace = Objects.requireNonNull(workspace);
-		this.label = Objects.requireNonNull(label);
-		this.description = DomainPreconditions.nullToEmpty(description);
-		this.color = DomainPreconditions.requireNotNull(color, "color");
-		this.hierarchyLevel = DomainPreconditions.requireNotNull(hierarchyLevel, "hierarchyLevel");
-		this.workflow = DomainPreconditions.requireNotNull(workflow, "workflow");
+		this.workspace = workspace;
+		this.label = label;
+		this.description = description;
+		this.color = color;
+		this.hierarchyLevel = hierarchyLevel;
+		this.workflow = workflow;
 		this.systemType = false;
 	}
 
 	public static IssueType create(
-		Workspace workspace,
-		Label label,
+		@NonNull Workspace workspace,
+		@NonNull Label label,
 		@Nullable String description,
-		ColorType color,
-		HierarchyLevel hierarchyLevel,
-		Workflow workflow
+		@NonNull ColorType color,
+		@NonNull HierarchyLevel hierarchyLevel,
+		@NonNull Workflow workflow
 	) {
 		return IssueType.builder()
 			.workspace(workspace)
 			.label(label)
-			.description(description)
+			.description(nullToEmpty(description))
 			.color(color)
 			.hierarchyLevel(hierarchyLevel)
 			.workflow(workflow)
@@ -123,24 +122,24 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
-	public void rename(Label label) {
-		this.label = Objects.requireNonNull(label);
+	public void rename(@NonNull Label label) {
+		this.label = label;
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = DomainPreconditions.nullToEmpty(description);
+		this.description = nullToEmpty(description);
 	}
 
-	public void updateColor(ColorType color) {
-		this.color = DomainPreconditions.requireNotNull(color, "color");
+	public void updateColor(@NonNull ColorType color) {
+		this.color = color;
 	}
 
-	public void updateHierarchyLevel(HierarchyLevel hierarchyLevel) {
-		this.hierarchyLevel = DomainPreconditions.requireNotNull(hierarchyLevel, "hierarchyLevel");
+	public void updateHierarchyLevel(@NonNull HierarchyLevel hierarchyLevel) {
+		this.hierarchyLevel = hierarchyLevel;
 	}
 
-	public void setWorkflow(Workflow workflow) {
-		this.workflow = DomainPreconditions.requireNotNull(workflow, "workflow");
+	public void setWorkflow(@NonNull Workflow workflow) {
+		this.workflow = workflow;
 	}
 
 	public void setAsSystemType() {

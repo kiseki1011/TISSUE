@@ -3,12 +3,15 @@ package com.tissue.api.issue.base.domain.model.vo;
 import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.common.util.TextNormalizer.*;
 
+import java.util.Objects;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.ToString;
 
 @Embeddable
@@ -30,10 +33,10 @@ public class Label {
 		this.normalized = normalized;
 	}
 
-	public static Label of(String raw) {
-		String checked = requireNotNull(raw, "label");
-		String display = requireNotBlank(normalizeLabel(checked), "label");
-		String norm = requireNotBlank(normalizeForUniq(checked), "label");
+	public static Label of(@NonNull String raw) {
+		String checked = Objects.requireNonNull(raw);
+		String display = requireNotBlank(normalizeLabel(checked));
+		String norm = requireNotBlank(normalizeForUniq(checked));
 
 		return new Label(display, norm);
 	}

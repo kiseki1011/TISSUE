@@ -1,11 +1,8 @@
 package com.tissue.api.issue.base.domain.model;
 
-import java.util.Objects;
-
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
@@ -24,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
@@ -32,7 +30,6 @@ import lombok.ToString;
 @SQLRestriction("archived = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-	// uniqueConstraints = @UniqueConstraint(columnNames = {"issue_field_id", "label"}),
 	indexes = {
 		@Index(name = "idx_option_field_label", columnList = "issue_field_id,label"),
 		@Index(name = "idx_option_field_position", columnList = "issue_field_id,position")
@@ -62,27 +59,31 @@ public class EnumFieldOption extends BaseEntity {
 	@Column(nullable = false)
 	private int position;
 
-	@Builder
+	@Builder(access = AccessLevel.PRIVATE)
 	private EnumFieldOption(
 		IssueField field,
 		Label label,
 		Integer position
 	) {
-		this.field = DomainPreconditions.requireNotNull(field, "issueField");
-		this.label = Objects.requireNonNull(label);
-		this.position = (position == null) ? 0 : position;
+		this.field = field;
+		this.label = label;
+		this.position = position;
 	}
 
-	public static EnumFieldOption create(IssueField field, Label label, Integer position) {
+	public static EnumFieldOption create(
+		@NonNull IssueField field,
+		@NonNull Label label,
+		Integer position
+	) {
 		return EnumFieldOption.builder()
 			.field(field)
 			.label(label)
-			.position(position)
+			.position((position == null) ? 0 : position)
 			.build();
 	}
 
-	public void rename(Label label) {
-		this.label = Objects.requireNonNull(label);
+	public void rename(@NonNull Label label) {
+		this.label = label;
 	}
 
 	public void movePositionTo(int position) {

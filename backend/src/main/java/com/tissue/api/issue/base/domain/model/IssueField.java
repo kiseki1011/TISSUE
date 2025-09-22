@@ -1,12 +1,11 @@
 package com.tissue.api.issue.base.domain.model;
 
-import java.util.Objects;
+import static com.tissue.api.common.util.DomainPreconditions.*;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.util.DomainPreconditions;
 import com.tissue.api.issue.base.domain.enums.FieldType;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 
@@ -28,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
@@ -35,7 +35,6 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
 @Table(
-	// uniqueConstraints = {@UniqueConstraint(columnNames = {"issueType_id", "label"})},
 	indexes = {
 		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label")
 	}
@@ -58,7 +57,7 @@ public class IssueField extends BaseEntity {
 	@ToString.Include
 	private Label label;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String description;
 
 	@Enumerated(EnumType.STRING)
@@ -72,7 +71,9 @@ public class IssueField extends BaseEntity {
 	@JoinColumn(name = "issue_type_id", nullable = false)
 	private IssueType issueType;
 
-	@Builder
+	// private String icon;
+
+	@Builder(access = AccessLevel.PRIVATE)
 	private IssueField(
 		Label label,
 		String description,
@@ -80,25 +81,25 @@ public class IssueField extends BaseEntity {
 		Boolean required,
 		IssueType issueType
 	) {
-		this.label = Objects.requireNonNull(label);
-		this.description = DomainPreconditions.nullToEmpty(description);
-		this.fieldType = DomainPreconditions.requireNotNull(fieldType, "fieldType");
-		this.required = Boolean.TRUE.equals(required);
-		this.issueType = DomainPreconditions.requireNotNull(issueType, "issueType");
+		this.label = label;
+		this.description = description;
+		this.fieldType = fieldType;
+		this.required = required;
+		this.issueType = issueType;
 	}
 
 	public static IssueField create(
-		Label label,
+		@NonNull Label label,
 		@Nullable String description,
-		FieldType fieldType,
-		Boolean required,
-		IssueType issueType
+		@NonNull FieldType fieldType,
+		@NonNull Boolean required,
+		@NonNull IssueType issueType
 	) {
 		return IssueField.builder()
 			.label(label)
-			.description(description)
+			.description(nullToEmpty(description))
 			.fieldType(fieldType)
-			.required(required)
+			.required(Boolean.TRUE.equals(required))
 			.issueType(issueType)
 			.build();
 	}
@@ -107,21 +108,21 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceKey();
 	}
 
-	public void rename(Label label) {
-		this.label = Objects.requireNonNull(label);
+	public void rename(@NonNull Label label) {
+		this.label = label;
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = DomainPreconditions.nullToEmpty(description);
+		this.description = nullToEmpty(description);
 	}
 
-	public void setRequired(Boolean required) {
+	public void setRequired(@NonNull Boolean required) {
 		this.required = Boolean.TRUE.equals(required);
 	}
 
-	public void updateFieldType(FieldType fieldType) {
-		this.fieldType = DomainPreconditions.requireNotNull(fieldType, "fieldType");
-	}
+	// public void updateFieldType(@NonNull FieldType fieldType) {
+	// 	this.fieldType = fieldType;
+	// }
 
 	public void softDelete() {
 		archive();
