@@ -18,7 +18,7 @@ public abstract class BaseDateEntity {
 
 	@CreatedDate
 	@Column(updatable = false)
-	private Instant createdDate;
+	private Instant createdAt;
 	@LastModifiedDate
-	private Instant lastModifiedDate;
+	private Instant lastModifiedAt;
 }

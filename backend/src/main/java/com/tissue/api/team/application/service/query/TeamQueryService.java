@@ -22,7 +22,7 @@ public class TeamQueryService {
 
 	@Transactional(readOnly = true)
 	public GetTeamsResponse getTeams(String workspaceCode) {
-		List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedDateAsc(workspaceCode);
+		List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceCode);
 		return GetTeamsResponse.from(teams);
 	}
 

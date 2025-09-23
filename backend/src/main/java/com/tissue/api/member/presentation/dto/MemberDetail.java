@@ -30,8 +30,8 @@ public record MemberDetail(
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
 			.ownedWorkspaceCount(member.getWorkspaceCount())
-			.createdAt(member.getCreatedDate())
-			.updatedAt(member.getLastModifiedDate())
+			.createdAt(member.getCreatedAt())
+			.updatedAt(member.getLastModifiedAt())
 			.build();
 	}
 }

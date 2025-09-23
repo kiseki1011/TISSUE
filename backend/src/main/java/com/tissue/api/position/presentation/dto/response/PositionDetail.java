@@ -24,8 +24,8 @@ public record PositionDetail(
 			.name(position.getName())
 			.description(position.getDescription())
 			.color(position.getColor())
-			.createdAt(position.getCreatedDate())
-			.updatedAt(position.getLastModifiedDate())
+			.createdAt(position.getCreatedAt())
+			.updatedAt(position.getLastModifiedAt())
 			.build();
 	}
 }

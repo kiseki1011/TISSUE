@@ -34,7 +34,7 @@ public record SprintDetail(
 				.map(si -> si.getIssue().getKey())
 				.sorted()
 				.toList())
-			.createdAt(sprint.getCreatedDate())
+			.createdAt(sprint.getCreatedAt())
 			.createdBy(sprint.getCreatedBy())
 			.build();
 	}

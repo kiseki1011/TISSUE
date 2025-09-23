@@ -22,7 +22,7 @@ public interface IssueFieldRepository extends JpaRepository<IssueField, Long> {
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update IssueField f "
 		+ "set f.archived = true, "
-		+ "f.updatedAt = CURRENT_TIMESTAMP, "
+		+ "f.lastModifiedAt = instant, "
 		+ "f.version = f.version + 1 "
 		+ "where f.issueType = :issueType "
 		+ "and f.archived = false")

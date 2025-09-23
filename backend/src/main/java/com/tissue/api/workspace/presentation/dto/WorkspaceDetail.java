@@ -53,9 +53,9 @@ public class WorkspaceDetail {
 			.description(workspace.getDescription())
 			.memberCount(workspace.getMemberCount())
 			.createdBy(workspace.getCreatedBy())
-			.createdAt(workspace.getCreatedDate())
+			.createdAt(workspace.getCreatedAt())
 			.updatedBy(workspace.getLastModifiedBy())
-			.updatedAt(workspace.getLastModifiedDate())
+			.updatedAt(workspace.getLastModifiedAt())
 			.build();
 	}
 }

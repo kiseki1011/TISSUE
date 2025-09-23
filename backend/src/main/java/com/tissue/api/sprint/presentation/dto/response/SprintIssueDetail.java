@@ -26,7 +26,7 @@ public record SprintIssueDetail(
 			.title(issue.getTitle())
 			// .status(issue.getStatus())
 			.priority(issue.getPriority())
-			.createdAt(issue.getCreatedDate())
+			.createdAt(issue.getCreatedAt())
 			.createdBy(issue.getCreatedBy())
 			.build();
 	}

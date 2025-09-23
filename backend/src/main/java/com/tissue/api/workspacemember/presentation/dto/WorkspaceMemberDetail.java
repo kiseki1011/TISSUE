@@ -20,8 +20,8 @@ public record WorkspaceMemberDetail(
 			.workspaceMemberId(workspaceMember.getId())
 			.nickname(workspaceMember.getDisplayName())
 			.workspaceRole(workspaceMember.getRole())
-			.joinedWorkspaceAt(workspaceMember.getCreatedDate())
-			.updatedAt(workspaceMember.getLastModifiedDate())
+			.joinedWorkspaceAt(workspaceMember.getCreatedAt())
+			.updatedAt(workspaceMember.getLastModifiedAt())
 			.build();
 	}
 }

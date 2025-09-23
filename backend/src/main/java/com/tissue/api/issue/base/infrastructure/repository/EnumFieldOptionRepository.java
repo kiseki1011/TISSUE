@@ -30,7 +30,7 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update EnumFieldOption o "
 		+ "set o.archived = true, "
-		+ "o.updatedAt = CURRENT_TIMESTAMP, "
+		+ "o.lastModifiedAt = instant, "
 		+ "o.version = o.version + 1 "
 		+ "where o.field = :field "
 		+ "and o.archived = false")
@@ -39,7 +39,7 @@ public interface EnumFieldOptionRepository extends JpaRepository<EnumFieldOption
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update EnumFieldOption o "
 		+ "set o.archived = true, "
-		+ "o.updatedAt = CURRENT_TIMESTAMP, "
+		+ "o.lastModifiedAt = instant, "
 		+ "o.version = o.version + 1 "
 		+ "where o.field in "
 		+ "(select f from IssueField f "

@@ -21,7 +21,7 @@ public record InvitationDetail(
 			.workspaceCode(invitation.getWorkspaceCode())
 			.invitedBy(invitation.getCreatedBy())
 			.status(invitation.getStatus())
-			.invitedAt(invitation.getCreatedDate())
+			.invitedAt(invitation.getCreatedAt())
 			.build();
 	}
 }

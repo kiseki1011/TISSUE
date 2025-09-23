@@ -31,8 +31,8 @@ public record GetProfileResponse(
 			.name(member.getName())
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
-			.joinedAt(member.getCreatedDate())
-			.lastModifiedAt(member.getLastModifiedDate())
+			.joinedAt(member.getCreatedAt())
+			.lastModifiedAt(member.getLastModifiedAt())
 			.ownedWorkspaceCount(member.getWorkspaceCount())
 			.build();
 	}

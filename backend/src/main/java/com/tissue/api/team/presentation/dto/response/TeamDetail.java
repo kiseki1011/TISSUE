@@ -24,8 +24,8 @@ public record TeamDetail(
 			.name(team.getName())
 			.description(team.getDescription())
 			.color(team.getColor())
-			.createdAt(team.getCreatedDate())
-			.updatedAt(team.getLastModifiedDate())
+			.createdAt(team.getCreatedAt())
+			.updatedAt(team.getLastModifiedAt())
 			.build();
 	}
 }

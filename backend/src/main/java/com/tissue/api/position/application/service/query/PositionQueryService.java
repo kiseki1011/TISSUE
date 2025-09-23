@@ -22,7 +22,7 @@ public class PositionQueryService {
 
 	@Transactional(readOnly = true)
 	public GetPositionsResponse getPositions(String workspaceCode) {
-		List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedDateAsc(workspaceCode);
+		List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceCode);
 		return GetPositionsResponse.from(positions);
 	}
 
