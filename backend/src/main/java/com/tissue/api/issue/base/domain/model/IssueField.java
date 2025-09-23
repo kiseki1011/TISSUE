@@ -120,10 +120,6 @@ public class IssueField extends BaseEntity {
 		this.required = Boolean.TRUE.equals(required);
 	}
 
-	// public void updateFieldType(@NonNull FieldType fieldType) {
-	// 	this.fieldType = fieldType;
-	// }
-
 	public void softDelete() {
 		archive();
 	}
