@@ -15,6 +15,7 @@ import com.tissue.api.issue.base.application.dto.RenameIssueFieldCommand;
 import com.tissue.api.issue.base.application.dto.RenameOptionCommand;
 import com.tissue.api.issue.base.application.dto.ReorderOptionsCommand;
 import com.tissue.api.issue.base.application.finder.IssueFieldFinder;
+import com.tissue.api.issue.base.application.finder.IssueFieldOptionFinder;
 import com.tissue.api.issue.base.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.base.application.validator.EnumFieldOptionValidator;
 import com.tissue.api.issue.base.application.validator.IssueFieldValidator;
@@ -30,7 +31,6 @@ import com.tissue.api.issue.base.infrastructure.repository.IssueFieldRepository;
 import com.tissue.api.issue.base.presentation.dto.response.IssueFieldResponse;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -39,6 +39,7 @@ public class IssueFieldService {
 
 	private final IssueTypeFinder issueTypeFinder;
 	private final IssueFieldFinder issueFieldFinder;
+	private final IssueFieldOptionFinder optionFinder;
 	private final IssueFieldRepository issueFieldRepo;
 	private final EnumFieldOptionRepository optionRepo;
 	private final IssueFieldValidator issueFieldValidator;
@@ -130,7 +131,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse renameOption(RenameOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOption option = findOption(field, cmd.optionId());
+		EnumFieldOption option = optionFinder.findOption(field, cmd.optionId());
 
 		if (labelUnchanged(option.getLabel(), cmd.label())) {
 			return IssueFieldResponse.from(field);
@@ -145,8 +146,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-
-		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field, findActiveOptions(field));
+		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field, optionFinder.findActiveOptions(field));
 
 		options.ensureExactActiveIds(cmd.targetOrderedIds());
 		options.bumpPositions();
@@ -166,7 +166,7 @@ public class IssueFieldService {
 		Long optionId
 	) {
 		IssueField field = findIssueField(workspaceKey, issueTypeId, issueFieldId);
-		EnumFieldOption option = findOption(field, optionId);
+		EnumFieldOption option = optionFinder.findOption(field, optionId);
 
 		// TODO: 해당 EnumFieldOption을 사용하는 IssueFieldValue가 있어도 soft-delete 허용할까?
 		// optionValidator.ensureNotInUse(option);
@@ -182,15 +182,6 @@ public class IssueFieldService {
 	private IssueField findIssueField(String workspaceKey, Long typeId, Long fieldId) {
 		IssueType type = issueTypeFinder.findIssueType(workspaceKey, typeId);
 		return issueFieldFinder.findByTypeAndId(type, fieldId);
-	}
-
-	private EnumFieldOption findOption(IssueField field, Long optionId) {
-		return optionRepo.findByFieldAndId(field, optionId)
-			.orElseThrow(() -> new EntityNotFoundException("Option not found."));
-	}
-
-	private List<EnumFieldOption> findActiveOptions(IssueField field) {
-		return optionRepo.findByFieldOrderByPositionAsc(field);
 	}
 
 	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {
