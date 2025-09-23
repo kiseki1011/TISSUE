@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
@@ -22,6 +23,7 @@ import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 // TODO: archived=false 대상으로 issue_id, issue_field_id 대상 유니크 제약 추후에 설정(Postgres DDL)
 @Entity
@@ -59,7 +61,7 @@ public class IssueFieldValue extends BaseEntity {
 		this.field = field;
 	}
 
-	public static IssueFieldValue of(Issue issue, IssueField field, Object value) {
+	public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field, @Nullable Object value) {
 		IssueFieldValue issueFieldValue = new IssueFieldValue(issue, field);
 
 		ensureValuePresentRequired(value, field);
