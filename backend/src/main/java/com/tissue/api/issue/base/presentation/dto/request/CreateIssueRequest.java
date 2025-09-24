@@ -32,7 +32,7 @@ public record CreateIssueRequest(
 			.priority(priority)
 			.dueAt(dueAt)
 			.issueTypeId(issueTypeId)
-			.customFields(customFields)
+			.customFields(customFields == null ? Map.of() : customFields)
 			.build();
 	}
 }
