@@ -23,7 +23,7 @@ public class IssueFieldSchemaValidator {
 
 	private final IssueFieldRepository issueFieldRepo;
 	private final IssueFieldValueRepository issueFieldValueRepo;
-	private final IssueFieldValueCodec codec; // 라우팅 + blank 규칙 + 파싱 + 할당
+	private final IssueFieldHandlerRegistry handler;
 
 	public List<IssueFieldValue> validateAndExtract(Map<Long, Object> rawInputByFieldId, Issue issue) {
 		List<IssueField> fieldDefs = loadFieldDefinitions(issue);
@@ -60,7 +60,6 @@ public class IssueFieldSchemaValidator {
 		return toPersist;
 	}
 
-	// ---------- Helpers ----------
 	private List<IssueField> loadFieldDefinitions(Issue issue) {
 		return issueFieldRepo.findByIssueType(issue.getIssueType());
 	}
@@ -79,21 +78,21 @@ public class IssueFieldSchemaValidator {
 		if (!def.isRequired()) {
 			return;
 		}
-		if (raw == null || codec.isBlank(def, raw)) {
+		if (raw == null || handler.isBlank(def, raw)) {
 			throw new InvalidCustomFieldException("Field(id:%d) is required".formatted(def.getId()));
 		}
 	}
 
 	/** 타입별 blank 기준 적용(null 포함) */
 	private boolean isEmptyFor(IssueField def, Object raw) {
-		return raw == null || codec.isBlank(def, raw);
+		return raw == null || handler.isBlank(def, raw);
 	}
 
 	/** 파싱 후 신규 값 엔티티 생성 및 칼럼에 할당 */
 	private IssueFieldValue parseAndCreateValue(Issue issue, IssueField def, Object raw) {
-		Object parsed = codec.parse(def, raw);
+		Object parsed = handler.parse(def, raw);
 		IssueFieldValue val = IssueFieldValue.of(issue, def);
-		codec.assign(val, parsed);
+		handler.assign(val, parsed);
 		return val;
 	}
 
@@ -107,10 +106,10 @@ public class IssueFieldSchemaValidator {
 	) {
 		IssueField def = requireKnown(defMap, fieldId);
 
-		// 1) 필수값 검사
+		// 필수값 검사
 		ensureRequiredOrThrow(def, raw);
 
-		// 2) null/blank → 기존 값이 있으면 삭제(컬럼 전부 clear)
+		// null/blank → 기존 값이 있으면 삭제(컬럼 전부 clear)
 		if (isEmptyFor(def, raw)) {
 			IssueFieldValue cur = existing.get(fieldId);
 			if (cur != null) {
@@ -120,13 +119,13 @@ public class IssueFieldSchemaValidator {
 			return Optional.empty();
 		}
 
-		// 3) 파싱 + 기존 값 갱신 or 신규 생성
-		Object parsed = codec.parse(def, raw);
+		// 파싱 + 기존 값 갱신 or 신규 생성
+		Object parsed = handler.parse(def, raw);
 		IssueFieldValue cur = existing.get(fieldId);
 		if (cur == null) {
 			cur = IssueFieldValue.of(issue, def);
 		}
-		codec.assign(cur, parsed);
+		handler.assign(cur, parsed);
 		return Optional.of(cur);
 	}
 

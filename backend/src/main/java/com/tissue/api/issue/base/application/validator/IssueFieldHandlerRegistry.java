@@ -12,11 +12,11 @@ import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 
 @Component
-public class IssueFieldValueCodec {
+public class IssueFieldHandlerRegistry {
 
 	private final EnumMap<FieldType, FieldTypeHandler> handlers;
 
-	public IssueFieldValueCodec(List<FieldTypeHandler> handlerBeans) {
+	public IssueFieldHandlerRegistry(List<FieldTypeHandler> handlerBeans) {
 		this.handlers = new EnumMap<>(FieldType.class);
 		for (FieldTypeHandler h : handlerBeans) {
 			FieldType prev = (h.type());
