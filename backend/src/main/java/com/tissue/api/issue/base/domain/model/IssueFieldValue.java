@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
@@ -55,19 +54,15 @@ public class IssueFieldValue extends BaseEntity {
 	private BigDecimal decimalValue;
 	private Instant timestampValue;
 	private LocalDate dateValue;
+	private Boolean booleanValue;
 
 	private IssueFieldValue(Issue issue, IssueField field) {
 		this.issue = issue;
 		this.field = field;
 	}
 
-	public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field, @Nullable Object value) {
-		IssueFieldValue issueFieldValue = new IssueFieldValue(issue, field);
-
-		ensureValuePresentRequired(value, field);
-		issueFieldValue.apply(value);
-
-		return issueFieldValue;
+	public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field) {
+		return new IssueFieldValue(issue, field);
 	}
 
 	public void updateValue(Object value) {
@@ -79,7 +74,7 @@ public class IssueFieldValue extends BaseEntity {
 		apply(value);
 	}
 
-	private void apply(Object value) {
+	public void apply(Object value) {
 		clearValue();
 		switch (field.getFieldType()) {
 			case TEXT -> this.stringValue = (String)value;
@@ -87,9 +82,8 @@ public class IssueFieldValue extends BaseEntity {
 			case DECIMAL -> this.decimalValue = (BigDecimal)value;
 			case TIMESTAMP -> this.timestampValue = (Instant)value;
 			case DATE -> this.dateValue = (LocalDate)value;
-			case ENUM -> {
-				this.enumOption = (EnumFieldOption)value;
-			}
+			case BOOLEAN -> this.booleanValue = (Boolean)value;
+			case ENUM -> this.enumOption = (EnumFieldOption)value;
 			default -> throw new InvalidCustomFieldException("Unsupported: " + field.getFieldType());
 		}
 	}
@@ -100,6 +94,7 @@ public class IssueFieldValue extends BaseEntity {
 		this.decimalValue = null;
 		this.timestampValue = null;
 		this.dateValue = null;
+		this.booleanValue = null;
 		this.enumOption = null;
 	}
 
