@@ -29,7 +29,7 @@ public class EnumFieldHandler implements FieldTypeHandler {
 
 	@Override
 	public boolean isBlank(Object raw) {
-		return raw == null;
+		return raw == null || (raw instanceof String s && s.isBlank());
 	}
 
 	@Override
