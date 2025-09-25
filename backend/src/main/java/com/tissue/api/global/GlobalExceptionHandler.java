@@ -75,28 +75,6 @@ public class GlobalExceptionHandler {
 		return ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Invalid request body.");
 	}
 
-	// @ExceptionHandler(JwtAuthenticationException.class)
-	// public ResponseEntity<ApiResponse<Void>> handleJwtAuth(JwtAuthenticationException ex) {
-	// 	log.warn("JWT authentication error: {}", ex.getMessage(), ex);
-	//
-	// 	HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
-	//
-	// 	return ResponseEntity
-	// 		.status(httpStatus)
-	// 		.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
-	// }
-	//
-	// @ExceptionHandler(JwtCreationException.class)
-	// public ResponseEntity<ApiResponse<Void>> handleJwtCreation(JwtCreationException ex) {
-	// 	log.error("JWT creation failed: {}", ex.getMessage(), ex);
-	//
-	// 	HttpStatus httpStatus = ex.getHttpStatus();
-	//
-	// 	return ResponseEntity
-	// 		.status(httpStatus)
-	// 		.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
-	// }
-
 	// DB constraint violation (null/unique/fk/etc)
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
