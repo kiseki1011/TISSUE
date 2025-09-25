@@ -23,49 +23,49 @@ public class IssueFieldSchemaValidator {
 
 	private final IssueFieldRepository issueFieldRepo;
 	private final IssueFieldValueRepository issueFieldValueRepo;
-	private final IssueFieldHandlerRegistry handler;
+	private final IssueFieldTypeHandlerRegistry fieldTypeHandler;
 
-	public List<IssueFieldValue> validateAndExtract(Map<Long, Object> rawInputByFieldId, Issue issue) {
-		List<IssueField> fieldDefs = loadFieldDefinitions(issue);
-		List<IssueFieldValue> out = new ArrayList<>(fieldDefs.size());
+	public List<IssueFieldValue> validateAndExtract(Map<Long, Object> rawInputById, Issue issue) {
+		List<IssueField> fields = loadFields(issue);
+		List<IssueFieldValue> issueFieldValues = new ArrayList<>(fields.size());
 
-		for (IssueField field : fieldDefs) {
-			Object raw = rawInputByFieldId.get(field.getId());
+		for (IssueField field : fields) {
+			Object raw = rawInputById.get(field.getId());
 
-			// 필수값 검사: null 또는 타입별 blank 금지
-			ensureRequiredOrThrow(field, raw);
+			requireValueIfRequired(field, raw);
 
-			// 선택 필드에서 빈 값이면 스킵 (DB에 아무것도 저장하지 않음)
-			if (isEmptyFor(field, raw)) {
+			IssueFieldValue val = IssueFieldValue.of(issue, field);
+
+			if (isEmptyValue(field, raw)) {
+				val.clearValue();
+				issueFieldValues.add(val);
 				continue;
 			}
 
-			// 파싱 + 엔티티 생성 + 값 할당
-			IssueFieldValue val = parseAndCreateValue(issue, field, raw);
-			out.add(val);
+			issueFieldValues.add(parseAndAssignValue(val, field, raw));
 		}
-		return out;
+		return issueFieldValues;
 	}
 
-	public List<IssueFieldValue> validateAndApplyPartialUpdate(Map<Long, Object> rawInputByFieldId, Issue issue) {
+	public List<IssueFieldValue> validateAndApplyPartialUpdate(Map<Long, Object> rawInputById, Issue issue) {
 		Map<Long, IssueField> defMap = loadFieldMap(issue);
 		Map<Long, IssueFieldValue> existing = loadExistingValueMap(issue);
 
-		List<IssueFieldValue> toPersist = new ArrayList<>(rawInputByFieldId.size());
+		List<IssueFieldValue> toUpdate = new ArrayList<>(rawInputById.size());
 
-		for (Map.Entry<Long, Object> e : rawInputByFieldId.entrySet()) {
+		for (Map.Entry<Long, Object> e : rawInputById.entrySet()) {
 			applyOnePatchEntry(issue, defMap, existing, e.getKey(), e.getValue())
-				.ifPresent(toPersist::add);
+				.ifPresent(toUpdate::add);
 		}
-		return toPersist;
+		return toUpdate;
 	}
 
-	private List<IssueField> loadFieldDefinitions(Issue issue) {
+	private List<IssueField> loadFields(Issue issue) {
 		return issueFieldRepo.findByIssueType(issue.getIssueType());
 	}
 
 	private Map<Long, IssueField> loadFieldMap(Issue issue) {
-		return loadFieldDefinitions(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
+		return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
 	}
 
 	private Map<Long, IssueFieldValue> loadExistingValueMap(Issue issue) {
@@ -73,60 +73,49 @@ public class IssueFieldSchemaValidator {
 			.collect(Collectors.toMap(v -> v.getField().getId(), v -> v));
 	}
 
-	/** required면 null/blank 금지. optional이면 통과 */
-	private void ensureRequiredOrThrow(IssueField def, Object raw) {
-		if (!def.isRequired()) {
+	// required면 null/blank 금지
+	private void requireValueIfRequired(IssueField field, Object raw) {
+		boolean fieldNotRequired = !field.isRequired();
+		if (fieldNotRequired) {
 			return;
 		}
-		if (raw == null || handler.isBlank(def, raw)) {
-			throw new InvalidCustomFieldException("Field(id:%d) is required".formatted(def.getId()));
+		if (isEmptyValue(field, raw)) {
+			throw new InvalidCustomFieldException("Field(id:%d) is required".formatted(field.getId()));
 		}
 	}
 
-	/** 타입별 blank 기준 적용(null 포함) */
-	private boolean isEmptyFor(IssueField def, Object raw) {
-		return raw == null || handler.isBlank(def, raw);
+	private boolean isEmptyValue(IssueField field, Object raw) {
+		return fieldTypeHandler.isBlank(field, raw);
 	}
 
 	/** 파싱 후 신규 값 엔티티 생성 및 칼럼에 할당 */
-	private IssueFieldValue parseAndCreateValue(Issue issue, IssueField def, Object raw) {
-		Object parsed = handler.parse(def, raw);
-		IssueFieldValue val = IssueFieldValue.of(issue, def);
-		handler.assign(val, parsed);
+	private IssueFieldValue parseAndAssignValue(IssueFieldValue val, IssueField field, Object raw) {
+		Object parsed = fieldTypeHandler.parse(field, raw);
+		fieldTypeHandler.assign(val, parsed);
 		return val;
 	}
-
-	/** 부분 업데이트 1건 처리: Optional 반환(저장할 게 없으면 빈) */
+	
 	private Optional<IssueFieldValue> applyOnePatchEntry(
 		Issue issue,
-		Map<Long, IssueField> defMap,
+		Map<Long, IssueField> fieldMap,
 		Map<Long, IssueFieldValue> existing,
 		Long fieldId,
 		Object raw
 	) {
-		IssueField def = requireKnown(defMap, fieldId);
+		IssueField field = requireKnown(fieldMap, fieldId);
 
-		// 필수값 검사
-		ensureRequiredOrThrow(def, raw);
+		requireValueIfRequired(field, raw);
 
-		// null/blank → 기존 값이 있으면 삭제(컬럼 전부 clear)
-		if (isEmptyFor(def, raw)) {
-			IssueFieldValue cur = existing.get(fieldId);
-			if (cur != null) {
-				cur.clearValue();
-				return Optional.of(cur);
-			}
-			return Optional.empty();
+		IssueFieldValue fieldValue = getFieldValue(existing, fieldId, issue, field);
+
+		if (isEmptyValue(field, raw)) {
+			fieldValue.clearValue();
+			return Optional.of(fieldValue);
 		}
 
-		// 파싱 + 기존 값 갱신 or 신규 생성
-		Object parsed = handler.parse(def, raw);
-		IssueFieldValue cur = existing.get(fieldId);
-		if (cur == null) {
-			cur = IssueFieldValue.of(issue, def);
-		}
-		handler.assign(cur, parsed);
-		return Optional.of(cur);
+		Object parsed = fieldTypeHandler.parse(field, raw);
+		fieldTypeHandler.assign(fieldValue, parsed);
+		return Optional.of(fieldValue);
 	}
 
 	private IssueField requireKnown(Map<Long, IssueField> map, Long id) {
@@ -135,5 +124,14 @@ public class IssueFieldSchemaValidator {
 			throw new InvalidCustomFieldException("Unknown custom field(id:%d)".formatted(id));
 		}
 		return field;
+	}
+
+	private IssueFieldValue getFieldValue(
+		Map<Long, IssueFieldValue> existing,
+		Long fieldId,
+		Issue issue,
+		IssueField field
+	) {
+		return existing.computeIfAbsent(fieldId, id -> IssueFieldValue.of(issue, field));
 	}
 }

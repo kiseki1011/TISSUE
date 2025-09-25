@@ -12,7 +12,7 @@ public interface FieldTypeHandler {
 
 	/** Return true if the raw input should be treated as "blank" (e.g., "" for TEXT). */
 	default boolean isBlank(Object raw) {
-		return (raw instanceof String s) && s.isBlank();
+		return (raw == null) || (raw instanceof String s) && s.isBlank();
 	}
 
 	/** Parse the raw input (JSON-decoded object) into the strongly-typed domain value. */

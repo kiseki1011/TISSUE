@@ -4,12 +4,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-import org.hibernate.annotations.SQLRestriction;
-
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -27,7 +25,6 @@ import lombok.NonNull;
 // TODO: archived=false 대상으로 issue_id, issue_field_id 대상 유니크 제약 추후에 설정(Postgres DDL)
 @Entity
 @Getter
-@SQLRestriction("archived = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueFieldValue extends BaseEntity {
 
@@ -56,26 +53,19 @@ public class IssueFieldValue extends BaseEntity {
 	private LocalDate dateValue;
 	private Boolean booleanValue;
 
-	private IssueFieldValue(Issue issue, IssueField field) {
-		this.issue = issue;
-		this.field = field;
-	}
+	@Column(name = "value_present", nullable = false)
+	private boolean valuePresent;
 
 	public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field) {
-		return new IssueFieldValue(issue, field);
+		IssueFieldValue fieldValue = new IssueFieldValue();
+		fieldValue.issue = issue;
+		fieldValue.field = field;
+		fieldValue.valuePresent = false;
+		return fieldValue;
 	}
 
-	public void updateValue(Object value) {
-		ensureValuePresentRequired(value, this.field);
-		if (value == null) {
-			clearValue();
-			return;
-		}
-		apply(value);
-	}
-
-	public void apply(Object value) {
-		clearValue();
+	public void apply(@NonNull Object value) {
+		clearColumnsOnly();
 		switch (field.getFieldType()) {
 			case TEXT -> this.stringValue = (String)value;
 			case INTEGER -> this.integerValue = (Integer)value;
@@ -86,9 +76,15 @@ public class IssueFieldValue extends BaseEntity {
 			case ENUM -> this.enumOption = (EnumFieldOption)value;
 			default -> throw new InvalidCustomFieldException("Unsupported: " + field.getFieldType());
 		}
+		markPresent();
 	}
 
 	public void clearValue() {
+		clearColumnsOnly();
+		markEmpty();
+	}
+
+	private void clearColumnsOnly() {
 		this.stringValue = null;
 		this.integerValue = null;
 		this.decimalValue = null;
@@ -98,13 +94,11 @@ public class IssueFieldValue extends BaseEntity {
 		this.enumOption = null;
 	}
 
-	private static void ensureValuePresentRequired(Object value, IssueField field) {
-		if (field.isRequired() && (value == null || isBlankString(value))) {
-			throw new InvalidOperationException("This field is required.");
-		}
+	private void markPresent() {
+		this.valuePresent = true;
 	}
 
-	private static boolean isBlankString(Object value) {
-		return (value instanceof String s) && s.isBlank();
+	private void markEmpty() {
+		this.valuePresent = false;
 	}
 }

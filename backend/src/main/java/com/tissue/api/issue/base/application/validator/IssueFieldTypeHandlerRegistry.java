@@ -12,11 +12,11 @@ import com.tissue.api.issue.base.domain.model.IssueField;
 import com.tissue.api.issue.base.domain.model.IssueFieldValue;
 
 @Component
-public class IssueFieldHandlerRegistry {
+public class IssueFieldTypeHandlerRegistry {
 
 	private final EnumMap<FieldType, FieldTypeHandler> handlers;
 
-	public IssueFieldHandlerRegistry(List<FieldTypeHandler> handlerBeans) {
+	public IssueFieldTypeHandlerRegistry(List<FieldTypeHandler> handlerBeans) {
 		this.handlers = new EnumMap<>(FieldType.class);
 		for (FieldTypeHandler h : handlerBeans) {
 			FieldType prev = (h.type());
@@ -27,9 +27,6 @@ public class IssueFieldHandlerRegistry {
 	}
 
 	public boolean isBlank(IssueField field, Object raw) {
-		if (raw == null) {
-			return true;
-		}
 		return requireHandler(field).isBlank(raw);
 	}
 
