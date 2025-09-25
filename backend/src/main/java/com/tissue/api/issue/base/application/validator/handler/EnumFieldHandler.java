@@ -28,11 +28,6 @@ public class EnumFieldHandler implements FieldTypeHandler {
 	}
 
 	@Override
-	public boolean isBlank(Object raw) {
-		return raw == null || (raw instanceof String s && s.isBlank());
-	}
-
-	@Override
 	public Object parse(@NonNull IssueField field, @NonNull Object raw) {
 		try {
 			Long optionId = cs.convert(raw, Long.class);
