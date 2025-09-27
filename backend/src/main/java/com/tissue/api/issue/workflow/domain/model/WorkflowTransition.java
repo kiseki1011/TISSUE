@@ -48,24 +48,24 @@ public class WorkflowTransition extends BaseEntity {
 	private boolean isMainFlow;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus sourceStep;
+	private WorkflowStatus sourceStatus;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus targetStep;
+	private WorkflowStatus targetStatus;
 
 	@Builder
 	public WorkflowTransition(
 		Workflow workflow,
 		Boolean isMainFlow,
-		WorkflowStatus sourceStep,
-		WorkflowStatus targetStep,
+		WorkflowStatus sourceStatus,
+		WorkflowStatus targetStatus,
 		String label,
 		String description
 	) {
 		this.workflow = workflow;
 		this.isMainFlow = isMainFlow;
-		this.sourceStep = sourceStep;
-		this.targetStep = targetStep;
+		this.sourceStatus = sourceStatus;
+		this.targetStatus = targetStatus;
 		this.label = label;
 		this.description = description;
 	}
@@ -75,16 +75,16 @@ public class WorkflowTransition extends BaseEntity {
 		@NonNull String label,
 		@Nullable String description,
 		@NonNull Boolean isMainFlow,
-		@NonNull WorkflowStatus sourceStep,
-		@NonNull WorkflowStatus targetStep
+		@NonNull WorkflowStatus sourceStatus,
+		@NonNull WorkflowStatus targetStatus
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
 		wt.workflow = workflow;
 		wt.label = label;
 		wt.description = nullToEmpty(description);
 		wt.isMainFlow = isMainFlow;
-		wt.sourceStep = sourceStep;
-		wt.targetStep = targetStep;
+		wt.sourceStatus = sourceStatus;
+		wt.targetStatus = targetStatus;
 
 		return wt;
 	}
@@ -99,12 +99,12 @@ public class WorkflowTransition extends BaseEntity {
 		this.isMainFlow = isMainFlow;
 	}
 
-	public void updateSourceStep(@NonNull WorkflowStatus sourceStep) {
-		this.sourceStep = sourceStep;
+	public void updateSourceStatus(@NonNull WorkflowStatus sourceStatus) {
+		this.sourceStatus = sourceStatus;
 	}
 
-	public void updateTargetStep(@NonNull WorkflowStatus targetStep) {
-		this.targetStep = targetStep;
+	public void updateTargetStatus(@NonNull WorkflowStatus targetStatus) {
+		this.targetStatus = targetStatus;
 	}
 
 	public void updateLabel(@NonNull String label) {
