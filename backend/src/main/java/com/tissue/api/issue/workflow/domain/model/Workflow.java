@@ -19,21 +19,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostPersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Am I setting the @UniqueConstraint right?
+// TODO: archived=true 대상만으로 유니크 제약을 위한 Postgres DDL 적용
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"workspace_id", "label"})
-})
-@EqualsAndHashCode(of = {"workspace", "label"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workflow extends BaseEntity {
 

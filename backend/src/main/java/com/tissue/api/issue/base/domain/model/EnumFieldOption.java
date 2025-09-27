@@ -25,16 +25,16 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
-@Getter
-@ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
 	indexes = {
 		@Index(name = "idx_option_field_label", columnList = "issue_field_id,label"),
 		@Index(name = "idx_option_field_position", columnList = "issue_field_id,position")
 	}
 )
+@Getter
+@ToString(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EnumFieldOption extends BaseEntity {
 
 	// @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "field_option_seq_gen")

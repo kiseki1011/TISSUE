@@ -31,14 +31,14 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
-@Getter
-@ToString(onlyExplicitlyIncluded = true)
 @SQLRestriction("archived = false")
 @Table(
 	indexes = {
 		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label")
 	}
 )
+@Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueField extends BaseEntity {
 

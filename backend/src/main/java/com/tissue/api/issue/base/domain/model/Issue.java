@@ -31,21 +31,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"issue_key", "workspace_id"})
-})
-@EqualsAndHashCode(of = {"key", "workspace"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 

@@ -1,5 +1,6 @@
 package com.tissue.api.issue.workflow.domain.model;
 
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.global.key.KeyGenerator;
 
 import jakarta.persistence.Column;
@@ -11,23 +12,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 // TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
-@Table(uniqueConstraints = {
-	@UniqueConstraint(columnNames = {"workflow_id", "source_step_id", "key"})
-})
-@EqualsAndHashCode(of = {"workflow", "key"}, callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkflowTransition {
+public class WorkflowTransition extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
