@@ -42,11 +42,11 @@ public class WorkflowController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ResponseEntity<ApiResponse<WorkflowResponse>> createWorkflow(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateWorkflowRequest request
 	) {
-		WorkflowResponse response = workflowService.createWorkflow(request.toCommand(workspaceCode));
+		WorkflowResponse response = workflowService.createWorkflow(request.toCommand(workspaceKey));
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Workflow created.", response));
 	}
