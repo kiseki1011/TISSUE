@@ -4,9 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
@@ -18,29 +19,30 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostPersist;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 
 // TODO: archived=true 대상만으로 유니크 제약을 위한 Postgres DDL 적용
 @Entity
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workflow extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ToString.Include
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
 
-	@Column(name = "workflow_key", nullable = false)
-	private String key;
-
 	@Column(nullable = false)
+	@ToString.Include
 	private String label;
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -52,29 +54,34 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus initialStatus;
 
+	@Column(nullable = false)
 	private String description;
-
-	@PostPersist
-	private void assignKey() {
-		if (key == null && id != null) {
-			key = KeyGenerator.generateWorkflowKey(id);
-		}
-	}
 
 	@Builder
 	public Workflow(
 		Workspace workspace,
-		String key,
 		String label,
 		String description
 	) {
 		this.workspace = workspace;
-		this.key = key;
 		this.label = label;
 		this.description = description;
 	}
 
-	public void addStatus(WorkflowStatus status) {
+	public static Workflow create(
+		@NonNull Workspace workspace,
+		@NonNull String label,
+		@Nullable String description
+	) {
+		Workflow wf = new Workflow();
+		wf.workspace = workspace;
+		wf.label = label;
+		wf.description = description;
+
+		return wf;
+	}
+
+	public void addStatus(@NonNull WorkflowStatus status) {
 		statuses.add(status);
 		status.setWorkflow(this);
 
@@ -83,20 +90,16 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
-	public void addTransition(WorkflowTransition transition) {
+	public void addTransition(@NonNull WorkflowTransition transition) {
 		transitions.add(transition);
 		transition.setWorkflow(this);
 	}
 
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public void updateLabel(String label) {
+	public void updateLabel(@NonNull String label) {
 		this.label = label;
 	}
 
-	public void updateInitialStatus(WorkflowStatus newInitialStatus) {
+	public void updateInitialStatus(@NonNull WorkflowStatus newInitialStatus) {
 		if (!statuses.contains(newInitialStatus)) {
 			throw new InvalidOperationException("The step must be part of this workflow.");
 		}
@@ -109,7 +112,7 @@ public class Workflow extends BaseEntity {
 		this.initialStatus = newInitialStatus;
 	}
 
-	public void updateDescription(String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
 

@@ -1,7 +1,8 @@
 package com.tissue.api.issue.workflow.domain.model;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.global.key.KeyGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,36 +12,37 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PostPersist;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 
-// TODO: Am I setting the @UniqueConstraint right?
 @Entity
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowStatus extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ToString.Include
 	private Long id;
 
-	// TODO: Should I use uni or bi directional relation with WorkflowDefinition?
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workflow_id")
 	private Workflow workflow;
 
-	@Column(name = "wf_status_key", nullable = false)
-	private String key;
-
 	@Column(nullable = false)
+	@ToString.Include
 	private String label;
 
+	// TODO: Change isInitial -> aInitial
 	@Column(nullable = false)
 	private boolean isInitial;
 
+	// TODO: Change isFinal -> aFinal
 	@Column(nullable = false)
 	private boolean isFinal;
 
@@ -48,51 +50,55 @@ public class WorkflowStatus extends BaseEntity {
 
 	// TODO: consider adding fields for color, icons, etc...
 
-	@PostPersist
-	private void assignKey() {
-		if (key == null && id != null) {
-			key = KeyGenerator.generateStatusKey(id);
-		}
-	}
-
 	@Builder
 	public WorkflowStatus(
 		Workflow workflow,
-		String key,
 		String label,
 		Boolean isInitial,
 		Boolean isFinal,
 		String description
 	) {
 		this.workflow = workflow;
-		this.key = key;
 		this.label = label;
-		this.isInitial = isInitial != null ? isInitial : false;
-		this.isFinal = isFinal != null ? isFinal : false;
+		this.isInitial = isInitial;
+		this.isFinal = isFinal;
 		this.description = description;
 	}
 
-	public void setWorkflow(Workflow workflow) {
+	public static WorkflowStatus create(
+		@NonNull Workflow workflow,
+		@NonNull String label,
+		@NonNull Boolean isInitial,
+		@NonNull Boolean isFinal,
+		@Nullable String description
+	) {
+		WorkflowStatus ws = new WorkflowStatus();
+		ws.workflow = workflow;
+		ws.label = label;
+		ws.isInitial = isInitial;
+		ws.isFinal = isFinal;
+		ws.description = description;
+
+		return ws;
+	}
+
+	public void setWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
 
-	public void setInitial(boolean isInitial) {
+	public void setInitial(@NonNull Boolean isInitial) {
 		this.isInitial = isInitial;
 	}
 
-	public void setFinal(boolean isFinal) {
+	public void setFinal(@NonNull Boolean isFinal) {
 		this.isFinal = isFinal;
 	}
 
-	public void updateLabel(String label) {
+	public void updateLabel(@NonNull String label) {
 		this.label = label;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public void updateDescription(String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
 
