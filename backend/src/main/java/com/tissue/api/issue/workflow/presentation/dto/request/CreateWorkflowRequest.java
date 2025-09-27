@@ -3,6 +3,7 @@ package com.tissue.api.issue.workflow.presentation.dto.request;
 import java.util.List;
 
 import com.tissue.api.common.validator.annotation.size.LabelSize;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 
 import jakarta.validation.constraints.NotBlank;
@@ -16,18 +17,19 @@ public record CreateWorkflowRequest(
 ) {
 	public CreateWorkflowCommand toCommand(String workspaceCode) {
 		List<CreateWorkflowCommand.StatusCommand> statusCommands = statusRequests.stream()
-			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), s.label(), s.description(), s.isInitial(),
+			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), Label.of(s.label()), s.description(),
+				s.isInitial(),
 				s.isFinal()))
 			.toList();
 
 		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitionRequests.stream()
-			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.description(), t.isMainFlow(),
+			.map(t -> new CreateWorkflowCommand.TransitionCommand(Label.of(t.label()), t.description(), t.isMainFlow(),
 				t.sourceTempKey(), t.targetTempKey()))
 			.toList();
 
 		return CreateWorkflowCommand.builder()
 			.workspaceCode(workspaceCode)
-			.label(label)
+			.label(Label.of(label))
 			.description(description)
 			.statuses(statusCommands)
 			.transitions(transitionCommands)

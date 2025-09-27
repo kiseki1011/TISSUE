@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class WorkflowValidator {
 	// TODO: I wonder if i can just encapsulate validation logic inside the entities?
 	//  (WorkflowDefinition, WorkflowStep, WorkflowTransition) If possible, is it a good design?
 	public void validateCommand(CreateWorkflowCommand cmd) {
-		Set<String> stepLabels = new HashSet<>();
+		Set<Label> stepLabels = new HashSet<>();
 		int initialCount = 0;
 		int finalCount = 0;
 

@@ -5,8 +5,10 @@ import static com.tissue.api.common.util.DomainPreconditions.*;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -36,9 +37,9 @@ public class WorkflowTransition extends BaseEntity {
 	@JoinColumn(name = "workflow_id")
 	private Workflow workflow;
 
-	@Column(nullable = false)
+	@Embedded
 	@ToString.Include
-	private String label;
+	private Label label;
 
 	@Column(nullable = false)
 	private String description;
@@ -53,26 +54,9 @@ public class WorkflowTransition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStatus;
 
-	@Builder
-	public WorkflowTransition(
-		Workflow workflow,
-		Boolean isMainFlow,
-		WorkflowStatus sourceStatus,
-		WorkflowStatus targetStatus,
-		String label,
-		String description
-	) {
-		this.workflow = workflow;
-		this.isMainFlow = isMainFlow;
-		this.sourceStatus = sourceStatus;
-		this.targetStatus = targetStatus;
-		this.label = label;
-		this.description = description;
-	}
-
 	public static WorkflowTransition create(
 		@NonNull Workflow workflow,
-		@NonNull String label,
+		@NonNull Label label,
 		@Nullable String description,
 		@NonNull Boolean isMainFlow,
 		@NonNull WorkflowStatus sourceStatus,
@@ -107,7 +91,7 @@ public class WorkflowTransition extends BaseEntity {
 		this.targetStatus = targetStatus;
 	}
 
-	public void updateLabel(@NonNull String label) {
+	public void updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 

@@ -15,9 +15,9 @@ public class WorkflowFinder {
 
 	private final WorkflowRepository workflowRepository;
 
-	public Workflow findWorkflow(Workspace workspace, String key) {
-		return workflowRepository.findByWorkspaceAndKey(workspace, key)
+	public Workflow findWorkflow(Workspace workspace, Long id) {
+		return workflowRepository.findByWorkspaceAndId(workspace, id)
 			.orElseThrow(() -> new ResourceNotFoundException(
-				"Workflow not found: workspaceKey=" + workspace.getKey() + ", key=" + key));
+				"Workflow not found: workspaceKey=" + workspace.getKey() + ", id=" + id));
 	}
 }

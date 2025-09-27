@@ -10,10 +10,12 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +24,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -43,9 +44,9 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
 
-	@Column(nullable = false)
+	@Embedded
 	@ToString.Include
-	private String label;
+	private Label label;
 
 	@Column(nullable = false)
 	private String description;
@@ -59,20 +60,9 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus initialStatus;
 
-	@Builder
-	public Workflow(
-		Workspace workspace,
-		String label,
-		String description
-	) {
-		this.workspace = workspace;
-		this.label = label;
-		this.description = description;
-	}
-
 	public static Workflow create(
 		@NonNull Workspace workspace,
-		@NonNull String label,
+		@NonNull Label label,
 		@Nullable String description
 	) {
 		Workflow wf = new Workflow();
@@ -97,7 +87,7 @@ public class Workflow extends BaseEntity {
 		transition.setWorkflow(this);
 	}
 
-	public void updateLabel(@NonNull String label) {
+	public void updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 

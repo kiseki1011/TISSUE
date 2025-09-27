@@ -5,8 +5,10 @@ import static com.tissue.api.common.util.DomainPreconditions.*;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -36,40 +37,25 @@ public class WorkflowStatus extends BaseEntity {
 	@JoinColumn(name = "workflow_id")
 	private Workflow workflow;
 
-	@Column(nullable = false)
+	@Embedded
 	@ToString.Include
-	private String label;
+	private Label label;
 
 	private String description;
 
-	// TODO: Change isInitial -> aInitial
+	// TODO: Should I change isInitial -> aInitial
 	@Column(nullable = false)
 	private boolean isInitial;
 
-	// TODO: Change isFinal -> aFinal
+	// TODO: Should I change isFinal -> aFinal
 	@Column(nullable = false)
 	private boolean isFinal;
 
 	// TODO: consider adding fields for color, icons, etc...
 
-	@Builder
-	public WorkflowStatus(
-		Workflow workflow,
-		String label,
-		Boolean isInitial,
-		Boolean isFinal,
-		String description
-	) {
-		this.workflow = workflow;
-		this.label = label;
-		this.isInitial = isInitial;
-		this.isFinal = isFinal;
-		this.description = description;
-	}
-
 	public static WorkflowStatus create(
 		@NonNull Workflow workflow,
-		@NonNull String label,
+		@NonNull Label label,
 		@Nullable String description,
 		@NonNull Boolean isInitial,
 		@NonNull Boolean isFinal
@@ -96,7 +82,7 @@ public class WorkflowStatus extends BaseEntity {
 		this.isFinal = isFinal;
 	}
 
-	public void updateLabel(@NonNull String label) {
+	public void updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 

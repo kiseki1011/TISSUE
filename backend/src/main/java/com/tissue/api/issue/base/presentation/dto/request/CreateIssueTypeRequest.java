@@ -17,7 +17,7 @@ public record CreateIssueTypeRequest(
 	@Nullable @Size(max = 255) String description,
 	@NotNull ColorType color,
 	@NotNull HierarchyLevel hierarchyLevel,
-	@NotBlank String workflowKey
+	@NotNull Long workflowId
 ) {
 	public CreateIssueTypeCommand toCommand(String workspaceKey) {
 		return CreateIssueTypeCommand.builder()
@@ -26,7 +26,7 @@ public record CreateIssueTypeRequest(
 			.description(description)
 			.color(color)
 			.hierarchyLevel(hierarchyLevel)
-			.workflowKey(workflowKey)
+			.workflowId(workflowId)
 			.build();
 	}
 }

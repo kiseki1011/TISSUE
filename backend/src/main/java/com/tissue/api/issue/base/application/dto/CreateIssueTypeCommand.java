@@ -13,6 +13,6 @@ public record CreateIssueTypeCommand(
 	String description,
 	ColorType color,
 	HierarchyLevel hierarchyLevel,
-	String workflowKey
+	Long workflowId
 ) {
 }
