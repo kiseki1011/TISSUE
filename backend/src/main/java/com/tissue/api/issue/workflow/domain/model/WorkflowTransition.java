@@ -99,4 +99,8 @@ public class WorkflowTransition extends BaseEntity {
 	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
+
+	public void softDelete() {
+		archive();
+	}
 }

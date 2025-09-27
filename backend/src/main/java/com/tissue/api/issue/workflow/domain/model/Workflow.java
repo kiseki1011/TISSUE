@@ -76,7 +76,7 @@ public class Workflow extends BaseEntity {
 		statuses.add(status);
 		status.setWorkflow(this);
 
-		if (status.isInitialStatus()) {
+		if (status.isInitial()) {
 			updateInitialStatus(status);
 		}
 	}
@@ -96,10 +96,10 @@ public class Workflow extends BaseEntity {
 		}
 
 		for (WorkflowStatus status : statuses) {
-			status.setInitialFlag(false);
+			status.markInitialFlag(false);
 		}
 
-		newInitialStatus.setInitialFlag(true);
+		newInitialStatus.markInitialFlag(true);
 		this.initialStatus = newInitialStatus;
 	}
 

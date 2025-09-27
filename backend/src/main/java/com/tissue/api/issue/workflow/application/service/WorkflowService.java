@@ -41,7 +41,6 @@ public class WorkflowService {
 				Workflow.create(workspace, cmd.label(), cmd.description())
 			);
 
-			// Step mapping using tempKey
 			Map<String, WorkflowStatus> statusMap = new HashMap<>();
 			for (CreateWorkflowCommand.StatusCommand s : cmd.statuses()) {
 				WorkflowStatus status = WorkflowStatus.create(workflow, s.label(), s.description(), s.initial(),

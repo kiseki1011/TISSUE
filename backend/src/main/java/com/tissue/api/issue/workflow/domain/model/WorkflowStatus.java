@@ -73,11 +73,11 @@ public class WorkflowStatus extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	public void setInitialFlag(boolean value) {
+	protected void markInitialFlag(boolean value) {
 		this.initial = value;
 	}
 
-	public void setTerminalFlag(boolean value) {
+	protected void markTerminalFlag(boolean value) {
 		this.terminal = value;
 	}
 
@@ -85,11 +85,7 @@ public class WorkflowStatus extends BaseEntity {
 		this.description = description;
 	}
 
-	public boolean isInitialStatus() {
-		return initial;
-	}
-
-	public boolean isFinalStatus() {
-		return terminal;
+	public void softDelete() {
+		archive();
 	}
 }
