@@ -1,5 +1,7 @@
 package com.tissue.api.issue.workflow.domain.model;
 
+import static com.tissue.api.common.util.DomainPreconditions.*;
+
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -38,6 +40,8 @@ public class WorkflowStatus extends BaseEntity {
 	@ToString.Include
 	private String label;
 
+	private String description;
+
 	// TODO: Change isInitial -> aInitial
 	@Column(nullable = false)
 	private boolean isInitial;
@@ -45,8 +49,6 @@ public class WorkflowStatus extends BaseEntity {
 	// TODO: Change isFinal -> aFinal
 	@Column(nullable = false)
 	private boolean isFinal;
-
-	private String description;
 
 	// TODO: consider adding fields for color, icons, etc...
 
@@ -68,16 +70,16 @@ public class WorkflowStatus extends BaseEntity {
 	public static WorkflowStatus create(
 		@NonNull Workflow workflow,
 		@NonNull String label,
+		@Nullable String description,
 		@NonNull Boolean isInitial,
-		@NonNull Boolean isFinal,
-		@Nullable String description
+		@NonNull Boolean isFinal
 	) {
 		WorkflowStatus ws = new WorkflowStatus();
 		ws.workflow = workflow;
 		ws.label = label;
+		ws.description = nullToEmpty(description);
 		ws.isInitial = isInitial;
 		ws.isFinal = isFinal;
-		ws.description = description;
 
 		return ws;
 	}

@@ -36,6 +36,13 @@ public class WorkflowTransition extends BaseEntity {
 	@JoinColumn(name = "workflow_id")
 	private Workflow workflow;
 
+	@Column(nullable = false)
+	@ToString.Include
+	private String label;
+
+	@Column(nullable = false)
+	private String description;
+
 	// TODO: Should I change isMainFlow -> aMainFlow or mainFlow?
 	@Column(nullable = false)
 	private boolean isMainFlow;
@@ -45,13 +52,6 @@ public class WorkflowTransition extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStep;
-
-	@Column(nullable = false)
-	@ToString.Include
-	private String label;
-
-	@Column(nullable = false)
-	private String description;
 
 	@Builder
 	public WorkflowTransition(
@@ -72,19 +72,19 @@ public class WorkflowTransition extends BaseEntity {
 
 	public static WorkflowTransition create(
 		@NonNull Workflow workflow,
+		@NonNull String label,
+		@Nullable String description,
 		@NonNull Boolean isMainFlow,
 		@NonNull WorkflowStatus sourceStep,
-		@NonNull WorkflowStatus targetStep,
-		@NonNull String label,
-		@Nullable String description
+		@NonNull WorkflowStatus targetStep
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
 		wt.workflow = workflow;
+		wt.label = label;
+		wt.description = nullToEmpty(description);
 		wt.isMainFlow = isMainFlow;
 		wt.sourceStep = sourceStep;
 		wt.targetStep = targetStep;
-		wt.label = label;
-		wt.description = nullToEmpty(description);
 
 		return wt;
 	}

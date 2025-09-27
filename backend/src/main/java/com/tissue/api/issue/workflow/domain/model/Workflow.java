@@ -1,5 +1,7 @@
 package com.tissue.api.issue.workflow.domain.model;
 
+import static com.tissue.api.common.util.DomainPreconditions.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +47,9 @@ public class Workflow extends BaseEntity {
 	@ToString.Include
 	private String label;
 
+	@Column(nullable = false)
+	private String description;
+
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkflowStatus> statuses = new HashSet<>();
 
@@ -53,9 +58,6 @@ public class Workflow extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus initialStatus;
-
-	@Column(nullable = false)
-	private String description;
 
 	@Builder
 	public Workflow(
@@ -76,7 +78,7 @@ public class Workflow extends BaseEntity {
 		Workflow wf = new Workflow();
 		wf.workspace = workspace;
 		wf.label = label;
-		wf.description = description;
+		wf.description = nullToEmpty(description);
 
 		return wf;
 	}
