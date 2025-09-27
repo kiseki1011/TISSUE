@@ -37,20 +37,16 @@ public class WorkflowService {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
 
 		try {
-			Workflow workflow = workflowRepository.save(Workflow.builder()
-				.workspace(workspace)
-				.label(cmd.label())
-				.build());
+			Workflow workflow = workflowRepository.save(
+				Workflow.create(workspace, cmd.label(), cmd.description())
+			);
 
 			// Step mapping using tempKey
 			Map<String, WorkflowStatus> statusMap = new HashMap<>();
 			for (CreateWorkflowCommand.StatusCommand s : cmd.statuses()) {
-				WorkflowStatus status = WorkflowStatus.builder()
-					.workflow(workflow)
-					.label(s.label())
-					.isInitial(s.isInitial())
-					.isFinal(s.isFinal())
-					.build();
+				WorkflowStatus status = WorkflowStatus.create(workflow, s.label(), s.description(), s.isInitial(),
+					s.isFinal());
+
 				workflow.addStatus(status);
 				statusMap.put(s.tempKey(), status);
 			}
@@ -59,18 +55,13 @@ public class WorkflowService {
 				WorkflowStatus sourceStatus = statusMap.get(t.sourceTempKey());
 				WorkflowStatus targetStatus = statusMap.get(t.targetTempKey());
 
-				WorkflowTransition transition = WorkflowTransition.builder()
-					.workflow(workflow)
-					.isMainFlow(t.isMainFlow())
-					.sourceStep(sourceStatus)
-					.targetStep(targetStatus)
-					.label(t.label())
-					.build();
+				WorkflowTransition transition = WorkflowTransition.create(workflow, t.label(), t.description(),
+					t.isMainFlow(), sourceStatus, targetStatus);
+
 				workflow.addTransition(transition);
 			}
 
 			return WorkflowResponse.from(workflow);
-
 		} catch (DataIntegrityViolationException e) {
 			log.info("Failed due to duplicate label.", e);
 			throw new DuplicateResourceException("Duplicate label is not allowed for workflows or statuses.", e);
