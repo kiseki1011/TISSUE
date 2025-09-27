@@ -28,11 +28,11 @@ public class WorkflowValidator {
 			if (!stepLabels.add(step.label())) {
 				throw new DuplicateResourceException("Duplicate step label: " + step.label());
 			}
-			if (step.isInitial()) {
+			if (step.initial()) {
 				initialCount++;
 			}
 
-			if (step.isFinal()) {
+			if (step.terminal()) {
 				finalCount++;
 			}
 		}

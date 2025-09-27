@@ -44,8 +44,8 @@ public class WorkflowService {
 			// Step mapping using tempKey
 			Map<String, WorkflowStatus> statusMap = new HashMap<>();
 			for (CreateWorkflowCommand.StatusCommand s : cmd.statuses()) {
-				WorkflowStatus status = WorkflowStatus.create(workflow, s.label(), s.description(), s.isInitial(),
-					s.isFinal());
+				WorkflowStatus status = WorkflowStatus.create(workflow, s.label(), s.description(), s.initial(),
+					s.terminal());
 
 				workflow.addStatus(status);
 				statusMap.put(s.tempKey(), status);
@@ -56,7 +56,7 @@ public class WorkflowService {
 				WorkflowStatus targetStatus = statusMap.get(t.targetTempKey());
 
 				WorkflowTransition transition = WorkflowTransition.create(workflow, t.label(), t.description(),
-					t.isMainFlow(), sourceStatus, targetStatus);
+					t.mainFlow(), sourceStatus, targetStatus);
 
 				workflow.addTransition(transition);
 			}

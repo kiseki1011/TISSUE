@@ -2,9 +2,8 @@ package com.tissue.api.issue.workflow.domain.model;
 
 import static com.tissue.api.common.util.DomainPreconditions.*;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.lang.Nullable;
 
@@ -48,14 +47,14 @@ public class Workflow extends BaseEntity {
 	@ToString.Include
 	private Label label;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String description;
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<WorkflowStatus> statuses = new HashSet<>();
+	private List<WorkflowStatus> statuses = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<WorkflowTransition> transitions = new HashSet<>();
+	private List<WorkflowTransition> transitions = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus initialStatus;
@@ -97,10 +96,10 @@ public class Workflow extends BaseEntity {
 		}
 
 		for (WorkflowStatus status : statuses) {
-			status.setInitial(false);
+			status.setInitialFlag(false);
 		}
 
-		newInitialStatus.setInitial(true);
+		newInitialStatus.setInitialFlag(true);
 		this.initialStatus = newInitialStatus;
 	}
 
@@ -110,7 +109,12 @@ public class Workflow extends BaseEntity {
 
 	public List<WorkflowStatus> getFinalStatuses() {
 		return statuses.stream()
-			.filter(WorkflowStatus::isFinal)
+			.filter(WorkflowStatus::isTerminal)
 			.toList();
+	}
+
+	public void softDelete() {
+		archive();
+		// TODO: statuses, transitions에 대해서도 softDelete 전파
 	}
 }

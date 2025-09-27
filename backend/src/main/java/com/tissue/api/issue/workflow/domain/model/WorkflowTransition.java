@@ -41,12 +41,11 @@ public class WorkflowTransition extends BaseEntity {
 	@ToString.Include
 	private Label label;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 255)
 	private String description;
 
-	// TODO: Should I change isMainFlow -> aMainFlow or mainFlow?
 	@Column(nullable = false)
-	private boolean isMainFlow;
+	private boolean mainFlow;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus sourceStatus;
@@ -58,7 +57,7 @@ public class WorkflowTransition extends BaseEntity {
 		@NonNull Workflow workflow,
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull Boolean isMainFlow,
+		@NonNull Boolean mainFlow,
 		@NonNull WorkflowStatus sourceStatus,
 		@NonNull WorkflowStatus targetStatus
 	) {
@@ -66,7 +65,7 @@ public class WorkflowTransition extends BaseEntity {
 		wt.workflow = workflow;
 		wt.label = label;
 		wt.description = nullToEmpty(description);
-		wt.isMainFlow = isMainFlow;
+		wt.mainFlow = mainFlow;
 		wt.sourceStatus = sourceStatus;
 		wt.targetStatus = targetStatus;
 
@@ -77,10 +76,12 @@ public class WorkflowTransition extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	public void updateIsMainFlow(@NonNull Boolean isMainFlow) {
-		// TODO: Should I add validation logic so the main flow will maintain a single straight flow?
-		//  If I should, where should i perform the validation? In this Entity? or at the application service layer?
-		this.isMainFlow = isMainFlow;
+	public void includeInMainFlow() {
+		this.mainFlow = true;
+	}
+
+	public void excludeFromMainFlow() {
+		this.mainFlow = false;
 	}
 
 	public void updateSourceStatus(@NonNull WorkflowStatus sourceStatus) {

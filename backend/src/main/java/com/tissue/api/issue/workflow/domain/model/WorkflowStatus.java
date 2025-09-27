@@ -41,15 +41,14 @@ public class WorkflowStatus extends BaseEntity {
 	@ToString.Include
 	private Label label;
 
+	@Column(nullable = false, length = 255)
 	private String description;
 
-	// TODO: Should I change isInitial -> aInitial
 	@Column(nullable = false)
-	private boolean isInitial;
+	private boolean initial;
 
-	// TODO: Should I change isFinal -> aFinal
 	@Column(nullable = false)
-	private boolean isFinal;
+	private boolean terminal;
 
 	// TODO: consider adding fields for color, icons, etc...
 
@@ -57,15 +56,15 @@ public class WorkflowStatus extends BaseEntity {
 		@NonNull Workflow workflow,
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull Boolean isInitial,
-		@NonNull Boolean isFinal
+		@NonNull Boolean initial,
+		@NonNull Boolean terminal
 	) {
 		WorkflowStatus ws = new WorkflowStatus();
 		ws.workflow = workflow;
 		ws.label = label;
 		ws.description = nullToEmpty(description);
-		ws.isInitial = isInitial;
-		ws.isFinal = isFinal;
+		ws.initial = initial;
+		ws.terminal = terminal;
 
 		return ws;
 	}
@@ -74,16 +73,12 @@ public class WorkflowStatus extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	public void setInitial(@NonNull Boolean isInitial) {
-		this.isInitial = isInitial;
+	public void setInitialFlag(boolean value) {
+		this.initial = value;
 	}
 
-	public void setFinal(@NonNull Boolean isFinal) {
-		this.isFinal = isFinal;
-	}
-
-	public void updateLabel(@NonNull Label label) {
-		this.label = label;
+	public void setTerminalFlag(boolean value) {
+		this.terminal = value;
 	}
 
 	public void updateDescription(@Nullable String description) {
@@ -91,10 +86,10 @@ public class WorkflowStatus extends BaseEntity {
 	}
 
 	public boolean isInitialStatus() {
-		return isInitial;
+		return initial;
 	}
 
 	public boolean isFinalStatus() {
-		return isFinal;
+		return terminal;
 	}
 }

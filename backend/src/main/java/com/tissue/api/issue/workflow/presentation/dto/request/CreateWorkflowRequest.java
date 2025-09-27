@@ -18,12 +18,11 @@ public record CreateWorkflowRequest(
 	public CreateWorkflowCommand toCommand(String workspaceCode) {
 		List<CreateWorkflowCommand.StatusCommand> statusCommands = statusRequests.stream()
 			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), Label.of(s.label()), s.description(),
-				s.isInitial(),
-				s.isFinal()))
+				s.initial(), s.terminal()))
 			.toList();
 
 		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitionRequests.stream()
-			.map(t -> new CreateWorkflowCommand.TransitionCommand(Label.of(t.label()), t.description(), t.isMainFlow(),
+			.map(t -> new CreateWorkflowCommand.TransitionCommand(Label.of(t.label()), t.description(), t.mainFlow(),
 				t.sourceTempKey(), t.targetTempKey()))
 			.toList();
 

@@ -14,10 +14,10 @@ public record CreateWorkflowCommand(
 	List<StatusCommand> statuses,
 	List<TransitionCommand> transitions
 ) {
-	public record StatusCommand(String tempKey, Label label, String description, boolean isInitial, boolean isFinal) {
+	public record StatusCommand(String tempKey, Label label, String description, boolean initial, boolean terminal) {
 	}
 
-	public record TransitionCommand(Label label, String description, boolean isMainFlow, String sourceTempKey,
+	public record TransitionCommand(Label label, String description, boolean mainFlow, String sourceTempKey,
 									String targetTempKey) {
 	}
 }
