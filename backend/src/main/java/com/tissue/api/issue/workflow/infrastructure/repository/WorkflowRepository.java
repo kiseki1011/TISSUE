@@ -9,5 +9,5 @@ import com.tissue.api.workspace.domain.model.Workspace;
 
 public interface WorkflowRepository extends JpaRepository<Workflow, Long> {
 
-	Optional<Workflow> findByWorkspaceAndKey(Workspace workspace, String key);
+	Optional<Workflow> findByWorkspaceAndId(Workspace workspace, Long id);
 }
