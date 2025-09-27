@@ -39,7 +39,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowKey());
+		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		issueTypeValidator.ensureUniqueLabel(workspace, cmd.label());
 
