@@ -8,12 +8,14 @@ import lombok.Builder;
 public record CreateWorkflowCommand(
 	String workspaceCode,
 	String label,
+	String description,
 	List<StatusCommand> statuses,
 	List<TransitionCommand> transitions
 ) {
-	public record StatusCommand(String tempKey, String label, boolean isInitial, boolean isFinal) {
+	public record StatusCommand(String tempKey, String label, String description, boolean isInitial, boolean isFinal) {
 	}
 
-	public record TransitionCommand(String label, boolean isMainFlow, String sourceTempKey, String targetTempKey) {
+	public record TransitionCommand(String label, String description, boolean isMainFlow, String sourceTempKey,
+									String targetTempKey) {
 	}
 }

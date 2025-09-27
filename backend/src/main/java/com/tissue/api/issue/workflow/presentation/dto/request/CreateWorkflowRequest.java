@@ -2,26 +2,33 @@ package com.tissue.api.issue.workflow.presentation.dto.request;
 
 import java.util.List;
 
+import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public record CreateWorkflowRequest(
-	String label,
+	@NotBlank @LabelSize String label,
+	@Size(max = 255) String description,
 	List<StatusRequest> statusRequests,
 	List<TransitionRequest> transitionRequests
 ) {
 	public CreateWorkflowCommand toCommand(String workspaceCode) {
 		List<CreateWorkflowCommand.StatusCommand> statusCommands = statusRequests.stream()
-			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), s.label(), s.isInitial(), s.isFinal()))
+			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), s.label(), s.description(), s.isInitial(),
+				s.isFinal()))
 			.toList();
 
 		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = transitionRequests.stream()
-			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.isMainFlow(), t.sourceTempKey(),
-				t.targetTempKey()))
+			.map(t -> new CreateWorkflowCommand.TransitionCommand(t.label(), t.description(), t.isMainFlow(),
+				t.sourceTempKey(), t.targetTempKey()))
 			.toList();
 
 		return CreateWorkflowCommand.builder()
 			.workspaceCode(workspaceCode)
 			.label(label)
+			.description(description)
 			.statuses(statusCommands)
 			.transitions(transitionCommands)
 			.build();
