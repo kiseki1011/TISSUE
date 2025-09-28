@@ -52,24 +52,21 @@ public class WorkflowService {
 				statusMap.put(s.tempKey(), status);
 			}
 
-			List<WorkflowTransition> mainFlowPath = new ArrayList<>();
+			List<WorkflowTransition> mainFlowCandidates = new ArrayList<>();
 
 			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitions()) {
-				WorkflowStatus sourceStatus = statusMap.get(t.sourceTempKey());
-				WorkflowStatus targetStatus = statusMap.get(t.targetTempKey());
+				WorkflowStatus src = statusMap.get(t.sourceTempKey());
+				WorkflowStatus trg = statusMap.get(t.targetTempKey());
 
-				WorkflowTransition transition = workflow.addTransition(t.label(), t.description(), sourceStatus,
-					targetStatus, t.mainFlow());
+				WorkflowTransition transition = workflow.addTransition(t.label(), t.description(), src, trg);
 
 				if (t.mainFlow()) {
-					mainFlowPath.add(transition);
+					mainFlowCandidates.add(transition);
 				}
 			}
 
-			// TODO: mainFlowPatch 비어있지 않고 유효한 transition들로 이루어져 있을 것이라고 신뢰
-			//  - 그러기 위해서는 유효한 검증 로직으로 사전에 검증이 필요함
-			workflowValidator.ensureMainFlowSingleLine(workflow, mainFlowPath);
-			workflow.defineMainFlow(mainFlowPath);
+			workflowValidator.ensureMainFlowSingleLine(workflow, mainFlowCandidates);
+			workflow.defineMainFlow(mainFlowCandidates);
 
 			return WorkflowResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {

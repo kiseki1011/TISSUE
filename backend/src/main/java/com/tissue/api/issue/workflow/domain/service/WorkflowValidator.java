@@ -23,19 +23,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkflowValidator {
 
+	// TODO: blank 관련 검증은 bean validation을 적용하면 굳이 할 필요 있을까? 과한 방어적 프로그래밍 같은데
 	public void validateCommand(CreateWorkflowCommand cmd) {
-		// 라벨 중복/카디널리티
 		Set<Label> labels = new HashSet<>();
 		int initial = 0;
 		int terminal = 0;
-		for (var s : cmd.statuses()) {
-			if (!labels.add(s.label())) {
-				throw new DuplicateResourceException("Duplicate step label: " + s.label());
+		for (var sc : cmd.statuses()) {
+			if (!labels.add(sc.label())) {
+				throw new DuplicateResourceException("Duplicate step label: " + sc.label());
 			}
-			if (s.initial()) {
+			if (sc.initial()) {
 				initial++;
 			}
-			if (s.terminal()) {
+			if (sc.terminal()) {
 				terminal++;
 			}
 		}
@@ -46,34 +46,32 @@ public class WorkflowValidator {
 			throw new InvalidOperationException("Workflow must have at least one terminal step.");
 		}
 
-		// tempKey 유효/유니크
 		Set<String> keys = new HashSet<>();
-		for (var s : cmd.statuses()) {
-			if (s.tempKey() == null || s.tempKey().isBlank()) {
-				throw new InvalidOperationException("Status tempKey must be non-blank.");
+		for (var sc : cmd.statuses()) {
+			if (sc.tempKey() == null || sc.tempKey().isBlank()) {
+				throw new InvalidOperationException("Status tempKey must not be blank.");
 			}
-			if (!keys.add(s.tempKey())) {
-				throw new DuplicateResourceException("Duplicate status tempKey: " + s.tempKey());
+			if (!keys.add(sc.tempKey())) {
+				throw new DuplicateResourceException("Duplicate status tempKey: " + sc.tempKey());
 			}
 		}
 
-		// 전이 참조 무결성
-		for (var t : cmd.transitions()) {
-			if (t.sourceTempKey() == null || t.sourceTempKey().isBlank()) {
-				throw new InvalidOperationException("Transition sourceTempKey must be non-blank.");
+		for (var tc : cmd.transitions()) {
+			if (tc.sourceTempKey() == null || tc.sourceTempKey().isBlank()) {
+				throw new InvalidOperationException("Transition sourceTempKey must not be blank.");
 			}
-			if (t.targetTempKey() == null || t.targetTempKey().isBlank()) {
-				throw new InvalidOperationException("Transition targetTempKey must be non-blank.");
+			if (tc.targetTempKey() == null || tc.targetTempKey().isBlank()) {
+				throw new InvalidOperationException("Transition targetTempKey must not be blank.");
 			}
-
-			if (!keys.contains(t.sourceTempKey())) {
-				throw new InvalidOperationException("Unknown source tempKey: " + t.sourceTempKey());
+			if (!keys.contains(tc.sourceTempKey())) {
+				throw new InvalidOperationException("Unknown source status tempKey: " + tc.sourceTempKey());
 			}
-			if (!keys.contains(t.targetTempKey())) {
-				throw new InvalidOperationException("Unknown target tempKey: " + t.targetTempKey());
+			if (!keys.contains(tc.targetTempKey())) {
+				throw new InvalidOperationException("Unknown target status tempKey: " + tc.targetTempKey());
 			}
-			// (선택) self-loop 금지:
-			// if (t.sourceTempKey().equals(t.targetTempKey())) throw new InvalidOperationException("Self-loop not allowed.");
+			if (tc.sourceTempKey().equals(tc.targetTempKey())) {
+				throw new InvalidOperationException("Self-loop not allowed.");
+			}
 		}
 	}
 
@@ -82,9 +80,9 @@ public class WorkflowValidator {
 	 * 조건 불만족 시 예외를 던진다.
 	 * 경로가 비어 있으면 안됨(최소 하나의 transition으로 이루어져야 함)
 	 */
-	public void ensureMainFlowSingleLine(Workflow wf, List<WorkflowTransition> main) {
-		if (main.isEmpty()) {
-			return;
+	public void ensureMainFlowSingleLine(Workflow wf, List<WorkflowTransition> mainFlow) {
+		if (mainFlow.isEmpty()) {
+			throw new InvalidOperationException("Main flow of transitions must not be empty.");
 		}
 
 		WorkflowStatus initialStatus = wf.getInitialStatus();
@@ -92,54 +90,47 @@ public class WorkflowValidator {
 			throw new InvalidOperationException("Initial status must be set before validating main flow.");
 		}
 
-		// 소속/상태 집합 확인
 		Set<WorkflowStatus> statusSet = new HashSet<>(wf.getStatuses());
-		for (var t : main) {
-			if (t.getWorkflow() != wf) {
-				throw new InvalidOperationException("Foreign transition in main flow.");
-			}
+		for (var t : mainFlow) {
 			if (!statusSet.contains(t.getSourceStatus()) || !statusSet.contains(t.getTargetStatus())) {
 				throw new InvalidOperationException("Main flow must connect statuses of this workflow.");
 			}
 		}
 
-		// 차수 계산
-		Map<WorkflowStatus, Integer> inDeg = new IdentityHashMap<>();
-		Map<WorkflowStatus, Integer> outDeg = new IdentityHashMap<>();
-		for (var t : main) {
-			outDeg.put(t.getSourceStatus(), outDeg.getOrDefault(t.getSourceStatus(), 0) + 1);
-			inDeg.put(t.getTargetStatus(), inDeg.getOrDefault(t.getTargetStatus(), 0) + 1);
+		Map<WorkflowStatus, Integer> outCountByStatus = new IdentityHashMap<>();
+		Map<WorkflowStatus, Integer> inCountByStatus = new IdentityHashMap<>();
+		for (var t : mainFlow) {
+			outCountByStatus.merge(t.getSourceStatus(), 1, Integer::sum);
+			inCountByStatus.merge(t.getTargetStatus(), 1, Integer::sum);
 		}
 
-		// 차수 제약
 		for (var s : wf.getStatuses()) {
-			int in = inDeg.getOrDefault(s, 0);
-			int out = outDeg.getOrDefault(s, 0);
+			int inCount = inCountByStatus.getOrDefault(s, 0);
+			int outCount = outCountByStatus.getOrDefault(s, 0);
 
 			if (s == initialStatus) {
-				if (!(in == 0 && out <= 1)) {
-					throw new InvalidOperationException("Initial must have in=0 and out<=1 in main flow.");
+				if (!(inCount == 0 && outCount <= 1)) {
+					throw new InvalidOperationException("Initial must have inCount=0 and outCount<=1 in main flow.");
 				}
 			} else if (s.isTerminal()) {
-				if (!((in <= 1 && out == 0) || (in == 0 && out == 0))) {
-					throw new InvalidOperationException("Terminal must have in<=1 and out=0 in main flow.");
+				if (!(inCount <= 1 && outCount == 0)) {
+					throw new InvalidOperationException("Terminal must have inCount<=1 and outCount=0 in main flow.");
 				}
 			} else {
-				if (!((in == 0 && out == 0) || (in == 1 && out == 1))) {
+				if (!((inCount == 0 && outCount == 0) || (inCount == 1 && outCount == 1))) {
 					throw new InvalidOperationException("Intermediate must be (1,1) or (0,0) on main flow.");
 				}
 			}
 		}
 
-		// 연결성/무순환/도달성
 		Map<WorkflowStatus, WorkflowTransition> nextTransition = new IdentityHashMap<>();
-		for (var t : main) {
+		for (var t : mainFlow) {
 			if (nextTransition.put(t.getSourceStatus(), t) != null) {
 				throw new InvalidOperationException("Multiple main transitions leaving the same status.");
 			}
 		}
 
-		int walked = 0;
+		int visitedCount = 0;
 		Set<WorkflowTransition> visited = Collections.newSetFromMap(new IdentityHashMap<>());
 		WorkflowStatus currentStatus = initialStatus;
 		while (true) {
@@ -150,11 +141,11 @@ public class WorkflowValidator {
 			if (!visited.add(transition)) {
 				throw new InvalidOperationException("Cycle detected in main flow.");
 			}
-			walked++;
+			visitedCount++;
 			currentStatus = transition.getTargetStatus();
 		}
 
-		if (walked != main.size()) {
+		if (visitedCount != mainFlow.size()) {
 			throw new InvalidOperationException(
 				"Main flow must be a single straight line (disconnected transitions present).");
 		}

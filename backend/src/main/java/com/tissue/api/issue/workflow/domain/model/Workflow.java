@@ -88,14 +88,15 @@ public class Workflow extends BaseEntity {
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull WorkflowStatus source,
-		@NonNull WorkflowStatus target,
-		boolean mainFlow
+		@NonNull WorkflowStatus target
 	) {
 		// ensureOwned(source);
 		// ensureOwned(target);
 		ensureNoDuplicateEdge(source, target);
 
-		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target, mainFlow);
+		// TODO(optional): 초기 in 금지 / 터미널 out 금지 같은 전역 그래프 제약도 여기서 가드
+
+		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target, false);
 		attachTransition(transition);
 
 		return transition;
@@ -134,7 +135,6 @@ public class Workflow extends BaseEntity {
 		transitions.forEach(WorkflowTransition::softDelete);
 	}
 
-	// TODO: 호출전에 검증을 위해 ensureMainFlowSingleLine 호출 필요
 	public void defineMainFlow(@NonNull List<WorkflowTransition> transitionPath) {
 		for (var t : transitions) {
 			t._excludeFromMainFlow();
@@ -146,15 +146,16 @@ public class Workflow extends BaseEntity {
 
 	public void renameStatus(WorkflowStatus status, Label newLabel) {
 		// ensureOwned(status);
-		// TODO: Workflow 스코프 내에서 WorkflowStatus의 Label이 유일하도록 검증(서비스 계층에서 해도 괜찮을 듯)
+		// TODO: Workflow 스코프 내에서 WorkflowStatus의 Label이 유일하도록 검증
 		// ensureUniqueLabel(newLabel);
 		status._updateLabel(newLabel);
 	}
 
 	public void renameTransition(WorkflowTransition transition, Label newLabel) {
 		// ensureOwned(transition);
-		// TODO: Workflow 스코프 내에서 WorkflowTransition의 Label이 유일하도록 검증(서비스 계층에서 해도 괜찮을 듯)
-		//  - 아니면 transition 정도는 Label 중복을 허용할까?
+		// TODO: Workflow 스코프 내에서 WorkflowTransition의 Label이 유일하도록 검증
+		//  - (sourceStatus, label) 기준으로 유니크 적용
+		//  - 예를 들어서 같은 상태에서 두 가지 전이가 나갈 수 있는데, 둘이 서로 같은 이름이면 안됨
 		// ensureUniqueLabel(newLabel);
 		transition._updateLabel(newLabel);
 	}
