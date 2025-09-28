@@ -34,7 +34,7 @@ public class WorkflowService {
 
 	// TODO: 엔티티 내부에 중복 Label을 불허하도록 검증하는 메서드 추가
 	//  - 이때 WorkflowTransition은 중복 Label을 허용할지 고민하고 있음
-	// TODO: terminal WorkflowStatus에서 나가는 WorkflowTransition을 불허하는 검증 로직이 있는지 확인? (필요함)
+	// TODO: terminal=true WorkflowStatus에서 나가는 WorkflowTransition을 불허하는 검증 로직이 있는지 확인? (필요함)
 	@Transactional
 	public WorkflowResponse createWorkflow(CreateWorkflowCommand cmd) {
 
@@ -78,13 +78,21 @@ public class WorkflowService {
 		}
 	}
 
+	// TODO: Workflow 삭제(soft-delete)
+	//  - 하나 이상의 IssueType이 Workflow를 사용 중이면 막기(ensureDeletable 구현)
+	//  - 이미 엔티티에서 soft-delete가 WorkflowStatus, WorkflowTransition에 전파되도록 구현
+	//  - systemType(기본으로 제공하는 Workflow에 해당하면)이면 삭제를 막을까?
+	// TODO: Workflow의 label/description 수정
+	//   - Label 중복 검증 로직 필요(WorkflowValidator에 만들기, Workspace 스코프 내에서 유일해야 함)
 	// TODO: WorkflowStatus의 label/description 수정
+	//   - Label 중복 검증 로직 필요(WorkflowValidator에 만들까? vs 엔티티 내부에 만들까?)
 	// TODO: WorkflowTransition의 label/description 수정
+	//   - WorkflowTransition의 경우 Label 중복을 허용할까?
 	// TODO: WorkflowTransition의 소스/타겟 status 변경
 	//  - 연결이 없는 고아 WorkflowStatus가 없도록 해야 함
 	//  - mainFlow 검증 필요
 	//  - sourceStatus를 변경하거나, targetStatus를 변경하거나 둘중 하나만 허용
-	// TODO: WorkflowTransition 삭제
+	// TODO: WorkflowTransition 삭제(soft-delete)
 	//  - 연결이 없는 고아 WorkflowStatus가 없도록 해야 함
 	//  - mainFlow 검증 필요
 	//  - 필요한 경우의 WorkflowStatus의 initial, terminal의 변경

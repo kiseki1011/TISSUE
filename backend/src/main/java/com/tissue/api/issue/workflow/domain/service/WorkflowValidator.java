@@ -80,7 +80,7 @@ public class WorkflowValidator {
 	/**
 	 * 메인 플로우가 '초기 → ... → (종료)'로 이어지는 단일 직선 경로임을 보장한다.
 	 * 조건 불만족 시 예외를 던진다.
-	 * 경로가 비어 있으면 안됨(최소한 두 개의 status, 그러니깐 하나의 transition으로 이루어져야 함)
+	 * 경로가 비어 있으면 안됨(최소 하나의 transition으로 이루어져야 함)
 	 */
 	public void ensureMainFlowSingleLine(Workflow wf, List<WorkflowTransition> main) {
 		if (main.isEmpty()) {
@@ -132,34 +132,34 @@ public class WorkflowValidator {
 		}
 
 		// 연결성/무순환/도달성
-		Map<WorkflowStatus, WorkflowTransition> nextEdge = new IdentityHashMap<>();
+		Map<WorkflowStatus, WorkflowTransition> nextTransition = new IdentityHashMap<>();
 		for (var t : main) {
-			if (nextEdge.put(t.getSourceStatus(), t) != null) {
-				throw new InvalidOperationException("Multiple main edges leaving the same status.");
+			if (nextTransition.put(t.getSourceStatus(), t) != null) {
+				throw new InvalidOperationException("Multiple main transitions leaving the same status.");
 			}
 		}
 
 		int walked = 0;
 		Set<WorkflowTransition> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-		WorkflowStatus cur = initialStatus;
+		WorkflowStatus currentStatus = initialStatus;
 		while (true) {
-			WorkflowTransition e = nextEdge.get(cur);
-			if (e == null) {
+			WorkflowTransition transition = nextTransition.get(currentStatus);
+			if (transition == null) {
 				break;
 			}
-			if (!visited.add(e)) {
+			if (!visited.add(transition)) {
 				throw new InvalidOperationException("Cycle detected in main flow.");
 			}
 			walked++;
-			cur = e.getTargetStatus();
+			currentStatus = transition.getTargetStatus();
 		}
 
 		if (walked != main.size()) {
 			throw new InvalidOperationException(
-				"Main flow must be a single straight line (disconnected edges present).");
+				"Main flow must be a single straight line (disconnected transitions present).");
 		}
 
-		if (!cur.isTerminal()) {
+		if (!currentStatus.isTerminal()) {
 			throw new InvalidOperationException("Main flow must end at a terminal status.");
 		}
 	}
