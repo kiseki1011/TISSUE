@@ -94,6 +94,8 @@ public class WorkflowService {
 	//  - sourceStatus를 변경하거나, targetStatus를 변경하거나 둘중 하나만 허용
 	// TODO: WorkflowTransition 삭제(soft-delete)
 	//  - 연결이 없는 고아 WorkflowStatus가 없도록 해야 함
+	//    - (필요하면 삭제될때의 문제점을 알릴 수 있으면 좋을 것 같음) 예를 들어서, terminal status가 아닌데도 나가는 transition이 없다거나.
+	//    또는 initial status가 아닌데도 들어오는 transition이 없다거나, 등...
 	//  - mainFlow 검증 필요
 	//  - 필요한 경우의 WorkflowStatus의 initial, terminal의 변경
 	// TODO: WorkflowTransition을 추가
