@@ -44,60 +44,58 @@ public class WorkflowTransition extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String description;
 
-	@Column(nullable = false)
-	private boolean mainFlow;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus sourceStatus;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStatus;
 
-	public static WorkflowTransition create(
-		@NonNull Workflow workflow,
+	@Column(nullable = false)
+	private boolean mainFlow;
+
+	public static WorkflowTransition of(
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull Boolean mainFlow,
 		@NonNull WorkflowStatus sourceStatus,
-		@NonNull WorkflowStatus targetStatus
+		@NonNull WorkflowStatus targetStatus,
+		boolean mainFlow
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
-		wt.workflow = workflow;
 		wt.label = label;
 		wt.description = nullToEmpty(description);
-		wt.mainFlow = mainFlow;
 		wt.sourceStatus = sourceStatus;
 		wt.targetStatus = targetStatus;
+		wt.mainFlow = mainFlow;
 
 		return wt;
 	}
 
-	public void setWorkflow(@NonNull Workflow workflow) {
+	void _attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
 
-	public void includeInMainFlow() {
+	void _includeInMainFlow() {
 		this.mainFlow = true;
 	}
 
-	public void excludeFromMainFlow() {
+	void _excludeFromMainFlow() {
 		this.mainFlow = false;
 	}
 
-	public void updateSourceStatus(@NonNull WorkflowStatus sourceStatus) {
+	void _rewireSource(@NonNull WorkflowStatus sourceStatus) {
 		this.sourceStatus = sourceStatus;
 	}
 
-	public void updateTargetStatus(@NonNull WorkflowStatus targetStatus) {
+	void _rewireTarget(@NonNull WorkflowStatus targetStatus) {
 		this.targetStatus = targetStatus;
 	}
 
-	public void updateLabel(@NonNull Label label) {
+	void _updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 
-	public void updateDescription(@Nullable String description) {
-		this.description = description;
+	void _updateDescription(@Nullable String description) {
+		this.description = nullToEmpty(description);
 	}
 
 	public void softDelete() {

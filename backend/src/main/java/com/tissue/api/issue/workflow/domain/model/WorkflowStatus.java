@@ -52,15 +52,13 @@ public class WorkflowStatus extends BaseEntity {
 
 	// TODO: consider adding fields for color, icons, etc...
 
-	public static WorkflowStatus create(
-		@NonNull Workflow workflow,
+	static WorkflowStatus of(
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull Boolean initial,
-		@NonNull Boolean terminal
+		boolean initial,
+		boolean terminal
 	) {
 		WorkflowStatus ws = new WorkflowStatus();
-		ws.workflow = workflow;
 		ws.label = label;
 		ws.description = nullToEmpty(description);
 		ws.initial = initial;
@@ -69,20 +67,32 @@ public class WorkflowStatus extends BaseEntity {
 		return ws;
 	}
 
-	public void setWorkflow(@NonNull Workflow workflow) {
+	void _attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
 
-	protected void markInitialFlag(boolean value) {
-		this.initial = value;
+	void _markInitial() {
+		this.initial = true;
 	}
 
-	protected void markTerminalFlag(boolean value) {
-		this.terminal = value;
+	void _unmarkInitial() {
+		this.initial = false;
 	}
 
-	public void updateDescription(@Nullable String description) {
-		this.description = description;
+	void _markTerminal() {
+		this.terminal = true;
+	}
+
+	void _unmarkTerminal() {
+		this.terminal = false;
+	}
+
+	void _updateLabel(@NonNull Label label) {
+		this.label = label;
+	}
+
+	void _updateDescription(@Nullable String description) {
+		this.description = nullToEmpty(description);
 	}
 
 	public void softDelete() {
