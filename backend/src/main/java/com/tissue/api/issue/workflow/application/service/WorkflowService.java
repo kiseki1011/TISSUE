@@ -103,4 +103,10 @@ public class WorkflowService {
 	// TODO: WorkflowStatus를 추가 + WorkflowTransition 추가
 	//  - mainFlow 검증 필요
 	//  - 필요한 경우의 WorkflowStatus의 initial, terminal의 변경
+	// TODO: WorkflowStatus를 삭제(soft-delete) + 해당 WorkflowStatus를 사용하는 WorkflowTransition 삭제(soft-delete)
+	//  - mainFlow 검증 필요
+	//  - 필요한 경우의 WorkflowStatus의 initial, terminal의 변경
+	//  - 내 생각에는 중간의 WorkflowStatus 삭제는 불허하고 initial이거나 terminal인 WorkflowStatus 삭제만 허용.
+	//    이때 해당 WorkflowStatus를 사용한 WorkflowTransition의 삭제도 해야할듯
+
 }
