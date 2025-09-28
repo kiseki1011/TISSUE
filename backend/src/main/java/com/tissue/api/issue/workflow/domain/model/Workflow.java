@@ -5,6 +5,7 @@ import static com.tissue.api.common.util.DomainPreconditions.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -29,6 +30,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
+@SQLRestriction("archived = false")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

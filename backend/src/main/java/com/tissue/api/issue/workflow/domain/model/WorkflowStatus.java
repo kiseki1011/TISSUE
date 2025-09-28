@@ -2,6 +2,7 @@ package com.tissue.api.issue.workflow.domain.model;
 
 import static com.tissue.api.common.util.DomainPreconditions.*;
 
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -23,6 +24,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
+@SQLRestriction("archived = false")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -49,8 +51,6 @@ public class WorkflowStatus extends BaseEntity {
 
 	@Column(nullable = false)
 	private boolean terminal;
-
-	// TODO: consider adding fields for color, icons, etc...
 
 	static WorkflowStatus of(
 		@NonNull Label label,
