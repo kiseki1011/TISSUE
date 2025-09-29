@@ -8,7 +8,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateWorkflowCommand(
-	String workspaceCode,
+	String workspaceKey,
 	Label label,
 	String description,
 	List<StatusCommand> statuses,
