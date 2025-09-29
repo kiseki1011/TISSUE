@@ -65,6 +65,7 @@ public class WorkflowService {
 				}
 			}
 
+			// mainCandidates가 비어있는 상황은 어차피 ensureMainFlowSingleLine에서 검증
 			workflowValidator.ensureMainFlowSingleLine(workflow, mainFlowCandidates);
 			workflow.defineMainFlow(mainFlowCandidates);
 

@@ -71,6 +71,14 @@ public class WorkflowStatus extends BaseEntity {
 		this.workflow = workflow;
 	}
 
+	void _updateLabel(@NonNull Label label) {
+		this.label = label;
+	}
+
+	void _updateDescription(@Nullable String description) {
+		this.description = nullToEmpty(description);
+	}
+
 	void _markInitial() {
 		this.initial = true;
 	}
@@ -85,14 +93,6 @@ public class WorkflowStatus extends BaseEntity {
 
 	void _unmarkTerminal() {
 		this.terminal = false;
-	}
-
-	void _updateLabel(@NonNull Label label) {
-		this.label = label;
-	}
-
-	void _updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
 	}
 
 	public void softDelete() {

@@ -72,6 +72,14 @@ public class WorkflowTransition extends BaseEntity {
 		return wt;
 	}
 
+	void _updateLabel(@NonNull Label label) {
+		this.label = label;
+	}
+
+	void _updateDescription(@Nullable String description) {
+		this.description = nullToEmpty(description);
+	}
+
 	void _attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
@@ -90,14 +98,6 @@ public class WorkflowTransition extends BaseEntity {
 
 	void _rewireTarget(@NonNull WorkflowStatus targetStatus) {
 		this.targetStatus = targetStatus;
-	}
-
-	void _updateLabel(@NonNull Label label) {
-		this.label = label;
-	}
-
-	void _updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
 	}
 
 	public void softDelete() {
