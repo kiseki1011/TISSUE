@@ -28,6 +28,8 @@ public abstract class BaseEntity extends BaseDateEntity {
 
 	private Instant archivedAt;
 
+	public abstract Long getId();
+
 	public void archive() {
 		if (!archived) {
 			this.archived = true;
@@ -43,5 +45,29 @@ public abstract class BaseEntity extends BaseDateEntity {
 			this.archived = false;
 			this.archivedAt = null;
 		}
+	}
+
+	private static Class<?> effectiveClass(Object o) {
+		if (o instanceof org.hibernate.proxy.HibernateProxy p) {
+			return p.getHibernateLazyInitializer().getPersistentClass();
+		}
+		return o.getClass();
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null)
+			return false;
+		if (effectiveClass(this) != effectiveClass(o))
+			return false;
+		BaseEntity that = (BaseEntity)o;
+		return getId() != null && java.util.Objects.equals(getId(), that.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return effectiveClass(this).hashCode();
 	}
 }
