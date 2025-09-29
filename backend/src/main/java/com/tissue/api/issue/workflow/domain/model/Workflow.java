@@ -10,6 +10,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -51,10 +52,10 @@ public class Workflow extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String description;
 
-	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "workflow", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
 	private List<WorkflowStatus> statuses = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "workflow", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
 	private List<WorkflowTransition> transitions = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -69,6 +70,7 @@ public class Workflow extends BaseEntity {
 		wf.workspace = workspace;
 		wf.label = label;
 		wf.description = nullToEmpty(description);
+
 		return wf;
 	}
 
@@ -78,6 +80,8 @@ public class Workflow extends BaseEntity {
 		boolean initial,
 		boolean terminal
 	) {
+		ensureUniqueStatusLabel(label);
+
 		WorkflowStatus status = WorkflowStatus.of(label, description, initial, terminal);
 		attachStatus(status);
 
@@ -93,8 +97,8 @@ public class Workflow extends BaseEntity {
 		// ensureOwned(source);
 		// ensureOwned(target);
 		ensureNoDuplicateEdge(source, target);
-
-		// TODO(optional): 초기 in 금지 / 터미널 out 금지 같은 전역 그래프 제약도 여기서 가드
+		ensureTransitionAllowed(source, target);
+		ensureUniqueTransitionLabelForSource(label, source);
 
 		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target, false);
 		attachTransition(transition);
@@ -144,19 +148,21 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
-	public void renameStatus(WorkflowStatus status, Label newLabel) {
+	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
 		// ensureOwned(status);
-		// TODO: Workflow 스코프 내에서 WorkflowStatus의 Label이 유일하도록 검증
-		// ensureUniqueLabel(newLabel);
+		if (status.getLabel().equals(newLabel)) {
+			return;
+		}
+		ensureUniqueStatusLabel(newLabel);
 		status._updateLabel(newLabel);
 	}
 
-	public void renameTransition(WorkflowTransition transition, Label newLabel) {
+	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
 		// ensureOwned(transition);
-		// TODO: Workflow 스코프 내에서 WorkflowTransition의 Label이 유일하도록 검증
-		//  - (sourceStatus, label) 기준으로 유니크 적용
-		//  - 예를 들어서 같은 상태에서 두 가지 전이가 나갈 수 있는데, 둘이 서로 같은 이름이면 안됨
-		// ensureUniqueLabel(newLabel);
+		if (transition.getLabel().equals(newLabel)) {
+			return;
+		}
+		ensureUniqueTransitionLabelForSource(newLabel, transition.getSourceStatus());
 		transition._updateLabel(newLabel);
 	}
 
@@ -186,11 +192,41 @@ public class Workflow extends BaseEntity {
 	// 	}
 	// }
 
+	private void ensureTransitionAllowed(WorkflowStatus source, WorkflowStatus target) {
+		if (source.isTerminal()) {
+			throw new InvalidOperationException("Transitions cannot leave a terminal status.");
+		}
+		if (target.isInitial()) {
+			throw new InvalidOperationException("Transitions cannot enter the initial status.");
+		}
+		if (source.equals(target)) {
+			throw new InvalidOperationException("Self-loop not allowed.");
+		}
+	}
+
 	private void ensureNoDuplicateEdge(WorkflowStatus source, WorkflowStatus target) {
 		boolean dup = transitions.stream()
-			.anyMatch(x -> x.getSourceStatus() == source && x.getTargetStatus() == target);
+			.anyMatch(x -> x.getSourceStatus().equals(source) && x.getTargetStatus().equals(target));
 		if (dup) {
-			throw new DuplicateResourceException("Duplicate transition(source,target) is not allowed.");
+			throw new DuplicateResourceException("Duplicate transition (source,target) is not allowed.");
+		}
+	}
+
+	private void ensureUniqueStatusLabel(Label newLabel) {
+		boolean dup = statuses.stream()
+			.anyMatch(s -> s.getLabel().equals(newLabel));
+		if (dup) {
+			throw new DuplicateResourceException("Duplicate status label: " + newLabel);
+		}
+	}
+
+	private void ensureUniqueTransitionLabelForSource(Label newLabel, WorkflowStatus source) {
+		boolean dup = transitions.stream()
+			.filter(t -> t.getSourceStatus().equals(source))
+			.anyMatch(t -> t.getLabel().equals(newLabel));
+		if (dup) {
+			throw new DuplicateResourceException(
+				"Duplicate transition label for source '" + source.getLabel() + "': " + newLabel);
 		}
 	}
 }
