@@ -15,13 +15,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@EqualsAndHashCode(of = "assigneeMemberId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueAssignee extends BaseEntity {
 
