@@ -2,19 +2,55 @@ package com.tissue.api.issue.workflow.presentation.dto.request;
 
 import java.util.List;
 
-import com.tissue.api.issue.workflow.application.dto.ReplaceWorkflowGraphCommand;
+import org.springframework.lang.Nullable;
 
+import com.tissue.api.issue.workflow.application.dto.ReplaceWorkflowGraphCommand;
+import com.tissue.api.issue.workflow.domain.service.WorkflowGraphValidator;
+
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+/**
+ * TODO: 자세한 문서화 필요
+ *  - 기존 status, transition은 id 전달
+ *  - 새로 추가되는 status, transition은 tempKey 전달
+ *  - tempKey는 클라이언트에서 생성. UUID 계열 권장(원한면 transliteration 사용)
+ */
 public record ReplaceWorkflowGraphRequest(
-	Long version,
-	List<StatusDto> statuses,
-	List<TransitionDto> transitions
+	@NotNull Long version,
+	@NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
+	@NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests
 ) {
-	public record StatusDto(Long id, String tempKey, String label, String description, boolean initial,
-							boolean terminal) {
+	public record ReplaceStatusRequest(
+		Long id,
+		String tempKey,
+		@Nullable @Size(max = 32) String label,
+		@Nullable @Size(max = 255) String description,
+		@NotNull boolean initial,
+		@NotNull boolean terminal
+	) {
+		public ReplaceStatusRequest {
+			if ((id == null) == (tempKey == null)) {
+				throw new IllegalArgumentException("Status must have exactly one of id or tempKey");
+			}
+		}
 	}
 
-	public record TransitionDto(Long id, String tempKey, String label, String description, String sourceKey,
-								String targetKey, boolean mainFlow) {
+	public record ReplaceTransitionRequest(
+		Long id,
+		String tempKey,
+		@Nullable @Size(max = 32) String label,
+		@Nullable @Size(max = 255) String description,
+		@NotNull WorkflowGraphValidator.EntityRef source,
+		@NotNull WorkflowGraphValidator.EntityRef target,
+		@NotNull boolean mainFlow
+	) {
+		public ReplaceTransitionRequest {
+			if ((id == null) == (tempKey == null)) {
+				throw new IllegalArgumentException("Transition must have exactly one of id or tempKey");
+			}
+		}
 	}
 
 	public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, Long workflowId) {
@@ -22,15 +58,24 @@ public record ReplaceWorkflowGraphRequest(
 			workspaceKey,
 			workflowId,
 			version,
-			statuses.stream()
-				.map(s -> new ReplaceWorkflowGraphCommand.StatusCmd(
-					s.id(), s.tempKey(), s.label(), s.description(), s.initial(), s.terminal())
-				)
+			replaceStatusRequests.stream()
+				.map(s -> new ReplaceWorkflowGraphCommand.ReplaceStatusCommand(
+					new WorkflowGraphValidator.EntityRef(s.id(), s.tempKey()),
+					s.label(),
+					s.description(),
+					s.initial(),
+					s.terminal()
+				))
 				.toList(),
-			transitions.stream()
-				.map(t -> new ReplaceWorkflowGraphCommand.TransitionCmd(
-					t.id(), t.tempKey(), t.label(), t.description(), t.sourceKey(), t.targetKey(), t.mainFlow())
-				)
+			replaceTransitionRequests.stream()
+				.map(t -> new ReplaceWorkflowGraphCommand.ReplaceTransitionCommand(
+					new WorkflowGraphValidator.EntityRef(t.id(), t.tempKey()),
+					t.label(),
+					t.description(),
+					t.source(),
+					t.target(),
+					t.mainFlow()
+				))
 				.toList()
 		);
 	}
