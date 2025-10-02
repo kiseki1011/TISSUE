@@ -17,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,10 @@ public class WorkflowTransition extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@ToString.Include
 	private Long id;
+
+	@Version
+	@ToString.Include
+	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workflow_id")
@@ -72,31 +77,31 @@ public class WorkflowTransition extends BaseEntity {
 		return wt;
 	}
 
-	void _updateLabel(@NonNull Label label) {
+	void updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 
-	void _updateDescription(@Nullable String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = nullToEmpty(description);
 	}
 
-	void _attachToWorkflow(@NonNull Workflow workflow) {
+	void attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
 
-	void _includeInMainFlow() {
+	void includeInMainFlow() {
 		this.mainFlow = true;
 	}
 
-	void _excludeFromMainFlow() {
+	void excludeFromMainFlow() {
 		this.mainFlow = false;
 	}
 
-	void _rewireSource(@NonNull WorkflowStatus sourceStatus) {
+	void rewireSource(@NonNull WorkflowStatus sourceStatus) {
 		this.sourceStatus = sourceStatus;
 	}
 
-	void _rewireTarget(@NonNull WorkflowStatus targetStatus) {
+	void rewireTarget(@NonNull WorkflowStatus targetStatus) {
 		this.targetStatus = targetStatus;
 	}
 

@@ -15,7 +15,7 @@ public record CreateWorkflowRequest(
 	List<StatusRequest> statusRequests,
 	List<TransitionRequest> transitionRequests
 ) {
-	public CreateWorkflowCommand toCommand(String workspaceCode) {
+	public CreateWorkflowCommand toCommand(String workspaceKey) {
 		List<CreateWorkflowCommand.StatusCommand> statusCommands = statusRequests.stream()
 			.map(s -> new CreateWorkflowCommand.StatusCommand(s.tempKey(), Label.of(s.label()), s.description(),
 				s.initial(), s.terminal()))
@@ -27,7 +27,7 @@ public record CreateWorkflowRequest(
 			.toList();
 
 		return CreateWorkflowCommand.builder()
-			.workspaceCode(workspaceCode)
+			.workspaceKey(workspaceKey)
 			.label(Label.of(label))
 			.description(description)
 			.statuses(statusCommands)

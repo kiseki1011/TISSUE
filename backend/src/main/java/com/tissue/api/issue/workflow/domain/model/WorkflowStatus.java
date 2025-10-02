@@ -17,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,10 @@ public class WorkflowStatus extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@ToString.Include
 	private Long id;
+
+	@Version
+	@ToString.Include
+	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workflow_id")
@@ -67,31 +72,31 @@ public class WorkflowStatus extends BaseEntity {
 		return ws;
 	}
 
-	void _attachToWorkflow(@NonNull Workflow workflow) {
+	void attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
 	}
 
-	void _updateLabel(@NonNull Label label) {
+	void updateLabel(@NonNull Label label) {
 		this.label = label;
 	}
 
-	void _updateDescription(@Nullable String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = nullToEmpty(description);
 	}
 
-	void _markInitial() {
+	void markInitial() {
 		this.initial = true;
 	}
 
-	void _unmarkInitial() {
+	void unmarkInitial() {
 		this.initial = false;
 	}
 
-	void _markTerminal() {
+	void markTerminal() {
 		this.terminal = true;
 	}
 
-	void _unmarkTerminal() {
+	void unmarkTerminal() {
 		this.terminal = false;
 	}
 

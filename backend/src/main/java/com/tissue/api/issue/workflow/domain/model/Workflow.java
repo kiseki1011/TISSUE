@@ -24,6 +24,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,10 @@ public class Workflow extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@ToString.Include
 	private Long id;
+
+	@Version
+	@ToString.Include
+	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Workspace workspace;
@@ -94,8 +99,6 @@ public class Workflow extends BaseEntity {
 		@NonNull WorkflowStatus source,
 		@NonNull WorkflowStatus target
 	) {
-		// ensureOwned(source);
-		// ensureOwned(target);
 		ensureNoDuplicateEdge(source, target);
 		ensureTransitionAllowed(source, target);
 		ensureUniqueTransitionLabelForSource(label, source);
@@ -106,23 +109,20 @@ public class Workflow extends BaseEntity {
 		return transition;
 	}
 
-	public void updateLabel(@NonNull Label label) {
+	public void rename(@NonNull Label label) {
 		this.label = label;
 	}
 
-	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+	public void updateDescription(@Nullable String desc) {
+		this.description = nullToEmpty(desc);
 	}
 
-	public void updateInitialStatus(@NonNull WorkflowStatus status) {
-		// ensureOwned(status);
-
+	public void updateInitialStatus(@NonNull WorkflowStatus newInitial) {
 		for (WorkflowStatus s : statuses) {
-			s._unmarkInitial();
+			s.unmarkInitial();
 		}
-
-		status._markInitial();
-		this.initialStatus = status;
+		newInitial.markInitial();
+		this.initialStatus = newInitial;
 	}
 
 	public List<WorkflowStatus> getFinalStatuses() {
@@ -131,8 +131,9 @@ public class Workflow extends BaseEntity {
 			.toList();
 	}
 
-	// TODO: 하나 이상의 IssueType이 Workflow를 사용 중이면 서비스 계층에서 막기
+	// TODO: 하나 이상의 Issue가 Workflow를 진행 중이면 서비스 계층에서 막기
 	//  - ensureDeletable 같은 메서드를 구현해서 사용
+	//  - Issue가 initial status 또는 terminal status에 있다면 ok
 	public void softDelete() {
 		archive();
 		statuses.forEach(WorkflowStatus::softDelete);
@@ -141,33 +142,47 @@ public class Workflow extends BaseEntity {
 
 	public void defineMainFlow(@NonNull List<WorkflowTransition> transitionPath) {
 		for (var t : transitions) {
-			t._excludeFromMainFlow();
+			t.excludeFromMainFlow();
 		}
 		for (var t : transitionPath) {
-			t._includeInMainFlow();
+			t.includeInMainFlow();
 		}
 	}
 
 	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
-		// ensureOwned(status);
 		if (status.getLabel().equals(newLabel)) {
 			return;
 		}
 		ensureUniqueStatusLabel(newLabel);
-		status._updateLabel(newLabel);
+		status.updateLabel(newLabel);
 	}
 
 	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
-		// ensureOwned(transition);
 		if (transition.getLabel().equals(newLabel)) {
 			return;
 		}
 		ensureUniqueTransitionLabelForSource(newLabel, transition.getSourceStatus());
-		transition._updateLabel(newLabel);
+		transition.updateLabel(newLabel);
+	}
+
+	public void markStatusTerminal(@NonNull WorkflowStatus status) {
+		status.markTerminal();
+	}
+
+	public void unmarkStatusTerminal(@NonNull WorkflowStatus status) {
+		status.unmarkTerminal();
+	}
+
+	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newSource) {
+		transition.rewireSource(newSource);
+	}
+
+	public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newTarget) {
+		transition.rewireTarget(newTarget);
 	}
 
 	private void attachStatus(WorkflowStatus status) {
-		status._attachToWorkflow(this);
+		status.attachToWorkflow(this);
 		statuses.add(status);
 
 		if (status.isInitial()) {
@@ -176,26 +191,11 @@ public class Workflow extends BaseEntity {
 	}
 
 	private void attachTransition(WorkflowTransition transition) {
-		transition._attachToWorkflow(this);
+		transition.attachToWorkflow(this);
 		transitions.add(transition);
 	}
-
-	// private void ensureOwned(WorkflowStatus status) {
-	// 	if (status.getWorkflow() != this) {
-	// 		throw new InvalidOperationException("Status not owned by this workflow.");
-	// 	}
-	// }
-	//
-	// private void ensureOwned(WorkflowTransition transition) {
-	// 	if (transition.getWorkflow() != this) {
-	// 		throw new InvalidOperationException("Transition not owned by this workflow.");
-	// 	}
-	// }
-
+	
 	private void ensureTransitionAllowed(WorkflowStatus source, WorkflowStatus target) {
-		if (source.isTerminal()) {
-			throw new InvalidOperationException("Transitions cannot leave a terminal status.");
-		}
 		if (target.isInitial()) {
 			throw new InvalidOperationException("Transitions cannot enter the initial status.");
 		}
