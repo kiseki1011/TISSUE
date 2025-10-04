@@ -85,9 +85,27 @@ public class WorkflowGraphReplaceService {
 		WorkflowStatus initial
 	) {
 		Set<WorkflowStatus> toDelete = findStatusesToDelete(wf, cmd.statusCommands());
+
+		// ensureNotDeletingStatusesInUse(toDelete);
 		graphValidator.ensureNotDeletingInitial(toDelete, initial);
+
 		toDelete.forEach(WorkflowStatus::softDelete);
 	}
+
+	// TODO: 요구사항이 생기면 이슈에 대한 WorkflowStatus 마이그레이션 제공
+	// private void ensureNotDeletingStatusesInUse(
+	// 	Set<WorkflowStatus> toDelete
+	// ) {
+	// 	for (WorkflowStatus status : toDelete) {
+	// 		boolean hasIssues = issueRepository.existsByWorkflowStatus(status);
+	// 		if (hasIssues) {
+	// 			throw new InvalidOperationException(
+	// 				"Cannot delete status '" + status.getLabel() +
+	// 					"' because it is currently in use by one or more issues. " +
+	// 					"Please move all issues to another status before deleting.");
+	// 		}
+	// 	}
+	// }
 
 	private Set<WorkflowStatus> findStatusesToDelete(
 		Workflow wf,
