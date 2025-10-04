@@ -6,11 +6,14 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -51,6 +54,10 @@ public class WorkflowStatus extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String description;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ColorType color;
+
 	@Column(nullable = false)
 	private boolean initial;
 
@@ -60,12 +67,14 @@ public class WorkflowStatus extends BaseEntity {
 	static WorkflowStatus of(
 		@NonNull Label label,
 		@Nullable String description,
+		@NonNull ColorType color,
 		boolean initial,
 		boolean terminal
 	) {
 		WorkflowStatus ws = new WorkflowStatus();
 		ws.label = label;
 		ws.description = nullToEmpty(description);
+		ws.color = color;
 		ws.initial = initial;
 		ws.terminal = terminal;
 
@@ -82,6 +91,10 @@ public class WorkflowStatus extends BaseEntity {
 
 	public void updateDescription(@Nullable String description) {
 		this.description = nullToEmpty(description);
+	}
+
+	public void updateColor(@NonNull ColorType color) {
+		this.color = color;
 	}
 
 	void markInitial() {

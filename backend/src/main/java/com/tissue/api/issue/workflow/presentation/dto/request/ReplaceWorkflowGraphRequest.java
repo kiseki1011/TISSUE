@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.lang.Nullable;
 
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.workflow.application.dto.ReplaceWorkflowGraphCommand;
 import com.tissue.api.issue.workflow.domain.service.EntityRef;
 
@@ -27,6 +28,7 @@ public record ReplaceWorkflowGraphRequest(
 		String tempKey,
 		@Nullable @Size(max = 32) String label,
 		@Nullable @Size(max = 255) String description,
+		@NotNull ColorType color,
 		@NotNull boolean initial,
 		@NotNull boolean terminal
 	) {
@@ -62,6 +64,7 @@ public record ReplaceWorkflowGraphRequest(
 					new EntityRef(s.id(), s.tempKey()),
 					s.label(),
 					s.description(),
+					s.color(),
 					s.initial(),
 					s.terminal()
 				))

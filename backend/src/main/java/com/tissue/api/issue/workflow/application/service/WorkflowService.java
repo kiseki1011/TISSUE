@@ -44,11 +44,14 @@ public class WorkflowService {
 		);
 
 		try {
-			Workflow workflow = workflowRepository.save(Workflow.create(workspace, cmd.label(), cmd.description()));
+			Workflow workflow = workflowRepository.save(
+				Workflow.create(workspace, cmd.label(), cmd.description(), cmd.color())
+			);
 
 			Map<String, WorkflowStatus> statusMap = new HashMap<>();
 			for (CreateWorkflowCommand.StatusCommand s : cmd.statusCommands()) {
-				WorkflowStatus status = workflow.addStatus(s.label(), s.description(), s.initial(), s.terminal());
+				WorkflowStatus status = workflow.addStatus(s.label(), s.description(), s.color(), s.initial(),
+					s.terminal());
 				statusMap.put(s.ref().tempKey(), status);
 			}
 
@@ -70,14 +73,11 @@ public class WorkflowService {
 
 	// @Transactional
 	// public WorkflowResponse patch(PatchWorkflowCommand cmd) {
-	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
+	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 	// 	Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.id());
 	//
-	// 	// TODO: Workflow의 label/description 수정
-	// 	//   - Label 중복 검증 로직 필요(WorkflowValidator에 만들기, Workspace 스코프 내에서 유일해야 함)
-	//
 	// 	if (!workflow.getLabel().equals(cmd.label())) {
-	// 		validator.ensureUniqueLabel(ws, cmd.label());
+	// 		workflowValidator.ensureLabelUnique(workspace, cmd.label());
 	// 		Patchers.apply(cmd.label(), workflow::rename);
 	// 	}
 	//
@@ -89,13 +89,10 @@ public class WorkflowService {
 	//
 	// @Transactional
 	// public WorkflowResponse softDelete(DeleteWorkflowCommand cmd) {
-	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
+	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 	// 	Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.id());
 	//
-	// 	// TODO: Workflow 삭제(soft-delete)
-	// 	//  - 하나 이상의 IssueType이 Workflow를 사용 중이면 막기(ensureDeletable 구현)
-	// 	//  - 이미 엔티티에서 soft-delete가 WorkflowStatus, WorkflowTransition에 전파되도록 구현
-	// 	//  - systemType(기본으로 제공하는 Workflow에 해당하면)이면 삭제를 막을까?
+	// 	// TODO: Workflow의 softDelete 주석 참고
 	// 	// workflowValidator.ensureDeletable();
 	//
 	// 	workflow.softDelete();
@@ -105,7 +102,7 @@ public class WorkflowService {
 	//
 	// @Transactional
 	// public WorkflowResponse patchStatus(PatchStatusCommand cmd) {
-	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
+	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 	// 	Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 	// 	WorkflowStatus status = workflowFinder.findWorkflowStatus(workflow, cmd.statusId());
 	//
@@ -118,7 +115,7 @@ public class WorkflowService {
 	//
 	// @Transactional
 	// public WorkflowResponse patchTransition(PatchTransitionCommand cmd) {
-	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceCode());
+	// 	Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 	// 	Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 	// 	WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, cmd.transitionId());
 	//

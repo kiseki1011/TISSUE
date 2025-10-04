@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.base.domain.model.vo.Label;
@@ -18,6 +19,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,6 +60,10 @@ public class Workflow extends BaseEntity {
 	@Column(nullable = false, length = 255)
 	private String description;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ColorType color;
+
 	@OneToMany(mappedBy = "workflow", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
 	private List<WorkflowStatus> statuses = new ArrayList<>();
 
@@ -66,15 +73,21 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus initialStatus;
 
+	@Column(nullable = false)
+	private boolean systemProvided;
+
 	public static Workflow create(
 		@NonNull Workspace workspace,
 		@NonNull Label label,
-		@Nullable String description
+		@Nullable String description,
+		@NonNull ColorType color
 	) {
 		Workflow wf = new Workflow();
 		wf.workspace = workspace;
 		wf.label = label;
 		wf.description = nullToEmpty(description);
+		wf.color = color;
+		wf.systemProvided = false;
 
 		return wf;
 	}
@@ -82,12 +95,14 @@ public class Workflow extends BaseEntity {
 	public WorkflowStatus addStatus(
 		@NonNull Label label,
 		@Nullable String description,
+		@NonNull ColorType color,
 		boolean initial,
 		boolean terminal
 	) {
+		ensureNotSystemProvided();
 		ensureUniqueStatusLabel(label);
 
-		WorkflowStatus status = WorkflowStatus.of(label, description, initial, terminal);
+		WorkflowStatus status = WorkflowStatus.of(label, description, color, initial, terminal);
 		attachStatus(status);
 
 		return status;
@@ -99,9 +114,10 @@ public class Workflow extends BaseEntity {
 		@NonNull WorkflowStatus source,
 		@NonNull WorkflowStatus target
 	) {
+		ensureNotSystemProvided();
+		ensureUniqueTransitionLabelForSource(label, source);
 		ensureNoDuplicateEdge(source, target);
 		ensureTransitionAllowed(source, target);
-		ensureUniqueTransitionLabelForSource(label, source);
 
 		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target);
 		attachTransition(transition);
@@ -109,7 +125,12 @@ public class Workflow extends BaseEntity {
 		return transition;
 	}
 
+	public void setAsSystemProvided() {
+		this.systemProvided = true;
+	}
+
 	public void rename(@NonNull Label label) {
+		ensureNotSystemProvided();
 		this.label = label;
 	}
 
@@ -117,7 +138,12 @@ public class Workflow extends BaseEntity {
 		this.description = nullToEmpty(desc);
 	}
 
+	public void updateColor(@Nullable ColorType color) {
+		this.color = color;
+	}
+
 	public void updateInitialStatus(@NonNull WorkflowStatus newInitial) {
+		ensureNotSystemProvided();
 		for (WorkflowStatus s : statuses) {
 			s.unmarkInitial();
 		}
@@ -131,16 +157,18 @@ public class Workflow extends BaseEntity {
 			.toList();
 	}
 
-	// TODO: 하나 이상의 Issue가 Workflow를 진행 중이면 서비스 계층에서 막기
-	//  - ensureDeletable 같은 메서드를 구현해서 사용
-	//  - Issue가 initial status 또는 terminal status에 있다면 ok
+	// TODO: 삭제 금지 정책을 정하자
+	//  전략 1: 하나 이상의 Issue가 intial status가 아니면서 Workflow를 진행 중이면 삭제 막기
+	//  전략 2: 하나 이상의 IssueType이 해당 Workflow를 선택했으면 삭제 막기
 	public void softDelete() {
+		ensureNotSystemProvided();
 		archive();
 		statuses.forEach(WorkflowStatus::softDelete);
 		transitions.forEach(WorkflowTransition::softDelete);
 	}
 
 	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
+		ensureNotSystemProvided();
 		if (status.getLabel().equals(newLabel)) {
 			return;
 		}
@@ -149,6 +177,7 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
+		ensureNotSystemProvided();
 		if (transition.getLabel().equals(newLabel)) {
 			return;
 		}
@@ -157,6 +186,7 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void updateStatusTerminalFlag(@NonNull WorkflowStatus status, boolean terminalFlag) {
+		ensureNotSystemProvided();
 		if (status.isTerminal() == terminalFlag) {
 			return;
 		}
@@ -168,10 +198,12 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newSource) {
+		ensureNotSystemProvided();
 		transition.rewireSource(newSource);
 	}
 
 	public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newTarget) {
+		ensureNotSystemProvided();
 		transition.rewireTarget(newTarget);
 	}
 
@@ -187,6 +219,13 @@ public class Workflow extends BaseEntity {
 	private void attachTransition(WorkflowTransition transition) {
 		transition.attachToWorkflow(this);
 		transitions.add(transition);
+	}
+
+	// TODO: 예외 메세지를 호출하는 쪽에서 파라미터로 넘겨서 사용할까?
+	private void ensureNotSystemProvided() {
+		if (systemProvided) {
+			throw new RuntimeException("Cannot modify system provided workflow.");
+		}
 	}
 
 	// TODO: 이게 필요할까? 이미 WorkflowGraphValidator에서 검증을 하고 있음.

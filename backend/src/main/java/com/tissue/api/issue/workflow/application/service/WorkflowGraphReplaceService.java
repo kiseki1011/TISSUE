@@ -150,6 +150,7 @@ public class WorkflowGraphReplaceService {
 			WorkflowStatus created = wf.addStatus(
 				Label.of(s.label()),
 				s.description(),
+				s.color(),
 				s.initial(),
 				s.terminal()
 			);
