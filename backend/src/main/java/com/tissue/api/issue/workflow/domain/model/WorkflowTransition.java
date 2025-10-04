@@ -57,22 +57,17 @@ public class WorkflowTransition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStatus;
 
-	@Column(nullable = false)
-	private boolean mainFlow;
-
 	public static WorkflowTransition of(
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull WorkflowStatus sourceStatus,
-		@NonNull WorkflowStatus targetStatus,
-		boolean mainFlow
+		@NonNull WorkflowStatus targetStatus
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
 		wt.label = label;
 		wt.description = nullToEmpty(description);
 		wt.sourceStatus = sourceStatus;
 		wt.targetStatus = targetStatus;
-		wt.mainFlow = mainFlow;
 
 		return wt;
 	}
@@ -87,14 +82,6 @@ public class WorkflowTransition extends BaseEntity {
 
 	void attachToWorkflow(@NonNull Workflow workflow) {
 		this.workflow = workflow;
-	}
-
-	void includeInMainFlow() {
-		this.mainFlow = true;
-	}
-
-	void excludeFromMainFlow() {
-		this.mainFlow = false;
 	}
 
 	void rewireSource(@NonNull WorkflowStatus sourceStatus) {

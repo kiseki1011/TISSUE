@@ -6,7 +6,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
-import com.tissue.api.issue.workflow.domain.service.WorkflowGraphValidator;
+import com.tissue.api.issue.workflow.domain.service.EntityRef;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -31,16 +31,15 @@ public record CreateWorkflowRequest(
 	public record CreateTransitionRequest(
 		@NotBlank @Size(max = 32) String label,
 		@Nullable @Size(max = 255) String description,
-		@NotNull boolean mainFlow,
 		@NotBlank String sourceTempKey,
 		@NotBlank String targetTempKey
 	) {
 	}
 
 	public CreateWorkflowCommand toCommand(String workspaceKey) {
-		List<CreateWorkflowCommand.CreateStatusCommand> createStatusCommands = createStatusRequests.stream()
-			.map(s -> new CreateWorkflowCommand.CreateStatusCommand(
-				new WorkflowGraphValidator.EntityRef(null, s.tempKey()),
+		List<CreateWorkflowCommand.StatusCommand> statusCommands = createStatusRequests.stream()
+			.map(s -> new CreateWorkflowCommand.StatusCommand(
+				new EntityRef(null, s.tempKey()),
 				Label.of(s.label()),
 				s.description(),
 				s.initial(),
@@ -48,13 +47,12 @@ public record CreateWorkflowRequest(
 			))
 			.toList();
 
-		List<CreateWorkflowCommand.CreateTransitionCommand> createTransitionCommands = createTransitionRequests.stream()
-			.map(t -> new CreateWorkflowCommand.CreateTransitionCommand(
+		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = createTransitionRequests.stream()
+			.map(t -> new CreateWorkflowCommand.TransitionCommand(
 				Label.of(t.label()),
 				t.description(),
-				t.mainFlow(),
-				new WorkflowGraphValidator.EntityRef(null, t.sourceTempKey()),
-				new WorkflowGraphValidator.EntityRef(null, t.targetTempKey())
+				new EntityRef(null, t.sourceTempKey()),
+				new EntityRef(null, t.targetTempKey())
 			))
 			.toList();
 
@@ -62,8 +60,8 @@ public record CreateWorkflowRequest(
 			.workspaceKey(workspaceKey)
 			.label(Label.of(label))
 			.description(description)
-			.createStatusCommands(createStatusCommands)
-			.createTransitionCommands(createTransitionCommands)
+			.statusCommands(statusCommands)
+			.transitionCommands(transitionCommands)
 			.build();
 	}
 }

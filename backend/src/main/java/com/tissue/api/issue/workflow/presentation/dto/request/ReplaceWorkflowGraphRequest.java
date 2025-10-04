@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.issue.workflow.application.dto.ReplaceWorkflowGraphCommand;
-import com.tissue.api.issue.workflow.domain.service.WorkflowGraphValidator;
+import com.tissue.api.issue.workflow.domain.service.EntityRef;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -42,9 +42,8 @@ public record ReplaceWorkflowGraphRequest(
 		String tempKey,
 		@Nullable @Size(max = 32) String label,
 		@Nullable @Size(max = 255) String description,
-		@NotNull WorkflowGraphValidator.EntityRef source,
-		@NotNull WorkflowGraphValidator.EntityRef target,
-		@NotNull boolean mainFlow
+		@NotNull EntityRef source,
+		@NotNull EntityRef target
 	) {
 		public ReplaceTransitionRequest {
 			if ((id == null) == (tempKey == null)) {
@@ -59,8 +58,8 @@ public record ReplaceWorkflowGraphRequest(
 			workflowId,
 			version,
 			replaceStatusRequests.stream()
-				.map(s -> new ReplaceWorkflowGraphCommand.ReplaceStatusCommand(
-					new WorkflowGraphValidator.EntityRef(s.id(), s.tempKey()),
+				.map(s -> new ReplaceWorkflowGraphCommand.StatusCommand(
+					new EntityRef(s.id(), s.tempKey()),
 					s.label(),
 					s.description(),
 					s.initial(),
@@ -68,13 +67,12 @@ public record ReplaceWorkflowGraphRequest(
 				))
 				.toList(),
 			replaceTransitionRequests.stream()
-				.map(t -> new ReplaceWorkflowGraphCommand.ReplaceTransitionCommand(
-					new WorkflowGraphValidator.EntityRef(t.id(), t.tempKey()),
+				.map(t -> new ReplaceWorkflowGraphCommand.TransitionCommand(
+					new EntityRef(t.id(), t.tempKey()),
 					t.label(),
 					t.description(),
 					t.source(),
-					t.target(),
-					t.mainFlow()
+					t.target()
 				))
 				.toList()
 		);

@@ -1,8 +1,6 @@
 package com.tissue.api.issue.workflow.application.service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,7 +12,6 @@ import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 import com.tissue.api.issue.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.issue.workflow.domain.model.Workflow;
 import com.tissue.api.issue.workflow.domain.model.WorkflowStatus;
-import com.tissue.api.issue.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.issue.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.issue.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.issue.workflow.infrastructure.repository.WorkflowRepository;
@@ -42,34 +39,27 @@ public class WorkflowService {
 
 		workflowValidator.ensureLabelUnique(workspace, cmd.label());
 		graphValidator.validateWorkflowGraphStructure(
-			cmd.createStatusCommands().stream().map(s -> s.toInfo()).toList(),
-			cmd.createTransitionCommands().stream().map(t -> t.toInfo()).toList()
+			cmd.statusCommands().stream().map(s -> s.toValidationData()).toList(),
+			cmd.transitionCommands().stream().map(t -> t.toValidationData()).toList()
 		);
 
 		try {
 			Workflow workflow = workflowRepository.save(Workflow.create(workspace, cmd.label(), cmd.description()));
 
 			Map<String, WorkflowStatus> statusMap = new HashMap<>();
-			for (CreateWorkflowCommand.CreateStatusCommand s : cmd.createStatusCommands()) {
+			for (CreateWorkflowCommand.StatusCommand s : cmd.statusCommands()) {
 				WorkflowStatus status = workflow.addStatus(s.label(), s.description(), s.initial(), s.terminal());
 				statusMap.put(s.ref().tempKey(), status);
 			}
 
-			List<WorkflowTransition> mainFlowCandidates = new ArrayList<>();
-
-			for (CreateWorkflowCommand.CreateTransitionCommand t : cmd.createTransitionCommands()) {
+			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitionCommands()) {
 				WorkflowStatus src = statusMap.get(t.sourceRef().tempKey());
 				WorkflowStatus trg = statusMap.get(t.targetRef().tempKey());
 
-				WorkflowTransition transition = workflow.addTransition(t.label(), t.description(), src, trg);
-
-				if (t.mainFlow()) {
-					mainFlowCandidates.add(transition);
-				}
+				workflow.addTransition(t.label(), t.description(), src, trg);
 			}
 
-			graphValidator.ensureValidWorkflowGraph(workflow, mainFlowCandidates);
-			workflow.defineMainFlow(mainFlowCandidates);
+			graphValidator.ensureValidWorkflowGraph(workflow);
 
 			return WorkflowResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {

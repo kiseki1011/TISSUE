@@ -103,7 +103,7 @@ public class Workflow extends BaseEntity {
 		ensureTransitionAllowed(source, target);
 		ensureUniqueTransitionLabelForSource(label, source);
 
-		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target, false);
+		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target);
 		attachTransition(transition);
 
 		return transition;
@@ -140,15 +140,6 @@ public class Workflow extends BaseEntity {
 		transitions.forEach(WorkflowTransition::softDelete);
 	}
 
-	public void defineMainFlow(@NonNull List<WorkflowTransition> transitionPath) {
-		for (var t : transitions) {
-			t.excludeFromMainFlow();
-		}
-		for (var t : transitionPath) {
-			t.includeInMainFlow();
-		}
-	}
-
 	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
 		if (status.getLabel().equals(newLabel)) {
 			return;
@@ -165,11 +156,14 @@ public class Workflow extends BaseEntity {
 		transition.updateLabel(newLabel);
 	}
 
-	public void markStatusTerminal(@NonNull WorkflowStatus status) {
-		status.markTerminal();
-	}
-
-	public void unmarkStatusTerminal(@NonNull WorkflowStatus status) {
+	public void updateStatusTerminalFlag(@NonNull WorkflowStatus status, boolean terminalFlag) {
+		if (status.isTerminal() == terminalFlag) {
+			return;
+		}
+		if (terminalFlag) {
+			status.markTerminal();
+			return;
+		}
 		status.unmarkTerminal();
 	}
 
@@ -194,7 +188,8 @@ public class Workflow extends BaseEntity {
 		transition.attachToWorkflow(this);
 		transitions.add(transition);
 	}
-	
+
+	// TODO: 이게 필요할까? 이미 WorkflowGraphValidator에서 검증을 하고 있음.
 	private void ensureTransitionAllowed(WorkflowStatus source, WorkflowStatus target) {
 		if (target.isInitial()) {
 			throw new InvalidOperationException("Transitions cannot enter the initial status.");
@@ -204,6 +199,7 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
+	// TODO: 이게 메서드는 문제 없겠지?
 	private void ensureNoDuplicateEdge(WorkflowStatus source, WorkflowStatus target) {
 		boolean dup = transitions.stream()
 			.anyMatch(x -> x.getSourceStatus().equals(source) && x.getTargetStatus().equals(target));

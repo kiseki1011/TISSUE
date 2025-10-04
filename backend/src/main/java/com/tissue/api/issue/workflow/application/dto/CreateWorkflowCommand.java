@@ -3,6 +3,7 @@ package com.tissue.api.issue.workflow.application.dto;
 import java.util.List;
 
 import com.tissue.api.issue.base.domain.model.vo.Label;
+import com.tissue.api.issue.workflow.domain.service.EntityRef;
 import com.tissue.api.issue.workflow.domain.service.WorkflowGraphValidator;
 
 import lombok.Builder;
@@ -12,18 +13,18 @@ public record CreateWorkflowCommand(
 	String workspaceKey,
 	Label label,
 	String description,
-	List<CreateStatusCommand> createStatusCommands,
-	List<CreateTransitionCommand> createTransitionCommands
+	List<StatusCommand> statusCommands,
+	List<TransitionCommand> transitionCommands
 ) {
-	public record CreateStatusCommand(
-		WorkflowGraphValidator.EntityRef ref,
+	public record StatusCommand(
+		EntityRef ref,
 		Label label,
 		String description,
 		boolean initial,
 		boolean terminal
 	) {
-		public WorkflowGraphValidator.StatusInfo toInfo() {
-			return new WorkflowGraphValidator.StatusInfo(
+		public WorkflowGraphValidator.StatusValidationData toValidationData() {
+			return new WorkflowGraphValidator.StatusValidationData(
 				ref.tempKey(),
 				initial,
 				terminal
@@ -31,15 +32,14 @@ public record CreateWorkflowCommand(
 		}
 	}
 
-	public record CreateTransitionCommand(
+	public record TransitionCommand(
 		Label label,
 		String description,
-		boolean mainFlow,
-		WorkflowGraphValidator.EntityRef sourceRef,
-		WorkflowGraphValidator.EntityRef targetRef
+		EntityRef sourceRef,
+		EntityRef targetRef
 	) {
-		public WorkflowGraphValidator.TransitionInfo toInfo() {
-			return new WorkflowGraphValidator.TransitionInfo(
+		public WorkflowGraphValidator.TransitionValidationData toValidationData() {
+			return new WorkflowGraphValidator.TransitionValidationData(
 				sourceRef.tempKey(),
 				targetRef.tempKey()
 			);
