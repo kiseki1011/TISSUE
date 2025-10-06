@@ -11,7 +11,6 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.base.domain.model.vo.Label;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -117,7 +116,6 @@ public class Workflow extends BaseEntity {
 		ensureNotSystemProvided();
 		ensureUniqueTransitionLabelForSource(label, source);
 		ensureNoDuplicateEdge(source, target);
-		ensureTransitionAllowed(source, target);
 
 		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target);
 		attachTransition(transition);
@@ -165,6 +163,18 @@ public class Workflow extends BaseEntity {
 		archive();
 		statuses.forEach(WorkflowStatus::softDelete);
 		transitions.forEach(WorkflowTransition::softDelete);
+	}
+
+	public void softDeleteStatus(WorkflowStatus status) {
+		ensureNotSystemProvided();
+		status.softDelete();
+		statuses.remove(status);
+	}
+
+	public void softDeleteTransition(WorkflowTransition transition) {
+		ensureNotSystemProvided();
+		transition.softDelete();
+		transitions.remove(transition);
 	}
 
 	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
@@ -225,16 +235,6 @@ public class Workflow extends BaseEntity {
 	private void ensureNotSystemProvided() {
 		if (systemProvided) {
 			throw new RuntimeException("Cannot modify system provided workflow.");
-		}
-	}
-
-	// TODO: 이게 필요할까? 이미 WorkflowGraphValidator에서 검증을 하고 있음.
-	private void ensureTransitionAllowed(WorkflowStatus source, WorkflowStatus target) {
-		if (target.isInitial()) {
-			throw new InvalidOperationException("Transitions cannot enter the initial status.");
-		}
-		if (source.equals(target)) {
-			throw new InvalidOperationException("Self-loop not allowed.");
 		}
 	}
 

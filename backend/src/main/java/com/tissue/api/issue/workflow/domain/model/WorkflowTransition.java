@@ -92,7 +92,7 @@ public class WorkflowTransition extends BaseEntity {
 		this.targetStatus = targetStatus;
 	}
 
-	public void softDelete() {
+	void softDelete() {
 		archive();
 	}
 }

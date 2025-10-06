@@ -89,7 +89,7 @@ public class WorkflowGraphReplaceService {
 		// ensureNotDeletingStatusesInUse(toDelete);
 		graphValidator.ensureNotDeletingInitial(toDelete, initial);
 
-		toDelete.forEach(WorkflowStatus::softDelete);
+		toDelete.forEach(wf::softDeleteStatus);
 	}
 
 	// TODO: 요구사항이 생기면 이슈에 대한 WorkflowStatus 마이그레이션 제공
@@ -226,7 +226,7 @@ public class WorkflowGraphReplaceService {
 
 		for (WorkflowTransition t : List.copyOf(wf.getTransitions())) {
 			if (t.getId() != null && !reqIds.contains(t.getId())) {
-				t.softDelete();
+				wf.softDeleteTransition(t);
 			}
 		}
 	}

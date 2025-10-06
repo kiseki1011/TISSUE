@@ -113,7 +113,7 @@ public class WorkflowStatus extends BaseEntity {
 		this.terminal = false;
 	}
 
-	public void softDelete() {
+	void softDelete() {
 		archive();
 	}
 }
