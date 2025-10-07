@@ -12,6 +12,7 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.issue.base.domain.model.vo.Label;
+import com.tissue.api.issue.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
@@ -63,10 +64,10 @@ public class Workflow extends BaseEntity {
 	@Column(nullable = false)
 	private ColorType color;
 
-	@OneToMany(mappedBy = "workflow", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
 	private List<WorkflowStatus> statuses = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workflow", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
 	private List<WorkflowTransition> transitions = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -217,6 +218,15 @@ public class Workflow extends BaseEntity {
 		transition.rewireTarget(newTarget);
 	}
 
+	public void addTransitionGuard(@NonNull WorkflowTransition transition, @NonNull GuardType guardType,
+		@Nullable String params, int order) {
+		transition.addGuard(guardType, params, order);
+	}
+
+	public void clearGaurdsForTranstion(@NonNull WorkflowTransition transition) {
+		transition.clearGuards();
+	}
+
 	private void attachStatus(WorkflowStatus status) {
 		status.attachToWorkflow(this);
 		statuses.add(status);
@@ -231,7 +241,6 @@ public class Workflow extends BaseEntity {
 		transitions.add(transition);
 	}
 
-	// TODO: 예외 메세지를 호출하는 쪽에서 파라미터로 넘겨서 사용할까?
 	private void ensureNotSystemProvided() {
 		if (systemProvided) {
 			throw new RuntimeException("Cannot modify system provided workflow.");

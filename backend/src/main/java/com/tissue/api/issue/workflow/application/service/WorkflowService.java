@@ -7,8 +7,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.common.util.Patchers;
+import com.tissue.api.issue.workflow.application.dto.ConfigureTransitionGuardsCommand;
 import com.tissue.api.issue.workflow.application.dto.CreateWorkflowCommand;
 import com.tissue.api.issue.workflow.application.dto.PatchStatusCommand;
 import com.tissue.api.issue.workflow.application.dto.PatchTransitionCommand;
@@ -37,6 +42,7 @@ public class WorkflowService {
 	private final WorkflowRepository workflowRepository;
 	private final WorkflowValidator workflowValidator;
 	private final WorkflowGraphValidator graphValidator;
+	private final TransitionGuardRegistry guardRegistry;
 
 	@Transactional
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
@@ -130,5 +136,41 @@ public class WorkflowService {
 		Patchers.apply(cmd.description(), transition::updateDescription);
 
 		return WorkflowResponse.from(workflow);
+	}
+
+	@Transactional
+	public void configureTransitionGuards(
+		ConfigureTransitionGuardsCommand cmd
+	) {
+		// Workflow와 Transition 조회
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
+
+		WorkflowTransition transition = workflow.getTransitions().stream()
+			.filter(t -> t.getId().equals(cmd.transitionId()))
+			.findFirst()
+			.orElseThrow(() -> new ResourceNotFoundException("Transition not found"));
+
+		// Guard 타입 검증
+		for (var guardConfigData : cmd.guards()) {
+			guardRegistry.getGuard(guardConfigData.guardType());  // 존재하는 Guard인지 확인
+		}
+
+		// 기존 Guard 모두 제거 후 새로 설정
+		workflow.clearGaurdsForTranstion(transition);
+
+		for (var item : cmd.guards()) {
+			// JSON 직렬화
+			String paramsJson = null;
+			if (item.params() != null && !item.params().isEmpty()) {
+				try {
+					paramsJson = new ObjectMapper().writeValueAsString(item.params());
+				} catch (JsonProcessingException e) {
+					throw new InvalidOperationException("Invalid guard parameters");
+				}
+			}
+
+			workflow.addTransitionGuard(transition, item.guardType(), paramsJson, item.order());
+		}
 	}
 }

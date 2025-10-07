@@ -2,12 +2,17 @@ package com.tissue.api.issue.workflow.domain.model;
 
 import static com.tissue.api.common.util.DomainPreconditions.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.base.domain.model.vo.Label;
+import com.tissue.api.issue.workflow.domain.gaurd.GuardType;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -17,6 +22,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,6 +64,10 @@ public class WorkflowTransition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStatus;
 
+	@OneToMany(mappedBy = "transition", cascade = CascadeType.PERSIST, orphanRemoval = false)
+	@OrderBy("executionOrder ASC")
+	private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
+
 	public static WorkflowTransition of(
 		@NonNull Label label,
 		@Nullable String description,
@@ -90,6 +101,22 @@ public class WorkflowTransition extends BaseEntity {
 
 	void rewireTarget(@NonNull WorkflowStatus targetStatus) {
 		this.targetStatus = targetStatus;
+	}
+
+	// Guard 추가 (GuardType enum 사용)
+	void addGuard(@NonNull GuardType guardType, @Nullable String params, int order) {
+		TransitionGuardConfig config = TransitionGuardConfig.create(
+			this,
+			guardType,
+			params,
+			order
+		);
+		guardConfigs.add(config);
+	}
+
+	// 모든 Guard 제거
+	void clearGuards() {
+		guardConfigs.clear();
 	}
 
 	void softDelete() {
