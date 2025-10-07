@@ -2,13 +2,11 @@ package com.tissue.api.notification.domain.service.message;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.comment.domain.event.ReviewCommentAddedEvent;
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
-import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
-import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
+import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
+import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
+import com.tissue.api.issue.collaborator.domain.event.IssueReviewerAddedEvent;
+import com.tissue.api.issue.workflow.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
@@ -30,9 +28,9 @@ public class NotificationContentArgumentsFormatter {
 		IssueStatusChangedEvent statusChangedEvent = (IssueStatusChangedEvent)event;
 		return new Object[] {
 			actorNickname,
-			event.getEntityKey(),
-			statusChangedEvent.getOldStatus().toString(),
-			statusChangedEvent.getNewStatus().toString()
+			event.getEntityKey()
+			// statusChangedEvent.getOldStatus().toString(),
+			// statusChangedEvent.getNewStatus().toString()
 		};
 	}
 
@@ -63,23 +61,23 @@ public class NotificationContentArgumentsFormatter {
 		};
 	}
 
-	public Object[] createReviewSubmittedArgs(DomainEvent event, String actorNickname) {
-		ReviewSubmittedEvent reviewSubmittedEvent = (ReviewSubmittedEvent)event;
-		return new Object[] {
-			actorNickname,
-			event.getEntityKey(),
-			reviewSubmittedEvent.getReviewStatus()
-		};
-	}
+	// public Object[] createReviewSubmittedArgs(DomainEvent event, String actorNickname) {
+	// 	ReviewSubmittedEvent reviewSubmittedEvent = (ReviewSubmittedEvent)event;
+	// 	return new Object[] {
+	// 		actorNickname,
+	// 		event.getEntityKey(),
+	// 		reviewSubmittedEvent.getReviewStatus()
+	// 	};
+	// }
 
-	public Object[] createReviewCommentAddedArgs(DomainEvent event, String actorNickname) {
-		ReviewCommentAddedEvent commentEvent = (ReviewCommentAddedEvent)event;
-		return new Object[] {
-			actorNickname,
-			event.getEntityKey(),
-			commentEvent.getReviewId().toString()
-		};
-	}
+	// public Object[] createReviewCommentAddedArgs(DomainEvent event, String actorNickname) {
+	// 	ReviewCommentAddedEvent commentEvent = (ReviewCommentAddedEvent)event;
+	// 	return new Object[] {
+	// 		actorNickname,
+	// 		event.getEntityKey(),
+	// 		commentEvent.getReviewId().toString()
+	// 	};
+	// }
 
 	public Object[] createSprintStartedArgs(String entityKey) {
 		return new Object[] {entityKey};

@@ -11,10 +11,10 @@ import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.comment.presentation.dto.request.CreateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest;
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
-import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.base.application.finder.IssueFinder;
+import com.tissue.api.issue.base.domain.model.Issue;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommentCommandService {
 
-	private final IssueReader issueReader;
-	private final WorkspaceMemberReader workspaceMemberReader;
+	private final IssueFinder issueFinder;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final CommentRepository commentRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -34,9 +34,9 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueReader.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
 		IssueComment parentComment = request.hasParentComment()
 			? (IssueComment)commentRepository.findById(request.parentCommentId())
@@ -67,9 +67,9 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
 				commentId,
 				issueKey,
 				workspaceCode
@@ -89,9 +89,9 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_IssueKeyAndIssue_WorkspaceCode(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
 				commentId,
 				issueKey,
 				workspaceCode

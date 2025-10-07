@@ -19,18 +19,18 @@ public class NotificationPreferenceService {
 	// TODO: 현재는 EMAIL로 채널이 하드코딩. 추후 채널이 늘어나면 request에서 꺼내서 사용하기.
 	@Transactional
 	public void updatePreference(
-		String workspaceCode,
+		String workspaceKey,
 		Long memberId,
 		UpdateNotificationPreferenceRequest request
 	) {
 		NotificationPreference pref = repository.findByReceiver(
 			memberId,
-			workspaceCode,
+			workspaceKey,
 			request.type(),
 			NotificationChannel.EMAIL
 		).orElse(NotificationPreference.builder()
 			.receiverMemberId(memberId)
-			.workspaceCode(workspaceCode)
+			.workspaceKey(workspaceKey)
 			.type(request.type())
 			.channel(NotificationChannel.EMAIL)
 			.build()

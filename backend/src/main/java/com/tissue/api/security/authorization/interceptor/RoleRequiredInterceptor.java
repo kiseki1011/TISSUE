@@ -14,7 +14,7 @@ import com.tissue.api.common.exception.type.AuthenticationFailedException;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberReader;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RoleRequiredInterceptor implements HandlerInterceptor {
 
-	public static final String PATH_VAR_WORKSPACE_CODE = "workspaceCode";
-	private final WorkspaceMemberReader workspaceMemberReader;
+	public static final String PATH_VAR_WORKSPACE_KEY = "workspaceKey";
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 
 	private static boolean isNotHandlerMethod(Object handler) {
 		return !(handler instanceof HandlerMethod);
@@ -59,15 +59,15 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
 		Long loginMemberId = userDetails.getMemberId();
 
-		// extract workspaceCode from path variable
-		String workspaceCode = getPathVariable(request, PATH_VAR_WORKSPACE_CODE);
+		// extract workspaceKey from path variable
+		String workspaceKey = getPathVariable(request, PATH_VAR_WORKSPACE_KEY);
 
 		// TODO: cache WorkspaceMember later
-		WorkspaceMember workspaceMember = workspaceMemberReader.findWorkspaceMember(loginMemberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(loginMemberId, workspaceKey);
 
 		// check if workspaceMember has the minimum required role
-		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceCode: {}",
-			loginMemberId, workspaceCode);
+		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceKey: {}",
+			loginMemberId, workspaceKey);
 
 		validateRole(workspaceMember, roleRequired);
 

@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 public class NotificationQueryService {
 
 	// @Transactional(readOnly = true)
-	// public List<NotificationDto> getUnreadNotifications(Long workspaceMemberId, String workspaceCode) {
+	// public List<NotificationDto> getUnreadNotifications(Long workspaceMemberId, String workspaceKey) {
 	// 	return notificationRepository.findByReceiverWorkspaceMemberIdAndWorkspaceCodeAndIsReadFalse(
-	// 			workspaceMemberId, workspaceCode)
+	// 			workspaceMemberId, workspaceKey)
 	// 		.stream()
 	// 		.map(NotificationDto::from)
 	// 		.collect(Collectors.toList());

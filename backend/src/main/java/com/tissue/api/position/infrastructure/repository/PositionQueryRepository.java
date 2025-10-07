@@ -8,7 +8,7 @@ import com.tissue.api.position.domain.model.Position;
 
 public interface PositionQueryRepository extends JpaRepository<Position, Long> {
 
-	List<Position> findAllByWorkspaceCodeOrderByCreatedDateAsc(String workspaceCode);
+	List<Position> findAllByWorkspace_KeyOrderByCreatedAtAsc(String workspaceKey);
 
-	List<Position> findAllByWorkspaceCode(String workspaceCode);
+	List<Position> findAllByWorkspace_Key(String workspaceKey);
 }

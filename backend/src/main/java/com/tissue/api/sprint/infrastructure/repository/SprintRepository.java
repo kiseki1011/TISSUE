@@ -10,14 +10,14 @@ import com.tissue.api.sprint.domain.model.Sprint;
 
 public interface SprintRepository extends JpaRepository<Sprint, Long> {
 
-	Optional<Sprint> findBySprintKeyAndWorkspaceCode(String sprintKey, String workspaceCode);
+	Optional<Sprint> findByKeyAndWorkspace_Key(String sprintKey, String workspaceKey);
 
 	@Query("SELECT s FROM Sprint s "
 		+ "LEFT JOIN FETCH s.sprintIssues si "
 		+ "LEFT JOIN FETCH si.issue "
-		+ "WHERE s.sprintKey = :sprintKey AND s.workspaceCode = :workspaceCode")
-	Optional<Sprint> findBySprintKeyAndWorkspaceCodeWithIssues(
+		+ "WHERE s.key = :sprintKey AND s.workspace.key = :workspaceKey")
+	Optional<Sprint> findBySprintKeyAndWorkspaceKeyWithIssues(
 		@Param("sprintKey") String sprintKey,
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceKey
 	);
 }

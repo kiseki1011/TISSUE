@@ -49,7 +49,7 @@ public class Invitation extends BaseEntity {
 		this.member = member;
 		this.workspace = workspace;
 		this.status = status;
-		this.workspaceCode = workspace.getCode();
+		this.workspaceCode = workspace.getKey();
 	}
 
 	public static Invitation addInvitation(Member member, Workspace workspace, InvitationStatus status) {

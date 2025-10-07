@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.presentation.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import com.tissue.api.sprint.domain.model.Sprint;
@@ -14,27 +14,27 @@ public record SprintDetail(
 	String sprintKey,
 	String title,
 	String goal,
-	LocalDateTime plannedStartDate,
-	LocalDateTime plannedEndDate,
+	Instant plannedStartDate,
+	Instant plannedEndDate,
 	SprintStatus status,
 	List<String> issueKeys,
-	LocalDateTime createdAt,
+	Instant createdAt,
 	Long createdBy
 ) {
 	public static SprintDetail from(Sprint sprint) {
 		return SprintDetail.builder()
 			.id(sprint.getId())
-			.sprintKey(sprint.getSprintKey())
+			.sprintKey(sprint.getKey())
 			.title(sprint.getTitle())
 			.goal(sprint.getGoal())
 			.plannedStartDate(sprint.getPlannedStartDate())
 			.plannedEndDate(sprint.getPlannedEndDate())
 			.status(sprint.getStatus())
 			.issueKeys(sprint.getSprintIssues().stream()
-				.map(si -> si.getIssue().getIssueKey())
+				.map(si -> si.getIssue().getKey())
 				.sorted()
 				.toList())
-			.createdAt(sprint.getCreatedDate())
+			.createdAt(sprint.getCreatedAt())
 			.createdBy(sprint.getCreatedBy())
 			.build();
 	}

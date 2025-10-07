@@ -1,7 +1,6 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.issue.domain.model.enums.IssueType;
-import com.tissue.api.issue.domain.event.IssueEvent;
+import com.tissue.api.issue.base.domain.event.IssueEvent;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
 
@@ -18,7 +17,7 @@ public abstract class CommentEvent extends IssueEvent {
 		String workspaceCode,
 		Long issueId,
 		String issueKey,
-		IssueType issueType,
+		// IssueType issueType,
 		Long actorMemberId,
 		Long commentId
 	) {
@@ -28,7 +27,7 @@ public abstract class CommentEvent extends IssueEvent {
 			workspaceCode,
 			issueId,
 			issueKey,
-			issueType,
+			// issueType,
 			actorMemberId
 		);
 

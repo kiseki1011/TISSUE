@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InternalServerException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.member.application.service.command.MemberReader;
+import com.tissue.api.global.key.WorkspaceKeyGenerator;
+import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.util.WorkspaceCodeGenerator;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
@@ -33,13 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCreateService {
 	private static final int MAX_RETRIES = 5;
 
-	private final MemberReader memberReader;
+	private final MemberFinder memberFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final WorkspaceCodeGenerator workspaceCodeGenerator;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
+	private final WorkspacePolicy workspacePolicy;
 
+	// TODO: Make CreateWorkspaceCommand
+	// TODO: Consider moving workspace creation to WorkspaceService?
+	// TODO: Refactor for readability
 	@Override
 	@Retryable(
 		retryFor = {DataIntegrityViolationException.class},
@@ -52,19 +54,22 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 		CreateWorkspaceRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		Workspace workspace = CreateWorkspaceRequest.to(request);
-		setGeneratedWorkspaceCode(workspace);
+		setGeneratedWorkspaceKey(workspace);
 		setEncodedPasswordIfPresent(request, workspace);
-		setIssueKeyPrefix(request, workspace);
+		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		Workspace savedWorkspace = workspaceRepository.saveAndFlush(workspace);
 
-		workspaceMemberRepository.save(addOwnerWorkspaceMember(
-			member,
-			savedWorkspace
-		));
+		workspaceMemberRepository.save(
+			addOwnerWorkspaceMember(
+				member,
+				savedWorkspace,
+				workspacePolicy
+			)
+		);
 
 		return WorkspaceResponse.from(savedWorkspace);
 	}
@@ -77,19 +82,14 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
 		throw new InternalServerException(
-			"Failed to solve workspace code collision after " + MAX_RETRIES + " attempts.",
+			"Failed to solve workspace code collision after %d attempts.".formatted(MAX_RETRIES),
 			exception
 		);
 	}
 
-	private void setIssueKeyPrefix(CreateWorkspaceRequest request, Workspace workspace) {
-		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
-		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
-	}
-
-	private void setGeneratedWorkspaceCode(Workspace workspace) {
-		String generatedCode = workspaceCodeGenerator.generateWorkspaceCode();
-		workspace.setCode(generatedCode);
+	private void setGeneratedWorkspaceKey(Workspace workspace) {
+		String generatedKeySuffix = WorkspaceKeyGenerator.generateWorkspaceKeySuffix();
+		workspace.setKey(generatedKeySuffix);
 	}
 
 	private void setEncodedPasswordIfPresent(CreateWorkspaceRequest request, Workspace workspace) {

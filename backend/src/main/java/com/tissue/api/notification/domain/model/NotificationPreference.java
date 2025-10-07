@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "UK_NOTIFICATION_PREF",
-			columnNames = {"receiverMemberId", "workspaceCode", "type", "channel"})
+			columnNames = {"receiver_member_id", "workspace_key", "type", "channel"})
 	}
 )
 public class NotificationPreference {
@@ -37,7 +37,7 @@ public class NotificationPreference {
 	private Long receiverMemberId;
 
 	@Column(nullable = false)
-	private String workspaceCode;
+	private String workspaceKey;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -53,13 +53,13 @@ public class NotificationPreference {
 	@Builder
 	public NotificationPreference(
 		Long receiverMemberId,
-		String workspaceCode,
+		String workspaceKey,
 		NotificationType type,
 		NotificationChannel channel,
 		boolean enabled
 	) {
 		this.receiverMemberId = receiverMemberId;
-		this.workspaceCode = workspaceCode;
+		this.workspaceKey = workspaceKey;
 		this.type = type;
 		this.channel = channel;
 		this.enabled = enabled;

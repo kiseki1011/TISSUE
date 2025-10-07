@@ -11,8 +11,8 @@ import com.tissue.api.position.presentation.dto.request.UpdatePositionColorReque
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.position.validator.PositionValidator;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PositionCommandService {
 
-	private final PositionReader positionReader;
-	private final WorkspaceReader workspaceReader;
+	private final PositionFinder positionFinder;
+	private final WorkspaceFinder workspaceFinder;
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
@@ -33,7 +33,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Position position = Position.builder()
 			.name(request.name())
@@ -52,7 +52,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -67,7 +67,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -79,7 +79,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-		Position position = positionReader.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
 		positionValidator.validatePositionIsUsed(position);
 

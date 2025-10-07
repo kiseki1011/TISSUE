@@ -1,5 +1,7 @@
 package com.tissue.api.common.entity;
 
+import java.time.Instant;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -21,20 +23,51 @@ public abstract class BaseEntity extends BaseDateEntity {
 	@LastModifiedBy
 	private Long lastModifiedBy;
 
-	// @Column(nullable = false)
-	// private boolean deleted = false;
-	//
-	// private LocalDateTime deletedAt;
-	//
-	// public void softDelete() {
-	// 	this.deleted = true;
-	// 	this.deletedAt = LocalDateTime.now();
-	// }
-	//
-	// public void restore() {
-	// 	if (this.deleted) {
-	// 		this.deleted = false;
-	// 		this.deletedAt = null;
-	// 	}
-	// }
+	@Column(nullable = false)
+	private boolean archived = false;
+
+	private Instant archivedAt;
+
+	public abstract Long getId();
+
+	public void archive() {
+		if (!archived) {
+			this.archived = true;
+			this.archivedAt = Instant.now();
+		}
+	}
+
+	/**
+	 * Disable if there is no restore policy.
+	 */
+	public void restore() {
+		if (archived) {
+			this.archived = false;
+			this.archivedAt = null;
+		}
+	}
+
+	private static Class<?> effectiveClass(Object o) {
+		if (o instanceof org.hibernate.proxy.HibernateProxy p) {
+			return p.getHibernateLazyInitializer().getPersistentClass();
+		}
+		return o.getClass();
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null)
+			return false;
+		if (effectiveClass(this) != effectiveClass(o))
+			return false;
+		BaseEntity that = (BaseEntity)o;
+		return getId() != null && java.util.Objects.equals(getId(), that.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return effectiveClass(this).hashCode();
+	}
 }

@@ -1,0 +1,162 @@
+package deprecated.com.tissue.unit.controller;
+
+import deprecated.com.tissue.support.helper.ControllerTestHelper;
+
+class WorkspaceParticipationControllerTest extends ControllerTestHelper {
+
+	// WorkspaceEntityFixture workspaceEntityFixture;
+	// MemberEntityFixture memberEntityFixture;
+	// WorkspaceMemberEntityFixture workspaceMemberEntityFixture;
+	//
+	// @BeforeEach
+	// public void setup() {
+	// 	workspaceEntityFixture = new WorkspaceEntityFixture();
+	// 	memberEntityFixture = new MemberEntityFixture();
+	// 	workspaceMemberEntityFixture = new WorkspaceMemberEntityFixture();
+	// }
+	//
+	// @Test
+	// @DisplayName("POST /members/workspaces/{code}/members - 워크스페이스 참여 요청을 성공하는 경우 200을 응답 받는다")
+	// void test11() throws Exception {
+	// 	// given
+	// 	String workspaceCode = "TESTCODE";
+	// 	String loginId = "member1";
+	// 	String email = "member1@test.com";
+	//
+	// 	Workspace workspace = workspaceEntityFixture.createWorkspace(workspaceCode);
+	// 	Member member = memberEntityFixture.createMember(loginId, email);
+	// 	WorkspaceMember workspaceMember = workspaceMemberEntityFixture.createMemberWorkspaceMember(member,
+	// 		workspace);
+	// 	JoinWorkspaceRequest request = new JoinWorkspaceRequest(null);
+	//
+	// 	WorkspaceMemberResponse response = WorkspaceMemberResponse.from(workspaceMember);
+	//
+	// 	when(workspaceParticipationService.joinWorkspace(eq(workspaceCode), anyLong()))
+	// 		.thenReturn(response);
+	//
+	// 	// when & then
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members", workspaceCode)
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$.message").value("Joined workspace"))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("POST /members/workspaces/{code}/members - 워크스페이스 참여 요청 시 비밀번호가 불일치하는 경우 401을 응답 받는다")
+	// void test12() throws Exception {
+	// 	// given
+	// 	String workspaceCode = "TESTCODE";
+	// 	String invalidPassword = "invalid1234!";
+	//
+	// 	JoinWorkspaceRequest request = new JoinWorkspaceRequest(invalidPassword);
+	//
+	// 	when(workspaceParticipationService.joinWorkspace(eq("TESTCODE"), anyLong()))
+	// 		.thenThrow(new AuthenticationFailedException("Workspace password is invalid."));
+	//
+	// 	// when & then
+	// 	mockMvc.perform(post("/api/v1/workspaces/{code}/members", workspaceCode)
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isUnauthorized())
+	// 		.andExpect(jsonPath("$.message").value("Workspace password is invalid."))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("GET /workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 기대하는 응답을 받는다")
+	// void getMyWorkspaces_shouldReturn_completeJsonResponse() throws Exception {
+	// 	// given
+	// 	WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+	// 		.id(1L)
+	// 		.code("WS001")
+	// 		.name("Workspace 1")
+	// 		.description("Description 1")
+	// 		.createdAt(LocalDateTime.now().minusDays(5))
+	// 		.updatedAt(LocalDateTime.now())
+	// 		.build();
+	//
+	// 	WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+	// 		.id(2L)
+	// 		.code("WS002")
+	// 		.name("Workspace 2")
+	// 		.description("Description 2")
+	// 		.createdAt(LocalDateTime.now().minusDays(10))
+	// 		.updatedAt(LocalDateTime.now())
+	// 		.build();
+	//
+	// 	GetWorkspacesResponse response = GetWorkspacesResponse.builder()
+	// 		.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+	// 		.totalElements(2L)
+	// 		.build();
+	//
+	// 	// MockHttpSession session = new MockHttpSession();
+	// 	// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+	//
+	// 	when(workspaceParticipationQueryService.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+	// 		.thenReturn(response);
+	//
+	// 	// 기대하는 JSON 응답 생성
+	// 	String expectedJson = objectMapper.writeValueAsString(
+	// 		ApiResponse.ok("Currently joined workspaces found.", response)
+	// 	);
+	//
+	// 	// when & then - 요청 및 전체 JSON 비교 검증
+	// 	mockMvc.perform(get("/api/v1/workspaces")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.param("page", "0")
+	// 			.param("size", "10"))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(content().json(expectedJson))
+	// 		.andDo(print());
+	//
+	// 	verify(workspaceParticipationQueryService, times(1))
+	// 		.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+	// }
+	//
+	// @Test
+	// @DisplayName("GET /workspaces - 현재 참여하고 있는 모든 워크스페이스의 조회에 성공하면 OK를 응답받는다")
+	// void getCurrentlyJoinedWorkspaces_shouldReturn200_ifSuccess() throws Exception {
+	// 	// given
+	// 	// MockHttpSession session = new MockHttpSession();
+	// 	// session.setAttribute(SessionAttributes.LOGIN_MEMBER_ID, 1L);
+	//
+	// 	WorkspaceDetail workspaceDetail1 = WorkspaceDetail.builder()
+	// 		.id(1L)
+	// 		.code("WS001")
+	// 		.name("Workspace 1")
+	// 		.description("Description 1")
+	// 		.createdAt(LocalDateTime.now().minusDays(5))
+	// 		.updatedAt(LocalDateTime.now())
+	// 		.build();
+	//
+	// 	WorkspaceDetail workspaceDetail2 = WorkspaceDetail.builder()
+	// 		.id(2L)
+	// 		.code("WS002")
+	// 		.name("Workspace 2")
+	// 		.description("Description 2")
+	// 		.createdAt(LocalDateTime.now().minusDays(10))
+	// 		.updatedAt(LocalDateTime.now())
+	// 		.build();
+	//
+	// 	GetWorkspacesResponse response = GetWorkspacesResponse.builder()
+	// 		.workspaces(List.of(workspaceDetail1, workspaceDetail2))
+	// 		.totalElements(2L)
+	// 		.build();
+	//
+	// 	when(workspaceParticipationQueryService.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class)))
+	// 		.thenReturn(response);
+	//
+	// 	// when & then
+	// 	mockMvc.perform(get("/api/v1/workspaces")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.param("page", "0")
+	// 			.param("size", "10"))
+	// 		.andExpect(status().isOk());
+	//
+	// 	verify(workspaceParticipationQueryService, times(1))
+	// 		.getWorkspaces(anyLong(), ArgumentMatchers.any(Pageable.class));
+	//
+	// }
+}

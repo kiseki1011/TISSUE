@@ -1,7 +1,5 @@
 package com.tissue.api.review.presentation.dto.response;
 
-import com.tissue.api.review.domain.model.Review;
-
 import lombok.Builder;
 
 @Builder
@@ -10,11 +8,11 @@ public record ReviewResponse(
 	String issueKey,
 	Long reviewId
 ) {
-	public static ReviewResponse from(Review review) {
-		return ReviewResponse.builder()
-			.workspaceCode(review.getWorkspaceCode())
-			.issueKey(review.getIssueKey())
-			.reviewId(review.getId())
-			.build();
-	}
+	// public static ReviewResponse from(Review review) {
+	// 	return ReviewResponse.builder()
+	// 		.workspaceKey(review.getWorkspaceCode())
+	// 		.issueKey(review.getIssueKey())
+	// 		.reviewId(review.getId())
+	// 		.build();
+	// }
 }

@@ -19,7 +19,7 @@ public class WorkspaceParticipationQueryService {
 
 	@Transactional(readOnly = true)
 	public GetWorkspacesResponse getWorkspaces(Long memberId, Pageable pageable) {
-		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMemberId(memberId, pageable)
+		Page<WorkspaceDetail> workspaceDetails = workspaceMemberRepository.findByMember_Id(memberId, pageable)
 			.map(workspaceMember -> WorkspaceDetail.from(
 				workspaceMember.getWorkspace()
 			));

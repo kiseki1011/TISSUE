@@ -6,10 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.application.service.command.MemberReader;
+import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.service.validator.WorkspaceValidator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
 import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
@@ -22,18 +21,17 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class WorkspaceCommandService {
 
-	private final MemberReader memberReader;
-	private final WorkspaceReader workspaceReader;
+	private final MemberFinder memberFinder;
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceRepository workspaceRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final WorkspaceValidator workspaceValidator;
 
 	@Transactional
 	public WorkspaceResponse updateWorkspaceInfo(
 		UpdateWorkspaceInfoRequest request,
 		String workspaceCode
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		updateWorkspaceInfoIfPresent(request, workspace);
 
@@ -45,7 +43,7 @@ public class WorkspaceCommandService {
 		UpdateWorkspacePasswordRequest request,
 		String workspaceCode
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
 		workspace.updatePassword(encodedUpdatePassword);
@@ -68,10 +66,10 @@ public class WorkspaceCommandService {
 		String workspaceCode,
 		Long memberId
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
-		Member member = memberReader.findMemberById(memberId);
-		member.decreaseMyWorkspaceCount();
+		Member member = memberFinder.findMemberById(memberId);
+		// member.decreaseMyWorkspaceCount();
 
 		workspaceRepository.delete(workspace);
 	}
@@ -81,9 +79,8 @@ public class WorkspaceCommandService {
 		String workspaceCode,
 		UpdateIssueKeyRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
-		workspaceValidator.validateIssueKeyPrefix(request.issueKeyPrefix());
 		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
 
 		return WorkspaceResponse.from(workspace);

@@ -22,7 +22,7 @@ public class InvitationValidator {
 	}
 
 	private boolean hasWorkspaceMember(Long memberId, String workspaceCode) {
-		return workspaceMemberRepository.existsByMemberIdAndWorkspaceCode(memberId, workspaceCode);
+		return workspaceMemberRepository.existsByMember_IdAndWorkspace_Key(memberId, workspaceCode);
 	}
 
 }

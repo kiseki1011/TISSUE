@@ -1,7 +1,7 @@
 package com.tissue.api.member.presentation.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.model.enums.JobType;
@@ -19,8 +19,8 @@ public record MemberDetail(
 
 	int ownedWorkspaceCount,
 
-	LocalDateTime createdAt,
-	LocalDateTime updatedAt
+	Instant createdAt,
+	Instant updatedAt
 ) {
 	public static MemberDetail from(Member member) {
 		return MemberDetail.builder()
@@ -29,9 +29,9 @@ public record MemberDetail(
 			.name(member.getName())
 			.birthDate(member.getBirthDate())
 			.jobType(member.getJobType())
-			.ownedWorkspaceCount(member.getMyWorkspaceCount())
-			.createdAt(member.getCreatedDate())
-			.updatedAt(member.getLastModifiedDate())
+			.ownedWorkspaceCount(member.getWorkspaceCount())
+			.createdAt(member.getCreatedAt())
+			.updatedAt(member.getLastModifiedAt())
 			.build();
 	}
 }

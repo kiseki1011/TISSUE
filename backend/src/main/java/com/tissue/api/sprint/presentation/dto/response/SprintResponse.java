@@ -7,6 +7,6 @@ public record SprintResponse(
 	String sprintKey
 ) {
 	public static SprintResponse from(Sprint sprint) {
-		return new SprintResponse(sprint.getWorkspaceCode(), sprint.getSprintKey());
+		return new SprintResponse(sprint.getWorkspaceKey(), sprint.getKey());
 	}
 }

@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Size(
-	min = 4, max = 20,
+	min = 4, max = 24,
 	message = "{valid.size.id}"
 )
 public @interface IdSize {
