@@ -7,6 +7,6 @@ public record PositionResponse(
 	Long positionId
 ) {
 	public static PositionResponse from(Position position) {
-		return new PositionResponse(position.getWorkspaceCode(), position.getId());
+		return new PositionResponse(position.getWorkspaceKey(), position.getId());
 	}
 }

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EntityReference {
 
-	// TODO: WorkspaceMember는 workspaceCode + memberId로 사용하도록 리팩토링
+	// TODO: WorkspaceMember는 workspaceKey + memberId로 사용하도록 리팩토링
 	private static final String WORKSPACES = "/workspaces/";
 	private static final String ISSUES = "/issues/";
 	private static final String COMMENTS = "/comments/";

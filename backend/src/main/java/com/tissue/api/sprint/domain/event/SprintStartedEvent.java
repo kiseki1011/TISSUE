@@ -31,8 +31,8 @@ public class SprintStartedEvent extends SprintEvent {
 	) {
 		return new SprintStartedEvent(
 			sprint.getId(),
-			sprint.getSprintKey(),
-			sprint.getWorkspaceCode(),
+			sprint.getKey(),
+			sprint.getWorkspaceKey(),
 			actorMemberId
 		);
 	}

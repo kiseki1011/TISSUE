@@ -1,7 +1,7 @@
 package com.tissue.api.sprint.domain.model;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.base.domain.model.Issue;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

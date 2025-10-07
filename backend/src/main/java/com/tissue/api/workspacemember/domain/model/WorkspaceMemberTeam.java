@@ -1,5 +1,6 @@
 package com.tissue.api.workspacemember.domain.model;
 
+import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.team.domain.model.Team;
 
 import jakarta.persistence.Entity;
@@ -20,24 +21,24 @@ import lombok.NoArgsConstructor;
 @Table(
 	uniqueConstraints = {
 		@UniqueConstraint(
-			name = "UK_WORKSPACE_MEMBER_TEAM",
-			columnNames = {"WORKSPACE_MEMBER_ID", "TEAM_ID"})
+			name = "uk_workspace_member_team",
+			columnNames = {"workspace_member_id", "team_id"})
 	}
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkspaceMemberTeam {
+public class WorkspaceMemberTeam extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_MEMBER_ID", nullable = false)
+	@JoinColumn(name = "workspace_member_id", nullable = false)
 	private WorkspaceMember workspaceMember;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "TEAM_ID", nullable = false)
+	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
 
 	@Builder

@@ -1,18 +1,18 @@
 package com.tissue.api.sprint.application.service.command;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.application.service.reader.IssueReader;
-import com.tissue.api.sprint.domain.model.Sprint;
-import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.issue.base.application.finder.IssueFinder;
+import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
+import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
@@ -20,8 +20,8 @@ import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,10 +29,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SprintCommandService {
 
-	private final SprintReader sprintReader;
+	private final SprintFinder sprintFinder;
 	private final SprintRepository sprintRepository;
-	private final WorkspaceReader workspaceReader;
-	private final IssueReader issueReader;
+	private final WorkspaceFinder workspaceFinder;
+	private final IssueFinder issueFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -40,7 +40,7 @@ public class SprintCommandService {
 		String workspaceCode,
 		CreateSprintRequest request
 	) {
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		Sprint sprint = Sprint.builder()
 			.title(request.title())
@@ -60,9 +60,9 @@ public class SprintCommandService {
 		String sprintKey,
 		AddSprintIssuesRequest request
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
-		List<Issue> issues = issueReader.findIssues(request.issueKeys(), workspaceCode);
+		List<Issue> issues = issueFinder.findIssues(request.issueKeys(), workspaceCode);
 
 		for (Issue issue : issues) {
 			sprint.addIssue(issue);
@@ -77,14 +77,14 @@ public class SprintCommandService {
 		String sprintKey,
 		UpdateSprintRequest request
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
 		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
 
-		LocalDateTime startDate =
+		Instant startDate =
 			request.plannedStartDate() != null ? request.plannedStartDate() : sprint.getPlannedStartDate();
-		LocalDateTime endDate =
+		Instant endDate =
 			request.plannedEndDate() != null ? request.plannedEndDate() : sprint.getPlannedEndDate();
 
 		if (request.plannedStartDate() != null || request.plannedEndDate() != null) {
@@ -101,7 +101,7 @@ public class SprintCommandService {
 		UpdateSprintStatusRequest request,
 		Long currentWorkspaceMemberId
 	) {
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.updateStatus(request.newStatus());
 
@@ -120,8 +120,8 @@ public class SprintCommandService {
 		String sprintKey,
 		RemoveSprintIssueRequest request
 	) {
-		Issue issue = issueReader.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
-		Sprint sprint = sprintReader.findSprint(sprintKey, workspaceCode);
+		Issue issue = issueFinder.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
+		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
 		sprint.removeIssue(issue);
 

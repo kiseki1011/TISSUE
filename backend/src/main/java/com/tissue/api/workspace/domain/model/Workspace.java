@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.global.key.KeyGenerator;
+import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.invitation.domain.model.Invitation;
-import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
@@ -28,39 +30,30 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
 
-	// Todo: 추후 낙관적 락 적용
-	// @Version
-	// private Long version;
-
-	private static final int MAX_MEMBER_COUNT = 500;
-	private static final String DEFAULT_KEY_PREFIX = "ISSUE";
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "WORKSPACE_ID")
+	@Column(name = "workspace_id")
 	private Long id;
 
-	@Column(unique = true, nullable = false)
-	private String code;
+	@Column(name = "workspace_key", unique = true, nullable = false)
+	private String key;
 
 	@Column(nullable = false)
 	private String name;
+
 	@Column(nullable = false)
 	private String description;
 
 	private String password;
 
 	@Column(nullable = false)
-	private int memberCount = 0;
-
-	@Column(nullable = false)
 	private String issueKeyPrefix;
 
 	@Column(nullable = false)
-	private Integer nextIssueNumber = 1;
+	private Integer issueNumber = 0;
 
 	@Column(nullable = false)
-	private Integer nextSprintNumber = 1;
+	private Integer sprintNumber = 0;
 
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
@@ -68,33 +61,51 @@ public class Workspace extends BaseEntity {
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Issue> issues = new ArrayList<>();
-
 	@OneToMany(mappedBy = "workspace")
 	private List<Sprint> sprints = new ArrayList<>();
 
 	@Builder
 	public Workspace(
-		String code,
+		String key,
 		String name,
 		String description,
 		String password,
 		String issueKeyPrefix
 	) {
-		this.code = code;
+		this.key = key;
 		this.name = name;
 		this.description = description;
 		this.password = password;
-		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
+		updateIssueKeyPrefix(issueKeyPrefix);
 	}
 
-	public void setCode(String code) {
-		this.code = code;
+	public void setKey(String key) {
+		this.key = key;
 	}
 
-	public void updateIssueKeyPrefix(String issueKeyPrefix) {
-		this.issueKeyPrefix = toUpperCaseOrDefault(issueKeyPrefix);
+	// TODO: Issue key prefix must be 3 ~ 24 characters (only en)
+	//  Use WorkspacePolicy.ensureKeyPrefixValidLength
+	public void updateIssueKeyPrefix(String newPrefix) {
+		if (newPrefix == null) {
+			newPrefix = KeyPrefixPolicy.ISSUE;
+		}
+
+		newPrefix = newPrefix.toUpperCase();
+		if (KeyPrefixPolicy.isReserved(newPrefix)) {
+			throw new InvalidOperationException("Cannot use reserved key prefix: " + newPrefix);
+		}
+
+		this.issueKeyPrefix = newPrefix;
+	}
+
+	public String generateCurrentIssueKey() {
+		increaseIssueNumber();
+		return KeyGenerator.generateIssueKey(issueKeyPrefix, issueNumber);
+	}
+
+	public String generateSprintKey() {
+		increaseSprintNumber();
+		return KeyGenerator.generateSprintKey(sprintNumber);
 	}
 
 	public void updatePassword(String password) {
@@ -109,35 +120,12 @@ public class Workspace extends BaseEntity {
 		this.description = description;
 	}
 
-	/*
-	 * Todo
-	 *  - Workspace의 책임인가?
-	 *  - 그냥 Issue에서 workspace.getKeyPrefix + workspace.getNextIssueNumber로 처리하면 안되나?
-	 */
-	public String getIssueKey() {
-		return String.format("%s-%d", issueKeyPrefix, nextIssueNumber);
+	public void increaseIssueNumber() {
+		this.issueNumber++;
 	}
 
-	public void increaseNextIssueNumber() {
-		this.nextIssueNumber++;
-	}
-
-	public void increaseNextSprintNumber() {
-		this.nextSprintNumber++;
-	}
-
-	public void increaseMemberCount() {
-		validateMemberLimit();
-		this.memberCount++;
-	}
-
-	public void decreaseMemberCount() {
-		validatePositiveMemberCount();
-		this.memberCount--;
-	}
-
-	private String toUpperCaseOrDefault(String keyPrefix) {
-		return keyPrefix != null ? keyPrefix.toUpperCase() : DEFAULT_KEY_PREFIX;
+	public void increaseSprintNumber() {
+		this.sprintNumber++;
 	}
 
 	public boolean hasActiveSprintExcept(Sprint excludedSprint) {
@@ -151,17 +139,11 @@ public class Workspace extends BaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
-	private void validateMemberLimit() {
-		if (memberCount >= MAX_MEMBER_COUNT) {
-			throw new InvalidOperationException(String.format(
-				"Maximum number of workspace members reached. Workspace member limit: %d",
-				MAX_MEMBER_COUNT));
-		}
+	public void ensureCanAddMember(WorkspacePolicy workspacePolicy) {
+		workspacePolicy.ensureWithinMemberLimit(this);
 	}
 
-	private void validatePositiveMemberCount() {
-		if (memberCount <= 0) {
-			throw new InvalidOperationException("Number of workspace members cannot go below 1.");
-		}
+	public int getMemberCount() {
+		return workspaceMembers.size();
 	}
 }

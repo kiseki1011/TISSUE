@@ -15,30 +15,26 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
 
-	Page<WorkspaceMember> findByMemberId(Long memberId, Pageable pageable);
+	Page<WorkspaceMember> findByMember_Id(Long memberId, Pageable pageable);
 
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceCode(Long memberId, String workspaceCode);
+	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceId(Long memberId, Long workspaceId);
+	boolean existsByMember_IdAndRole(Long memberId, WorkspaceRole role);
 
-	Optional<WorkspaceMember> findByIdAndWorkspaceCode(Long workspaceMemberId, String workspaceCode);
+	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 
-	boolean existsByMemberIdAndRole(Long id, WorkspaceRole role);
+	List<WorkspaceMember> findAllByWorkspace_KeyAndMember_IdIn(String workspaceKey, Set<Long> memberIdList);
 
-	boolean existsByMemberIdAndWorkspaceCode(Long id, String workspaceCode);
+	List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
-	List<WorkspaceMember> findAllByWorkspaceCodeAndMemberIdIn(String workspaceCode, Set<Long> memberIdList);
-
-	List<WorkspaceMember> findAllByWorkspaceCode(String workspaceCode);
-
-	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspaceCode = :workspaceCode AND wm.role IN ('ADMIN', 'OWNER')")
-	Set<WorkspaceMember> findAdminsByWorkspaceCode(@Param("workspaceCode") String workspaceCode);
+	@Query("SELECT wm FROM WorkspaceMember wm WHERE wm.workspace.key = :workspaceKey AND wm.role IN ('ADMIN', 'OWNER')")
+	Set<WorkspaceMember> findAdminsByWorkspace_Key(@Param("workspaceKey") String workspaceKey);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
 		+ "WHERE (wm.member.loginId = :identifier OR wm.member.email = :identifier) "
-		+ "AND wm.workspace.code = :workspaceCode")
-	Optional<WorkspaceMember> findByMemberIdentifierAndWorkspaceCode(
+		+ "AND wm.workspace.key = :workspaceKey")
+	Optional<WorkspaceMember> findByMemberIdentifierAndWorkspaceKey(
 		@Param("identifier") String identifier,
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceKey
 	);
 }

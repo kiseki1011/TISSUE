@@ -62,7 +62,7 @@ public class MemberValidator {
 	}
 
 	public void validateMemberHasNoOwnedWorkspaces(Long memberId) {
-		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberIdAndRole(memberId, WorkspaceRole.OWNER);
+		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMember_IdAndRole(memberId, WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {
 			throw new InvalidOperationException("You currently have one or more owned workspaces.");
 		}

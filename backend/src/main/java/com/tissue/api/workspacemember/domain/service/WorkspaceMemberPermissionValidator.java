@@ -21,7 +21,7 @@ public class WorkspaceMemberPermissionValidator {
 	) {
 		if (isSelf(requester, target)) {
 			throw new InvalidOperationException(
-				"Cannot remove yourself. Use DELETE api/v1/workspaces/" + requester.getWorkspaceCode() + "/members"
+				"Cannot remove yourself. Use DELETE api/v1/workspaces/" + requester.getWorkspaceKey() + "/members"
 			);
 		}
 

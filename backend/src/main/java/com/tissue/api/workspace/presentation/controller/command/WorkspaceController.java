@@ -58,7 +58,7 @@ public class WorkspaceController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@PatchMapping("/{workspaceCode}/info")
+	@PatchMapping("/{workspaceKey}/info")
 	public ApiResponse<WorkspaceResponse> updateWorkspaceInfo(
 		@PathVariable String workspaceCode,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
@@ -85,7 +85,7 @@ public class WorkspaceController {
 
 	@RoleRequired(role = WorkspaceRole.OWNER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping("/{workspaceCode}")
+	@DeleteMapping("/{workspaceKey}")
 	public ApiResponse<Void> deleteWorkspace(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails,

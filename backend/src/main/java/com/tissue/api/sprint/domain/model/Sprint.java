@@ -1,12 +1,12 @@
 package com.tissue.api.sprint.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.base.domain.model.Issue;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -43,13 +43,13 @@ public class Sprint extends BaseEntity {
 	private String goal;
 
 	@Column(nullable = false)
-	private LocalDateTime plannedStartDate;
+	private Instant plannedStartDate;
 
 	@Column(nullable = false)
-	private LocalDateTime plannedEndDate;
+	private Instant plannedEndDate;
 
-	private LocalDateTime startDate;
-	private LocalDateTime endDate;
+	private Instant startDate;
+	private Instant endDate;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -59,14 +59,8 @@ public class Sprint extends BaseEntity {
 	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
-
-	@Column(nullable = false, unique = true)
-	private String sprintKey;
-
-	@Column(nullable = false)
-	private Integer number;
+	@Column(name = "sprint_key", nullable = false, unique = true)
+	private String key;
 
 	@OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SprintIssue> sprintIssues = new ArrayList<>();
@@ -75,23 +69,23 @@ public class Sprint extends BaseEntity {
 	public Sprint(
 		String title,
 		String goal,
-		LocalDateTime plannedStartDate,
-		LocalDateTime plannedEndDate,
+		Instant plannedStartDate,
+		Instant plannedEndDate,
 		Workspace workspace
 	) {
 		validateDates(plannedStartDate, plannedEndDate);
 
-		this.number = workspace.getNextSprintNumber();
-		this.sprintKey = String.format("SPRINT-%d", this.number);
-		workspace.increaseNextSprintNumber();
-
+		this.key = workspace.generateSprintKey();
 		this.title = title;
 		this.goal = goal;
 		this.plannedStartDate = plannedStartDate;
 		this.plannedEndDate = plannedEndDate;
 		this.status = SprintStatus.PLANNING;
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
 	}
 
 	public void updateTitle(String title) {
@@ -102,13 +96,13 @@ public class Sprint extends BaseEntity {
 		this.goal = goal;
 	}
 
-	private void validateDates(LocalDateTime startDate, LocalDateTime endDate) {
+	private void validateDates(Instant startDate, Instant endDate) {
 		if (endDate.isBefore(startDate)) {
 			throw new InvalidOperationException("Sprint end date cannot be before start date.");
 		}
 	}
 
-	public void updateDates(LocalDateTime startDate, LocalDateTime endDate) {
+	public void updateDates(Instant startDate, Instant endDate) {
 		validateDates(startDate, endDate);
 		this.plannedStartDate = startDate;
 		this.plannedEndDate = endDate;
@@ -123,14 +117,15 @@ public class Sprint extends BaseEntity {
 
 	private void updateTimestamps(SprintStatus newStatus) {
 		if (newStatus == SprintStatus.ACTIVE) {
-			startDate = LocalDateTime.now();
+			startDate = Instant.now();
 			return;
 		}
 		if (newStatus == SprintStatus.COMPLETED) {
-			endDate = LocalDateTime.now();
+			endDate = Instant.now();
 		}
 	}
 
+	// TODO: Move to validator
 	private void validateStatusTransition(SprintStatus newStatus) {
 		if (this.status == newStatus) {
 			throw new InvalidOperationException(
@@ -147,7 +142,7 @@ public class Sprint extends BaseEntity {
 				}
 
 				boolean newStatusIsActive = newStatus == SprintStatus.ACTIVE;
-				if (newStatusIsActive && LocalDateTime.now().isAfter(plannedEndDate)) {
+				if (newStatusIsActive && Instant.now().isAfter(plannedEndDate)) {
 					throw new InvalidOperationException("Cannot start sprint after planned end date.");
 				}
 
@@ -183,13 +178,14 @@ public class Sprint extends BaseEntity {
 		this.sprintIssues.removeIf(si -> si.getIssue().equals(issue));
 	}
 
+	// TODO: Consider moving to validator
 	private void validateCanAddIssue(Issue issue) {
 		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
 		if (notRequiredStatus) {
 			throw new InvalidOperationException("Can only add issues to PLANNING or ACTIVE sprint.");
 		}
 
-		boolean notEqualWorkspaceCode = !issue.getWorkspaceCode().equals(this.workspaceCode);
+		boolean notEqualWorkspaceCode = !issue.getWorkspaceKey().equals(workspace.getKey());
 		if (notEqualWorkspaceCode) {
 			throw new InvalidOperationException("Cannot add issue from different workspace to sprint.");
 		}

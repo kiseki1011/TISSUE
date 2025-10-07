@@ -8,5 +8,5 @@ import com.tissue.api.workspace.domain.model.Workspace;
 
 public interface WorkspaceQueryRepository extends JpaRepository<Workspace, Long> {
 
-	Optional<Workspace> findByCode(String code);
+	Optional<Workspace> findByKey(String key);
 }

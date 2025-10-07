@@ -14,13 +14,13 @@ public interface NotificationPreferenceRepository extends JpaRepository<Notifica
 	@Query("""
 		SELECT p FROM NotificationPreference p
 		WHERE p.receiverMemberId = :memberId
-		AND p.workspaceCode = :workspaceCode
+		AND p.workspaceKey = :workspaceKey
 		AND p.type = :type
 		AND p.channel = :channel
 		""")
 	Optional<NotificationPreference> findByReceiver(
 		@Param("memberId") Long memberId,
-		@Param("workspaceCode") String workspaceCode,
+		@Param("workspaceKey") String workspaceCode,
 		@Param("type") NotificationType type,
 		@Param("channel") NotificationChannel channel
 	);

@@ -16,7 +16,7 @@ import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationCommandService;
+import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationService;
 import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.presentation.dto.request.JoinWorkspaceRequest;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceParticipationController {
 
 	private final WorkspaceParticipationQueryService workspaceParticipationQueryService;
-	private final WorkspaceParticipationCommandService workspaceParticipationCommandService;
+	private final WorkspaceParticipationService workspaceParticipationService;
 	private final WorkspaceAuthenticationService workspaceAuthenticationService;
 
 	/**
@@ -46,14 +46,14 @@ public class WorkspaceParticipationController {
 	 *  - getMyWorkspaceRole: 특정 참여한 워크스페이스에서 내가 가지고 있는 권한 조회하기
 	 */
 
-	@PostMapping("/{workspaceCode}/members")
+	@PostMapping("/{workspaceKey}/members")
 	public ApiResponse<WorkspaceMemberResponse> joinWorkspace(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid JoinWorkspaceRequest request
 	) {
 		workspaceAuthenticationService.authenticate(request.password(), workspaceCode);
-		WorkspaceMemberResponse response = workspaceParticipationCommandService.joinWorkspace(
+		WorkspaceMemberResponse response = workspaceParticipationService.joinWorkspace(
 			workspaceCode,
 			userDetails.getMemberId()
 		);
@@ -63,12 +63,12 @@ public class WorkspaceParticipationController {
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping("/{workspaceCode}/members")
+	@DeleteMapping("/{workspaceKey}/members")
 	public ApiResponse<Void> leaveWorkspace(
 		@PathVariable String workspaceCode,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceParticipationCommandService.leaveWorkspace(
+		workspaceParticipationService.leaveWorkspace(
 			workspaceCode,
 			userDetails.getMemberId()
 		);

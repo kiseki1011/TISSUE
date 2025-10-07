@@ -1,0 +1,392 @@
+package com.tissue.api.issue.base.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+import com.tissue.api.common.entity.BaseEntity;
+import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.base.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.base.domain.enums.IssuePriority;
+import com.tissue.api.issue.collaborator.domain.model.IssueAssignee;
+import com.tissue.api.issue.collaborator.domain.model.IssueReviewer;
+import com.tissue.api.issue.collaborator.domain.model.IssueWatcher;
+import com.tissue.api.issue.workflow.domain.model.WorkflowStatus;
+import com.tissue.api.sprint.domain.model.SprintIssue;
+import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Issue extends BaseEntity {
+
+	// TODO: Use application.yml for value
+	private static final int MAX_REVIEWERS = 10;
+	private static final int MAX_ASSIGNEES = 50;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(name = "issue_key", nullable = false)
+	private String key;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "workspace_id", nullable = false)
+	private Workspace workspace;
+
+	@Column(nullable = false)
+	private String title;
+
+	@Lob
+	@Column(nullable = false)
+	private String content;
+
+	@Lob
+	private String summary;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private IssuePriority priority;
+
+	private LocalDateTime startedAt;
+	private LocalDateTime resolvedAt;
+
+	@Column(nullable = false)
+	private LocalDateTime dueAt;
+
+	private Integer storyPoint;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "parent_issue_id")
+	private Issue parentIssue;
+
+	@OneToMany(mappedBy = "parentIssue")
+	private Set<Issue> childIssues = new HashSet<>();
+
+	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<IssueRelation> outgoingRelations = new HashSet<>();
+
+	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<IssueRelation> incomingRelations = new HashSet<>();
+
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<IssueReviewer> reviewers = new HashSet<>();
+
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<IssueAssignee> assignees = new HashSet<>();
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "issue_id")
+	private Set<IssueWatcher> watchers = new HashSet<>();
+
+	@OneToMany(mappedBy = "issue")
+	private Set<SprintIssue> sprintIssues = new HashSet<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private IssueType issueType;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	private WorkflowStatus currentStatus;
+
+	@Builder
+	protected Issue(
+		Workspace workspace,
+		IssueType issueType,
+		String title,
+		String content,
+		String summary,
+		IssuePriority priority,
+		LocalDateTime dueAt,
+		Integer storyPoint
+	) {
+		this.key = workspace.generateCurrentIssueKey();
+
+		this.workspace = workspace;
+		this.title = title;
+		this.content = content;
+		this.summary = summary;
+		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
+		this.dueAt = dueAt;
+		this.storyPoint = storyPoint;
+		this.issueType = issueType;
+		this.currentStatus = issueType.getWorkflow().getInitialStatus();
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
+	}
+
+	public void updateTitle(String title) {
+		this.title = title;
+	}
+
+	public void updateContent(String content) {
+		this.content = content;
+	}
+
+	public void updateSummary(String summary) {
+		this.summary = summary;
+	}
+
+	public void updateDueAt(LocalDateTime dueAt) {
+		this.dueAt = dueAt;
+	}
+
+	public boolean hasParent() {
+		return parentIssue != null;
+	}
+
+	public void updatePriority(IssuePriority priority) {
+		this.priority = priority;
+	}
+
+	public void moveToStep(WorkflowStatus step) {
+		this.currentStatus = step;
+	}
+
+	public void assignParentIssue(Issue newParent) {
+		validateParentIssue(newParent);
+		removeParentIssue();
+
+		this.parentIssue = newParent;
+		if (newParent != null) {
+			newParent.childIssues.add(this);
+		}
+	}
+
+	public void removeParentIssue() {
+		if (parentIssue != null) {
+			parentIssue.getChildIssues().remove(this);
+			parentIssue = null;
+		}
+	}
+
+	public void validateParentIssue(Issue parentIssue) {
+		if (parentIssue == null) {
+			throw new InvalidOperationException("Parent issue cannot be null.");
+		}
+
+		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
+		if (isDifferentWorkspace) {
+			throw new InvalidOperationException("Parent must belong to the same workspace.");
+		}
+
+		if (this.equals(parentIssue)) {
+			throw new InvalidOperationException("An issue cannot be its own parent.");
+		}
+
+		HierarchyLevel parentLevel = parentIssue.getIssueType().getHierarchyLevel();
+		HierarchyLevel childLevel = this.issueType.getHierarchyLevel();
+
+		if (parentLevel.isInvalidParentFor(childLevel)) {
+			throw new InvalidOperationException(
+				"Parent must be exactly one level above the child. Parent: %s (%d), Child: %s (%d)"
+					.formatted(parentIssue.getIssueType().getLabel(), parentLevel.getLevel(),
+						this.issueType.getLabel(), childLevel.getLevel()));
+		}
+	}
+
+	// TODO: Will I need this in the future to constraint creating stand-alone SubTasks?
+	public void validateCanRemoveParent() {
+	}
+
+	// TODO: Should updating timestamps(startedAt, resolvedAt) be called on the service?
+	// private void updateTimestamps(WorkflowStep newStep) {
+	// }
+
+	public void updateStoryPoint(Integer storyPoint) {
+		this.storyPoint = storyPoint;
+	}
+
+	public boolean isAuthor(Long memberId) {
+		return Objects.equals(getCreatedBy(), memberId);
+	}
+
+	public void addWatcher(WorkspaceMember workspaceMember) {
+		IssueWatcher watcher = new IssueWatcher(workspaceMember);
+		watchers.add(watcher);
+	}
+
+	public void removeWatcher(WorkspaceMember workspaceMember) {
+		watchers.removeIf(watcher -> watcher.getWatcher().equals(workspaceMember));
+	}
+
+	public Set<Long> getSubscriberMemberIds() {
+		Set<Long> memberIds = new HashSet<>();
+
+		// add memberId of author
+		if (this.getCreatedBy() != null) {
+			memberIds.add(this.getCreatedBy());
+		}
+
+		// add Assignee memberIds
+		assignees.stream()
+			.map(IssueAssignee::getAssigneeMemberId)
+			.forEach(memberIds::add);
+
+		// add Reviewer memberIds
+		reviewers.stream()
+			.map(IssueReviewer::getReviewerMemberId)
+			.forEach(memberIds::add);
+
+		// add Watcher memberIds
+		watchers.stream()
+			.map(IssueWatcher::getWatcherMemberId)
+			.forEach(memberIds::add);
+
+		return memberIds;
+	}
+
+	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
+		validateAssigneeLimit();
+		validateBelongsToWorkspace(workspaceMember);
+
+		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
+
+		assignees.add(assignee);
+		return assignee;
+	}
+
+	public void removeAssignee(WorkspaceMember assignee) {
+		IssueAssignee issueAssignee = findIssueAssignee(assignee);
+		assignees.remove(issueAssignee);
+	}
+
+	public void validateIsAssignee(Long memberId) {
+		boolean isNotAssignee = !isAssignee(memberId);
+
+		if (isNotAssignee) {
+			throw new ForbiddenOperationException(
+				String.format("Must be an assignee of this issue. workspace code: %s, issue key: %s, member id: %d",
+					getWorkspaceKey(), key, memberId));
+		}
+	}
+
+	private IssueAssignee findIssueAssignee(WorkspaceMember assignee) {
+		return assignees.stream()
+			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
+			.findFirst()
+			.orElseThrow(() -> new InvalidOperationException(
+				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, displayName: %s",
+					assignee.getId(), assignee.getDisplayName()))
+			);
+	}
+
+	private boolean isAssignee(Long memberId) {
+		return assignees.stream()
+			.anyMatch(issueAssignee -> Objects.equals(issueAssignee.getAssigneeMemberId(), memberId));
+	}
+
+	private void validateAssigneeLimit() {
+		if (assignees.size() >= MAX_ASSIGNEES) {
+			throw new InvalidOperationException(
+				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES));
+		}
+	}
+
+	private void validateBelongsToWorkspace(WorkspaceMember workspaceMember) {
+		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceKey().equals(getWorkspaceKey());
+
+		if (hasDifferentWorkspaceCode) {
+			throw new InvalidOperationException(String.format(
+				"Assignee must belong to this workspace. expected: %s , actual: %s",
+				workspaceMember.getWorkspaceKey(), getWorkspaceKey()));
+		}
+	}
+
+	public Set<Long> getReviewerMemberIds() {
+		Set<Long> reviewerIds = new HashSet<>();
+
+		reviewers.stream()
+			.map(IssueReviewer::getReviewerMemberId)
+			.forEach(reviewerIds::add);
+
+		return reviewerIds;
+	}
+
+	public IssueReviewer addReviewer(WorkspaceMember workspaceMember) {
+		validateReviewerLimit();
+		validateIsReviewer(workspaceMember);
+
+		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
+		reviewers.add(reviewer);
+
+		return reviewer;
+	}
+
+	public void removeReviewer(WorkspaceMember workspaceMember) {
+		IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
+		reviewers.remove(issueReviewer);
+	}
+
+	private void validateReviewerLimit() {
+		if (reviewers.size() >= MAX_REVIEWERS) {
+			throw new InvalidOperationException(
+				String.format("The max number of reviewers for a single issue is %d.", MAX_REVIEWERS));
+		}
+	}
+
+	private void validateIsReviewer(WorkspaceMember workspaceMember) {
+		boolean isAlreadyReviewer = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
+
+		if (isAlreadyReviewer) {
+			throw new InvalidOperationException(
+				String.format("Workspace member is already a reviewer. workspaceMemberId: %d",
+					workspaceMember.getId()));
+		}
+	}
+
+	private IssueReviewer findIssueReviewer(WorkspaceMember workspaceMember) {
+		return reviewers.stream()
+			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
+			.findFirst()
+			.orElseThrow(() -> new ForbiddenOperationException(
+				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
+					workspaceMember.getId(), workspaceMember.getDisplayName()))
+			);
+	}
+
+	// TODO: IssueRelation related codes need to be modified after implementing
+	//  custom IssueTypeDefinition, WorkflowDefinition, etc...
+	//  Lets do this later.
+	// private void validateBlockingIssuesAreDone() {
+	// 	List<com.tissue.api.issue.domain.newmodel.Issue> blockingIssues = incomingRelations.stream()
+	// 		.filter(relation -> relation.getRelationType() == IssueRelationType.BLOCKED_BY)
+	// 		.map(IssueRelation::getSourceIssue)
+	// 		.filter(issue -> issue.getStatus() != DONE)
+	// 		.toList();
+	//
+	// 	if (!blockingIssues.isEmpty()) {
+	// 		String blockingIssueKeys = blockingIssues.stream()
+	// 			.map(com.tissue.api.issue.domain.newmodel.Issue::getIssueKey)
+	// 			.collect(Collectors.joining(", "));
+	//
+	// 		throw new InvalidOperationException(
+	// 			String.format("Cannot complete this issue. Blocking issues must be completed first: %s",
+	// 				blockingIssueKeys));
+	// 	}
+	// }
+}

@@ -10,17 +10,15 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
-import com.tissue.api.comment.domain.event.ReviewCommentAddedEvent;
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.issue.domain.event.IssueAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueCreatedEvent;
-import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.domain.event.IssueReviewRequestedEvent;
-import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
-import com.tissue.api.issue.domain.event.IssueStatusChangedEvent;
-import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
-import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
+import com.tissue.api.issue.base.domain.event.IssueAssignedEvent;
+import com.tissue.api.issue.base.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
+import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
+import com.tissue.api.issue.base.domain.event.IssueUpdatedEvent;
+import com.tissue.api.issue.collaborator.domain.event.IssueReviewerAddedEvent;
+import com.tissue.api.issue.workflow.domain.event.IssueStatusChangedEvent;
+import com.tissue.api.issue.collaborator.domain.event.IssueUnassignedEvent;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
@@ -29,7 +27,6 @@ import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.review.domain.event.ReviewSubmittedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
@@ -146,27 +143,27 @@ public class NotificationEventHandler {
 		processNotifications(event, targets);
 	}
 
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleReviewRequested(IssueReviewRequestedEvent event) {
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleReviewRequested(IssueReviewRequestedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleReviewSubmitted(ReviewSubmittedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleReviewSubmitted(ReviewSubmittedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
 	@Async("notificationTaskExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -179,16 +176,16 @@ public class NotificationEventHandler {
 		processNotifications(event, targets);
 	}
 
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleReviewCommentCreated(ReviewCommentAddedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleReviewCommentCreated(ReviewCommentAddedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
 	@Async("notificationTaskExecutor")
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Size(
-	min = 2, max = 10,
+	min = 2, max = 16,
 	message = "{valid.size.issuekeyprefix}"
 )
 public @interface IssueKeyPrefixSize {

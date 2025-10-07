@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberCommandService {
 
-	private final MemberReader memberReader;
+	private final MemberFinder memberFinder;
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
 	private final AuthenticationManager authenticationManager;
@@ -60,7 +60,7 @@ public class MemberCommandService {
 		UpdateMemberProfileRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		updateMemberInfoIfPresent(request, member);
 
@@ -72,7 +72,7 @@ public class MemberCommandService {
 		UpdateMemberEmailRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		memberValidator.validateEmailIsUnique(request.newEmail());
 		memberEmailVerificationService.validateEmailVerified(request.newEmail());
@@ -91,7 +91,7 @@ public class MemberCommandService {
 		UpdateMemberUsernameRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		memberValidator.validateUsernameIsUnique(request.newUsername());
 
@@ -108,7 +108,7 @@ public class MemberCommandService {
 		UpdateMemberPasswordRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.originalPassword())
@@ -127,13 +127,14 @@ public class MemberCommandService {
 	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
 	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
 	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
+	 *  - 탈퇴하는 경우 기존에 참가하던 Workspace에 대한 처리는 어떻게?
 	 */
 	@Transactional
 	public void withdraw(
 		WithdrawMemberRequest request,
 		Long memberId
 	) {
-		Member member = memberReader.findMemberById(memberId);
+		Member member = memberFinder.findMemberById(memberId);
 
 		// memberValidator.validateMemberPassword(request.password(), memberId);
 

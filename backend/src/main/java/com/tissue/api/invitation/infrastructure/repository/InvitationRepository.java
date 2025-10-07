@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
+import com.tissue.api.invitation.domain.model.Invitation;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 
@@ -27,12 +27,12 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 	List<Invitation> findAllByMemberId(Long id);
 
 	@Query("SELECT DISTINCT m.id FROM WorkspaceMember wm JOIN wm.member m "
-		+ "WHERE wm.workspace.code = :workspaceCode "
+		+ "WHERE wm.workspace.key = :workspaceKey "
 		+ "UNION "
 		+ "SELECT DISTINCT m.id FROM Invitation i JOIN i.member m "
-		+ "WHERE i.workspace.code = :workspaceCode AND i.status = 'PENDING'")
+		+ "WHERE i.workspace.key = :workspaceKey AND i.status = 'PENDING'")
 	Set<Long> findExistingMemberIds(
-		@Param("workspaceCode") String workspaceCode
+		@Param("workspaceKey") String workspaceKey
 	);
 
 	@Modifying

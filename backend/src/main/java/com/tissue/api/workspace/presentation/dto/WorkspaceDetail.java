@@ -1,6 +1,6 @@
 package com.tissue.api.workspace.presentation.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -18,9 +18,9 @@ public class WorkspaceDetail {
 	private String description;
 	private int memberCount;
 	private Long createdBy;
-	private LocalDateTime createdAt;
+	private Instant createdAt;
 	private Long updatedBy;
-	private LocalDateTime updatedAt;
+	private Instant updatedAt;
 
 	@Builder
 	public WorkspaceDetail(
@@ -30,9 +30,9 @@ public class WorkspaceDetail {
 		String description,
 		int memberCount,
 		Long createdBy,
-		LocalDateTime createdAt,
+		Instant createdAt,
 		Long updatedBy,
-		LocalDateTime updatedAt
+		Instant updatedAt
 	) {
 		this.id = id;
 		this.code = code;
@@ -48,14 +48,14 @@ public class WorkspaceDetail {
 	public static WorkspaceDetail from(Workspace workspace) {
 		return WorkspaceDetail.builder()
 			.id(workspace.getId())
-			.code(workspace.getCode())
+			.code(workspace.getKey())
 			.name(workspace.getName())
 			.description(workspace.getDescription())
 			.memberCount(workspace.getMemberCount())
 			.createdBy(workspace.getCreatedBy())
-			.createdAt(workspace.getCreatedDate())
+			.createdAt(workspace.getCreatedAt())
 			.updatedBy(workspace.getLastModifiedBy())
-			.updatedAt(workspace.getLastModifiedDate())
+			.updatedAt(workspace.getLastModifiedAt())
 			.build();
 	}
 }

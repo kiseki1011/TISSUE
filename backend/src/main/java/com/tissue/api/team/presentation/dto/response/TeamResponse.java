@@ -7,6 +7,6 @@ public record TeamResponse(
 	Long teamId
 ) {
 	public static TeamResponse from(Team team) {
-		return new TeamResponse(team.getWorkspaceCode(), team.getId());
+		return new TeamResponse(team.getWorkspaceKey(), team.getId());
 	}
 }

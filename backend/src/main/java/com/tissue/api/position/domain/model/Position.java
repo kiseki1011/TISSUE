@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMemberPosition;
 import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMemberPosition;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -20,6 +20,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,30 +29,36 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(uniqueConstraints = {
+	@UniqueConstraint(
+		name = "uk_workspace_position_name",
+		columnNames = {"workspace_id", "name"}
+	)
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Position extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "POSITION_ID")
+	@Column(name = "position_id")
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(name = "name", nullable = false)
 	private String name;
 
+	// TODO: should i allow null for description
+	@Column(name = "description")
 	private String description;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name = "color", nullable = false)
 	private ColorType color;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
-
+	// TODO: Should i use Set, and override EqualsAndHashCode as {"workspaceMember", "position"}?
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
@@ -64,7 +72,6 @@ public class Position extends BaseEntity {
 		this.name = name;
 		this.description = description != null ? description : "";
 		this.workspace = workspace;
-		this.workspaceCode = workspace.getCode();
 		this.color = color;
 	}
 
@@ -78,5 +85,9 @@ public class Position extends BaseEntity {
 
 	public void updateColor(ColorType color) {
 		this.color = color;
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
 	}
 }

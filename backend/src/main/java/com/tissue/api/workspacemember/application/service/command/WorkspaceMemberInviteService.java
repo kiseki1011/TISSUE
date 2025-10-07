@@ -11,8 +11,8 @@ import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.application.service.command.WorkspaceReader;
 import com.tissue.api.workspacemember.presentation.dto.request.InviteMembersRequest;
 import com.tissue.api.workspacemember.presentation.dto.response.InviteMembersResponse;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceMemberInviteService {
 
-	private final WorkspaceReader workspaceReader;
+	private final WorkspaceFinder workspaceFinder;
 	private final MemberRepository memberRepository;
 	private final InvitationRepository invitationRepository;
 
@@ -32,7 +32,7 @@ public class WorkspaceMemberInviteService {
 		InviteMembersRequest request
 	) {
 
-		Workspace workspace = workspaceReader.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
 
 		// 초대 가능한 멤버 필터링
 		List<Member> members = filterInvitableMembers(workspaceCode, request.memberIdentifiers());

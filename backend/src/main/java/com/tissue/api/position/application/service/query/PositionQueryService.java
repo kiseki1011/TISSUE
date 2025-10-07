@@ -22,12 +22,12 @@ public class PositionQueryService {
 
 	@Transactional(readOnly = true)
 	public GetPositionsResponse getPositions(String workspaceCode) {
-		List<Position> positions = positionQueryRepository.findAllByWorkspaceCodeOrderByCreatedDateAsc(workspaceCode);
+		List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceCode);
 		return GetPositionsResponse.from(positions);
 	}
 
 	public Set<ColorType> getUsedColors(String workspaceCode) {
-		List<Position> positions = positionQueryRepository.findAllByWorkspaceCode(workspaceCode);
+		List<Position> positions = positionQueryRepository.findAllByWorkspace_Key(workspaceCode);
 		return positions.stream()
 			.map(Position::getColor)
 			.collect(Collectors.toSet());

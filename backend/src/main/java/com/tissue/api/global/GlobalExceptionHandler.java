@@ -1,13 +1,11 @@
 package com.tissue.api.global;
 
 import java.util.List;
-import java.util.Objects;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,9 +17,8 @@ import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.common.dto.FieldErrorDto;
 import com.tissue.api.common.exception.TissueException;
 import com.tissue.api.common.exception.type.ExternalServiceException;
+import com.tissue.api.common.exception.type.FieldValidationException;
 import com.tissue.api.common.exception.type.InternalServerException;
-import com.tissue.api.security.authentication.exception.JwtAuthenticationException;
-import com.tissue.api.security.authentication.exception.JwtCreationException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,107 +40,90 @@ public class GlobalExceptionHandler {
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(Exception.class)
-	public ApiResponse<Void> unexpectedException(Exception e) {
-		log.error("Unexpected exception: {}", e.getMessage(), e);
+	public ApiResponse<Void> unexpectedException(Exception ex) {
+		log.error("Unexpected exception: {}", ex.getMessage(), ex);
 
 		return ApiResponse.failWithNoContent(HttpStatus.INTERNAL_SERVER_ERROR, "A unexpected problem has occured.");
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ApiResponse<List<FieldErrorDto>> handleValidationException(MethodArgumentNotValidException e) {
-		log.info("Validation failed: {} ", e.getMessage(), e);
+	@ExceptionHandler(FieldValidationException.class)
+	public ApiResponse<List<FieldErrorDto>> handleFieldValidationException(FieldValidationException ex) {
+		log.info("Schema validation for custom fields failed: {}", ex.getMessage(), ex);
+		return ApiResponse.fail(ex.getHttpStatus(), ex.getMessage(), ex.getFieldErrors());
+	}
 
-		List<FieldErrorDto> errors = extractFieldErrors(e.getBindingResult());
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ApiResponse<List<FieldErrorDto>> handleValidationException(MethodArgumentNotValidException ex) {
+		log.info("Validation failed: {} ", ex.getMessage(), ex);
+		List<FieldErrorDto> errors = FieldErrorDto.fromBindingResult(ex.getBindingResult());
 
 		return ApiResponse.fail(HttpStatus.BAD_REQUEST, "One or more fields have failed validation.", errors);
 	}
 
-	private List<FieldErrorDto> extractFieldErrors(BindingResult bindingResult) {
-		return bindingResult.getFieldErrors().stream()
-			.map(this::toFieldErrorDto)
-			.toList();
-	}
-
-	private FieldErrorDto toFieldErrorDto(FieldError error) {
-		String rejectedValue = Objects.toString(error.getRejectedValue(), "");
-		return new FieldErrorDto(error.getField(), rejectedValue, error.getDefaultMessage());
-	}
-
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Void> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
-		// enum 타입 변환 실패로 인한 예외인 경우
-		if (e.getCause() instanceof InvalidFormatException) {
-			log.warn("Invalid enum value provided: {} ", e.getMessage(), e);
+	public ApiResponse<Void> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+		// enum type failure
+		if (ex.getCause() instanceof InvalidFormatException) {
+			log.warn("Invalid enum value provided: {} ", ex.getMessage(), ex);
 			return ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Invalid enum value provided.");
 		}
 
-		// 그 외의 요청 본문 관련 예외
-		log.warn("Invalid request body provided: {} ", e.getMessage(), e);
+		log.warn("Invalid request body provided: {} ", ex.getMessage(), ex);
 		return ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Invalid request body.");
 	}
 
-	@ExceptionHandler(JwtAuthenticationException.class)
-	public ResponseEntity<ApiResponse<Void>> handleJwtAuth(JwtAuthenticationException e) {
-		log.warn("JWT authentication error: {}", e.getMessage(), e);
+	// DB constraint violation (null/unique/fk/etc)
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		// TODO: Branch HttpStatus on cause
+		log.warn("Data integrity violation: {}", ex.getMessage(), ex);
 
-		HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
-
-		return ResponseEntity
-			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, e.getMessage()));
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+			.body(ApiResponse.failWithNoContent(HttpStatus.UNPROCESSABLE_ENTITY, "Data integrity violation."));
 	}
 
-	@ExceptionHandler(JwtCreationException.class)
-	public ResponseEntity<ApiResponse<Void>> handleJwtCreation(JwtCreationException e) {
-		log.error("JWT creation failed: {}", e.getMessage(), e);
-
-		HttpStatus httpStatus = e.getHttpStatus();
-
-		return ResponseEntity
-			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, e.getMessage()));
-	}
+	// TODO: Handle OptimisticLockException
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
-	public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException e) {
-		log.warn("Missing request parameter: {}", e.getParameterName());
+	public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
+		log.warn("Missing request parameter: {}", ex.getParameterName());
 
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Missing parameter: " + e.getParameterName()));
+			.body(ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Missing parameter: " + ex.getParameterName()));
 	}
 
 	@ExceptionHandler(InternalServerException.class)
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public ResponseEntity<ApiResponse<Void>> handleInternalServerException(InternalServerException e) {
-		log.error("Internal server problem: {}", e.getMessage(), e);
+	public ResponseEntity<ApiResponse<Void>> handleInternalServerException(InternalServerException ex) {
+		log.error("Internal server problem: {}", ex.getMessage(), ex);
 
-		HttpStatus httpStatus = e.getHttpStatus();
+		HttpStatus httpStatus = ex.getHttpStatus();
 
 		return ResponseEntity
 			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, e.getMessage()));
+			.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
 	}
 
 	@ExceptionHandler(ExternalServiceException.class)
-	public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException e) {
-		log.error("External service problem: {}", e.getMessage(), e);
+	public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException ex) {
+		log.error("External service problem: {}", ex.getMessage(), ex);
 
-		HttpStatus httpStatus = e.getHttpStatus();
+		HttpStatus httpStatus = ex.getHttpStatus();
 
 		return ResponseEntity
 			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, e.getMessage()));
+			.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
 	}
 
 	@ExceptionHandler(TissueException.class)
-	public ResponseEntity<ApiResponse<Void>> handleTissueException(TissueException e) {
-		log.info("Tissue exception: {}", e.getMessage(), e);
+	public ResponseEntity<ApiResponse<Void>> handleTissueException(TissueException ex) {
+		log.info("Tissue exception: {}", ex.getMessage(), ex);
 
-		String message = e.getMessage();
-		HttpStatus httpStatus = e.getHttpStatus();
+		String message = ex.getMessage();
+		HttpStatus httpStatus = ex.getHttpStatus();
 
 		return ResponseEntity
 			.status(httpStatus)
