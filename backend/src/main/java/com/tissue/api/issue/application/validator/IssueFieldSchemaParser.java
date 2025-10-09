@@ -10,7 +10,7 @@ import java.time.format.DateTimeParseException;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-import com.tissue.api.issue.domain.policy.IssueFieldPolicy;
+import com.tissue.api.issue.domain.policy.FieldValuePolicy;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.repository.EnumFieldOptionRepository;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueFieldSchemaParser {
 
 	private final EnumFieldOptionRepository optionRepo;
-	private final IssueFieldPolicy issueFieldPolicy;
+	private final FieldValuePolicy policy;
 
 	/**
 	 * Converts 'raw' input into a domain value based on the field type.
@@ -83,8 +83,8 @@ public class IssueFieldSchemaParser {
 			);
 		}
 
-		issueFieldPolicy.ensureDigits(value, field.getId());
-		return issueFieldPolicy.normalizeDecimal(value);
+		policy.ensureDigits(value, field.getId());
+		return policy.normalizeDecimal(value);
 	}
 
 	/**

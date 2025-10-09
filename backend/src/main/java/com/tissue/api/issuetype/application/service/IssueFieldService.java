@@ -12,7 +12,6 @@ import com.tissue.api.issue.application.finder.IssueFieldFinder;
 import com.tissue.api.issue.application.finder.IssueFieldOptionFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.domain.model.vo.Label;
-import com.tissue.api.issue.domain.policy.IssueFieldPolicy;
 import com.tissue.api.issuetype.application.dto.AddOptionCommand;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueFieldCommand;
@@ -26,6 +25,7 @@ import com.tissue.api.issuetype.domain.EnumFieldOptions;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.domain.enums.FieldType;
+import com.tissue.api.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.api.issuetype.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.issuetype.repository.EnumFieldOptionRepository;
 import com.tissue.api.issuetype.repository.IssueFieldRepository;
@@ -44,7 +44,7 @@ public class IssueFieldService {
 	private final EnumFieldOptionRepository optionRepo;
 	private final IssueFieldValidator issueFieldValidator;
 	private final EnumFieldOptionValidator optionValidator;
-	private final IssueFieldPolicy issueFieldPolicy;
+	private final FieldDefintionPolicy fieldDefintionPolicy;
 	private final EntityManager entityManager;
 
 	@Transactional
@@ -64,7 +64,7 @@ public class IssueFieldService {
 		IssueField savedField = issueFieldRepo.save(issueField);
 
 		if (savedField.getFieldType() == FieldType.ENUM) {
-			issueFieldPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
+			fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
 			saveInitialEnumOptions(savedField, cmd.initialOptions());
 		}
 
@@ -120,7 +120,7 @@ public class IssueFieldService {
 		optionValidator.ensureLabelUnique(field, cmd.label());
 
 		int nextPosition = optionRepo.countByField(field);
-		issueFieldPolicy.ensureCanAddOption(nextPosition);
+		fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
 		EnumFieldOption option = EnumFieldOption.create(field, cmd.label(), nextPosition);
 		optionRepo.save(option);

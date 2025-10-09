@@ -9,9 +9,9 @@ import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-import com.tissue.api.issue.domain.policy.IssueFieldPolicy;
-import com.tissue.api.issuetype.domain.enums.FieldType;
+import com.tissue.api.issue.domain.policy.FieldValuePolicy;
 import com.tissue.api.issuetype.domain.IssueField;
+import com.tissue.api.issuetype.domain.enums.FieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DecimalFieldHandler implements FieldTypeHandler {
 
-	private final IssueFieldPolicy policy; // digits/scale domain rules
+	private final FieldValuePolicy policy; // digits/scale domain rules
 
 	@Qualifier("domainConversionService")
 	private final ConversionService cs;

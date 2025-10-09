@@ -2,30 +2,16 @@ package com.tissue.api.issue.domain.policy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.vo.Label;
 
-public record IssueFieldPolicy(
-	int maxEnumOptions,
+// TODO: refactor or remove if going to use default
+public record FieldValuePolicy(
 	int decimalScale,
 	RoundingMode roundingMode,
 	int maxIntegerDigits,
 	int maxFractionDigits
 ) {
-	public void ensureOptionsWithinLimit(List<Label> options) {
-		if (options.size() > maxEnumOptions) {
-			throw new InvalidOperationException("Too many options. max=" + maxEnumOptions);
-		}
-	}
-
-	public void ensureCanAddOption(int activeCount) {
-		if (activeCount >= maxEnumOptions) {
-			throw new InvalidOperationException("Too many options. max=" + maxEnumOptions);
-		}
-	}
 
 	public void ensureDigits(BigDecimal value, Long fieldId) {
 		if (value == null) {
