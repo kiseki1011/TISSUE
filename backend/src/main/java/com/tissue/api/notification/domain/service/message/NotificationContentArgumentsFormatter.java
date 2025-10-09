@@ -3,10 +3,10 @@ package com.tissue.api.notification.domain.service.message;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.issue.base.domain.event.IssueParentAssignedEvent;
-import com.tissue.api.issue.base.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.collaborator.domain.event.IssueReviewerAddedEvent;
-import com.tissue.api.issue.workflow.domain.event.IssueStatusChangedEvent;
+import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
+import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
+import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
+import com.tissue.api.workflow.domain.event.IssueStatusChangedEvent;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;

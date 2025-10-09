@@ -9,9 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.tissue.api.issue.collaborator.application.dto.AddReviewerCommand;
-import com.tissue.api.issue.collaborator.presentation.dto.request.AddReviewerRequest;
-import com.tissue.api.issue.collaborator.presentation.dto.response.IssueReviewerResponse;
+import com.tissue.api.issue.application.dto.AddReviewerCommand;
+import com.tissue.api.issue.presentation.dto.request.AddReviewerRequest;
+import com.tissue.api.issue.presentation.dto.response.IssueReviewerResponse;
 
 import deprecated.com.tissue.support.helper.ControllerTestHelper;
 

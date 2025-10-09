@@ -7,8 +7,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.base.application.finder.IssueFinder;
-import com.tissue.api.issue.base.domain.model.Issue;
+import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.sprint.domain.model.Sprint;

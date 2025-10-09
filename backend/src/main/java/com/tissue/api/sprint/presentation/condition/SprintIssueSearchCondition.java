@@ -3,7 +3,7 @@ package com.tissue.api.sprint.presentation.condition;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.issue.base.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssuePriority;
 
 import jakarta.validation.constraints.Size;
 import lombok.Builder;

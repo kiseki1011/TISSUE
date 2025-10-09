@@ -1,6 +1,6 @@
 package com.tissue.api.comment.domain.model;
 
-import com.tissue.api.issue.base.domain.model.Issue;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.DiscriminatorValue;
