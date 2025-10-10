@@ -1,18 +1,22 @@
 package com.tissue.api.issue.domain.model;
 
+import static com.tissue.api.issue.domain.enums.IssueHierarchy.*;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.workflow.domain.model.WorkflowStatus;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
+import com.tissue.api.workflow.domain.model.WorkflowStatus;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -30,16 +34,16 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	// TODO: Use application.yml for value
+	// TODO: use application.yml for value
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
@@ -53,6 +57,10 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reporter_id") // TODO: add nullable = false
+	private WorkspaceMember reporter;
 
 	@Column(nullable = false)
 	private String title;
@@ -68,7 +76,10 @@ public class Issue extends BaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
+	// TODO: must be set on workflow transition from intial to next step
 	private LocalDateTime startedAt;
+
+	// TODO: must be set when workflow status reaches terminal
 	private LocalDateTime resolvedAt;
 
 	@Column(nullable = false)
@@ -80,6 +91,7 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
+	// TODO: Set vs List? which is better?
 	@OneToMany(mappedBy = "parentIssue")
 	private Set<Issue> childIssues = new HashSet<>();
 
@@ -89,6 +101,8 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> incomingRelations = new HashSet<>();
 
+	// TODO: IssueReviewer, IssueAssignee, IssueWatcher를 Issue 와 WorkspaceMember 사이의 중간 엔티티로 설계하는게 좋은 방법인걸까?
+	//  @ManyToMany는 비권장하기 때문에 중간 엔티티를 통해 다대다 관계를 형성하긴 했지만, 이게 좋은 방법인지는 모름.
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueReviewer> reviewers = new HashSet<>();
 
@@ -108,47 +122,56 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus currentStatus;
 
-	@Builder
-	protected Issue(
-		Workspace workspace,
-		IssueType issueType,
-		String title,
-		String content,
-		String summary,
-		IssuePriority priority,
-		LocalDateTime dueAt,
-		Integer storyPoint
+	public static Issue create(
+		@NonNull Workspace workspace,
+		@NonNull IssueType issueType,
+		@NonNull String title,
+		@Nullable String content,
+		@Nullable String summary,
+		IssuePriority priority, // TODO: nullable or non-null?
+		@Nullable LocalDateTime dueAt,
+		@Nullable Integer storyPoint
 	) {
-		this.key = workspace.generateCurrentIssueKey();
+		Issue issue = new Issue();
+		issue.workspace = workspace;
+		issue.issueType = issueType;
+		issue.title = title;
+		issue.content = content;
+		issue.summary = summary;
+		issue.priority = priority;
+		issue.dueAt = dueAt;
+		// TODO: IssueType의 Hierarchy가 Hierarchy.EPIC, Hierarchy.SUBTASK, Hierarchy.MICROTASK면 값 설정 금지(null)
+		//  - 로직이 ensureCanUseStoryPoint()과 유사한데, static 메서드 내에서는 ensureCanUseStoryPoint를 사용못함. 좋은 방법 없을까?
+		//  - 아니면 이런 검증 로직은 그냥 서비스 계층에서 호출할까? 엔티티에 캡슐화하는게 실수를 줄일 것 같긴한데. 깔끔하고.
+		if (issue.getHierarchy() == EPIC || issue.getHierarchy() == SUBTASK || issue.getHierarchy() == MICROTASK) {
+			throw new RuntimeException("Cannot set story point for this hierarchy level: " + issue.getHierarchy());
+		}
+		issue.storyPoint = storyPoint;
 
-		this.workspace = workspace;
-		this.title = title;
-		this.content = content;
-		this.summary = summary;
-		this.priority = priority != null ? priority : IssuePriority.MEDIUM;
-		this.dueAt = dueAt;
-		this.storyPoint = storyPoint;
-		this.issueType = issueType;
-		this.currentStatus = issueType.getWorkflow().getInitialStatus();
+		return issue;
 	}
 
 	public String getWorkspaceKey() {
 		return workspace.getKey();
 	}
 
-	public void updateTitle(String title) {
+	public void updateReporter(@NonNull WorkspaceMember reporter) {
+		this.reporter = reporter;
+	}
+
+	public void updateTitle(@NonNull String title) {
 		this.title = title;
 	}
 
-	public void updateContent(String content) {
+	public void updateContent(@Nullable String content) {
 		this.content = content;
 	}
 
-	public void updateSummary(String summary) {
+	public void updateSummary(@Nullable String summary) {
 		this.summary = summary;
 	}
 
-	public void updateDueAt(LocalDateTime dueAt) {
+	public void updateDueAt(@Nullable LocalDateTime dueAt) {
 		this.dueAt = dueAt;
 	}
 
@@ -160,32 +183,51 @@ public class Issue extends BaseEntity {
 		this.priority = priority;
 	}
 
+	public IssueHierarchy getHierarchy() {
+		return getIssueType().getIssueHierarchy();
+	}
+
+	public void updateStoryPoint(@Nullable Integer storyPoint) {
+		if (storyPoint != null) {
+			ensureCanUseStoryPoint();
+		}
+		this.storyPoint = storyPoint;
+	}
+
+	public void ensureCanUseStoryPoint() {
+		// TODO: storyPoint를 사용할 수 있는 enum 값의 목록을 만들고 활용하는게 좋을까?
+		//  그렇게하면 클라에서 storyPoint 사용여부를 확인하는 API를 만드는것도 편하지 않을까?
+		if (getHierarchy() == EPIC || getHierarchy() == SUBTASK || getHierarchy() == MICROTASK) {
+			throw new RuntimeException("Cannot set story point for this hierarchy level: " + getHierarchy());
+		}
+	}
+
 	public void moveToStep(WorkflowStatus step) {
 		this.currentStatus = step;
 	}
 
-	public void assignParentIssue(Issue newParent) {
-		validateParentIssue(newParent);
+	public void assignParentIssue(@NonNull Issue newParent) {
+		ensureCanAddParent(newParent);
+		// TODO: removeParentIssue를 여기에 캡슐화하는게 좋은 방법일까? 아니면 명시적으로 서비스에서 호출할까?
 		removeParentIssue();
 
 		this.parentIssue = newParent;
-		if (newParent != null) {
-			newParent.childIssues.add(this);
-		}
+		newParent.childIssues.add(this);
 	}
 
+	// TODO: IssueHierarchy.SUBTASK, IssueHierarchy.MICROTASK는 무조건 부모가 있어야 함
+	//  stand-alone 불가!
 	public void removeParentIssue() {
+		ensureCanRemoveParent();
 		if (parentIssue != null) {
 			parentIssue.getChildIssues().remove(this);
 			parentIssue = null;
 		}
 	}
 
-	public void validateParentIssue(Issue parentIssue) {
-		if (parentIssue == null) {
-			throw new InvalidOperationException("Parent issue cannot be null.");
-		}
-
+	private void ensureCanAddParent(Issue parentIssue) {
+		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장
+		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
 			throw new InvalidOperationException("Parent must belong to the same workspace.");
@@ -195,28 +237,25 @@ public class Issue extends BaseEntity {
 			throw new InvalidOperationException("An issue cannot be its own parent.");
 		}
 
-		HierarchyLevel parentLevel = parentIssue.getIssueType().getHierarchyLevel();
-		HierarchyLevel childLevel = this.issueType.getHierarchyLevel();
+		IssueHierarchy parentHierarchy = parentIssue.getIssueType().getIssueHierarchy();
+		IssueHierarchy childHierarchy = this.issueType.getIssueHierarchy();
 
-		if (parentLevel.isInvalidParentFor(childLevel)) {
+		if (parentHierarchy.isOneLevelHigher(childHierarchy)) {
 			throw new InvalidOperationException(
-				"Parent must be exactly one level above the child. Parent: %s (%d), Child: %s (%d)"
-					.formatted(parentIssue.getIssueType().getLabel(), parentLevel.getLevel(),
-						this.issueType.getLabel(), childLevel.getLevel()));
+				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
+					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy,
+						this.issueType.getLabel(), childHierarchy));
 		}
 	}
 
-	// TODO: Will I need this in the future to constraint creating stand-alone SubTasks?
-	public void validateCanRemoveParent() {
+	public void ensureCanRemoveParent() {
+		if (getHierarchy() == SUBTASK || getHierarchy() == MICROTASK) {
+			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
+		}
 	}
 
-	// TODO: Should updating timestamps(startedAt, resolvedAt) be called on the service?
-	// private void updateTimestamps(WorkflowStep newStep) {
-	// }
-
-	public void updateStoryPoint(Integer storyPoint) {
-		this.storyPoint = storyPoint;
-	}
+	// TODO: updateStartedAt: Workflow 전이에서 initial에서 다름 상태로 넘어가는 순간 호출
+	// TODO: updateResolvedAt: Workflow 전이에서 terminal에 도달하는 경우 호출
 
 	public boolean isAuthor(Long memberId) {
 		return Objects.equals(getCreatedBy(), memberId);
@@ -259,7 +298,9 @@ public class Issue extends BaseEntity {
 
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
 		validateAssigneeLimit();
-		validateBelongsToWorkspace(workspaceMember);
+		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장
+		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
+		// validateBelongsToWorkspace(workspaceMember);
 
 		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
 
@@ -272,16 +313,6 @@ public class Issue extends BaseEntity {
 		assignees.remove(issueAssignee);
 	}
 
-	public void validateIsAssignee(Long memberId) {
-		boolean isNotAssignee = !isAssignee(memberId);
-
-		if (isNotAssignee) {
-			throw new ForbiddenOperationException(
-				String.format("Must be an assignee of this issue. workspace code: %s, issue key: %s, member id: %d",
-					getWorkspaceKey(), key, memberId));
-		}
-	}
-
 	private IssueAssignee findIssueAssignee(WorkspaceMember assignee) {
 		return assignees.stream()
 			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
@@ -292,25 +323,20 @@ public class Issue extends BaseEntity {
 			);
 	}
 
-	private boolean isAssignee(Long memberId) {
+	public boolean isAssignee(Long memberId) {
 		return assignees.stream()
 			.anyMatch(issueAssignee -> Objects.equals(issueAssignee.getAssigneeMemberId(), memberId));
 	}
 
+	// TODO: isReviewer()
+	// TODO: isWatcher()
+
+	// TODO: MAX_ASSIGNEES를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
+	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
 	private void validateAssigneeLimit() {
 		if (assignees.size() >= MAX_ASSIGNEES) {
 			throw new InvalidOperationException(
 				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES));
-		}
-	}
-
-	private void validateBelongsToWorkspace(WorkspaceMember workspaceMember) {
-		boolean hasDifferentWorkspaceCode = !workspaceMember.getWorkspaceKey().equals(getWorkspaceKey());
-
-		if (hasDifferentWorkspaceCode) {
-			throw new InvalidOperationException(String.format(
-				"Assignee must belong to this workspace. expected: %s , actual: %s",
-				workspaceMember.getWorkspaceKey(), getWorkspaceKey()));
 		}
 	}
 
@@ -324,14 +350,18 @@ public class Issue extends BaseEntity {
 		return reviewerIds;
 	}
 
-	public IssueReviewer addReviewer(WorkspaceMember workspaceMember) {
+	public void addReviewer(WorkspaceMember workspaceMember) {
 		validateReviewerLimit();
-		validateIsReviewer(workspaceMember);
+
+		boolean isReviewer = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
+
+		if (isReviewer) {
+			return;
+		}
 
 		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
 		reviewers.add(reviewer);
-
-		return reviewer;
 	}
 
 	public void removeReviewer(WorkspaceMember workspaceMember) {
@@ -339,21 +369,12 @@ public class Issue extends BaseEntity {
 		reviewers.remove(issueReviewer);
 	}
 
+	// TODO: MAX_REVIEWERS를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
+	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
 	private void validateReviewerLimit() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
 			throw new InvalidOperationException(
 				String.format("The max number of reviewers for a single issue is %d.", MAX_REVIEWERS));
-		}
-	}
-
-	private void validateIsReviewer(WorkspaceMember workspaceMember) {
-		boolean isAlreadyReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
-
-		if (isAlreadyReviewer) {
-			throw new InvalidOperationException(
-				String.format("Workspace member is already a reviewer. workspaceMemberId: %d",
-					workspaceMember.getId()));
 		}
 	}
 

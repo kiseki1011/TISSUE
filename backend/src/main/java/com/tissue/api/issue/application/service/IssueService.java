@@ -8,15 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.application.dto.AssignParentIssueCommand;
 import com.tissue.api.issue.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.application.dto.RemoveParentIssueCommand;
+import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
-import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueFieldValue;
 import com.tissue.api.issue.infrastructure.repository.IssueFieldValueRepository;
-import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
+import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
@@ -52,32 +52,36 @@ public class IssueService {
 	private final IssueFieldValueRepository fieldValueRepository;
 
 	@Transactional
-	public IssueResponse createIssue(CreateIssueCommand cmd) {
+	public IssueResponse create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
+		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.currentMemberId(),
+			cmd.workspaceKey());
 
-		Issue issue = issueRepository.save(Issue.builder()
-			.workspace(workspace)
-			.issueType(issueType)
-			.title(cmd.title())
-			.content(cmd.content())
-			.summary(cmd.summary())
-			.priority(cmd.priority())
-			.dueAt(cmd.dueAt())
-			.build());
+		Issue issue = issueRepository.save(Issue.create(
+			workspace,
+			issueType,
+			cmd.title(),
+			cmd.content(),
+			cmd.summary(),
+			cmd.priority(),
+			cmd.dueAt(),
+			cmd.storyPoint()
+		));
 
 		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
 		fieldValueRepository.saveAll(values);
 
-		// TODO: Should I get the memberId from the controller, or use the audit info like now?
-		WorkspaceMember creator = workspaceMemberFinder.findWorkspaceMember(issue.getCreatedBy(), workspace.getKey());
-		issue.addWatcher(creator);
+		// TODO: 아래 로직을 Issue.create에 캡슐화 하는게 좋을까?
+		issue.updateReporter(actor);
+		issue.addWatcher(actor);
 
 		return IssueResponse.from(issue);
 	}
 
+	// TODO: updateReporter도 추가
 	// @Transactional
-	// public IssueResponse updateIssue(UpdateIssueCommand cmd) {
+	// public IssueResponse update(UpdateIssueCommand cmd) {
 	// 	Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
 	//
 	// 	if (cmd.title() != null) {
@@ -108,7 +112,7 @@ public class IssueService {
 	// }
 
 	@Transactional
-	public IssueResponse assignParentIssue(AssignParentIssueCommand cmd) {
+	public IssueResponse assignParent(AssignParentIssueCommand cmd) {
 		Issue child = issueFinder.findIssue(cmd.childIssueKey(), cmd.workspaceCode());
 		Issue parent = issueFinder.findIssue(cmd.parentIssueKey(), cmd.workspaceCode());
 
@@ -118,7 +122,7 @@ public class IssueService {
 	}
 
 	@Transactional
-	public IssueResponse removeParentIssue(RemoveParentIssueCommand cmd) {
+	public IssueResponse removeParent(RemoveParentIssueCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
 
 		// TODO: Need to implement a way to turn on/off requiring a parent.
@@ -133,28 +137,7 @@ public class IssueService {
 	}
 
 	// @Transactional
-	// public IssueResponse updateIssueStatus(
-	// 	String workspaceKey,
-	// 	String issueKey,
-	// 	Long memberId,
-	// 	UpdateIssueStatusRequest request
-	// ) {
-	// 	Issue issue = issueReader.findIssue(issueKey, workspaceKey);
-	// 	WorkspaceMember requester = workspaceMemberReader.findWorkspaceMember(memberId, workspaceKey);
-	//
-	// 	IssueStatus oldStatus = issue.getStatus();
-	//
-	// 	issue.updateStatus(request.status());
-	//
-	// 	eventPublisher.publishEvent(
-	// 		IssueStatusChangedEvent.createEvent(issue, oldStatus, memberId)
-	// 	);
-	//
-	// 	return IssueResponse.from(issue);
-	// }
-
-	// @Transactional
-	// public void softDeleteIssue(
+	// public void softDelete(
 	// 	String workspaceKey,
 	// 	String issueKey,
 	// 	Long requesterWorkspaceMemberId

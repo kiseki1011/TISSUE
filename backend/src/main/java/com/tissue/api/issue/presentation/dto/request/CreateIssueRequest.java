@@ -21,10 +21,11 @@ public record CreateIssueRequest(
 	@NotNull IssuePriority priority,
 	@Nullable LocalDateTime dueAt,
 	@NotNull Long issueTypeId,
-	Map<Long, Object> customFields
+	@Nullable Map<Long, Object> customFields
 ) {
-	public CreateIssueCommand toCommand(String workspaceKey) {
+	public CreateIssueCommand toCommand(String workspaceKey, Long currentMemberId) {
 		return CreateIssueCommand.builder()
+			.currentMemberId(currentMemberId)
 			.workspaceKey(workspaceKey)
 			.title(title)
 			.content(content)

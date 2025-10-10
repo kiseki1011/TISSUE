@@ -9,12 +9,14 @@ import lombok.Builder;
 
 @Builder
 public record CreateIssueCommand(
+	Long currentMemberId,
 	String workspaceKey,
 	String title,
 	String content,
 	String summary,
 	IssuePriority priority,
 	LocalDateTime dueAt,
+	Integer storyPoint,
 	Long issueTypeId,
 	Map<Long, Object> customFields
 ) {
