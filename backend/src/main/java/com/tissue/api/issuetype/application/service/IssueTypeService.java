@@ -48,7 +48,7 @@ public class IssueTypeService {
 			cmd.label(),
 			cmd.description(),
 			cmd.color(),
-			cmd.hierarchyLevel(),
+			cmd.issueHierarchy(),
 			workflow
 		);
 

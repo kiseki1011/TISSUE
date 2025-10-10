@@ -4,9 +4,9 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
-import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
-import com.tissue.api.issue.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ public record CreateIssueTypeRequest(
 	@NotBlank @LabelSize String label,
 	@Nullable @Size(max = 255) String description,
 	@NotNull ColorType color,
-	@NotNull HierarchyLevel hierarchyLevel,
+	@NotNull IssueHierarchy issueHierarchy,
 	@NotNull Long workflowId
 ) {
 	public CreateIssueTypeCommand toCommand(String workspaceKey) {
@@ -25,7 +25,7 @@ public record CreateIssueTypeRequest(
 			.label(Label.of(label))
 			.description(description)
 			.color(color)
-			.hierarchyLevel(hierarchyLevel)
+			.issueHierarchy(issueHierarchy)
 			.workflowId(workflowId)
 			.build();
 	}

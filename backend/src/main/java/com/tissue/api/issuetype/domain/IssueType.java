@@ -7,7 +7,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.enums.HierarchyLevel;
+import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.model.vo.Label;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -73,7 +73,7 @@ public class IssueType extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private HierarchyLevel hierarchyLevel;
+	private IssueHierarchy issueHierarchy;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "workflow_id", nullable = false)
@@ -88,14 +88,14 @@ public class IssueType extends BaseEntity {
 		Label label,
 		String description,
 		ColorType color,
-		HierarchyLevel hierarchyLevel,
+		IssueHierarchy issueHierarchy,
 		Workflow workflow
 	) {
 		this.workspace = workspace;
 		this.label = label;
 		this.description = description;
 		this.color = color;
-		this.hierarchyLevel = hierarchyLevel;
+		this.issueHierarchy = issueHierarchy;
 		this.workflow = workflow;
 		this.systemType = false;
 	}
@@ -105,7 +105,7 @@ public class IssueType extends BaseEntity {
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color,
-		@NonNull HierarchyLevel hierarchyLevel,
+		@NonNull IssueHierarchy issueHierarchy,
 		@NonNull Workflow workflow
 	) {
 		return IssueType.builder()
@@ -113,7 +113,7 @@ public class IssueType extends BaseEntity {
 			.label(label)
 			.description(nullToEmpty(description))
 			.color(color)
-			.hierarchyLevel(hierarchyLevel)
+			.issueHierarchy(issueHierarchy)
 			.workflow(workflow)
 			.build();
 	}
@@ -134,8 +134,13 @@ public class IssueType extends BaseEntity {
 		this.color = color;
 	}
 
-	public void updateHierarchyLevel(@NonNull HierarchyLevel hierarchyLevel) {
-		this.hierarchyLevel = hierarchyLevel;
+	// TODO: 함부로 변경을 허용하면 안됨
+	//  - IssueHierarchy는 Issue의 parent issue 설정에 영향을 줌
+	//  - IssueHierarchy를 변경하는 경우, 해당 IssueType를 사용하는 issue들의 부모 이슈에 대한 전략을 세워야 함
+	//  - case 1: 기존 부모들 clear(파괴적인 변경이 될 가능성이 높기 때문에 웬만하면 case2로 가는게 좋지 않을까?)
+	//  - case 2: 만약 부모가 있는 이슈가 있다면 IssueHierarchy 변경 제한
+	public void updateHierarchyLevel(@NonNull IssueHierarchy issueHierarchy) {
+		this.issueHierarchy = issueHierarchy;
 	}
 
 	public void setWorkflow(@NonNull Workflow workflow) {
