@@ -83,10 +83,10 @@ public class Issue extends BaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
-	// TODO: must be set on workflow transition from intial to next step
+	// TODO: 이슈의 상태를 전이(transition) 시킬 때 intial에서 다음 상태로 가는 경우 설정(변경 불가해야 함)
 	private Instant startedAt;
 
-	// TODO: must be set when workflow status reaches terminal
+	// TODO: 이슈의 상태를 전이 시킬 때 terminal에 도달하는 경우 설정
 	private Instant resolvedAt;
 
 	@Column(nullable = false)
@@ -98,7 +98,7 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
-	// TODO: Set vs List? which is better?
+	// TODO: Set vs List? 둘 중 뭐가 더 좋으려나?
 	@OneToMany(mappedBy = "parentIssue")
 	private Set<Issue> childIssues = new HashSet<>();
 
@@ -118,7 +118,7 @@ public class Issue extends BaseEntity {
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "issue_id")
-	private Set<IssueWatcher> watchers = new HashSet<>();
+	private Set<IssueSubscriber> watchers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue")
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
@@ -149,7 +149,7 @@ public class Issue extends BaseEntity {
 		issue.dueAt = dueAt;
 		// TODO: IssueType의 Hierarchy가 Hierarchy.EPIC, Hierarchy.SUBTASK, Hierarchy.MICROTASK면 값 설정 금지(null)
 		//  - 로직이 ensureCanUseStoryPoint()과 유사한데, static 메서드 내에서는 ensureCanUseStoryPoint를 사용못함. 좋은 방법 없을까?
-		//  - 아니면 이런 검증 로직은 그냥 서비스 계층에서 호출할까? 엔티티에 캡슐화하는게 실수를 줄일 것 같긴한데. 깔끔하고.
+		//  - 아니면 이런 검증 로직은 그냥 서비스 계층에서 호출할까? 엔티티에 캡슐화하는게 실수를 줄일 것 같긴한데.
 		if (issue.getHierarchy() == EPIC || issue.getHierarchy() == SUBTASK || issue.getHierarchy() == MICROTASK) {
 			throw new RuntimeException("Cannot set story point for this hierarchy level: " + issue.getHierarchy());
 		}
@@ -276,39 +276,13 @@ public class Issue extends BaseEntity {
 		archive();
 	}
 
-	public void addWatcher(WorkspaceMember workspaceMember) {
-		IssueWatcher watcher = new IssueWatcher(workspaceMember);
+	public void addSubscriber(WorkspaceMember workspaceMember) {
+		IssueSubscriber watcher = new IssueSubscriber(workspaceMember);
 		watchers.add(watcher);
 	}
 
-	public void removeWatcher(WorkspaceMember workspaceMember) {
+	public void removeSubscriber(WorkspaceMember workspaceMember) {
 		watchers.removeIf(watcher -> watcher.getWatcher().equals(workspaceMember));
-	}
-
-	public Set<Long> getSubscriberMemberIds() {
-		Set<Long> memberIds = new HashSet<>();
-
-		// add memberId of author
-		if (this.getCreatedBy() != null) {
-			memberIds.add(this.getCreatedBy());
-		}
-
-		// add Assignee memberIds
-		assignees.stream()
-			.map(IssueAssignee::getAssigneeMemberId)
-			.forEach(memberIds::add);
-
-		// add Reviewer memberIds
-		reviewers.stream()
-			.map(IssueReviewer::getReviewerMemberId)
-			.forEach(memberIds::add);
-
-		// add Watcher memberIds
-		watchers.stream()
-			.map(IssueWatcher::getWatcherMemberId)
-			.forEach(memberIds::add);
-
-		return memberIds;
 	}
 
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
@@ -323,18 +297,19 @@ public class Issue extends BaseEntity {
 		return assignee;
 	}
 
-	public void removeAssignee(WorkspaceMember assignee) {
-		IssueAssignee issueAssignee = findIssueAssignee(assignee);
-		assignees.remove(issueAssignee);
+	public void removeAssignee(WorkspaceMember workspaceMember) {
+		IssueAssignee assignee = findAssignee(workspaceMember);
+		assignees.remove(assignee);
 	}
 
-	private IssueAssignee findIssueAssignee(WorkspaceMember assignee) {
+	// TODO: 더 간단하게 개선할 방법은 없나?
+	private IssueAssignee findAssignee(WorkspaceMember assignee) {
 		return assignees.stream()
 			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
 			.findFirst()
 			.orElseThrow(() -> new InvalidOperationException(
-				String.format("Is not a assignee assigned to this issue. workspaceMemberId: %d, displayName: %s",
-					assignee.getId(), assignee.getDisplayName()))
+				"Is not a assignee assigned to this issue. workspaceMemberId: %d, displayName: %s"
+					.formatted(assignee.getId(), assignee.getDisplayName()))
 			);
 	}
 
@@ -344,25 +319,15 @@ public class Issue extends BaseEntity {
 	}
 
 	// TODO: isReviewer()
-	// TODO: isWatcher()
+	// TODO: isSubscriber()
 
 	// TODO: MAX_ASSIGNEES를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
 	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
 	private void validateAssigneeLimit() {
 		if (assignees.size() >= MAX_ASSIGNEES) {
 			throw new InvalidOperationException(
-				String.format("The maximum number of assignees for a single issue is %d", MAX_ASSIGNEES));
+				"The maximum number of assignees for a single issue is %d".formatted(MAX_ASSIGNEES));
 		}
-	}
-
-	public Set<Long> getReviewerMemberIds() {
-		Set<Long> reviewerIds = new HashSet<>();
-
-		reviewers.stream()
-			.map(IssueReviewer::getReviewerMemberId)
-			.forEach(reviewerIds::add);
-
-		return reviewerIds;
 	}
 
 	public void addReviewer(WorkspaceMember workspaceMember) {
@@ -402,25 +367,4 @@ public class Issue extends BaseEntity {
 					workspaceMember.getId(), workspaceMember.getDisplayName()))
 			);
 	}
-
-	// TODO: IssueRelation related codes need to be modified after implementing
-	//  custom IssueTypeDefinition, WorkflowDefinition, etc...
-	//  Lets do this later.
-	// private void validateBlockingIssuesAreDone() {
-	// 	List<com.tissue.api.issue.domain.newmodel.Issue> blockingIssues = incomingRelations.stream()
-	// 		.filter(relation -> relation.getRelationType() == IssueRelationType.BLOCKED_BY)
-	// 		.map(IssueRelation::getSourceIssue)
-	// 		.filter(issue -> issue.getStatus() != DONE)
-	// 		.toList();
-	//
-	// 	if (!blockingIssues.isEmpty()) {
-	// 		String blockingIssueKeys = blockingIssues.stream()
-	// 			.map(com.tissue.api.issue.domain.newmodel.Issue::getIssueKey)
-	// 			.collect(Collectors.joining(", "));
-	//
-	// 		throw new InvalidOperationException(
-	// 			String.format("Cannot complete this issue. Blocking issues must be completed first: %s",
-	// 				blockingIssueKeys));
-	// 	}
-	// }
 }

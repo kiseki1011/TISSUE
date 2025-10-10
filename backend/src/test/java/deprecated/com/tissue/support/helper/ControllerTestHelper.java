@@ -22,10 +22,8 @@ import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.application.service.IssueService;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.presentation.controller.IssueController;
-import com.tissue.api.issue.application.service.IssueReviewerService;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
-import com.tissue.api.issue.presentation.controller.IssueReviewerController;
+import com.tissue.api.issue.presentation.controller.IssueController;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -59,7 +57,6 @@ import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceM
 import com.tissue.api.workspacemember.presentation.controller.command.WorkspaceParticipationController;
 
 import deprecated.com.tissue.support.config.WebMvcTestConfig;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -76,7 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 		PositionController.class,
 		IssueController.class,
 		// ReviewController.class,
-		IssueReviewerController.class
+		// IssueReviewerController.class
 	},
 	excludeAutoConfiguration = SecurityAutoConfiguration.class,
 	excludeFilters = {
@@ -159,8 +156,8 @@ public abstract class ControllerTestHelper {
 	protected IssueService issueService;
 	// @MockBean
 	// protected ReviewCommandService reviewCommandService;
-	@MockBean
-	protected IssueReviewerService issueReviewerService;
+	// @MockBean
+	// protected IssueReviewerService issueReviewerService;
 	@MockBean
 	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 

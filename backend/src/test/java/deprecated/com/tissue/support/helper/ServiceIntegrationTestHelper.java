@@ -14,12 +14,11 @@ import com.tissue.api.invitation.application.service.command.InvitationCommandSe
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
+import com.tissue.api.issue.application.service.IssueCollaboratorService;
 import com.tissue.api.issue.application.service.IssueRelationService;
 import com.tissue.api.issue.application.service.IssueService;
 import com.tissue.api.issue.domain.service.CircularDependencyValidator;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.application.service.IssueCollaboratorService;
-import com.tissue.api.issue.application.service.IssueReviewerService;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
@@ -55,7 +54,6 @@ import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberR
 
 import deprecated.com.tissue.support.fixture.TestDataFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
-
 import jakarta.persistence.EntityManager;
 
 @SpringBootTest
@@ -134,8 +132,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueRelationService issueRelationService;
 	// @Autowired
 	// protected ReviewCommandService reviewCommandService;
-	@Autowired
-	protected IssueReviewerService issueReviewerService;
+	// @Autowired
+	// protected IssueReviewerService issueReviewerService;
 	@Autowired
 	protected IssueCollaboratorService issueCollaboratorService;
 	@Autowired

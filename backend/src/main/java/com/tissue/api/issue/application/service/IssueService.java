@@ -39,7 +39,7 @@ public class IssueService {
 	private final IssueFieldValueRepository fieldValueRepository;
 
 	/**
-	 * TODO
+	 * TODO(later)
 	 *  1. (추후에 Workspace -> Project로 리팩토링 후 진행) 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려.
 	 *  이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
 	 *  2. 이슈를 클론하는 API 구현. (근데 이 경우에는 IssueRelation.CLONE을 설정해줘야 할까?)
@@ -69,7 +69,7 @@ public class IssueService {
 
 		// TODO: 아래 로직을 Issue.create에 캡슐화 하는게 좋을까?
 		issue.updateReporter(actor); // TODO: updateReporter 대신 setReporter가 더 나으려나?
-		issue.addWatcher(actor);
+		issue.addSubscriber(actor);
 
 		return IssueResponse.from(issue);
 	}
@@ -81,7 +81,7 @@ public class IssueService {
 
 		Patchers.apply(cmd.title(), issue::updateTitle);
 		Patchers.apply(cmd.content(), issue::updateContent);
-		Patchers.apply(cmd.summary(), issue::updateContent);
+		Patchers.apply(cmd.summary(), issue::updateSummary);
 		Patchers.apply(cmd.dueAt(), issue::updateDueAt);
 		Patchers.apply(cmd.priority(), issue::updatePriority);
 		Patchers.apply(cmd.storyPoint(), issue::updateStoryPoint);
@@ -126,10 +126,7 @@ public class IssueService {
 	}
 
 	@Transactional
-	public IssueResponse softDelete(
-		String workspaceKey,
-		String issueKey
-	) {
+	public IssueResponse softDelete(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
 		// issueValidator.ensureDeletable();
@@ -137,4 +134,6 @@ public class IssueService {
 
 		return IssueResponse.from(issue);
 	}
+
+	// TODO: requestReview()
 }

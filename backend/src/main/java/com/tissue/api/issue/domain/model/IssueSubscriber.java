@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @EqualsAndHashCode(of = "watcherMemberId", callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IssueWatcher extends BaseDateEntity {
+public class IssueSubscriber extends BaseDateEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +38,7 @@ public class IssueWatcher extends BaseDateEntity {
 	@Column(nullable = false)
 	private LocalDateTime watchedAt;
 
-	public IssueWatcher(WorkspaceMember watcher) {
+	public IssueSubscriber(WorkspaceMember watcher) {
 		this.watcher = watcher;
 		this.watcherMemberId = watcher.getMember().getId();
 		this.watchedAt = LocalDateTime.now();
