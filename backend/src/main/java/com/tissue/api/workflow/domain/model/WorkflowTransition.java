@@ -64,7 +64,7 @@ public class WorkflowTransition extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus targetStatus;
 
-	@OneToMany(mappedBy = "transition", cascade = CascadeType.PERSIST, orphanRemoval = false)
+	@OneToMany(mappedBy = "transition", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("executionOrder ASC")
 	private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
 
