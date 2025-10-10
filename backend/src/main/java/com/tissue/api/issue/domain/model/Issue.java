@@ -215,8 +215,7 @@ public class Issue extends BaseEntity {
 		newParent.childIssues.add(this);
 	}
 
-	// TODO: IssueHierarchy.SUBTASK, IssueHierarchy.MICROTASK는 무조건 부모가 있어야 함
-	//  stand-alone 불가!
+	// TODO: IssueHierarchy.SUBTASK, IssueHierarchy.MICROTASK는 무조건 부모가 있어야 함. stand-alone 불가!
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
 		if (parentIssue != null) {

@@ -4,14 +4,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.application.dto.AddAssigneeCommand;
 import com.tissue.api.issue.application.dto.AddWatcherCommand;
+import com.tissue.api.issue.application.dto.RemoveAssigneeCommand;
 import com.tissue.api.issue.application.dto.RemoveWatcherCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
-import com.tissue.api.issue.domain.event.IssueAssignedEvent;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.application.dto.AddAssigneeCommand;
-import com.tissue.api.issue.application.dto.RemoveAssigneeCommand;
-import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.presentation.dto.response.IssueAssigneeResponse;
 import com.tissue.api.issue.presentation.dto.response.IssueCollaboratorResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
@@ -44,9 +42,9 @@ public class IssueCollaboratorService {
 
 		issue.addAssignee(assignee);
 
-		eventPublisher.publishEvent(
-			IssueAssignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
-		);
+		// eventPublisher.publishEvent(
+		// 	IssueAssignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
+		// );
 
 		return IssueAssigneeResponse.from(assignee, issueKey);
 	}
@@ -76,9 +74,9 @@ public class IssueCollaboratorService {
 
 		issue.removeAssignee(assignee);
 
-		eventPublisher.publishEvent(
-			IssueUnassignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
-		);
+		// eventPublisher.publishEvent(
+		// 	IssueUnassignedEvent.createEvent(issue, command.memberId(), requesterMemberId)
+		// );
 
 		return IssueAssigneeResponse.from(assignee, issueKey);
 	}

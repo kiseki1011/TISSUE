@@ -1,24 +1,10 @@
 package com.tissue.api.notification.application.eventhandler;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.issue.domain.event.IssueAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueCreatedEvent;
-import com.tissue.api.issue.domain.event.IssueParentAssignedEvent;
-import com.tissue.api.issue.domain.event.IssueParentRemovedEvent;
-import com.tissue.api.issue.domain.event.IssueUpdatedEvent;
-import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
-import com.tissue.api.workflow.domain.event.IssueStatusChangedEvent;
-import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
@@ -27,10 +13,6 @@ import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
-import com.tissue.api.sprint.domain.event.SprintStartedEvent;
-import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
-import com.tissue.api.workspacemember.domain.event.WorkspaceMemberRoleChangedEvent;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -55,93 +37,90 @@ public class NotificationEventHandler {
 	private final NotificationMessageFactory notificationMessageFactory;
 	private final ActivityLogRepository activityLogRepository;
 
-	/**
-	 * 이슈 생성 이벤트 처리 - 워크스페이스 전체 멤버에게 알림
-	 */
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueCreated(IssueCreatedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueUpdated(IssueUpdatedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueAssigned(IssueAssignedEvent event) {
-
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
-			event.getWorkspaceCode(),
-			event.getAssignedMemberId()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueUnassigned(IssueUnassignedEvent event) {
-
-		Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
-			event.getWorkspaceCode(),
-			event.getAssigneeMemberId()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueStatusChanged(IssueStatusChangedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueParentAssigned(IssueParentAssignedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueParentRemoved(IssueParentRemovedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleReviewerAdded(IssueReviewerAddedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueCreated(IssueCreatedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueUpdated(IssueUpdatedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueAssigned(IssueAssignedEvent event) {
+	//
+	// 	Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
+	// 		event.getWorkspaceCode(),
+	// 		event.getAssignedMemberId()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueUnassigned(IssueUnassignedEvent event) {
+	//
+	// 	Set<WorkspaceMember> targets = targetResolver.getSpecificMemberTarget(
+	// 		event.getWorkspaceCode(),
+	// 		event.getAssigneeMemberId()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueStatusChanged(IssueStatusChangedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueParentAssigned(IssueParentAssignedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueParentRemoved(IssueParentRemovedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleReviewerAdded(IssueReviewerAddedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
 	// @Async("notificationTaskExecutor")
 	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -165,16 +144,16 @@ public class NotificationEventHandler {
 	// 	processNotifications(event, targets);
 	// }
 
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleIssueCommentCreated(IssueCommentAddedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
-			event.getIssueKey(),
-			event.getWorkspaceCode()
-		);
-		processNotifications(event, targets);
-	}
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleIssueCommentCreated(IssueCommentAddedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getIssueSubscriberTargets(
+	// 		event.getIssueKey(),
+	// 		event.getWorkspaceCode()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
 	// @Async("notificationTaskExecutor")
 	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -187,40 +166,40 @@ public class NotificationEventHandler {
 	// 	processNotifications(event, targets);
 	// }
 
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleSprintStarted(SprintStartedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleSprintCompleted(SprintCompletedEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
-
-		List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
-		processNotifications(event, targets);
-	}
-
-	@Async("notificationTaskExecutor")
-	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	public void handleWorkspaceMemberRoleChanged(WorkspaceMemberRoleChangedEvent event) {
-
-		Set<WorkspaceMember> targets = targetResolver.getAdminAndSpecificMemberTargets(
-			event.getWorkspaceCode(),
-			event.getTargetMemberId()
-		);
-		processNotifications(event, targets);
-	}
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleSprintStarted(SprintStartedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleSprintCompleted(SprintCompletedEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
+	//
+	// 	List<WorkspaceMember> targets = targetResolver.getWorkspaceWideMemberTargets(event.getWorkspaceCode());
+	// 	processNotifications(event, targets);
+	// }
+	//
+	// @Async("notificationTaskExecutor")
+	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	// public void handleWorkspaceMemberRoleChanged(WorkspaceMemberRoleChangedEvent event) {
+	//
+	// 	Set<WorkspaceMember> targets = targetResolver.getAdminAndSpecificMemberTargets(
+	// 		event.getWorkspaceCode(),
+	// 		event.getTargetMemberId()
+	// 	);
+	// 	processNotifications(event, targets);
+	// }
 
 	private <T extends DomainEvent> void processNotifications(T event, Collection<WorkspaceMember> targets) {
 

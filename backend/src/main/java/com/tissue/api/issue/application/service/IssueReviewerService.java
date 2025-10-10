@@ -4,11 +4,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.finder.IssueFinder;
-import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.application.dto.AddReviewerCommand;
 import com.tissue.api.issue.application.dto.RemoveReviewerCommand;
-import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
+import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.dto.response.IssueReviewerResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -44,9 +43,9 @@ public class IssueReviewerService {
 
 		issue.addReviewer(reviewer);
 
-		eventPublisher.publishEvent(
-			IssueReviewerAddedEvent.createEvent(issue, requester, reviewer)
-		);
+		// eventPublisher.publishEvent(
+		// 	IssueReviewerAddedEvent.createEvent(issue, requester, reviewer)
+		// );
 
 		return IssueReviewerResponse.from(issue, reviewer);
 	}

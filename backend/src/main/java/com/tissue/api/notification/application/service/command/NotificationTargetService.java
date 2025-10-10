@@ -13,6 +13,7 @@ import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberR
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: NotificationTargetResolver가 더 좋은 표현일듯
 @Service
 @RequiredArgsConstructor
 public class NotificationTargetService {

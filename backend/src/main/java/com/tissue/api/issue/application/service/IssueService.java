@@ -55,8 +55,7 @@ public class IssueService {
 	public IssueResponse create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.currentMemberId(),
-			cmd.workspaceKey());
+		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.currentMemberId(), cmd.workspaceKey());
 
 		Issue issue = issueRepository.save(Issue.create(
 			workspace,
@@ -73,7 +72,7 @@ public class IssueService {
 		fieldValueRepository.saveAll(values);
 
 		// TODO: 아래 로직을 Issue.create에 캡슐화 하는게 좋을까?
-		issue.updateReporter(actor);
+		issue.updateReporter(actor); // TODO: updateReporter 대신 setReporter가 더 나으려나?
 		issue.addWatcher(actor);
 
 		return IssueResponse.from(issue);
@@ -113,23 +112,17 @@ public class IssueService {
 
 	@Transactional
 	public IssueResponse assignParent(AssignParentIssueCommand cmd) {
-		Issue child = issueFinder.findIssue(cmd.childIssueKey(), cmd.workspaceCode());
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
 		Issue parent = issueFinder.findIssue(cmd.parentIssueKey(), cmd.workspaceCode());
 
-		child.assignParentIssue(parent);
+		issue.assignParentIssue(parent);
 
-		return IssueResponse.from(child);
+		return IssueResponse.from(issue);
 	}
 
 	@Transactional
 	public IssueResponse removeParent(RemoveParentIssueCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
-
-		// TODO: Need to implement a way to turn on/off requiring a parent.
-		//  To put it easy, I need a way to allow or disallow stand-alone creation of Issues.
-		//  For example, I dont want to allow making a SubTask without a parent.
-		//  How should i implement this, so the user can add this gaurd on a IssueTypeDefinition at runtime?
-		// issue.validateCanRemoveParent();
 
 		issue.removeParentIssue();
 
