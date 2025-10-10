@@ -6,12 +6,11 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum IssuePriority {
-	EMERGENCY(6),
-	HIGHEST(5),
-	HIGH(4),
-	MEDIUM(3),
-	LOW(2),
-	LOWEST(1);
+	BLOCKER(1), // highest
+	MAJOR(2),
+	NORMAL(3),
+	MINOR(4),
+	TRIVIAL(5); // lowest
 
 	private final int level;
 }
