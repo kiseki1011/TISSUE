@@ -55,7 +55,7 @@ public class IssueRelation extends BaseEntity {
 		this.relationType = relationType != null ? relationType : IssueRelationType.RELEVANT;
 	}
 
-	public static IssueRelation createRelation(
+	public static IssueRelation create(
 		Issue sourceIssue,
 		Issue targetIssue,
 		IssueRelationType type

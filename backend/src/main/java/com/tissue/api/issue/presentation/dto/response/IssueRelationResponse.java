@@ -7,14 +7,14 @@ import lombok.Builder;
 
 @Builder
 public record IssueRelationResponse(
-	String workspaceCode,
+	String workspaceKey,
 	String sourceIssueKey,
 	String targetIssueKey,
 	Long issueRelationId
 ) {
 	public static IssueRelationResponse from(Issue sourceIssue, Issue targetIssue, IssueRelation relation) {
 		return IssueRelationResponse.builder()
-			.workspaceCode(sourceIssue.getWorkspaceKey())
+			.workspaceKey(sourceIssue.getWorkspaceKey())
 			.sourceIssueKey(sourceIssue.getKey())
 			.targetIssueKey(targetIssue.getKey())
 			.issueRelationId(relation.getId())
