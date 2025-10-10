@@ -14,10 +14,10 @@ import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.domain.model.IssueAssignee;
 import com.tissue.api.issue.domain.model.IssueReviewer;
 import com.tissue.api.issue.infrastructure.repository.IssueAssigneeRepository;
+import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
@@ -308,13 +308,13 @@ public class TestDataFixture {
 		return issueReviewers;
 	}
 
-	public IssueReviewer addIssueReviewer(
-		Issue issue,
-		WorkspaceMember workspaceMember
-	) {
-		IssueReviewer reviewer = issue.addReviewer(workspaceMember);
-		return issueReviewerRepository.save(reviewer);
-	}
+	// public IssueReviewer addIssueReviewer(
+	// 	Issue issue,
+	// 	WorkspaceMember workspaceMember
+	// ) {
+	// 	IssueReviewer reviewer = issue.addReviewer(workspaceMember);
+	// 	return issueReviewerRepository.save(reviewer);
+	// }
 
 	// public Review createReview(
 	// 	IssueReviewer issueReviewer,
