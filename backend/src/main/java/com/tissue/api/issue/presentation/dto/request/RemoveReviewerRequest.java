@@ -1,11 +1,8 @@
 package com.tissue.api.issue.presentation.dto.request;
 
-import com.tissue.api.issue.application.dto.RemoveReviewerCommand;
+import jakarta.validation.constraints.NotNull;
 
 public record RemoveReviewerRequest(
-	Long memberId
+	@NotNull Long memberId
 ) {
-	public RemoveReviewerCommand toCommand() {
-		return new RemoveReviewerCommand(memberId);
-	}
 }
