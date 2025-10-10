@@ -2,7 +2,7 @@ package com.tissue.api.issue.domain.model;
 
 import static com.tissue.api.issue.domain.enums.IssueHierarchy.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -59,7 +59,7 @@ public class Issue extends BaseEntity {
 	private Workspace workspace;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reporter_id") // TODO: add nullable = false
+	@JoinColumn(name = "reporter_id", nullable = false)
 	private WorkspaceMember reporter;
 
 	@Column(nullable = false)
@@ -77,13 +77,13 @@ public class Issue extends BaseEntity {
 	private IssuePriority priority;
 
 	// TODO: must be set on workflow transition from intial to next step
-	private LocalDateTime startedAt;
+	private Instant startedAt;
 
 	// TODO: must be set when workflow status reaches terminal
-	private LocalDateTime resolvedAt;
+	private Instant resolvedAt;
 
 	@Column(nullable = false)
-	private LocalDateTime dueAt;
+	private Instant dueAt;
 
 	private Integer storyPoint;
 
@@ -129,7 +129,7 @@ public class Issue extends BaseEntity {
 		@Nullable String content,
 		@Nullable String summary,
 		IssuePriority priority, // TODO: nullable or non-null?
-		@Nullable LocalDateTime dueAt,
+		@Nullable Instant dueAt,
 		@Nullable Integer storyPoint
 	) {
 		Issue issue = new Issue();
@@ -171,7 +171,7 @@ public class Issue extends BaseEntity {
 		this.summary = summary;
 	}
 
-	public void updateDueAt(@Nullable LocalDateTime dueAt) {
+	public void updateDueAt(@Nullable Instant dueAt) {
 		this.dueAt = dueAt;
 	}
 

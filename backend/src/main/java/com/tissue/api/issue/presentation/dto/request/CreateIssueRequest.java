@@ -1,6 +1,6 @@
 package com.tissue.api.issue.presentation.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 import org.springframework.lang.Nullable;
@@ -19,7 +19,7 @@ public record CreateIssueRequest(
 	@NotBlank @ContentText String content,
 	@Nullable @LongText String summary,
 	@NotNull IssuePriority priority,
-	@Nullable LocalDateTime dueAt,
+	@Nullable Instant dueAt,
 	@NotNull Long issueTypeId,
 	@Nullable Map<Long, Object> customFields
 ) {

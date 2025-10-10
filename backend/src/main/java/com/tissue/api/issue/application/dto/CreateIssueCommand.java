@@ -1,6 +1,6 @@
 package com.tissue.api.issue.application.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 import com.tissue.api.issue.domain.enums.IssuePriority;
@@ -15,7 +15,7 @@ public record CreateIssueCommand(
 	String content,
 	String summary,
 	IssuePriority priority,
-	LocalDateTime dueAt,
+	Instant dueAt,
 	Integer storyPoint,
 	Long issueTypeId,
 	Map<Long, Object> customFields
