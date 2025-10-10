@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -37,9 +38,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Entity
+@SQLRestriction("archived = false")
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
@@ -47,10 +51,12 @@ public class Issue extends BaseEntity {
 	private static final int MAX_REVIEWERS = 10;
 	private static final int MAX_ASSIGNEES = 50;
 
+	@ToString.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@ToString.Include
 	@Column(name = "issue_key", nullable = false)
 	private String key;
 
@@ -62,6 +68,7 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "reporter_id", nullable = false)
 	private WorkspaceMember reporter;
 
+	@ToString.Include
 	@Column(nullable = false)
 	private String title;
 
@@ -224,7 +231,7 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	private void ensureCanAddParent(Issue parentIssue) {
+	public void ensureCanAddParent(Issue parentIssue) {
 		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
@@ -258,6 +265,15 @@ public class Issue extends BaseEntity {
 
 	public boolean isAuthor(Long memberId) {
 		return Objects.equals(getCreatedBy(), memberId);
+	}
+
+	// TODO: 이슈 삭제 전략을 어떻게 가져가야 할까? (일단 기본적으로 soft-delete)
+	//  - 현재 워크플로우 진행중인 이슈는 삭제 불가?
+	//  - 특정 이슈의 부모라면 삭제 불가? 아니면 자동으로 자식 이슈까지 다같이 삭제?
+	//  - 확실한건 IssueHierarchy.SUBTASK, MICROTASK의 부모라면 삭제 제한해야 함
+	//  - 설정된 IssueRelation과 관련해서 삭제 정책을 어떻게 가져갈지도 정해야 함
+	public void softDelete() {
+		archive();
 	}
 
 	public void addWatcher(WorkspaceMember workspaceMember) {

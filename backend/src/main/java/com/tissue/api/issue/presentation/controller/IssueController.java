@@ -94,10 +94,20 @@ public class IssueController {
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@DeleteMapping("/{issueKey}")
+	public ApiResponse<IssueResponse> softDelete(
+		@PathVariable String workspaceKey,
+		@PathVariable String issueKey,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueResponse response = issueService.softDelete(workspaceKey, issueKey);
+		return ApiResponse.ok("Issue removed(archived).",
+			response); // TODO: "Issue soft-deleted"라고 할까? 아니면 "removed"를 그대로 사용할까?
+	}
+
 	// TODO: progressWorkflow, 이슈의 IssueType에 따른 Workflow를 따라 상태 전이를 골라서 진행
 	//  - 이걸 IssueTransitionController로 분리할까?
-
-	// TODO: Soft delete Issue
 
 	// TODO(Later):
 	//  - Clone Issue
