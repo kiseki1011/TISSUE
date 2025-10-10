@@ -223,7 +223,7 @@ public class Workflow extends BaseEntity {
 		transition.addGuard(guardType, params, order);
 	}
 
-	public void clearGaurdsForTranstion(@NonNull WorkflowTransition transition) {
+	public void clearGuardsForTransition(@NonNull WorkflowTransition transition) {
 		transition.clearGuards();
 	}
 
