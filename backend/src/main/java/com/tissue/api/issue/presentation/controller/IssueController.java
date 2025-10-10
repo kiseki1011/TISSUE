@@ -102,14 +102,13 @@ public class IssueController {
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueService.softDelete(workspaceKey, issueKey);
-		return ApiResponse.ok("Issue removed(archived).",
-			response); // TODO: "Issue soft-deleted"라고 할까? 아니면 "removed"를 그대로 사용할까?
+		return ApiResponse.ok("Issue removed(archived).", response); // TODO: "Issue soft-deleted"라고 할까?
 	}
 
-	// TODO: progressWorkflow, 이슈의 IssueType에 따른 Workflow를 따라 상태 전이를 골라서 진행
+	// TODO: progressWorkflow 또는 executeTransition
 	//  - 이걸 IssueTransitionController로 분리할까?
 
-	// TODO(Later):
-	//  - Clone Issue
-	//  - Move(or clone) Issue to different Project
+	// TODO(Later): 이슈 복제 기능
+	// TODO(Later): 이슈를 다른 프로젝트로 옮기는 기능
+	// TODO(Later): 이슈를 다른 프로젝트로 복제하는 기능
 }
