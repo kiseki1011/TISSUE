@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issue.domain.model.IssueFieldValue;
-import com.tissue.api.issuetype.repository.IssueFieldRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueFieldValueRepository;
+import com.tissue.api.issuetype.domain.IssueField;
+import com.tissue.api.issuetype.repository.IssueFieldRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,7 +47,10 @@ public class IssueFieldSchemaValidator {
 		return issueFieldValues;
 	}
 
-	public List<IssueFieldValue> validateAndApplyPartialUpdate(Map<Long, Object> rawInputById, Issue issue) {
+	// TODO: 근데 만약 명시적으로 null을 보내도 정상적으로 null로 설정해주나?
+	//  - field가 Map에 존재하고, 해당 값이 유효하면 당연히 없데이트 진행(설령 값이 null이더라도)
+	//  - field가 Map에 없으면 업데이트 대상에서 제외
+	public List<IssueFieldValue> validateAndApplyPatch(Map<Long, Object> rawInputById, Issue issue) {
 		Map<Long, IssueField> defMap = loadFieldMap(issue);
 		Map<Long, IssueFieldValue> existing = loadExistingValueMap(issue);
 
@@ -94,7 +97,7 @@ public class IssueFieldSchemaValidator {
 		fieldTypeHandler.assign(val, parsed);
 		return val;
 	}
-	
+
 	private Optional<IssueFieldValue> applyOnePatchEntry(
 		Issue issue,
 		Map<Long, IssueField> fieldMap,

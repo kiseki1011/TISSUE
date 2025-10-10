@@ -5,9 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.dto.AssignParentIssueCommand;
+import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.dto.CreateIssueCommand;
-import com.tissue.api.issue.application.dto.RemoveParentIssueCommand;
+import com.tissue.api.issue.application.dto.UpdateCommonFieldsCommand;
+import com.tissue.api.issue.application.dto.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
@@ -24,20 +25,8 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * TODO
- *  - Needs authorization logic. For example, restrict so only assignees or the author can update.
- *  But also allow WorkspaceMembers with or higher than MANAGER role be able to update.
- *  - Should i make a authorization service or use Spring Security?
- *  - Use soft-delete for issue instead of hard delete
- *  - Make IssueAssociateService and move watchIssue, unWatchIssue methods to it
- *    - IssueAssociateService should have the use-cases for assignees, watchers, reviewers, etc...
- *  - Move updateIssueStatus method to WorkflowService
- *  <p>
- *  Needed use-case methods
- *  - Issue Update(meta-data update)
- *  - Issue Soft-Delete
- */
+// TODO(추후에 Workspace -> Project로 리팩토링 후 진행): 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려
+//  - 이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
 @Service
 @RequiredArgsConstructor
 public class IssueService {
@@ -78,42 +67,42 @@ public class IssueService {
 		return IssueResponse.from(issue);
 	}
 
-	// TODO: updateReporter도 추가
-	// @Transactional
-	// public IssueResponse update(UpdateIssueCommand cmd) {
-	// 	Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
-	//
-	// 	if (cmd.title() != null) {
-	// 		issue.updateTitle(cmd.title());
-	// 	}
-	// 	if (cmd.content() != null) {
-	// 		issue.updateContent(cmd.content());
-	// 	}
-	// 	if (cmd.summary() != null) {
-	// 		issue.updateSummary(cmd.summary());
-	// 	}
-	// 	if (cmd.priority() != null) {
-	// 		issue.updatePriority(cmd.priority());
-	// 	}
-	// 	if (cmd.dueAt() != null) {
-	// 		issue.updateDueAt(cmd.dueAt());
-	// 	}
-	//
-	// 	if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
-	// 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPartialUpdate(
-	// 			cmd.customFields(),
-	// 			issue
-	// 		);
-	// 		fieldValueRepository.saveAll(updateValues);
-	// 	}
-	//
-	// 	return IssueResponse.from(issue);
-	// }
+	// TODO: updateReporter도 여기서 업데이트? 아니면 따로 API를 분리할까?
+	@Transactional
+	public IssueResponse updateCommonFields(UpdateCommonFieldsCommand cmd) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		Patchers.apply(cmd.title(), issue::updateTitle);
+		Patchers.apply(cmd.content(), issue::updateContent);
+		Patchers.apply(cmd.summary(), issue::updateContent);
+		Patchers.apply(cmd.dueAt(), issue::updateDueAt);
+		Patchers.apply(cmd.priority(), issue::updatePriority);
+		Patchers.apply(cmd.storyPoint(), issue::updateStoryPoint);
+
+		return IssueResponse.from(issue);
+	}
+
+	// TODO: 가독성 리팩토링 가능할까?
+	//  early-return을 사용하면 더 좋을까? 아니면 조건문의 조건을 변수로 추출해서 이름을 붙일가?
+	@Transactional
+	public IssueResponse updateCustomFields(UpdateCustomFieldsCommand cmd) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
+			List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
+				cmd.customFields(),
+				issue
+			);
+			fieldValueRepository.saveAll(updateValues);
+		}
+
+		return IssueResponse.from(issue);
+	}
 
 	@Transactional
-	public IssueResponse assignParent(AssignParentIssueCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
-		Issue parent = issueFinder.findIssue(cmd.parentIssueKey(), cmd.workspaceCode());
+	public IssueResponse assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
+		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
 
 		issue.assignParentIssue(parent);
 
@@ -121,8 +110,8 @@ public class IssueService {
 	}
 
 	@Transactional
-	public IssueResponse removeParent(RemoveParentIssueCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceCode());
+	public IssueResponse removeParent(String workspaceKey, String issueKey) {
+		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
 		issue.removeParentIssue();
 

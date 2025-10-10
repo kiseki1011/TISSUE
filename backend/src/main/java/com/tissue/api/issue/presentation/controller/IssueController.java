@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.issue.application.dto.RemoveParentIssueCommand;
 import com.tissue.api.issue.application.service.IssueService;
 import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRequest;
+import com.tissue.api.issue.presentation.dto.request.UpdateCommonFieldsRequest;
+import com.tissue.api.issue.presentation.dto.request.UpdateCustomFieldsRequest;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -35,7 +36,7 @@ public class IssueController {
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
-	public ResponseEntity<ApiResponse<IssueResponse>> createIssue(
+	public ResponseEntity<ApiResponse<IssueResponse>> create(
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
@@ -45,47 +46,60 @@ public class IssueController {
 			.body(ApiResponse.created("Issue created.", response));
 	}
 
-	// @RoleRequired(role = WorkspaceRole.MEMBER)
-	// @PatchMapping("/{issueKey}")
-	// public ApiResponse<IssueResponse> updateIssue(
-	// 	@PathVariable String workspaceCode,
-	// 	@PathVariable String issueKey,
-	// 	@RequestBody @Valid UpdateIssueRequest request,
-	// 	@CurrentMember MemberUserDetails userDetails
-	// ) {
-	// 	IssueResponse response = issueService.updateIssue(request.toCommand(workspaceCode, issueKey));
-	// 	return ApiResponse.ok("Issue updated.", response);
-	// }
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}")
+	public ApiResponse<IssueResponse> updateCommonFields(
+		@PathVariable String workspaceCode,
+		@PathVariable String issueKey,
+		@RequestBody @Valid UpdateCommonFieldsRequest request,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueResponse response = issueService.updateCommonFields(request.toCommand(workspaceCode, issueKey));
+		return ApiResponse.ok("Issue updated.", response);
+	}
+
+	// TODO: 커스텀 필드 업데이트에 대한 경로는 "/{issueKey}/custom"가 괜찮을까?
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}/custom")
+	public ApiResponse<IssueResponse> updateCustomFields(
+		@PathVariable String workspaceCode,
+		@PathVariable String issueKey,
+		@RequestBody @Valid UpdateCustomFieldsRequest request,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueResponse response = issueService.updateCustomFields(request.toCommand(workspaceCode, issueKey));
+		return ApiResponse.ok("Issue updated.", response);
+	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
-	public ApiResponse<IssueResponse> assignParentIssue(
+	public ApiResponse<IssueResponse> assignParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AssignParentIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.assignParent(request.toCommand(workspaceKey, issueKey));
+		IssueResponse response = issueService.assignParent(workspaceKey, issueKey, request.parentIssueKey());
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
-	public ApiResponse<IssueResponse> removeParentIssue(
+	public ApiResponse<IssueResponse> removeParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.removeParent(new RemoveParentIssueCommand(workspaceKey, issueKey));
+		IssueResponse response = issueService.removeParent(workspaceKey, issueKey);
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
-	// TODO: Progress Issue(Update Issue's WorkflowStep)
-	//  Should this API be placed inside IssueController or WorkflowController?
+	// TODO: progressWorkflow, 이슈의 IssueType에 따른 Workflow를 따라 상태 전이를 골라서 진행
+	//  - 이걸 IssueTransitionController로 분리할까?
 
 	// TODO: Soft delete Issue
 
 	// TODO(Later):
 	//  - Clone Issue
-	//  - Move(or clone) Issue to different Workspace
+	//  - Move(or clone) Issue to different Project
 }

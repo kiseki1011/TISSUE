@@ -16,9 +16,9 @@ import jakarta.validation.constraints.Size;
 
 public record CreateIssueRequest(
 	@NotBlank @Size(max = 100) String title,
-	@NotBlank @ContentText String content,
+	@Nullable @ContentText String content,
 	@Nullable @LongText String summary,
-	@NotNull IssuePriority priority,
+	IssuePriority priority, // TODO: not-null vs nullable?
 	@Nullable Instant dueAt,
 	@NotNull Long issueTypeId,
 	@Nullable Map<Long, Object> customFields
