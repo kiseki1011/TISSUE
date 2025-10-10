@@ -40,7 +40,7 @@ public class IssueController {
 		@RequestBody @Valid CreateIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.createIssue(request.toCommand(workspaceKey));
+		IssueResponse response = issueService.create(request.toCommand(workspaceKey, userDetails.getMemberId()));
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Issue created.", response));
 	}
@@ -65,7 +65,7 @@ public class IssueController {
 		@RequestBody @Valid AssignParentIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.assignParentIssue(request.toCommand(workspaceKey, issueKey));
+		IssueResponse response = issueService.assignParent(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
@@ -76,7 +76,7 @@ public class IssueController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.removeParentIssue(new RemoveParentIssueCommand(workspaceKey, issueKey));
+		IssueResponse response = issueService.removeParent(new RemoveParentIssueCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
