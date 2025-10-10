@@ -3,13 +3,13 @@ package com.tissue.api.issue.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.application.dto.AddIssueRelationCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueRelation;
 import com.tissue.api.issue.domain.service.CircularDependencyValidator;
 import com.tissue.api.issue.infrastructure.repository.IssueRelationRepository;
-import com.tissue.api.issue.presentation.dto.request.CreateIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 
@@ -25,33 +25,28 @@ public class IssueRelationService {
 	private final CircularDependencyValidator circularDependencyValidator;
 
 	@Transactional
-	public IssueRelationResponse createRelation(
-		String workspaceCode,
-		String sourceIssueKey,
-		String targetIssueKey,
-		CreateIssueRelationRequest request
-	) {
-		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
+	public IssueRelationResponse add(AddIssueRelationCommand cmd) {
+		Issue sourceIssue = issueFinder.findIssue(cmd.sourceIssueKey(), cmd.workspaceKey());
+		Issue targetIssue = issueFinder.findIssue(cmd.targetIssueKey(), cmd.workspaceKey());
 
-		if (request.relationType() == IssueRelationType.BLOCKS) {
+		if (cmd.relationType() == IssueRelationType.BLOCKS) {
 			circularDependencyValidator.validateNoCircularDependency(sourceIssue, targetIssue);
 		}
 
-		IssueRelation relation = IssueRelation.createRelation(sourceIssue, targetIssue, request.relationType());
+		IssueRelation relation = IssueRelation.create(sourceIssue, targetIssue, cmd.relationType());
 		relationRepository.save(relation);
 
 		return IssueRelationResponse.from(sourceIssue, targetIssue, relation);
 	}
 
 	@Transactional
-	public void removeRelation(
-		String workspaceCode,
+	public void remove(
+		String workspaceKey,
 		String sourceIssueKey,
 		String targetIssueKey
 	) {
-		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceCode);
-		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceCode);
+		Issue sourceIssue = issueFinder.findIssue(sourceIssueKey, workspaceKey);
+		Issue targetIssue = issueFinder.findIssue(targetIssueKey, workspaceKey);
 
 		IssueRelation.removeRelation(sourceIssue, targetIssue);
 	}
