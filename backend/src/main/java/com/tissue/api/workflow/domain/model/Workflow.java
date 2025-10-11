@@ -150,7 +150,7 @@ public class Workflow extends BaseEntity {
 		this.initialStatus = newInitial;
 	}
 
-	public List<WorkflowStatus> getFinalStatuses() {
+	public List<WorkflowStatus> getTerminalStatuses() {
 		return statuses.stream()
 			.filter(WorkflowStatus::isTerminal)
 			.toList();
@@ -218,8 +218,12 @@ public class Workflow extends BaseEntity {
 		transition.rewireTarget(newTarget);
 	}
 
-	public void addTransitionGuard(@NonNull WorkflowTransition transition, @NonNull GuardType guardType,
-		@Nullable String params, int order) {
+	public void addTransitionGuard(
+		@NonNull WorkflowTransition transition,
+		@NonNull GuardType guardType,
+		@Nullable String params,
+		int order
+	) {
 		transition.addGuard(guardType, params, order);
 	}
 
@@ -247,9 +251,9 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
-	// TODO: 이게 메서드는 문제 없겠지?
 	private void ensureNoDuplicateEdge(WorkflowStatus source, WorkflowStatus target) {
 		boolean dup = transitions.stream()
+			.filter(t -> !t.isArchived())
 			.anyMatch(x -> x.getSourceStatus().equals(source) && x.getTargetStatus().equals(target));
 		if (dup) {
 			throw new DuplicateResourceException("Duplicate transition (source,target) is not allowed.");
@@ -258,6 +262,7 @@ public class Workflow extends BaseEntity {
 
 	private void ensureUniqueStatusLabel(Label newLabel) {
 		boolean dup = statuses.stream()
+			.filter(t -> !t.isArchived())
 			.anyMatch(s -> s.getLabel().equals(newLabel));
 		if (dup) {
 			throw new DuplicateResourceException("Duplicate status label: " + newLabel);
@@ -266,6 +271,7 @@ public class Workflow extends BaseEntity {
 
 	private void ensureUniqueTransitionLabelForSource(Label newLabel, WorkflowStatus source) {
 		boolean dup = transitions.stream()
+			.filter(t -> !t.isArchived())
 			.filter(t -> t.getSourceStatus().equals(source))
 			.anyMatch(t -> t.getLabel().equals(newLabel));
 		if (dup) {
