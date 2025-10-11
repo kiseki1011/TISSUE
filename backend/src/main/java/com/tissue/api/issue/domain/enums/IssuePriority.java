@@ -15,6 +15,6 @@ public enum IssuePriority {
 	private final int level;
 
 	public boolean isMoreCritical(IssuePriority priority) {
-		return this.level > priority.level;
+		return this.level < priority.level;
 	}
 }
