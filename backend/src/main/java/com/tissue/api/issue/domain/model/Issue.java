@@ -282,7 +282,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void removeSubscriber(WorkspaceMember workspaceMember) {
-		watchers.removeIf(watcher -> watcher.getWatcher().equals(workspaceMember));
+		watchers.removeIf(watcher -> watcher.getSubscriber().equals(workspaceMember));
 	}
 
 	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
