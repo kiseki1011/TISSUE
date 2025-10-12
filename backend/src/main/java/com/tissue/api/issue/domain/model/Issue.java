@@ -1,7 +1,5 @@
 package com.tissue.api.issue.domain.model;
 
-import static com.tissue.api.issue.domain.enums.IssueHierarchy.*;
-
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
@@ -108,17 +106,19 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> incomingRelations = new HashSet<>();
 
-	// TODO: IssueReviewer, IssueAssignee, IssueWatcher를 Issue 와 WorkspaceMember 사이의 중간 엔티티로 설계하는게 좋은 방법인걸까?
-	//  @ManyToMany는 비권장하기 때문에 중간 엔티티를 통해 다대다 관계를 형성하긴 했지만, 이게 좋은 방법인지는 모름.
+	// TODO: assignees는 단수만 허용하도록 변경
+	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	// private Set<IssueAssignee> assignees = new HashSet<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "assignee_id")
+	private WorkspaceMember assignee;
+
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueReviewer> reviewers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<IssueAssignee> assignees = new HashSet<>();
-
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "issue_id")
-	private Set<IssueSubscriber> watchers = new HashSet<>();
+	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue")
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
@@ -147,12 +147,8 @@ public class Issue extends BaseEntity {
 		issue.summary = summary;
 		issue.priority = priority;
 		issue.dueAt = dueAt;
-		// TODO: IssueType의 Hierarchy가 Hierarchy.EPIC, Hierarchy.SUBTASK, Hierarchy.MICROTASK면 값 설정 금지(null)
-		//  - 로직이 ensureCanUseStoryPoint()과 유사한데, static 메서드 내에서는 ensureCanUseStoryPoint를 사용못함. 좋은 방법 없을까?
-		//  - 아니면 이런 검증 로직은 그냥 서비스 계층에서 호출할까? 엔티티에 캡슐화하는게 실수를 줄일 것 같긴한데.
-		if (issue.getHierarchy() == EPIC || issue.getHierarchy() == SUBTASK || issue.getHierarchy() == MICROTASK) {
-			throw new RuntimeException("Cannot set story point for this hierarchy level: " + issue.getHierarchy());
-		}
+
+		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
 		issue.storyPoint = storyPoint;
 
 		return issue;
@@ -162,6 +158,7 @@ public class Issue extends BaseEntity {
 		return workspace.getKey();
 	}
 
+	// TODO: updateReporter면 충분히 좋은 이름인가? 아니면 더 좋은 이름이 있을까?
 	public void updateReporter(@NonNull WorkspaceMember reporter) {
 		this.reporter = reporter;
 	}
@@ -196,16 +193,19 @@ public class Issue extends BaseEntity {
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
 		if (storyPoint != null) {
-			ensureCanUseStoryPoint();
+			ensureCanUseStoryPoint(this.getHierarchy(), storyPoint);
 		}
 		this.storyPoint = storyPoint;
 	}
 
-	public void ensureCanUseStoryPoint() {
-		// TODO: storyPoint를 사용할 수 있는 enum 값의 목록을 만들고 활용하는게 좋을까?
-		//  그렇게하면 클라에서 storyPoint 사용여부를 확인하는 API를 만드는것도 편하지 않을까?
-		if (getHierarchy() == EPIC || getHierarchy() == SUBTASK || getHierarchy() == MICROTASK) {
-			throw new RuntimeException("Cannot set story point for this hierarchy level: " + getHierarchy());
+	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
+		if (storyPoint == null) {
+			return;
+		}
+		if (hierarchy.cannotHaveStoryPoint()) {
+			throw new InvalidOperationException(
+				"Cannot set story point for hierarchy: " + hierarchy
+			);
 		}
 	}
 
@@ -215,14 +215,12 @@ public class Issue extends BaseEntity {
 
 	public void assignParentIssue(@NonNull Issue newParent) {
 		ensureCanAddParent(newParent);
-		// TODO: removeParentIssue를 여기에 캡슐화하는게 좋은 방법일까? 아니면 명시적으로 서비스에서 호출할까?
 		removeParentIssue();
 
 		this.parentIssue = newParent;
 		newParent.childIssues.add(this);
 	}
 
-	// TODO: IssueHierarchy.SUBTASK, IssueHierarchy.MICROTASK는 무조건 부모가 있어야 함. stand-alone 불가!
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
 		if (parentIssue != null) {
@@ -232,9 +230,10 @@ public class Issue extends BaseEntity {
 	}
 
 	public void ensureCanAddParent(Issue parentIssue) {
-		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장
+		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
-		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
+		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
+		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
 		if (isDifferentWorkspace) {
 			throw new InvalidOperationException("Parent must belong to the same workspace.");
 		}
@@ -243,8 +242,12 @@ public class Issue extends BaseEntity {
 			throw new InvalidOperationException("An issue cannot be its own parent.");
 		}
 
-		IssueHierarchy parentHierarchy = parentIssue.getIssueType().getIssueHierarchy();
-		IssueHierarchy childHierarchy = this.issueType.getIssueHierarchy();
+		if (getHierarchy().cannotHaveParent()) {
+			throw new RuntimeException("EPIC level issues cannot have parents.");
+		}
+
+		IssueHierarchy parentHierarchy = parentIssue.getHierarchy();
+		IssueHierarchy childHierarchy = this.getHierarchy();
 
 		if (parentHierarchy.isOneLevelHigher(childHierarchy)) {
 			throw new InvalidOperationException(
@@ -255,7 +258,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void ensureCanRemoveParent() {
-		if (getHierarchy() == SUBTASK || getHierarchy() == MICROTASK) {
+		if (getHierarchy().mustHaveParent()) {
 			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
 		}
 	}
@@ -263,7 +266,7 @@ public class Issue extends BaseEntity {
 	// TODO: updateStartedAt: Workflow 전이에서 initial에서 다름 상태로 넘어가는 순간 호출
 	// TODO: updateResolvedAt: Workflow 전이에서 terminal에 도달하는 경우 호출
 
-	public boolean isAuthor(Long memberId) {
+	public boolean isAuthor(@NonNull Long memberId) {
 		return Objects.equals(getCreatedBy(), memberId);
 	}
 
@@ -276,59 +279,37 @@ public class Issue extends BaseEntity {
 		archive();
 	}
 
-	public void addSubscriber(WorkspaceMember workspaceMember) {
+	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
 		IssueSubscriber watcher = new IssueSubscriber(workspaceMember);
-		watchers.add(watcher);
+		subscribers.add(watcher);
 	}
 
-	public void removeSubscriber(WorkspaceMember workspaceMember) {
-		watchers.removeIf(watcher -> watcher.getSubscriber().equals(workspaceMember));
+	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
+		subscribers.removeIf(watcher -> watcher.getSubscriber().equals(workspaceMember));
 	}
 
-	public IssueAssignee addAssignee(WorkspaceMember workspaceMember) {
-		validateAssigneeLimit();
-		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장
+	// TODO: setAssignee 또는 updateAssignee 대신 assignTo가 좋으려나?
+	public void assignTo(@NonNull WorkspaceMember assignee) {
+		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
-		// validateBelongsToWorkspace(workspaceMember);
-
-		IssueAssignee assignee = new IssueAssignee(this, workspaceMember);
-
-		assignees.add(assignee);
-		return assignee;
+		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
+		// validateBelongsToWorkspace(assignee);
+		this.assignee = assignee;
 	}
 
-	public void removeAssignee(WorkspaceMember workspaceMember) {
-		IssueAssignee assignee = findAssignee(workspaceMember);
-		assignees.remove(assignee);
+	public void unassign() {
+		this.assignee = null;
 	}
 
-	// TODO: 더 간단하게 개선할 방법은 없나?
-	private IssueAssignee findAssignee(WorkspaceMember assignee) {
-		return assignees.stream()
-			.filter(ia -> ia.getAssignee().getId().equals(assignee.getId()))
-			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException(
-				"Is not a assignee assigned to this issue. workspaceMemberId: %d, displayName: %s"
-					.formatted(assignee.getId(), assignee.getDisplayName()))
-			);
-	}
-
-	public boolean isAssignee(Long memberId) {
-		return assignees.stream()
-			.anyMatch(issueAssignee -> Objects.equals(issueAssignee.getAssigneeMemberId(), memberId));
+	// TODO: WorkspaceMember를 입력 파라미터로 받을까?
+	public boolean isAssignee(@NonNull Long memberId) {
+		return Objects.equals(assignee.getMemberId(), memberId);
 	}
 
 	// TODO: isReviewer()
 	// TODO: isSubscriber()
 
-	// TODO: MAX_ASSIGNEES를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
-	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
-	private void validateAssigneeLimit() {
-		if (assignees.size() >= MAX_ASSIGNEES) {
-			throw new InvalidOperationException(
-				"The maximum number of assignees for a single issue is %d".formatted(MAX_ASSIGNEES));
-		}
-	}
+	// TODO: calculateEpicLevelStoryPoint()
 
 	public void addReviewer(WorkspaceMember workspaceMember) {
 		validateReviewerLimit();
