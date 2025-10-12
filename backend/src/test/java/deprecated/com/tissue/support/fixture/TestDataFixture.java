@@ -1,29 +1,17 @@
 package deprecated.com.tissue.support.fixture;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.comment.domain.model.Comment;
-import com.tissue.api.comment.domain.model.IssueComment;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
-import com.tissue.api.invitation.domain.enums.InvitationStatus;
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueAssignee;
-import com.tissue.api.issue.domain.model.IssueReviewer;
 import com.tissue.api.issue.infrastructure.repository.IssueAssigneeRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
-import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -274,39 +262,40 @@ public class TestDataFixture {
 	//
 	// 	return issueRepository.save(subTask);
 	// }
-	public List<IssueAssignee> addIssueAssignees(
-		Issue issue,
-		List<WorkspaceMember> workspaceMembers
-	) {
-		List<IssueAssignee> issueAssignees = workspaceMembers.stream()
-			.map(workspaceMember -> new IssueAssignee(issue, workspaceMember))
-			.toList();
 
-		issueAssigneeRepository.saveAll(issueAssignees);
+	// public List<IssueAssignee> addIssueAssignees(
+	// 	Issue issue,
+	// 	List<WorkspaceMember> workspaceMembers
+	// ) {
+	// 	List<IssueAssignee> issueAssignees = workspaceMembers.stream()
+	// 		.map(workspaceMember -> new IssueAssignee(issue, workspaceMember))
+	// 		.toList();
+	//
+	// 	issueAssigneeRepository.saveAll(issueAssignees);
+	//
+	// 	return issueAssignees;
+	// }
 
-		return issueAssignees;
-	}
-
-	public IssueAssignee addIssueAssignee(
-		Issue issue,
-		WorkspaceMember workspaceMember
-	) {
-		IssueAssignee assignee = issue.addAssignee(workspaceMember);
-		return issueAssigneeRepository.save(assignee);
-	}
-
-	public List<IssueReviewer> addIssueReviewers(
-		Issue issue,
-		List<WorkspaceMember> workspaceMembers
-	) {
-		List<IssueReviewer> issueReviewers = workspaceMembers.stream()
-			.map(workspaceMember -> new IssueReviewer(workspaceMember, issue))
-			.toList();
-
-		issueReviewerRepository.saveAll(issueReviewers);
-
-		return issueReviewers;
-	}
+	// public IssueAssignee addIssueAssignee(
+	// 	Issue issue,
+	// 	WorkspaceMember workspaceMember
+	// ) {
+	// 	IssueAssignee assignee = issue.setAssignee(workspaceMember);
+	// 	return issueAssigneeRepository.save(assignee);
+	// }
+	//
+	// public List<IssueReviewer> addIssueReviewers(
+	// 	Issue issue,
+	// 	List<WorkspaceMember> workspaceMembers
+	// ) {
+	// 	List<IssueReviewer> issueReviewers = workspaceMembers.stream()
+	// 		.map(workspaceMember -> new IssueReviewer(workspaceMember, issue))
+	// 		.toList();
+	//
+	// 	issueReviewerRepository.saveAll(issueReviewers);
+	//
+	// 	return issueReviewers;
+	// }
 
 	// public IssueReviewer addIssueReviewer(
 	// 	Issue issue,
@@ -329,19 +318,19 @@ public class TestDataFixture {
 	// 		.build());
 	// }
 
-	public IssueComment createIssueComment(
-		Issue issue,
-		String content,
-		WorkspaceMember author,
-		Comment parentComment
-	) {
-		return commentRepository.save(IssueComment.builder()
-			.issue(issue)
-			.content(content)
-			.author(author)
-			.parentComment(parentComment)
-			.build());
-	}
+	// public IssueComment createIssueComment(
+	// 	Issue issue,
+	// 	String content,
+	// 	WorkspaceMember author,
+	// 	Comment parentComment
+	// ) {
+	// 	return commentRepository.save(IssueComment.builder()
+	// 		.issue(issue)
+	// 		.content(content)
+	// 		.author(author)
+	// 		.parentComment(parentComment)
+	// 		.build());
+	// }
 
 	// public ReviewComment createReviewComment(
 	// 	Review review,
@@ -357,17 +346,17 @@ public class TestDataFixture {
 	// 		.build());
 	// }
 
-	public Invitation createInvitation(
-		Workspace workspace,
-		Member member,
-		InvitationStatus status
-	) {
-		Invitation invitation = Invitation.builder()
-			.workspace(workspace)
-			.member(member)
-			.status(status)
-			.build();
-
-		return invitationRepository.save(invitation);
-	}
+	// public Invitation createInvitation(
+	// 	Workspace workspace,
+	// 	Member member,
+	// 	InvitationStatus status
+	// ) {
+	// 	Invitation invitation = Invitation.builder()
+	// 		.workspace(workspace)
+	// 		.member(member)
+	// 		.status(status)
+	// 		.build();
+	//
+	// 	return invitationRepository.save(invitation);
+	// }
 }
