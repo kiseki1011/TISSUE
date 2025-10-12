@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.issue.infrastructure.repository.IssueAssigneeRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
@@ -29,8 +28,6 @@ public class TestDataFixture {
 	private final IssueReviewerRepository issueReviewerRepository;
 	@Autowired
 	private final CommentRepository commentRepository;
-	@Autowired
-	private final IssueAssigneeRepository issueAssigneeRepository;
 	@Autowired
 	private final MemberRepository memberRepository;
 	@Autowired
