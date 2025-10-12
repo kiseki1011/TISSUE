@@ -28,19 +28,19 @@ public class IssueSubscriber extends BaseDateEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "WATCHER_ID", nullable = false)
+	@Column(nullable = false)
 	private Long subcriberMemberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WATCHER_ID", insertable = false, updatable = false)
+	@JoinColumn(insertable = false, updatable = false)
 	private WorkspaceMember subscriber;
 
 	@Column(nullable = false)
-	private LocalDateTime watchedAt;
+	private LocalDateTime subscribedAt;
 
 	public IssueSubscriber(WorkspaceMember subscriber) {
 		this.subscriber = subscriber;
 		this.subcriberMemberId = subscriber.getMember().getId();
-		this.watchedAt = LocalDateTime.now();
+		this.subscribedAt = LocalDateTime.now();
 	}
 }
