@@ -262,10 +262,16 @@ public class Issue extends BaseEntity {
 
 	// TODO: 이슈 삭제 전략을 어떻게 가져가야 할까? (일단 기본적으로 soft-delete)
 	//  - 현재 워크플로우 진행중인 이슈는 삭제 불가?
-	//  - 특정 이슈의 부모라면 삭제 불가? 아니면 자동으로 자식 이슈까지 다같이 삭제?
-	//  - 확실한건 IssueHierarchy.SUBTASK, MICROTASK의 부모라면 삭제 제한해야 함
-	//  - 설정된 IssueRelation과 관련해서 삭제 정책을 어떻게 가져갈지도 정해야 함
+	//  - terminal 상태의 이슈는 삭제 불가?(기록으로 무조건 남도록?)
 	public void softDelete() {
+		unassign();
+		this.reviewers.clear();
+		this.subscribers.clear();
+
+		// TODO: relations clear
+
+		removeParentIssue();
+
 		archive();
 	}
 
@@ -298,6 +304,9 @@ public class Issue extends BaseEntity {
 	// TODO: isReviewer()
 	// TODO: isSubscriber()
 	// TODO: calculateEpicLevelStoryPoint()
+	// TODO: calculateEpicProgress()
+	//  전략 1: (해결된 STORY 레벨 이슈들의 story point 합) / (EPIC 레벨 이슈의 story point)
+	//  전력 2: (해결된 STORY 레벨 이슈들의 수) / (전체 STORY 레벨 이슈들의 수)
 
 	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
 		ensureCanAddReviewer();
@@ -326,7 +335,7 @@ public class Issue extends BaseEntity {
 
 	private IssueReviewer findIssueReviewer(WorkspaceMember workspaceMember) {
 		return reviewers.stream()
-			.filter(r -> r.getReviewer().getId().equals(workspaceMember.getId()))
+			.filter(r -> r.getReviewer().equals(workspaceMember))
 			.findFirst()
 			.orElseThrow(() -> new ForbiddenOperationException(
 				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
