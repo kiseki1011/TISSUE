@@ -47,7 +47,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	private static final int MAX_REVIEWERS = 10;
+	private static int MAX_REVIEWERS = 10;
 
 	@ToString.Include
 	@Id
@@ -79,7 +79,7 @@ public class Issue extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private IssuePriority priority;
+	private IssuePriority priority; // TODO: null 허용할까? 아니면 null이 들어오면 기본값 설정되도록 할까?
 
 	// TODO: 이슈의 상태를 전이(transition) 시킬 때 intial에서 다음 상태로 가는 경우 설정(변경 불가해야 함)
 	private Instant startedAt;
@@ -130,7 +130,7 @@ public class Issue extends BaseEntity {
 		@NonNull String title,
 		@Nullable String content,
 		@Nullable String summary,
-		IssuePriority priority, // TODO: nullable or non-null?
+		@Nullable IssuePriority priority,
 		@Nullable Instant dueAt,
 		@Nullable Integer storyPoint
 	) {
@@ -140,7 +140,7 @@ public class Issue extends BaseEntity {
 		issue.title = title;
 		issue.content = nullToEmpty(content);
 		issue.summary = nullToEmpty(summary);
-		issue.priority = priority;
+		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
 		issue.dueAt = dueAt;
 
 		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
@@ -149,8 +149,7 @@ public class Issue extends BaseEntity {
 		return issue;
 	}
 
-	// TODO: updateReporter면 충분히 좋은 이름인가? 아니면 더 좋은 이름이 있을까?
-	public void updateReporter(@NonNull WorkspaceMember reporter) {
+	public void setReporter(@NonNull WorkspaceMember reporter) {
 		this.reporter = reporter;
 	}
 
@@ -170,8 +169,7 @@ public class Issue extends BaseEntity {
 		this.dueAt = dueAt;
 	}
 
-	// TODO: non-null vs nullable
-	public void updatePriority(IssuePriority priority) {
+	public void updatePriority(@NonNull IssuePriority priority) {
 		this.priority = priority;
 	}
 
@@ -249,7 +247,7 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void ensureCanRemoveParent() {
+	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
 			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
 		}
@@ -280,7 +278,6 @@ public class Issue extends BaseEntity {
 		subscribers.removeIf(watcher -> watcher.getSubscriber().equals(workspaceMember));
 	}
 
-	// TODO: setAssignee 또는 updateAssignee 대신 assignTo가 좋으려나?
 	public void assignTo(@NonNull WorkspaceMember assignee) {
 		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
@@ -321,12 +318,9 @@ public class Issue extends BaseEntity {
 		reviewers.remove(issueReviewer);
 	}
 
-	// TODO: MAX_REVIEWERS를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
-	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
 	private void ensureCanAddReviewer() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
-			throw new InvalidOperationException(
-				String.format("The max number of reviewers for a single issue is %d.", MAX_REVIEWERS));
+			throw new InvalidOperationException(String.format("The max number of reviewers is %d.", MAX_REVIEWERS));
 		}
 	}
 
@@ -338,5 +332,10 @@ public class Issue extends BaseEntity {
 				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
 					workspaceMember.getId(), workspaceMember.getDisplayName()))
 			);
+	}
+
+	// TODO: IssueConfig에서 @PostConstruct를 사용하는 것 보다 좋은 방법은 없나?
+	public static void setLimits(int maxReviewers) {
+		MAX_REVIEWERS = maxReviewers;
 	}
 }

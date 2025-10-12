@@ -68,7 +68,7 @@ public class IssueService {
 		fieldValueRepository.saveAll(values);
 
 		// TODO: 아래 로직을 Issue.create에 캡슐화 하는게 좋을까?
-		issue.updateReporter(actor); // TODO: updateReporter 대신 setReporter가 더 나으려나?
+		issue.setReporter(actor); // TODO: updateReporter 대신 setReporter가 더 나으려나?
 		issue.addSubscriber(actor);
 
 		return IssueResponse.from(issue);
