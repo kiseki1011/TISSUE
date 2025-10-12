@@ -47,9 +47,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	// TODO: use application.yml for value
 	private static final int MAX_REVIEWERS = 10;
-	private static final int MAX_ASSIGNEES = 50;
 
 	@ToString.Include
 	@Id
@@ -98,7 +96,6 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
-	// TODO: Set vs List? 둘 중 뭐가 더 좋으려나?
 	@OneToMany(mappedBy = "parentIssue")
 	private Set<Issue> childIssues = new HashSet<>();
 
@@ -118,7 +115,7 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
-	@OneToMany(mappedBy = "issue")
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -173,6 +170,7 @@ public class Issue extends BaseEntity {
 		this.dueAt = dueAt;
 	}
 
+	// TODO: non-null vs nullable
 	public void updatePriority(IssuePriority priority) {
 		this.priority = priority;
 	}
@@ -203,8 +201,8 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void moveToStep(WorkflowStatus step) {
-		this.currentStatus = step;
+	public void moveToStatus(@NonNull WorkflowStatus status) {
+		this.currentStatus = status;
 	}
 
 	public void assignParentIssue(@NonNull Issue newParent) {
@@ -223,7 +221,7 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void ensureCanAddParent(Issue parentIssue) {
+	public void ensureCanAddParent(@NonNull Issue parentIssue) {
 		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
 		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
@@ -302,11 +300,10 @@ public class Issue extends BaseEntity {
 
 	// TODO: isReviewer()
 	// TODO: isSubscriber()
-
 	// TODO: calculateEpicLevelStoryPoint()
 
-	public void addReviewer(WorkspaceMember workspaceMember) {
-		validateReviewerLimit();
+	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
+		ensureCanAddReviewer();
 
 		boolean isReviewer = reviewers.stream()
 			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
@@ -319,14 +316,14 @@ public class Issue extends BaseEntity {
 		reviewers.add(reviewer);
 	}
 
-	public void removeReviewer(WorkspaceMember workspaceMember) {
+	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
 		IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
 		reviewers.remove(issueReviewer);
 	}
 
 	// TODO: MAX_REVIEWERS를 외부 설정값으로 설정할 수 있도록, policy 객체를 만들어서 여기에 주입해서 사용할까?
 	//  아니면 검증을 서비스 계층에서하고, 해당 서비스 계층에서 policy 객체를 사용한다거나?
-	private void validateReviewerLimit() {
+	private void ensureCanAddReviewer() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
 			throw new InvalidOperationException(
 				String.format("The max number of reviewers for a single issue is %d.", MAX_REVIEWERS));

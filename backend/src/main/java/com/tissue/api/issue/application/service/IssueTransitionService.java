@@ -64,7 +64,7 @@ public class IssueTransitionService {
 		// TODO: moveToStep의 내부 구현은 사실상 set 메서드나 다름 없음.
 		//  안에 검증 로직을 캡슐화 하거나 할 필요는 없을까? 물론 findAndValidateTransition에서 가능한 전이를 검증하긴 하지만
 		//  더 우아하게 처리할 방법은 없나 고민이 됨.
-		issue.moveToStep(transition.getTargetStatus());
+		issue.moveToStatus(transition.getTargetStatus());
 
 		log.info("Issue transitioned: workspace={}, issueKey={}, transition={}, {} -> {}",
 			cmd.workspaceKey(),
