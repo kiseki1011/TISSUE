@@ -17,4 +17,16 @@ public enum IssueHierarchy {
 	public boolean isOneLevelHigher(IssueHierarchy hierarchy) {
 		return this.level == hierarchy.level - 1;
 	}
+
+	public boolean mustHaveParent() {
+		return this == SUBTASK || this == MICROTASK;
+	}
+
+	public boolean cannotHaveParent() {
+		return this == EPIC;
+	}
+
+	public boolean cannotHaveStoryPoint() {
+		return this != STORY;
+	}
 }
