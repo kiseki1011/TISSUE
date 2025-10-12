@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain.model;
 
+import static com.tissue.api.common.util.TextNormalizer.*;
+
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
@@ -106,10 +108,6 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> incomingRelations = new HashSet<>();
 
-	// TODO: assignees는 단수만 허용하도록 변경
-	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	// private Set<IssueAssignee> assignees = new HashSet<>();
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "assignee_id")
 	private WorkspaceMember assignee;
@@ -143,8 +141,8 @@ public class Issue extends BaseEntity {
 		issue.workspace = workspace;
 		issue.issueType = issueType;
 		issue.title = title;
-		issue.content = content;
-		issue.summary = summary;
+		issue.content = nullToEmpty(content);
+		issue.summary = nullToEmpty(summary);
 		issue.priority = priority;
 		issue.dueAt = dueAt;
 
@@ -152,10 +150,6 @@ public class Issue extends BaseEntity {
 		issue.storyPoint = storyPoint;
 
 		return issue;
-	}
-
-	public String getWorkspaceKey() {
-		return workspace.getKey();
 	}
 
 	// TODO: updateReporter면 충분히 좋은 이름인가? 아니면 더 좋은 이름이 있을까?
@@ -168,27 +162,19 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateContent(@Nullable String content) {
-		this.content = content;
+		this.content = nullToEmpty(content);
 	}
 
 	public void updateSummary(@Nullable String summary) {
-		this.summary = summary;
+		this.summary = nullToEmpty(summary);
 	}
 
 	public void updateDueAt(@Nullable Instant dueAt) {
 		this.dueAt = dueAt;
 	}
 
-	public boolean hasParent() {
-		return parentIssue != null;
-	}
-
 	public void updatePriority(IssuePriority priority) {
 		this.priority = priority;
-	}
-
-	public IssueHierarchy getHierarchy() {
-		return getIssueType().getIssueHierarchy();
 	}
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
@@ -196,6 +182,14 @@ public class Issue extends BaseEntity {
 			ensureCanUseStoryPoint(this.getHierarchy(), storyPoint);
 		}
 		this.storyPoint = storyPoint;
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
+	}
+
+	public IssueHierarchy getHierarchy() {
+		return issueType.getIssueHierarchy();
 	}
 
 	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
