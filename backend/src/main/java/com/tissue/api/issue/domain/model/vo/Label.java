@@ -1,6 +1,5 @@
 package com.tissue.api.issue.domain.model.vo;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.util.Objects;
@@ -35,8 +34,8 @@ public class Label {
 
 	public static Label of(@NonNull String raw) {
 		String checked = Objects.requireNonNull(raw);
-		String display = requireNotBlank(normalizeLabel(checked));
-		String norm = requireNotBlank(normalizeForUniq(checked));
+		String display = normalizeLabel(checked);
+		String norm = normalizeForUniq(checked);
 
 		return new Label(display, norm);
 	}

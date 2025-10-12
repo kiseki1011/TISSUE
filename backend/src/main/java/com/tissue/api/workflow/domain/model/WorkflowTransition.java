@@ -1,6 +1,6 @@
 package com.tissue.api.workflow.domain.model;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
+import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.util.ArrayList;
 import java.util.List;

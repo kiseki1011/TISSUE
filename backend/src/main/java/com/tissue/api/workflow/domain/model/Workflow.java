@@ -1,6 +1,6 @@
 package com.tissue.api.workflow.domain.model;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
+import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,8 +133,8 @@ public class Workflow extends BaseEntity {
 		this.label = label;
 	}
 
-	public void updateDescription(@Nullable String desc) {
-		this.description = nullToEmpty(desc);
+	public void updateDescription(@Nullable String description) {
+		this.description = nullToEmpty(description);
 	}
 
 	public void updateColor(@Nullable ColorType color) {

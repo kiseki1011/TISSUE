@@ -1,13 +1,13 @@
 package com.tissue.api.issuetype.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
+import static com.tissue.api.common.util.TextNormalizer.*;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.issuetype.domain.enums.FieldType;
 import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.issuetype.domain.enums.FieldType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -24,7 +24,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -73,21 +72,6 @@ public class IssueField extends BaseEntity {
 
 	// private String icon;
 
-	@Builder(access = AccessLevel.PRIVATE)
-	private IssueField(
-		Label label,
-		String description,
-		FieldType fieldType,
-		Boolean required,
-		IssueType issueType
-	) {
-		this.label = label;
-		this.description = description;
-		this.fieldType = fieldType;
-		this.required = required;
-		this.issueType = issueType;
-	}
-
 	public static IssueField create(
 		@NonNull Label label,
 		@Nullable String description,
@@ -95,13 +79,14 @@ public class IssueField extends BaseEntity {
 		@NonNull Boolean required,
 		@NonNull IssueType issueType
 	) {
-		return IssueField.builder()
-			.label(label)
-			.description(nullToEmpty(description))
-			.fieldType(fieldType)
-			.required(Boolean.TRUE.equals(required))
-			.issueType(issueType)
-			.build();
+		IssueField issueField = new IssueField();
+		issueField.label = label;
+		issueField.description = nullToEmpty(description);
+		issueField.fieldType = fieldType;
+		issueField.required = Boolean.TRUE.equals(required);
+		issueField.issueType = issueType;
+
+		return issueField;
 	}
 
 	public String getWorkspaceKey() {
