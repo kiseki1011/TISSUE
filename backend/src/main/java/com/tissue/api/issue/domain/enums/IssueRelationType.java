@@ -1,7 +1,6 @@
 package com.tissue.api.issue.domain.enums;
 
 public enum IssueRelationType {
-
 	RELEVANT,
 	BLOCKS,
 	BLOCKED_BY,

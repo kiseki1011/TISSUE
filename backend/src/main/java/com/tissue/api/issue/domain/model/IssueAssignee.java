@@ -31,7 +31,7 @@ public class IssueAssignee extends BaseEntity {
 	private Issue issue;
 
 	@Column(name = "ASSIGNEE_ID", nullable = false)
-	private Long assigneeMemberId;  // ID만 직접 저장
+	private Long assigneeMemberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ASSIGNEE_ID", insertable = false, updatable = false)

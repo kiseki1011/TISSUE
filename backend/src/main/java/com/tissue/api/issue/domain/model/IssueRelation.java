@@ -46,7 +46,6 @@ public class IssueRelation extends BaseEntity {
 		Issue targetIssue,
 		IssueRelationType relationType
 	) {
-		// TODO: 생성자는 최대한 순수하게 유지하고, validate 로직을 createRelation으로 옮길까?
 		validateSelfReference(sourceIssue, targetIssue);
 		validateRelationExists(sourceIssue, targetIssue);
 
@@ -98,7 +97,7 @@ public class IssueRelation extends BaseEntity {
 		}
 	}
 
-	public String getWorkspaceCode() {
+	public String getWorkspaceKey() {
 		return sourceIssue.getWorkspaceKey();
 	}
 }
