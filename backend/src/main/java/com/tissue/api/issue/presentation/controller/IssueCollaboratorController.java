@@ -3,22 +3,17 @@ package com.tissue.api.issue.presentation.controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.application.service.IssueCollaboratorService;
-import com.tissue.api.issue.presentation.dto.request.AddAssigneeRequest;
-import com.tissue.api.issue.presentation.dto.request.AddReviewerRequest;
-import com.tissue.api.issue.presentation.dto.request.RemoveReviewerRequest;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -32,17 +27,18 @@ public class IssueCollaboratorController {
 	//  그냥 "/assignees/{memberId}" 처럼 path variable로 사용하면 안되나?
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PostMapping("/assignees")
+	@PostMapping("/assignees/{memberId}")
 	public ApiResponse<IssueResponse> assignTo(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid AddAssigneeRequest request,
+		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCollaboratorService.assignTo(
 			workspaceKey,
 			issueKey,
-			request.memberId());
+			memberId
+		);
 
 		return ApiResponse.ok("Assignee added.", response);
 	}
@@ -96,34 +92,34 @@ public class IssueCollaboratorController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@PostMapping("/reviewers")
+	@PostMapping("/reviewers/{memberId}")
 	public ApiResponse<IssueResponse> addReviewer(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid AddReviewerRequest request,
+		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCollaboratorService.addReviewer(
 			workspaceKey,
 			issueKey,
-			request.memberId()
+			memberId
 		);
 
 		return ApiResponse.ok("Reviewer added.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@DeleteMapping("/reviewers")
+	@DeleteMapping("/reviewers/{memberId}")
 	public ApiResponse<IssueResponse> removeReviewer(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid RemoveReviewerRequest request,
+		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		IssueResponse response = issueCollaboratorService.removeReviewer(
 			workspaceKey,
 			issueKey,
-			request.memberId()
+			memberId
 		);
 
 		return ApiResponse.ok("Reviewer removed.", response);
