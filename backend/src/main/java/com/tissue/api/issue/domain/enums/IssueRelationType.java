@@ -1,13 +1,20 @@
 package com.tissue.api.issue.domain.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum IssueRelationType {
-	RELEVANT,
-	BLOCKS,
-	BLOCKED_BY,
-	CAUSES,
-	CAUSED_BY,
-	DUPLICATES,
-	DUPLICATED_BY;
+	RELEVANT(false),
+	BLOCKS(true),
+	BLOCKED_BY(true),
+	CAUSES(true),
+	CAUSED_BY(true),
+	DUPLICATES(true),
+	DUPLICATED_BY(true);
+
+	private final boolean requiresAcyclicCheck;
 
 	public IssueRelationType getOpposite() {
 		return switch (this) {
