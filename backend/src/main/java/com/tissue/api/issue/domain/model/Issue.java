@@ -3,7 +3,9 @@ package com.tissue.api.issue.domain.model;
 import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
+import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.model.WorkflowStatus;
@@ -79,7 +82,7 @@ public class Issue extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private IssuePriority priority; // TODO: null 허용할까? 아니면 null이 들어오면 기본값 설정되도록 할까?
+	private IssuePriority priority;
 
 	// TODO: 이슈의 상태를 전이(transition) 시킬 때 intial에서 다음 상태로 가는 경우 설정(변경 불가해야 함)
 	private Instant startedAt;
@@ -87,8 +90,7 @@ public class Issue extends BaseEntity {
 	// TODO: 이슈의 상태를 전이 시킬 때 terminal에 도달하는 경우 설정
 	private Instant resolvedAt;
 
-	@Column(nullable = false)
-	private Instant dueAt;
+	private Instant dueAt; // TODO: 현재 시간 보다 이전으로 설정 못하도록 검증 필요
 
 	private Integer storyPoint;
 
@@ -123,6 +125,11 @@ public class Issue extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowStatus currentStatus;
+
+	// TODO: IssueConfig에서 @PostConstruct를 사용하는 것 보다 좋은 방법은 없나?
+	public static void setLimits(int maxReviewers) {
+		MAX_REVIEWERS = maxReviewers;
+	}
 
 	public static Issue create(
 		@NonNull Workspace workspace,
@@ -180,6 +187,93 @@ public class Issue extends BaseEntity {
 		this.storyPoint = storyPoint;
 	}
 
+	public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
+		return IssueRelation.create(this, targetIssue, type);
+	}
+
+	public void removeRelation(Issue otherIssue) {
+		// Outgoing 찾기
+		IssueRelation outgoing = outgoingRelations.stream()
+			.filter(r -> r.getTargetIssue().equals(otherIssue))
+			.findFirst()
+			.orElse(null);
+
+		if (outgoing != null) {
+			outgoing.remove();
+			return;
+		}
+
+		// Incoming 찾기
+		IssueRelation incoming = incomingRelations.stream()
+			.filter(r -> r.getSourceIssue().equals(otherIssue))
+			.findFirst()
+			.orElse(null);
+
+		if (incoming != null) {
+			incoming.remove();
+			return;
+		}
+
+		throw new RuntimeException("No relation found between " + this.getKey() + " and " + otherIssue.getKey());
+
+	}
+
+	/**
+	 * 모든 관계 조회 (양방향)
+	 */
+	public List<IssueRelation> getAllRelations() {
+		List<IssueRelation> all = new ArrayList<>();
+		all.addAll(outgoingRelations);
+		all.addAll(incomingRelations);
+		return all;
+	}
+
+	/**
+	 * 특정 타입의 관련 이슈들 조회
+	 */
+	public List<Issue> getRelatedIssues(IssueRelationType type) {
+		List<Issue> result = new ArrayList<>();
+
+		// Outgoing에서 찾기
+		outgoingRelations.stream()
+			.filter(r -> r.getRelationType() == type)
+			.map(IssueRelation::getTargetIssue)
+			.forEach(result::add);
+
+		// Incoming에서 역방향 타입으로 찾기
+		incomingRelations.stream()
+			.filter(r -> r.getRelationType() == type.getOpposite())
+			.map(IssueRelation::getSourceIssue)
+			.forEach(result::add);
+
+		return result;
+	}
+
+	/**
+	 * BLOCKS 관계 확인
+	 */
+	public boolean isBlockedBy(Issue otherIssue) {
+		return incomingRelations.stream()
+			.anyMatch(r ->
+				r.getSourceIssue().equals(otherIssue) &&
+					r.getRelationType() == IssueRelationType.BLOCKS
+			);
+	}
+
+	/**
+	 * Blocking하는 이슈들
+	 */
+	public List<Issue> getBlockingIssues() {
+		return getRelatedIssues(IssueRelationType.BLOCKS);
+	}
+
+	/**
+	 * Blocked by 이슈들
+	 */
+	public List<Issue> getBlockedByIssues() {
+		return getRelatedIssues(IssueRelationType.BLOCKED_BY);
+	}
+
 	public String getWorkspaceKey() {
 		return workspace.getKey();
 	}
@@ -205,7 +299,7 @@ public class Issue extends BaseEntity {
 
 	public void assignParentIssue(@NonNull Issue newParent) {
 		ensureCanAddParent(newParent);
-		removeParentIssue();
+		detachFromCurrentParent();
 
 		this.parentIssue = newParent;
 		newParent.childIssues.add(this);
@@ -213,13 +307,17 @@ public class Issue extends BaseEntity {
 
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
+		detachFromCurrentParent();
+	}
+
+	private void detachFromCurrentParent() {
 		if (parentIssue != null) {
 			parentIssue.getChildIssues().remove(this);
 			parentIssue = null;
 		}
 	}
 
-	public void ensureCanAddParent(@NonNull Issue parentIssue) {
+	private void ensureCanAddParent(@NonNull Issue parentIssue) {
 		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
 		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
 		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
@@ -270,7 +368,7 @@ public class Issue extends BaseEntity {
 
 		// TODO: relations clear
 
-		removeParentIssue();
+		detachFromCurrentParent();
 
 		archive();
 	}
@@ -341,10 +439,5 @@ public class Issue extends BaseEntity {
 				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
 					workspaceMember.getId(), workspaceMember.getDisplayName()))
 			);
-	}
-
-	// TODO: IssueConfig에서 @PostConstruct를 사용하는 것 보다 좋은 방법은 없나?
-	public static void setLimits(int maxReviewers) {
-		MAX_REVIEWERS = maxReviewers;
 	}
 }

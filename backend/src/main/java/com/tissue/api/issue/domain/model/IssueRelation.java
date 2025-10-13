@@ -14,90 +14,134 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 
 @Entity
+@Table(name = "issue_relation",
+	uniqueConstraints = @UniqueConstraint(
+		columnNames = {"source_issue_id", "target_issue_id"}
+	)
+)
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelation extends BaseEntity {
 
+	@ToString.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	// TODO: toString에 포함?
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "SOURCE_ISSUE_ID", nullable = false)
+	@JoinColumn(name = "source_issue_id", nullable = false)
 	private Issue sourceIssue;
 
+	// TODO: toString에 포함?
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "TARGET_ISSUE_ID", nullable = false)
+	@JoinColumn(name = "target_issue_id", nullable = false)
 	private Issue targetIssue;
 
+	@ToString.Include
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private IssueRelationType relationType;
 
-	@Builder
-	private IssueRelation(
-		Issue sourceIssue,
-		Issue targetIssue,
-		IssueRelationType relationType
+	static IssueRelation create(
+		@NonNull Issue sourceIssue,
+		@NonNull Issue targetIssue,
+		@NonNull IssueRelationType type
 	) {
-		validateSelfReference(sourceIssue, targetIssue);
-		validateRelationExists(sourceIssue, targetIssue);
+		ensureSameWorkspace(sourceIssue, targetIssue);
+		ensureNotSelfReference(sourceIssue, targetIssue);
+		ensureNotDuplicate(sourceIssue, targetIssue);
+		// validateRelationType(type, sourceIssue, targetIssue);
 
-		this.sourceIssue = sourceIssue;
-		this.targetIssue = targetIssue;
-		this.relationType = relationType != null ? relationType : IssueRelationType.RELEVANT;
+		IssueRelation issueRelation = new IssueRelation();
+		issueRelation.sourceIssue = sourceIssue;
+		issueRelation.targetIssue = targetIssue;
+		issueRelation.relationType = type;
+
+		// TODO: 역방향의 관계 추가는 필요 없나?
+		// 관계 형성
+		sourceIssue.getOutgoingRelations().add(issueRelation);
+		targetIssue.getIncomingRelations().add(issueRelation);
+
+		return issueRelation;
 	}
 
-	public static IssueRelation create(
-		Issue sourceIssue,
-		Issue targetIssue,
-		IssueRelationType type
-	) {
-		// 정방향 관계 생성
-		IssueRelation relation = new IssueRelation(sourceIssue, targetIssue, type);
-		sourceIssue.getOutgoingRelations().add(relation);
-		targetIssue.getIncomingRelations().add(relation);
-
-		// 역방향 관계 생성
-		IssueRelation oppositeRelation = new IssueRelation(targetIssue, sourceIssue, type.getOpposite());
-		targetIssue.getOutgoingRelations().add(oppositeRelation);
-		sourceIssue.getIncomingRelations().add(oppositeRelation);
-
-		return relation;
+	void remove() {
+		sourceIssue.getOutgoingRelations().remove(this);
+		targetIssue.getIncomingRelations().remove(this);
 	}
 
-	public static void removeRelation(Issue sourceIssue, Issue targetIssue) {
-		sourceIssue.getOutgoingRelations()
-			.removeIf(relation -> relation.getTargetIssue().equals(targetIssue));
-
-		targetIssue.getOutgoingRelations()
-			.removeIf(relation -> relation.getTargetIssue().equals(sourceIssue));
+	public boolean isInwardFor(@NonNull Issue issue) {
+		return this.targetIssue.equals(issue);
 	}
 
-	private void validateSelfReference(Issue sourceIssue, Issue targetIssue) {
+	public boolean isOutwardFor(@NonNull Issue issue) {
+		return this.sourceIssue.equals(issue);
+	}
+
+	/**
+	 * 특정 이슈 관점에서 연결된 상대 이슈 반환
+	 */
+	public Issue getOtherIssue(@NonNull Issue issue) {
+		if (sourceIssue.equals(issue)) {
+			return targetIssue;
+		}
+		if (targetIssue.equals(issue)) {
+			return sourceIssue;
+		}
+		throw new IllegalArgumentException("Issue not part of this relation");
+	}
+
+	/**
+	 * 특정 이슈 관점에서의 관계 타입 (역방향이면 opposite 반환)
+	 */
+	public IssueRelationType getTypeFor(@NonNull Issue issue) {
+		if (sourceIssue.equals(issue)) {
+			return relationType; // outward
+		}
+		if (targetIssue.equals(issue)) {
+			return relationType.getOpposite(); // inward
+		}
+		throw new IllegalArgumentException("Issue not part of this relation");
+	}
+
+	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
 			throw new InvalidOperationException("Self reference is not allowed.");
 		}
 	}
 
-	private void validateRelationExists(Issue sourceIssue, Issue targetIssue) {
-		boolean hasRelation = sourceIssue.getOutgoingRelations().stream()
-			.anyMatch(relation -> relation.getTargetIssue().equals(targetIssue));
+	private static void ensureNotDuplicate(Issue source, Issue target) {
+		boolean exists = source.getOutgoingRelations().stream()
+			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 
-		if (hasRelation) {
-			throw new InvalidOperationException(String.format(
-				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s",
-				sourceIssue.getKey(), targetIssue.getKey()));
+		if (exists) {
+			throw new InvalidOperationException(
+				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s"
+					.formatted(source.getKey(), target.getKey())
+			);
 		}
 	}
 
-	public String getWorkspaceKey() {
-		return sourceIssue.getWorkspaceKey();
+	// TODO: 어차피 workspace + issueKey로 조회하기 때문에 무조건 같은 워크스페이스 보장됨
+	//  (메서드 계약도 무조건 그렇게 하도록 노출되어 있음). 굳이 필요할까?
+	private static void ensureSameWorkspace(Issue source, Issue target) {
+		if (!source.getWorkspace().equals(target.getWorkspace())) {
+			throw new InvalidOperationException("Issues must be in the same workspace");
+		}
 	}
+
+	// TODO(optional): validateRelationType()
+	//  - relation 종류별로 필요한 검증 로직을 switch 문으로
+	//  - 예를 들어서 DUPLICATE 관계는 서로 같은 이슈 타입이어야 한다거나(예시 임)
 }
