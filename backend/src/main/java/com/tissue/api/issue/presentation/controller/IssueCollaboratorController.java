@@ -23,9 +23,6 @@ public class IssueCollaboratorController {
 
 	private final IssueCollaboratorService issueCollaboratorService;
 
-	// TODO: 굳이 request dto를 통해 대상 memberId를 넘겨야 하나?
-	//  그냥 "/assignees/{memberId}" 처럼 path variable로 사용하면 안되나?
-
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/assignees/{memberId}")
 	public ApiResponse<IssueResponse> assignTo(
@@ -74,7 +71,6 @@ public class IssueCollaboratorController {
 		return ApiResponse.ok("Subscriber added.", response); // TODO: "Subscribed issue."로 바꿀까?
 	}
 
-	// TODO: Delete mapping을 사용해도 어차피 동사니깐 unsubscribe로 경로를 바꿀까?
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("/subscribers")
 	public ApiResponse<IssueResponse> unsubscribe(

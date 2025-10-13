@@ -58,7 +58,6 @@ public class IssueController {
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
-	// TODO: 커스텀 필드 업데이트에 대한 경로는 "/{issueKey}/custom"가 괜찮을까?
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/custom")
 	public ApiResponse<IssueResponse> updateCustomFields(
@@ -71,6 +70,7 @@ public class IssueController {
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
+	// TODO: parentKey는 AssignParentIssueRequest가 아니라 path variable로 전달하는게 좋을까?
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> assignParent(
