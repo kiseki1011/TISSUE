@@ -19,7 +19,6 @@ import com.tissue.api.issue.application.service.IssueRelationService;
 import com.tissue.api.issue.application.service.IssueService;
 import com.tissue.api.issue.domain.service.CircularDependencyValidator;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.infrastructure.repository.IssueReviewerRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -174,10 +173,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected TeamRepository teamRepository;
 	@Autowired
 	protected IssueRepository issueRepository;
-	// @Autowired
-	// protected ReviewRepository reviewRepository;
-	@Autowired
-	protected IssueReviewerRepository issueReviewerRepository;
 	@Autowired
 	protected CommentRepository commentRepository;
 	@Autowired
