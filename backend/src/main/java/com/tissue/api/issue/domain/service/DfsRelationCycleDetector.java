@@ -11,7 +11,7 @@ import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueRelation;
 
 @Component
-public class DfsCycleDetector implements CycleDetector {
+public class DfsRelationCycleDetector implements RelationCycleDetector {
 
 	@Override
 	public void ensureNoCycle(
