@@ -60,7 +60,7 @@ public record ReplaceWorkflowGraphRequest(
 			workflowId,
 			version,
 			replaceStatusRequests.stream()
-				.map(s -> new ReplaceWorkflowGraphCommand.StatusCommand(
+				.map(s -> new ReplaceWorkflowGraphCommand.StateCommand(
 					new EntityRef(s.id(), s.tempKey()),
 					s.label(),
 					s.description(),

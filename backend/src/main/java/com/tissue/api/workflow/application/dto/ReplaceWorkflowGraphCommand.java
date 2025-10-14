@@ -10,10 +10,10 @@ public record ReplaceWorkflowGraphCommand(
 	String workspaceKey,
 	Long workflowId,
 	Long version,
-	List<StatusCommand> statusCommands,
+	List<StateCommand> stateCommands,
 	List<TransitionCommand> transitionCommands
 ) {
-	public record StatusCommand(
+	public record StateCommand(
 		EntityRef ref,
 		String label,
 		String description,
@@ -21,11 +21,11 @@ public record ReplaceWorkflowGraphCommand(
 		boolean initial,
 		boolean terminal
 	) {
-		public WorkflowGraphValidator.StatusValidationData toValidationData() {
+		public WorkflowGraphValidator.StateValidationData toValidationData() {
 			String key = ref.isExisting()
 				? String.valueOf(ref.id())
 				: ref.tempKey();
-			return new WorkflowGraphValidator.StatusValidationData(key, initial, terminal);
+			return new WorkflowGraphValidator.StateValidationData(key, initial, terminal);
 		}
 	}
 

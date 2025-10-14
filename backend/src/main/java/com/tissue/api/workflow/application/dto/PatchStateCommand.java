@@ -8,7 +8,7 @@ import com.tissue.api.issue.domain.model.vo.Label;
 import lombok.Builder;
 
 @Builder
-public record PatchStatusCommand(
+public record PatchStateCommand(
 	String workspaceKey,
 	Long workflowId,
 	Long statusId,

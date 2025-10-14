@@ -87,9 +87,4 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 			return Map.of();
 		}
 	}
-
-	// TODO: TransitionGuardConfig는 물리 삭제 정책
-	// void softDelete() {
-	// 	archive();
-	// }
 }

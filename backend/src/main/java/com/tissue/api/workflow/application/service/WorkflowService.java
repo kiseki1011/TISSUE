@@ -19,13 +19,13 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.workflow.application.GuardConfigData;
 import com.tissue.api.workflow.application.dto.ConfigureTransitionGuardsCommand;
 import com.tissue.api.workflow.application.dto.CreateWorkflowCommand;
-import com.tissue.api.workflow.application.dto.PatchStatusCommand;
+import com.tissue.api.workflow.application.dto.PatchStateCommand;
 import com.tissue.api.workflow.application.dto.PatchTransitionCommand;
 import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowStatus;
+import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.service.WorkflowValidator;
@@ -55,7 +55,7 @@ public class WorkflowService {
 
 		workflowValidator.ensureLabelUnique(workspace, cmd.label());
 		graphValidator.validateWorkflowGraphStructure(
-			cmd.statusCommands().stream().map(s -> s.toValidationData()).toList(),
+			cmd.stateCommands().stream().map(s -> s.toValidationData()).toList(),
 			cmd.transitionCommands().stream().map(t -> t.toValidationData()).toList()
 		);
 
@@ -64,18 +64,23 @@ public class WorkflowService {
 				Workflow.create(workspace, cmd.label(), cmd.description(), cmd.color())
 			);
 
-			Map<String, WorkflowStatus> statusMap = new HashMap<>();
-			for (CreateWorkflowCommand.StatusCommand s : cmd.statusCommands()) {
-				WorkflowStatus status = workflow.addStatus(s.label(), s.description(), s.color(), s.initial(),
-					s.terminal());
-				statusMap.put(s.ref().tempKey(), status);
+			Map<String, WorkflowState> stateByTempKey = new HashMap<>();
+			for (CreateWorkflowCommand.StateCommand s : cmd.stateCommands()) {
+				WorkflowState status = workflow.addState(
+					s.label(),
+					s.description(),
+					s.color(),
+					s.initial(),
+					s.terminal()
+				);
+				stateByTempKey.put(s.ref().tempKey(), status);
 			}
 
 			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitionCommands()) {
-				WorkflowStatus src = statusMap.get(t.sourceRef().tempKey());
-				WorkflowStatus trg = statusMap.get(t.targetRef().tempKey());
+				WorkflowState source = stateByTempKey.get(t.sourceRef().tempKey());
+				WorkflowState target = stateByTempKey.get(t.targetRef().tempKey());
 
-				workflow.addTransition(t.label(), t.description(), src, trg);
+				workflow.addTransition(t.label(), t.description(), source, target);
 			}
 
 			graphValidator.ensureValidWorkflowGraph(workflow);
@@ -119,14 +124,14 @@ public class WorkflowService {
 	}
 
 	@Transactional
-	public WorkflowResponse patchStatus(PatchStatusCommand cmd) {
+	public WorkflowResponse patchState(PatchStateCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
-		WorkflowStatus status = workflowFinder.findWorkflowStatus(workflow, cmd.statusId());
+		WorkflowState state = workflowFinder.findWorkflowState(workflow, cmd.statusId());
 
-		Patchers.apply(cmd.label(), l -> workflow.renameStatus(status, l));
-		Patchers.apply(cmd.description(), status::updateDescription);
-		Patchers.apply(cmd.color(), status::updateColor);
+		Patchers.apply(cmd.label(), l -> workflow.renameState(state, l));
+		Patchers.apply(cmd.description(), state::updateDescription);
+		Patchers.apply(cmd.color(), state::updateColor);
 
 		return WorkflowResponse.from(workflow);
 	}

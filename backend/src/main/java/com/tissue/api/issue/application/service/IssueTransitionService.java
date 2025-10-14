@@ -16,7 +16,7 @@ import com.tissue.api.workflow.domain.gaurd.GuardContext;
 import com.tissue.api.workflow.domain.gaurd.TransitionGuard;
 import com.tissue.api.workflow.domain.model.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowStatus;
+import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 
@@ -60,18 +60,18 @@ public class IssueTransitionService {
 		executeGuards(cmd.workspaceKey(), issue, transition, cmd.actorMemberId());
 
 		// 상태 전이
-		WorkflowStatus previousStatus = issue.getCurrentStatus();
+		WorkflowState previousStatus = issue.getCurrentStatus();
 		// TODO: moveToStep의 내부 구현은 사실상 set 메서드나 다름 없음.
 		//  안에 검증 로직을 캡슐화 하거나 할 필요는 없을까? 물론 findAndValidateTransition에서 가능한 전이를 검증하긴 하지만
 		//  더 우아하게 처리할 방법은 없나 고민이 됨.
-		issue.moveToStatus(transition.getTargetStatus());
+		issue.proceedToNextState(transition.getTargetState());
 
 		log.info("Issue transitioned: workspace={}, issueKey={}, transition={}, {} -> {}",
 			cmd.workspaceKey(),
 			cmd.issueKey(),
 			transition.getLabel().getDisplay(),
 			previousStatus.getLabel().getDisplay(),
-			transition.getTargetStatus().getLabel().getDisplay()
+			transition.getTargetState().getLabel().getDisplay()
 		);
 
 		// 5. 도메인 이벤트 발행 (알림, 히스토리 기록...)
@@ -108,12 +108,12 @@ public class IssueTransitionService {
 		// 현재 상태가 이 Transition의 source status인지 확인
 		// 예: 현재 "TODO"인데 "IN_PROGRESS -> DONE" transition 시도하면 실패
 		// TODO: IssueTransitionValidator로 로직 분리
-		if (!issue.getCurrentStatus().equals(transition.getSourceStatus())) {
+		if (!issue.getCurrentStatus().equals(transition.getSourceState())) {
 			throw new InvalidOperationException(
 				String.format(
 					"Invalid transition. Current status is '%s' but transition requires '%s'",
 					issue.getCurrentStatus().getLabel().getDisplay(),
-					transition.getSourceStatus().getLabel().getDisplay()
+					transition.getSourceState().getLabel().getDisplay()
 				)
 			);
 		}
@@ -214,7 +214,7 @@ public class IssueTransitionService {
 		return workflow.getTransitions().stream()
 			// 현재 상태(currentStatus)에서 출발하는 Transition만 필터링
 			// 예: 현재 "IN_PROGRESS"면 "IN_PROGRESS -> X" 형태만 선택
-			.filter(t -> t.getSourceStatus().equals(issue.getCurrentStatus()))
+			.filter(t -> t.getSourceState().equals(issue.getCurrentStatus()))
 			.map(TransitionResponse::from)
 			.toList();
 	}

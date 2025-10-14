@@ -65,13 +65,13 @@ public class Workflow extends BaseEntity {
 	private ColorType color;
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
-	private List<WorkflowStatus> statuses = new ArrayList<>();
+	private List<WorkflowState> states = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
 	private List<WorkflowTransition> transitions = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus initialStatus;
+	private WorkflowState initialState;
 
 	@Column(nullable = false)
 	private boolean systemProvided;
@@ -92,7 +92,7 @@ public class Workflow extends BaseEntity {
 		return wf;
 	}
 
-	public WorkflowStatus addStatus(
+	public WorkflowState addState(
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color,
@@ -100,19 +100,19 @@ public class Workflow extends BaseEntity {
 		boolean terminal
 	) {
 		ensureNotSystemProvided();
-		ensureUniqueStatusLabel(label);
+		ensureUniqueStateLabel(label);
 
-		WorkflowStatus status = WorkflowStatus.of(label, description, color, initial, terminal);
-		attachStatus(status);
+		WorkflowState state = WorkflowState.of(label, description, color, initial, terminal);
+		attachState(state);
 
-		return status;
+		return state;
 	}
 
 	public WorkflowTransition addTransition(
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull WorkflowStatus source,
-		@NonNull WorkflowStatus target
+		@NonNull WorkflowState source,
+		@NonNull WorkflowState target
 	) {
 		ensureNotSystemProvided();
 		ensureUniqueTransitionLabelForSource(label, source);
@@ -141,18 +141,18 @@ public class Workflow extends BaseEntity {
 		this.color = color;
 	}
 
-	public void updateInitialStatus(@NonNull WorkflowStatus newInitial) {
+	public void updateInitialState(@NonNull WorkflowState newInitial) {
 		ensureNotSystemProvided();
-		for (WorkflowStatus s : statuses) {
+		for (WorkflowState s : states) {
 			s.unmarkInitial();
 		}
 		newInitial.markInitial();
-		this.initialStatus = newInitial;
+		this.initialState = newInitial;
 	}
 
-	public List<WorkflowStatus> getTerminalStatuses() {
-		return statuses.stream()
-			.filter(WorkflowStatus::isTerminal)
+	public List<WorkflowState> getTerminalStates() {
+		return states.stream()
+			.filter(WorkflowState::isTerminal)
 			.toList();
 	}
 
@@ -162,14 +162,14 @@ public class Workflow extends BaseEntity {
 	public void softDelete() {
 		ensureNotSystemProvided();
 		archive();
-		statuses.forEach(WorkflowStatus::softDelete);
+		states.forEach(WorkflowState::softDelete);
 		transitions.forEach(WorkflowTransition::softDelete);
 	}
 
-	public void softDeleteStatus(WorkflowStatus status) {
+	public void softDeleteState(WorkflowState state) {
 		ensureNotSystemProvided();
-		status.softDelete();
-		statuses.remove(status);
+		state.softDelete();
+		states.remove(state);
 	}
 
 	public void softDeleteTransition(WorkflowTransition transition) {
@@ -178,13 +178,13 @@ public class Workflow extends BaseEntity {
 		transitions.remove(transition);
 	}
 
-	public void renameStatus(@NonNull WorkflowStatus status, @NonNull Label newLabel) {
+	public void renameState(@NonNull WorkflowState state, @NonNull Label newLabel) {
 		ensureNotSystemProvided();
-		if (status.getLabel().equals(newLabel)) {
+		if (state.getLabel().equals(newLabel)) {
 			return;
 		}
-		ensureUniqueStatusLabel(newLabel);
-		status.updateLabel(newLabel);
+		ensureUniqueStateLabel(newLabel);
+		state.updateLabel(newLabel);
 	}
 
 	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
@@ -192,28 +192,28 @@ public class Workflow extends BaseEntity {
 		if (transition.getLabel().equals(newLabel)) {
 			return;
 		}
-		ensureUniqueTransitionLabelForSource(newLabel, transition.getSourceStatus());
+		ensureUniqueTransitionLabelForSource(newLabel, transition.getSourceState());
 		transition.updateLabel(newLabel);
 	}
 
-	public void updateStatusTerminalFlag(@NonNull WorkflowStatus status, boolean terminalFlag) {
+	public void updateStateTerminalFlag(@NonNull WorkflowState state, boolean terminalFlag) {
 		ensureNotSystemProvided();
-		if (status.isTerminal() == terminalFlag) {
+		if (state.isTerminal() == terminalFlag) {
 			return;
 		}
 		if (terminalFlag) {
-			status.markTerminal();
+			state.markTerminal();
 			return;
 		}
-		status.unmarkTerminal();
+		state.unmarkTerminal();
 	}
 
-	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newSource) {
+	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
 		ensureNotSystemProvided();
 		transition.rewireSource(newSource);
 	}
 
-	public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowStatus newTarget) {
+	public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowState newTarget) {
 		ensureNotSystemProvided();
 		transition.rewireTarget(newTarget);
 	}
@@ -231,12 +231,12 @@ public class Workflow extends BaseEntity {
 		transition.clearGuards();
 	}
 
-	private void attachStatus(WorkflowStatus status) {
-		status.attachToWorkflow(this);
-		statuses.add(status);
+	private void attachState(WorkflowState state) {
+		state.attachToWorkflow(this);
+		states.add(state);
 
-		if (status.isInitial()) {
-			updateInitialStatus(status);
+		if (state.isInitial()) {
+			updateInitialState(state);
 		}
 	}
 
@@ -251,17 +251,17 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
-	private void ensureNoDuplicateEdge(WorkflowStatus source, WorkflowStatus target) {
+	private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
 		boolean dup = transitions.stream()
 			.filter(t -> !t.isArchived())
-			.anyMatch(x -> x.getSourceStatus().equals(source) && x.getTargetStatus().equals(target));
+			.anyMatch(x -> x.getSourceState().equals(source) && x.getTargetState().equals(target));
 		if (dup) {
 			throw new DuplicateResourceException("Duplicate transition (source,target) is not allowed.");
 		}
 	}
 
-	private void ensureUniqueStatusLabel(Label newLabel) {
-		boolean dup = statuses.stream()
+	private void ensureUniqueStateLabel(Label newLabel) {
+		boolean dup = states.stream()
 			.filter(t -> !t.isArchived())
 			.anyMatch(s -> s.getLabel().equals(newLabel));
 		if (dup) {
@@ -269,10 +269,10 @@ public class Workflow extends BaseEntity {
 		}
 	}
 
-	private void ensureUniqueTransitionLabelForSource(Label newLabel, WorkflowStatus source) {
+	private void ensureUniqueTransitionLabelForSource(Label newLabel, WorkflowState source) {
 		boolean dup = transitions.stream()
 			.filter(t -> !t.isArchived())
-			.filter(t -> t.getSourceStatus().equals(source))
+			.filter(t -> t.getSourceState().equals(source))
 			.anyMatch(t -> t.getLabel().equals(newLabel));
 		if (dup) {
 			throw new DuplicateResourceException(

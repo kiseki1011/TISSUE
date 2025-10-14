@@ -15,10 +15,10 @@ public record CreateWorkflowCommand(
 	Label label,
 	String description,
 	ColorType color,
-	List<StatusCommand> statusCommands,
+	List<StateCommand> stateCommands,
 	List<TransitionCommand> transitionCommands
 ) {
-	public record StatusCommand(
+	public record StateCommand(
 		EntityRef ref,
 		Label label,
 		String description,
@@ -26,8 +26,8 @@ public record CreateWorkflowCommand(
 		boolean initial,
 		boolean terminal
 	) {
-		public WorkflowGraphValidator.StatusValidationData toValidationData() {
-			return new WorkflowGraphValidator.StatusValidationData(
+		public WorkflowGraphValidator.StateValidationData toValidationData() {
+			return new WorkflowGraphValidator.StateValidationData(
 				ref.tempKey(),
 				initial,
 				terminal

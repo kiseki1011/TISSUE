@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowStatus;
+import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
@@ -25,45 +25,51 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkflowGraphValidator {
 
-	public record StatusValidationData(String ref, boolean initial, boolean terminal) {
+	public record StateValidationData(String stateRef, boolean initial, boolean terminal) {
 	}
 
-	public record TransitionValidationData(String sourceRef, String targetRef) {
+	public record TransitionValidationData(String sourceStateRef, String targetStateRef) {
 	}
 
 	public void validateWorkflowGraphStructure(
-		List<StatusValidationData> statusDataList,
-		List<TransitionValidationData> transitionDataList
+		List<StateValidationData> stateValidations,
+		List<TransitionValidationData> transitionValidations
 	) {
-		ensureExactlyOneInitial(statusDataList);
-		ensureAtLeastOneTerminal(statusDataList);
-		ensureTransitionReferencesValid(statusDataList, transitionDataList);
-		ensureNoSelfLoops(transitionDataList);
+		ensureExactlyOneInitial(stateValidations);
+		ensureAtLeastOneTerminal(stateValidations);
+		ensureTransitionReferencesValid(stateValidations, transitionValidations);
+		ensureNoSelfLoops(transitionValidations);
 	}
 
 	public void ensureValidWorkflowGraph(Workflow wf) {
-		ensureNoIncomingToInitial(wf.getInitialStatus(), wf.getTransitions());
+		ensureNoIncomingToInitial(wf.getInitialState(), wf.getTransitions());
 		ensureNoOrphans(wf);
 	}
 
 	public void ensureNotDeletingInitial(
-		Set<WorkflowStatus> toDelete,
-		WorkflowStatus initial
+		Set<WorkflowState> toDelete,
+		WorkflowState initial
 	) {
 		if (toDelete.contains(initial)) {
 			throw new InvalidOperationException("Cannot delete the initial status.");
 		}
 	}
 
-	private void ensureExactlyOneInitial(List<StatusValidationData> statusDataList) {
-		long initialCount = statusDataList.stream().filter(StatusValidationData::initial).count();
+	private void ensureExactlyOneInitial(List<StateValidationData> stateValidations) {
+		long initialCount = stateValidations.stream()
+			.filter(StateValidationData::initial)
+			.count();
+
 		if (initialCount != 1) {
 			throw new InvalidOperationException("Exactly one initial required.");
 		}
 	}
 
-	private void ensureAtLeastOneTerminal(List<StatusValidationData> statusDataList) {
-		long count = statusDataList.stream().filter(StatusValidationData::terminal).count();
+	private void ensureAtLeastOneTerminal(List<StateValidationData> stateValidations) {
+		long count = stateValidations.stream()
+			.filter(StateValidationData::terminal)
+			.count();
+
 		if (count == 0) {
 			throw new InvalidOperationException("At least one terminal required.");
 		}
@@ -71,94 +77,94 @@ public class WorkflowGraphValidator {
 
 	// transition이 가리키는 key들이 실제 status 키 집합 안에 존재하는지 확인
 	private void ensureTransitionReferencesValid(
-		List<StatusValidationData> statusDataList,
-		List<TransitionValidationData> transitionDataList
+		List<StateValidationData> stateValidations,
+		List<TransitionValidationData> transitionValidations
 	) {
-		Set<String> refs = statusDataList.stream()
-			.map(StatusValidationData::ref)
+		Set<String> refs = stateValidations.stream()
+			.map(StateValidationData::stateRef)
 			.collect(Collectors.toSet());
 
-		if (refs.size() != statusDataList.size()) {
-			throw new InvalidOperationException("Duplicate status keys found.");
+		if (refs.size() != stateValidations.size()) {
+			throw new InvalidOperationException("Duplicate state keys found.");
 		}
 
-		for (var t : transitionDataList) {
-			if (!refs.contains(t.sourceRef())) {
-				throw new InvalidOperationException("Unknown source reference: " + t.sourceRef());
+		for (var t : transitionValidations) {
+			if (!refs.contains(t.sourceStateRef())) {
+				throw new InvalidOperationException("Unknown source reference: " + t.sourceStateRef());
 			}
-			if (!refs.contains(t.targetRef())) {
-				throw new InvalidOperationException("Unknown target reference: " + t.targetRef());
+			if (!refs.contains(t.targetStateRef())) {
+				throw new InvalidOperationException("Unknown target reference: " + t.targetStateRef());
 			}
 		}
 	}
 
-	private void ensureNoSelfLoops(List<TransitionValidationData> transitionDataList) {
-		for (var t : transitionDataList) {
-			if (Objects.equals(t.sourceRef(), t.targetRef())) {
+	private void ensureNoSelfLoops(List<TransitionValidationData> transitionValidations) {
+		for (var t : transitionValidations) {
+			if (Objects.equals(t.sourceStateRef(), t.targetStateRef())) {
 				throw new InvalidOperationException("Self-loop not allowed.");
 			}
 		}
 	}
 
 	private void ensureNoIncomingToInitial(
-		WorkflowStatus initial,
+		WorkflowState initial,
 		Collection<WorkflowTransition> allTransitions
 	) {
 		for (var t : allTransitions) {
-			if (t.getTargetStatus().equals(initial)) {
-				throw new InvalidOperationException("Transitions into the initial status are not allowed.");
+			if (t.getTargetState().equals(initial)) {
+				throw new InvalidOperationException("Transitions into the initial states are not allowed.");
 			}
 		}
 	}
 
-	private WorkflowStatus ensureInitialExists(Workflow wf) {
-		WorkflowStatus status = wf.getInitialStatus();
-		if (status == null || status.isArchived()) {
+	private WorkflowState ensureInitialExists(Workflow wf) {
+		WorkflowState state = wf.getInitialState();
+		if (state == null || state.isArchived()) {
 			throw new InvalidOperationException("Initial must exist and be active.");
 		}
-		return status;
+		return state;
 	}
 
 	private void ensureNoOrphans(Workflow wf) {
-		WorkflowStatus initial = ensureInitialExists(wf);
+		WorkflowState initial = ensureInitialExists(wf);
 
 		// 인접 리스트(그래프)를 만든다
-		Map<WorkflowStatus, List<WorkflowStatus>> reachableFrom = new HashMap<>();
+		Map<WorkflowState, List<WorkflowState>> reachableFrom = new HashMap<>();
 		for (var transition : wf.getTransitions()) {
 			if (transition.isArchived()) {
 				continue;
 			}
 
-			WorkflowStatus from = transition.getSourceStatus();
-			WorkflowStatus to = transition.getTargetStatus();
+			WorkflowState from = transition.getSourceState();
+			WorkflowState to = transition.getTargetState();
 
 			reachableFrom.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
 		}
 
 		// BFS로 initial에서 시작해 도달 가능한 상태를 모두 방문
-		Set<WorkflowStatus> reachableStatuses = new HashSet<>();
-		Deque<WorkflowStatus> toVisit = new ArrayDeque<>();
+		Set<WorkflowState> reachableStates = new HashSet<>();
+		Deque<WorkflowState> toVisit = new ArrayDeque<>();
 		toVisit.add(initial);
-		reachableStatuses.add(initial);
+		reachableStates.add(initial);
 
 		while (!toVisit.isEmpty()) {
-			WorkflowStatus current = toVisit.poll();
-			List<WorkflowStatus> nextStatuses = reachableFrom.getOrDefault(current, List.of());
+			WorkflowState current = toVisit.poll();
+			List<WorkflowState> nextStatuses = reachableFrom.getOrDefault(current, List.of());
 
-			for (WorkflowStatus next : nextStatuses) {
-				if (reachableStatuses.add(next)) {
+			for (WorkflowState next : nextStatuses) {
+				if (reachableStates.add(next)) {
 					toVisit.add(next);
 				}
 			}
 		}
 
 		// 살아있는 상태 수와 방문한 상태 수가 같아야 '고아 없음'
-		long totalStatuses = wf.getStatuses().stream()
+		long totalStates = wf.getStates().stream()
 			.filter(s -> !s.isArchived())
 			.count();
 
-		if (reachableStatuses.size() != totalStatuses) {
-			throw new InvalidOperationException("Orphan statuses exist (unreachable from initial).");
+		if (reachableStates.size() != totalStates) {
+			throw new InvalidOperationException("Orphan states exist (unreachable from initial).");
 		}
 	}
 }

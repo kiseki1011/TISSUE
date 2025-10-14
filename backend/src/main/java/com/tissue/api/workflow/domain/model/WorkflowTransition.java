@@ -59,10 +59,10 @@ public class WorkflowTransition extends BaseEntity {
 	private String description;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus sourceStatus;
+	private WorkflowState sourceState;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus targetStatus;
+	private WorkflowState targetState;
 
 	@OneToMany(mappedBy = "transition", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("executionOrder ASC")
@@ -71,14 +71,14 @@ public class WorkflowTransition extends BaseEntity {
 	public static WorkflowTransition of(
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull WorkflowStatus sourceStatus,
-		@NonNull WorkflowStatus targetStatus
+		@NonNull WorkflowState sourceState,
+		@NonNull WorkflowState targetState
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
 		wt.label = label;
 		wt.description = nullToEmpty(description);
-		wt.sourceStatus = sourceStatus;
-		wt.targetStatus = targetStatus;
+		wt.sourceState = sourceState;
+		wt.targetState = targetState;
 
 		return wt;
 	}
@@ -95,12 +95,12 @@ public class WorkflowTransition extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	void rewireSource(@NonNull WorkflowStatus sourceStatus) {
-		this.sourceStatus = sourceStatus;
+	void rewireSource(@NonNull WorkflowState sourceState) {
+		this.sourceState = sourceState;
 	}
 
-	void rewireTarget(@NonNull WorkflowStatus targetStatus) {
-		this.targetStatus = targetStatus;
+	void rewireTarget(@NonNull WorkflowState targetState) {
+		this.targetState = targetState;
 	}
 
 	// Guard 추가 (GuardType enum 사용)

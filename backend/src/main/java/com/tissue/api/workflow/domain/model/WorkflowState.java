@@ -32,7 +32,7 @@ import lombok.ToString;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkflowStatus extends BaseEntity {
+public class WorkflowState extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,14 +64,14 @@ public class WorkflowStatus extends BaseEntity {
 	@Column(nullable = false)
 	private boolean terminal;
 
-	static WorkflowStatus of(
+	static WorkflowState of(
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color,
 		boolean initial,
 		boolean terminal
 	) {
-		WorkflowStatus ws = new WorkflowStatus();
+		WorkflowState ws = new WorkflowState();
 		ws.label = label;
 		ws.description = nullToEmpty(description);
 		ws.color = color;
