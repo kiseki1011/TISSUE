@@ -1,12 +1,14 @@
 package com.tissue.api.workflow.domain.model;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
+import static com.tissue.api.issue.domain.enums.StateCategory.*;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issue.domain.model.vo.Label;
 
 import jakarta.persistence.Column;
@@ -64,6 +66,10 @@ public class WorkflowState extends BaseEntity {
 	@Column(nullable = false)
 	private boolean terminal;
 
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private StateCategory category;
+
 	static WorkflowState of(
 		@NonNull Label label,
 		@Nullable String description,
@@ -77,6 +83,7 @@ public class WorkflowState extends BaseEntity {
 		ws.color = color;
 		ws.initial = initial;
 		ws.terminal = terminal;
+		ws.category = derive(initial, terminal);
 
 		return ws;
 	}
@@ -99,18 +106,22 @@ public class WorkflowState extends BaseEntity {
 
 	void markInitial() {
 		this.initial = true;
+		this.category = derive(true, terminal);
 	}
 
 	void unmarkInitial() {
 		this.initial = false;
+		this.category = derive(false, terminal);
 	}
 
 	void markTerminal() {
 		this.terminal = true;
+		this.category = derive(this.initial, true);
 	}
 
 	void unmarkTerminal() {
 		this.terminal = false;
+		this.category = derive(this.initial, false);
 	}
 
 	void softDelete() {

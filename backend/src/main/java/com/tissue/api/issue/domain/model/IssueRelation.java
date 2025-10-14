@@ -25,25 +25,23 @@ import lombok.ToString;
 @Entity
 @Table(name = "issue_relation",
 	uniqueConstraints = @UniqueConstraint(
+		// TODO: 현재는 relation이 같은 소스-타겟 사이에서 하나만 존재 가능
+		//  relation 타입까지 포함한 유니크 제약을 걸어서, 중복되지 않는 타입이라면 여러개 생성할 수 있도록 허용할까?
 		columnNames = {"source_issue_id", "target_issue_id"}
 	)
 )
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelation extends BaseEntity {
 
-	@ToString.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// TODO: toString에 포함?
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "source_issue_id", nullable = false)
 	private Issue sourceIssue;
 
-	// TODO: toString에 포함?
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "target_issue_id", nullable = false)
 	private Issue targetIssue;
@@ -68,8 +66,6 @@ public class IssueRelation extends BaseEntity {
 		issueRelation.targetIssue = targetIssue;
 		issueRelation.relationType = type;
 
-		// TODO: 역방향의 관계 추가는 필요 없나?
-		// 관계 형성
 		sourceIssue.getOutgoingRelations().add(issueRelation);
 		targetIssue.getIncomingRelations().add(issueRelation);
 
@@ -89,9 +85,7 @@ public class IssueRelation extends BaseEntity {
 		return this.sourceIssue.equals(issue);
 	}
 
-	/**
-	 * 특정 이슈 관점에서 연결된 상대 이슈 반환
-	 */
+	// TODO: 더 좋은 이름 없을까?
 	public Issue getOtherIssue(@NonNull Issue issue) {
 		if (sourceIssue.equals(issue)) {
 			return targetIssue;
@@ -102,9 +96,6 @@ public class IssueRelation extends BaseEntity {
 		throw new IllegalArgumentException("Issue not part of this relation");
 	}
 
-	/**
-	 * 특정 이슈 관점에서의 관계 타입 (역방향이면 opposite 반환)
-	 */
 	public IssueRelationType getTypeFor(@NonNull Issue issue) {
 		if (sourceIssue.equals(issue)) {
 			return relationType; // outward
@@ -133,15 +124,24 @@ public class IssueRelation extends BaseEntity {
 		}
 	}
 
-	// TODO: 어차피 workspace + issueKey로 조회하기 때문에 무조건 같은 워크스페이스 보장됨
-	//  (메서드 계약도 무조건 그렇게 하도록 노출되어 있음). 굳이 필요할까?
 	private static void ensureSameWorkspace(Issue source, Issue target) {
 		if (!source.getWorkspace().equals(target.getWorkspace())) {
 			throw new InvalidOperationException("Issues must be in the same workspace");
 		}
 	}
 
+	@Override
+	public String toString() {
+		return String.format(
+			"IssueRelation(id=%d, source=%s, target=%s, type=%s)",
+			id,
+			sourceIssue != null ? sourceIssue.getKey() : "?",
+			targetIssue != null ? targetIssue.getKey() : "?",
+			relationType
+		);
+	}
+
 	// TODO(optional): validateRelationType()
 	//  - relation 종류별로 필요한 검증 로직을 switch 문으로
-	//  - 예를 들어서 DUPLICATE 관계는 서로 같은 이슈 타입이어야 한다거나(예시 임)
+	//  - 예를 들어서 DUPLICATE 관계는 서로 같은 이슈 타입이어야 한다거나(예시)
 }

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.application.service.IssueRelationService;
 import com.tissue.api.issue.presentation.dto.request.AddIssueRelationRequest;
-import com.tissue.api.issue.presentation.dto.request.RemoveIssueRelationRequest;
 import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -26,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueRelationController {
 
 	private final IssueRelationService issueRelationService;
-
+	
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ApiResponse<IssueRelationResponse> addRelation(
@@ -41,14 +40,14 @@ public class IssueRelationController {
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@DeleteMapping("/{relationId}")
+	@DeleteMapping("/{targetIssueKey}")
 	public ApiResponse<Void> removeRelation(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid RemoveIssueRelationRequest request,
+		@PathVariable String targetIssueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		issueRelationService.remove(workspaceKey, issueKey, request.targetIssueKey());
+		issueRelationService.remove(workspaceKey, issueKey, targetIssueKey);
 
 		return ApiResponse.okWithNoContent("Issue relation removed.");
 	}

@@ -13,14 +13,15 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
-import com.tissue.api.workflow.domain.model.WorkflowStatus;
+import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -84,10 +85,8 @@ public class Issue extends BaseEntity {
 	@Column(nullable = false)
 	private IssuePriority priority;
 
-	// TODO: 이슈의 상태를 전이(transition) 시킬 때 intial에서 다음 상태로 가는 경우 설정(변경 불가해야 함)
 	private Instant startedAt;
 
-	// TODO: 이슈의 상태를 전이 시킬 때 terminal에 도달하는 경우 설정
 	private Instant resolvedAt;
 
 	private Instant dueAt; // TODO: 현재 시간 보다 이전으로 설정 못하도록 검증 필요
@@ -124,9 +123,14 @@ public class Issue extends BaseEntity {
 	private IssueType issueType;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private WorkflowStatus currentStatus;
+	private WorkflowState currentState;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private StateCategory category;
 
 	// TODO: IssueConfig에서 @PostConstruct를 사용하는 것 보다 좋은 방법은 없나?
+	//  예를 들어서, (아래의 주석에도 언급했지만) reviewer를 추가하기 위한 검증 로직을 IssueValidator로 분리하고, 서비스 계층에서 호출
 	public static void setLimits(int maxReviewers) {
 		MAX_REVIEWERS = maxReviewers;
 	}
@@ -214,9 +218,15 @@ public class Issue extends BaseEntity {
 			return;
 		}
 
-		throw new RuntimeException("No relation found between " + this.getKey() + " and " + otherIssue.getKey());
+		throw new ResourceNotFoundException(
+			"No relation found between %s and %s"
+				.formatted(this.getKey(), otherIssue.getKey())
+		);
 
 	}
+
+	// TODO: 조회 메서드들은 엔티티 내에 정의해서 사용하지 말고, 그냥 레포지토리에서 정의하고, 필요한 경우 서비스에서 호출할까?
+	//  엔티티에 정의하니깐 엔티티가 너무 비대해지고, 책임이 너무 커지는 느낌이 듬
 
 	/**
 	 * 모든 관계 조회 (양방향)
@@ -231,7 +241,7 @@ public class Issue extends BaseEntity {
 	/**
 	 * 특정 타입의 관련 이슈들 조회
 	 */
-	public List<Issue> getRelatedIssues(IssueRelationType type) {
+	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
 		List<Issue> result = new ArrayList<>();
 
 		// Outgoing에서 찾기
@@ -264,14 +274,14 @@ public class Issue extends BaseEntity {
 	 * Blocking하는 이슈들
 	 */
 	public List<Issue> getBlockingIssues() {
-		return getRelatedIssues(IssueRelationType.BLOCKS);
+		return getRelatedIssuesByType(IssueRelationType.BLOCKS);
 	}
 
 	/**
 	 * Blocked by 이슈들
 	 */
 	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssues(IssueRelationType.BLOCKED_BY);
+		return getRelatedIssuesByType(IssueRelationType.BLOCKED_BY);
 	}
 
 	public String getWorkspaceKey() {
@@ -293,8 +303,19 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void moveToStatus(@NonNull WorkflowStatus status) {
-		this.currentStatus = status;
+	public void proceedToNextState(@NonNull WorkflowState newState) {
+		WorkflowState previousState = this.currentState;
+		this.currentState = newState;
+
+		if (previousState.isInitial() && this.startedAt == null) {
+			this.startedAt = Instant.now();
+		}
+		if (newState.isTerminal() && this.resolvedAt == null) {
+			this.resolvedAt = Instant.now();
+		}
+		if (previousState.isTerminal() && !newState.isTerminal()) {
+			this.resolvedAt = null;
+		}
 	}
 
 	public void assignParentIssue(@NonNull Issue newParent) {
@@ -318,9 +339,6 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureCanAddParent(@NonNull Issue parentIssue) {
-		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
-		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
-		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
 		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
 		if (isDifferentWorkspace) {
 			throw new InvalidOperationException("Parent must belong to the same workspace.");
@@ -351,22 +369,21 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	// TODO: updateStartedAt: Workflow 전이에서 initial에서 다름 상태로 넘어가는 순간 호출
-	// TODO: updateResolvedAt: Workflow 전이에서 terminal에 도달하는 경우 호출
-
 	public boolean isAuthor(@NonNull Long memberId) {
 		return Objects.equals(getCreatedBy(), memberId);
 	}
 
-	// TODO: 이슈 삭제 전략을 어떻게 가져가야 할까? (일단 기본적으로 soft-delete)
-	//  - 현재 워크플로우 진행중인 이슈는 삭제 불가?
-	//  - terminal 상태의 이슈는 삭제 불가?(기록으로 무조건 남도록?)
 	public void softDelete() {
+		if (!currentState.isInitial()) {
+			throw new RuntimeException("Cannot delete issue that is not initial state.");
+		}
+
 		unassign();
 		this.reviewers.clear();
 		this.subscribers.clear();
 
-		// TODO: relations clear
+		this.outgoingRelations.clear();
+		this.incomingRelations.clear();
 
 		detachFromCurrentParent();
 
@@ -374,19 +391,15 @@ public class Issue extends BaseEntity {
 	}
 
 	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		IssueSubscriber watcher = new IssueSubscriber(workspaceMember);
-		subscribers.add(watcher);
+		IssueSubscriber subscriber = new IssueSubscriber(workspaceMember);
+		subscribers.add(subscriber);
 	}
 
 	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		subscribers.removeIf(watcher -> watcher.getSubscriber().equals(workspaceMember));
+		subscribers.removeIf(issueSubscriber -> issueSubscriber.getSubscriber().equals(workspaceMember));
 	}
 
 	public void assignTo(@NonNull WorkspaceMember assignee) {
-		// TODO: 어차피 서비스 계층에서 조회할때 workspace + issueKey로 조회하기 때문에 같은 워크스페이스 보장함.
-		//  그래서 같은 워크스페이스 소속 검증 로직은 제거해도 되지 않을까?
-		//  애초에 노출되는 조회 메서드 자체가 workspace + issueKey로 찾도록 강제함
-		// validateBelongsToWorkspace(assignee);
 		this.assignee = assignee;
 	}
 
@@ -410,7 +423,7 @@ public class Issue extends BaseEntity {
 		ensureCanAddReviewer();
 
 		boolean isReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().getId().equals(workspaceMember.getId()));
+			.anyMatch(r -> r.getReviewer().equals(workspaceMember));
 
 		if (isReviewer) {
 			return;
@@ -420,14 +433,17 @@ public class Issue extends BaseEntity {
 		reviewers.add(reviewer);
 	}
 
+	// TODO: 주석한 방법이 더 좋나? 아니면 현재 이 방법이 더 좋나?
 	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
-		reviewers.remove(issueReviewer);
+		// IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
+		// reviewers.remove(issueReviewer);
+		reviewers.removeIf(issueReviewer -> issueReviewer.getReviewer().equals(workspaceMember));
 	}
 
+	// TODO: 그냥 issueValidator로 분리해서, 서비스 계층에서 호출할까?
 	private void ensureCanAddReviewer() {
 		if (reviewers.size() >= MAX_REVIEWERS) {
-			throw new InvalidOperationException(String.format("The max number of reviewers is %d.", MAX_REVIEWERS));
+			throw new InvalidOperationException("The max number of reviewers is %d.".formatted(MAX_REVIEWERS));
 		}
 	}
 
@@ -435,9 +451,10 @@ public class Issue extends BaseEntity {
 		return reviewers.stream()
 			.filter(r -> r.getReviewer().equals(workspaceMember))
 			.findFirst()
-			.orElseThrow(() -> new ForbiddenOperationException(
-				String.format("Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s",
-					workspaceMember.getId(), workspaceMember.getDisplayName()))
+			.orElseThrow(() -> new ResourceNotFoundException(
+					"Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s"
+						.formatted(workspaceMember.getId(), workspaceMember.getDisplayName())
+				)
 			);
 	}
 }

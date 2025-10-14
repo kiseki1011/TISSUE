@@ -1,9 +1,7 @@
 package com.tissue.api.issue.domain.enums;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
 @RequiredArgsConstructor
 public enum IssueRelationType {
 	RELEVANT(false),
@@ -15,6 +13,10 @@ public enum IssueRelationType {
 	DUPLICATED_BY(true);
 
 	private final boolean requiresAcyclicCheck;
+
+	public boolean requiresAcyclicCheck() {
+		return this.requiresAcyclicCheck;
+	}
 
 	public IssueRelationType getOpposite() {
 		return switch (this) {

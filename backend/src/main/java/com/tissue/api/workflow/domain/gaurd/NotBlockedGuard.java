@@ -23,7 +23,7 @@ public class NotBlockedGuard implements TransitionGuard {
 
 		// 모든 blocking 이슈가 terminal 상태인지 확인
 		return blockingIssues.stream()
-			.allMatch(blocking -> blocking.getCurrentStatus().isTerminal());
+			.allMatch(blocking -> blocking.getCurrentState().isTerminal());
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class NotBlockedGuard implements TransitionGuard {
 		Issue issue = context.getIssue();
 
 		List<Issue> unresolved = issue.getBlockedByIssues().stream()
-			.filter(blocking -> !blocking.getCurrentStatus().isTerminal())
+			.filter(blocking -> !blocking.getCurrentState().isTerminal())
 			.toList();
 
 		String blockingKeys = unresolved.stream()
