@@ -11,24 +11,19 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: IssueAssociateService라는 이름이 더 좋을까? 아니면 기존의 IssueCollaboratorService?
-//  아니면 더 좋은 이름이 있으려나? (더 좋은 이름이 있다면 IssueCollaboratorController의 이름도 다 같이 변경 예정)
 @Service
 @RequiredArgsConstructor
-public class IssueCollaboratorService {
+public class IssueParticipantService {
 
 	private final IssueFinder issueFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 
-	// TODO: 아래의 메서드들의 변수명에 target, actor 등을 사용하고 있는데, 이렇게 지어도 괜찮나?
-	//  내 의도는 target 이나 actor 같은 변수를 통해 의미를 나타내고 싶었음. 그냥 workspaceMember로 두는게 좋으려나?
-
 	@Transactional
 	public IssueResponse assignTo(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember assignee = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		issue.assignTo(target);
+		issue.assignTo(assignee);
 
 		return IssueResponse.from(issue);
 	}
@@ -45,9 +40,9 @@ public class IssueCollaboratorService {
 	@Transactional
 	public IssueResponse subscribe(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember subscriber = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		issue.addSubscriber(actor);
+		issue.addSubscriber(subscriber);
 
 		return IssueResponse.from(issue);
 	}
@@ -55,9 +50,9 @@ public class IssueCollaboratorService {
 	@Transactional
 	public IssueResponse unsubscribe(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember subscriber = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		issue.removeSubscriber(actor);
+		issue.removeSubscriber(subscriber);
 
 		return IssueResponse.from(issue);
 	}
@@ -65,9 +60,9 @@ public class IssueCollaboratorService {
 	@Transactional
 	public IssueResponse addReviewer(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		issue.addReviewer(target);
+		issue.addReviewer(reviewer);
 
 		return IssueResponse.from(issue);
 	}
@@ -75,9 +70,9 @@ public class IssueCollaboratorService {
 	@Transactional
 	public IssueResponse removeReviewer(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		issue.removeReviewer(target);
+		issue.removeReviewer(reviewer);
 
 		return IssueResponse.from(issue);
 	}

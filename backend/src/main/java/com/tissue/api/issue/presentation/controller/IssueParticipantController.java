@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.issue.application.service.IssueCollaboratorService;
+import com.tissue.api.issue.application.service.IssueParticipantService;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -19,9 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/issues/{issueKey}")
-public class IssueCollaboratorController {
+public class IssueParticipantController {
 
-	private final IssueCollaboratorService issueCollaboratorService;
+	private final IssueParticipantService issueParticipantService;
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/assignees/{memberId}")
@@ -31,7 +31,7 @@ public class IssueCollaboratorController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.assignTo(
+		IssueResponse response = issueParticipantService.assignTo(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -47,7 +47,7 @@ public class IssueCollaboratorController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.unassign(
+		IssueResponse response = issueParticipantService.unassign(
 			workspaceKey,
 			issueKey
 		);
@@ -62,7 +62,7 @@ public class IssueCollaboratorController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.subscribe(
+		IssueResponse response = issueParticipantService.subscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -78,7 +78,7 @@ public class IssueCollaboratorController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.unsubscribe(
+		IssueResponse response = issueParticipantService.unsubscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -95,7 +95,7 @@ public class IssueCollaboratorController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.addReviewer(
+		IssueResponse response = issueParticipantService.addReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -112,7 +112,7 @@ public class IssueCollaboratorController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCollaboratorService.removeReviewer(
+		IssueResponse response = issueParticipantService.removeReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
