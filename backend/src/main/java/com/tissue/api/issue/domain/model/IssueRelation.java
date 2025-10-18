@@ -2,6 +2,7 @@ package com.tissue.api.issue.domain.model;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
 import jakarta.persistence.Column;
@@ -85,7 +86,6 @@ public class IssueRelation extends BaseEntity {
 		return this.sourceIssue.equals(issue);
 	}
 
-	// TODO: 더 좋은 이름 없을까?
 	public Issue getOtherIssue(@NonNull Issue issue) {
 		if (sourceIssue.equals(issue)) {
 			return targetIssue;
@@ -144,4 +144,40 @@ public class IssueRelation extends BaseEntity {
 	// TODO(optional): validateRelationType()
 	//  - relation 종류별로 필요한 검증 로직을 switch 문으로
 	//  - 예를 들어서 DUPLICATE 관계는 서로 같은 이슈 타입이어야 한다거나(예시)
+	private static void validateRelationType(
+		IssueRelationType type,
+		Issue sourceIssue,
+		Issue targetIssue
+	) {
+		switch (type) {
+			case DUPLICATES, DUPLICATED_BY -> {
+				// 중복은 같은 IssueType만
+				if (!sourceIssue.getIssueType().equals(targetIssue.getIssueType())) {
+					throw new InvalidOperationException(
+						"DUPLICATES relation requires same issue type. " +
+							"Source: " + sourceIssue.getIssueType().getLabel() + ", " +
+							"Target: " + targetIssue.getIssueType().getLabel()
+					);
+				}
+			}
+
+			case BLOCKS, BLOCKED_BY -> {
+				// BLOCKS는 같은 hierarchy 레벨 또는 상위 레벨만
+				IssueHierarchy sourceHierarchy = sourceIssue.getHierarchy();
+				IssueHierarchy targetHierarchy = targetIssue.getHierarchy();
+
+				// Epic은 Epic만, Story는 Story/Epic, Subtask는 모두 가능
+				if (sourceHierarchy == IssueHierarchy.SUBTASK &&
+					targetHierarchy == IssueHierarchy.EPIC) {
+					throw new InvalidOperationException(
+						"Subtask cannot block Epic directly"
+					);
+				}
+			}
+
+			case RELEVANT -> {
+				// 제약 없음
+			}
+		}
+	}
 }
