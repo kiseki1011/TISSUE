@@ -2,6 +2,7 @@ package com.tissue.api.issue.domain.model;
 
 import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.common.util.TextNormalizer.*;
+import static com.tissue.api.issue.domain.enums.IssueRelationType.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,8 +52,6 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	// private static int MAX_REVIEWERS = 10;
-
 	@ToString.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,7 +74,6 @@ public class Issue extends BaseEntity {
 	private String title;
 
 	@Lob
-	@Column(nullable = false)
 	private String content;
 
 	@Lob
@@ -189,6 +187,8 @@ public class Issue extends BaseEntity {
 		return IssueRelation.create(this, targetIssue, type);
 	}
 
+	// TODO: removeRelation 내부의 로직을 IssueRelation에서 담당하는 형태로 만드는건 불가능할까?
+	//  Issue에서는 단순히 해당 IssueRelation의 메서드를 부르고. 불가능한가?
 	public void removeRelation(Issue otherIssue) {
 		IssueRelation outgoing = outgoingRelations.stream()
 			.filter(r -> r.getTargetIssue().equals(otherIssue))
@@ -303,19 +303,34 @@ public class Issue extends BaseEntity {
 		return issueType.getIssueHierarchy();
 	}
 
-	// TODO: WorkspaceMember를 입력 파라미터로 받을까?
 	public boolean isAuthor(@NonNull Long memberId) {
 		return Objects.equals(getCreatedBy(), memberId);
 	}
 
-	// TODO: Long memberId를 입력 파라미터로 받을까?
-	public boolean isAssignee(@NonNull WorkspaceMember workspaceMember) {
-		return Objects.equals(assignee, workspaceMember);
+	public boolean isReporter(@NonNull WorkspaceMember wm) {
+		return Objects.equals(reporter, wm);
 	}
 
-	// TODO: Long memberId를 입력 파라미터로 받을까?
-	public boolean isReporter(@NonNull WorkspaceMember workspaceMember) {
-		return Objects.equals(reporter, workspaceMember);
+	public boolean isAssignee(@NonNull WorkspaceMember wm) {
+		return Objects.equals(assignee, wm);
+	}
+
+	public boolean isSubscriber(@NonNull WorkspaceMember wm) {
+		return subscribers.stream()
+			.anyMatch(s -> Objects.equals(s.getSubscriber(), wm));
+	}
+
+	public boolean isReviewer(@NonNull WorkspaceMember wm) {
+		return reviewers.stream()
+			.anyMatch(s -> Objects.equals(s.getReviewer(), wm));
+	}
+
+	public boolean isParticipant(@NonNull WorkspaceMember wm) {
+		return isAuthor(wm.getMemberId()) ||
+			isReporter(wm) ||
+			isAssignee(wm) ||
+			isReviewer(wm) ||
+			isSubscriber(wm);
 	}
 
 	public List<IssueRelation> getAllRelations() {
@@ -343,16 +358,15 @@ public class Issue extends BaseEntity {
 
 	public boolean isBlockedBy(Issue otherIssue) {
 		return incomingRelations.stream()
-			.anyMatch(r ->
-				r.getSourceIssue().equals(otherIssue) && r.getRelationType() == IssueRelationType.BLOCKS);
+			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) && r.getRelationType() == BLOCKS);
 	}
 
 	public List<Issue> getBlockingIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKS);
+		return getRelatedIssuesByType(BLOCKS);
 	}
 
 	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKED_BY);
+		return getRelatedIssuesByType(BLOCKED_BY);
 	}
 
 	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
@@ -414,8 +428,6 @@ public class Issue extends BaseEntity {
 		this.incomingRelations.clear();
 	}
 
-	// TODO: isReviewer()
-	// TODO: isSubscriber()
 	// TODO: calculateEpicLevelStoryPoint()
 	// TODO: calculateEpicProgress()
 	//  전략 1: (해결된 STORY 레벨 이슈들의 story point 합) / (EPIC 레벨 이슈의 story point)
