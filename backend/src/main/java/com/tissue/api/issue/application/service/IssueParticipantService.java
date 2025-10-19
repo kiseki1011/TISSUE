@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.policy.IssuePolicy;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -17,6 +18,21 @@ public class IssueParticipantService {
 
 	private final IssueFinder issueFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final IssuePolicy issuePolicy;
+
+	@Transactional
+	public IssueResponse changeReporter(String workspaceKey, String issueKey, Long memberId) {
+		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+
+		if (issue.isReporter(target)) {
+			return IssueResponse.from(issue);
+		}
+
+		issue.changeReporter(target);
+
+		return IssueResponse.from(issue);
+	}
 
 	@Transactional
 	public IssueResponse assignTo(String workspaceKey, String issueKey, Long memberId) {
@@ -62,6 +78,7 @@ public class IssueParticipantService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
+		issuePolicy.ensureCanAddReviewer(issue);
 		issue.addReviewer(reviewer);
 
 		return IssueResponse.from(issue);

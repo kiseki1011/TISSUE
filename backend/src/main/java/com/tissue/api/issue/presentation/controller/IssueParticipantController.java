@@ -1,6 +1,7 @@
 package com.tissue.api.issue.presentation.controller;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,18 @@ public class IssueParticipantController {
 	private final IssueParticipantService issueParticipantService;
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/reporters/{memberId}")
+	public ApiResponse<IssueResponse> changeReporter(
+		@PathVariable String workspaceKey,
+		@PathVariable String issueKey,
+		@PathVariable Long memberId,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueResponse response = issueParticipantService.changeReporter(workspaceKey, issueKey, memberId);
+		return ApiResponse.ok("Reporter changed.", response);
+	}
+
+	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/assignees/{memberId}")
 	public ApiResponse<IssueResponse> assignTo(
 		@PathVariable String workspaceKey,
@@ -36,7 +49,6 @@ public class IssueParticipantController {
 			issueKey,
 			memberId
 		);
-
 		return ApiResponse.ok("Assignee added.", response);
 	}
 
@@ -51,7 +63,6 @@ public class IssueParticipantController {
 			workspaceKey,
 			issueKey
 		);
-
 		return ApiResponse.ok("Assignee removed.", response);
 	}
 
@@ -67,8 +78,7 @@ public class IssueParticipantController {
 			issueKey,
 			userDetails.getMemberId()
 		);
-
-		return ApiResponse.ok("Subscriber added.", response); // TODO: "Subscribed issue."로 바꿀까?
+		return ApiResponse.ok("Subscriber added.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
@@ -83,7 +93,6 @@ public class IssueParticipantController {
 			issueKey,
 			userDetails.getMemberId()
 		);
-
 		return ApiResponse.ok("Subscriber removed.", response);
 	}
 
@@ -100,7 +109,6 @@ public class IssueParticipantController {
 			issueKey,
 			memberId
 		);
-
 		return ApiResponse.ok("Reviewer added.", response);
 	}
 
@@ -117,7 +125,6 @@ public class IssueParticipantController {
 			issueKey,
 			memberId
 		);
-
 		return ApiResponse.ok("Reviewer removed.", response);
 	}
 }

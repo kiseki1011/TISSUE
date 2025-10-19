@@ -51,11 +51,12 @@ public class IssueService {
 	public IssueResponse create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.currentMemberId(), cmd.workspaceKey());
+		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
 
 		Issue issue = issueRepository.save(Issue.create(
 			workspace,
 			issueType,
+			actor,
 			cmd.title(),
 			cmd.content(),
 			cmd.summary(),
@@ -67,14 +68,15 @@ public class IssueService {
 		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
 		fieldValueRepository.saveAll(values);
 
-		// TODO: 아래 로직을 Issue.create에 캡슐화 하는게 좋을까?
-		issue.setReporter(actor); // TODO: updateReporter 대신 setReporter가 더 나으려나?
-		issue.addSubscriber(actor);
+		issue.changeReporter(actor);
+
+		// TODO: 굳이 reporter를 subscriber로 추가해야 할까?
+		// issue.addSubscriber(actor);
 
 		return IssueResponse.from(issue);
 	}
 
-	// TODO: updateReporter도 여기서 업데이트? 아니면 따로 API를 분리할까?
+	// TODO: setReporter도 여기서 업데이트? 아니면 따로 API를 분리할까?
 	@Transactional
 	public IssueResponse updateCommonFields(UpdateCommonFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
@@ -89,19 +91,20 @@ public class IssueService {
 		return IssueResponse.from(issue);
 	}
 
-	// TODO: 가독성 리팩토링 가능할까?
-	//  early-return을 사용하면 더 좋을까? 아니면 조건문의 조건을 변수로 추출해서 이름을 붙일가?
 	@Transactional
 	public IssueResponse updateCustomFields(UpdateCustomFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
-		if (cmd.customFields() != null && !cmd.customFields().isEmpty()) {
-			List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
-				cmd.customFields(),
-				issue
-			);
-			fieldValueRepository.saveAll(updateValues);
+		// TODO: 확실하게 커맨드 dto 또는 변환 과정에서 처리하면 로직을 제거해도 되지 않을까?
+		if (cmd.customFields() == null || cmd.customFields().isEmpty()) {
+			return IssueResponse.from(issue);
 		}
+
+		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
+			cmd.customFields(),
+			issue
+		);
+		fieldValueRepository.saveAll(updateValues);
 
 		return IssueResponse.from(issue);
 	}
@@ -111,7 +114,7 @@ public class IssueService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
 
-		issue.assignParentIssue(parent);
+		issue.setParentIssue(parent);
 
 		return IssueResponse.from(issue);
 	}
@@ -129,7 +132,6 @@ public class IssueService {
 	public IssueResponse softDelete(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
-		// issueValidator.ensureDeletable();
 		issue.softDelete();
 
 		return IssueResponse.from(issue);

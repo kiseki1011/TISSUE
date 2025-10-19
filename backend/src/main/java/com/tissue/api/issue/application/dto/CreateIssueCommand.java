@@ -9,7 +9,7 @@ import lombok.Builder;
 
 @Builder
 public record CreateIssueCommand(
-	Long currentMemberId,
+	Long memberId,
 	String workspaceKey,
 	String title,
 	String content,
