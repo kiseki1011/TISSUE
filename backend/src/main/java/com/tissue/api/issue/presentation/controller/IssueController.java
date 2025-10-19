@@ -49,28 +49,27 @@ public class IssueController {
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
 	public ApiResponse<IssueResponse> updateCommonFields(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid UpdateCommonFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.updateCommonFields(request.toCommand(workspaceCode, issueKey));
+		IssueResponse response = issueService.updateCommonFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/custom")
 	public ApiResponse<IssueResponse> updateCustomFields(
-		@PathVariable String workspaceCode,
+		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid UpdateCustomFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueService.updateCustomFields(request.toCommand(workspaceCode, issueKey));
+		IssueResponse response = issueService.updateCustomFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
-	// TODO: parentKey는 AssignParentIssueRequest가 아니라 path variable로 전달하는게 좋을까?
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/parent")
 	public ApiResponse<IssueResponse> assignParent(
