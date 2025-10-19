@@ -1,5 +1,6 @@
 package com.tissue.api.issue.domain.model;
 
+import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.time.Instant;
@@ -18,7 +19,6 @@ import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.model.WorkflowState;
@@ -51,7 +51,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	private static int MAX_REVIEWERS = 10;
+	// private static int MAX_REVIEWERS = 10;
 
 	@ToString.Include
 	@Id
@@ -125,19 +125,10 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private StateCategory category;
-
-	// TODO: IssueConfig에서 @PostConstruct를 사용하는 것 보다 좋은 방법은 없나?
-	//  예를 들어서, (아래의 주석에도 언급했지만) reviewer를 추가하기 위한 검증 로직을 IssueValidator로 분리하고, 서비스 계층에서 호출
-	public static void setLimits(int maxReviewers) {
-		MAX_REVIEWERS = maxReviewers;
-	}
-
 	public static Issue create(
 		@NonNull Workspace workspace,
 		@NonNull IssueType issueType,
+		@NonNull WorkspaceMember reporter,
 		@NonNull String title,
 		@Nullable String content,
 		@Nullable String summary,
@@ -148,19 +139,22 @@ public class Issue extends BaseEntity {
 		Issue issue = new Issue();
 		issue.workspace = workspace;
 		issue.issueType = issueType;
+		issue.reporter = reporter;
 		issue.title = title;
 		issue.content = nullToEmpty(content);
 		issue.summary = nullToEmpty(summary);
 		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
-		issue.dueAt = dueAt;
+		issue.dueAt = requireFutureOrPresent(dueAt);
 
 		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
 		issue.storyPoint = storyPoint;
 
+		// issue.addSubscriber(reporter);
+
 		return issue;
 	}
 
-	public void setReporter(@NonNull WorkspaceMember reporter) {
+	public void changeReporter(@NonNull WorkspaceMember reporter) {
 		this.reporter = reporter;
 	}
 
@@ -177,7 +171,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateDueAt(@Nullable Instant dueAt) {
-		this.dueAt = dueAt;
+		this.dueAt = requireFutureOrPresent(dueAt);
 	}
 
 	public void updatePriority(@NonNull IssuePriority priority) {
@@ -196,7 +190,6 @@ public class Issue extends BaseEntity {
 	}
 
 	public void removeRelation(Issue otherIssue) {
-		// Outgoing 찾기
 		IssueRelation outgoing = outgoingRelations.stream()
 			.filter(r -> r.getTargetIssue().equals(otherIssue))
 			.findFirst()
@@ -207,7 +200,6 @@ public class Issue extends BaseEntity {
 			return;
 		}
 
-		// Incoming 찾기
 		IssueRelation incoming = incomingRelations.stream()
 			.filter(r -> r.getSourceIssue().equals(otherIssue))
 			.findFirst()
@@ -219,88 +211,9 @@ public class Issue extends BaseEntity {
 		}
 
 		throw new ResourceNotFoundException(
-			"No relation found between %s and %s"
-				.formatted(this.getKey(), otherIssue.getKey())
+			"No relation found between %s and %s".formatted(this.getKey(), otherIssue.getKey())
 		);
 
-	}
-
-	// TODO: 조회 메서드들은 엔티티 내에 정의해서 사용하지 말고, 그냥 레포지토리에서 정의하고, 필요한 경우 서비스에서 호출할까?
-	//  엔티티에 정의하니깐 엔티티가 너무 비대해지고, 책임이 너무 커지는 느낌이 듬
-
-	/**
-	 * 모든 관계 조회 (양방향)
-	 */
-	public List<IssueRelation> getAllRelations() {
-		List<IssueRelation> all = new ArrayList<>();
-		all.addAll(outgoingRelations);
-		all.addAll(incomingRelations);
-		return all;
-	}
-
-	/**
-	 * 특정 타입의 관련 이슈들 조회
-	 */
-	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
-		List<Issue> result = new ArrayList<>();
-
-		// Outgoing에서 찾기
-		outgoingRelations.stream()
-			.filter(r -> r.getRelationType() == type)
-			.map(IssueRelation::getTargetIssue)
-			.forEach(result::add);
-
-		// Incoming에서 역방향 타입으로 찾기
-		incomingRelations.stream()
-			.filter(r -> r.getRelationType() == type.getOpposite())
-			.map(IssueRelation::getSourceIssue)
-			.forEach(result::add);
-
-		return result;
-	}
-
-	/**
-	 * BLOCKS 관계 확인
-	 */
-	public boolean isBlockedBy(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r ->
-				r.getSourceIssue().equals(otherIssue) &&
-					r.getRelationType() == IssueRelationType.BLOCKS
-			);
-	}
-
-	/**
-	 * Blocking하는 이슈들
-	 */
-	public List<Issue> getBlockingIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKS);
-	}
-
-	/**
-	 * Blocked by 이슈들
-	 */
-	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKED_BY);
-	}
-
-	public String getWorkspaceKey() {
-		return workspace.getKey();
-	}
-
-	public IssueHierarchy getHierarchy() {
-		return issueType.getIssueHierarchy();
-	}
-
-	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
-		if (storyPoint == null) {
-			return;
-		}
-		if (hierarchy.cannotHaveStoryPoint()) {
-			throw new InvalidOperationException(
-				"Cannot set story point for hierarchy: " + hierarchy
-			);
-		}
 	}
 
 	public void proceedToNextState(@NonNull WorkflowState newState) {
@@ -318,8 +231,42 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void assignParentIssue(@NonNull Issue newParent) {
-		ensureCanAddParent(newParent);
+	// TODO: reporter, assignee, reviewers를 설정 및 추가할때 subcribers에 자동으로 추가 되도록 설계해야 할까?
+	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
+		IssueSubscriber subscriber = new IssueSubscriber(workspaceMember);
+		subscribers.add(subscriber);
+	}
+
+	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
+		subscribers.removeIf(issueSubscriber -> issueSubscriber.getSubscriber().equals(workspaceMember));
+	}
+
+	public void assignTo(@NonNull WorkspaceMember assignee) {
+		this.assignee = assignee;
+	}
+
+	public void unassign() {
+		this.assignee = null;
+	}
+
+	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
+		boolean isReviewer = reviewers.stream()
+			.anyMatch(r -> r.getReviewer().equals(workspaceMember));
+
+		if (isReviewer) {
+			return;
+		}
+
+		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
+		reviewers.add(reviewer);
+	}
+
+	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
+		reviewers.removeIf(issueReviewer -> issueReviewer.getReviewer().equals(workspaceMember));
+	}
+
+	public void setParentIssue(@NonNull Issue newParent) {
+		ensureCanSetParent(newParent);
 		detachFromCurrentParent();
 
 		this.parentIssue = newParent;
@@ -331,6 +278,92 @@ public class Issue extends BaseEntity {
 		detachFromCurrentParent();
 	}
 
+	// 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리하는게 좋을까?
+	public void softDelete() {
+		if (!currentState.isInitial()) {
+			throw new RuntimeException("Cannot delete issue that is not initial state.");
+		}
+
+		if (!childIssues.isEmpty()) {
+			throw new RuntimeException("Cannot delete issue that has children.");
+		}
+
+		clearParticipants();
+		clearRelations();
+		detachFromCurrentParent();
+
+		archive();
+	}
+
+	public String getWorkspaceKey() {
+		return workspace.getKey();
+	}
+
+	public IssueHierarchy getHierarchy() {
+		return issueType.getIssueHierarchy();
+	}
+
+	// TODO: WorkspaceMember를 입력 파라미터로 받을까?
+	public boolean isAuthor(@NonNull Long memberId) {
+		return Objects.equals(getCreatedBy(), memberId);
+	}
+
+	// TODO: Long memberId를 입력 파라미터로 받을까?
+	public boolean isAssignee(@NonNull WorkspaceMember workspaceMember) {
+		return Objects.equals(assignee, workspaceMember);
+	}
+
+	// TODO: Long memberId를 입력 파라미터로 받을까?
+	public boolean isReporter(@NonNull WorkspaceMember workspaceMember) {
+		return Objects.equals(reporter, workspaceMember);
+	}
+
+	public List<IssueRelation> getAllRelations() {
+		List<IssueRelation> all = new ArrayList<>();
+		all.addAll(outgoingRelations);
+		all.addAll(incomingRelations);
+		return all;
+	}
+
+	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
+		List<Issue> result = new ArrayList<>();
+
+		outgoingRelations.stream()
+			.filter(r -> r.getRelationType() == type)
+			.map(IssueRelation::getTargetIssue)
+			.forEach(result::add);
+
+		incomingRelations.stream()
+			.filter(r -> r.getRelationType() == type.getOpposite())
+			.map(IssueRelation::getSourceIssue)
+			.forEach(result::add);
+
+		return result;
+	}
+
+	public boolean isBlockedBy(Issue otherIssue) {
+		return incomingRelations.stream()
+			.anyMatch(r ->
+				r.getSourceIssue().equals(otherIssue) && r.getRelationType() == IssueRelationType.BLOCKS);
+	}
+
+	public List<Issue> getBlockingIssues() {
+		return getRelatedIssuesByType(IssueRelationType.BLOCKS);
+	}
+
+	public List<Issue> getBlockedByIssues() {
+		return getRelatedIssuesByType(IssueRelationType.BLOCKED_BY);
+	}
+
+	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
+		if (storyPoint == null) {
+			return;
+		}
+		if (hierarchy.cannotHaveStoryPoint()) {
+			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
+		}
+	}
+
 	private void detachFromCurrentParent() {
 		if (parentIssue != null) {
 			parentIssue.getChildIssues().remove(this);
@@ -338,7 +371,8 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	private void ensureCanAddParent(@NonNull Issue parentIssue) {
+	// TODO: 어디까지가 불변식이고, 어디까지가 정책인가?
+	private void ensureCanSetParent(@NonNull Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
 		if (isDifferentWorkspace) {
 			throw new InvalidOperationException("Parent must belong to the same workspace.");
@@ -369,47 +403,15 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public boolean isAuthor(@NonNull Long memberId) {
-		return Objects.equals(getCreatedBy(), memberId);
-	}
-
-	public void softDelete() {
-		if (!currentState.isInitial()) {
-			throw new RuntimeException("Cannot delete issue that is not initial state.");
-		}
-
+	private void clearParticipants() {
 		unassign();
 		this.reviewers.clear();
 		this.subscribers.clear();
+	}
 
+	private void clearRelations() {
 		this.outgoingRelations.clear();
 		this.incomingRelations.clear();
-
-		detachFromCurrentParent();
-
-		archive();
-	}
-
-	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		IssueSubscriber subscriber = new IssueSubscriber(workspaceMember);
-		subscribers.add(subscriber);
-	}
-
-	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		subscribers.removeIf(issueSubscriber -> issueSubscriber.getSubscriber().equals(workspaceMember));
-	}
-
-	public void assignTo(@NonNull WorkspaceMember assignee) {
-		this.assignee = assignee;
-	}
-
-	public void unassign() {
-		this.assignee = null;
-	}
-
-	// TODO: WorkspaceMember를 입력 파라미터로 받을까?
-	public boolean isAssignee(@NonNull Long memberId) {
-		return Objects.equals(assignee.getMemberId(), memberId);
 	}
 
 	// TODO: isReviewer()
@@ -417,44 +419,5 @@ public class Issue extends BaseEntity {
 	// TODO: calculateEpicLevelStoryPoint()
 	// TODO: calculateEpicProgress()
 	//  전략 1: (해결된 STORY 레벨 이슈들의 story point 합) / (EPIC 레벨 이슈의 story point)
-	//  전력 2: (해결된 STORY 레벨 이슈들의 수) / (전체 STORY 레벨 이슈들의 수)
-
-	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
-		ensureCanAddReviewer();
-
-		boolean isReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().equals(workspaceMember));
-
-		if (isReviewer) {
-			return;
-		}
-
-		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
-		reviewers.add(reviewer);
-	}
-
-	// TODO: 주석한 방법이 더 좋나? 아니면 현재 이 방법이 더 좋나?
-	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		// IssueReviewer issueReviewer = findIssueReviewer(workspaceMember);
-		// reviewers.remove(issueReviewer);
-		reviewers.removeIf(issueReviewer -> issueReviewer.getReviewer().equals(workspaceMember));
-	}
-
-	// TODO: 그냥 issueValidator로 분리해서, 서비스 계층에서 호출할까?
-	private void ensureCanAddReviewer() {
-		if (reviewers.size() >= MAX_REVIEWERS) {
-			throw new InvalidOperationException("The max number of reviewers is %d.".formatted(MAX_REVIEWERS));
-		}
-	}
-
-	private IssueReviewer findIssueReviewer(WorkspaceMember workspaceMember) {
-		return reviewers.stream()
-			.filter(r -> r.getReviewer().equals(workspaceMember))
-			.findFirst()
-			.orElseThrow(() -> new ResourceNotFoundException(
-					"Not a reviewer assigned to this issue. workspaceMemberId: %d, displayName: %s"
-						.formatted(workspaceMember.getId(), workspaceMember.getDisplayName())
-				)
-			);
-	}
+	//  전략 2: (해결된 STORY 레벨 이슈들의 수) / (전체 STORY 레벨 이슈들의 수)
 }
