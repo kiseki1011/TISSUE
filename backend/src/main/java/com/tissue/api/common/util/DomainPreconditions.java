@@ -12,13 +12,17 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DomainPreconditions {
 
-	public static void requireFutureOrPresent(
-		@NonNull Instant instant,
-		@NonNull String fieldName
+	public static Instant requireFutureOrPresent(
+		Instant instant
 	) {
-		if (instant.isBefore(Instant.now())) {
-			throw new InvalidOperationException(fieldName + " cannot be in the past");
+		if (instant == null) {
+			return null;
 		}
+		if (instant.isBefore(Instant.now())) {
+			throw new InvalidOperationException("Date cannot be in the past");
+		}
+
+		return instant;
 	}
 
 	public static void requireMaxSize(
