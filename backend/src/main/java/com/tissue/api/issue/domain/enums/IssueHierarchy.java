@@ -14,8 +14,12 @@ public enum IssueHierarchy {
 
 	private final int level;
 
-	public boolean isOneLevelHigher(IssueHierarchy hierarchy) {
+	public boolean canBeParentOf(IssueHierarchy hierarchy) {
 		return this.level == hierarchy.level - 1;
+	}
+
+	public boolean cannotBeParentOf(IssueHierarchy hierarchy) {
+		return this.level != hierarchy.level - 1;
 	}
 
 	public boolean mustHaveParent() {

@@ -20,6 +20,9 @@ import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.domain.enums.StateCategory;
+import com.tissue.api.issue.domain.service.IssueStoryPointsAggregator;
+import com.tissue.api.issue.domain.service.ProgressType;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.model.WorkflowState;
@@ -87,16 +90,20 @@ public class Issue extends BaseEntity {
 
 	private Instant resolvedAt;
 
-	private Instant dueAt; // TODO: 현재 시간 보다 이전으로 설정 못하도록 검증 필요
+	private Instant dueAt;
 
 	private Integer storyPoint;
+
+	private Integer countBasedProgress;
+
+	private Integer pointBasedProgress;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
 	@OneToMany(mappedBy = "parentIssue")
-	private Set<Issue> childIssues = new HashSet<>();
+	private List<Issue> childIssues = new ArrayList<>();
 
 	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> outgoingRelations = new HashSet<>();
@@ -147,8 +154,6 @@ public class Issue extends BaseEntity {
 		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
 		issue.storyPoint = storyPoint;
 
-		// issue.addSubscriber(reporter);
-
 		return issue;
 	}
 
@@ -181,6 +186,16 @@ public class Issue extends BaseEntity {
 			ensureCanUseStoryPoint(this.getHierarchy(), storyPoint);
 		}
 		this.storyPoint = storyPoint;
+	}
+
+	// EPIC 전용
+	public void updateTotalStoryPoints() {
+		this.storyPoint = IssueStoryPointsAggregator.calculateTotalStoryPoints(this);
+	}
+
+	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
+		this.countBasedProgress = countBased;
+		this.pointBasedProgress = pointBased;
 	}
 
 	public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
@@ -278,7 +293,7 @@ public class Issue extends BaseEntity {
 		detachFromCurrentParent();
 	}
 
-	// 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리하는게 좋을까?
+	// TODO: 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리
 	public void softDelete() {
 		if (!currentState.isInitial()) {
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
@@ -301,6 +316,10 @@ public class Issue extends BaseEntity {
 
 	public IssueHierarchy getHierarchy() {
 		return issueType.getIssueHierarchy();
+	}
+
+	public boolean isDone() {
+		return currentState.getCategory() == StateCategory.DONE;
 	}
 
 	public boolean isAuthor(@NonNull Long memberId) {
@@ -338,6 +357,13 @@ public class Issue extends BaseEntity {
 		all.addAll(outgoingRelations);
 		all.addAll(incomingRelations);
 		return all;
+	}
+
+	public Integer getProgress(ProgressType type) {
+		return switch (type) {
+			case COUNT_BASED -> countBasedProgress;
+			case POINT_BASED -> pointBasedProgress;
+		};
 	}
 
 	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
@@ -396,6 +422,7 @@ public class Issue extends BaseEntity {
 			throw new InvalidOperationException("An issue cannot be its own parent.");
 		}
 
+		// TODO: cannotHaveParent()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
 		if (getHierarchy().cannotHaveParent()) {
 			throw new RuntimeException("EPIC level issues cannot have parents.");
 		}
@@ -403,7 +430,8 @@ public class Issue extends BaseEntity {
 		IssueHierarchy parentHierarchy = parentIssue.getHierarchy();
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
-		if (parentHierarchy.isOneLevelHigher(childHierarchy)) {
+		// TODO: canBeParentOf()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
+		if (!parentHierarchy.canBeParentOf(childHierarchy)) {
 			throw new InvalidOperationException(
 				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
 					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy,
@@ -412,6 +440,7 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureCanRemoveParent() {
+		// TODO: mustHaveParent()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
 		if (getHierarchy().mustHaveParent()) {
 			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
 		}
@@ -427,9 +456,4 @@ public class Issue extends BaseEntity {
 		this.outgoingRelations.clear();
 		this.incomingRelations.clear();
 	}
-
-	// TODO: calculateEpicLevelStoryPoint()
-	// TODO: calculateEpicProgress()
-	//  전략 1: (해결된 STORY 레벨 이슈들의 story point 합) / (EPIC 레벨 이슈의 story point)
-	//  전략 2: (해결된 STORY 레벨 이슈들의 수) / (전체 STORY 레벨 이슈들의 수)
 }

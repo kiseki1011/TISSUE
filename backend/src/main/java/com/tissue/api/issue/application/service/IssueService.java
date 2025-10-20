@@ -68,15 +68,9 @@ public class IssueService {
 		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
 		fieldValueRepository.saveAll(values);
 
-		issue.changeReporter(actor);
-
-		// TODO: 굳이 reporter를 subscriber로 추가해야 할까?
-		// issue.addSubscriber(actor);
-
 		return IssueResponse.from(issue);
 	}
 
-	// TODO: setReporter도 여기서 업데이트? 아니면 따로 API를 분리할까?
 	@Transactional
 	public IssueResponse updateCommonFields(UpdateCommonFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum StateCategory {
-
 	TODO,
 	IN_PROGRESS,
 	DONE;
