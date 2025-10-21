@@ -20,12 +20,12 @@ public class IssueProgressService {
 		Integer pointBased = null;
 
 		for (IssueProgressCalculator calculator : calculators) {
-			if (!calculator.supports(issue)) {
-				continue;
-			}
-
 			Integer progress = calculator.calculate(issue);
 
+			if (progress == null) {
+				continue;
+			}
+			
 			if (calculator.getType() == ProgressType.COUNT_BASED) {
 				childBased = progress;
 			}

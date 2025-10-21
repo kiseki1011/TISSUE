@@ -11,17 +11,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PointBasedProgressCalculator implements IssueProgressCalculator {
 
-	private final IssueStoryPointsAggregator storyPointsAggregator;
+	private final IssueStoryPointsAggregator aggregator;
 
 	@Override
-	public Integer calculate(Issue issue) {
-		int totalPoints = storyPointsAggregator.calculateTotalStoryPoints(issue);
-
-		if (totalPoints == 0) {
-			return null;
-		}
-
-		int completedPoints = storyPointsAggregator.calculateCompletedTotalStoryPoints(issue);
+	public Integer doCalculate(Issue issue) {
+		int totalPoints = aggregator.calculateTotalStoryPoints(issue);
+		int completedPoints = aggregator.calculateCompletedTotalStoryPoints(issue);
 
 		return (int)((completedPoints * 100) / totalPoints);
 	}

@@ -4,18 +4,20 @@ import com.tissue.api.issue.domain.model.Issue;
 
 public interface IssueProgressCalculator {
 
-	/**
-	 * 이슈의 진행도를 계산
-	 */
-	Integer calculate(Issue issue);
+	default Integer calculate(Issue issue) {
+		boolean doesNotSupport = !supports(issue);
+		if (doesNotSupport) {
+			return null;
+		}
+		return doCalculate(issue);
+	}
+
+	Integer doCalculate(Issue issue);
 
 	/**
-	 * 이 계산기가 해당 이슈에 적용 가능한지 여부
+	 * 진행도 계산 전략이 해당 이슈에 적용 가능한지 여부
 	 */
 	boolean supports(Issue issue);
 
-	/**
-	 * 진행도 타입
-	 */
 	ProgressType getType();
 }

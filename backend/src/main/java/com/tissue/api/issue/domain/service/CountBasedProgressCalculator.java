@@ -11,7 +11,7 @@ import com.tissue.api.issue.domain.model.Issue;
 public class CountBasedProgressCalculator implements IssueProgressCalculator {
 
 	@Override
-	public Integer calculate(Issue issue) {
+	public Integer doCalculate(Issue issue) {
 		List<Issue> children = issue.getChildIssues();
 
 		long total = children.size();
