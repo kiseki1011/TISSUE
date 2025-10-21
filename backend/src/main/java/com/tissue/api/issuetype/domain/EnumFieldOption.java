@@ -3,7 +3,7 @@ package com.tissue.api.issuetype.domain;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

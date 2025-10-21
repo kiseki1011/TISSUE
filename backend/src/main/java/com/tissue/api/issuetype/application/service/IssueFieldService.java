@@ -11,7 +11,7 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.finder.IssueFieldFinder;
 import com.tissue.api.issue.application.finder.IssueFieldOptionFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.AddOptionCommand;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueFieldCommand;

@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.application.dto.CreateWorkflowCommand;
 import com.tissue.api.workflow.domain.service.EntityRef;
 

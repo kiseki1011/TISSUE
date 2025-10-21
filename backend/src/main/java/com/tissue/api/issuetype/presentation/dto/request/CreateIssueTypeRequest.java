@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
 
 import jakarta.validation.constraints.NotBlank;

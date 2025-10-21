@@ -4,7 +4,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.JsonNullables;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
 
 import jakarta.validation.constraints.NotBlank;

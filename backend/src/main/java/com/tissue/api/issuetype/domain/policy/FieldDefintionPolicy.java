@@ -3,7 +3,7 @@ package com.tissue.api.issuetype.domain.policy;
 import java.util.List;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 public record FieldDefintionPolicy(
 	int maxEnumOptions

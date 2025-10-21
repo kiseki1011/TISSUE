@@ -3,7 +3,7 @@ package com.tissue.api.workflow.application.dto;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import lombok.Builder;
 

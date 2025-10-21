@@ -9,7 +9,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

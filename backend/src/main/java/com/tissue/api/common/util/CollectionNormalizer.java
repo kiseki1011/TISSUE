@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

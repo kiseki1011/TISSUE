@@ -11,7 +11,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workspace.domain.model.Workspace;
 

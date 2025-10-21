@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.RenameIssueTypeCommand;

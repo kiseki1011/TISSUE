@@ -8,7 +8,7 @@ import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issuetype.domain.enums.FieldType;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

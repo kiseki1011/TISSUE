@@ -1,4 +1,4 @@
-package com.tissue.api.issue.domain.model.vo;
+package com.tissue.api.common.vo;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
 

@@ -3,7 +3,7 @@ package com.tissue.api.issuetype.application.dto;
 import java.util.List;
 
 import com.tissue.api.issuetype.domain.enums.FieldType;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import lombok.Builder;
 

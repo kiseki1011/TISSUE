@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.repository.IssueTypeRepository;

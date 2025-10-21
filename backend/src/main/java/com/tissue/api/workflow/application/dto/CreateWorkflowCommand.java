@@ -3,7 +3,7 @@ package com.tissue.api.workflow.application.dto;
 import java.util.List;
 
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.service.EntityRef;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 

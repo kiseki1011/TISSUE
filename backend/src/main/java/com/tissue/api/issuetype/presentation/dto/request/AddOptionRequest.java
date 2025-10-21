@@ -2,7 +2,7 @@ package com.tissue.api.issuetype.presentation.dto.request;
 
 import com.tissue.api.common.validator.annotation.size.LabelSize;
 import com.tissue.api.issuetype.application.dto.AddOptionCommand;
-import com.tissue.api.issue.domain.model.vo.Label;
+import com.tissue.api.common.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 
