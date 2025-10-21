@@ -21,7 +21,6 @@ import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.issue.domain.service.IssueStoryPointsAggregator;
 import com.tissue.api.issue.domain.service.ProgressType;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
@@ -190,7 +189,10 @@ public class Issue extends BaseEntity {
 
 	// EPIC 전용
 	public void updateTotalStoryPoints() {
-		this.storyPoint = IssueStoryPointsAggregator.calculateTotalStoryPoints(this);
+		this.storyPoint = this.getChildIssues().stream()
+			.filter(child -> child.getStoryPoint() != null)
+			.mapToInt(Issue::getStoryPoint)
+			.sum();
 	}
 
 	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
@@ -247,6 +249,8 @@ public class Issue extends BaseEntity {
 	}
 
 	// TODO: reporter, assignee, reviewers를 설정 및 추가할때 subcribers에 자동으로 추가 되도록 설계해야 할까?
+	//  - 내가 생각하기에는 굳이 자동으로 구독자로 등록하지 않아도 될 것 같은데.
+	//  - 굳이 이슈 관련자 대상으로 작업을 하고 싶다면 isParticipant를 활용하면 되지 않을까? 아니면 따로 조회 메서드를 만들거나.
 	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
 		IssueSubscriber subscriber = new IssueSubscriber(workspaceMember);
 		subscribers.add(subscriber);
