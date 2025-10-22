@@ -12,6 +12,10 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DomainPreconditions {
 
+	public static String nullToEmpty(String val) {
+		return val == null ? "" : val;
+	}
+
 	public static Instant requireFutureOrPresent(
 		Instant instant
 	) {
