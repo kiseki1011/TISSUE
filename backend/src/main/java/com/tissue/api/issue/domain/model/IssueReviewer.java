@@ -25,19 +25,19 @@ public class IssueReviewer extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ISSUE_ID", nullable = false)
+	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 
-	@Column(name = "REVIEWER_MEMBER_ID")
+	@Column(name = "reviewer_member_id")
 	private Long reviewerMemberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "REVIEWER_ID", insertable = false, updatable = false)
+	@JoinColumn(name = "reviewer_id", insertable = false, updatable = false)
 	private WorkspaceMember reviewer;
 
 	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
+		this.issue = issue;
 		this.reviewer = reviewer;
 		this.reviewerMemberId = reviewer.getMember().getId();
-		this.issue = issue;
 	}
 }

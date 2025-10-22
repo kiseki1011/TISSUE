@@ -65,7 +65,7 @@ public record CreateWorkflowRequest(
 			.label(Label.of(label))
 			.description(description)
 			.color(color)
-			.statusCommands(stateCommands)
+			.stateCommands(stateCommands)
 			.transitionCommands(transitionCommands)
 			.build();
 	}

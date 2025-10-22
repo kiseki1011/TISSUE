@@ -25,7 +25,7 @@ public record CreateIssueRequest(
 ) {
 	public CreateIssueCommand toCommand(String workspaceKey, Long currentMemberId) {
 		return CreateIssueCommand.builder()
-			.currentMemberId(currentMemberId)
+			.memberId(currentMemberId)
 			.workspaceKey(workspaceKey)
 			.title(title)
 			.content(content)

@@ -225,7 +225,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		this.participants.addSubscriber(workspaceMember);
+		this.participants.addSubscriber(workspaceMember, this);
 	}
 
 	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {

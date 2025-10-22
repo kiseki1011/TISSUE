@@ -55,13 +55,9 @@ public class IssueParticipants {
 	}
 
 	public void addReviewer(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
-		boolean isReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().equals(workspaceMember));
-
-		if (isReviewer) {
+		if (isReviewer(workspaceMember)) {
 			return;
 		}
-
 		reviewers.add(new IssueReviewer(workspaceMember, issue));
 	}
 
@@ -69,8 +65,11 @@ public class IssueParticipants {
 		reviewers.removeIf(r -> r.getReviewer().equals(workspaceMember));
 	}
 
-	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		subscribers.add(new IssueSubscriber(workspaceMember));
+	public void addSubscriber(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
+		if (isSubscriber(workspaceMember)) {
+			return;
+		}
+		subscribers.add(new IssueSubscriber(workspaceMember, issue));
 	}
 
 	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {

@@ -7,15 +7,13 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.model.Issue;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Component
 @Getter
-@RequiredArgsConstructor
 public class IssuePolicy {
 
 	@Value("${issue.max-reviewers:10}")
-	private final int maxReviewers;
+	private int maxReviewers;
 
 	public void ensureCanAddReviewer(int currentCount) {
 		if (currentCount >= maxReviewers) {
@@ -24,7 +22,7 @@ public class IssuePolicy {
 	}
 
 	public void ensureCanAddReviewer(Issue issue) {
-		if (issue.getReviewers().size() >= maxReviewers) {
+		if (issue.getParticipants().getReviewers().size() >= maxReviewers) {
 			throw new InvalidOperationException("The max number of reviewers is " + maxReviewers);
 		}
 	}
