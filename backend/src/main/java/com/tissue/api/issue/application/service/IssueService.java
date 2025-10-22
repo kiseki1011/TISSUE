@@ -14,6 +14,9 @@ import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.domain.model.IssueFieldValue;
+import com.tissue.api.issue.domain.model.vo.IssueContent;
+import com.tissue.api.issue.domain.model.vo.IssueParticipants;
+import com.tissue.api.issue.domain.model.vo.IssueSchedule;
 import com.tissue.api.issue.infrastructure.repository.IssueFieldValueRepository;
 import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
@@ -56,12 +59,11 @@ public class IssueService {
 		Issue issue = issueRepository.save(Issue.create(
 			workspace,
 			issueType,
-			actor,
 			cmd.title(),
-			cmd.content(),
-			cmd.summary(),
+			new IssueContent(cmd.content(), cmd.summary()),
+			new IssueSchedule(cmd.dueAt()),
+			new IssueParticipants(actor),
 			cmd.priority(),
-			cmd.dueAt(),
 			cmd.storyPoint()
 		));
 

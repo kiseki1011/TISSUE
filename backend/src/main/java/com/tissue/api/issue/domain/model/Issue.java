@@ -1,7 +1,5 @@
 package com.tissue.api.issue.domain.model;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
-import static com.tissue.api.common.util.TextNormalizer.*;
 import static com.tissue.api.issue.domain.enums.IssueRelationType.*;
 
 import java.time.Instant;
@@ -21,7 +19,10 @@ import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.issue.domain.service.ProgressType;
+import com.tissue.api.issue.domain.model.vo.IssueContent;
+import com.tissue.api.issue.domain.model.vo.IssueParticipants;
+import com.tissue.api.issue.domain.model.vo.IssueProgress;
+import com.tissue.api.issue.domain.model.vo.IssueSchedule;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.model.WorkflowState;
@@ -30,6 +31,7 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,28 +40,23 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
 @Entity
 @SQLRestriction("archived = false")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
 
-	@ToString.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ToString.Include
 	@Column(name = "issue_key", nullable = false)
 	private String key;
 
@@ -67,35 +64,28 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reporter_id", nullable = false)
-	private WorkspaceMember reporter;
-
-	@ToString.Include
+	// TODO: title도 IssueContent VO에 포함시킬까?
 	@Column(nullable = false)
 	private String title;
 
-	@Lob
-	private String content;
+	@Embedded
+	private IssueContent content;
 
-	@Lob
-	private String summary;
+	@Embedded
+	private IssueSchedule schedule;
+
+	@Embedded
+	private IssueProgress progress;
+
+	@Embedded
+	private IssueParticipants participants;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private IssuePriority priority;
 
-	private Instant startedAt;
-
-	private Instant resolvedAt;
-
-	private Instant dueAt;
-
+	// TODO: 이것도 VO로 만들까 그냥?
 	private Integer storyPoint;
-
-	private Integer countBasedProgress;
-
-	private Integer pointBasedProgress;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_issue_id")
@@ -104,21 +94,12 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "parentIssue")
 	private List<Issue> childIssues = new ArrayList<>();
 
+	// TODO: relation 관련도 IssueRelations이라는 VO로 만들까?
 	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> outgoingRelations = new HashSet<>();
 
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> incomingRelations = new HashSet<>();
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "assignee_id")
-	private WorkspaceMember assignee;
-
-	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<IssueReviewer> reviewers = new HashSet<>();
-
-	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
@@ -132,23 +113,21 @@ public class Issue extends BaseEntity {
 	public static Issue create(
 		@NonNull Workspace workspace,
 		@NonNull IssueType issueType,
-		@NonNull WorkspaceMember reporter,
 		@NonNull String title,
-		@Nullable String content,
-		@Nullable String summary,
+		@NonNull IssueContent content,
+		@NonNull IssueSchedule schedule,
+		@NonNull IssueParticipants participants,
 		@Nullable IssuePriority priority,
-		@Nullable Instant dueAt,
 		@Nullable Integer storyPoint
 	) {
 		Issue issue = new Issue();
 		issue.workspace = workspace;
 		issue.issueType = issueType;
-		issue.reporter = reporter;
 		issue.title = title;
-		issue.content = nullToEmpty(content);
-		issue.summary = nullToEmpty(summary);
+		issue.content = content;
+		issue.schedule = schedule;
+		issue.participants = participants;
 		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
-		issue.dueAt = requireFutureOrPresent(dueAt);
 
 		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
 		issue.storyPoint = storyPoint;
@@ -157,7 +136,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void changeReporter(@NonNull WorkspaceMember reporter) {
-		this.reporter = reporter;
+		this.participants.changeReporter(reporter);
 	}
 
 	public void updateTitle(@NonNull String title) {
@@ -165,15 +144,15 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateContent(@Nullable String content) {
-		this.content = nullToEmpty(content);
+		this.content.updateContent(content);
 	}
 
 	public void updateSummary(@Nullable String summary) {
-		this.summary = nullToEmpty(summary);
+		this.content.updateSummary(summary);
 	}
 
 	public void updateDueAt(@Nullable Instant dueAt) {
-		this.dueAt = requireFutureOrPresent(dueAt);
+		this.schedule.updateDueDate(dueAt);
 	}
 
 	public void updatePriority(@NonNull IssuePriority priority) {
@@ -196,16 +175,13 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
-		this.countBasedProgress = countBased;
-		this.pointBasedProgress = pointBased;
+		this.progress.update(countBased, pointBased);
 	}
 
 	public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
 		return IssueRelation.create(this, targetIssue, type);
 	}
 
-	// TODO: removeRelation 내부의 로직을 IssueRelation에서 담당하는 형태로 만드는건 불가능할까?
-	//  Issue에서는 단순히 해당 IssueRelation의 메서드를 부르고. 불가능한가?
 	public void removeRelation(Issue otherIssue) {
 		IssueRelation outgoing = outgoingRelations.stream()
 			.filter(r -> r.getTargetIssue().equals(otherIssue))
@@ -237,51 +213,39 @@ public class Issue extends BaseEntity {
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 
-		if (previousState.isInitial() && this.startedAt == null) {
-			this.startedAt = Instant.now();
+		if (previousState.isInitial()) {
+			this.schedule.markStarted();
 		}
-		if (newState.isTerminal() && this.resolvedAt == null) {
-			this.resolvedAt = Instant.now();
+		if (newState.isTerminal()) {
+			this.schedule.markResolved();
 		}
 		if (previousState.isTerminal() && !newState.isTerminal()) {
-			this.resolvedAt = null;
+			this.schedule.clearResolved();
 		}
 	}
 
-	// TODO: reporter, assignee, reviewers를 설정 및 추가할때 subcribers에 자동으로 추가 되도록 설계해야 할까?
-	//  - 내가 생각하기에는 굳이 자동으로 구독자로 등록하지 않아도 될 것 같은데.
-	//  - 굳이 이슈 관련자 대상으로 작업을 하고 싶다면 isParticipant를 활용하면 되지 않을까? 아니면 따로 조회 메서드를 만들거나.
 	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		IssueSubscriber subscriber = new IssueSubscriber(workspaceMember);
-		subscribers.add(subscriber);
+		this.participants.addSubscriber(workspaceMember);
 	}
 
 	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		subscribers.removeIf(issueSubscriber -> issueSubscriber.getSubscriber().equals(workspaceMember));
+		this.participants.removeSubscriber(workspaceMember);
 	}
 
 	public void assignTo(@NonNull WorkspaceMember assignee) {
-		this.assignee = assignee;
+		this.participants.assignTo(assignee);
 	}
 
 	public void unassign() {
-		this.assignee = null;
+		this.participants.unassign();
 	}
 
 	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
-		boolean isReviewer = reviewers.stream()
-			.anyMatch(r -> r.getReviewer().equals(workspaceMember));
-
-		if (isReviewer) {
-			return;
-		}
-
-		IssueReviewer reviewer = new IssueReviewer(workspaceMember, this);
-		reviewers.add(reviewer);
+		this.participants.addReviewer(workspaceMember, this);
 	}
 
 	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		reviewers.removeIf(issueReviewer -> issueReviewer.getReviewer().equals(workspaceMember));
+		this.participants.removeReviewer(workspaceMember);
 	}
 
 	public void setParentIssue(@NonNull Issue newParent) {
@@ -297,21 +261,25 @@ public class Issue extends BaseEntity {
 		detachFromCurrentParent();
 	}
 
-	// TODO: 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리
 	public void softDelete() {
-		if (!currentState.isInitial()) {
-			throw new RuntimeException("Cannot delete issue that is not initial state.");
-		}
-
-		if (!childIssues.isEmpty()) {
-			throw new RuntimeException("Cannot delete issue that has children.");
-		}
+		ensureDeletable();
 
 		clearParticipants();
 		clearRelations();
 		detachFromCurrentParent();
 
 		archive();
+	}
+
+	// TODO: 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리할까?
+	private void ensureDeletable() {
+		if (!currentState.isInitial()) {
+			throw new RuntimeException("Cannot delete issue that is not initial state.");
+		}
+		// TODO: 자식 이슈가 있어도 삭제를 허용할까? (자식 이슈가 SUBTASK 이하라면 삭제 안됨)
+		if (!childIssues.isEmpty()) {
+			throw new RuntimeException("Cannot delete issue that has children.");
+		}
 	}
 
 	public String getWorkspaceKey() {
@@ -330,32 +298,15 @@ public class Issue extends BaseEntity {
 		return Objects.equals(getCreatedBy(), memberId);
 	}
 
-	public boolean isReporter(@NonNull WorkspaceMember wm) {
-		return Objects.equals(reporter, wm);
-	}
-
-	public boolean isAssignee(@NonNull WorkspaceMember wm) {
-		return Objects.equals(assignee, wm);
-	}
-
-	public boolean isSubscriber(@NonNull WorkspaceMember wm) {
-		return subscribers.stream()
-			.anyMatch(s -> Objects.equals(s.getSubscriber(), wm));
-	}
-
-	public boolean isReviewer(@NonNull WorkspaceMember wm) {
-		return reviewers.stream()
-			.anyMatch(s -> Objects.equals(s.getReviewer(), wm));
-	}
-
 	public boolean isParticipant(@NonNull WorkspaceMember wm) {
 		return isAuthor(wm.getMemberId()) ||
-			isReporter(wm) ||
-			isAssignee(wm) ||
-			isReviewer(wm) ||
-			isSubscriber(wm);
+			participants.isReporter(wm) ||
+			participants.isAssignee(wm) ||
+			participants.isReviewer(wm) ||
+			participants.isSubscriber(wm);
 	}
 
+	/** ---------------TODO: IssueRelations VO 만들고 해당 VO로 분리?-------------- **/
 	public List<IssueRelation> getAllRelations() {
 		List<IssueRelation> all = new ArrayList<>();
 		all.addAll(outgoingRelations);
@@ -363,11 +314,17 @@ public class Issue extends BaseEntity {
 		return all;
 	}
 
-	public Integer getProgress(ProgressType type) {
-		return switch (type) {
-			case COUNT_BASED -> countBasedProgress;
-			case POINT_BASED -> pointBasedProgress;
-		};
+	public boolean isBlockedBy(Issue otherIssue) {
+		return incomingRelations.stream()
+			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) && r.getRelationType() == BLOCKS);
+	}
+
+	public List<Issue> getBlockingIssues() {
+		return getRelatedIssuesByType(BLOCKS);
+	}
+
+	public List<Issue> getBlockedByIssues() {
+		return getRelatedIssuesByType(BLOCKED_BY);
 	}
 
 	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
@@ -386,18 +343,7 @@ public class Issue extends BaseEntity {
 		return result;
 	}
 
-	public boolean isBlockedBy(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) && r.getRelationType() == BLOCKS);
-	}
-
-	public List<Issue> getBlockingIssues() {
-		return getRelatedIssuesByType(BLOCKS);
-	}
-
-	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssuesByType(BLOCKED_BY);
-	}
+	/** --------------------------------------------------------------------------- **/
 
 	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (storyPoint == null) {
@@ -451,13 +397,21 @@ public class Issue extends BaseEntity {
 	}
 
 	private void clearParticipants() {
-		unassign();
-		this.reviewers.clear();
-		this.subscribers.clear();
+		participants.clear();
 	}
 
 	private void clearRelations() {
 		this.outgoingRelations.clear();
 		this.incomingRelations.clear();
+	}
+
+	@Override
+	public String toString() {
+		return "Issue{" +
+			"id=" + id +
+			", key='" + key + '\'' +
+			", workspaceKey=" + getWorkspaceKey() +
+			", title='" + title + '\'' +
+			'}';
 	}
 }

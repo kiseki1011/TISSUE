@@ -25,7 +25,7 @@ public class IssueParticipantService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
 
-		if (issue.isReporter(target)) {
+		if (issue.getParticipants().isReporter(target)) {
 			return IssueResponse.from(issue);
 		}
 
