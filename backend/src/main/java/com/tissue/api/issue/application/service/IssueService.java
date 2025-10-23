@@ -9,6 +9,7 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.dto.CreateIssueCommand;
 import com.tissue.api.issue.application.dto.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.UpdateCustomFieldsCommand;
+import com.tissue.api.issue.application.dto.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
@@ -82,7 +83,20 @@ public class IssueService {
 		Patchers.apply(cmd.summary(), issue::updateSummary);
 		Patchers.apply(cmd.dueAt(), issue::updateDueAt);
 		Patchers.apply(cmd.priority(), issue::updatePriority);
-		Patchers.apply(cmd.storyPoint(), issue::updateStoryPoint);
+
+		return IssueResponse.from(issue);
+	}
+
+	@Transactional
+	public IssueResponse updateStoryPoint(UpdateStoryPointCommand cmd) {
+		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		issue.updateStoryPoint(cmd.storyPoint());
+
+		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
+		if (issue.getParentIssue() != null) {
+			issue.getParentIssue().recalculateEpicStoryPoint();
+		}
 
 		return IssueResponse.from(issue);
 	}
@@ -112,6 +126,11 @@ public class IssueService {
 
 		issue.setParentIssue(parent);
 
+		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
+		if (issue.getParentIssue() != null) {
+			issue.getParentIssue().recalculateEpicStoryPoint();
+		}
+
 		return IssueResponse.from(issue);
 	}
 
@@ -120,6 +139,11 @@ public class IssueService {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
 		issue.removeParentIssue();
+
+		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
+		if (issue.getParentIssue() != null) {
+			issue.getParentIssue().recalculateEpicStoryPoint();
+		}
 
 		return IssueResponse.from(issue);
 	}
@@ -134,4 +158,9 @@ public class IssueService {
 	}
 
 	// TODO: requestReview()
+	// TODO: batchChangeParent()
+	// TODO: batchUpdateStoryPoint()
+	// TODO: batchSoftDelete()
+	// TODO: cloneIssue()
+	// TODO: cloneIssueToProject()
 }

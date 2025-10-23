@@ -16,6 +16,7 @@ import com.tissue.api.issue.presentation.dto.request.AssignParentIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.CreateIssueRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateCommonFieldsRequest;
 import com.tissue.api.issue.presentation.dto.request.UpdateCustomFieldsRequest;
+import com.tissue.api.issue.presentation.dto.request.UpdateStoryPointRequest;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -68,6 +69,18 @@ public class IssueController {
 	) {
 		IssueResponse response = issueService.updateCustomFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
+	}
+
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PatchMapping("/{issueKey}/storypoint")
+	public ApiResponse<IssueResponse> updateStoryPoint(
+		@PathVariable String workspaceKey,
+		@PathVariable String issueKey,
+		@RequestBody @Valid UpdateStoryPointRequest request,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		IssueResponse response = issueService.updateStoryPoint(request.toCommand(workspaceKey, issueKey));
+		return ApiResponse.ok("Issue story point updated.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)

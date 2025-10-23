@@ -15,8 +15,7 @@ public record UpdateCommonFieldsRequest(
 	JsonNullable<String> content,
 	JsonNullable<String> summary,
 	JsonNullable<IssuePriority> priority,
-	JsonNullable<Instant> dueAt,
-	JsonNullable<Integer> storyPoint
+	JsonNullable<Instant> dueAt
 ) {
 	public UpdateCommonFieldsCommand toCommand(String workspaceKey, String issueKey) {
 		return UpdateCommonFieldsCommand.builder()
@@ -27,7 +26,6 @@ public record UpdateCommonFieldsRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueAt(dueAt)
-			.storyPoint(storyPoint)
 			.build();
 	}
 }
