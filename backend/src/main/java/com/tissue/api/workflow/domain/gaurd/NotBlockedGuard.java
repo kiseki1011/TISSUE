@@ -15,7 +15,7 @@ public class NotBlockedGuard implements TransitionGuard {
 		Issue issue = context.getIssue();
 
 		// Blocked by 관계 확인
-		List<Issue> blockingIssues = issue.getBlockedByIssues();
+		List<Issue> blockingIssues = issue.getRelations().getBlockedByIssues();
 
 		if (blockingIssues.isEmpty()) {
 			return true;  // 차단하는 이슈 없음
@@ -30,7 +30,7 @@ public class NotBlockedGuard implements TransitionGuard {
 	public String getFailureMessage(GuardContext context) {
 		Issue issue = context.getIssue();
 
-		List<Issue> unresolved = issue.getBlockedByIssues().stream()
+		List<Issue> unresolved = issue.getRelations().getBlockedByIssues().stream()
 			.filter(blocking -> !blocking.getCurrentState().isTerminal())
 			.toList();
 

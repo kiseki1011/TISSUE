@@ -12,6 +12,9 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DomainPreconditions {
 
+	private final static int MIN_PERCENTAGE = 0;
+	private final static int MAX_PERCENTAGE = 100;
+
 	public static String nullToEmpty(String val) {
 		return val == null ? "" : val;
 	}
@@ -44,14 +47,26 @@ public final class DomainPreconditions {
 	public static void requireInRange(
 		@NonNull Integer value,
 		int min,
-		int max,
-		@NonNull String fieldName
+		int max
 	) {
 		if (value < min || value > max) {
 			throw new InvalidOperationException(
-				"%s must be between %d and %d, but was %d".formatted(fieldName, min, max, value)
+				"Must be between %d and %d, but was %d".formatted(min, max, value)
 			);
 		}
+	}
+
+	public static Integer ensureValidPercentageRange(Integer value) {
+		if (value == null) {
+			return null;
+		}
+		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
+			throw new InvalidOperationException(
+				"Percentage must be between %d and %d, but was %d".formatted(MIN_PERCENTAGE, MAX_PERCENTAGE, value)
+			);
+		}
+
+		return value;
 	}
 
 	public static void requireSameWorkspace(

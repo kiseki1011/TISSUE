@@ -1,7 +1,5 @@
 package com.tissue.api.issue.domain.model;
 
-import static com.tissue.api.issue.domain.enums.IssueRelationType.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +12,6 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
@@ -64,8 +61,7 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	// TODO: title도 IssueContent VO에 포함시킬까?
-	@Column(nullable = false)
+	@Column(name = "title", nullable = false)
 	private String title;
 
 	@Embedded
@@ -80,11 +76,14 @@ public class Issue extends BaseEntity {
 	@Embedded
 	private IssueParticipants participants;
 
+	@Embedded
+	private IssueRelations relations;
+
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(name = "priority", nullable = false)
 	private IssuePriority priority;
 
-	// TODO: 이것도 VO로 만들까 그냥?
+	@Column(name = "story_point")
 	private Integer storyPoint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -93,13 +92,6 @@ public class Issue extends BaseEntity {
 
 	@OneToMany(mappedBy = "parentIssue")
 	private List<Issue> childIssues = new ArrayList<>();
-
-	// TODO: relation 관련도 IssueRelations이라는 VO로 만들까?
-	@OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<IssueRelation> outgoingRelations = new HashSet<>();
-
-	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<IssueRelation> incomingRelations = new HashSet<>();
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
@@ -127,10 +119,11 @@ public class Issue extends BaseEntity {
 		issue.content = content;
 		issue.schedule = schedule;
 		issue.participants = participants;
-		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
+		issue.priority = defaultPriorityIfNull(priority);
+		issue.storyPoint = ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
 
-		ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
-		issue.storyPoint = storyPoint;
+		issue.progress = IssueProgress.init();
+		issue.relations = IssueRelations.init();
 
 		return issue;
 	}
@@ -166,8 +159,10 @@ public class Issue extends BaseEntity {
 		this.storyPoint = storyPoint;
 	}
 
-	// EPIC 전용
-	public void updateTotalStoryPoints() {
+	public void recalculateEpicStoryPoint() {
+		if (getHierarchy() != IssueHierarchy.EPIC) {
+			return; // TODO: 예외를 던져야 하나? 아니면 그냥 무시?
+		}
 		this.storyPoint = this.getChildIssues().stream()
 			.filter(child -> child.getStoryPoint() != null)
 			.mapToInt(Issue::getStoryPoint)
@@ -178,35 +173,12 @@ public class Issue extends BaseEntity {
 		this.progress.update(countBased, pointBased);
 	}
 
-	public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
-		return IssueRelation.create(this, targetIssue, type);
+	public IssueRelation addRelation(@NonNull Issue targetIssue, @NonNull IssueRelationType type) {
+		return this.relations.addRelation(this, targetIssue, type);
 	}
 
-	public void removeRelation(Issue otherIssue) {
-		IssueRelation outgoing = outgoingRelations.stream()
-			.filter(r -> r.getTargetIssue().equals(otherIssue))
-			.findFirst()
-			.orElse(null);
-
-		if (outgoing != null) {
-			outgoing.remove();
-			return;
-		}
-
-		IssueRelation incoming = incomingRelations.stream()
-			.filter(r -> r.getSourceIssue().equals(otherIssue))
-			.findFirst()
-			.orElse(null);
-
-		if (incoming != null) {
-			incoming.remove();
-			return;
-		}
-
-		throw new ResourceNotFoundException(
-			"No relation found between %s and %s".formatted(this.getKey(), otherIssue.getKey())
-		);
-
+	public void removeRelation(@NonNull Issue otherIssue) {
+		this.relations.removeRelation(this, otherIssue);
 	}
 
 	public void proceedToNextState(@NonNull WorkflowState newState) {
@@ -263,11 +235,9 @@ public class Issue extends BaseEntity {
 
 	public void softDelete() {
 		ensureDeletable();
-
 		clearParticipants();
 		clearRelations();
 		detachFromCurrentParent();
-
 		archive();
 	}
 
@@ -306,52 +276,18 @@ public class Issue extends BaseEntity {
 			participants.isSubscriber(wm);
 	}
 
-	/** ---------------TODO: IssueRelations VO 만들고 해당 VO로 분리?-------------- **/
-	public List<IssueRelation> getAllRelations() {
-		List<IssueRelation> all = new ArrayList<>();
-		all.addAll(outgoingRelations);
-		all.addAll(incomingRelations);
-		return all;
-	}
-
-	public boolean isBlockedBy(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) && r.getRelationType() == BLOCKS);
-	}
-
-	public List<Issue> getBlockingIssues() {
-		return getRelatedIssuesByType(BLOCKS);
-	}
-
-	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssuesByType(BLOCKED_BY);
-	}
-
-	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
-		List<Issue> result = new ArrayList<>();
-
-		outgoingRelations.stream()
-			.filter(r -> r.getRelationType() == type)
-			.map(IssueRelation::getTargetIssue)
-			.forEach(result::add);
-
-		incomingRelations.stream()
-			.filter(r -> r.getRelationType() == type.getOpposite())
-			.map(IssueRelation::getSourceIssue)
-			.forEach(result::add);
-
-		return result;
-	}
-
-	/** --------------------------------------------------------------------------- **/
-
-	private static void ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
+	private static Integer ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (storyPoint == null) {
-			return;
+			return null;
 		}
 		if (hierarchy.cannotHaveStoryPoint()) {
 			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
 		}
+		return storyPoint;
+	}
+
+	private static IssuePriority defaultPriorityIfNull(IssuePriority priority) {
+		return priority == null ? IssuePriority.NORMAL : priority;
 	}
 
 	private void detachFromCurrentParent() {
@@ -372,7 +308,6 @@ public class Issue extends BaseEntity {
 			throw new InvalidOperationException("An issue cannot be its own parent.");
 		}
 
-		// TODO: cannotHaveParent()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
 		if (getHierarchy().cannotHaveParent()) {
 			throw new RuntimeException("EPIC level issues cannot have parents.");
 		}
@@ -380,7 +315,6 @@ public class Issue extends BaseEntity {
 		IssueHierarchy parentHierarchy = parentIssue.getHierarchy();
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
-		// TODO: canBeParentOf()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
 		if (!parentHierarchy.canBeParentOf(childHierarchy)) {
 			throw new InvalidOperationException(
 				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
@@ -390,7 +324,7 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureCanRemoveParent() {
-		// TODO: mustHaveParent()가 boolean을 반환하는게 아니라 아예 검증을 수행해서 예외를 던지도록 설계할까?
+		// TODO: IssueHierarchy enum의 mustHaveParent()가 boolean을 반환하는게 아니라 아예 검증(예외 던지기)을 하도록 변경할까?
 		if (getHierarchy().mustHaveParent()) {
 			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
 		}
@@ -401,10 +335,10 @@ public class Issue extends BaseEntity {
 	}
 
 	private void clearRelations() {
-		this.outgoingRelations.clear();
-		this.incomingRelations.clear();
+		this.relations.clear();
 	}
 
+	// TODO: formatted이나 String.format을 사용해서 더 보기 좋게 리팩토링 가능할까?
 	@Override
 	public String toString() {
 		return "Issue{" +

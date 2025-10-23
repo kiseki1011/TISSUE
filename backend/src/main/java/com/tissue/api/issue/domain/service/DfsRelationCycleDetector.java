@@ -65,7 +65,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 		}
 
 		// 현재 노드의 outgoing 관계 중 같은 타입만 따라감
-		for (IssueRelation relation : current.getOutgoingRelations()) {
+		for (IssueRelation relation : current.getRelations().getOutgoingRelations()) {
 			// 같은 타입의 관계만
 			if (relation.getRelationType() != relationType) {
 				continue;

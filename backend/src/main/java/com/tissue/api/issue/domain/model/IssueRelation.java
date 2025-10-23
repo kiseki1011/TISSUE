@@ -59,7 +59,6 @@ public class IssueRelation extends BaseEntity {
 	) {
 		ensureSameWorkspace(sourceIssue, targetIssue);
 		ensureNotSelfReference(sourceIssue, targetIssue);
-		ensureNotDuplicate(sourceIssue, targetIssue);
 		// validateRelationType(type, sourceIssue, targetIssue);
 
 		IssueRelation issueRelation = new IssueRelation();
@@ -67,60 +66,15 @@ public class IssueRelation extends BaseEntity {
 		issueRelation.targetIssue = targetIssue;
 		issueRelation.relationType = type;
 
-		sourceIssue.getOutgoingRelations().add(issueRelation);
-		targetIssue.getIncomingRelations().add(issueRelation);
+		sourceIssue.getRelations().getOutgoingRelations().add(issueRelation);
+		targetIssue.getRelations().getIncomingRelations().add(issueRelation);
 
 		return issueRelation;
-	}
-
-	void remove() {
-		sourceIssue.getOutgoingRelations().remove(this);
-		targetIssue.getIncomingRelations().remove(this);
-	}
-
-	public boolean isInwardFor(@NonNull Issue issue) {
-		return this.targetIssue.equals(issue);
-	}
-
-	public boolean isOutwardFor(@NonNull Issue issue) {
-		return this.sourceIssue.equals(issue);
-	}
-
-	public Issue getOtherIssue(@NonNull Issue issue) {
-		if (sourceIssue.equals(issue)) {
-			return targetIssue;
-		}
-		if (targetIssue.equals(issue)) {
-			return sourceIssue;
-		}
-		throw new IllegalArgumentException("Issue not part of this relation");
-	}
-
-	public IssueRelationType getTypeFor(@NonNull Issue issue) {
-		if (sourceIssue.equals(issue)) {
-			return relationType; // outward
-		}
-		if (targetIssue.equals(issue)) {
-			return relationType.getOpposite(); // inward
-		}
-		throw new IllegalArgumentException("Issue not part of this relation");
 	}
 
 	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
 			throw new InvalidOperationException("Self reference is not allowed.");
-		}
-	}
-
-	private static void ensureNotDuplicate(Issue source, Issue target) {
-		boolean exists = source.getOutgoingRelations().stream()
-			.anyMatch(relation -> relation.getTargetIssue().equals(target));
-
-		if (exists) {
-			throw new InvalidOperationException(
-				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s"
-					.formatted(source.getKey(), target.getKey())
-			);
 		}
 	}
 

@@ -62,7 +62,7 @@ public class IssueService {
 			cmd.title(),
 			new IssueContent(cmd.content(), cmd.summary()),
 			new IssueSchedule(cmd.dueAt()),
-			new IssueParticipants(actor),
+			IssueParticipants.init(actor),
 			cmd.priority(),
 			cmd.storyPoint()
 		));
