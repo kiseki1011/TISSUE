@@ -38,7 +38,7 @@ public class IssueParticipants {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
-	public static IssueParticipants init(@NonNull WorkspaceMember reporter) {
+	public static IssueParticipants of(@NonNull WorkspaceMember reporter) {
 		IssueParticipants participants = new IssueParticipants();
 		participants.reporter = reporter;
 

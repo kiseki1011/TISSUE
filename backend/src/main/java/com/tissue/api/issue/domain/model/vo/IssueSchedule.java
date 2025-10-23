@@ -26,8 +26,11 @@ public class IssueSchedule {
 	@Column(name = "due_at")
 	private Instant dueAt;
 
-	public IssueSchedule(@Nullable Instant dueAt) {
-		this.dueAt = requireFutureOrPresent(dueAt);
+	public static IssueSchedule of(@Nullable Instant dueAt) {
+		IssueSchedule schedule = new IssueSchedule();
+		schedule.dueAt = requireFutureOrPresent(dueAt);
+
+		return schedule;
 	}
 
 	public void markStarted() {

@@ -60,9 +60,9 @@ public class IssueService {
 			workspace,
 			issueType,
 			cmd.title(),
-			new IssueContent(cmd.content(), cmd.summary()),
-			new IssueSchedule(cmd.dueAt()),
-			IssueParticipants.init(actor),
+			IssueContent.of(cmd.content(), cmd.summary()),
+			IssueSchedule.of(cmd.dueAt()),
+			IssueParticipants.of(actor),
 			cmd.priority(),
 			cmd.storyPoint()
 		));

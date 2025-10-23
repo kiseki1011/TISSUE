@@ -24,9 +24,12 @@ public class IssueContent {
 	@Column(name = "summary")
 	private String summary;
 
-	public IssueContent(@Nullable String content, @Nullable String summary) {
-		this.content = nullToEmpty(content);
-		this.summary = nullToEmpty(summary);
+	public static IssueContent of(@Nullable String content, @Nullable String summary) {
+		IssueContent issueContent = new IssueContent();
+		issueContent.content = nullToEmpty(content);
+		issueContent.summary = nullToEmpty(summary);
+
+		return issueContent;
 	}
 
 	public void updateContent(@Nullable String content) {
