@@ -95,9 +95,6 @@ public class IssueRelation extends BaseEntity {
 		);
 	}
 
-	// TODO(optional): validateRelationType()
-	//  - relation 종류별로 필요한 검증 로직을 switch 문으로
-	//  - 예를 들어서 DUPLICATE 관계는 서로 같은 이슈 타입이어야 한다거나(예시)
 	private static void validateRelationType(
 		IssueRelationType type,
 		Issue sourceIssue,
