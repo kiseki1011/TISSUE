@@ -161,7 +161,7 @@ public class Issue extends BaseEntity {
 
 	public void recalculateEpicStoryPoint() {
 		if (getHierarchy() != IssueHierarchy.EPIC) {
-			return; // TODO: 예외를 던져야 하나? 아니면 그냥 무시?
+			return;
 		}
 		this.storyPoint = this.getChildIssues().stream()
 			.filter(child -> child.getStoryPoint() != null)
@@ -241,17 +241,6 @@ public class Issue extends BaseEntity {
 		archive();
 	}
 
-	// TODO: 삭제에 필요한 검증 로직을 issueValidator.ensureDeletable()로 분리할까?
-	private void ensureDeletable() {
-		if (!currentState.isInitial()) {
-			throw new RuntimeException("Cannot delete issue that is not initial state.");
-		}
-		// TODO: 자식 이슈가 있어도 삭제를 허용할까? (자식 이슈가 SUBTASK 이하라면 삭제 안됨)
-		if (!childIssues.isEmpty()) {
-			throw new RuntimeException("Cannot delete issue that has children.");
-		}
-	}
-
 	public String getWorkspaceKey() {
 		return workspace.getKey();
 	}
@@ -276,6 +265,15 @@ public class Issue extends BaseEntity {
 			participants.isSubscriber(wm);
 	}
 
+	private void ensureDeletable() {
+		if (!currentState.isInitial()) {
+			throw new RuntimeException("Cannot delete issue that is not initial state.");
+		}
+		if (!childIssues.isEmpty()) {
+			throw new RuntimeException("Cannot delete issue that has children.");
+		}
+	}
+
 	private static Integer ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (storyPoint == null) {
 			return null;
@@ -297,34 +295,38 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	// TODO: 어디까지가 불변식이고, 어디까지가 정책인가?
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
-		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
-		if (isDifferentWorkspace) {
-			throw new InvalidOperationException("Parent must belong to the same workspace.");
-		}
+		ensureSameWorkspace(parentIssue);
+		ensureNotSelfReference(parentIssue);
+		ensureValidHierarchy(parentIssue);
+	}
 
-		if (this.equals(parentIssue)) {
-			throw new InvalidOperationException("An issue cannot be its own parent.");
-		}
-
-		if (getHierarchy().cannotHaveParent()) {
-			throw new RuntimeException("EPIC level issues cannot have parents.");
-		}
-
+	private void ensureValidHierarchy(Issue parentIssue) {
 		IssueHierarchy parentHierarchy = parentIssue.getHierarchy();
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
 		if (!parentHierarchy.canBeParentOf(childHierarchy)) {
 			throw new InvalidOperationException(
 				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
-					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy,
-						this.issueType.getLabel(), childHierarchy));
+					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy, this.issueType.getLabel(),
+						childHierarchy));
+		}
+	}
+
+	private void ensureNotSelfReference(Issue parentIssue) {
+		if (this.equals(parentIssue)) {
+			throw new InvalidOperationException("An issue cannot be its own parent.");
+		}
+	}
+
+	private void ensureSameWorkspace(Issue parentIssue) {
+		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
+		if (isDifferentWorkspace) {
+			throw new InvalidOperationException("Parent must belong to the same workspace.");
 		}
 	}
 
 	private void ensureCanRemoveParent() {
-		// TODO: IssueHierarchy enum의 mustHaveParent()가 boolean을 반환하는게 아니라 아예 검증(예외 던지기)을 하도록 변경할까?
 		if (getHierarchy().mustHaveParent()) {
 			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
 		}
@@ -338,14 +340,9 @@ public class Issue extends BaseEntity {
 		this.relations.clear();
 	}
 
-	// TODO: formatted이나 String.format을 사용해서 더 보기 좋게 리팩토링 가능할까?
 	@Override
 	public String toString() {
-		return "Issue{" +
-			"id=" + id +
-			", key='" + key + '\'' +
-			", workspaceKey=" + getWorkspaceKey() +
-			", title='" + title + '\'' +
-			'}';
+		return "Issue{id=%d, key='%s', workspace='%s', title='%s'}"
+			.formatted(id, key, getWorkspaceKey(), title);
 	}
 }
