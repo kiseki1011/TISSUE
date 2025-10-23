@@ -93,6 +93,7 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "parentIssue")
 	private List<Issue> childIssues = new ArrayList<>();
 
+	// TODO: 리팩토링 필요 -> 더 좋은 이름, Sprint와의 관계 구조 개선
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
 
@@ -101,6 +102,8 @@ public class Issue extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
+
+	// TODO: 태그(tag) 추가. 분류와 검색용도로 활용
 
 	public static Issue create(
 		@NonNull Workspace workspace,

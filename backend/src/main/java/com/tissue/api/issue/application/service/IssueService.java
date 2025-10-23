@@ -44,11 +44,8 @@ public class IssueService {
 
 	/**
 	 * TODO(later)
-	 *  1. (추후에 Workspace -> Project로 리팩토링 후 진행) 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려.
+	 *  (추후에 Workspace -> Project로 리팩토링 후 진행) 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려.
 	 *  이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
-	 *  2. 이슈를 클론하는 API 구현. (근데 이 경우에는 IssueRelation.CLONE을 설정해줘야 할까?)
-	 *  3. 특정 부모 이슈 아래의 자식 이슈들을 다른 부모 이슈 아래로 배치(batch)로 이동 시키는 API 구현.
-	 *  각 이동되는 이슈마다 이동이 가능한지 검증해줘야 함. (issue.ensureCanAddParent 사용?)
 	 */
 
 	@Transactional
