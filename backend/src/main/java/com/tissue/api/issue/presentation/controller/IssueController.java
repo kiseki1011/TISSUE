@@ -25,12 +25,10 @@ import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/issues")
+@RequiredArgsConstructor
 public class IssueController {
 
 	private final IssueService issueService;
@@ -124,3 +122,5 @@ public class IssueController {
 	// TODO(Later): 이슈를 다른 프로젝트로 옮기는 기능
 	// TODO(Later): 이슈를 다른 프로젝트로 복제하는 기능
 }
+
+
