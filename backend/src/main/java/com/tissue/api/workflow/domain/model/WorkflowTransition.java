@@ -122,4 +122,8 @@ public class WorkflowTransition extends BaseEntity {
 	void softDelete() {
 		archive();
 	}
+
+	public String getDisplayLabel() {
+		return label.getDisplay();
+	}
 }

@@ -18,7 +18,6 @@ import com.tissue.api.workflow.domain.model.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
-import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +41,6 @@ public class IssueTransitionService {
 	 * 3. 모든 Guard 순차 실행 (하나라도 실패하면 중단)
 	 * 4. 상태 전이 실행
 	 * 5. 도메인 이벤트 발행
-	 *
-	 * @param cmd Transition 실행 커맨드
-	 * @return 전이 완료된 Issue 정보
-	 * @throws NotFoundException Transition을 찾을 수 없음
-	 * @throws InvalidOperationException 현재 상태에서 실행 불가능한 Transition
-	 * @throws TransitionGuardException Guard 조건 미충족
 	 */
 	@Transactional
 	public IssueResponse performTransition(PerformTransitionCommand cmd) {
@@ -110,12 +103,12 @@ public class IssueTransitionService {
 		// 현재 상태가 이 Transition의 source status인지 확인
 		// 예: 현재 "TODO"인데 "IN_PROGRESS -> DONE" transition 시도하면 실패
 		// TODO: IssueTransitionValidator로 로직 분리
-		if (!issue.getCurrentState().equals(transition.getSourceState())) {
+		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
+		if (transitionSourceStateNotMatch) {
 			throw new InvalidOperationException(
-				String.format(
-					"Invalid transition. Current status is '%s' but transition requires '%s'",
-					issue.getCurrentState().getLabel().getDisplay(),
-					transition.getSourceState().getLabel().getDisplay()
+				"Invalid transition. Current state is '%s' but transition requires '%s'".formatted(
+					issue.getCurrentState().getDisplayLabel(),
+					transition.getSourceState().getDisplayLabel()
 				)
 			);
 		}
@@ -147,12 +140,12 @@ public class IssueTransitionService {
 
 		// Guard가 없으면 바로 통과
 		if (configs.isEmpty()) {
-			log.debug("No guards configured for transition: {}", transition.getLabel().getDisplay());
+			log.debug("No guards configured for transition: {}", transition.getDisplayLabel());
 			return;
 		}
 
 		log.debug("Executing {} guard(s) for transition: {}",
-			configs.size(), transition.getLabel().getDisplay());
+			configs.size(), transition.getDisplayLabel());
 
 		// 각 Guard Config에 대해 순서대로 실행
 		for (TransitionGuardConfig config : configs) {
@@ -170,13 +163,17 @@ public class IssueTransitionService {
 				.build();
 
 			// Guard 조건 평가
-			if (!guard.evaluate(context)) {
+			boolean failEvaluation = !guard.evaluate(context);
+
+			if (failEvaluation) {
 				// 실패 시 메시지 생성 및 예외 발생 (이후 Guard는 실행 안함)
 				String message = guard.getFailureMessage(context);
 
-				log.warn("Guard evaluation failed: guardType={}, issueKey={}, message={}", guard.getType(),
+				log.warn("Guard evaluation failed: guardType={}, issueKey={}, message={}",
+					guard.getType(),
 					issue.getKey(),
-					message);
+					message
+				);
 
 				throw new RuntimeException(guard.getType() + message);
 			}
@@ -185,39 +182,6 @@ public class IssueTransitionService {
 		}
 
 		// 모든 Guard 통과
-		log.debug("All guard evaluation passed for transition: {}", transition.getLabel().getDisplay());
-	}
-
-	// TODO: IssueQueryService로
-
-	/**
-	 * 현재 상태에서 가능한 모든 Transition 조회
-	 * <p>
-	 * 반환되는 Transition:
-	 * - Issue의 currentStatus를 source로 하는 Transition들
-	 * - Guard 조건은 체크하지 않음 (실제 실행 시 체크)
-	 *
-	 * @param workspaceKey 워크스페이스 키
-	 * @param issueKey 이슈 키
-	 * @return 가능한 Transition 목록
-	 */
-	@Transactional(readOnly = true)
-	public List<TransitionResponse> getAvailableTransitions(
-		String workspaceKey,
-		String issueKey
-	) {
-		// Issue 조회
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-
-		// Issue의 Workflow 가져오기
-		Workflow workflow = issue.getIssueType().getWorkflow();
-
-		// Workflow의 모든 Transition 중에서
-		return workflow.getTransitions().stream()
-			// 현재 상태(currentStatus)에서 출발하는 Transition만 필터링
-			// 예: 현재 "IN_PROGRESS"면 "IN_PROGRESS -> X" 형태만 선택
-			.filter(t -> t.getSourceState().equals(issue.getCurrentState()))
-			.map(TransitionResponse::from)
-			.toList();
+		log.debug("All guard evaluation passed for transition: {}", transition.getDisplayLabel());
 	}
 }
