@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.application.dto.ExecuteTransitionCommand;
+import com.tissue.api.issue.application.dto.PerformTransitionCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.domain.model.Issue;
 import com.tissue.api.issue.presentation.dto.response.IssueResponse;
@@ -50,7 +50,7 @@ public class IssueTransitionService {
 	 * @throws TransitionGuardException Guard 조건 미충족
 	 */
 	@Transactional
-	public IssueResponse executeTransition(ExecuteTransitionCommand cmd) {
+	public IssueResponse performTransition(PerformTransitionCommand cmd) {
 		// Issue 조회 (workspace 검증 포함)
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
@@ -62,6 +62,7 @@ public class IssueTransitionService {
 
 		// 상태 전이
 		WorkflowState previousStatus = issue.getCurrentState();
+
 		// TODO: moveToStep의 내부 구현은 사실상 set 메서드나 다름 없음.
 		//  안에 검증 로직을 캡슐화 하거나 할 필요는 없을까? 물론 findAndValidateTransition에서 가능한 전이를 검증하긴 하지만
 		//  더 우아하게 처리할 방법은 없나 고민이 됨.
@@ -75,7 +76,7 @@ public class IssueTransitionService {
 			transition.getTargetState().getLabel().getDisplay()
 		);
 
-		// 5. 도메인 이벤트 발행 (알림, 히스토리 기록...)
+		// 도메인 이벤트 발행 (알림, 히스토리 기록...)
 		// eventPublisher.publishEvent(new IssueTransitionedEvent(
 		// 	issue.getId(),
 		// 	issue.getKey(),
