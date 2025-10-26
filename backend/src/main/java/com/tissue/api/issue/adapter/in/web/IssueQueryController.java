@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
 import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
-import com.tissue.api.issue.application.dto.response.IssueDetailDto;
 import com.tissue.api.issue.application.service.IssueQueryService;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
@@ -51,8 +50,7 @@ public class IssueQueryController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueDetailDto detailDto = issueQueryService.getIssueDetails(workspaceKey, issueKey);
-		IssueDetailResponse response = IssueDetailResponse.from(detailDto);
+		IssueDetailResponse response = issueQueryService.getIssueDetails(workspaceKey, issueKey);
 		return ApiResponse.ok("Retrieved issue details.", response);
 	}
 

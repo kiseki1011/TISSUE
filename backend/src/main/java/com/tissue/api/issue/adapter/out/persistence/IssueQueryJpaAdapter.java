@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.tissue.api.issue.application.dto.response.IssueDetailDto;
+import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 
@@ -39,12 +39,12 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 
 	// TODO: 틀린거 있는지 체크 필요
 	@Override
-	public Optional<IssueDetailDto> findDetailedIssue(
+	public Optional<IssueDetailResponse> findDetailedIssue(
 		String workspaceKey,
 		String issueKey
 	) {
 		String jpql = """
-			    SELECT new com.tissue.api.issue.application.dto.response.DetailedIssueDto(
+			    SELECT new com.tissue.api.issue.application.dto.response.IssueDetailResponse(
 			        i.id,
 			        i.key,
 			        i.title,
@@ -73,7 +73,7 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 			      AND i.deletedAt IS NULL
 			""";
 
-		return em.createQuery(jpql, IssueDetailDto.class)
+		return em.createQuery(jpql, IssueDetailResponse.class)
 			.setParameter("workspaceKey", workspaceKey)
 			.setParameter("issueKey", issueKey)
 			.getResultStream()

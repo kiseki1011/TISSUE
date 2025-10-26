@@ -2,7 +2,6 @@ package com.tissue.api.issue.adapter.in.web.dto.response;
 
 import java.time.Instant;
 
-import com.tissue.api.issue.application.dto.response.IssueDetailDto;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.StateCategory;
 
@@ -72,31 +71,5 @@ public record IssueDetailResponse(
 		String username,
 		String displayName
 	) {
-	}
-
-	public static IssueDetailResponse from(IssueDetailDto dto) {
-		return IssueDetailResponse.builder()
-			.issueId(dto.issueId())
-			.issueKey(dto.issueKey())
-			.title(dto.title())
-			.content(dto.content())
-			.summary(dto.summary())
-			.priority(dto.priority())
-			.storyPoint(dto.storyPoint())
-			.dueAt(dto.dueAt())
-			.startedAt(dto.startedAt())
-			.resolvedAt(dto.resolvedAt())
-			.countBasedProgress(dto.countBasedProgress())
-			.pointBasedProgress(dto.pointBasedProgress())
-			.issueType(new IssueTypeInfo(dto.issueType().id(), dto.issueType().displayName()))
-			.state(new StateInfo(dto.state().id(), dto.state().displayName(), dto.state().category()))
-			.assignee(
-				new ParticipantInfo(dto.assignee().memberId(), dto.assignee().username(), dto.assignee().displayName()))
-			.reporter(
-				new ParticipantInfo(dto.reporter().memberId(), dto.reporter().username(), dto.reporter().displayName()))
-			// .creator(new ParticipantInfo(dto.creator().memberId(), dto.creator().username(), dto.creator().displayName()))
-			.createdAt(dto.createdAt())
-			.updatedAt(dto.updatedAt())
-			.build();
 	}
 }

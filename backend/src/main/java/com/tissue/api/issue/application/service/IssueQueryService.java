@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.dto.response.IssueDetailDto;
+import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.domain.model.Workflow;
@@ -20,7 +20,7 @@ public class IssueQueryService {
 
 	private final IssueQueryRepository queryRepository;
 
-	public IssueDetailDto getIssueDetails(String workspaceKey, String issueKey) {
+	public IssueDetailResponse getIssueDetails(String workspaceKey, String issueKey) {
 		return queryRepository.findDetailedIssue(workspaceKey, issueKey)
 			.orElseThrow(() -> new RuntimeException("Issue not found"));
 	}
