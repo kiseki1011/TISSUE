@@ -5,14 +5,13 @@ import java.math.RoundingMode;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 
-// TODO: IssuePolicy로 내용을 옮기고, IssueConfig에서 값을 주입 받는 대신 여기서 바로 @Value를 사용하는 형태를 고려하자
+// TODO: IssuePolicy로 옮길까?
 public record FieldValuePolicy(
 	int decimalScale,
 	RoundingMode roundingMode,
 	int maxIntegerDigits,
 	int maxFractionDigits
 ) {
-
 	public void ensureDigits(BigDecimal value, Long fieldId) {
 		if (value == null) {
 			return;

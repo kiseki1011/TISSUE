@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.response.IssueDetailDto;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 

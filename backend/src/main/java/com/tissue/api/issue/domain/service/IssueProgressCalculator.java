@@ -1,6 +1,6 @@
 package com.tissue.api.issue.domain.service;
 
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 
 public interface IssueProgressCalculator {
 

@@ -25,12 +25,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: soft delete 적용
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
-	// TODO: Use application.yml
+	// TODO: 애플리케이션 서비스에서 XxxPolicy를 호출하는 형태로 리팩토링(거기서 application.yml에서 설정값을 읽는 방식)
 	private static final int MAX_WORKSPACE_COUNT = 10;
 
 	@Id
@@ -66,7 +67,8 @@ public class Member extends BaseDateEntity {
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
 
-	// TODO: Move workspace count validation to constructor or factory method
+	// TODO: 워크스페이스 카운트 검증은 애플리케이션 서비스에서 XxxPolicy를 호출하는 형태로 리팩토링
+	// TODO: 생성자(빌더) 사용 대신 정적 팩토리 메서드 사용
 	@Builder
 	public Member(
 		String loginId,

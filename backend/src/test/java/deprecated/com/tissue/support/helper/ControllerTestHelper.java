@@ -20,9 +20,9 @@ import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
-import com.tissue.api.issue.application.service.IssueService;
-import com.tissue.api.issue.infrastructure.repository.IssueRepository;
-import com.tissue.api.issue.presentation.controller.IssueController;
+import com.tissue.api.issue.adapter.in.web.IssueCommandController;
+import com.tissue.api.issue.application.port.out.IssueRepository;
+import com.tissue.api.issue.application.service.IssueCommandService;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -70,7 +70,7 @@ import lombok.extern.slf4j.Slf4j;
 		MemberController.class,
 		MemberQueryController.class,
 		PositionController.class,
-		IssueController.class,
+		IssueCommandController.class,
 		// ReviewController.class,
 		// IssueReviewerController.class
 	},
@@ -152,7 +152,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected PositionQueryService positionQueryService;
 	@MockBean
-	protected IssueService issueService;
+	protected IssueCommandService issueCommandService;
 	// @MockBean
 	// protected ReviewCommandService reviewCommandService;
 	// @MockBean

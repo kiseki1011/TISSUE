@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueRelation;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueRelation;
 
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {

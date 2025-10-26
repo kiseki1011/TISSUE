@@ -14,10 +14,10 @@ import com.tissue.api.invitation.application.service.command.InvitationCommandSe
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
+import com.tissue.api.issue.application.port.out.IssueRepository;
+import com.tissue.api.issue.application.service.IssueCommandService;
 import com.tissue.api.issue.application.service.IssueParticipantService;
 import com.tissue.api.issue.application.service.IssueRelationService;
-import com.tissue.api.issue.application.service.IssueService;
-import com.tissue.api.issue.infrastructure.repository.IssueRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -125,7 +125,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected TeamFinder teamFinder;
 	@Autowired
-	protected IssueService issueService;
+	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected IssueRelationService issueRelationService;
 	// @Autowired

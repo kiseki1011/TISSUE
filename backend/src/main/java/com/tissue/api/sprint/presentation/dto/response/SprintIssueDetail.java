@@ -3,7 +3,7 @@ package com.tissue.api.sprint.presentation.dto.response;
 import java.time.Instant;
 
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 
 import lombok.Builder;
 

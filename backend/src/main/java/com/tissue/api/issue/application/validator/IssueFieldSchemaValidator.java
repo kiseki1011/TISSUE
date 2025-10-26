@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueFieldValue;
-import com.tissue.api.issue.infrastructure.repository.IssueFieldValueRepository;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueFieldValue;
+import com.tissue.api.issue.application.port.out.IssueFieldValueRepository;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.repository.IssueFieldRepository;
 

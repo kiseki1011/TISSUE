@@ -9,7 +9,7 @@ import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.application.validator.handler.FieldTypeHandler;
 import com.tissue.api.issuetype.domain.enums.FieldType;
 import com.tissue.api.issuetype.domain.IssueField;
-import com.tissue.api.issue.domain.model.IssueFieldValue;
+import com.tissue.api.issue.domain.IssueFieldValue;
 
 @Component
 public class IssueFieldTypeHandlerRegistry {

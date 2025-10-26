@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ public class IssueProgressService {
 			if (progress == null) {
 				continue;
 			}
-			
+
 			if (calculator.getType() == ProgressType.COUNT_BASED) {
 				childBased = progress;
 			}

@@ -3,12 +3,12 @@ package com.tissue.api.issue.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.dto.AddIssueRelationCommand;
+import com.tissue.api.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.api.issue.application.finder.IssueFinder;
-import com.tissue.api.issue.domain.model.Issue;
-import com.tissue.api.issue.domain.model.IssueRelation;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.service.RelationCycleDetector;
-import com.tissue.api.issue.presentation.dto.response.IssueRelationResponse;
+import com.tissue.api.issue.adapter.in.web.dto.response.IssueRelationResponse;
 
 import lombok.RequiredArgsConstructor;
 

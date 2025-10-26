@@ -3,7 +3,7 @@ package com.tissue.api.issue.domain.service;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 
 import lombok.RequiredArgsConstructor;
 

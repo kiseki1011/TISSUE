@@ -2,7 +2,7 @@ package com.tissue.api.workflow.domain.gaurd;
 
 import java.util.Map;
 
-import com.tissue.api.issue.domain.model.Issue;
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
 
 import lombok.Builder;
