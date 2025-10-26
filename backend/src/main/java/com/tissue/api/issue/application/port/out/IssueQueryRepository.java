@@ -2,7 +2,7 @@ package com.tissue.api.issue.application.port.out;
 
 import java.util.Optional;
 
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.domain.Issue;
 
 public interface IssueQueryRepository {

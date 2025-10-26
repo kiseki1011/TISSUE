@@ -3,10 +3,10 @@ package com.tissue.api.issue.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.application.dto.response.IssueResponse;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.policy.IssuePolicy;
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueResponse;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 

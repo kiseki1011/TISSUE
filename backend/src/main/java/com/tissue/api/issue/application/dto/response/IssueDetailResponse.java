@@ -8,7 +8,7 @@ import com.tissue.api.issue.domain.enums.StateCategory;
 import lombok.Builder;
 
 @Builder
-public record IssueDetailDto(
+public record IssueDetailResponse(
 	// Issue 기본 정보
 	Long issueId,
 	String issueKey,
@@ -44,11 +44,13 @@ public record IssueDetailDto(
 	//  - 현재 맺은 관계들(outgoing, ingoing)
 	//  - parent 이슈
 	//  - child 이슈들
+	//  - subscribers는 보여줘야 하나? (따로 subscribers 조회 API 사용하도록 하는게 좋지 않을까?)
 	//  - subscribers 수
 	//  - reviewers
-	//  - 추후에 sprint 기능 완성 후, 현재 속한 sprint
-	//  - 추후에 파일 첨부 기능 염두
-	//  - 추후에 tag 필드 염두
+	//  - 예정 중
+	//    - 추후에 sprint 기능 완성 후, 현재 속한 sprint
+	//    - 추후에 파일 첨부 기능 염두
+	//    - 추후에 tag 필드 염두
 ) {
 	public record IssueTypeInfo(
 		Long id,

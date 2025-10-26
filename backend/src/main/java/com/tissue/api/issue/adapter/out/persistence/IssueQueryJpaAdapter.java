@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 

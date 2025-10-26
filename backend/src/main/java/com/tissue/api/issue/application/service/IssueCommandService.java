@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueResponse;
 import com.tissue.api.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
+import com.tissue.api.issue.application.dto.response.IssueResponse;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.port.out.IssueFieldValueRepository;

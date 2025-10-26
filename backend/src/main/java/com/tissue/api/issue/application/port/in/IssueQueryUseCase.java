@@ -2,7 +2,7 @@ package com.tissue.api.issue.application.port.in;
 
 import java.util.List;
 
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
 import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 
 public interface IssueQueryUseCase {

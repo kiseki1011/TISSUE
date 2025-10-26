@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.domain.model.Workflow;

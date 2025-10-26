@@ -1,4 +1,4 @@
-package com.tissue.api.issue.adapter.in.web.dto.response;
+package com.tissue.api.issue.application.dto.response;
 
 import com.tissue.api.issue.domain.Issue;
 

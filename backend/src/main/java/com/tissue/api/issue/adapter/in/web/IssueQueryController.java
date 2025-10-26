@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
-import com.tissue.api.issue.adapter.in.web.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
 import com.tissue.api.issue.application.service.IssueQueryService;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
