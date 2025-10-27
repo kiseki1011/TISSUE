@@ -7,7 +7,7 @@ import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 
 public interface IssueQueryUseCase {
 
-	IssueDetailResponse getDetailedIssue(String workspaceKey, String issueKey);
+	IssueDetailResponse getIssueDetails(String workspaceKey, String issueKey);
 
 	List<TransitionResponse> getAvailableTransitions(String workspaceKey, String issueKey);
 	// List<TransitionDto> getAvailableTransitions(String workspaceKey, String issueKey);

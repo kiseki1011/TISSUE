@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.api.issue.application.dto.response.IssueRelationResponse;
 import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.application.port.in.IssueRelationUseCase;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.service.RelationCycleDetector;
@@ -13,13 +14,14 @@ import com.tissue.api.issue.domain.service.RelationCycleDetector;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class IssueRelationService {
+public class IssueRelationService implements IssueRelationUseCase {
 
 	private final IssueFinder issueFinder;
 	private final RelationCycleDetector relationCycleDetector;
 
-	@Transactional
+	@Override
 	public IssueRelationResponse add(AddIssueRelationCommand cmd) {
 		Issue source = issueFinder.findIssue(cmd.sourceIssueKey(), cmd.workspaceKey());
 		Issue target = issueFinder.findIssue(cmd.targetIssueKey(), cmd.workspaceKey());
@@ -33,12 +35,8 @@ public class IssueRelationService {
 		return IssueRelationResponse.from(source, target, relation);
 	}
 
-	@Transactional
-	public void remove(
-		String workspaceKey,
-		String sourceIssueKey,
-		String targetIssueKey
-	) {
+	@Override
+	public void remove(String workspaceKey, String sourceIssueKey, String targetIssueKey) {
 		Issue source = issueFinder.findIssue(sourceIssueKey, workspaceKey);
 		Issue target = issueFinder.findIssue(targetIssueKey, workspaceKey);
 

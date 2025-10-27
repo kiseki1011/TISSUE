@@ -9,6 +9,7 @@ import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.api.issue.application.dto.response.IssueResponse;
 import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.TransitionGuardRegistry;
@@ -22,11 +23,11 @@ import com.tissue.api.workflow.domain.model.WorkflowTransition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO: DUPLICATES 자동 해결
-@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class IssueTransitionService {
+@Slf4j
+public class IssueTransitionService implements IssueTransitionUseCase {
 
 	private final IssueFinder issueFinder;
 	private final WorkflowFinder workflowFinder;
@@ -42,24 +43,18 @@ public class IssueTransitionService {
 	 * 4. 상태 전이 실행
 	 * 5. 도메인 이벤트 발행
 	 */
-	@Transactional
+	@Override
 	public IssueResponse performTransition(PerformTransitionCommand cmd) {
-		// Issue 조회 (workspace 검증 포함)
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
-
-		// Transition 조회 및 기본 검증
 		WorkflowTransition transition = findAndValidateTransition(issue, cmd.transitionId());
 
 		// 모든 Guard 실행
 		executeGuards(cmd.workspaceKey(), issue, transition, cmd.actorMemberId());
 
-		// 상태 전이
 		WorkflowState previousStatus = issue.getCurrentState();
 
-		// TODO: moveToStep의 내부 구현은 사실상 set 메서드나 다름 없음.
-		//  안에 검증 로직을 캡슐화 하거나 할 필요는 없을까? 물론 findAndValidateTransition에서 가능한 전이를 검증하긴 하지만
-		//  더 우아하게 처리할 방법은 없나 고민이 됨.
-		issue.proceedToNextState(transition.getTargetState());
+		// 상태 전이
+		issue.transitionTo(transition.getTargetState());
 
 		log.info("Issue transitioned: workspace={}, issueKey={}, transition={}, {} -> {}",
 			cmd.workspaceKey(),
@@ -94,14 +89,13 @@ public class IssueTransitionService {
 		Issue issue,
 		Long transitionId
 	) {
-		// Issue의 IssueType에 설정된 Workflow 가져오기
 		Workflow workflow = issue.getIssueType().getWorkflow();
 
 		// transition 조회
 		WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, transitionId);
 
 		// 현재 상태가 이 Transition의 source status인지 확인
-		// 예: 현재 "TODO"인데 "IN_PROGRESS -> DONE" transition 시도하면 실패
+		// 예: 현재 "PLANNED"인데 "IN_PROGRESS -> DONE" transition 시도하면 실패
 		// TODO: IssueTransitionValidator로 로직 분리
 		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
 		if (transitionSourceStateNotMatch) {

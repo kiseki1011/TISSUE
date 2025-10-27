@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
 import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
-import com.tissue.api.issue.application.service.IssueQueryService;
+import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueQueryController {
 
-	private final IssueQueryService issueQueryService;
+	private final IssueQueryUseCase queryUseCase;
 
 	// TODO: TransitionResponse 말고 새로운 걸 만들어야 함. (transitionId, displayName 모두 응답 내용에 포함)
 	@RoleRequired(role = WorkspaceRole.VIEWER)
@@ -37,7 +37,7 @@ public class IssueQueryController {
 		@RequestBody @Valid PerformTransitionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		List<TransitionResponse> response = issueQueryService.getAvailableTransitions(workspaceKey, issueKey);
+		List<TransitionResponse> response = queryUseCase.getAvailableTransitions(workspaceKey, issueKey);
 		return ApiResponse.created("", response);
 	}
 
@@ -50,7 +50,7 @@ public class IssueQueryController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueDetailResponse response = issueQueryService.getIssueDetails(workspaceKey, issueKey);
+		IssueDetailResponse response = queryUseCase.getIssueDetails(workspaceKey, issueKey);
 		return ApiResponse.ok("Retrieved issue details.", response);
 	}
 

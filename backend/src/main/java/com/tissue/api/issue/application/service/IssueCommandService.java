@@ -13,6 +13,7 @@ import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.dto.response.IssueResponse;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
+import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.api.issue.application.port.out.IssueFieldValueRepository;
 import com.tissue.api.issue.application.port.out.IssueRepository;
 import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
@@ -30,8 +31,9 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class IssueCommandService {
+public class IssueCommandService implements IssueCommandUseCase {
 
 	private final IssueFinder issueFinder;
 	private final IssueTypeFinder issueTypeFinder;
@@ -48,7 +50,7 @@ public class IssueCommandService {
 	 *  이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
 	 */
 
-	@Transactional
+	@Override
 	public IssueResponse create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
@@ -71,7 +73,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse updateCommonFields(UpdateCommonFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
@@ -84,7 +86,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse updateStoryPoint(UpdateStoryPointCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
@@ -98,7 +100,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse updateCustomFields(UpdateCustomFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
@@ -116,7 +118,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
@@ -131,7 +133,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse removeParent(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
@@ -145,7 +147,7 @@ public class IssueCommandService {
 		return IssueResponse.from(issue);
 	}
 
-	@Transactional
+	@Override
 	public IssueResponse softDelete(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
@@ -153,11 +155,4 @@ public class IssueCommandService {
 
 		return IssueResponse.from(issue);
 	}
-
-	// TODO: requestReview()
-	// TODO: batchChangeParent()
-	// TODO: batchUpdateStoryPoint()
-	// TODO: batchSoftDelete()
-	// TODO: cloneIssue()
-	// TODO: cloneIssueToProject()
 }

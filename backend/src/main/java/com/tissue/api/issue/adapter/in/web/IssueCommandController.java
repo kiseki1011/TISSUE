@@ -21,10 +21,10 @@ import com.tissue.api.issue.adapter.in.web.dto.request.UpdateCustomFieldsRequest
 import com.tissue.api.issue.adapter.in.web.dto.request.UpdateStoryPointRequest;
 import com.tissue.api.issue.application.dto.response.IssueRelationResponse;
 import com.tissue.api.issue.application.dto.response.IssueResponse;
-import com.tissue.api.issue.application.service.IssueCommandService;
-import com.tissue.api.issue.application.service.IssueParticipantService;
-import com.tissue.api.issue.application.service.IssueRelationService;
-import com.tissue.api.issue.application.service.IssueTransitionService;
+import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
+import com.tissue.api.issue.application.port.in.IssueParticipantUseCase;
+import com.tissue.api.issue.application.port.in.IssueRelationUseCase;
+import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
@@ -38,10 +38,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueCommandController {
 
-	private final IssueCommandService issueCommandService;
-	private final IssueTransitionService issueTransitionService;
-	private final IssueParticipantService issueParticipantService;
-	private final IssueRelationService issueRelationService;
+	private final IssueCommandUseCase commandUseCase;
+	private final IssueTransitionUseCase transitionUseCase;
+	private final IssueParticipantUseCase participantUseCase;
+	private final IssueRelationUseCase relationUseCase;
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
@@ -50,7 +50,7 @@ public class IssueCommandController {
 		@RequestBody @Valid CreateIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.create(request.toCommand(workspaceKey, userDetails.getMemberId()));
+		IssueResponse response = commandUseCase.create(request.toCommand(workspaceKey, userDetails.getMemberId()));
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Issue created.", response));
 	}
@@ -63,7 +63,7 @@ public class IssueCommandController {
 		@RequestBody @Valid UpdateCommonFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.updateCommonFields(request.toCommand(workspaceKey, issueKey));
+		IssueResponse response = commandUseCase.updateCommonFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
@@ -75,7 +75,7 @@ public class IssueCommandController {
 		@RequestBody @Valid UpdateCustomFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.updateCustomFields(request.toCommand(workspaceKey, issueKey));
+		IssueResponse response = commandUseCase.updateCustomFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
@@ -87,7 +87,7 @@ public class IssueCommandController {
 		@RequestBody @Valid UpdateStoryPointRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.updateStoryPoint(request.toCommand(workspaceKey, issueKey));
+		IssueResponse response = commandUseCase.updateStoryPoint(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue story point updated.", response);
 	}
 
@@ -99,7 +99,7 @@ public class IssueCommandController {
 		@RequestBody @Valid AssignParentIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.assignParent(workspaceKey, issueKey, request.parentIssueKey());
+		IssueResponse response = commandUseCase.assignParent(workspaceKey, issueKey, request.parentIssueKey());
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
@@ -110,7 +110,7 @@ public class IssueCommandController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.removeParent(workspaceKey, issueKey);
+		IssueResponse response = commandUseCase.removeParent(workspaceKey, issueKey);
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
@@ -122,7 +122,7 @@ public class IssueCommandController {
 		@RequestBody @Valid PerformTransitionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueTransitionService.performTransition(
+		IssueResponse response = transitionUseCase.performTransition(
 			request.toCommand(workspaceKey, issueKey, userDetails.getMemberId())
 		);
 		return ApiResponse.created("Issue state transitioned.", response);
@@ -135,7 +135,7 @@ public class IssueCommandController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueCommandService.softDelete(workspaceKey, issueKey);
+		IssueResponse response = commandUseCase.softDelete(workspaceKey, issueKey);
 		return ApiResponse.ok("Issue deleted(archived).", response);
 	}
 
@@ -147,7 +147,7 @@ public class IssueCommandController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.changeReporter(workspaceKey, issueKey, memberId);
+		IssueResponse response = participantUseCase.changeReporter(workspaceKey, issueKey, memberId);
 		return ApiResponse.ok("Reporter changed.", response);
 	}
 
@@ -159,7 +159,7 @@ public class IssueCommandController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.assignTo(
+		IssueResponse response = participantUseCase.assignTo(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -174,7 +174,7 @@ public class IssueCommandController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.unassign(
+		IssueResponse response = participantUseCase.unassign(
 			workspaceKey,
 			issueKey
 		);
@@ -188,7 +188,7 @@ public class IssueCommandController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.subscribe(
+		IssueResponse response = participantUseCase.subscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -203,7 +203,7 @@ public class IssueCommandController {
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.unsubscribe(
+		IssueResponse response = participantUseCase.unsubscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -219,7 +219,7 @@ public class IssueCommandController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.addReviewer(
+		IssueResponse response = participantUseCase.addReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -235,7 +235,7 @@ public class IssueCommandController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = issueParticipantService.removeReviewer(
+		IssueResponse response = participantUseCase.removeReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -253,8 +253,7 @@ public class IssueCommandController {
 		@RequestBody @Valid AddIssueRelationRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueRelationResponse response = issueRelationService.add(request.toCommand(workspaceKey, issueKey));
-
+		IssueRelationResponse response = relationUseCase.add(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue relation created.", response);
 	}
 
@@ -269,8 +268,7 @@ public class IssueCommandController {
 		@PathVariable String targetIssueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		issueRelationService.remove(workspaceKey, sourceIssueKey, targetIssueKey);
-
+		relationUseCase.remove(workspaceKey, sourceIssueKey, targetIssueKey);
 		return ApiResponse.okWithNoContent("Issue relation removed.");
 	}
 
