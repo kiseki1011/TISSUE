@@ -28,6 +28,7 @@ public class IssueReviewer extends BaseEntity {
 	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 
+	// TODO: reviewer.getMember().getId()으로 탐색해서 저장하는데, 이렇게 하는건 별로일까?
 	@Column(name = "reviewer_member_id")
 	private Long reviewerMemberId;
 

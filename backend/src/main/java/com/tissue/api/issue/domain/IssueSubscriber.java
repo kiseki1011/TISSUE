@@ -26,6 +26,7 @@ public class IssueSubscriber extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	// TODO: subscriber.getMember().getId()으로 탐색해서 저장하는데, 이렇게 하는건 별로일까?
 	@Column(nullable = false)
 	private Long subcriberMemberId;
 

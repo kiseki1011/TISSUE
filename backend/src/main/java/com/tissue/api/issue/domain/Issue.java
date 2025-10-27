@@ -132,6 +132,9 @@ public class Issue extends BaseEntity {
 	}
 
 	public void changeReporter(@NonNull WorkspaceMember reporter) {
+		if (participants.isReporter(reporter)) {
+			return;
+		}
 		this.participants.changeReporter(reporter);
 	}
 
@@ -181,10 +184,12 @@ public class Issue extends BaseEntity {
 	}
 
 	public void removeRelation(@NonNull Issue otherIssue) {
-		this.relations.removeRelation(this, otherIssue);
+		this.relations.removeRelation(otherIssue);
 	}
 
-	public void proceedToNextState(@NonNull WorkflowState newState) {
+	public void transitionTo(@NonNull WorkflowState newState) {
+		// TODO: 가능한 전이인지 검증을 애플리케이션 계층에서 하고 있긴한데, 검증을 여기서 수행이 가능할까?
+		//  가능해도, 여기서하는게 괜찮은 방식일까?
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
 import jakarta.persistence.CascadeType;
@@ -36,23 +35,9 @@ public class IssueRelations {
 		return IssueRelation.create(sourceIssue, targetIssue, type);
 	}
 
-	public void removeRelation(Issue thisIssue, Issue otherIssue) {
-		boolean removed = outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
-
-		if (removed) {
-			return;
-		}
-
-		removed = incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
-
-		if (removed) {
-			return;
-		}
-
-		// TODO: 굳이 던져야 하나? 관계가 없으면 그냥 무시해도 되지 않을까?
-		throw new ResourceNotFoundException(
-			"No relation found between %s and %s".formatted(thisIssue.getKey(), otherIssue.getKey())
-		);
+	public void removeRelation(Issue otherIssue) {
+		outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
+		incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
 	}
 
 	public void clear() {

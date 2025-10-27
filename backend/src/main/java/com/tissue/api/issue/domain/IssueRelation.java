@@ -26,9 +26,11 @@ import lombok.ToString;
 @Entity
 @Table(name = "issue_relation",
 	uniqueConstraints = @UniqueConstraint(
-		// TODO: 현재는 relation이 같은 소스-타겟 사이에서 하나만 존재 가능
-		//  relation 타입까지 포함한 유니크 제약을 걸어서, 중복되지 않는 타입이라면 여러개 생성할 수 있도록 허용할까?
-		columnNames = {"source_issue_id", "target_issue_id"}
+		// TODO: 그냥 두 이슈 사이에 하나의 관계만 허용할까?
+		//  - 굳이 두 개 이상의 다른 의미를 지닌 관계를 설정할 필요는 없을 것 같은데?
+		//  - 오히려 허용하면 더 헷갈리지 않을까?
+		//  예를 들어서 A -> B가 RELEVANT와 BLOCKS를 둘다 가지고 있어도 어차피 BLOCKS 자체가 관련있다는 것의 의미가 될텐데?
+		columnNames = {"source_issue_id", "target_issue_id"} // "relation_type"
 	)
 )
 @Getter
@@ -84,17 +86,6 @@ public class IssueRelation extends BaseEntity {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return String.format(
-			"IssueRelation(id=%d, source=%s, target=%s, type=%s)",
-			id,
-			sourceIssue != null ? sourceIssue.getKey() : "?",
-			targetIssue != null ? targetIssue.getKey() : "?",
-			relationType
-		);
-	}
-
 	private static void validateRelationType(
 		IssueRelationType type,
 		Issue sourceIssue,
@@ -130,5 +121,16 @@ public class IssueRelation extends BaseEntity {
 				// 제약 없음
 			}
 		}
+	}
+
+	@Override
+	public String toString() {
+		return String.format(
+			"IssueRelation(id=%d, source=%s, target=%s, type=%s)",
+			id,
+			sourceIssue != null ? sourceIssue.getKey() : "?",
+			targetIssue != null ? targetIssue.getKey() : "?",
+			relationType
+		);
 	}
 }
