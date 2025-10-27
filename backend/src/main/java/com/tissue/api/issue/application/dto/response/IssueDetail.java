@@ -1,6 +1,7 @@
 package com.tissue.api.issue.application.dto.response;
 
 import java.time.Instant;
+import java.util.List;
 
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.StateCategory;
@@ -8,7 +9,7 @@ import com.tissue.api.issue.domain.enums.StateCategory;
 import lombok.Builder;
 
 @Builder
-public record IssueDetailResponse(
+public record IssueDetail(
 	Long issueId,
 	String issueKey,
 
@@ -27,9 +28,16 @@ public record IssueDetailResponse(
 
 	StateInfo state,
 
+	ParticipantInfo creator,
 	ParticipantInfo assignee,
 	ParticipantInfo reporter,
-	// ParticipantInfo creator,
+	List<ParticipantInfo> reviewers,
+
+	// List<RelationInfo> relations,
+	// ParentIssueInfo parent,
+	// List<ChildIssueInfo> children,
+
+	// List<CustomFieldValueInfo> customFields,
 
 	Instant createdAt,
 	Instant updatedAt
@@ -43,6 +51,7 @@ public record IssueDetailResponse(
 	//  - subscribers 수
 	//  - (subscribers는 사용자가 조회를 따로 원할 때, 그렇기 때문에 따로 조회 API로 분리)
 	//  - reviewers
+	//  - 커스텀 필드와 값들? (따로 분리하지 않고 이것도 같이 가져오는게 좋지 않을까?)
 	//  TODO(예정 중):
 	//    - 추후에 sprint 기능 완성 후, 현재 속한 sprint
 	//    - 추후에 파일 첨부 기능 염두

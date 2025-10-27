@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
-import com.tissue.api.issue.application.dto.response.IssueDetailResponse;
+import com.tissue.api.issue.application.dto.response.IssueDetail;
+import com.tissue.api.issue.application.dto.response.TransitionDetail;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workflow.presentation.dto.response.TransitionResponse;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -31,26 +31,25 @@ public class IssueQueryController {
 	// TODO: TransitionResponse 말고 새로운 걸 만들어야 함. (transitionId, displayName 모두 응답 내용에 포함)
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/transitions")
-	public ApiResponse<List<TransitionResponse>> getAvailableTransitions(
+	public ApiResponse<List<TransitionDetail>> getAvailableTransitions(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid PerformTransitionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		List<TransitionResponse> response = queryUseCase.getAvailableTransitions(workspaceKey, issueKey);
+		List<TransitionDetail> response = queryUseCase.getAvailableTransitions(workspaceKey, issueKey);
 		return ApiResponse.created("", response);
 	}
 
 	// TODO: content의 경우 크기가 클수 있어서 캐싱 정책을 적용을 고려해야 하지 않을까?
-	// TODO: 굳이 IssueDetailDto -> IssueDetailResponse를 변환하지 않고 바로 IssueDetailResponse를 사용하도록 하자.
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}")
-	public ApiResponse<IssueDetailResponse> getIssueDetails(
+	public ApiResponse<IssueDetail> getIssueDetails(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueDetailResponse response = queryUseCase.getIssueDetails(workspaceKey, issueKey);
+		IssueDetail response = queryUseCase.getIssueDetails(workspaceKey, issueKey);
 		return ApiResponse.ok("Retrieved issue details.", response);
 	}
 
