@@ -82,6 +82,10 @@ public class EnumFieldOption extends BaseEntity {
 			.build();
 	}
 
+	public String getDisplayLabel() {
+		return label.getDisplay();
+	}
+
 	public void rename(@NonNull Label label) {
 		this.label = label;
 	}

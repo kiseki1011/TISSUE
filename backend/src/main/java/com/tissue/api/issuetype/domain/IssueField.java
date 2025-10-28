@@ -93,6 +93,10 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceKey();
 	}
 
+	public String getDisplayLabel() {
+		return label.getDisplay();
+	}
+
 	public void rename(@NonNull Label label) {
 		this.label = label;
 	}

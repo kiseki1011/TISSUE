@@ -7,8 +7,8 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -122,6 +122,10 @@ public class IssueType extends BaseEntity {
 		return workspace.getKey();
 	}
 
+	public String getDisplayLabel() {
+		return label.getDisplay();
+	}
+
 	public void rename(@NonNull Label label) {
 		this.label = label;
 	}
@@ -132,15 +136,6 @@ public class IssueType extends BaseEntity {
 
 	public void updateColor(@NonNull ColorType color) {
 		this.color = color;
-	}
-
-	// TODO: 함부로 변경을 허용하면 안됨
-	//  - IssueHierarchy는 Issue의 parent issue 설정에 영향을 줌
-	//  - IssueHierarchy를 변경하는 경우, 해당 IssueType를 사용하는 issue들의 부모 이슈에 대한 전략을 세워야 함
-	//  - case 1: 기존 부모들 clear(파괴적인 변경이 될 가능성이 높기 때문에 웬만하면 case2로 가는게 좋지 않을까?)
-	//  - case 2: 만약 부모가 있는 이슈가 있다면 IssueHierarchy 변경 제한
-	public void updateHierarchyLevel(@NonNull IssueHierarchy issueHierarchy) {
-		this.issueHierarchy = issueHierarchy;
 	}
 
 	public void setWorkflow(@NonNull Workflow workflow) {
