@@ -61,7 +61,7 @@ public class IssueRelation extends BaseEntity {
 	) {
 		ensureSameWorkspace(sourceIssue, targetIssue);
 		ensureNotSelfReference(sourceIssue, targetIssue);
-		// validateRelationType(type, sourceIssue, targetIssue);
+		validateRelationType(type, sourceIssue, targetIssue);
 
 		IssueRelation issueRelation = new IssueRelation();
 		issueRelation.sourceIssue = sourceIssue;
@@ -92,7 +92,7 @@ public class IssueRelation extends BaseEntity {
 		Issue targetIssue
 	) {
 		switch (type) {
-			case DUPLICATES, DUPLICATED_BY -> {
+			case DUPLICATES -> { // DUPLICATED_BY
 				// 중복은 같은 IssueType만
 				if (!sourceIssue.getIssueType().equals(targetIssue.getIssueType())) {
 					throw new InvalidOperationException(
@@ -103,7 +103,7 @@ public class IssueRelation extends BaseEntity {
 				}
 			}
 
-			case BLOCKS, BLOCKED_BY -> {
+			case BLOCKS -> { // BLOCKED_BY
 				// BLOCKS는 같은 hierarchy 레벨 또는 상위 레벨만
 				IssueHierarchy sourceHierarchy = sourceIssue.getHierarchy();
 				IssueHierarchy targetHierarchy = targetIssue.getHierarchy();

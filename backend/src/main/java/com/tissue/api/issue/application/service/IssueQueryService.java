@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.dto.response.IssueDetail;
+import com.tissue.api.issue.application.dto.response.IssueCommonFieldDetail;
 import com.tissue.api.issue.application.dto.response.TransitionDetail;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
@@ -24,7 +24,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	// TODO: findDetailedIssue에서 IssueDetailResponse으로 프로젝션 되도록 JPQL을 사용해서 구현했는데,
 	//  그냥 Issue를 join fetch를 사용해서 지연로딩 없이 가져올 연관 엔티티들도 같이 로드하고 나서
 	//  Issue -> IssueDetailResponse로 변환하는 방식을 사용할까?
-	public IssueDetail getIssueDetails(String workspaceKey, String issueKey) {
+	public IssueCommonFieldDetail getIssueDetails(String workspaceKey, String issueKey) {
 		return queryRepository.findDetailedIssue(workspaceKey, issueKey)
 			.orElseThrow(() -> new RuntimeException("Issue not found"));
 	}

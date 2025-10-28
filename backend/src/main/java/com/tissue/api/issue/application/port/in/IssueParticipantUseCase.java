@@ -1,19 +1,19 @@
 package com.tissue.api.issue.application.port.in;
 
-import com.tissue.api.issue.application.dto.response.IssueResponse;
+import com.tissue.api.issue.application.dto.response.IssueResult;
 
 public interface IssueParticipantUseCase {
-	IssueResponse changeReporter(String workspaceKey, String issueKey, Long memberId);
+	IssueResult changeReporter(String workspaceKey, String issueKey, Long memberId);
 
-	IssueResponse assignTo(String workspaceKey, String issueKey, Long memberId);
+	IssueResult assignTo(String workspaceKey, String issueKey, Long memberId);
 
-	IssueResponse unassign(String workspaceKey, String issueKey);
+	IssueResult unassign(String workspaceKey, String issueKey);
 
-	IssueResponse subscribe(String workspaceKey, String issueKey, Long memberId);
+	IssueResult subscribe(String workspaceKey, String issueKey, Long memberId);
 
-	IssueResponse unsubscribe(String workspaceKey, String issueKey, Long memberId);
+	IssueResult unsubscribe(String workspaceKey, String issueKey, Long memberId);
 
-	IssueResponse addReviewer(String workspaceKey, String issueKey, Long memberId);
+	IssueResult addReviewer(String workspaceKey, String issueKey, Long memberId);
 
-	IssueResponse removeReviewer(String workspaceKey, String issueKey, Long memberId);
+	IssueResult removeReviewer(String workspaceKey, String issueKey, Long memberId);
 }

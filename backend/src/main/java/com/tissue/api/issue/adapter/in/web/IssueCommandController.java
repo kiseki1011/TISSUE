@@ -19,8 +19,8 @@ import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
 import com.tissue.api.issue.adapter.in.web.dto.request.UpdateCommonFieldsRequest;
 import com.tissue.api.issue.adapter.in.web.dto.request.UpdateCustomFieldsRequest;
 import com.tissue.api.issue.adapter.in.web.dto.request.UpdateStoryPointRequest;
-import com.tissue.api.issue.application.dto.response.IssueRelationResponse;
-import com.tissue.api.issue.application.dto.response.IssueResponse;
+import com.tissue.api.issue.application.dto.response.IssueRelationResult;
+import com.tissue.api.issue.application.dto.response.IssueResult;
 import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.api.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.api.issue.application.port.in.IssueRelationUseCase;
@@ -45,84 +45,84 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
-	public ResponseEntity<ApiResponse<IssueResponse>> create(
+	public ResponseEntity<ApiResponse<IssueResult>> create(
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.create(request.toCommand(workspaceKey, userDetails.getMemberId()));
+		IssueResult response = commandUseCase.create(request.toCommand(workspaceKey, userDetails.getMemberId()));
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(ApiResponse.created("Issue created.", response));
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}")
-	public ApiResponse<IssueResponse> updateCommonFields(
+	public ApiResponse<IssueResult> updateCommonFields(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid UpdateCommonFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.updateCommonFields(request.toCommand(workspaceKey, issueKey));
+		IssueResult response = commandUseCase.updateCommonFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/custom")
-	public ApiResponse<IssueResponse> updateCustomFields(
+	public ApiResponse<IssueResult> updateCustomFields(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid UpdateCustomFieldsRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.updateCustomFields(request.toCommand(workspaceKey, issueKey));
+		IssueResult response = commandUseCase.updateCustomFields(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue updated.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PutMapping("/{issueKey}/storypoint")
-	public ApiResponse<IssueResponse> updateStoryPoint(
+	public ApiResponse<IssueResult> updateStoryPoint(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid UpdateStoryPointRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.updateStoryPoint(request.toCommand(workspaceKey, issueKey));
+		IssueResult response = commandUseCase.updateStoryPoint(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue story point updated.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PutMapping("/{issueKey}/parent")
-	public ApiResponse<IssueResponse> assignParent(
+	public ApiResponse<IssueResult> assignParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AssignParentIssueRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.assignParent(workspaceKey, issueKey, request.parentIssueKey());
+		IssueResult response = commandUseCase.assignParent(workspaceKey, issueKey, request.parentIssueKey());
 		return ApiResponse.ok("Parent issue assigned.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/parent")
-	public ApiResponse<IssueResponse> removeParent(
+	public ApiResponse<IssueResult> removeParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.removeParent(workspaceKey, issueKey);
+		IssueResult response = commandUseCase.removeParent(workspaceKey, issueKey);
 		return ApiResponse.ok("Parent issue removed.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{issueKey}/transition")
-	public ApiResponse<IssueResponse> performTransition(
+	public ApiResponse<IssueResult> performTransition(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid PerformTransitionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = transitionUseCase.performTransition(
+		IssueResult response = transitionUseCase.performTransition(
 			request.toCommand(workspaceKey, issueKey, userDetails.getMemberId())
 		);
 		return ApiResponse.created("Issue state transitioned.", response);
@@ -130,36 +130,36 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@DeleteMapping("/{issueKey}")
-	public ApiResponse<IssueResponse> softDelete(
+	public ApiResponse<IssueResult> softDelete(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = commandUseCase.softDelete(workspaceKey, issueKey);
+		IssueResult response = commandUseCase.softDelete(workspaceKey, issueKey);
 		return ApiResponse.ok("Issue deleted(archived).", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{issueKey}/reporters/{memberId}")
-	public ApiResponse<IssueResponse> changeReporter(
+	public ApiResponse<IssueResult> changeReporter(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.changeReporter(workspaceKey, issueKey, memberId);
+		IssueResult response = participantUseCase.changeReporter(workspaceKey, issueKey, memberId);
 		return ApiResponse.ok("Reporter changed.", response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{issueKey}/assignees/{memberId}")
-	public ApiResponse<IssueResponse> assignTo(
+	public ApiResponse<IssueResult> assignTo(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.assignTo(
+		IssueResult response = participantUseCase.assignTo(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -169,12 +169,12 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/assignees")
-	public ApiResponse<IssueResponse> unassign(
+	public ApiResponse<IssueResult> unassign(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.unassign(
+		IssueResult response = participantUseCase.unassign(
 			workspaceKey,
 			issueKey
 		);
@@ -183,12 +183,12 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PostMapping("/{issueKey}/subscribers")
-	public ApiResponse<IssueResponse> subscribe(
+	public ApiResponse<IssueResult> subscribe(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.subscribe(
+		IssueResult response = participantUseCase.subscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -198,12 +198,12 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@DeleteMapping("/{issueKey}/subscribers")
-	public ApiResponse<IssueResponse> unsubscribe(
+	public ApiResponse<IssueResult> unsubscribe(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.unsubscribe(
+		IssueResult response = participantUseCase.unsubscribe(
 			workspaceKey,
 			issueKey,
 			userDetails.getMemberId()
@@ -213,13 +213,13 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{issueKey}/reviewers/{memberId}")
-	public ApiResponse<IssueResponse> addReviewer(
+	public ApiResponse<IssueResult> addReviewer(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.addReviewer(
+		IssueResult response = participantUseCase.addReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -229,13 +229,13 @@ public class IssueCommandController {
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{issueKey}/reviewers/{memberId}")
-	public ApiResponse<IssueResponse> removeReviewer(
+	public ApiResponse<IssueResult> removeReviewer(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueResponse response = participantUseCase.removeReviewer(
+		IssueResult response = participantUseCase.removeReviewer(
 			workspaceKey,
 			issueKey,
 			memberId
@@ -247,13 +247,13 @@ public class IssueCommandController {
 	//  - DUPLICATES 제외(특수 처리 필요)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{issueKey}/relations")
-	public ApiResponse<IssueRelationResponse> addRelation(
+	public ApiResponse<IssueRelationResult> addRelation(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@RequestBody @Valid AddIssueRelationRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueRelationResponse response = relationUseCase.add(request.toCommand(workspaceKey, issueKey));
+		IssueRelationResult response = relationUseCase.add(request.toCommand(workspaceKey, issueKey));
 		return ApiResponse.ok("Issue relation created.", response);
 	}
 

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.request.AddIssueRelationCommand;
-import com.tissue.api.issue.application.dto.response.IssueRelationResponse;
+import com.tissue.api.issue.application.dto.response.IssueRelationResult;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueRelationUseCase;
 import com.tissue.api.issue.domain.Issue;
@@ -22,7 +22,7 @@ public class IssueRelationService implements IssueRelationUseCase {
 	private final RelationCycleDetector relationCycleDetector;
 
 	@Override
-	public IssueRelationResponse add(AddIssueRelationCommand cmd) {
+	public IssueRelationResult add(AddIssueRelationCommand cmd) {
 		Issue source = issueFinder.findIssue(cmd.sourceIssueKey(), cmd.workspaceKey());
 		Issue target = issueFinder.findIssue(cmd.targetIssueKey(), cmd.workspaceKey());
 
@@ -32,7 +32,7 @@ public class IssueRelationService implements IssueRelationUseCase {
 
 		IssueRelation relation = source.addRelation(target, cmd.relationType());
 
-		return IssueRelationResponse.from(source, target, relation);
+		return IssueRelationResult.from(source, target, relation);
 	}
 
 	@Override

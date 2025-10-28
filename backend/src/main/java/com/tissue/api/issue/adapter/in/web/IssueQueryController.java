@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.issue.adapter.in.web.dto.request.PerformTransitionRequest;
-import com.tissue.api.issue.application.dto.response.IssueDetail;
+import com.tissue.api.issue.application.dto.response.IssueCommonFieldDetail;
 import com.tissue.api.issue.application.dto.response.TransitionDetail;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.security.authentication.MemberUserDetails;
@@ -44,12 +44,12 @@ public class IssueQueryController {
 	// TODO: content의 경우 크기가 클수 있어서 캐싱 정책을 적용을 고려해야 하지 않을까?
 	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}")
-	public ApiResponse<IssueDetail> getIssueDetails(
+	public ApiResponse<IssueCommonFieldDetail> getIssueDetails(
 		@PathVariable String workspaceKey,
 		@PathVariable String issueKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		IssueDetail response = queryUseCase.getIssueDetails(workspaceKey, issueKey);
+		IssueCommonFieldDetail response = queryUseCase.getIssueDetails(workspaceKey, issueKey);
 		return ApiResponse.ok("Retrieved issue details.", response);
 	}
 

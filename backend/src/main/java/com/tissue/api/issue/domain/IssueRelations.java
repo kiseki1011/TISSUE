@@ -31,7 +31,7 @@ public class IssueRelations {
 	}
 
 	public IssueRelation addRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
-		ensureNotDuplicate(sourceIssue, targetIssue);
+		ensureNoRelationExists(sourceIssue, targetIssue);
 		return IssueRelation.create(sourceIssue, targetIssue, type);
 	}
 
@@ -52,42 +52,56 @@ public class IssueRelations {
 		return all;
 	}
 
-	public List<Issue> getRelatedIssuesByType(IssueRelationType type) {
+	// 이 이슈가 blocking하는 이슈들
+	public List<Issue> getBlockingIssues() {
+		return outgoingRelations.stream()
+			.filter(r -> r.getRelationType() == IssueRelationType.BLOCKS)
+			.map(IssueRelation::getTargetIssue)
+			.toList();
+	}
+
+	// 이 이슈를 blocking하는 이슈들
+	public List<Issue> getBlockedByIssues() {
+		return incomingRelations.stream()
+			.filter(r -> r.getRelationType() == IssueRelationType.BLOCKS)
+			.map(IssueRelation::getSourceIssue)
+			.toList();
+	}
+
+	public List<Issue> getRelevantIssues() {
 		List<Issue> result = new ArrayList<>();
 
 		outgoingRelations.stream()
-			.filter(r -> r.getRelationType() == type)
+			.filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
 			.map(IssueRelation::getTargetIssue)
 			.forEach(result::add);
 
 		incomingRelations.stream()
-			.filter(r -> r.getRelationType() == type.getOpposite())
+			.filter(r -> r.getRelationType() == IssueRelationType.RELEVANT)
 			.map(IssueRelation::getSourceIssue)
 			.forEach(result::add);
 
 		return result;
 	}
 
-	public boolean isBlockedBy(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) &&
-				r.getRelationType() == IssueRelationType.BLOCKS);
-	}
-
-	public List<Issue> getBlockingIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKS);
-	}
-
-	public List<Issue> getBlockedByIssues() {
-		return getRelatedIssuesByType(IssueRelationType.BLOCKED_BY);
-	}
-
-	public List<Issue> getRelevantIssues() {
-		return getRelatedIssuesByType(IssueRelationType.RELEVANT);
-	}
-
+	// 이 이슈가 복제한 이슈들
 	public List<Issue> getDuplicates() {
-		return getRelatedIssuesByType(IssueRelationType.DUPLICATES);
+		return outgoingRelations.stream()
+			.filter(r -> r.getRelationType() == IssueRelationType.DUPLICATES)
+			.map(IssueRelation::getTargetIssue)
+			.toList();
+	}
+
+	// 이 이슈를 복제한 이슈들
+	public List<Issue> getDuplicatedBy() {
+		return incomingRelations.stream()
+			.filter(r -> r.getRelationType() == IssueRelationType.DUPLICATES)
+			.map(IssueRelation::getSourceIssue)
+			.toList();
+	}
+
+	public int getTotalRelationCount() {
+		return outgoingRelations.size() + incomingRelations.size();
 	}
 
 	public boolean hasRelationWith(Issue otherIssue) {
@@ -97,11 +111,19 @@ public class IssueRelations {
 				.anyMatch(r -> r.getSourceIssue().equals(otherIssue));
 	}
 
-	public int getTotalRelationCount() {
-		return outgoingRelations.size() + incomingRelations.size();
+	public boolean isBlockedBy(Issue otherIssue) {
+		return incomingRelations.stream()
+			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) &&
+				r.getRelationType() == IssueRelationType.BLOCKS);
 	}
 
-	private static void ensureNotDuplicate(Issue source, Issue target) {
+	public boolean isDuplicateOf(Issue otherIssue) {
+		return incomingRelations.stream()
+			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) &&
+				r.getRelationType() == IssueRelationType.DUPLICATES);
+	}
+
+	private static void ensureNoRelationExists(Issue source, Issue target) {
 		boolean exists = source.getRelations().getOutgoingRelations().stream()
 			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 

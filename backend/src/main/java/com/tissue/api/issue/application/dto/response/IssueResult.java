@@ -2,11 +2,11 @@ package com.tissue.api.issue.application.dto.response;
 
 import com.tissue.api.issue.domain.Issue;
 
-public record IssueResponse(
+public record IssueResult(
 	String workspaceKey,
 	String issueKey
 ) {
-	public static IssueResponse from(Issue issue) {
-		return new IssueResponse(issue.getWorkspaceKey(), issue.getKey());
+	public static IssueResult from(Issue issue) {
+		return new IssueResult(issue.getWorkspaceKey(), issue.getKey());
 	}
 }

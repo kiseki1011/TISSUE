@@ -4,12 +4,11 @@ import java.time.Instant;
 import java.util.List;
 
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.issue.domain.enums.StateCategory;
 
 import lombok.Builder;
 
 @Builder
-public record IssueDetail(
+public record IssueCommonFieldDetail(
 	Long issueId,
 	String issueKey,
 
@@ -57,28 +56,4 @@ public record IssueDetail(
 	//    - 추후에 파일 첨부 기능 염두
 	//    - 추후에 tag 필드 염두
 ) {
-	public record IssueTypeInfo(
-		Long id,
-		String displayName
-		// ColorType color
-		// String icon
-	) {
-	}
-
-	public record StateInfo(
-		Long id,
-		String displayName,
-		StateCategory category
-		// ColorType color
-		// String icon
-	) {
-	}
-
-	public record ParticipantInfo(
-		Long memberId,
-		String username,
-		String displayName
-		// String profilePic? (예정 중)
-	) {
-	}
 }

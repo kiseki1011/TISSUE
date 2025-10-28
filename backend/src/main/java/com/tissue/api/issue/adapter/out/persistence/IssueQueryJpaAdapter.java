@@ -4,14 +4,13 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.tissue.api.issue.application.dto.response.IssueDetail;
+import com.tissue.api.issue.application.dto.response.IssueCommonFieldDetail;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-// TODO: IssueQueryFinder보다 좋은 이름 없나?
 @Repository
 @RequiredArgsConstructor
 public class IssueQueryJpaAdapter implements IssueQueryRepository {
@@ -42,7 +41,7 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 	// TODO: 이 방식(DTO에 프로젝션) 말고 그냥 Issue에 필요한 연관 엔티티들을 fetch join하고,
 	//  IssueDetailResponse는 서비스 계층에서 조립해서 반환하는 방식은 어떨까?
 	@Override
-	public Optional<IssueDetail> findDetailedIssue(
+	public Optional<IssueCommonFieldDetail> findDetailedIssue(
 		String workspaceKey,
 		String issueKey
 	) {
@@ -100,7 +99,7 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 			      AND i.key = :issueKey
 			""".formatted(path, path, path, path, path);
 
-		return em.createQuery(jpql, IssueDetail.class)
+		return em.createQuery(jpql, IssueCommonFieldDetail.class)
 			.setParameter("workspaceKey", workspaceKey)
 			.setParameter("issueKey", issueKey)
 			.getResultStream()
