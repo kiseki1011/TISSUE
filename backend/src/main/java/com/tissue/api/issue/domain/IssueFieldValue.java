@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: archived=false 대상으로 issue_id, issue_field_id 대상 유니크 제약 추후에 설정(Postgres DDL)
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

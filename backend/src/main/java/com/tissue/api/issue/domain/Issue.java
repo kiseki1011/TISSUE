@@ -93,7 +93,7 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "parentIssue")
 	private List<Issue> childIssues = new ArrayList<>();
 
-	// TODO: 리팩토링 필요하지 않을까? 예를 들어 더 좋은 이름, Sprint와의 관계 구조 개선
+	// TODO: 추후 Sprint 쪽 애그리거트 정리 후, 다시 리팩토링 진행. 일단은 보류.
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
 
@@ -117,6 +117,7 @@ public class Issue extends BaseEntity {
 	) {
 		Issue issue = new Issue();
 		issue.workspace = workspace;
+		issue.key = workspace.generateCurrentIssueKey();
 		issue.issueType = issueType;
 		issue.title = title;
 		issue.content = content;
@@ -135,7 +136,7 @@ public class Issue extends BaseEntity {
 		if (participants.isReporter(reporter)) {
 			return;
 		}
-		this.participants.changeReporter(reporter);
+		participants.changeReporter(reporter);
 	}
 
 	public void updateTitle(@NonNull String title) {
@@ -147,11 +148,11 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateSummary(@Nullable String summary) {
-		this.content.updateSummary(summary);
+		content.updateSummary(summary);
 	}
 
 	public void updateDueAt(@Nullable Instant dueAt) {
-		this.schedule.updateDueDate(dueAt);
+		schedule.updateDueDate(dueAt);
 	}
 
 	public void updatePriority(@NonNull IssuePriority priority) {
@@ -176,15 +177,15 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
-		this.progress.update(countBased, pointBased);
+		progress.update(countBased, pointBased);
 	}
 
 	public IssueRelation addRelation(@NonNull Issue targetIssue, @NonNull IssueRelationType type) {
-		return this.relations.addRelation(this, targetIssue, type);
+		return relations.addRelation(this, targetIssue, type);
 	}
 
 	public void removeRelation(@NonNull Issue otherIssue) {
-		this.relations.removeRelation(otherIssue);
+		relations.removeRelation(otherIssue);
 	}
 
 	public void transitionTo(@NonNull WorkflowState newState) {
@@ -205,27 +206,27 @@ public class Issue extends BaseEntity {
 	}
 
 	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		this.participants.addSubscriber(workspaceMember, this);
+		participants.addSubscriber(workspaceMember, this);
 	}
 
 	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		this.participants.removeSubscriber(workspaceMember);
+		participants.removeSubscriber(workspaceMember);
 	}
 
 	public void assignTo(@NonNull WorkspaceMember assignee) {
-		this.participants.assignTo(assignee);
+		participants.assignTo(assignee);
 	}
 
 	public void unassign() {
-		this.participants.unassign();
+		participants.unassign();
 	}
 
 	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
-		this.participants.addReviewer(workspaceMember, this);
+		participants.addReviewer(workspaceMember, this);
 	}
 
 	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		this.participants.removeReviewer(workspaceMember);
+		participants.removeReviewer(workspaceMember);
 	}
 
 	public void setParentIssue(@NonNull Issue newParent) {
@@ -345,7 +346,7 @@ public class Issue extends BaseEntity {
 	}
 
 	private void clearRelations() {
-		this.relations.clear();
+		relations.clear();
 	}
 
 	@Override
