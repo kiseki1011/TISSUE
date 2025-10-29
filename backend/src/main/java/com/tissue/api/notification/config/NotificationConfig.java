@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.message.SimpleNotificationMessageFactory;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 
 import lombok.RequiredArgsConstructor;
 

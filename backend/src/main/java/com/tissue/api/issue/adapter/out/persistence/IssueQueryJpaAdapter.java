@@ -1,12 +1,13 @@
 package com.tissue.api.issue.adapter.out.persistence;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.tissue.api.issue.application.dto.response.IssueCommonFieldDetail;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueReviewer;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -17,17 +18,19 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 
 	private final EntityManager em;
 
-	// TODO: 틀린거 있는지 체크 필요
-	// TODO: issue.getIssueType().getWorkflow();를 한번에 가져오기 위한 join fetch 필요
 	@Override
-	public Optional<Issue> findIssue(
+	public Optional<Issue> findWithBasicInfo(
 		String workspaceKey,
 		String issueKey
 	) {
 		String jpql = """
-				SELECT *
-				FROM Issue i JOIN i.workspace w
-				WHERE w.key = :workspaceKey AND i.key = :issueKey
+			    SELECT i
+			    FROM Issue i
+			    JOIN FETCH i.workspace w
+			    JOIN FETCH i.issueType it
+			    JOIN FETCH it.workflow
+			    JOIN FETCH i.currentState
+			    WHERE w.key = :workspaceKey AND i.key = :issueKey
 			""";
 
 		return em.createQuery(jpql, Issue.class)
@@ -37,72 +40,44 @@ public class IssueQueryJpaAdapter implements IssueQueryRepository {
 			.findFirst();
 	}
 
-	// TODO: 틀린거 있는지 체크 필요
-	// TODO: 이 방식(DTO에 프로젝션) 말고 그냥 Issue에 필요한 연관 엔티티들을 fetch join하고,
-	//  IssueDetailResponse는 서비스 계층에서 조립해서 반환하는 방식은 어떨까?
 	@Override
-	public Optional<IssueCommonFieldDetail> findDetailedIssue(
+	public Optional<Issue> findWithDetail(
 		String workspaceKey,
 		String issueKey
 	) {
-		String path = "com.tissue.api.issue.application.dto.response";
 		String jpql = """
-			    SELECT new %s.IssueDetailResponse(
-			        i.id,
-			        i.key,
-			        i.title,
-			        i.content.content,
-			        i.content.summary,
-			        i.priority,
-			        i.storyPoint,
-			        i.schedule.dueAt,
-			        i.schedule.startedAt,
-			        i.schedule.resolvedAt,
-			        i.progress.countBasedProgress,
-			        i.progress.pointBasedProgress,
-			        
-			        new %s.IssueDetailResponse.IssueTypeInfo(
-			            it.id,
-			            it.label.display
-			        ),
-			        
-			        new %s.IssueDetailResponse.StateInfo(
-			            ws.id,
-			            ws.label.display,
-			            ws.category
-			        ),
-			        
-			        new %s.IssueDetailResponse.ParticipantInfo(
-			            assigneeMember.id,
-			            assigneeMember.username,
-			            assignee.displayName
-			        ),
-			        
-			        new %s.IssueDetailResponse.ParticipantInfo(
-			            reporterMember.id,
-			            reporterMember.username,
-			            reporter.displayName
-			        ),
-			        
-			        i.createdAt,
-			        i.updatedAt
-			    )
+			    SELECT DISTINCT i
 			    FROM Issue i
-			    JOIN i.workspace w
-			    JOIN i.issueType it
-			    JOIN i.currentState ws
-			    LEFT JOIN i.participants.assignee assignee
-			    LEFT JOIN assignee.member assigneeMember
-			    JOIN i.participants.reporter reporter
-			    JOIN reporter.member reporterMember
-			    WHERE w.key = :workspaceKey
-			      AND i.key = :issueKey
-			""".formatted(path, path, path, path, path);
+			    JOIN FETCH i.workspace w
+			    JOIN FETCH i.issueType it
+			    JOIN FETCH i.currentState cs
+			    LEFT JOIN FETCH i.participants.assignee a
+			    LEFT JOIN FETCH a.member am
+			    JOIN FETCH i.participants.reporter r
+			    JOIN FETCH r.member rm
+			    LEFT JOIN FETCH i.participants.reviewers rev
+			    LEFT JOIN FETCH rev.reviewer revWm
+			    LEFT JOIN FETCH revWm.member revM
+			    WHERE w.key = :workspaceKey AND i.key = :issueKey
+			""";
 
-		return em.createQuery(jpql, IssueCommonFieldDetail.class)
+		return em.createQuery(jpql, Issue.class)
 			.setParameter("workspaceKey", workspaceKey)
-			.setParameter("issueKey", issueKey)
 			.getResultStream()
 			.findFirst();
+	}
+
+	private void fetchReviewers(Issue issue) {
+		String jpql = """
+			    SELECT r
+			    FROM IssueReviewer r
+			    JOIN FETCH r.reviewer wm
+			    JOIN FETCH wm.member m
+			    WHERE r.issue = :issue
+			""";
+
+		List<IssueReviewer> reviewers = em.createQuery(jpql, IssueReviewer.class)
+			.setParameter("issue", issue)
+			.getResultList();
 	}
 }

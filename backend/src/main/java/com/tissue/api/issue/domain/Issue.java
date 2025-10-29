@@ -124,7 +124,7 @@ public class Issue extends BaseEntity {
 		issue.schedule = schedule;
 		issue.participants = participants;
 		issue.priority = defaultPriorityIfNull(priority);
-		issue.storyPoint = ensureCanUseStoryPoint(issue.getHierarchy(), storyPoint);
+		issue.storyPoint = ensureCanModifyStoryPoint(issue.getHierarchy(), storyPoint);
 
 		issue.progress = IssueProgress.init();
 		issue.relations = IssueRelations.init();
@@ -161,7 +161,7 @@ public class Issue extends BaseEntity {
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
 		if (storyPoint != null) {
-			ensureCanUseStoryPoint(this.getHierarchy(), storyPoint);
+			ensureCanModifyStoryPoint(this.getHierarchy(), storyPoint);
 		}
 		this.storyPoint = storyPoint;
 	}
@@ -266,6 +266,10 @@ public class Issue extends BaseEntity {
 		return Objects.equals(getCreatedBy(), memberId);
 	}
 
+	public int getSubscribersCount() {
+		return participants.getSubscribers().size();
+	}
+
 	public boolean isParticipant(@NonNull WorkspaceMember wm) {
 		return isAuthor(wm.getMemberId()) ||
 			participants.isReporter(wm) ||
@@ -283,11 +287,11 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	private static Integer ensureCanUseStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
+	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (storyPoint == null) {
 			return null;
 		}
-		if (hierarchy.cannotHaveStoryPoint()) {
+		if (hierarchy.cannotModifyStoryPoint()) {
 			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
 		}
 		return storyPoint;

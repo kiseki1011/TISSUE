@@ -10,7 +10,7 @@ import com.tissue.api.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
-import com.tissue.api.issue.application.dto.response.IssueResult;
+import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
@@ -25,7 +25,7 @@ import com.tissue.api.issue.domain.vo.IssueSchedule;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	 */
 
 	@Override
-	public IssueResult create(CreateIssueCommand cmd) {
+	public IssueCommandResult create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
 		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
@@ -70,11 +70,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
 		fieldValueRepository.saveAll(values);
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult updateCommonFields(UpdateCommonFieldsCommand cmd) {
+	public IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), issue::updateTitle);
@@ -83,11 +83,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Patchers.apply(cmd.dueAt(), issue::updateDueAt);
 		Patchers.apply(cmd.priority(), issue::updatePriority);
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult updateStoryPoint(UpdateStoryPointCommand cmd) {
+	public IssueCommandResult updateStoryPoint(UpdateStoryPointCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		issue.updateStoryPoint(cmd.storyPoint());
@@ -97,16 +97,16 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue.getParentIssue().recalculateEpicStoryPoint();
 		}
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
+	public IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		// TODO: 확실하게 커맨드 dto 또는 변환 과정에서 처리하면 로직을 제거해도 되지 않을까?
 		if (cmd.customFields() == null || cmd.customFields().isEmpty()) {
-			return IssueResult.from(issue);
+			return IssueCommandResult.from(issue);
 		}
 
 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
@@ -115,11 +115,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 		);
 		fieldValueRepository.saveAll(updateValues);
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
+	public IssueCommandResult assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
 
@@ -130,11 +130,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue.getParentIssue().recalculateEpicStoryPoint();
 		}
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult removeParent(String workspaceKey, String issueKey) {
+	public IssueCommandResult removeParent(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
 		issue.removeParentIssue();
@@ -144,15 +144,15 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue.getParentIssue().recalculateEpicStoryPoint();
 		}
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueResult softDelete(String workspaceKey, String issueKey) {
+	public IssueCommandResult softDelete(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 
 		issue.softDelete();
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 }

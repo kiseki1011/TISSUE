@@ -12,7 +12,7 @@ import com.tissue.api.notification.application.service.command.NotificationProce
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 @ExtendWith(MockitoExtension.class)

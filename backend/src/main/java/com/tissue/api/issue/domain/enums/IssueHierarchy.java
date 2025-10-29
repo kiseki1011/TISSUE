@@ -30,7 +30,11 @@ public enum IssueHierarchy {
 		return this == EPIC;
 	}
 
-	public boolean cannotHaveStoryPoint() {
+	public boolean cannotModifyStoryPoint() {
 		return this != STORY;
+	}
+
+	public boolean canUseStoryPoint() {
+		return this == EPIC || this == STORY;
 	}
 }

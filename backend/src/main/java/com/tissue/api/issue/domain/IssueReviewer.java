@@ -3,7 +3,6 @@ package com.tissue.api.issue.domain;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -28,10 +27,6 @@ public class IssueReviewer extends BaseEntity {
 	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
 
-	// TODO: reviewer.getMember().getId()으로 탐색해서 저장하는데, 이렇게 하는건 별로일까?
-	@Column(name = "reviewer_member_id")
-	private Long reviewerMemberId;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reviewer_id", insertable = false, updatable = false)
 	private WorkspaceMember reviewer;
@@ -39,6 +34,9 @@ public class IssueReviewer extends BaseEntity {
 	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
 		this.issue = issue;
 		this.reviewer = reviewer;
-		this.reviewerMemberId = reviewer.getMember().getId();
+	}
+
+	public Long getReviewerMemberId() {
+		return reviewer.getMemberId();
 	}
 }

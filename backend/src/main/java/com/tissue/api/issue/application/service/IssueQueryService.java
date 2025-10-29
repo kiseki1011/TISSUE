@@ -5,12 +5,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.issue.application.dto.response.IssueCommonFieldDetail;
+import com.tissue.api.issue.application.dto.response.IssueCommonFieldsDetail;
 import com.tissue.api.issue.application.dto.response.TransitionDetail;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.domain.model.Workflow;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberQueryFinder;
+import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,18 +21,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueQueryService implements IssueQueryUseCase {
 
-	private final IssueQueryRepository queryRepository;
+	private final IssueQueryRepository issueQueryRepo;
+	private final WorkspaceMemberQueryFinder wmFinder;
 
-	// TODO: findDetailedIssue에서 IssueDetailResponse으로 프로젝션 되도록 JPQL을 사용해서 구현했는데,
-	//  그냥 Issue를 join fetch를 사용해서 지연로딩 없이 가져올 연관 엔티티들도 같이 로드하고 나서
-	//  Issue -> IssueDetailResponse로 변환하는 방식을 사용할까?
-	public IssueCommonFieldDetail getIssueDetails(String workspaceKey, String issueKey) {
-		return queryRepository.findDetailedIssue(workspaceKey, issueKey)
+	public IssueCommonFieldsDetail getIssueDetails(String workspaceKey, String issueKey) {
+		Issue issue = issueQueryRepo.findWithDetail(workspaceKey, issueKey)
 			.orElseThrow(() -> new RuntimeException("Issue not found"));
+
+		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
+		WorkspaceMember updatedBy = wmFinder.findIncludingArchived(issue.getLastModifiedBy(), workspaceKey);
+
+		return IssueCommonFieldsDetail.from(issue, author, updatedBy);
 	}
 
 	public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey) {
-		Issue issue = queryRepository.findIssue(issueKey, workspaceKey)
+		Issue issue = issueQueryRepo.findWithBasicInfo(issueKey, workspaceKey)
 			.orElseThrow(() -> new RuntimeException("Issue not found"));
 
 		Workflow workflow = issue.getIssueType().getWorkflow();

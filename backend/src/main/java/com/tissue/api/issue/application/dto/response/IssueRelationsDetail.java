@@ -2,6 +2,7 @@ package com.tissue.api.issue.application.dto.response;
 
 import java.util.List;
 
+import com.tissue.api.issue.application.dto.response.info.RelatedIssueInfo;
 import com.tissue.api.issue.domain.Issue;
 
 public record IssueRelationsDetail(

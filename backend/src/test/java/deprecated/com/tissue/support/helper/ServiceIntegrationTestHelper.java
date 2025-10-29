@@ -43,7 +43,7 @@ import com.tissue.api.workspace.application.service.command.create.WorkspaceCrea
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
 import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationService;

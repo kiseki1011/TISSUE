@@ -26,10 +26,6 @@ public class IssueSubscriber extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// TODO: subscriber.getMember().getId()으로 탐색해서 저장하는데, 이렇게 하는건 별로일까?
-	@Column(nullable = false)
-	private Long subcriberMemberId;
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
 	private Issue issue;
@@ -44,7 +40,10 @@ public class IssueSubscriber extends BaseEntity {
 	public IssueSubscriber(WorkspaceMember subscriber, Issue issue) {
 		this.issue = issue;
 		this.subscriber = subscriber;
-		this.subcriberMemberId = subscriber.getMember().getId();
 		this.subscribedAt = LocalDateTime.now();
+	}
+
+	public Long getSubscriberMemberId() {
+		return subscriber.getMemberId();
 	}
 }

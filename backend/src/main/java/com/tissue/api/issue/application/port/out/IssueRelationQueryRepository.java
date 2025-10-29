@@ -1,0 +1,65 @@
+package com.tissue.api.issue.application.port.out;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
+
+import com.tissue.api.issue.domain.IssueRelation;
+
+public interface IssueRelationQueryRepository extends Repository<IssueRelation, Long> {
+
+	/**
+	 * 특정 이슈가 source인 관계들 조회
+	 */
+	@Query("""
+		    SELECT r
+		    FROM IssueRelation r
+		    JOIN FETCH r.sourceIssue si
+		    JOIN FETCH r.targetIssue ti
+		    JOIN FETCH si.workspace w
+		    WHERE w.key = :workspaceKey
+		      AND si.key = :issueKey
+		""")
+	List<IssueRelation> findBySourceIssue(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey
+	);
+
+	/**
+	 * 특정 이슈가 target인 관계들 조회
+	 */
+	@Query("""
+		    SELECT r
+		    FROM IssueRelation r
+		    JOIN FETCH r.sourceIssue si
+		    JOIN FETCH r.targetIssue ti
+		    JOIN FETCH ti.workspace w
+		    WHERE w.key = :workspaceKey
+		      AND ti.key = :issueKey
+		""")
+	List<IssueRelation> findByTargetIssue(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey
+	);
+
+	/**
+	 * 두 이슈 간의 관계 존재 확인
+	 */
+	@Query("""
+		    SELECT COUNT(r) > 0
+		    FROM IssueRelation r
+		    JOIN r.sourceIssue si
+		    JOIN r.targetIssue ti
+		    JOIN si.workspace w
+		    WHERE w.key = :workspaceKey
+		      AND si.key = :sourceIssueKey
+		      AND ti.key = :targetIssueKey
+		""")
+	boolean existsRelation(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("sourceIssueKey") String sourceIssueKey,
+		@Param("targetIssueKey") String targetIssueKey
+	);
+}

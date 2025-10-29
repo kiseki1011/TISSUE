@@ -24,7 +24,7 @@ import com.tissue.api.notification.domain.enums.ResourceType;
 import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 @ExtendWith(MockitoExtension.class)

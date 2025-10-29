@@ -1,4 +1,4 @@
-package com.tissue.api.issue.application.dto.response;
+package com.tissue.api.issue.application.dto.response.info;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;

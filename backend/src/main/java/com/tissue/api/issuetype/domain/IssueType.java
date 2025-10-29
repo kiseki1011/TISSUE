@@ -118,6 +118,10 @@ public class IssueType extends BaseEntity {
 			.build();
 	}
 
+	public boolean canUseStoryPoint() {
+		return issueHierarchy.canUseStoryPoint();
+	}
+
 	public String getWorkspaceKey() {
 		return workspace.getKey();
 	}

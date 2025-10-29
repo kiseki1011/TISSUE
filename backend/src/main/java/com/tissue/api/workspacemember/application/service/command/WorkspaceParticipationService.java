@@ -10,6 +10,7 @@ import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 import com.tissue.api.workspacemember.presentation.dto.response.WorkspaceMemberResponse;

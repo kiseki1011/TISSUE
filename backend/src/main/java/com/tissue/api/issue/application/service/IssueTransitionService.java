@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
-import com.tissue.api.issue.application.dto.response.IssueResult;
+import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.issue.domain.Issue;
@@ -44,7 +44,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 	 * 5. 도메인 이벤트 발행
 	 */
 	@Override
-	public IssueResult performTransition(PerformTransitionCommand cmd) {
+	public IssueCommandResult performTransition(PerformTransitionCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 		WorkflowTransition transition = findAndValidateTransition(issue, cmd.transitionId());
 
@@ -75,7 +75,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		// 	cmd.actorMemberId()
 		// ));
 
-		return IssueResult.from(issue);
+		return IssueCommandResult.from(issue);
 	}
 
 	/**

@@ -4,22 +4,22 @@ import com.tissue.api.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
-import com.tissue.api.issue.application.dto.response.IssueResult;
+import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 
 public interface IssueCommandUseCase {
-	IssueResult create(CreateIssueCommand cmd);
+	IssueCommandResult create(CreateIssueCommand cmd);
 
-	IssueResult updateCommonFields(UpdateCommonFieldsCommand cmd);
+	IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd);
 
-	IssueResult updateCustomFields(UpdateCustomFieldsCommand cmd);
+	IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd);
 
-	IssueResult updateStoryPoint(UpdateStoryPointCommand cmd);
+	IssueCommandResult updateStoryPoint(UpdateStoryPointCommand cmd);
 
-	IssueResult assignParent(String workspaceKey, String issueKey, String parentIssueKey);
+	IssueCommandResult assignParent(String workspaceKey, String issueKey, String parentIssueKey);
 
-	IssueResult removeParent(String workspaceKey, String issueKey);
+	IssueCommandResult removeParent(String workspaceKey, String issueKey);
 
-	IssueResult softDelete(String workspaceKey, String issueKey);
+	IssueCommandResult softDelete(String workspaceKey, String issueKey);
 
 	// TODO: requestReview()
 	// TODO: batchChangeParent()
