@@ -7,9 +7,12 @@ public record ParticipantInfo(
 	String username,
 	String displayName,
 	boolean archived
-	// String profilePic? (예정 중)
+	// String profileImg (예정 중)
 ) {
 	public static ParticipantInfo from(WorkspaceMember wm) {
+		if (wm == null) {
+			return null;
+		}
 		return new ParticipantInfo(
 			wm.getMember().getId(),
 			wm.getMember().getUsername(),

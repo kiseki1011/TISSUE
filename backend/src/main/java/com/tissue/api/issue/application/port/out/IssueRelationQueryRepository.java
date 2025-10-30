@@ -10,6 +10,23 @@ import com.tissue.api.issue.domain.IssueRelation;
 
 public interface IssueRelationQueryRepository extends Repository<IssueRelation, Long> {
 
+	@Query("""
+		    SELECT r
+		    FROM IssueRelation r
+		    JOIN FETCH r.sourceIssue si
+		    JOIN FETCH si.issueType sit
+		    JOIN FETCH si.currentState scs
+		    JOIN FETCH r.targetIssue ti
+		    JOIN FETCH ti.issueType tit
+		    JOIN FETCH ti.currentState tcs
+		    WHERE (si.workspace.key = :workspaceKey AND si.key = :issueKey)
+		       OR (ti.workspace.key = :workspaceKey AND ti.key = :issueKey)
+		""")
+	List<IssueRelation> findAllRelations(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey
+	);
+
 	/**
 	 * 특정 이슈가 source인 관계들 조회
 	 */

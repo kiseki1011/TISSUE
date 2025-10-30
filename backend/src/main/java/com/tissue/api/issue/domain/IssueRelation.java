@@ -26,11 +26,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "issue_relation",
 	uniqueConstraints = @UniqueConstraint(
-		// TODO: 그냥 두 이슈 사이에 하나의 관계만 허용할까?
-		//  - 굳이 두 개 이상의 다른 의미를 지닌 관계를 설정할 필요는 없을 것 같은데?
-		//  - 오히려 허용하면 더 헷갈리지 않을까?
-		//  예를 들어서 A -> B가 RELEVANT와 BLOCKS를 둘다 가지고 있어도 어차피 BLOCKS 자체가 관련있다는 것의 의미가 될텐데?
-		columnNames = {"source_issue_id", "target_issue_id"} // "relation_type"
+		columnNames = {"source_issue_id", "target_issue_id"}
 	)
 )
 @Getter

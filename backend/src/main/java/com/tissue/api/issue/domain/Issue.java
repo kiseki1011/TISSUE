@@ -1,9 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -90,9 +88,6 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
-	@OneToMany(mappedBy = "parentIssue")
-	private List<Issue> childIssues = new ArrayList<>();
-
 	// TODO: 추후 Sprint 쪽 애그리거트 정리 후, 다시 리팩토링 진행. 일단은 보류.
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SprintIssue> sprintIssues = new HashSet<>();
@@ -103,7 +98,7 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
 
-	// TODO: 태그(tag) 추가. 분류와 검색용도로 활용
+	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
 
 	public static Issue create(
 		@NonNull Workspace workspace,
@@ -166,15 +161,16 @@ public class Issue extends BaseEntity {
 		this.storyPoint = storyPoint;
 	}
 
-	public void recalculateEpicStoryPoint() {
-		if (getHierarchy() != IssueHierarchy.EPIC) {
-			return;
-		}
-		this.storyPoint = this.getChildIssues().stream()
-			.filter(child -> child.getStoryPoint() != null)
-			.mapToInt(Issue::getStoryPoint)
-			.sum();
-	}
+	// TODO: 도메인 서비스로 이동
+	// public void recalculateEpicStoryPoint() {
+	// 	if (getHierarchy() != IssueHierarchy.EPIC) {
+	// 		return;
+	// 	}
+	// 	this.storyPoint = this.getChildIssues().stream()
+	// 		.filter(child -> child.getStoryPoint() != null)
+	// 		.mapToInt(Issue::getStoryPoint)
+	// 		.sum();
+	// }
 
 	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
 		progress.update(countBased, pointBased);
@@ -189,8 +185,6 @@ public class Issue extends BaseEntity {
 	}
 
 	public void transitionTo(@NonNull WorkflowState newState) {
-		// TODO: 가능한 전이인지 검증을 애플리케이션 계층에서 하고 있긴한데, 검증을 여기서 수행이 가능할까?
-		//  가능해도, 여기서하는게 괜찮은 방식일까?
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 
@@ -234,7 +228,7 @@ public class Issue extends BaseEntity {
 		detachFromCurrentParent();
 
 		this.parentIssue = newParent;
-		newParent.childIssues.add(this);
+		// newParent.childIssues.add(this);
 	}
 
 	public void removeParentIssue() {
@@ -278,13 +272,14 @@ public class Issue extends BaseEntity {
 			participants.isSubscriber(wm);
 	}
 
+	// TODO: IssueValidator로 분리하고 서비스 계층에서 호출할까?
 	private void ensureDeletable() {
 		if (!currentState.isInitial()) {
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}
-		if (!childIssues.isEmpty()) {
-			throw new RuntimeException("Cannot delete issue that has children.");
-		}
+		// if (!childIssues.isEmpty()) {
+		// 	throw new RuntimeException("Cannot delete issue that has children.");
+		// }
 	}
 
 	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
@@ -301,9 +296,11 @@ public class Issue extends BaseEntity {
 		return priority == null ? IssuePriority.NORMAL : priority;
 	}
 
+	// TODO: 이름을 clearParent로 변경할까?
 	private void detachFromCurrentParent() {
+		// TODO: 조건문 없이 그냥 parentIssue = null; 사용
 		if (parentIssue != null) {
-			parentIssue.getChildIssues().remove(this);
+			// parentIssue.getChildIssues().remove(this);
 			parentIssue = null;
 		}
 	}

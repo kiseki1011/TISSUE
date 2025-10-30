@@ -82,6 +82,8 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private boolean systemType;
 
+	// TODO: IssueField와 관계가 깊은데 양방향 관계를 맺을까?
+
 	@Builder(access = AccessLevel.PRIVATE)
 	private IssueType(
 		Workspace workspace,

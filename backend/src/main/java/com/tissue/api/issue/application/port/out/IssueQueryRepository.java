@@ -1,5 +1,6 @@
 package com.tissue.api.issue.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.tissue.api.issue.domain.Issue;
@@ -10,9 +11,7 @@ public interface IssueQueryRepository {
 
 	Optional<Issue> findWithDetail(String workspaceKey, String issueKey);
 
-	// TODO: findWithCustomFieldValues(): 커스텀 필드와 값 조회
-	// TODO: findIssues() 페이징 API
-	// TODO: isStoryPointUpdatable()
-	// TODO: findRelations()
-	// TODO: findSubscribers()
+	Optional<Issue> findWithParent(String workspaceKey, String issueKey);
+
+	List<Issue> findChildren(String workspaceKey, String issueKey);
 }

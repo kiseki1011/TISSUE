@@ -14,7 +14,7 @@ import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import lombok.Builder;
 
 @Builder
-public record IssueCommonFieldsDetail(
+public record IssueCommonDetail(
 	Long issueId,
 	String issueKey,
 
@@ -37,20 +37,21 @@ public record IssueCommonFieldsDetail(
 	ParticipantInfo assignee,
 	ParticipantInfo reporter,
 	List<ParticipantInfo> reviewers,
-	ParticipantInfo updatedBy,
+	ParticipantInfo lastUpdatedBy,
 
 	Integer subscribersCount,
 
 	Instant createdAt,
-	Instant updatedAt
+	Instant lastUpdatedAt
 
 	//  TODO(예정 중):
 	//   - 추후에 sprint 기능 완성 후, 현재 속한 sprint
 	//   - 추후에 파일 첨부 기능 염두
 	//   - 추후에 tag 필드 염두
 ) {
-	public static IssueCommonFieldsDetail from(Issue issue, WorkspaceMember author, WorkspaceMember updatedBy) {
-		return IssueCommonFieldsDetail.builder()
+	public static IssueCommonDetail from(Issue issue, WorkspaceMember author, WorkspaceMember updatedBy,
+		List<IssueReviewer> reviewers) {
+		return IssueCommonDetail.builder()
 			.issueId(issue.getId())
 			.issueKey(issue.getKey())
 			.title(issue.getTitle())
@@ -68,13 +69,11 @@ public record IssueCommonFieldsDetail(
 			.state(StateInfo.from(issue.getCurrentState()))
 
 			.author(ParticipantInfo.from(author))
-			.assignee(issue.getParticipants().getAssignee() != null
-				? ParticipantInfo.from(issue.getParticipants().getAssignee())
-				: null)
+			.assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
 			.reporter(ParticipantInfo.from(issue.getParticipants().getReporter()))
-			.updatedBy(ParticipantInfo.from(updatedBy))
+			.lastUpdatedBy(ParticipantInfo.from(updatedBy))
 
-			.reviewers(issue.getParticipants().getReviewers().stream()
+			.reviewers(reviewers.stream()
 				.map(IssueReviewer::getReviewer)
 				.map(ParticipantInfo::from)
 				.toList())
@@ -82,7 +81,7 @@ public record IssueCommonFieldsDetail(
 			.subscribersCount(issue.getSubscribersCount())
 
 			.createdAt(issue.getCreatedAt())
-			.updatedAt(issue.getLastModifiedAt())
+			.lastUpdatedAt(issue.getLastModifiedAt())
 			.build();
 	}
 }
