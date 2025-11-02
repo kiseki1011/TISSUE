@@ -42,60 +42,60 @@ public class IssueParticipants {
 		return participants;
 	}
 
-	public void changeReporter(@NonNull WorkspaceMember reporter) {
+	void changeReporter(@NonNull WorkspaceMember reporter) {
 		this.reporter = reporter;
 	}
 
-	public void assignTo(@NonNull WorkspaceMember assignee) {
+	void assignTo(@NonNull WorkspaceMember assignee) {
 		this.assignee = assignee;
 	}
 
-	public void unassign() {
+	void unassign() {
 		this.assignee = null;
 	}
 
-	public void addReviewer(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
+	void addReviewer(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
 		if (isReviewer(workspaceMember)) {
 			return;
 		}
 		reviewers.add(new IssueReviewer(workspaceMember, issue));
 	}
 
-	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
+	void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
 		reviewers.removeIf(r -> r.getReviewer().equals(workspaceMember));
 	}
 
-	public void addSubscriber(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
+	void addSubscriber(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
 		if (isSubscriber(workspaceMember)) {
 			return;
 		}
 		subscribers.add(new IssueSubscriber(workspaceMember, issue));
 	}
 
-	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
+	void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
 		subscribers.removeIf(s -> s.getSubscriber().equals(workspaceMember));
 	}
 
-	public void clear() {
+	void clear() {
 		unassign();
 		this.reviewers.clear();
 		this.subscribers.clear();
 	}
 
-	public boolean isReporter(WorkspaceMember member) {
+	boolean isReporter(WorkspaceMember member) {
 		return reporter.equals(member);
 	}
 
-	public boolean isAssignee(WorkspaceMember member) {
+	boolean isAssignee(WorkspaceMember member) {
 		return assignee != null && assignee.equals(member);
 	}
 
-	public boolean isReviewer(WorkspaceMember member) {
+	boolean isReviewer(WorkspaceMember member) {
 		return reviewers.stream()
 			.anyMatch(r -> r.getReviewer().equals(member));
 	}
 
-	public boolean isSubscriber(WorkspaceMember member) {
+	boolean isSubscriber(WorkspaceMember member) {
 		return subscribers.stream()
 			.anyMatch(s -> s.getSubscriber().equals(member));
 	}

@@ -33,23 +33,23 @@ public class IssueSchedule {
 		return schedule;
 	}
 
-	public void markStarted() {
+	void markStarted() {
 		if (this.startedAt == null) {
 			this.startedAt = Instant.now();
 		}
 	}
 
-	public void markResolved() {
+	void markResolved() {
 		if (this.resolvedAt == null) {
 			this.resolvedAt = Instant.now();
 		}
 	}
 
-	public void clearResolved() {
+	void clearResolved() {
 		this.resolvedAt = null;
 	}
 
-	public void updateDueDate(@Nullable Instant dueAt) {
+	void updateDueDate(@Nullable Instant dueAt) {
 		this.dueAt = requireFutureOrPresent(dueAt);
 	}
 }

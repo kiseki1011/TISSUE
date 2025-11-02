@@ -37,6 +37,7 @@ public class IssueFieldValue extends BaseEntity {
 	@SequenceGenerator(name = "field_value_seq_gen", sequenceName = "field_value_seq", allocationSize = 50)
 	private Long id;
 
+	// TODO: Issue와 양방향 연관관계를 맺어서 Issue 애그리거트를 통해서만 제어하도록 리팩토링하는게 좋을까?
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	private Issue issue;
 

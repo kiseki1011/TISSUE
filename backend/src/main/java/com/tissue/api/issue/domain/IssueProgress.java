@@ -23,11 +23,11 @@ public class IssueProgress {
 	@Column(name = "point_based_progress")
 	private Integer pointBasedProgress;
 
-	public static IssueProgress init() {
+	static IssueProgress init() {
 		return new IssueProgress();
 	}
 
-	public void update(@Nullable Integer countBased, @Nullable Integer pointBased) {
+	void update(@Nullable Integer countBased, @Nullable Integer pointBased) {
 		this.countBasedProgress = ensureValidPercentageRange(countBased);
 		this.pointBasedProgress = ensureValidPercentageRange(pointBased);
 	}

@@ -32,11 +32,11 @@ public class IssueContent {
 		return issueContent;
 	}
 
-	public void updateContent(@Nullable String content) {
+	void updateContent(@Nullable String content) {
 		this.content = nullToEmpty(content);
 	}
 
-	public void updateSummary(@Nullable String summary) {
+	void updateSummary(@Nullable String summary) {
 		this.summary = nullToEmpty(summary);
 	}
 }

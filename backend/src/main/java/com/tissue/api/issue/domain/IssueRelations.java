@@ -26,21 +26,21 @@ public class IssueRelations {
 	@OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueRelation> incomingRelations = new HashSet<>();
 
-	public static IssueRelations init() {
+	static IssueRelations init() {
 		return new IssueRelations();
 	}
 
-	public IssueRelation addRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
+	IssueRelation addRelation(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
 		ensureNoRelationExists(sourceIssue, targetIssue);
 		return IssueRelation.create(sourceIssue, targetIssue, type);
 	}
 
-	public void removeRelation(Issue otherIssue) {
+	void removeRelation(Issue otherIssue) {
 		outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
 		incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
 	}
 
-	public void clear() {
+	void clear() {
 		outgoingRelations.clear();
 		incomingRelations.clear();
 	}
