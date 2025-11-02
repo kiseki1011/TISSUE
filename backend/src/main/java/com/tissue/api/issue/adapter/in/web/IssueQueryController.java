@@ -144,7 +144,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	// TODO: getParticipants 굳이 필요할까?
 	// TODO: getIssuesByState
 	// TODO: getIssuesByStateCategory
 
