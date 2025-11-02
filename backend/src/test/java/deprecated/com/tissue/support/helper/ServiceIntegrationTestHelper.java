@@ -14,7 +14,7 @@ import com.tissue.api.invitation.application.service.command.InvitationCommandSe
 import com.tissue.api.invitation.application.service.finder.InvitationFinder;
 import com.tissue.api.invitation.application.service.query.InvitationQueryService;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.issue.application.port.out.IssueRepository;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.issue.application.service.IssueCommandService;
 import com.tissue.api.issue.application.service.IssueParticipantService;
 import com.tissue.api.issue.application.service.IssueRelationService;
@@ -169,7 +169,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected TeamRepository teamRepository;
 	@Autowired
-	protected IssueRepository issueRepository;
+	protected IssueCommandRepository issueCommandRepository;
 	@Autowired
 	protected CommentRepository commentRepository;
 	@Autowired

@@ -27,9 +27,6 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		@Param("issueKey") String issueKey
 	);
 
-	/**
-	 * 특정 이슈가 source인 관계들 조회
-	 */
 	@Query("""
 		    SELECT r
 		    FROM IssueRelation r
@@ -44,9 +41,6 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		@Param("issueKey") String issueKey
 	);
 
-	/**
-	 * 특정 이슈가 target인 관계들 조회
-	 */
 	@Query("""
 		    SELECT r
 		    FROM IssueRelation r
@@ -61,9 +55,6 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		@Param("issueKey") String issueKey
 	);
 
-	/**
-	 * 두 이슈 간의 관계 존재 확인
-	 */
 	@Query("""
 		    SELECT COUNT(r) > 0
 		    FROM IssueRelation r

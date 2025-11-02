@@ -21,7 +21,7 @@ import com.tissue.api.invitation.application.service.query.InvitationQueryServic
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.adapter.in.web.IssueCommandController;
-import com.tissue.api.issue.application.port.out.IssueRepository;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.issue.application.service.IssueCommandService;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
@@ -180,6 +180,6 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected PositionRepository positionRepository;
 	@MockBean
-	protected IssueRepository issueRepository;
+	protected IssueCommandRepository issueCommandRepository;
 
 }

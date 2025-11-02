@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.issue.application.port.out.IssueFieldValueRepository;
+import com.tissue.api.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.repository.IssueFieldRepository;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueFieldValidator {
 
 	private final IssueFieldRepository issueFieldRepo;
-	private final IssueFieldValueRepository fieldValueRepo;
+	private final IssueFieldValueQueryRepository fieldValueRepo;
 
 	public void ensureUniqueLabel(IssueType type, Label label) {
 		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel_Normalized(type, label.getNormalized());

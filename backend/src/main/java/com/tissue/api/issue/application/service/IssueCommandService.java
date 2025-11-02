@@ -11,17 +11,20 @@ import com.tissue.api.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
-import com.tissue.api.issue.application.finder.IssueFinder;
-import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
-import com.tissue.api.issue.application.port.out.IssueFieldValueRepository;
-import com.tissue.api.issue.application.port.out.IssueRepository;
-import com.tissue.api.issue.application.validator.IssueFieldSchemaValidator;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
+import com.tissue.api.issue.application.port.out.IssueFieldValueCommandRepository;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueTypeFinder;
+import com.tissue.api.issue.application.service.sync.EpicStoryPointSyncService;
+import com.tissue.api.issue.application.service.sync.IssueProgressSyncService;
+import com.tissue.api.issue.application.service.validator.IssueFieldSchemaValidator;
+import com.tissue.api.issue.application.service.validator.IssueValidator;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueContent;
 import com.tissue.api.issue.domain.IssueFieldValue;
-import com.tissue.api.issue.domain.vo.IssueContent;
-import com.tissue.api.issue.domain.vo.IssueParticipants;
-import com.tissue.api.issue.domain.vo.IssueSchedule;
+import com.tissue.api.issue.domain.IssueParticipants;
+import com.tissue.api.issue.domain.IssueSchedule;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -39,16 +42,14 @@ public class IssueCommandService implements IssueCommandUseCase {
 	private final IssueTypeFinder issueTypeFinder;
 	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
+
+	private final EpicStoryPointSyncService epicStoryPointSyncService;
+	private final IssueProgressSyncService issueProgressSyncService;
 	private final IssueFieldSchemaValidator fieldSchemaValidator;
+	private final IssueValidator issueValidator;
 
-	private final IssueRepository issueRepository;
-	private final IssueFieldValueRepository fieldValueRepository;
-
-	/**
-	 * TODO(later)
-	 *  (추후에 Workspace -> Project로 리팩토링 후 진행) 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려.
-	 *  이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
-	 */
+	private final IssueCommandRepository issueCommandRepository;
+	private final IssueFieldValueCommandRepository fieldValueRepository;
 
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
@@ -56,7 +57,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
 		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
 
-		Issue issue = issueRepository.save(Issue.create(
+		Issue issue = issueCommandRepository.save(Issue.create(
 			workspace,
 			issueType,
 			cmd.title(),
@@ -93,9 +94,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 		issue.updateStoryPoint(cmd.storyPoint());
 
 		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
-		if (issue.getParentIssue() != null) {
-			issue.getParentIssue().recalculateEpicStoryPoint();
-		}
+		epicStoryPointSyncService.recalculateStoryPoint(issue.getParentIssue());
+		issueProgressSyncService.recalculateProgress(issue.getParentIssue());
 
 		return IssueCommandResult.from(issue);
 	}
@@ -103,11 +103,6 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	public IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
-
-		// TODO: 확실하게 커맨드 dto 또는 변환 과정에서 처리하면 로직을 제거해도 되지 않을까?
-		if (cmd.customFields() == null || cmd.customFields().isEmpty()) {
-			return IssueCommandResult.from(issue);
-		}
 
 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
 			cmd.customFields(),
@@ -126,9 +121,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 		issue.setParentIssue(parent);
 
 		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
-		if (issue.getParentIssue() != null) {
-			issue.getParentIssue().recalculateEpicStoryPoint();
-		}
+		epicStoryPointSyncService.recalculateStoryPoint(issue.getParentIssue());
+		issueProgressSyncService.recalculateProgress(issue.getParentIssue());
 
 		return IssueCommandResult.from(issue);
 	}
@@ -136,13 +130,13 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	public IssueCommandResult removeParent(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+		Issue parent = issue.getParentIssue();
 
 		issue.removeParentIssue();
 
 		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
-		if (issue.getParentIssue() != null) {
-			issue.getParentIssue().recalculateEpicStoryPoint();
-		}
+		epicStoryPointSyncService.recalculateStoryPoint(parent);
+		issueProgressSyncService.recalculateProgress(parent);
 
 		return IssueCommandResult.from(issue);
 	}
@@ -150,8 +144,14 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	public IssueCommandResult softDelete(String workspaceKey, String issueKey) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+		Issue parent = issue.getParentIssue();
 
+		issueValidator.ensureCanDelete(issue);
 		issue.softDelete();
+
+		// TODO: 이벤트 발행 후, 리스너에서 처리 고려
+		epicStoryPointSyncService.recalculateStoryPoint(parent);
+		issueProgressSyncService.recalculateProgress(parent);
 
 		return IssueCommandResult.from(issue);
 	}

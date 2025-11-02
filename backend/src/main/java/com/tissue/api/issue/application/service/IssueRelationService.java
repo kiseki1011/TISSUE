@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.api.issue.application.dto.response.IssueRelationResult;
-import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueRelationUseCase;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;

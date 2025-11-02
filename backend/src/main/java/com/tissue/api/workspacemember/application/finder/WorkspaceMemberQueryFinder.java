@@ -8,6 +8,7 @@ import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberQ
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: WorkspaceMemberFinder로 통합
 @Service
 @RequiredArgsConstructor
 public class WorkspaceMemberQueryFinder {

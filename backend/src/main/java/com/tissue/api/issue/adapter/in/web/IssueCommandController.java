@@ -43,6 +43,12 @@ public class IssueCommandController {
 	private final IssueParticipantUseCase participantUseCase;
 	private final IssueRelationUseCase relationUseCase;
 
+	/**
+	 * TODO(later)
+	 *  (추후에 Workspace -> Project로 리팩토링 후 진행) 컨트롤러에서의 authorization외에도 assignee 또는 author만 수정을 가능하도록 토글 할 수 있는 권한 체계 고려.
+	 *  이때 ProjectRole(구 WorkspaceRole)은 ADMIN 이상이면 무조건 수정 가능해야 함
+	 */
+
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping
 	public ResponseEntity<ApiResponse<IssueCommandResult>> create(
@@ -243,8 +249,6 @@ public class IssueCommandController {
 		return ApiResponse.ok("Reviewer removed.", response);
 	}
 
-	// TODO: 두 이슈 간 중복되지 않는 한 여러 관계를 맺을 수 있도록 허용.
-	//  - DUPLICATES 제외(특수 처리 필요)
 	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PostMapping("/{issueKey}/relations")
 	public ApiResponse<IssueRelationResult> addRelation(

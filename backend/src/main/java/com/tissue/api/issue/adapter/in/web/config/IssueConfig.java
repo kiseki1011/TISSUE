@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.tissue.api.issue.domain.policy.FieldValuePolicy;
+import com.tissue.api.issue.application.service.policy.FieldValuePolicy;
 
 // TODO: Consider using @ConfigurationProperties
 @Configuration

@@ -14,10 +14,6 @@ import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.issue.domain.vo.IssueContent;
-import com.tissue.api.issue.domain.vo.IssueParticipants;
-import com.tissue.api.issue.domain.vo.IssueProgress;
-import com.tissue.api.issue.domain.vo.IssueSchedule;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.model.WorkflowState;
@@ -118,7 +114,7 @@ public class Issue extends BaseEntity {
 		issue.content = content;
 		issue.schedule = schedule;
 		issue.participants = participants;
-		issue.priority = defaultPriorityIfNull(priority);
+		issue.priority = setDefaultPriorityIfNull(priority);
 		issue.storyPoint = ensureCanModifyStoryPoint(issue.getHierarchy(), storyPoint);
 
 		issue.progress = IssueProgress.init();
@@ -155,22 +151,16 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
-		if (storyPoint != null) {
-			ensureCanModifyStoryPoint(this.getHierarchy(), storyPoint);
-		}
+		ensureCanModifyStoryPoint(this.getHierarchy(), storyPoint);
 		this.storyPoint = storyPoint;
 	}
 
-	// TODO: 도메인 서비스로 이동
-	// public void recalculateEpicStoryPoint() {
-	// 	if (getHierarchy() != IssueHierarchy.EPIC) {
-	// 		return;
-	// 	}
-	// 	this.storyPoint = this.getChildIssues().stream()
-	// 		.filter(child -> child.getStoryPoint() != null)
-	// 		.mapToInt(Issue::getStoryPoint)
-	// 		.sum();
-	// }
+	public void recalculateEpicStoryPoint(int totalChildrenStoryPoints) {
+		if (isNotEpic()) {
+			return;
+		}
+		this.storyPoint = totalChildrenStoryPoints;
+	}
 
 	public void updateProgress(@Nullable Integer countBased, @Nullable Integer pointBased) {
 		progress.update(countBased, pointBased);
@@ -225,27 +215,30 @@ public class Issue extends BaseEntity {
 
 	public void setParentIssue(@NonNull Issue newParent) {
 		ensureCanSetParent(newParent);
-		detachFromCurrentParent();
+		clearParent();
 
 		this.parentIssue = newParent;
-		// newParent.childIssues.add(this);
 	}
 
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
-		detachFromCurrentParent();
+		clearParent();
 	}
 
 	public void softDelete() {
-		ensureDeletable();
+		ensureIsInitial();
 		clearParticipants();
 		clearRelations();
-		detachFromCurrentParent();
+		clearParent();
 		archive();
 	}
 
 	public String getWorkspaceKey() {
 		return workspace.getKey();
+	}
+
+	public boolean isNotEpic() {
+		return issueType.getIssueHierarchy() != IssueHierarchy.EPIC;
 	}
 
 	public IssueHierarchy getHierarchy() {
@@ -272,37 +265,26 @@ public class Issue extends BaseEntity {
 			participants.isSubscriber(wm);
 	}
 
-	// TODO: IssueValidator로 분리하고 서비스 계층에서 호출할까?
-	private void ensureDeletable() {
+	private void ensureIsInitial() {
 		if (!currentState.isInitial()) {
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}
-		// if (!childIssues.isEmpty()) {
-		// 	throw new RuntimeException("Cannot delete issue that has children.");
-		// }
 	}
 
 	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
-		if (storyPoint == null) {
-			return null;
-		}
 		if (hierarchy.cannotModifyStoryPoint()) {
 			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
 		}
 		return storyPoint;
 	}
 
-	private static IssuePriority defaultPriorityIfNull(IssuePriority priority) {
+	private static IssuePriority setDefaultPriorityIfNull(IssuePriority priority) {
 		return priority == null ? IssuePriority.NORMAL : priority;
 	}
 
-	// TODO: 이름을 clearParent로 변경할까?
-	private void detachFromCurrentParent() {
-		// TODO: 조건문 없이 그냥 parentIssue = null; 사용
-		if (parentIssue != null) {
-			// parentIssue.getChildIssues().remove(this);
-			parentIssue = null;
-		}
+	private void clearParent() {
+		parentIssue = null;
+
 	}
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {

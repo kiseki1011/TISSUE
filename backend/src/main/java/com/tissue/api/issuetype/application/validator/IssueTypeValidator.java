@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.issue.application.port.out.IssueRepository;
+import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.issuetype.repository.IssueTypeRepository;
+import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.RequiredArgsConstructor;
@@ -16,11 +16,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueTypeValidator {
 
-	private final IssueRepository issueRepo;
-	private final IssueTypeRepository issueTypeRepo;
+	private final IssueQueryRepository issueQueryRepo;
+	private final IssueTypeQueryRepository issueTypeQueryRepo;
 
 	public void ensureUniqueLabel(Workspace workspace, Label label) {
-		boolean duplicated = issueTypeRepo.existsByWorkspaceAndLabel_Normalized(workspace, label.getNormalized());
+		boolean duplicated = issueTypeQueryRepo.existsByWorkspaceAndLabel_Normalized(workspace, label.getNormalized());
 		if (duplicated) {
 			throw new ResourceConflictException("Issue type label already exists in this workspace.");
 		}
@@ -42,7 +42,7 @@ public class IssueTypeValidator {
 	}
 
 	public void ensureNotInUse(IssueType type) {
-		if (issueRepo.existsByIssueType(type)) {
+		if (issueQueryRepo.existsByIssueType(type)) {
 			throw new InvalidOperationException("Cannot delete: issues exist for this issue type.");
 		}
 	}

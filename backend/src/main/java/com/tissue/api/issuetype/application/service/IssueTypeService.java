@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
-import com.tissue.api.issue.application.finder.IssueTypeFinder;
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.issue.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.RenameIssueTypeCommand;
@@ -16,7 +16,7 @@ import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.presentation.dto.response.IssueTypeResponse;
 import com.tissue.api.issuetype.repository.EnumFieldOptionRepository;
 import com.tissue.api.issuetype.repository.IssueFieldRepository;
-import com.tissue.api.issuetype.repository.IssueTypeRepository;
+import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class IssueTypeService {
 
 	private final WorkspaceFinder workspaceFinder;
-	private final IssueTypeRepository issueTypeRepo;
+	private final IssueTypeQueryRepository issueTypeRepo;
 	private final IssueFieldRepository issueFieldRepo;
 	private final EnumFieldOptionRepository optionRepo;
 	private final IssueTypeValidator issueTypeValidator;

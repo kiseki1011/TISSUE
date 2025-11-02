@@ -6,9 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueFieldValue;
+import com.tissue.api.issuetype.domain.IssueField;
 
 public interface IssueFieldValueQueryRepository extends Repository<IssueFieldValue, Long> {
+
+	List<IssueFieldValue> findByIssue(Issue issue);
+
+	boolean existsByField(IssueField field);
 
 	@Query("""
 		    SELECT fv
@@ -17,11 +23,10 @@ public interface IssueFieldValueQueryRepository extends Repository<IssueFieldVal
 		    LEFT JOIN FETCH fv.enumOption eo
 		    JOIN fv.issue i
 		    JOIN i.workspace w
-		    WHERE w.key = :workspaceKey
-		      AND i.key = :issueKey
+		    WHERE w.key = :workspaceKey AND i.key = :issueKey
 		    ORDER BY f.id
 		""")
-	List<IssueFieldValue> findByIssue(
+	List<IssueFieldValue> findByWorkspaceKeyAndIssueKey(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey
 	);

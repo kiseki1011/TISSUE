@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
-import com.tissue.api.issue.application.finder.IssueFinder;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;

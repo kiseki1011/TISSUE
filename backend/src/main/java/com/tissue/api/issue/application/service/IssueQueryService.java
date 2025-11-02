@@ -38,11 +38,11 @@ import lombok.RequiredArgsConstructor;
 public class IssueQueryService implements IssueQueryUseCase {
 
 	private final IssueQueryRepository issueQueryRepo;
-	private final IssueFieldValueQueryRepository fieldValueQueryRepo;
+	private final IssueFieldValueQueryRepository issueFieldValueQueryRepo;
 	private final IssueSubscriberQueryRepository subscriberQueryRepo;
 	private final IssueReviewerQueryRepository reviewerQueryRepo;
 	private final IssueRelationQueryRepository relationQueryRepo;
-	private final WorkspaceMemberQueryFinder wmFinder;
+	private final WorkspaceMemberQueryFinder wmFinder; // TODO: WorkspaceMemberFinder로 통합
 
 	@Override
 	public IssueBasicInfo getBasic(String workspaceKey, String issueKey) {
@@ -72,7 +72,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
 			.orElseThrow(() -> new RuntimeException("Issue not found"));
 
-		List<IssueFieldValue> fieldValues = fieldValueQueryRepo.findByIssue(workspaceKey, issueKey);
+		List<IssueFieldValue> fieldValues = issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey,
+			issueKey);
 
 		return IssueCustomDetail.from(issue, fieldValues);
 	}
@@ -102,7 +103,6 @@ public class IssueQueryService implements IssueQueryUseCase {
 			.toList();
 	}
 
-	// TODO: 이 방식 대신 Issue를 relations와 함께 join fetch해서 조회하고, issue.getRelations()를 통해 조회하도록 하는게 좋을까?
 	@Override
 	public IssueRelationsDetail getRelations(String workspaceKey, String issueKey) {
 		List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(workspaceKey, issueKey);
