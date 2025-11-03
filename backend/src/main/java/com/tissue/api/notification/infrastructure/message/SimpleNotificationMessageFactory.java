@@ -10,7 +10,7 @@ import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -64,30 +64,30 @@ public class SimpleNotificationMessageFactory implements NotificationMessageFact
 	 */
 	private <T extends DomainEvent> Object[] createContentArguments(T event, String actorNickname) {
 		return switch (event.getNotificationType()) {
-			case ISSUE_CREATED, ISSUE_UPDATED, ISSUE_COMMENT_ADDED,
-				ISSUE_ASSIGNED, ISSUE_UNASSIGNED, ISSUE_REVIEW_REQUESTED ->
-				argumentFormatter.createStandardArgs(actorNickname, event.getEntityKey());
-
-			case ISSUE_STATUS_CHANGED -> argumentFormatter.createIssueStatusChangeArgs(event, actorNickname);
-
-			case ISSUE_PARENT_ASSIGNED -> argumentFormatter.createIssueParentAssignedArgs(event, actorNickname);
-
-			case ISSUE_PARENT_REMOVED -> argumentFormatter.createIssueParentRemovedArgs(event, actorNickname);
-
-			case ISSUE_REVIEWER_ADDED -> argumentFormatter.createReviewerAddedArgs(event, actorNickname);
+			// case ISSUE_CREATED, ISSUE_UPDATED, ISSUE_COMMENT_ADDED,
+			// 	ISSUE_ASSIGNED, ISSUE_UNASSIGNED, ISSUE_REVIEW_REQUESTED ->
+			// 	argumentFormatter.createStandardArgs(actorNickname, event.getEntityKey());
+			//
+			// case ISSUE_STATUS_CHANGED -> argumentFormatter.createIssueStatusChangeArgs(event, actorNickname);
+			//
+			// case ISSUE_PARENT_ASSIGNED -> argumentFormatter.createIssueParentAssignedArgs(event, actorNickname);
+			//
+			// case ISSUE_PARENT_REMOVED -> argumentFormatter.createIssueParentRemovedArgs(event, actorNickname);
+			//
+			// case ISSUE_REVIEWER_ADDED -> argumentFormatter.createReviewerAddedArgs(event, actorNickname);
 
 			// case ISSUE_REVIEW_SUBMITTED -> argumentFormatter.createReviewSubmittedArgs(event, actorNickname);
 			//
 			// case REVIEW_COMMENT_ADDED -> argumentFormatter.createReviewCommentAddedArgs(event, actorNickname);
 
-			case SPRINT_STARTED -> argumentFormatter.createSprintStartedArgs(event.getEntityKey());
-
-			case SPRINT_COMPLETED -> argumentFormatter.createSprintCompletedArgs(event);
-
-			case MEMBER_JOINED_WORKSPACE -> argumentFormatter.createMemberJoinedWorkspaceArgs(event);
-
-			case WORKSPACE_MEMBER_ROLE_CHANGED ->
-				argumentFormatter.createWorkspaceRoleChangedArgs(event, actorNickname);
+			// case SPRINT_STARTED -> argumentFormatter.createSprintStartedArgs(event.getEntityKey());
+			//
+			// case SPRINT_COMPLETED -> argumentFormatter.createSprintCompletedArgs(event);
+			//
+			// case MEMBER_JOINED_WORKSPACE -> argumentFormatter.createMemberJoinedWorkspaceArgs(event);
+			//
+			// case WORKSPACE_MEMBER_ROLE_CHANGED ->
+			// 	argumentFormatter.createWorkspaceRoleChangedArgs(event, actorNickname);
 
 			default -> argumentFormatter.createStandardArgs(actorNickname, event.getEntityKey());
 		};

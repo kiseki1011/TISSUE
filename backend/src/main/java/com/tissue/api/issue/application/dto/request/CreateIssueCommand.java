@@ -1,0 +1,23 @@
+package com.tissue.api.issue.application.dto.request;
+
+import java.time.Instant;
+import java.util.Map;
+
+import com.tissue.api.issue.domain.enums.IssuePriority;
+
+import lombok.Builder;
+
+@Builder
+public record CreateIssueCommand(
+	Long memberId,
+	String workspaceKey,
+	String title,
+	String content,
+	String summary,
+	IssuePriority priority,
+	Instant dueAt,
+	Integer storyPoint,
+	Long issueTypeId,
+	Map<Long, Object> customFields
+) {
+}

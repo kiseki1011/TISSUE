@@ -53,6 +53,7 @@ tissue:
     # max-issue-field-count: 10000
     # max-issue-type-count: 10000
   issue:
+    max-reviewers: 10
     type:
     # max-field-per-issue-type: 50
     field:

@@ -1,0 +1,116 @@
+package com.tissue.api.workflow.presentation.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.workflow.application.service.WorkflowService;
+import com.tissue.api.workflow.presentation.dto.request.CreateWorkflowRequest;
+import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
+import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authentication.resolver.CurrentMember;
+import com.tissue.api.security.authorization.interceptor.RoleRequired;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/workflows")
+public class WorkflowController {
+
+	/**
+	 * TODO
+	 *  - add new step and transition to workflow
+	 *  - update workflow(update label)
+	 *  - delete workflow
+	 *  - dont allow deleting/updating default workflows(and the statusRequests and transitionRequests inside)!
+	 *  - update step(label, description)
+	 *  - update transition(label, description, sourceStep, targetStep)
+	 *  - needs to apply Spring State Machine
+	 *  - set guard for transitionRequests
+	 */
+
+	private final WorkflowService workflowService;
+
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@PostMapping
+	public ResponseEntity<ApiResponse<WorkflowResponse>> createWorkflow(
+		@PathVariable String workspaceKey,
+		@CurrentMember MemberUserDetails userDetails,
+		@RequestBody @Valid CreateWorkflowRequest request
+	) {
+		WorkflowResponse response = workflowService.create(request.toCommand(workspaceKey));
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(ApiResponse.created("Workflow created.", response));
+	}
+
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflow(
+	// 	@PathVariable String workspaceKey,
+	// 	@PathVariable String workflowKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflow(req.toCommand(workspaceKey, workflowKey));
+	//
+	// 	return ApiResponse.ok("Workflow updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @DeleteMapping("/{workflowKey}")
+	// public ApiResponse<Void> deleteWorkflow(
+	// 	@PathVariable String workspaceKey,
+	// 	@PathVariable String workflowKey,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	workflowService.deleteWorkflow(workspaceKey, workflowKey);
+	//
+	// 	return ApiResponse.okWithNoContent("Workflow deleted.");
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}/statusRequests/{stepKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflowStep(
+	// 	@PathVariable String workspaceKey,
+	// 	@PathVariable String stepKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowStepRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflowStep(req.toCommand(workspaceKey, stepKey));
+	//
+	// 	return ApiResponse.ok("Workflow step updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @PatchMapping("/{workflowKey}/transitionRequests/{transitionKey}")
+	// public ApiResponse<WorkflowResponse> updateWorkflowTransition(
+	// 	@PathVariable String workspaceKey,
+	// 	@PathVariable String transitionKey,
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	@RequestBody @Valid UpdateWorkflowTransitionRequest req
+	// ) {
+	// 	WorkflowResponse res = workflowService.updateWorkflowTransition(req.toCommand(workspaceKey, transitionKey));
+	//
+	// 	return ApiResponse.ok("Workflow transition updated.", res);
+	// }
+	//
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// @DeleteMapping("/{workflowKey}/transitionRequests/{transitionKey}")
+	// public ApiResponse<Void> deleteWorkflowTransition(
+	// 	@PathVariable String workspaceKey,
+	// 	@PathVariable String transitionKey,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	workflowService.deleteWorkflowTransition(workspaceKey, transitionKey);
+	//
+	// 	return ApiResponse.okWithNoContent("Workflow transition deleted.");
+	// }
+}

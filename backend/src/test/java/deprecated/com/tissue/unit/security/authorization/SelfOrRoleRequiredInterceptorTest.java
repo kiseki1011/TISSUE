@@ -26,7 +26,7 @@ import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequiredInterceptor;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 

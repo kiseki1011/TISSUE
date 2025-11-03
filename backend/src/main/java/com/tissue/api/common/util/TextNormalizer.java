@@ -20,8 +20,8 @@ public class TextNormalizer {
 		return lower(nfc(value.strip()));
 	}
 
-	public static String blankToNull(String value) {
-		return (value == null || value.isBlank()) ? null : value;
+	public static String nullToEmpty(String val) {
+		return val == null ? "" : val;
 	}
 
 	public static String lower(String value) {

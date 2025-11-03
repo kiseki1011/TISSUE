@@ -15,6 +15,7 @@ import com.tissue.api.workspacemember.application.dto.RemoveWorkspaceMemberComma
 import com.tissue.api.workspacemember.application.dto.TransferOwnershipCommand;
 import com.tissue.api.workspacemember.application.dto.UpdateDisplayNameCommand;
 import com.tissue.api.workspacemember.application.dto.UpdateRoleCommand;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberPermissionValidator;
 import com.tissue.api.workspacemember.domain.service.WorkspaceMemberValidator;
