@@ -5,10 +5,10 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
+import com.tissue.api.issue.domain.enums.IssueRelationType;
 
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
@@ -20,7 +20,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 		IssueRelationType relationType
 	) {
 		if (hasCycle(source, target, relationType)) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Creating this relation would create a cycle. %s %s %s forms a circular dependency."
 					.formatted(source.getKey(), relationType, target.getKey())
 			);

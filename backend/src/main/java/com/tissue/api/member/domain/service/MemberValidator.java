@@ -4,9 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.AuthenticationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.exception.MemberNotFoundException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
@@ -33,7 +32,7 @@ public class MemberValidator {
 
 	public void validatePasswordMatch(String rawPassword, String encodedPassword) {
 		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new AuthenticationFailedException("Password is invalid.");
+			throw new AuthenticationException("Password is invalid.");
 		}
 	}
 
@@ -64,7 +63,7 @@ public class MemberValidator {
 	public void validateMemberHasNoOwnedWorkspaces(Long memberId) {
 		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMember_IdAndRole(memberId, WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {
-			throw new InvalidOperationException("You currently have one or more owned workspaces.");
+			throw new BadRequestException("You currently have one or more owned workspaces.");
 		}
 	}
 }

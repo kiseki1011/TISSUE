@@ -6,7 +6,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.domain.model.Member;
@@ -41,7 +41,7 @@ public class WorkspaceMemberInviteService {
 		members.forEach(member -> createInvitation(workspace, member));
 
 		if (members.isEmpty()) {
-			throw new InvalidOperationException("No members were available for invitation.");
+			throw new BadRequestException("No members were available for invitation.");
 		}
 
 		return InviteMembersResponse.from(workspaceCode, members);

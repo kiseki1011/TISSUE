@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
@@ -49,12 +49,12 @@ public class WorkflowGraphReplaceService {
 
 		private WorkflowState resolveExisting(Long id) {
 			return Optional.ofNullable(existingStatuses.get(id))
-				.orElseThrow(() -> new InvalidOperationException("Unknown status id: " + id));
+				.orElseThrow(() -> new BadRequestException("Unknown status id: " + id));
 		}
 
 		private WorkflowState resolveNew(String tempKey) {
 			return Optional.ofNullable(newStatuses.get(tempKey))
-				.orElseThrow(() -> new InvalidOperationException("Unknown status tempKey: " + tempKey));
+				.orElseThrow(() -> new BadRequestException("Unknown status tempKey: " + tempKey));
 		}
 	}
 
@@ -190,7 +190,7 @@ public class WorkflowGraphReplaceService {
 	) {
 		WorkflowTransition transition = existingTransitions.get(cmd.ref().id());
 		if (transition == null) {
-			throw new InvalidOperationException("Unknown transition id: " + cmd.ref().id());
+			throw new BadRequestException("Unknown transition id: " + cmd.ref().id());
 		}
 		wf.rewireTransitionSource(transition, src);
 		wf.rewireTransitionTarget(transition, trg);
@@ -255,7 +255,7 @@ public class WorkflowGraphReplaceService {
 		var cmd = stateCommands.stream()
 			.filter(ReplaceWorkflowGraphCommand.StateCommand::initial)
 			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException("Initial not provided"));
+			.orElseThrow(() -> new BadRequestException("Initial not provided"));
 
 		WorkflowState requested = statusResolver.resolve(cmd.ref());
 

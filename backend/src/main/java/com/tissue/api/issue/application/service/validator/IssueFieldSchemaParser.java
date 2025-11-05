@@ -9,7 +9,6 @@ import java.time.format.DateTimeParseException;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.application.service.policy.FieldValuePolicy;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.IssueField;

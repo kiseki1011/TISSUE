@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.domain.model.enums.JobType;

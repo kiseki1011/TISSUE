@@ -2,7 +2,7 @@ package com.tissue.api.common.util;
 
 import java.time.Instant;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import lombok.AccessLevel;
@@ -26,7 +26,7 @@ public final class DomainPreconditions {
 			return null;
 		}
 		if (instant.isBefore(Instant.now())) {
-			throw new InvalidOperationException("Date cannot be in the past");
+			throw new BadRequestException("Date cannot be in the past");
 		}
 
 		return instant;
@@ -38,7 +38,7 @@ public final class DomainPreconditions {
 		@NonNull String collectionName
 	) {
 		if (currentSize >= maxSize) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Maximum %s limit reached: %d/%d".formatted(collectionName, currentSize, maxSize)
 			);
 		}
@@ -50,7 +50,7 @@ public final class DomainPreconditions {
 		int max
 	) {
 		if (value < min || value > max) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Must be between %d and %d, but was %d".formatted(min, max, value)
 			);
 		}
@@ -61,7 +61,7 @@ public final class DomainPreconditions {
 			return null;
 		}
 		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Percentage must be between %d and %d, but was %d".formatted(MIN_PERCENTAGE, MAX_PERCENTAGE, value)
 			);
 		}
@@ -74,7 +74,7 @@ public final class DomainPreconditions {
 		@NonNull Workspace workspace2
 	) {
 		if (!workspace1.equals(workspace2)) {
-			throw new InvalidOperationException("Resources must be from the same workspace");
+			throw new BadRequestException("Resources must be from the same workspace");
 		}
 	}
 }

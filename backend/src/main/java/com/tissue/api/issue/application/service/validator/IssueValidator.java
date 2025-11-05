@@ -2,7 +2,7 @@ package com.tissue.api.issue.application.service.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 
@@ -21,7 +21,7 @@ public class IssueValidator {
 	private void ensureNoChildren(Issue issue) {
 		boolean hasChildren = issueQueryRepo.hasChildren(issue.getWorkspaceKey(), issue.getKey());
 		if (hasChildren) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Cannot delete issue that has children. issueKey: %s"
 					.formatted(issue.getKey())
 			);

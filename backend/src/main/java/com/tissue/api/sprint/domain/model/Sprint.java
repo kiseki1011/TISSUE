@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -98,7 +98,7 @@ public class Sprint extends BaseEntity {
 
 	private void validateDates(Instant startDate, Instant endDate) {
 		if (endDate.isBefore(startDate)) {
-			throw new InvalidOperationException("Sprint end date cannot be before start date.");
+			throw new BadRequestException("Sprint end date cannot be before start date.");
 		}
 	}
 
@@ -128,7 +128,7 @@ public class Sprint extends BaseEntity {
 	// TODO: Move to validator
 	private void validateStatusTransition(SprintStatus newStatus) {
 		if (this.status == newStatus) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				String.format("Sprint is already in %s status.", newStatus));
 		}
 
@@ -137,19 +137,19 @@ public class Sprint extends BaseEntity {
 				boolean newStatusIsNotActive = newStatus != SprintStatus.ACTIVE;
 				boolean newStatusIsNotCancelled = newStatus != SprintStatus.CANCELLED;
 				if (newStatusIsNotActive && newStatusIsNotCancelled) {
-					throw new InvalidOperationException(
+					throw new BadRequestException(
 						"Sprint in PLANNING status can only be changed to ACTIVE or CANCELLED.");
 				}
 
 				boolean newStatusIsActive = newStatus == SprintStatus.ACTIVE;
 				if (newStatusIsActive && Instant.now().isAfter(plannedEndDate)) {
-					throw new InvalidOperationException("Cannot start sprint after planned end date.");
+					throw new BadRequestException("Cannot start sprint after planned end date.");
 				}
 
 				if (newStatusIsActive) {
 					boolean hasActiveSprintInWorkspace = workspace.hasActiveSprint();
 					if (hasActiveSprintInWorkspace) {
-						throw new InvalidOperationException(
+						throw new BadRequestException(
 							"Cannot start sprint. A sprint is already active in this workspace.");
 					}
 				}
@@ -158,12 +158,12 @@ public class Sprint extends BaseEntity {
 				boolean newStatusIsNotCompleted = newStatus != SprintStatus.COMPLETED;
 				boolean newStatusIsNotCancelled = newStatus != SprintStatus.CANCELLED;
 				if (newStatusIsNotCompleted && newStatusIsNotCancelled) {
-					throw new InvalidOperationException(
+					throw new BadRequestException(
 						"Sprint in ACTIVE status can only be changed to COMPLETED or CANCELLED.");
 				}
 			}
 			case COMPLETED, CANCELLED ->
-				throw new InvalidOperationException("Cannot change status of COMPLETED or CANCELLED sprint.");
+				throw new BadRequestException("Cannot change status of COMPLETED or CANCELLED sprint.");
 		}
 	}
 
@@ -182,29 +182,29 @@ public class Sprint extends BaseEntity {
 	private void validateCanAddIssue(Issue issue) {
 		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
 		if (notRequiredStatus) {
-			throw new InvalidOperationException("Can only add issues to PLANNING or ACTIVE sprint.");
+			throw new BadRequestException("Can only add issues to PLANNING or ACTIVE sprint.");
 		}
 
 		boolean notEqualWorkspaceCode = !issue.getWorkspaceKey().equals(workspace.getKey());
 		if (notEqualWorkspaceCode) {
-			throw new InvalidOperationException("Cannot add issue from different workspace to sprint.");
+			throw new BadRequestException("Cannot add issue from different workspace to sprint.");
 		}
 
 		boolean alreadyInSprint = sprintIssues.stream().anyMatch(si -> si.getIssue().equals(issue));
 		if (alreadyInSprint) {
-			throw new InvalidOperationException("Issue already exists in this sprint.");
+			throw new BadRequestException("Issue already exists in this sprint.");
 		}
 	}
 
 	private void validateCanRemoveIssue(Issue issue) {
 		boolean notRequiredStatus = status != SprintStatus.PLANNING && status != SprintStatus.ACTIVE;
 		if (notRequiredStatus) {
-			throw new InvalidOperationException("Can only remove issues from PLANNING or ACTIVE sprint.");
+			throw new BadRequestException("Can only remove issues from PLANNING or ACTIVE sprint.");
 		}
 
 		boolean issueNotInSprint = sprintIssues.stream().noneMatch(si -> si.getIssue().equals(issue));
 		if (issueNotInSprint) {
-			throw new InvalidOperationException("Issue does not exist in this sprint.");
+			throw new BadRequestException("Issue does not exist in this sprint.");
 		}
 	}
 }

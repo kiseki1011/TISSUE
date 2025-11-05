@@ -2,7 +2,7 @@ package com.tissue.api.issuetype.application.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.application.port.out.IssueFieldValueQueryRepository;
@@ -33,7 +33,7 @@ public class IssueFieldValidator {
 	private void ensureNotInUse(IssueField field) {
 		boolean fieldInUse = fieldValueRepo.existsByField(field);
 		if (fieldInUse) {
-			throw new InvalidOperationException("Field is in use.");
+			throw new BadRequestException("Field is in use.");
 		}
 	}
 }

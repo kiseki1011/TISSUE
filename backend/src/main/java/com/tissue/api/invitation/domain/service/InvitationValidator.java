@@ -2,7 +2,7 @@ package com.tissue.api.invitation.domain.service;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class InvitationValidator {
 
 	public void validateInvitation(Long memberId, String workspaceCode) {
 		if (hasWorkspaceMember(memberId, workspaceCode)) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				String.format("Member with id %d already joined workspace %s", memberId, workspaceCode)
 			);
 		}

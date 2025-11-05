@@ -20,9 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerMapping;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.InvalidRequestException;
+import com.tissue.api.common.exception.type.AuthenticationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequired;
 import com.tissue.api.security.authorization.interceptor.SelfOrRoleRequiredInterceptor;
@@ -164,7 +163,7 @@ class SelfOrRoleRequiredInterceptorTest {
 			.thenReturn(member);
 
 		assertThatThrownBy(() -> interceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(ForbiddenOperationException.class)
+			.isInstanceOf(UnauthorizedException.class)
 			.hasMessageContaining("Workspace role must be at least");
 	}
 
@@ -178,7 +177,7 @@ class SelfOrRoleRequiredInterceptorTest {
 		SecurityContextHolder.clearContext();
 
 		assertThatThrownBy(() -> interceptor.preHandle(request, response, handlerMethod))
-			.isInstanceOf(AuthenticationFailedException.class);
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test

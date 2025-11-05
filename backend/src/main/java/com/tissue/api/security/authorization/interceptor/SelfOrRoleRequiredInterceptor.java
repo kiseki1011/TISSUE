@@ -11,9 +11,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.InvalidRequestException;
+import com.tissue.api.common.exception.type.AuthenticationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -54,7 +53,7 @@ public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
-			throw new AuthenticationFailedException("Authentication required.");
+			throw new AuthenticationException("Authentication required.");
 		}
 
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
@@ -91,7 +90,7 @@ public class SelfOrRoleRequiredInterceptor implements HandlerInterceptor {
 		boolean isLowerThanRequiredRole = workspaceMember.getRole().isLowerThan(annotation.role());
 
 		if (isLowerThanRequiredRole) {
-			throw new ForbiddenOperationException(String.format(
+			throw new UnauthorizedException(String.format(
 				"Workspace role must be at least %s. Current role: %s",
 				annotation.role(), workspaceMember.getRole()));
 		}

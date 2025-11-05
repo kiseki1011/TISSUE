@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.IssueField;
 

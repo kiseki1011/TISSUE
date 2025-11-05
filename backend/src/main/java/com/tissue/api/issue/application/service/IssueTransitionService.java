@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
-import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.TransitionGuardRegistry;
@@ -99,7 +99,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		// TODO: IssueTransitionValidator로 로직 분리
 		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
 		if (transitionSourceStateNotMatch) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Invalid transition. Current state is '%s' but transition requires '%s'".formatted(
 					issue.getCurrentState().getDisplayLabel(),
 					transition.getSourceState().getDisplayLabel()

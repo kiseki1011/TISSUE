@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.api.issue.application.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.api.issue.domain.Issue;

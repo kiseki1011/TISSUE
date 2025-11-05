@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 
 public final class EnumFieldOptions {
 
@@ -48,7 +48,7 @@ public final class EnumFieldOptions {
 			Long id = orderedIds.get(i);
 			EnumFieldOption option = byId.get(id);
 			if (option == null) {
-				throw new InvalidOperationException("Unknown option id: " + id);
+				throw new BadRequestException("Unknown option id: " + id);
 			}
 			if (option.getPosition() != i) {
 				option.movePositionTo(i);
@@ -58,20 +58,20 @@ public final class EnumFieldOptions {
 
 	private void ensureSameSizeAsActive(List<Long> orderedIds) {
 		if (orderedIds.size() != active.size()) {
-			throw new InvalidOperationException("Order size mismatch.");
+			throw new BadRequestException("Order size mismatch.");
 		}
 	}
 
 	private void ensureNoNullElements(List<Long> orderedIds) {
 		if (orderedIds.contains(null)) {
-			throw new InvalidOperationException("Order contains null id.");
+			throw new BadRequestException("Order contains null id.");
 		}
 	}
 
 	private void ensureNoDuplicateIds(List<Long> orderedIds) {
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (uniq.size() != orderedIds.size()) {
-			throw new InvalidOperationException("Order contains duplicates.");
+			throw new BadRequestException("Order contains duplicates.");
 		}
 	}
 
@@ -81,7 +81,7 @@ public final class EnumFieldOptions {
 			.collect(Collectors.toSet());
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (!uniq.equals(actual)) {
-			throw new InvalidOperationException("Order keys must match the active option set exactly.");
+			throw new BadRequestException("Order keys must match the active option set exactly.");
 		}
 	}
 

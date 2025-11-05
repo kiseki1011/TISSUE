@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;
 
 import lombok.RequiredArgsConstructor;

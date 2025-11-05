@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -30,7 +30,7 @@ public class WorkspaceMemberValidator {
 			.anyMatch(wmp -> Objects.equals(wmp.getPosition().getId(), position.getId()));
 
 		if (alreadyAssigned) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Position '%s' (ID: %d) is already assigned to member (workspaceKey: %s, memberId: %d)"
 					.formatted(position.getName(), position.getId(), workspaceMember.getWorkspaceKey(),
 						workspaceMember.getMemberId())
@@ -43,7 +43,7 @@ public class WorkspaceMemberValidator {
 			.noneMatch(wmp -> Objects.equals(wmp.getPosition().getId(), position.getId()));
 
 		if (notAssigned) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Position '%s' (ID: %d) is not assigned to member (workspaceKey: %s, memberId: %d)"
 					.formatted(position.getName(), position.getId(), workspaceMember.getWorkspaceKey(),
 						workspaceMember.getMemberId())

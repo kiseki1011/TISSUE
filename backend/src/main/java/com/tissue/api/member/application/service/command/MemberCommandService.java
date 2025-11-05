@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.service.MemberValidator;

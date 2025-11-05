@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.email.domain.EmailClient;
 import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;

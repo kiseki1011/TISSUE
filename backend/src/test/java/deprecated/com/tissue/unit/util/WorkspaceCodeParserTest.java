@@ -8,7 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.util.WorkspaceCodeParser;
 
 class WorkspaceCodeParserTest {
@@ -40,6 +40,6 @@ class WorkspaceCodeParserTest {
 	@DisplayName("잘못된 형식의 URI에서 코드 추출을 시도하면 예외가 발생한다")
 	void throwExceptionForInvalidUri(String uri) {
 		assertThatThrownBy(() -> workspaceCodeParser.extractWorkspaceCode(uri))
-			.isInstanceOf(InvalidOperationException.class);
+			.isInstanceOf(BadRequestException.class);
 	}
 }

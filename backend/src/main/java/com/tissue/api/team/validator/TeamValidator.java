@@ -2,7 +2,7 @@ package com.tissue.api.team.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 
@@ -16,7 +16,7 @@ public class TeamValidator {
 
 	public void validateTeamIsUsed(Team team) {
 		if (teamRepository.existsByWorkspaceMembers(team)) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				String.format(
 					"There is a workspace member that belongs to this team. teamId: %d, name: %s",
 					team.getId(), team.getName()

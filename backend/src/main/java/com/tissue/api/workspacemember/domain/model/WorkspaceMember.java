@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.domain.model.Team;
@@ -133,7 +133,7 @@ public class WorkspaceMember extends BaseEntity {
 	//  If soft-delete is recommended, how should I implement it?
 	public void validateCanLeaveWorkspace() {
 		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Cannot leave workspace if OWNER.");
+			throw new BadRequestException("Cannot leave workspace if OWNER.");
 		}
 	}
 
@@ -172,19 +172,19 @@ public class WorkspaceMember extends BaseEntity {
 
 	private void validateUpdateToOwnerRole(WorkspaceRole newRole) {
 		if (newRole == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Cannot directly change to OWNER role. Use ownership transfer.");
+			throw new BadRequestException("Cannot directly change to OWNER role. Use ownership transfer.");
 		}
 	}
 
 	private void validateCurrentRoleIsOwner() {
 		if (this.role != WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role must be OWNER.");
+			throw new BadRequestException("Current role must be OWNER.");
 		}
 	}
 
 	private void validateCurrentRoleIsNotOwner() {
 		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role cannot be OWNER.");
+			throw new BadRequestException("Current role cannot be OWNER.");
 		}
 	}
 

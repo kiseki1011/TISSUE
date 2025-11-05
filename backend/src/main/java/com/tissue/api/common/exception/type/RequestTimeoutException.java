@@ -4,13 +4,14 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.TissueException;
 
-public class RequestTimeoutException extends TissueException {
+public abstract class RequestTimeoutException extends TissueException {
 
-	public RequestTimeoutException(String message) {
-		super(message, HttpStatus.REQUEST_TIMEOUT);
+	protected RequestTimeoutException(String message) {
+		super(message);
 	}
 
-	public RequestTimeoutException(String message, Throwable cause) {
-		super(message, HttpStatus.REQUEST_TIMEOUT, cause);
+	@Override
+	public final HttpStatus getHttpStatus() {
+		return HttpStatus.REQUEST_TIMEOUT;
 	}
 }

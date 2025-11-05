@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
@@ -97,7 +97,7 @@ public abstract class Comment extends BaseEntity {
 		if (workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER)) {
 			return;
 		}
-		throw new ForbiddenOperationException("Must either be the author or hold a workspace role of ADMIN or higher.");
+		throw new UnauthorizedException("Must either be the author or hold a workspace role of ADMIN or higher.");
 	}
 
 	// 대댓글 추가 시 1-depth 제한과 타입 검증
@@ -107,11 +107,11 @@ public abstract class Comment extends BaseEntity {
 		}
 
 		if (parentComment.getParentComment() != null) {
-			throw new InvalidOperationException("Comments can only be nested one level deep.");
+			throw new BadRequestException("Comments can only be nested one level deep.");
 		}
 
 		if (parentComment.getClass() != this.getClass()) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				String.format("Parent comment type(%s) and child comment type(%s) must match.",
 					parentComment.getClass().getSimpleName(),
 					this.getClass().getSimpleName())

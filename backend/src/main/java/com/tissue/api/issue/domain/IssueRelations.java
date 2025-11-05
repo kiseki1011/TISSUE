@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
 import jakarta.persistence.CascadeType;
@@ -128,7 +128,7 @@ public class IssueRelations {
 			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 
 		if (exists) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s"
 					.formatted(source.getKey(), target.getKey())
 			);

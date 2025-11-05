@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.presentation.dto.request.EmailVerificationRequest;

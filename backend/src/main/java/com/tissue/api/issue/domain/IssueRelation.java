@@ -1,7 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 
@@ -72,13 +72,13 @@ public class IssueRelation extends BaseEntity {
 
 	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new InvalidOperationException("Self reference is not allowed.");
+			throw new BadRequestException("Self reference is not allowed.");
 		}
 	}
 
 	private static void ensureSameWorkspace(Issue source, Issue target) {
 		if (!source.getWorkspace().equals(target.getWorkspace())) {
-			throw new InvalidOperationException("Issues must be in the same workspace");
+			throw new BadRequestException("Issues must be in the same workspace");
 		}
 	}
 
@@ -91,7 +91,7 @@ public class IssueRelation extends BaseEntity {
 			case DUPLICATES -> { // DUPLICATED_BY
 				// 중복은 같은 IssueType만
 				if (!sourceIssue.getIssueType().equals(targetIssue.getIssueType())) {
-					throw new InvalidOperationException(
+					throw new BadRequestException(
 						"DUPLICATES relation requires same issue type. " +
 							"Source: " + sourceIssue.getIssueType().getLabel() + ", " +
 							"Target: " + targetIssue.getIssueType().getLabel()
@@ -107,7 +107,7 @@ public class IssueRelation extends BaseEntity {
 				// Epic은 Epic만, Story는 Story/Epic, Subtask는 모두 가능
 				if (sourceHierarchy == IssueHierarchy.SUBTASK &&
 					targetHierarchy == IssueHierarchy.EPIC) {
-					throw new InvalidOperationException(
+					throw new BadRequestException(
 						"Subtask cannot block Epic directly"
 					);
 				}

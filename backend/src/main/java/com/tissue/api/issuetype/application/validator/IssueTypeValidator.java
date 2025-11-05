@@ -2,7 +2,7 @@ package com.tissue.api.issuetype.application.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
@@ -37,13 +37,13 @@ public class IssueTypeValidator {
 
 	public void ensureNotSystemType(IssueType type) {
 		if (type.isSystemType()) {
-			throw new InvalidOperationException("Cannot delete system(default) issue types.");
+			throw new BadRequestException("Cannot delete system(default) issue types.");
 		}
 	}
 
 	public void ensureNotInUse(IssueType type) {
 		if (issueQueryRepo.existsByIssueType(type)) {
-			throw new InvalidOperationException("Cannot delete: issues exist for this issue type.");
+			throw new BadRequestException("Cannot delete: issues exist for this issue type.");
 		}
 	}
 }

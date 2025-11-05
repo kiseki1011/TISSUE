@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
@@ -42,7 +42,7 @@ public class WorkspaceParticipationService {
 		// TODO: If im already join fetched WorkspaceMembers in the persistence context,
 		//  can't i just check the List<WorkspaceMembers> to see if it exists without using workspaceMemberRepository?
 		if (workspaceMemberRepository.existsByMember_IdAndWorkspace_Key(memberId, workspaceKey)) {
-			throw new InvalidOperationException(String.format(
+			throw new BadRequestException(String.format(
 				"Member already joined this workspace. memberId: %d, workspaceKey: %s",
 				memberId, workspaceKey)
 			);

@@ -12,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.exception.type.InternalServerException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
@@ -45,7 +45,7 @@ public class WorkspaceCreateRetryOnCodeCollisionService implements WorkspaceCrea
 	@Override
 	@Retryable(
 		retryFor = {DataIntegrityViolationException.class},
-		notRecoverable = {InvalidOperationException.class},
+		notRecoverable = {BadRequestException.class},
 		maxAttempts = MAX_RETRIES,
 		backoff = @Backoff(delay = 300)
 	)

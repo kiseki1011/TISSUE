@@ -2,7 +2,7 @@ package deprecated.com.tissue.support.mock;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +17,7 @@ public class MockAuthorizationInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 		if (hasSufficientRoleIsFalse()) {
-			throw new ForbiddenOperationException("[MockAuthorizationInterceptor] insufficient workspace role");
+			throw new UnauthorizedException("[MockAuthorizationInterceptor] insufficient workspace role");
 		}
 		return true;
 	}

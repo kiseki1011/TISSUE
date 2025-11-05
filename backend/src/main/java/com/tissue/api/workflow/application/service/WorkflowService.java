@@ -12,8 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.workflow.application.GuardConfigData;
@@ -182,7 +181,7 @@ public class WorkflowService {
 			try {
 				paramsJson = new ObjectMapper().writeValueAsString(guardConfigData.params());
 			} catch (JsonProcessingException e) {
-				throw new InvalidOperationException("Invalid guard parameters");
+				throw new BadRequestException("Invalid guard parameters");
 			}
 		}
 		return paramsJson;
@@ -191,7 +190,7 @@ public class WorkflowService {
 	private void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
 		boolean dup = !usedTypes.add(g.guardType());
 		if (dup) {
-			throw new InvalidOperationException("Duplicate guard type: " + g.guardType());
+			throw new BadRequestException("Duplicate guard type: " + g.guardType());
 		}
 	}
 
@@ -230,7 +229,7 @@ public class WorkflowService {
 		try {
 			return new ObjectMapper().writeValueAsString(params);
 		} catch (JsonProcessingException e) {
-			throw new InvalidOperationException("Invalid guard parameters", e);
+			throw new BadRequestException("Invalid guard parameters", e);
 		}
 	}
 

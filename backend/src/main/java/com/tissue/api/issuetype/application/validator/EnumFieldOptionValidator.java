@@ -2,7 +2,7 @@ package com.tissue.api.issuetype.application.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.exception.type.ResourceConflictException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
@@ -25,7 +25,7 @@ public class EnumFieldOptionValidator {
 
 	public void ensureNotInUse(EnumFieldOption opt) {
 		if (optionRepo.isInUse(opt)) {
-			throw new InvalidOperationException("Cannot delete/archive: option is in use.");
+			throw new BadRequestException("Cannot delete/archive: option is in use.");
 		}
 	}
 }

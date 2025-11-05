@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workflow.domain.model.WorkflowState;
 import com.tissue.api.workflow.domain.model.WorkflowTransition;
@@ -51,7 +51,7 @@ public class WorkflowGraphValidator {
 		WorkflowState initial
 	) {
 		if (toDelete.contains(initial)) {
-			throw new InvalidOperationException("Cannot delete the initial status.");
+			throw new BadRequestException("Cannot delete the initial status.");
 		}
 	}
 
@@ -61,7 +61,7 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (initialCount != 1) {
-			throw new InvalidOperationException("Exactly one initial required.");
+			throw new BadRequestException("Exactly one initial required.");
 		}
 	}
 
@@ -71,7 +71,7 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (count == 0) {
-			throw new InvalidOperationException("At least one terminal required.");
+			throw new BadRequestException("At least one terminal required.");
 		}
 	}
 
@@ -85,15 +85,15 @@ public class WorkflowGraphValidator {
 			.collect(Collectors.toSet());
 
 		if (refs.size() != stateValidations.size()) {
-			throw new InvalidOperationException("Duplicate state keys found.");
+			throw new BadRequestException("Duplicate state keys found.");
 		}
 
 		for (var t : transitionValidations) {
 			if (!refs.contains(t.sourceStateRef())) {
-				throw new InvalidOperationException("Unknown source reference: " + t.sourceStateRef());
+				throw new BadRequestException("Unknown source reference: " + t.sourceStateRef());
 			}
 			if (!refs.contains(t.targetStateRef())) {
-				throw new InvalidOperationException("Unknown target reference: " + t.targetStateRef());
+				throw new BadRequestException("Unknown target reference: " + t.targetStateRef());
 			}
 		}
 	}
@@ -101,7 +101,7 @@ public class WorkflowGraphValidator {
 	private void ensureNoSelfLoops(List<TransitionValidationData> transitionValidations) {
 		for (var t : transitionValidations) {
 			if (Objects.equals(t.sourceStateRef(), t.targetStateRef())) {
-				throw new InvalidOperationException("Self-loop not allowed.");
+				throw new BadRequestException("Self-loop not allowed.");
 			}
 		}
 	}
@@ -112,7 +112,7 @@ public class WorkflowGraphValidator {
 	) {
 		for (var t : allTransitions) {
 			if (t.getTargetState().equals(initial)) {
-				throw new InvalidOperationException("Transitions into the initial states are not allowed.");
+				throw new BadRequestException("Transitions into the initial states are not allowed.");
 			}
 		}
 	}
@@ -120,7 +120,7 @@ public class WorkflowGraphValidator {
 	private WorkflowState ensureInitialExists(Workflow wf) {
 		WorkflowState state = wf.getInitialState();
 		if (state == null || state.isArchived()) {
-			throw new InvalidOperationException("Initial must exist and be active.");
+			throw new BadRequestException("Initial must exist and be active.");
 		}
 		return state;
 	}
@@ -164,7 +164,7 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (reachableStates.size() != totalStates) {
-			throw new InvalidOperationException("Orphan states exist (unreachable from initial).");
+			throw new BadRequestException("Orphan states exist (unreachable from initial).");
 		}
 	}
 }

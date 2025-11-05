@@ -8,7 +8,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issue.application.service.policy.FieldValuePolicy;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.enums.FieldType;

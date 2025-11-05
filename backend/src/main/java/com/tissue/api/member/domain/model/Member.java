@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseDateEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.member.domain.model.enums.JobType;
 import com.tissue.api.security.authorization.enums.SystemRole;
@@ -123,7 +123,7 @@ public class Member extends BaseDateEntity {
 
 	public void validateWorkspaceLimit() {
 		if (getWorkspaceCount() >= MAX_WORKSPACE_COUNT) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				String.format("Max number of workspaces a member can have is %d.", MAX_WORKSPACE_COUNT));
 		}
 	}

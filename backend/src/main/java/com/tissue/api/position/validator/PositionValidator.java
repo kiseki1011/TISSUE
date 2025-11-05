@@ -2,7 +2,7 @@ package com.tissue.api.position.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 
@@ -16,7 +16,7 @@ public class PositionValidator {
 
 	public void validatePositionIsUsed(Position position) {
 		if (positionRepository.existsByWorkspaceMembers(position)) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"There is a workspace member that is using this position. position id: %d, position name: %s"
 					.formatted(position.getId(), position.getName())
 			);

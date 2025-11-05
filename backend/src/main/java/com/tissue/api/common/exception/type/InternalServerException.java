@@ -4,13 +4,14 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.TissueException;
 
-public class InternalServerException extends TissueException {
+public abstract class InternalServerException extends TissueException {
 
 	public InternalServerException(String message) {
-		super(message, HttpStatus.INTERNAL_SERVER_ERROR);
+		super(message);
 	}
 
-	public InternalServerException(String message, Throwable cause) {
-		super(message, HttpStatus.INTERNAL_SERVER_ERROR, cause);
+	@Override
+	public final HttpStatus getHttpStatus() {
+		return HttpStatus.INTERNAL_SERVER_ERROR;
 	}
 }

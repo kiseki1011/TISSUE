@@ -9,7 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
@@ -273,7 +273,7 @@ public class Issue extends BaseEntity {
 
 	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (hierarchy.cannotModifyStoryPoint()) {
-			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
+			throw new BadRequestException("Cannot set story point for hierarchy: " + hierarchy);
 		}
 		return storyPoint;
 	}
@@ -298,7 +298,7 @@ public class Issue extends BaseEntity {
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
 		if (!parentHierarchy.canBeParentOf(childHierarchy)) {
-			throw new InvalidOperationException(
+			throw new BadRequestException(
 				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
 					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy, this.issueType.getLabel(),
 						childHierarchy));
@@ -307,14 +307,14 @@ public class Issue extends BaseEntity {
 
 	private void ensureNotSelfReference(Issue parentIssue) {
 		if (this.equals(parentIssue)) {
-			throw new InvalidOperationException("An issue cannot be its own parent.");
+			throw new BadRequestException("An issue cannot be its own parent.");
 		}
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
 		if (isDifferentWorkspace) {
-			throw new InvalidOperationException("Parent must belong to the same workspace.");
+			throw new BadRequestException("Parent must belong to the same workspace.");
 		}
 	}
 

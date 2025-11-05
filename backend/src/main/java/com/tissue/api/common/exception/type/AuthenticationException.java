@@ -4,14 +4,14 @@ import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.TissueException;
 
-public abstract class ResourceConflictException extends TissueException {
+public class AuthenticationException extends TissueException {
 
-	public ResourceConflictException(String message) {
+	public AuthenticationException(String message) {
 		super(message);
 	}
 
 	@Override
 	public final HttpStatus getHttpStatus() {
-		return HttpStatus.CONFLICT;
+		return HttpStatus.UNAUTHORIZED;
 	}
 }

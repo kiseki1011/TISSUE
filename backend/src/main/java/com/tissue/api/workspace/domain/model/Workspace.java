@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.invitation.domain.model.Invitation;
@@ -92,7 +92,7 @@ public class Workspace extends BaseEntity {
 
 		newPrefix = newPrefix.toUpperCase();
 		if (KeyPrefixPolicy.isReserved(newPrefix)) {
-			throw new InvalidOperationException("Cannot use reserved key prefix: " + newPrefix);
+			throw new BadRequestException("Cannot use reserved key prefix: " + newPrefix);
 		}
 
 		this.issueKeyPrefix = newPrefix;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
+import com.tissue.api.common.exception.type.UnauthorizedException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
@@ -70,7 +70,7 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			throw new UnauthorizedException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
@@ -85,7 +85,7 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			throw new UnauthorizedException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
@@ -100,7 +100,7 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			throw new UnauthorizedException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
@@ -124,7 +124,7 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			throw new UnauthorizedException("Elevated permission required.");
 		}
 
 		memberCommandService.withdraw(request, userDetails.getMemberId());

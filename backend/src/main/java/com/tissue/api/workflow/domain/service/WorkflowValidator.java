@@ -2,7 +2,6 @@ package com.tissue.api.workflow.domain.service;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.model.Workflow;
 import com.tissue.api.workflow.repository.WorkflowRepository;

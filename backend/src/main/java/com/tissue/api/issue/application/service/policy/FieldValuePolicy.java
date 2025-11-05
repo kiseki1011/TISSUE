@@ -3,8 +3,6 @@ package com.tissue.api.issue.application.service.policy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
-
 // TODO: IssuePolicy로 옮길까?
 public record FieldValuePolicy(
 	int decimalScale,
