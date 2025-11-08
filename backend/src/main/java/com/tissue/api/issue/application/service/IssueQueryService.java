@@ -15,23 +15,24 @@ import com.tissue.api.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.api.issue.application.dto.response.info.IssueIdentificationInfo;
 import com.tissue.api.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
-import com.tissue.api.issue.application.port.out.IssueFieldValueQueryRepository;
-import com.tissue.api.issue.application.port.out.IssueQueryRepository;
-import com.tissue.api.issue.application.port.out.IssueRelationQueryRepository;
-import com.tissue.api.issue.application.port.out.IssueReviewerQueryRepository;
-import com.tissue.api.issue.application.port.out.IssueSubscriberQueryRepository;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueFieldValue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.IssueReviewer;
 import com.tissue.api.issue.domain.IssueSubscriber;
+import com.tissue.api.issue.domain.port.out.IssueFieldValueQueryRepository;
+import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
+import com.tissue.api.issue.domain.port.out.IssueRelationQueryRepository;
+import com.tissue.api.issue.domain.port.out.IssueReviewerQueryRepository;
+import com.tissue.api.issue.domain.port.out.IssueSubscriberQueryRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
 import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberQueryFinder;
+import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: project 애그리거트 추가 후 projectKey 관련 리팩토링
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -42,12 +43,12 @@ public class IssueQueryService implements IssueQueryUseCase {
 	private final IssueSubscriberQueryRepository subscriberQueryRepo;
 	private final IssueReviewerQueryRepository reviewerQueryRepo;
 	private final IssueRelationQueryRepository relationQueryRepo;
-	private final WorkspaceMemberQueryFinder wmFinder; // TODO: WorkspaceMemberFinder로 통합
+	private final WorkspaceMemberFinder wmFinder;
 
 	@Override
 	public IssueBasicInfo getBasic(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new RuntimeException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
 		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
 		WorkspaceMember updatedBy = wmFinder.findIncludingArchived(issue.getLastModifiedBy(), workspaceKey);
@@ -58,7 +59,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCommonDetail getCommon(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithDetail(workspaceKey, issueKey)
-			.orElseThrow(() -> new RuntimeException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
 		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
 		WorkspaceMember updatedBy = wmFinder.findIncludingArchived(issue.getLastModifiedBy(), workspaceKey);
@@ -70,10 +71,12 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCustomDetail getCustom(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new RuntimeException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
-		List<IssueFieldValue> fieldValues = issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey,
-			issueKey);
+		List<IssueFieldValue> fieldValues = issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(
+			workspaceKey,
+			issueKey
+		);
 
 		return IssueCustomDetail.from(issue, fieldValues);
 	}
@@ -81,10 +84,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueIdentificationInfo getParent(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithParent(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(
-				"Issue not found. workspaceKey: %s, issueKey: %s"
-					.formatted(workspaceKey, issueKey)
-			));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
 		Issue parent = issue.getParentIssue();
 		if (parent == null) {
@@ -118,12 +118,10 @@ public class IssueQueryService implements IssueQueryUseCase {
 		return IssueRelationsDetail.from(outgoing, incoming);
 	}
 
-	// TODO: findWithBasicInfo 대신 아무런 join fetch를 사용하지 않는 find라는 기본 조회 메서드를 만들어서 사용할까?
-	//  왜냐하면 여기서 join fetch를 사용할 이유가 없음
 	@Override
 	public ParticipantInfo getAuthor(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new RuntimeException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
 		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
 
@@ -145,7 +143,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(issueKey, workspaceKey)
-			.orElseThrow(() -> new RuntimeException("Issue not found"));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
 
 		Workflow workflow = issue.getIssueType().getWorkflow();
 

@@ -24,11 +24,12 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 		      AND w.key = :workspaceKey
 		      AND wm.archived = false
 		""")
-	Optional<WorkspaceMember> find(
+	Optional<WorkspaceMember> findByMemberIdAndWorkspaceKey(
 		Long memberId,
 		String workspaceKey
 	);
 
+	// TODO: 메서드명 괜찮나?
 	@Query("""
 		    SELECT wm
 		    FROM WorkspaceMember wm

@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
-import com.tissue.api.issue.application.service.policy.IssuePolicy;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.policy.IssuePolicy;
 import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 

@@ -88,7 +88,7 @@ public final class EnumFieldOptions {
 	private void ensureSameField() {
 		Long fid = field.getId();
 		for (EnumFieldOption o : active) {
-			if (!Objects.equals(o.getField().getId(), fid)) {
+			if (!Objects.equals(o.getIssueField().getId(), fid)) {
 				throw new IllegalStateException("Option belongs to another field.");
 			}
 		}

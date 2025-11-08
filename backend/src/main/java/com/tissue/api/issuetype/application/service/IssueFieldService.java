@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
-import com.tissue.api.issue.application.service.finder.IssueFieldFinder;
-import com.tissue.api.issue.application.service.finder.IssueFieldOptionFinder;
-import com.tissue.api.issue.application.service.finder.IssueTypeFinder;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.AddOptionCommand;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
@@ -18,17 +15,21 @@ import com.tissue.api.issuetype.application.dto.PatchIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.RenameIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.RenameOptionCommand;
 import com.tissue.api.issuetype.application.dto.ReorderOptionsCommand;
-import com.tissue.api.issuetype.application.validator.EnumFieldOptionValidator;
-import com.tissue.api.issuetype.application.validator.IssueFieldValidator;
+import com.tissue.api.issuetype.application.service.finder.IssueFieldFinder;
+import com.tissue.api.issuetype.application.service.finder.IssueFieldOptionFinder;
+import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.EnumFieldOptions;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.domain.enums.FieldType;
 import com.tissue.api.issuetype.domain.policy.FieldDefintionPolicy;
+import com.tissue.api.issuetype.domain.service.validator.EnumFieldOptionValidator;
+import com.tissue.api.issuetype.domain.service.validator.IssueFieldValidator;
 import com.tissue.api.issuetype.presentation.dto.response.IssueFieldResponse;
-import com.tissue.api.issuetype.repository.EnumFieldOptionRepository;
-import com.tissue.api.issuetype.repository.IssueFieldRepository;
+import com.tissue.api.issuetype.repository.EnumFieldOptionCommandRepository;
+import com.tissue.api.issuetype.repository.EnumFieldOptionQueryRepository;
+import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -37,21 +38,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueFieldService {
 
-	private final IssueTypeFinder issueTypeFinder;
-	private final IssueFieldFinder issueFieldFinder;
-	private final IssueFieldOptionFinder optionFinder;
-	private final IssueFieldRepository issueFieldRepo;
-	private final EnumFieldOptionRepository optionRepo;
-	private final IssueFieldValidator issueFieldValidator;
+	private final IssueTypeFinder typeFinder;
+	private final IssueFieldFinder fieldFinder;
+	private final IssueFieldOptionFinder fieldOptionFinder;
+
+	private final IssueFieldCommandRepository fieldCommandRepo;
+	private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
+	private final EnumFieldOptionQueryRepository fieldOptionQueryRepo;
+
+	private final IssueFieldValidator fieldValidator;
 	private final EnumFieldOptionValidator optionValidator;
 	private final FieldDefintionPolicy fieldDefintionPolicy;
+
 	private final EntityManager entityManager;
 
 	@Transactional
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-		IssueType issueType = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
 
-		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
+		fieldValidator.ensureUniqueLabel(issueType, cmd.label());
 
 		IssueField issueField = IssueField.create(
 			cmd.label(),
@@ -61,7 +66,7 @@ public class IssueFieldService {
 			issueType
 		);
 
-		IssueField savedField = issueFieldRepo.save(issueField);
+		IssueField savedField = fieldCommandRepo.save(issueField);
 
 		if (savedField.getFieldType() == FieldType.ENUM) {
 			fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
@@ -73,14 +78,14 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
-		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
 
 		if (labelUnchanged(field.getLabel(), cmd.label())) {
 			return IssueFieldResponse.from(field);
 		}
 
-		issueFieldValidator.ensureUniqueLabel(type, cmd.label());
+		fieldValidator.ensureUniqueLabel(type, cmd.label());
 		field.rename(cmd.label());
 
 		return IssueFieldResponse.from(field);
@@ -88,8 +93,8 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {
-		IssueType type = issueTypeFinder.findIssueType(cmd.workspaceKey(), cmd.issueTypeId());
-		IssueField field = issueFieldFinder.findByTypeAndId(type, cmd.issueFieldId());
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
 
 		Patchers.apply(cmd.description(), field::updateDescription);
 		Patchers.apply(cmd.required(), field::setRequired);
@@ -99,12 +104,12 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse softDelete(String workspaceKey, Long issueTypeId, Long issueFieldId) {
-		IssueType type = issueTypeFinder.findIssueType(workspaceKey, issueTypeId);
-		IssueField field = issueFieldFinder.findByTypeAndId(type, issueFieldId);
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(workspaceKey, issueTypeId);
+		IssueField field = fieldFinder.findByIdAndType(issueFieldId, type);
 
-		issueFieldValidator.ensureDeletable(field);
+		fieldValidator.ensureDeletable(field);
 
-		optionRepo.softDeleteByField(field);
+		fieldOptionCommandRepo.softDeleteByField(field);
 		field.softDelete();
 
 		return IssueFieldResponse.from(field);
@@ -119,11 +124,11 @@ public class IssueFieldService {
 
 		optionValidator.ensureLabelUnique(field, cmd.label());
 
-		int nextPosition = optionRepo.countByField(field);
+		int nextPosition = fieldOptionQueryRepo.countByIssueField(field);
 		fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
 		EnumFieldOption option = EnumFieldOption.create(field, cmd.label(), nextPosition);
-		optionRepo.save(option);
+		fieldOptionCommandRepo.save(option);
 
 		return IssueFieldResponse.from(field);
 	}
@@ -131,7 +136,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse renameOption(RenameOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOption option = optionFinder.findOption(field, cmd.optionId());
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(field, cmd.optionId());
 
 		if (labelUnchanged(option.getLabel(), cmd.label())) {
 			return IssueFieldResponse.from(field);
@@ -146,7 +151,8 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field, optionFinder.findActiveOptions(field));
+		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field,
+			fieldOptionFinder.findActiveOptions(field));
 
 		options.ensureExactActiveIds(cmd.targetOrderedIds());
 		options.bumpPositions();
@@ -166,7 +172,7 @@ public class IssueFieldService {
 		Long optionId
 	) {
 		IssueField field = findIssueField(workspaceKey, issueTypeId, issueFieldId);
-		EnumFieldOption option = optionFinder.findOption(field, optionId);
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(field, optionId);
 
 		// TODO: 해당 EnumFieldOption을 사용하는 IssueFieldValue가 있어도 soft-delete 허용할까?
 		// optionValidator.ensureNotInUse(option);
@@ -180,8 +186,8 @@ public class IssueFieldService {
 	}
 
 	private IssueField findIssueField(String workspaceKey, Long typeId, Long fieldId) {
-		IssueType type = issueTypeFinder.findIssueType(workspaceKey, typeId);
-		return issueFieldFinder.findByTypeAndId(type, fieldId);
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(workspaceKey, typeId);
+		return fieldFinder.findByIdAndType(fieldId, type);
 	}
 
 	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {
@@ -190,6 +196,6 @@ public class IssueFieldService {
 		for (Label label : labels) {
 			options.add(EnumFieldOption.create(field, label, pos++));
 		}
-		optionRepo.saveAll(options);
+		fieldOptionCommandRepo.saveAll(options);
 	}
 }

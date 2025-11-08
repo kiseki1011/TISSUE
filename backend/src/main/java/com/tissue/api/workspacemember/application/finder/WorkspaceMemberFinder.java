@@ -4,23 +4,24 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 import com.tissue.api.workspacemember.exception.WorkspaceMemberNotFoundException;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: WorkspaceMember soft-delete 관련 리팩토링 진행 후 개선
 @Component
 @RequiredArgsConstructor
 public class WorkspaceMemberFinder {
 
-	private final WorkspaceMemberRepository workspaceMemberRepository;
-
-	public WorkspaceMember findWorkspaceMember(Long id) {
-		return workspaceMemberRepository.findById(id)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(id));
-	}
+	private final WorkspaceMemberQueryRepository queryRepo;
 
 	public WorkspaceMember findWorkspaceMember(Long memberId, String workspaceKey) {
-		return workspaceMemberRepository.findByMember_IdAndWorkspace_Key(memberId, workspaceKey)
+		return queryRepo.findByMember_IdAndWorkspace_Key(memberId, workspaceKey)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+	}
+
+	public WorkspaceMember findIncludingArchived(Long memberId, String workspaceKey) {
+		return queryRepo.findIncludingArchived(memberId, workspaceKey)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
 	}
 }
