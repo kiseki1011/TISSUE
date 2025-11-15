@@ -20,8 +20,7 @@ public class IssueFieldValidator {
 	public void ensureUniqueLabel(IssueType type, Label label) {
 		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel_Normalized(type, label.getNormalized());
 		if (duplicated) {
-			// TODO: DuplicateIssueFieldLabelException vs DuplicateIssueFieldException
-			//  vs DuplicateLabelException 공용으로 두기
+			// TODO: DuplicateIssueFieldException
 			throw new RuntimeException("Label already exists for this issue type.");
 		}
 	}
@@ -34,8 +33,7 @@ public class IssueFieldValidator {
 	private void ensureNotInUse(IssueField field) {
 		boolean fieldInUse = fieldValueRepo.existsByField(field);
 		if (fieldInUse) {
-			// TODO: IssueFieldNotDeletableException vs IssueFieldCurrentlyUsedException vs IssueFieldInUseNotDeletableException
-			//  이름을 어떻게 정하는게 좋을지 모르겠음. 상황을 설명? or 원인을 설명?
+			// TODO: IssueFieldInUseException
 			throw new RuntimeException("Field is in use.");
 		}
 	}

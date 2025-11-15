@@ -26,8 +26,7 @@ public class EnumFieldOptionValidator {
 	//  EnumFieldOption은 그냥 사용중 여부에 상관 없이 삭제할 수 있도록 할까?
 	public void ensureNotInUse(EnumFieldOption opt) {
 		if (optionRepo.isInUse(opt)) {
-			// TODO: OptionNotDeletableException vs OptionCurrentlyUsedException vs OptionInUseNotDeletableException
-			//  이름을 어떻게 정하는게 좋을지 모르겠음. 상황을 설명? or 원인을 설명?
+			// TODO: OptionInUseException
 			throw new RuntimeException("Cannot delete/archive: option is in use.");
 		}
 	}
