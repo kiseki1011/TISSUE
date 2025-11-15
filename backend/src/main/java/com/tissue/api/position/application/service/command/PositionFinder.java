@@ -2,7 +2,6 @@ package com.tissue.api.position.application.service.command;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 
@@ -16,7 +15,8 @@ public class PositionFinder {
 
 	public Position findPosition(Long positionId, String workspaceCode) {
 		return positionRepository.findByIdAndWorkspace_Key(positionId, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(String.format(
+			// TODO: PositionNotFoundException
+			.orElseThrow(() -> new RuntimeException(String.format(
 				"Position was not found with positionId: %d, workspaceKey: %s",
 				positionId, workspaceCode)));
 	}

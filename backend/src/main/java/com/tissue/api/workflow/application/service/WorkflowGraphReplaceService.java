@@ -12,13 +12,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.service.EntityRef;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
@@ -49,12 +48,14 @@ public class WorkflowGraphReplaceService {
 
 		private WorkflowState resolveExisting(Long id) {
 			return Optional.ofNullable(existingStatuses.get(id))
-				.orElseThrow(() -> new BadRequestException("Unknown status id: " + id));
+				// TODO: IllegalStateException vs IllegalArgumentException
+				.orElseThrow(() -> new IllegalStateException("Unknown status id: " + id));
 		}
 
 		private WorkflowState resolveNew(String tempKey) {
 			return Optional.ofNullable(newStatuses.get(tempKey))
-				.orElseThrow(() -> new BadRequestException("Unknown status tempKey: " + tempKey));
+				// TODO: IllegalStateException vs IllegalArgumentException
+				.orElseThrow(() -> new IllegalStateException("Unknown status tempKey: " + tempKey));
 		}
 	}
 
@@ -92,17 +93,18 @@ public class WorkflowGraphReplaceService {
 		toDelete.forEach(wf::softDeleteState);
 	}
 
-	// TODO: 요구사항이 생기면 이슈에 대한 WorkflowStatus 마이그레이션 제공
-	// private void ensureNotDeletingStatusesInUse(
-	// 	Set<WorkflowStatus> toDelete
+	// TODO: 요구사항이 생기면 이슈에 대한 WorkflowStatus 마이그레이션 제공?
+	// TODO: 현재 내 삭제 정책은 괜찮나?
+	// TODO: WorkflowValidator로 이동
+	// private void ensureNotDeletingStatesInUse(
+	// 	Set<WorkflowState> toDelete
 	// ) {
-	// 	for (WorkflowStatus status : toDelete) {
-	// 		boolean hasIssues = issueRepository.existsByWorkflowStatus(status);
+	// 	for (WorkflowState state : toDelete) {
+	// 		boolean hasIssues = issueRepository.existsByWorkflowState(state);
 	// 		if (hasIssues) {
 	// 			throw new InvalidOperationException(
-	// 				"Cannot delete status '" + status.getLabel() +
-	// 					"' because it is currently in use by one or more issues. " +
-	// 					"Please move all issues to another status before deleting.");
+	// 				"Cannot delete workflow state '" + state.getLabel() +
+	// 					"' because it is currently in use by one or more issues.");
 	// 		}
 	// 	}
 	// }
@@ -190,7 +192,8 @@ public class WorkflowGraphReplaceService {
 	) {
 		WorkflowTransition transition = existingTransitions.get(cmd.ref().id());
 		if (transition == null) {
-			throw new BadRequestException("Unknown transition id: " + cmd.ref().id());
+			// TODO: IllegalStateException vs IllegalArgumentException
+			throw new IllegalArgumentException("Unknown transition id: " + cmd.ref().id());
 		}
 		wf.rewireTransitionSource(transition, src);
 		wf.rewireTransitionTarget(transition, trg);
@@ -255,7 +258,8 @@ public class WorkflowGraphReplaceService {
 		var cmd = stateCommands.stream()
 			.filter(ReplaceWorkflowGraphCommand.StateCommand::initial)
 			.findFirst()
-			.orElseThrow(() -> new BadRequestException("Initial not provided"));
+			// TODO: IllegalStateException vs IllegalArgumentException
+			.orElseThrow(() -> new IllegalStateException("Initial not provided"));
 
 		WorkflowState requested = statusResolver.resolve(cmd.ref());
 

@@ -10,7 +10,7 @@ public record LoginRequest(
 
 	@ShortText
 	@NotBlank(message = "{valid.notblank}")
-	String identifier,
+	String loginEmail,
 
 	@ShortText
 	@NotBlank(message = "{valid.notblank}")

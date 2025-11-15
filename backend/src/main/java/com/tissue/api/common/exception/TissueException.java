@@ -14,6 +14,10 @@ public abstract class TissueException extends RuntimeException {
 		super(message);
 	}
 
+	protected TissueException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 	public abstract HttpStatus getHttpStatus();
 
 	public String getErrorCode() {

@@ -18,7 +18,7 @@ import com.tissue.api.issuetype.repository.EnumFieldOptionCommandRepository;
 import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
 import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
-import com.tissue.api.workflow.domain.model.Workflow;
+import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
@@ -62,7 +62,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse rename(RenameIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(workspace, cmd.id());
+		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
 
 		if (labelUnchanged(issueType, cmd.label())) {
 			return IssueTypeResponse.from(issueType);
@@ -77,7 +77,7 @@ public class IssueTypeService {
 	@Transactional
 	public IssueTypeResponse patch(PatchIssueTypeCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(workspace, cmd.id());
+		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
 		Patchers.apply(cmd.color(), issueType::updateColor);
@@ -87,7 +87,8 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse softDelete(String workspaceKey, Long id) {
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(workspaceKey, id);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceKey);
+		IssueType issueType = typeFinder.findByIdAndWorkspace(id, workspace);
 
 		typeValidator.ensureDeletable(issueType);
 

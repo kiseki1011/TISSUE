@@ -29,7 +29,7 @@ public class BooleanFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, Boolean.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be true/false");
+			throw new IllegalArgumentException("must be true/false");
 		}
 	}
 }

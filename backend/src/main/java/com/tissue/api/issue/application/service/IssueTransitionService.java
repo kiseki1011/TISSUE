@@ -13,12 +13,12 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.service.validator.IssueValidator;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.TransitionGuardRegistry;
+import com.tissue.api.workflow.domain.TransitionGuardConfig;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.gaurd.GuardContext;
 import com.tissue.api.workflow.domain.gaurd.TransitionGuard;
-import com.tissue.api.workflow.domain.model.TransitionGuardConfig;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

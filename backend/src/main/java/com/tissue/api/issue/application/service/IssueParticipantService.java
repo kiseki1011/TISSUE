@@ -25,7 +25,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult changeReporter(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issue.changeReporter(target);
 
@@ -35,7 +35,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult assignTo(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember assignee = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember assignee = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issue.assignTo(assignee);
 
@@ -54,7 +54,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult subscribe(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember subscriber = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember subscriber = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issue.addSubscriber(subscriber);
 
@@ -64,7 +64,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult unsubscribe(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember subscriber = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember subscriber = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issue.removeSubscriber(subscriber);
 
@@ -74,7 +74,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult addReviewer(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember reviewer = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issuePolicy.ensureCanAddReviewer(issue);
 		issue.addReviewer(reviewer);
@@ -85,7 +85,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	public IssueCommandResult removeReviewer(String workspaceKey, String issueKey, Long memberId) {
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember reviewer = workspaceMemberFinder.findWorkspaceMember(memberId, workspaceKey);
+		WorkspaceMember reviewer = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
 
 		issue.removeReviewer(reviewer);
 

@@ -26,7 +26,7 @@ import com.tissue.api.issue.domain.port.out.IssueRelationQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueReviewerQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueSubscriberQueryRepository;
 import com.tissue.api.issue.exception.IssueNotFoundException;
-import com.tissue.api.workflow.domain.model.Workflow;
+import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 

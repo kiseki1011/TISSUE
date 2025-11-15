@@ -7,8 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.tissue.api.common.exception.type.BadRequestException;
-
 public final class EnumFieldOptions {
 
 	private static final int DEFAULT_OFFSET = 1_000_000;
@@ -41,6 +39,10 @@ public final class EnumFieldOptions {
 		}
 	}
 
+	// TODO: 아래의 메서드들에서 IllegalStateException들을 즐겨 사용했는데, 이렇게 사용해도 괜찮나?
+	//  IllegalStateException vs IllegalArgumentException
+	//  굳이 커스텀 예외를 만들어서 사용할 필요는 없겠지?
+	//  언제 커스텀 예외를 만들고, 언제 스프링이나 자바에서 기본으로 제공하는 예외를 사용하는게 좋을까?
 	public void reorderTo(List<Long> orderedIds) {
 		Map<Long, EnumFieldOption> byId = active.stream()
 			.collect(Collectors.toMap(EnumFieldOption::getId, x -> x));
@@ -48,7 +50,7 @@ public final class EnumFieldOptions {
 			Long id = orderedIds.get(i);
 			EnumFieldOption option = byId.get(id);
 			if (option == null) {
-				throw new BadRequestException("Unknown option id: " + id);
+				throw new IllegalStateException("Unknown option id: " + id);
 			}
 			if (option.getPosition() != i) {
 				option.movePositionTo(i);
@@ -58,20 +60,20 @@ public final class EnumFieldOptions {
 
 	private void ensureSameSizeAsActive(List<Long> orderedIds) {
 		if (orderedIds.size() != active.size()) {
-			throw new BadRequestException("Order size mismatch.");
+			throw new IllegalStateException("Order size mismatch.");
 		}
 	}
 
 	private void ensureNoNullElements(List<Long> orderedIds) {
 		if (orderedIds.contains(null)) {
-			throw new BadRequestException("Order contains null id.");
+			throw new IllegalStateException("Order contains null id.");
 		}
 	}
 
 	private void ensureNoDuplicateIds(List<Long> orderedIds) {
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (uniq.size() != orderedIds.size()) {
-			throw new BadRequestException("Order contains duplicates.");
+			throw new IllegalStateException("Order contains duplicates.");
 		}
 	}
 
@@ -81,7 +83,7 @@ public final class EnumFieldOptions {
 			.collect(Collectors.toSet());
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (!uniq.equals(actual)) {
-			throw new BadRequestException("Order keys must match the active option set exactly.");
+			throw new IllegalStateException("Order keys must match the active option set exactly.");
 		}
 	}
 

@@ -36,7 +36,6 @@ import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
-import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
@@ -70,8 +69,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected DatabaseCleaner databaseCleaner;
 	@Autowired
 	protected PasswordEncoder passwordEncoder;
-	@Autowired
-	protected WorkspaceCodeParser workspaceCodeParser;
+	// @Autowired
+	// protected WorkspaceCodeParser workspaceCodeParser;
 	@Autowired
 	protected EntityManager entityManager;
 

@@ -6,7 +6,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.domain.model.Member;
@@ -28,30 +27,30 @@ public class WorkspaceMemberInviteService {
 
 	@Transactional
 	public InviteMembersResponse inviteMembers(
-		String workspaceCode,
+		String workspaceKey,
 		InviteMembersRequest request
 	) {
-
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findWorkspace(workspaceKey);
 
 		// 초대 가능한 멤버 필터링
-		List<Member> members = filterInvitableMembers(workspaceCode, request.memberIdentifiers());
+		List<Member> members = filterInvitableMembers(workspaceKey, request.emails());
 
 		// 초대장 생성
 		members.forEach(member -> createInvitation(workspace, member));
 
 		if (members.isEmpty()) {
-			throw new BadRequestException("No members were available for invitation.");
+			// TODO: 예외 던지지 말고 대상이 없다면 그냥 무시하기?
+			// throw new RuntimeException("No members were available for invitation.");
 		}
 
-		return InviteMembersResponse.from(workspaceCode, members);
+		return InviteMembersResponse.from(workspaceKey, members);
 	}
 
-	private List<Member> filterInvitableMembers(String workspaceCode, Set<String> memberIdentifiers) {
+	private List<Member> filterInvitableMembers(String workspaceKey, Set<String> emails) {
 		// 이미 참여중이거나 초대중인 멤버 ID 조회
-		Set<Long> existingMemberIds = invitationRepository.findExistingMemberIds(workspaceCode);
+		Set<Long> existingMemberIds = invitationRepository.findExistingMemberIds(workspaceKey);
 
-		return memberRepository.findAllByEmailInOrLoginIdIn(memberIdentifiers).stream()
+		return memberRepository.findAllByEmailIn(emails).stream()
 			.filter(member -> !existingMemberIds.contains(member.getId()))
 			.toList();
 	}

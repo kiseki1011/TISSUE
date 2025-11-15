@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.enums.ResourceType;
@@ -62,9 +62,9 @@ class NotificationCommandServiceTest {
 		// 액터 모의 설정
 		WorkspaceMember actor = mock(WorkspaceMember.class);
 		when(actor.getDisplayName()).thenReturn("TestUser");
-		when(workspaceMemberFinder.findWorkspaceMember(actorId, workspaceCode)).thenReturn(actor);
+		when(workspaceMemberFinder.findByMemberIdAndWorkspaceKey(actorId, workspaceCode)).thenReturn(actor);
 		WorkspaceMember receiver = mock(WorkspaceMember.class);
-		when(workspaceMemberFinder.findWorkspaceMember(receiverId, workspaceCode)).thenReturn(receiver);
+		when(workspaceMemberFinder.findByMemberIdAndWorkspaceKey(receiverId, workspaceCode)).thenReturn(receiver);
 		when(receiver.getEmail()).thenReturn("receiver_email");
 
 		// when

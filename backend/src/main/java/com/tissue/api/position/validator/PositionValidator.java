@@ -2,7 +2,6 @@ package com.tissue.api.position.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 
@@ -14,21 +13,14 @@ public class PositionValidator {
 
 	private final PositionRepository positionRepository;
 
-	public void validatePositionIsUsed(Position position) {
+	public void ensureDeletable(Position position) {
 		if (positionRepository.existsByWorkspaceMembers(position)) {
-			throw new BadRequestException(
+			// TODO: PositionCurrentlyUsedException, 더 좋은 이름이 있을까?
+			//  - 메세지에는 사용 중이라 삭제 불가하다는 내용 필요
+			throw new RuntimeException(
 				"There is a workspace member that is using this position. position id: %d, position name: %s"
 					.formatted(position.getId(), position.getName())
 			);
 		}
 	}
-
-	// public void validatePositionAvailability(Position position, Workspace workspace) {
-	// 	boolean keyNotMatch = !Objects.equals(position.getWorkspaceCode(), workspace.getKey());
-	// 	if (keyNotMatch) {
-	// 		throw new InvalidOperationException(String.format(
-	// 			"Position does not belong to this workspace. position workspace code: %s, current workspace code: %s",
-	// 			position.getWorkspaceCode(), workspace.getKey()));
-	// 	}
-	// }
 }

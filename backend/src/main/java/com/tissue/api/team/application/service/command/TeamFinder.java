@@ -2,7 +2,6 @@ package com.tissue.api.team.application.service.command;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
 
@@ -16,7 +15,8 @@ public class TeamFinder {
 
 	public Team findTeam(Long teamId, String workspaceCode) {
 		return teamRepository.findByIdAndWorkspace_Key(teamId, workspaceCode)
-			.orElseThrow(() -> new ResourceNotFoundException(String.format(
+			// TODO: TeamNotFoundException
+			.orElseThrow(() -> new RuntimeException(String.format(
 				"Team was not found with teamId: %d, workspaceKey: %s",
 				teamId, workspaceCode)));
 	}

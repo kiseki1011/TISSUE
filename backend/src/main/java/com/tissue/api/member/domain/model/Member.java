@@ -4,12 +4,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.common.entity.BaseDateEntity;
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.invitation.domain.model.Invitation;
-import com.tissue.api.member.domain.model.enums.JobType;
 import com.tissue.api.security.authorization.enums.SystemRole;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -21,9 +20,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 // TODO: soft delete 적용
 @Entity
@@ -39,58 +38,65 @@ public class Member extends BaseDateEntity {
 	@Column(name = "member_id")
 	private Long id;
 
-	@Column(unique = true, nullable = false)
-	private String loginId;
-
+	// TODO: Email VO를 만들어서 사용?
 	@Column(unique = true, nullable = false)
 	private String email;
 
+	// TODO: Username VO를 만들어서 사용?
 	@Column(unique = true, nullable = false)
 	private String username;
 
 	@Column(nullable = false)
 	private String password;
 
+	// TODO: name, birthDate MemberProfile라는 VO로 묶기?
+	//  아니면 Profile VO는 만들지 않고 Name VO를 만들어서 사용하기?
 	private String name;
 
 	private LocalDate birthDate;
 
 	@Enumerated(EnumType.STRING)
-	private JobType jobType;
-
-	@Enumerated(EnumType.STRING)
 	private SystemRole role;
 
-	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
+	// @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+	// private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
 
-	// TODO: 워크스페이스 카운트 검증은 애플리케이션 서비스에서 XxxPolicy를 호출하는 형태로 리팩토링
 	// TODO: 생성자(빌더) 사용 대신 정적 팩토리 메서드 사용
-	@Builder
-	public Member(
-		String loginId,
-		String email,
-		String username,
-		String password,
-		JobType jobType,
-		String name,
-		LocalDate birthDate
-	) {
-		this.loginId = loginId;
-		this.email = email;
-		this.username = username;
-		this.password = password;
-		this.jobType = jobType;
-		this.name = name;
-		this.birthDate = birthDate;
-		this.role = SystemRole.USER;
-	}
+	// @Builder
+	// public Member(
+	// 	String email,
+	// 	String username,
+	// 	String password,
+	// 	String name,
+	// 	LocalDate birthDate
+	// ) {
+	// 	this.email = email;
+	// 	this.username = username;
+	// 	this.password = password;
+	// 	this.name = name;
+	// 	this.birthDate = birthDate;
+	// 	this.role = SystemRole.USER;
+	// }
 
-	public int getWorkspaceCount() {
-		return workspaceMembers.size();
+	public static Member create(
+		@NonNull String email,
+		@NonNull String username,
+		@NonNull String password,
+		@Nullable String name,
+		@Nullable LocalDate birthDate
+	) {
+		Member member = new Member();
+		member.email = email;
+		member.username = username;
+		member.password = password;
+		member.name = name;
+		member.birthDate = birthDate;
+		member.role = SystemRole.USER;
+
+		return member;
 	}
 
 	public void updateEmail(String email) {
@@ -113,18 +119,12 @@ public class Member extends BaseDateEntity {
 		this.birthDate = birthDate;
 	}
 
-	public void updateJobType(JobType jobType) {
-		this.jobType = jobType;
-	}
-
-	public void updateRole(SystemRole role) {
-		this.role = role;
-	}
-
-	public void validateWorkspaceLimit() {
-		if (getWorkspaceCount() >= MAX_WORKSPACE_COUNT) {
-			throw new BadRequestException(
-				String.format("Max number of workspaces a member can have is %d.", MAX_WORKSPACE_COUNT));
-		}
-	}
+	// TODO: 참여하는 워크스페이스의 수 vs OWNER로 가지고 있는 워크스페이스의 수 중 어떤걸 기준으로 검증할까?
+	// public void validateWorkspaceLimit() {
+	// 	if (getWorkspaceCount() >= MAX_WORKSPACE_COUNT) {
+	// 		// TODO: WorkspaceLimitExceededException
+	// 		throw new RuntimeException(
+	// 			String.format("Max number of workspaces a member can have is %d.", MAX_WORKSPACE_COUNT));
+	// 	}
+	// }
 }

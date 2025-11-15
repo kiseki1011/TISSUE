@@ -49,7 +49,7 @@ public class AuthenticationController {
 	) {
 		ElevatedTokenResponse response = authenticationService.elevatePermission(
 			request,
-			userDetails.getLoginId(),
+			userDetails.getEmail(),
 			userDetails.getMemberId()
 		);
 

@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
+import com.tissue.api.notification.exception.NotificationNotFoundException;
 import com.tissue.api.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
@@ -29,12 +29,12 @@ public class NotificationCommandService {
 		Long receiverMemberId,
 		NotificationMessage message
 	) {
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(
+		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
 			event.getActorMemberId(),
 			event.getWorkspaceCode()
 		);
 
-		WorkspaceMember receiver = workspaceMemberFinder.findWorkspaceMember(
+		WorkspaceMember receiver = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
 			receiverMemberId,
 			event.getWorkspaceCode()
 		);
@@ -61,8 +61,7 @@ public class NotificationCommandService {
 				notificationId,
 				receiverMemberId
 			)
-			.orElseThrow(() -> new ResourceNotFoundException(
-				String.format("Notification not found. notification id: %d", notificationId)));
+			.orElseThrow(() -> new NotificationNotFoundException(notificationId));
 
 		notification.markAsRead();
 	}

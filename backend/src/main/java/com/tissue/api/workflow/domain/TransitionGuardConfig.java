@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.domain.model;
+package com.tissue.api.workflow.domain;
 
 import java.util.Map;
 
@@ -80,9 +80,11 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			return mapper.readValue(guardParams,
+			return mapper.readValue(
+				guardParams,
 				new TypeReference<Map<String, Object>>() {
-				});
+				}
+			);
 		} catch (JsonProcessingException e) {
 			return Map.of();
 		}

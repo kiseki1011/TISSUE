@@ -12,8 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.api.common.exception.type.BadRequestException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.workflow.application.GuardConfigData;
 import com.tissue.api.workflow.application.dto.ConfigureTransitionGuardsCommand;
@@ -22,10 +20,10 @@ import com.tissue.api.workflow.application.dto.PatchStateCommand;
 import com.tissue.api.workflow.application.dto.PatchTransitionCommand;
 import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
@@ -48,6 +46,7 @@ public class WorkflowService {
 	private final WorkflowGraphValidator graphValidator;
 	private final TransitionGuardRegistry guardRegistry;
 
+	// TODO: spring-retry 적용
 	@Transactional
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
@@ -87,7 +86,8 @@ public class WorkflowService {
 			return WorkflowResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {
 			log.info("Failed due to duplicate label.", e);
-			throw new DuplicateResourceException("Duplicate label is not allowed.", e);
+			// TODO: DuplicateWorkflowException vs DuplicateWorkflowLabelException
+			throw new RuntimeException("Duplicate label is not allowed.", e);
 		}
 	}
 
@@ -159,7 +159,8 @@ public class WorkflowService {
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
 			.findFirst()
-			.orElseThrow(() -> new ResourceNotFoundException("Transition not found"));
+			// TODO: TransitionNotFoundException vs WorkflowTransitionNotFoundException
+			.orElseThrow(() -> new RuntimeException("Transition not found"));
 
 		workflow.clearGuardsForTransition(transition);
 
@@ -181,7 +182,8 @@ public class WorkflowService {
 			try {
 				paramsJson = new ObjectMapper().writeValueAsString(guardConfigData.params());
 			} catch (JsonProcessingException e) {
-				throw new BadRequestException("Invalid guard parameters");
+				// TODO: IllegalStateException vs IllegalArgumentException
+				throw new IllegalArgumentException("Invalid guard parameters");
 			}
 		}
 		return paramsJson;
@@ -190,7 +192,9 @@ public class WorkflowService {
 	private void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
 		boolean dup = !usedTypes.add(g.guardType());
 		if (dup) {
-			throw new BadRequestException("Duplicate guard type: " + g.guardType());
+			// TODO: DuplicateGuardTypeException vs IllegalArgumentException vs IllegalStateException
+			//  예외를 던지지 말고 이 로직을 반복문 안으로 옮기고, 중복된 가드 타입이 있다면 continue하는 식으로 구현할까?
+			throw new RuntimeException("Duplicate guard type: " + g.guardType());
 		}
 	}
 
@@ -203,7 +207,8 @@ public class WorkflowService {
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
 			.findFirst()
-			.orElseThrow(() -> new ResourceNotFoundException("Transition not found"));
+			// TODO: TransitionNotFoundException vs WorkflowTransitionNotFoundException
+			.orElseThrow(() -> new RuntimeException("Transition not found"));
 
 		Set<GuardType> usedTypes = new HashSet<>();
 
@@ -229,7 +234,8 @@ public class WorkflowService {
 		try {
 			return new ObjectMapper().writeValueAsString(params);
 		} catch (JsonProcessingException e) {
-			throw new BadRequestException("Invalid guard parameters", e);
+			// TODO: IllegalStateException vs IllegalArgumentException
+			throw new IllegalArgumentException("Invalid guard parameters", e);
 		}
 	}
 

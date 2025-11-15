@@ -1,6 +1,6 @@
 package com.tissue.api.issuetype.exception;
 
-import com.tissue.api.common.exception.type.BadRequestException;
+import com.tissue.api.common.exception.base.BadRequestException;
 
 public class UnsupportedFieldTypeException extends BadRequestException {
 

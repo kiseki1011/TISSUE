@@ -81,7 +81,7 @@ public class PositionCommandService {
 	) {
 		Position position = positionFinder.findPosition(positionId, workspaceCode);
 
-		positionValidator.validatePositionIsUsed(position);
+		positionValidator.ensureDeletable(position);
 
 		positionRepository.delete(position);
 	}

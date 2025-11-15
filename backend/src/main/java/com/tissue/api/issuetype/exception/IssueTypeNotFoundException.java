@@ -1,6 +1,6 @@
 package com.tissue.api.issuetype.exception;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
 public class IssueTypeNotFoundException extends ResourceNotFoundException {
 

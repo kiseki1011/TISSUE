@@ -1,4 +1,4 @@
-package com.tissue.api.common.exception.type;
+package com.tissue.api.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
@@ -8,6 +8,10 @@ public abstract class InternalServerException extends TissueException {
 
 	public InternalServerException(String message) {
 		super(message);
+	}
+
+	protected InternalServerException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 	@Override

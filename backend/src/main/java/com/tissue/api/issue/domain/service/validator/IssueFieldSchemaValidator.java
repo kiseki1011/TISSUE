@@ -83,7 +83,8 @@ public class IssueFieldSchemaValidator {
 			return;
 		}
 		if (isEmptyValue(field, raw)) {
-			throw new InvalidCustomFieldException("Field(id:%d) is required".formatted(field.getId()));
+			// TODO: InvalidCustomFieldException vs IllegalStateException
+			throw new RuntimeException("Field(id:%d) is required".formatted(field.getId()));
 		}
 	}
 
@@ -124,7 +125,8 @@ public class IssueFieldSchemaValidator {
 	private IssueField requireKnown(Map<Long, IssueField> map, Long id) {
 		IssueField field = map.get(id);
 		if (field == null) {
-			throw new InvalidCustomFieldException("Unknown custom field(id:%d)".formatted(id));
+			// TODO: InvalidCustomFieldException vs IllegalStateException vs IllegalArgumentException
+			throw new IllegalArgumentException("Unknown custom field(id:%d)".formatted(id));
 		}
 		return field;
 	}

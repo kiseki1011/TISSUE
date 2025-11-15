@@ -24,7 +24,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	void test1() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("user123")
+			.loginEmail("test@test.com")
 			.password("password123!")
 			.build();
 
@@ -63,7 +63,7 @@ class AuthenticationControllerTest extends ControllerTestHelper {
 	void test2() throws Exception {
 		// given
 		LoginRequest loginRequest = LoginRequest.builder()
-			.identifier("user123")
+			.loginEmail("test@test.com")
 			.password("")
 			.build();
 

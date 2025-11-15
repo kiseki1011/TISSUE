@@ -1,6 +1,6 @@
 package com.tissue.api.security.authentication.exception;
 
-import com.tissue.api.common.exception.type.InternalServerException;
+import com.tissue.api.common.exception.base.InternalServerException;
 
 public class JwtCreationException extends InternalServerException {
 

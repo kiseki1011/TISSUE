@@ -54,7 +54,7 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
 
 		fieldValidator.ensureUniqueLabel(issueType, cmd.label());
 
@@ -78,7 +78,7 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
 		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
 
 		if (labelUnchanged(field.getLabel(), cmd.label())) {
@@ -93,7 +93,7 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.workspaceKey(), cmd.issueTypeId());
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
 		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
 
 		Patchers.apply(cmd.description(), field::updateDescription);
@@ -104,7 +104,7 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse softDelete(String workspaceKey, Long issueTypeId, Long issueFieldId) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(workspaceKey, issueTypeId);
+		IssueType type = typeFinder.findByIdAndWorkspaceKey(issueTypeId, workspaceKey);
 		IssueField field = fieldFinder.findByIdAndType(issueFieldId, type);
 
 		fieldValidator.ensureDeletable(field);
@@ -136,7 +136,7 @@ public class IssueFieldService {
 	@Transactional
 	public IssueFieldResponse renameOption(RenameOptionCommand cmd) {
 		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(field, cmd.optionId());
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), field);
 
 		if (labelUnchanged(option.getLabel(), cmd.label())) {
 			return IssueFieldResponse.from(field);
@@ -172,7 +172,7 @@ public class IssueFieldService {
 		Long optionId
 	) {
 		IssueField field = findIssueField(workspaceKey, issueTypeId, issueFieldId);
-		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(field, optionId);
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(optionId, field);
 
 		// TODO: 해당 EnumFieldOption을 사용하는 IssueFieldValue가 있어도 soft-delete 허용할까?
 		// optionValidator.ensureNotInUse(option);
@@ -185,9 +185,9 @@ public class IssueFieldService {
 		return Objects.equals(currentLabel, newLabel);
 	}
 
-	private IssueField findIssueField(String workspaceKey, Long typeId, Long fieldId) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(workspaceKey, typeId);
-		return fieldFinder.findByIdAndType(fieldId, type);
+	private IssueField findIssueField(String workspaceKey, Long issueTypeId, Long issueFieldId) {
+		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(issueTypeId, workspaceKey);
+		return fieldFinder.findByIdAndType(issueFieldId, issueType);
 	}
 
 	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {

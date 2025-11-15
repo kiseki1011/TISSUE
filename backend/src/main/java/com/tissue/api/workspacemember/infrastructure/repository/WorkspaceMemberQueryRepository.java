@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
@@ -13,6 +15,16 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(
 		Long memberId,
 		String workspaceKey
+	);
+
+	Optional<WorkspaceMember> findByMember_IdAndWorkspace(
+		Long memberId,
+		Workspace workspace
+	);
+
+	Optional<WorkspaceMember> findByMemberAndWorkspace(
+		Member member,
+		Workspace workspace
 	);
 
 	@Query("""

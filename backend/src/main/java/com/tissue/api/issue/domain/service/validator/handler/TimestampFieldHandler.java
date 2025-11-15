@@ -31,7 +31,7 @@ public class TimestampFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, Instant.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be ISO-8601 with offset");
+			throw new IllegalArgumentException("must be ISO-8601 with offset");
 		}
 	}
 }

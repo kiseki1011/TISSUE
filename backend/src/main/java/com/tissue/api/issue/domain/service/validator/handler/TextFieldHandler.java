@@ -29,7 +29,7 @@ public class TextFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, String.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be a string");
+			throw new IllegalArgumentException("must be a string");
 		}
 	}
 }

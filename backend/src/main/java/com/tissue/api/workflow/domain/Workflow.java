@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.domain.model;
+package com.tissue.api.workflow.domain;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
 
@@ -12,6 +12,8 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
+import com.tissue.api.workflow.exception.DuplicateStateException;
+import com.tissue.api.workflow.exception.DuplicateTransitionException;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
@@ -255,7 +257,7 @@ public class Workflow extends BaseEntity {
 			.filter(t -> !t.isArchived())
 			.anyMatch(x -> x.getSourceState().equals(source) && x.getTargetState().equals(target));
 		if (dup) {
-			throw new DuplicateResourceException("Duplicate transition (source,target) is not allowed.");
+			throw new RuntimeException("Duplicate transition (source,target) is not allowed.");
 		}
 	}
 
@@ -264,7 +266,11 @@ public class Workflow extends BaseEntity {
 			.filter(t -> !t.isArchived())
 			.anyMatch(s -> s.getLabel().equals(newLabel));
 		if (dup) {
-			throw new DuplicateResourceException("Duplicate status label: " + newLabel);
+			throw new DuplicateStateException(
+				newLabel.getDisplay(),
+				label.getDisplay(),
+				id
+			);
 		}
 	}
 
@@ -274,8 +280,12 @@ public class Workflow extends BaseEntity {
 			.filter(t -> t.getSourceState().equals(source))
 			.anyMatch(t -> t.getLabel().equals(newLabel));
 		if (dup) {
-			throw new DuplicateResourceException(
-				"Duplicate transition label for source '" + source.getLabel() + "': " + newLabel);
+			throw new DuplicateTransitionException(
+				newLabel.getDisplay(),
+				source.getDisplayLabel(),
+				label.getDisplay(),
+				id
+			);
 		}
 	}
 }

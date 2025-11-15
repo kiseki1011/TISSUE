@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.domain.model;
+package com.tissue.api.workflow.domain;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
 import static com.tissue.api.issue.domain.enums.StateCategory.*;

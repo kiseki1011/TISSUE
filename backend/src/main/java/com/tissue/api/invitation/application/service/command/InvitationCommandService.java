@@ -12,9 +12,12 @@ import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.domain.service.InvitationValidator;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -30,21 +33,25 @@ public class InvitationCommandService {
 	private final WorkspacePolicy workspacePolicy;
 	private final ApplicationEventPublisher eventPublisher;
 
+	// TODO: 전체적으로 Invitation에 대한 방식도 수정할 필요가 있음
+	//  - 엔티티 수정(연관 관계 개선)
+	//  - role을 정해서 초대를 보낼 수 있도록 변경
 	@Transactional
 	public InvitationResponse acceptInvitation(
 		Long memberId,
 		Long invitationId
 	) {
+		// TODO: member를 조회하고, 해당 member를 통해 invitation 조회로 방식을 변경?
 		Invitation invitation = getPendingInvitation(memberId, invitationId);
 		invitation.updateStatus(InvitationStatus.ACCEPTED);
 
-		WorkspaceMember workspaceMember = WorkspaceMember.addWorkspaceMember(
-			invitation.getMember(),
-			invitation.getWorkspace(),
-			workspacePolicy
-		);
+		Workspace workspace = invitation.getWorkspace();
+		Member member = invitation.getMember();
 
-		workspaceMemberRepository.save(workspaceMember);
+		// memberPolicy.ensureCanJoin(member);
+		// workspacePolicy.ensureCanAddMember(workspace);
+
+		WorkspaceMember workspaceMember = workspace.addMember(member, WorkspaceRole.MEMBER);
 
 		eventPublisher.publishEvent(
 			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
@@ -81,9 +88,6 @@ public class InvitationCommandService {
 		Invitation invitation = invitationFinder.findPendingInvitation(invitationId);
 		String workspaceCode = invitation.getWorkspaceCode();
 
-		// TODO: InvitationValidator를 InvitationValidationService로 이름 바꾸기?
-		//  - 또는 validation을 Invitation 엔티티에서 진행?
-		//  - 그런데 다른 도메인과 연결되었기 때문에 도메인 서비스로 분리하는게 좋을 듯
 		invitationValidator.validateInvitation(memberId, workspaceCode);
 
 		return invitation;

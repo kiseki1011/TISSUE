@@ -54,8 +54,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findByIdAndWorkspace(cmd.issueTypeId(), workspace);
+		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(), cmd.workspaceKey());
 
 		Issue issue = issueCommandRepository.save(Issue.create(
 			workspace,

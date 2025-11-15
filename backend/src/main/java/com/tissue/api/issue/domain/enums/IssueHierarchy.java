@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain.enums;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,16 +16,24 @@ public enum IssueHierarchy {
 
 	private final int level;
 
+	public static List<IssueHierarchy> getStoryPointModifiable() {
+		return List.of(STORY);
+	}
+
+	public static List<IssueHierarchy> getParentRequired() {
+		return List.of(SUBTASK, MICROTASK);
+	}
+
 	public boolean canBeParentOf(IssueHierarchy hierarchy) {
 		return this.level == hierarchy.level - 1;
 	}
 
 	public boolean cannotBeParentOf(IssueHierarchy hierarchy) {
-		return this.level != hierarchy.level - 1;
+		return !canBeParentOf(hierarchy);
 	}
 
 	public boolean mustHaveParent() {
-		return this == SUBTASK || this == MICROTASK;
+		return getParentRequired().contains(this);
 	}
 
 	public boolean cannotHaveParent() {
@@ -31,7 +41,11 @@ public enum IssueHierarchy {
 	}
 
 	public boolean cannotModifyStoryPoint() {
-		return this != STORY;
+		return !canModifyStoryPoint();
+	}
+
+	public boolean canModifyStoryPoint() {
+		return getStoryPointModifiable().contains(this);
 	}
 
 	public boolean canUseStoryPoint() {

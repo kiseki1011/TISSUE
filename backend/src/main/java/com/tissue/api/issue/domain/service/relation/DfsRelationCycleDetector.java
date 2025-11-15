@@ -5,10 +5,10 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.exception.IssueRelationCircularDependencyException;
 
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
@@ -19,24 +19,17 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 		Issue target,
 		IssueRelationType relationType
 	) {
-		if (hasCycle(source, target, relationType)) {
-			throw new BadRequestException(
-				"Creating this relation would create a cycle. %s %s %s forms a circular dependency."
-					.formatted(source.getKey(), relationType, target.getKey())
-			);
+		if (hasCycle(source, target)) {
+			throw new IssueRelationCircularDependencyException(relationType, source.getKey(), target.getKey());
 		}
 	}
 
-	/**
-	 * target에서 출발해서 source에 도달 가능한지 확인
-	 */
 	private boolean hasCycle(
 		Issue source,
-		Issue target,
-		IssueRelationType relationType
+		Issue target
 	) {
 		Set<Issue> visited = new HashSet<>();
-		return dfs(target, source, relationType, visited);
+		return dfs(target, source, visited);
 	}
 
 	/**
@@ -44,40 +37,31 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 	 *
 	 * @param current 현재 노드
 	 * @param destination 목적지 (source)
-	 * @param relationType 따라갈 관계 타입
 	 * @param visited 방문한 노드들
 	 * @return destination에 도달하면 true
 	 */
 	private boolean dfs(
 		Issue current,
 		Issue destination,
-		IssueRelationType relationType,
 		Set<Issue> visited
 	) {
-		// 이미 방문했으면 스킵
 		if (!visited.add(current)) {
 			return false;
 		}
-
-		// 목적지 도달 → 사이클 발견
 		if (current.equals(destination)) {
 			return true;
 		}
 
-		// 현재 노드의 outgoing 관계 중 같은 타입만 따라감
 		for (IssueRelation relation : current.getRelations().getOutgoingRelations()) {
-			// 같은 타입의 관계만
-			if (relation.getRelationType() != relationType) {
+			if (!relation.getRelationType().requiresAcyclicCheck()) {
 				continue;
 			}
 
 			Issue nextIssue = relation.getTargetIssue();
-
-			if (dfs(nextIssue, destination, relationType, visited)) {
-				return true; // 사이클 발견
+			if (dfs(nextIssue, destination, visited)) {
+				return true;
 			}
 		}
-
 		return false;
 	}
 }

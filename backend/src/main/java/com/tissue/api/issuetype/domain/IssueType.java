@@ -9,7 +9,7 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
-import com.tissue.api.workflow.domain.model.Workflow;
+import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.Column;

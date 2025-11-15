@@ -30,13 +30,13 @@ public class AuthenticationService {
 	public LoginResponse login(LoginRequest request) {
 
 		Authentication authentication = authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(request.identifier(), request.password())
+			new UsernamePasswordAuthenticationToken(request.loginEmail(), request.password())
 		);
 
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
 
-		String accessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getLoginId());
-		String refreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getLoginId());
+		String accessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+		String refreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
 
 		return LoginResponse.from(accessToken, refreshToken);
 	}
@@ -49,26 +49,26 @@ public class AuthenticationService {
 		// validate refresh token
 		jwtTokenService.validateRefreshToken(refreshToken);
 
-		// extract subject (login identifier)
-		String loginIdentifier = jwtTokenService.getSubjectFromToken(refreshToken);
+		// extract subject (login email)
+		String loginEmail = jwtTokenService.getSubjectFromToken(refreshToken);
 
 		// load user to ensure they still exist and are valid
-		MemberUserDetails userDetails = (MemberUserDetails)userDetailsService.loadUserByUsername(loginIdentifier);
+		MemberUserDetails userDetails = (MemberUserDetails)userDetailsService.loadUserByUsername(loginEmail);
 
 		// create new access token
-		String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getLoginId());
+		String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
 
 		return new RefreshTokenResponse(newAccessToken);
 	}
 
 	@Transactional
-	public ElevatedTokenResponse elevatePermission(PermissionRequest request, String loginIdentifier, Long memberId) {
+	public ElevatedTokenResponse elevatePermission(PermissionRequest request, String loginEmail, Long memberId) {
 
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(loginIdentifier, request.password())
+			new UsernamePasswordAuthenticationToken(loginEmail, request.password())
 		);
 
-		String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginIdentifier);
+		String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginEmail);
 
 		return new ElevatedTokenResponse(elevatedToken);
 	}

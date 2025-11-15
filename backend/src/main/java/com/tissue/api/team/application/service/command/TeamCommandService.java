@@ -78,7 +78,7 @@ public class TeamCommandService {
 	) {
 		Team team = teamFinder.findTeam(teamId, workspaceCode);
 
-		teamValidator.validateTeamIsUsed(team);
+		teamValidator.ensureDeletable(team);
 
 		teamRepository.delete(team);
 	}

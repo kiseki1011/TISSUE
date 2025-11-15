@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.member.domain.service.MemberValidator;
+import com.tissue.api.member.exception.DuplicateEmailException;
+import com.tissue.api.member.exception.DuplicateUsernameException;
+import com.tissue.api.member.exception.MemberSignupConflictException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
 import com.tissue.api.member.presentation.dto.request.UpdateMemberPasswordRequest;
@@ -29,51 +32,52 @@ public class MemberCommandService {
 	private final MemberValidator memberValidator;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
+	// TODO: MemberVerificationUseCase
 	private final MemberEmailVerificationService memberEmailVerificationService;
 
 	@Transactional
-	public MemberResponse signup(
-		SignupMemberCommand command
-	) {
-		memberValidator.validateLoginIdIsUnique(command.loginId());
-		memberValidator.validateEmailIsUnique(command.email());
-		memberValidator.validateUsernameIsUnique(command.username());
+	public MemberResponse signup(SignupMemberCommand cmd) {
+		memberValidator.ensureEmailIsUnique(cmd.email());
+		memberValidator.ensureUsernameIsUnique(cmd.username());
 
-		memberEmailVerificationService.validateEmailVerified(command.email());
+		memberEmailVerificationService.validateEmailVerified(cmd.email());
 
-		String encodedPassword = passwordEncoder.encode(command.password());
-		Member member = command.toEntity(encodedPassword);
+		Member member = Member.create(
+			cmd.email(),
+			cmd.username(),
+			passwordEncoder.encode(cmd.password()),
+			cmd.name(),
+			cmd.birthDate()
+		);
 
 		try {
 			Member savedMember = memberRepository.save(member);
-			memberEmailVerificationService.clearVerification(command.email());
+			memberEmailVerificationService.clearVerification(cmd.email());
 
 			return MemberResponse.from(savedMember);
+
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("Failed to signup.", e);
+			throw new MemberSignupConflictException(cmd.email(), cmd.username(), e);
 		}
 	}
 
+	// TODO: UpdateMemberProfileCommand
 	@Transactional
-	public MemberResponse updateInfo(
-		UpdateMemberProfileRequest request,
-		Long memberId
-	) {
+	public MemberResponse updateProfile(UpdateMemberProfileRequest request, Long memberId) {
 		Member member = memberFinder.findMemberById(memberId);
 
+		// TODO: Patchers.apply를 사용하도록 리팩토링
 		updateMemberInfoIfPresent(request, member);
 
 		return MemberResponse.from(member);
 	}
 
+	// TODO: UpdateMemberEmailRequest -> String newEmail
 	@Transactional
-	public MemberResponse updateEmail(
-		UpdateMemberEmailRequest request,
-		Long memberId
-	) {
+	public MemberResponse updateEmail(UpdateMemberEmailRequest request, Long memberId) {
 		Member member = memberFinder.findMemberById(memberId);
 
-		memberValidator.validateEmailIsUnique(request.newEmail());
+		memberValidator.ensureEmailIsUnique(request.newEmail());
 		memberEmailVerificationService.validateEmailVerified(request.newEmail());
 
 		try {
@@ -81,39 +85,33 @@ public class MemberCommandService {
 			memberEmailVerificationService.clearVerification(request.newEmail());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("Failed to update email. Email already in use.", e);
+			throw new DuplicateEmailException(request.newEmail(), e);
 		}
 	}
 
+	// TODO: UpdateMemberUsernameRequest -> String newUsername
 	@Transactional
-	public MemberResponse updateUsername(
-		UpdateMemberUsernameRequest request,
-		Long memberId
-	) {
+	public MemberResponse updateUsername(UpdateMemberUsernameRequest request, Long memberId) {
 		Member member = memberFinder.findMemberById(memberId);
 
-		memberValidator.validateUsernameIsUnique(request.newUsername());
+		memberValidator.ensureUsernameIsUnique(request.newUsername());
 
 		try {
 			member.updateUsername(request.newUsername());
 			return MemberResponse.from(member);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateResourceException("Failed to update username. Username already in use.", e);
+			throw new DuplicateUsernameException(request.newUsername(), e);
 		}
 	}
 
+	// TODO: UpdateMemberPasswordCommand
 	@Transactional
-	public MemberResponse updatePassword(
-		UpdateMemberPasswordRequest request,
-		Long memberId
-	) {
+	public MemberResponse updatePassword(UpdateMemberPasswordRequest request, Long memberId) {
 		Member member = memberFinder.findMemberById(memberId);
 
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.originalPassword())
+			new UsernamePasswordAuthenticationToken(member.getEmail(), request.originalPassword())
 		);
-
-		// memberValidator.validateMemberPassword(request.originalPassword(), memberId);
 
 		member.updatePassword(passwordEncoder.encode(request.newPassword()));
 
@@ -123,41 +121,32 @@ public class MemberCommandService {
 	/**
 	 * Todo
 	 *  - hard delete X
-	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
-	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
-	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
-	 *  - 탈퇴하는 경우 기존에 참가하던 Workspace에 대한 처리는 어떻게?
+	 *  - 기존에 사용하던 soft-delete(base entity의 archived 필드) 방식 대신
+	 *  INACTIVE 또는 WITHDRAW_REQUESTED 상태를 가진 MembershipStatus 만들어서 사용할까?
+	 *  - 추후에 스케쥴을 사용해서 배치로 물리 삭제?
+	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기
 	 */
+	// TODO: WithdrawMemberRequest -> String password
 	@Transactional
-	public void withdraw(
-		WithdrawMemberRequest request,
-		Long memberId
-	) {
+	public void withdraw(WithdrawMemberRequest request, Long memberId) {
 		Member member = memberFinder.findMemberById(memberId);
 
-		// memberValidator.validateMemberPassword(request.password(), memberId);
-
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(member.getLoginId(), request.password())
+			new UsernamePasswordAuthenticationToken(member.getEmail(), request.password())
 		);
 
-		memberValidator.validateMemberHasNoOwnedWorkspaces(memberId);
+		memberValidator.ensureWithdrawable(member);
 
 		memberRepository.delete(member);
 	}
 
-	private void updateMemberInfoIfPresent(
-		UpdateMemberProfileRequest request,
-		Member member
-	) {
+	// TODO: Patchers.apply를 사용하도록 리팩토링
+	private void updateMemberInfoIfPresent(UpdateMemberProfileRequest request, Member member) {
 		if (request.hasName()) {
 			member.updateName(request.name());
 		}
 		if (request.hasBirthDate()) {
 			member.updateBirthDate(request.birthDate());
-		}
-		if (request.hasJobType()) {
-			member.updateJobType(request.jobType());
 		}
 	}
 }

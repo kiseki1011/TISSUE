@@ -36,7 +36,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
 			policy.ensureDigits(bd, field.getId());
 			return policy.normalizeDecimal(bd);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be a decimal number");
+			throw new IllegalArgumentException("must be a decimal number");
 		}
 	}
 }

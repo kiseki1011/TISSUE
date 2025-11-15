@@ -1,13 +1,11 @@
 package com.tissue.api.member.domain.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.AuthenticationException;
-import com.tissue.api.common.exception.type.BadRequestException;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.exception.MemberNotFoundException;
+import com.tissue.api.member.exception.DuplicateEmailException;
+import com.tissue.api.member.exception.DuplicateUsernameException;
+import com.tissue.api.member.exception.MemberHasOwnedWorkspacesException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
@@ -15,55 +13,35 @@ import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberR
 import lombok.RequiredArgsConstructor;
 
 @Component
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberValidator {
 
 	private final MemberRepository memberRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
-	private final PasswordEncoder passwordEncoder;
 
-	public void validateMemberPassword(String password, Long memberId) {
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new MemberNotFoundException(memberId));
-
-		validatePasswordMatch(password, member.getPassword());
-	}
-
-	public void validatePasswordMatch(String rawPassword, String encodedPassword) {
-		if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-			throw new AuthenticationException("Password is invalid.");
-		}
-	}
-
-	public void validateLoginIdIsUnique(String loginId) {
-		if (memberRepository.existsByLoginId(loginId)) {
-			throw new DuplicateResourceException(
-				String.format("Login ID already exists. loginId: %s", loginId)
-			);
-		}
-	}
-
-	public void validateEmailIsUnique(String email) {
+	public void ensureEmailIsUnique(String email) {
 		if (memberRepository.existsByEmail(email)) {
-			throw new DuplicateResourceException(
-				String.format("Email already exists. email: %s", email)
-			);
+			throw new DuplicateEmailException(email);
 		}
 	}
 
-	public void validateUsernameIsUnique(String username) {
+	public void ensureUsernameIsUnique(String username) {
 		if (memberRepository.existsByUsername(username)) {
-			throw new DuplicateResourceException(
-				String.format("Username already exists. username: %s", username)
-			);
+			throw new DuplicateUsernameException(username);
 		}
 	}
 
-	public void validateMemberHasNoOwnedWorkspaces(Long memberId) {
-		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMember_IdAndRole(memberId, WorkspaceRole.OWNER);
+	public void ensureWithdrawable(Member member) {
+		String message = "Member(id: %s, username:'%s') cannot withdraw. Delete or transfer ownership of all owned workspaces."
+			.formatted(member.getId(), member.getUsername());
+
+		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {
-			throw new BadRequestException("You currently have one or more owned workspaces.");
+			throw new MemberHasOwnedWorkspacesException(
+				message,
+				member.getId(),
+				member.getUsername()
+			);
 		}
 	}
 }

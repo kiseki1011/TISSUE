@@ -5,11 +5,9 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 public record InviteMembersRequest(
-
-	@NotEmpty(message = "{valid.notempty.memberidentifiers}")
-	Set<String> memberIdentifiers
+	@NotEmpty Set<String> emails
 ) {
-	public static InviteMembersRequest of(Set<String> memberIdentifiers) {
-		return new InviteMembersRequest(memberIdentifiers);
+	public static InviteMembersRequest of(Set<String> emails) {
+		return new InviteMembersRequest(emails);
 	}
 }

@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.BadRequestException;
+import com.tissue.api.common.exception.base.BadRequestException;
+import com.tissue.api.workspace.exception.InvalidWorkspaceKeyUriException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +37,6 @@ public class WorkspaceCodeParser {
 		if (matcher.matches()) {
 			return matcher.group(1);
 		}
-		throw new BadRequestException(String.format("Invalid workspace code in URI. URI: %s", uri));
+		throw new InvalidWorkspaceKeyUriException(uri);
 	}
 }

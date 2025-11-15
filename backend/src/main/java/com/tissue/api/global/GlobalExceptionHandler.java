@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.tissue.api.common.exception.TissueException;
-import com.tissue.api.common.exception.type.AuthenticationException;
-import com.tissue.api.common.exception.type.InternalServerException;
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
-import com.tissue.api.common.exception.type.UnauthorizedException;
+import com.tissue.api.common.exception.base.AuthenticationException;
+import com.tissue.api.common.exception.base.ForbiddenException;
+import com.tissue.api.common.exception.base.InternalServerException;
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -116,7 +116,7 @@ public class GlobalExceptionHandler {
 	}
 
 	// TODO: 스프링 시큐리티 쪽도 비슷하게 처리 필요
-	@ExceptionHandler({AuthenticationException.class, UnauthorizedException.class})
+	@ExceptionHandler({AuthenticationException.class, ForbiddenException.class})
 	public ProblemDetail handleSecurityException(
 		TissueException ex,
 		HttpServletRequest request

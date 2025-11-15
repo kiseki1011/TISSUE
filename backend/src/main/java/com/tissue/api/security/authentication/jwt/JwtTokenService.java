@@ -80,9 +80,11 @@ public class JwtTokenService {
 		log.info("JwtTokenProvider initialized (HS256)");
 	}
 
+	// TODO: loginIdentifier -> email
+
 	/**
 	 * Create Access Token
-	 * - subject: loginId
+	 * - subject: email
 	 * - memberId: Primary Key for Member
 	 * - tokenType: "access"
 	 */
@@ -145,6 +147,7 @@ public class JwtTokenService {
 	 */
 	public Authentication getAuthentication(String token) {
 
+		// TODO: loginIdentifier -> email
 		String loginIdentifier = null;
 
 		try {

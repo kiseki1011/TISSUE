@@ -11,7 +11,6 @@ import com.tissue.api.workspace.application.service.command.create.WorkspaceCrea
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspace.infrastructure.properties.WorkspaceProperties;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
 
 @Configuration
 @EnableConfigurationProperties(WorkspaceProperties.class)
@@ -25,14 +24,12 @@ public class WorkspaceConfig {
 	public WorkspaceCreateService workspaceCreateService(
 		MemberFinder memberFinder,
 		WorkspaceRepository workspaceRepository,
-		WorkspaceMemberRepository workspaceMemberRepository,
 		PasswordEncoder passwordEncoder,
 		WorkspacePolicy workspacePolicy
 	) {
 		return new WorkspaceCreateRetryOnCodeCollisionService(
 			memberFinder,
 			workspaceRepository,
-			workspaceMemberRepository,
 			passwordEncoder,
 			workspacePolicy
 		);

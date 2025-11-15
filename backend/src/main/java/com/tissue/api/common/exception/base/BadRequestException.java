@@ -1,13 +1,17 @@
-package com.tissue.api.common.exception.type;
+package com.tissue.api.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
 import com.tissue.api.common.exception.TissueException;
 
-public class BadRequestException extends TissueException {
+public abstract class BadRequestException extends TissueException {
 
 	public BadRequestException(String message) {
 		super(message);
+	}
+
+	protected BadRequestException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 	@Override

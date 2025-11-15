@@ -18,31 +18,33 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RdbEmailVerificationRepository implements EmailVerificationRepository {
 
-	private final EmailVerificationJpaRepository jpaRepository;
+	private final EmailVerificationJpaRepository tokenRepository;
 
 	@Override
 	@Transactional
 	public void saveToken(String email, String tokenValue, Duration ttl) {
-		EmailVerificationToken verificationToken = jpaRepository.findByEmail(email)
+		EmailVerificationToken verificationToken = tokenRepository.findByEmail(email)
 			.map(t -> {
 				t.markVerified(); // 이전 토큰 무효화
 				return EmailVerificationToken.create(email, tokenValue, ttl);
 			})
 			.orElse(EmailVerificationToken.create(email, tokenValue, ttl));
-
 		try {
-			jpaRepository.save(verificationToken);
+			tokenRepository.save(verificationToken);
 		} catch (DataIntegrityViolationException e) {
 			log.warn("Duplicate verification token for email: {}", email, e);
-			throw new InvalidRequestException("A verification email was already sent. Please try again shortly.");
+			// TODO: VerificationTokenAlreadyExistsException 또는 DuplicateVerificationTokenException
+			//  extends ResourceConflictException
+			throw new RuntimeException("A verification email was already sent. Please try again shortly.");
 		}
 	}
 
 	@Override
 	@Transactional
 	public boolean verify(String email, String tokenValue) {
-		EmailVerificationToken token = jpaRepository.findByEmail(email)
-			.orElseThrow(() -> new InvalidRequestException("Invalid token"));
+		EmailVerificationToken token = tokenRepository.findByEmail(email)
+			// TODO: VerificationTokenNotFoundException
+			.orElseThrow(() -> new RuntimeException("Invalid token"));
 
 		if (token.isExpired() || token.tokenValueNotMatch(tokenValue)) {
 			return false;
@@ -54,7 +56,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 
 	@Override
 	public boolean isVerified(String email) {
-		return jpaRepository.findByEmail(email)
+		return tokenRepository.findByEmail(email)
 			.map(t -> t.isVerified() && !t.isExpired())
 			.orElse(false);
 	}
@@ -62,6 +64,6 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 	@Override
 	@Transactional
 	public void deleteToken(String email) {
-		jpaRepository.deleteByEmail(email);
+		tokenRepository.deleteByEmail(email);
 	}
 }

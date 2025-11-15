@@ -29,7 +29,7 @@ public class IntegerFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, Integer.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be an integer");
+			throw new IllegalArgumentException("must be an integer");
 		}
 	}
 }

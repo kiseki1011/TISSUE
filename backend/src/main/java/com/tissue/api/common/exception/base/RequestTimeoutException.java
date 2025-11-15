@@ -1,4 +1,4 @@
-package com.tissue.api.common.exception.type;
+package com.tissue.api.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
@@ -8,6 +8,10 @@ public abstract class RequestTimeoutException extends TissueException {
 
 	protected RequestTimeoutException(String message) {
 		super(message);
+	}
+
+	protected RequestTimeoutException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 	@Override

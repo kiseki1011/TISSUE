@@ -39,7 +39,8 @@ public class IssueFieldTypeHandlerRegistry {
 	private FieldTypeHandler requireHandler(IssueField field) {
 		FieldTypeHandler handler = handlers.get(field.getFieldType());
 		if (handler == null) {
-			throw new InvalidCustomFieldException("No handler for field type " + field.getFieldType());
+			// TODO: InvalidHandlerException vs IllegalArgumentException vs IllegalStateException
+			throw new IllegalArgumentException("No handler for field type " + field.getFieldType());
 		}
 		return handler;
 	}

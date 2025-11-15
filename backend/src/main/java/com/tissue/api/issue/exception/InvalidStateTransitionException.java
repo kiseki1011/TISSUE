@@ -1,6 +1,6 @@
 package com.tissue.api.issue.exception;
 
-import com.tissue.api.common.exception.type.BadRequestException;
+import com.tissue.api.common.exception.base.BadRequestException;
 
 public class InvalidStateTransitionException extends BadRequestException {
 

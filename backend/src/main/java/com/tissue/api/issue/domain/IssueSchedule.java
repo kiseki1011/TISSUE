@@ -1,10 +1,10 @@
 package com.tissue.api.issue.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
-
 import java.time.Instant;
 
 import org.springframework.lang.Nullable;
+
+import com.tissue.api.issue.exception.InvalidDueDateException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -28,7 +28,7 @@ public class IssueSchedule {
 
 	public static IssueSchedule of(@Nullable Instant dueAt) {
 		IssueSchedule schedule = new IssueSchedule();
-		schedule.dueAt = requireFutureOrPresent(dueAt);
+		schedule.dueAt = ensureValidDueAt(dueAt);
 
 		return schedule;
 	}
@@ -50,6 +50,19 @@ public class IssueSchedule {
 	}
 
 	void updateDueDate(@Nullable Instant dueAt) {
-		this.dueAt = requireFutureOrPresent(dueAt);
+		this.dueAt = ensureValidDueAt(dueAt);
+	}
+
+	private static Instant ensureValidDueAt(Instant instant) {
+		if (instant == null) {
+			return null;
+		}
+
+		Instant now = Instant.now();
+		if (instant.isBefore(now)) {
+			throw new InvalidDueDateException(instant, now);
+		}
+
+		return instant;
 	}
 }

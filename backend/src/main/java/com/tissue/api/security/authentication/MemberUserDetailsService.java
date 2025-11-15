@@ -25,23 +25,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberUserDetailsService implements UserDetailsService {
 
-	// private final MemberReader memberReader;
 	private final MemberRepository memberRepository;
 
-	// @Override
-	// public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-	// 	Member member = memberReader.findMemberByLoginIdOrEmail(username);
-	// 	return new MemberUserDetails(member);
-	// }
-
 	/**
-	 * Find by username(in this case loginId or email) extracted from the JWT token
+	 * Find by username(in this case email) extracted from the JWT token
 	 */
-	// TODO: Consider using Cache-Based DB Lookup using Redis
 	@Override
-	public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-		return memberRepository.findByLoginIdOrEmail(identifier)
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		return memberRepository.findByEmail(email)
 			.map(MemberUserDetails::new)
-			.orElseThrow(() -> new UsernameNotFoundException("Member not found for identifier: " + identifier));
+			.orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 	}
 }

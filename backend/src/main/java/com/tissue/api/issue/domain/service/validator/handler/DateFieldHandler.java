@@ -31,7 +31,7 @@ public class DateFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, LocalDate.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new InvalidCustomFieldException("must be yyyy-MM-dd");
+			throw new IllegalArgumentException("must be yyyy-MM-dd");
 		}
 	}
 }

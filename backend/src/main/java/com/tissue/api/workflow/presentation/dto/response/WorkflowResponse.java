@@ -1,6 +1,6 @@
 package com.tissue.api.workflow.presentation.dto.response;
 
-import com.tissue.api.workflow.domain.model.Workflow;
+import com.tissue.api.workflow.domain.Workflow;
 
 public record WorkflowResponse(
 	String workspaceKey,

@@ -30,11 +30,11 @@ public class EnumFieldHandler implements FieldTypeHandler {
 	public Object parse(@NonNull IssueField field, @NonNull Object raw) {
 		try {
 			Long optionId = cs.convert(raw, Long.class);
-			return optionRepo.findByIdAndIssueField(field, optionId)
-				.orElseThrow(() -> new InvalidCustomFieldException(
+			return optionRepo.findByIdAndIssueField(optionId, field)
+				.orElseThrow(() -> new RuntimeException(
 					"Unknown enum option(id:%d) for field:%d".formatted(optionId, field.getId())));
 		} catch (ConversionFailedException e) {
-			throw new InvalidCustomFieldException("Field(id:%d) must be an enum option id".formatted(field.getId()));
+			throw new RuntimeException("Field(id:%d) must be an enum option id".formatted(field.getId()));
 		}
 	}
 }
