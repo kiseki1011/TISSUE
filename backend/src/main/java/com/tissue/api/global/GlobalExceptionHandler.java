@@ -23,6 +23,7 @@ import com.tissue.api.common.exception.base.ForbiddenException;
 import com.tissue.api.common.exception.base.InternalServerException;
 import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -115,7 +116,6 @@ public class GlobalExceptionHandler {
 		return createProblemDetail(ex);
 	}
 
-	// TODO: 스프링 시큐리티 쪽도 비슷하게 처리 필요
 	@ExceptionHandler({AuthenticationException.class, ForbiddenException.class})
 	public ProblemDetail handleSecurityException(
 		TissueException ex,
@@ -286,9 +286,9 @@ public class GlobalExceptionHandler {
 		return problem;
 	}
 
-	@ExceptionHandler(OptimisticLockingFailureException.class)
+	@ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
 	public ProblemDetail handleOptimisticLockingFailure(
-		OptimisticLockingFailureException ex,
+		Exception ex,
 		HttpServletRequest request
 	) {
 		log.warn(
