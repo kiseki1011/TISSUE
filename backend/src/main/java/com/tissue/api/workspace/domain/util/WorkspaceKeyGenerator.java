@@ -1,4 +1,4 @@
-package com.tissue.api.global.key;
+package com.tissue.api.workspace.domain.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -6,6 +6,10 @@ import java.security.SecureRandom;
 
 import com.tissue.api.util.Base62Encoder;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WorkspaceKeyGenerator {
 
 	private static final int KEY_SUFFIX_LENGTH = 8;

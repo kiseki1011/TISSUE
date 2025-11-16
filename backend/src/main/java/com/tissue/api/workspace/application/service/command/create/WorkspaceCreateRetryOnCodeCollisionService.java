@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.base.BadRequestException;
-import com.tissue.api.global.key.WorkspaceKeyGenerator;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
+import com.tissue.api.workspace.domain.util.WorkspaceKeyGenerator;
 import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
 import com.tissue.api.workspace.presentation.dto.request.CreateWorkspaceRequest;
 import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
