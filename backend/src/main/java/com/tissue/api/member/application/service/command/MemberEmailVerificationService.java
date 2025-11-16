@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.email.domain.EmailClient;
 import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;
@@ -55,7 +54,8 @@ public class MemberEmailVerificationService {
 	public void validateEmailVerified(String email) {
 		boolean emailNotVerified = !repository.isVerified(email);
 		if (emailNotVerified) {
-			throw new InvalidRequestException("Email is not verified. Please complete verification before signing up.");
+			// TODO: EmailNotVerifiedException
+			throw new RuntimeException("Email is not verified. Please complete verification before signing up.");
 		}
 	}
 

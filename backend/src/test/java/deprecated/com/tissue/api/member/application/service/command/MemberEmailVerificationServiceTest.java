@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.email.domain.EmailClient;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.config.EmailVerificationProperties;
@@ -77,7 +76,8 @@ class MemberEmailVerificationServiceTest {
 
 		// expect
 		assertThatThrownBy(() -> service.validateEmailVerified(email))
-			.isInstanceOf(InvalidRequestException.class)
+			// TODO: EmailNotVerifiedException
+			.isInstanceOf(RuntimeException.class)
 			.hasMessageContaining("not verified");
 	}
 

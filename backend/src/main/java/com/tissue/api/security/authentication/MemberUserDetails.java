@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class MemberUserDetails implements UserDetails {
 
 	private final Long memberId;
-	private final String loginId;
 	private final String email;
 	private final String username;
 	private final String password;
@@ -38,7 +37,6 @@ public class MemberUserDetails implements UserDetails {
 	// TODO: should i consider using a DTO or a factory method instead of directly using Member entity?
 	public MemberUserDetails(Member member) {
 		this.memberId = member.getId();
-		this.loginId = member.getLoginId();
 		this.email = member.getEmail();
 		this.username = member.getUsername();
 		this.password = member.getPassword();
@@ -61,11 +59,10 @@ public class MemberUserDetails implements UserDetails {
 		return password;
 	}
 
-	// TODO: is there no problem with Lombok?
 	@Override
 	public String getUsername() {
 		// identifier that spring security uses internally (logging, etc...)
-		return loginId;
+		return email;
 	}
 
 	@Override

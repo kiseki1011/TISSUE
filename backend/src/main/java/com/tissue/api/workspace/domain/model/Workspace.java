@@ -1,17 +1,20 @@
 package com.tissue.api.workspace.domain.model;
 
+import static com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.global.key.KeyGenerator;
 import com.tissue.api.global.key.KeyPrefixPolicy;
 import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
-import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
+import com.tissue.api.workspace.exception.WorkspaceOwnershipRequiredException;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -21,7 +24,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -64,27 +66,54 @@ public class Workspace extends BaseEntity {
 	@OneToMany(mappedBy = "workspace")
 	private List<Sprint> sprints = new ArrayList<>();
 
-	@Builder
-	public Workspace(
+	// TODO: @NonNull(롬복), @Nullable 추가
+	public static Workspace create(
 		String key,
 		String name,
 		String description,
 		String password,
-		String issueKeyPrefix
+		String issueKeyPrefix,
+		Member member
 	) {
-		this.key = key;
-		this.name = name;
-		this.description = description;
-		this.password = password;
-		updateIssueKeyPrefix(issueKeyPrefix);
+		Workspace workspace = new Workspace();
+		workspace.key = key;
+		workspace.name = name;
+		workspace.description = description;
+		workspace.password = password;
+		workspace.issueKeyPrefix = issueKeyPrefix; // updateIssueKeyPrefix?
+
+		workspace.workspaceMembers.add(WorkspaceMember.create(member, workspace, OWNER));
+
+		return workspace;
+	}
+
+	public WorkspaceMember addMember(Member member, WorkspaceRole role) {
+		WorkspaceMember workspaceMember = WorkspaceMember.create(member, this, role);
+		this.workspaceMembers.add(workspaceMember);
+
+		return workspaceMember;
+	}
+
+	public void removeMember(WorkspaceMember workspaceMember) {
+		this.workspaceMembers.remove(workspaceMember);
+	}
+
+	public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
+		if (!owner.isOwner()) {
+			throw new WorkspaceOwnershipRequiredException("Needs to be OWNER to transfer ownership.",
+				key, owner.getMemberId(), owner.getRole());
+		}
+		owner.changeRoleTo(ADMIN);
+		newOwner.changeRoleToOwner();
 	}
 
 	public void setKey(String key) {
 		this.key = key;
 	}
 
-	// TODO: Issue key prefix must be 3 ~ 24 characters (only en)
-	//  Use WorkspacePolicy.ensureKeyPrefixValidLength
+	// TODO: Issue key prefix(이슈키 접두사)의 길이는 영문 대문자 3 ~ 24자
+	// TODO: 추후에 Project 애그리거트 개발을 완료하면, {projectKey}-{issueNumber}로 이슈키가 만들어지도록 할거임.
+	//  한마디로, projectKey가 이슈키 접두사가 되도록
 	public void updateIssueKeyPrefix(String newPrefix) {
 		if (newPrefix == null) {
 			newPrefix = KeyPrefixPolicy.ISSUE;
@@ -92,7 +121,8 @@ public class Workspace extends BaseEntity {
 
 		newPrefix = newPrefix.toUpperCase();
 		if (KeyPrefixPolicy.isReserved(newPrefix)) {
-			throw new InvalidOperationException("Cannot use reserved key prefix: " + newPrefix);
+			// TODO: ReservedProjectKeyException
+			throw new RuntimeException("Cannot use reserved key prefix: " + newPrefix);
 		}
 
 		this.issueKeyPrefix = newPrefix;
@@ -137,10 +167,6 @@ public class Workspace extends BaseEntity {
 	public boolean hasActiveSprint() {
 		return sprints.stream()
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
-	}
-
-	public void ensureCanAddMember(WorkspacePolicy workspacePolicy) {
-		workspacePolicy.ensureWithinMemberLimit(this);
 	}
 
 	public int getMemberCount() {

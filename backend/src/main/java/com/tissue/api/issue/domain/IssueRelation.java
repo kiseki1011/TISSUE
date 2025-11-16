@@ -1,9 +1,10 @@
 package com.tissue.api.issue.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.exception.IssueSelfReferenceException;
+import com.tissue.api.issue.exception.IssueTypeMismatchForRelationException;
+import com.tissue.api.issue.exception.RelationWorkspaceMismatchException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -72,13 +73,18 @@ public class IssueRelation extends BaseEntity {
 
 	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new InvalidOperationException("Self reference is not allowed.");
+			throw new IssueSelfReferenceException(sourceIssue.getKey());
 		}
 	}
 
 	private static void ensureSameWorkspace(Issue source, Issue target) {
 		if (!source.getWorkspace().equals(target.getWorkspace())) {
-			throw new InvalidOperationException("Issues must be in the same workspace");
+			throw new RelationWorkspaceMismatchException(
+				source.getWorkspaceKey(),
+				source.getKey(),
+				target.getWorkspaceKey(),
+				target.getKey()
+			);
 		}
 	}
 
@@ -88,33 +94,20 @@ public class IssueRelation extends BaseEntity {
 		Issue targetIssue
 	) {
 		switch (type) {
-			case DUPLICATES -> { // DUPLICATED_BY
-				// 중복은 같은 IssueType만
-				if (!sourceIssue.getIssueType().equals(targetIssue.getIssueType())) {
-					throw new InvalidOperationException(
-						"DUPLICATES relation requires same issue type. " +
-							"Source: " + sourceIssue.getIssueType().getLabel() + ", " +
-							"Target: " + targetIssue.getIssueType().getLabel()
+			case DUPLICATES -> {
+				boolean issueTypeNotMatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
+				if (issueTypeNotMatch) {
+					throw new IssueTypeMismatchForRelationException(
+						type,
+						sourceIssue.getIssueType(),
+						targetIssue.getIssueType(),
+						sourceIssue.getWorkspaceKey(),
+						sourceIssue.getKey(),
+						targetIssue.getKey()
 					);
 				}
 			}
-
-			case BLOCKS -> { // BLOCKED_BY
-				// BLOCKS는 같은 hierarchy 레벨 또는 상위 레벨만
-				IssueHierarchy sourceHierarchy = sourceIssue.getHierarchy();
-				IssueHierarchy targetHierarchy = targetIssue.getHierarchy();
-
-				// Epic은 Epic만, Story는 Story/Epic, Subtask는 모두 가능
-				if (sourceHierarchy == IssueHierarchy.SUBTASK &&
-					targetHierarchy == IssueHierarchy.EPIC) {
-					throw new InvalidOperationException(
-						"Subtask cannot block Epic directly"
-					);
-				}
-			}
-
-			case RELEVANT -> {
-				// 제약 없음
+			case BLOCKS, RELEVANT -> {
 			}
 		}
 	}

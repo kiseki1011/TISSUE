@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
 import com.tissue.api.member.config.EmailVerificationProperties;
 import com.tissue.api.member.presentation.dto.request.EmailVerificationRequest;
@@ -20,44 +19,45 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/members/email-verification")
+@RequestMapping("/api/v1/members/verification")
 @RequiredArgsConstructor
 public class MemberEmailVerificationController {
 
 	private final MemberEmailVerificationService memberEmailVerificationService;
 	private final EmailVerificationProperties properties;
 
-	@PostMapping("/request")
+	// TODO: URI 설계를 제대로 한건지 잘 모르겠네
+	@PostMapping("/email-request")
 	public ApiResponse<Void> request(@RequestBody @Valid EmailVerificationRequest request) {
 		memberEmailVerificationService.sendVerificationEmail(request.email());
 		return ApiResponse.okWithNoContent("Verification email sent.");
 	}
 
-	@GetMapping("/verify")
+	// TODO: 아니 이메일 인증 REST API인데 redirectUrl이 필요한가? 단순히 성공 or 실패 여부만 알면되는거 아닌가?
+	@GetMapping("/email-verify")
 	public ResponseEntity<Void> verifyEmail(
 		@RequestParam String email,
 		@RequestParam String token
 	) {
-		try {
-			boolean verified = memberEmailVerificationService.verifyEmail(email, token);
+		boolean verified = memberEmailVerificationService.verifyEmail(email, token);
 
-			String redirectUrl = verified
-				? properties.getSuccessUrl() : properties.getFailureUrl();
+		String redirectUrl = verified
+			? properties.getSuccessUrl() : properties.getFailureUrl();
 
-			return ResponseEntity
-				.status(HttpStatus.FOUND)
-				.header(HttpHeaders.LOCATION, redirectUrl)
-				.build();
+		return ResponseEntity
+			.status(HttpStatus.FOUND)
+			.header(HttpHeaders.LOCATION, redirectUrl)
+			.build();
 
-		} catch (InvalidRequestException e) {
-			return ResponseEntity
-				.status(HttpStatus.FOUND)
-				.header(HttpHeaders.LOCATION, properties.getFailureUrl())
-				.build();
-		}
+		// catch (InvalidRequestException e) {
+		// 	return ResponseEntity
+		// 		.status(HttpStatus.FOUND)
+		// 		.header(HttpHeaders.LOCATION, properties.getFailureUrl())
+		// 		.build();
+		// }
 	}
 
-	@GetMapping("/status")
+	@GetMapping("/email-status")
 	public ApiResponse<Boolean> isVerified(@RequestParam String email) {
 		boolean verified = memberEmailVerificationService.isEmailVerified(email);
 		return ApiResponse.ok("Email verification status: " + verified, verified);

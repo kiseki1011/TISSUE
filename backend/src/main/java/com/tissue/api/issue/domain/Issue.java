@@ -9,14 +9,18 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.StateCategory;
+import com.tissue.api.issue.exception.InvalidParentHierarchyException;
+import com.tissue.api.issue.exception.IssueSelfReferenceException;
+import com.tissue.api.issue.exception.ParentRequiredException;
+import com.tissue.api.issue.exception.ParentWorkspaceMismatchException;
+import com.tissue.api.issue.exception.StoryPointNotAllowedForHierarchyException;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.sprint.domain.model.SprintIssue;
-import com.tissue.api.workflow.domain.model.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -54,6 +58,13 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
+
+	@Column(name = "workspace_key", nullable = false, updatable = false)
+	private String workspaceKey;
+
+	// TODO: project 애그리거트 추가 후 추가
+	// @Column(name = "project_key", nullable = false, updatable = false)
+	// private String projectKey;
 
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -108,6 +119,8 @@ public class Issue extends BaseEntity {
 	) {
 		Issue issue = new Issue();
 		issue.workspace = workspace;
+		// issue.projectKey = project.getKey();
+		// issue.workspaceKey = project.getWorkspaceKey();
 		issue.key = workspace.generateCurrentIssueKey();
 		issue.issueType = issueType;
 		issue.title = title;
@@ -273,7 +286,7 @@ public class Issue extends BaseEntity {
 
 	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (hierarchy.cannotModifyStoryPoint()) {
-			throw new InvalidOperationException("Cannot set story point for hierarchy: " + hierarchy);
+			throw new StoryPointNotAllowedForHierarchyException(hierarchy);
 		}
 		return storyPoint;
 	}
@@ -289,38 +302,44 @@ public class Issue extends BaseEntity {
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
 		ensureSameWorkspace(parentIssue);
+		// TODO: ensureSameProject - SUB_TASK 이하인 경우
 		ensureNotSelfReference(parentIssue);
-		ensureValidHierarchy(parentIssue);
+		ensureValidParentHierarchy(parentIssue);
 	}
 
-	private void ensureValidHierarchy(Issue parentIssue) {
+	private void ensureValidParentHierarchy(Issue parentIssue) {
 		IssueHierarchy parentHierarchy = parentIssue.getHierarchy();
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
-		if (!parentHierarchy.canBeParentOf(childHierarchy)) {
-			throw new InvalidOperationException(
-				"Parent must be exactly one level above the child. Parent: %s (%s), Child: %s (%s)"
-					.formatted(parentIssue.getIssueType().getLabel(), parentHierarchy, this.issueType.getLabel(),
-						childHierarchy));
+		if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
+			throw new InvalidParentHierarchyException(parentIssue.getKey(), parentHierarchy, this.key, childHierarchy);
 		}
 	}
 
 	private void ensureNotSelfReference(Issue parentIssue) {
 		if (this.equals(parentIssue)) {
-			throw new InvalidOperationException("An issue cannot be its own parent.");
+			throw new IssueSelfReferenceException(this.key);
 		}
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
 		if (isDifferentWorkspace) {
-			throw new InvalidOperationException("Parent must belong to the same workspace.");
+			throw new ParentWorkspaceMismatchException(
+				parentIssue.workspace.getKey(),
+				parentIssue.key,
+				this.workspace.getKey(),
+				this.key
+			);
 		}
 	}
 
+	// TODO: ensureSameProject - STORY 이하의 hierarchy를 가지는 경우 자식은 무조건 같은 Project 내에서만 할 수 있도록 허용
+	//  - EPIC과 STORY 사이의 경우에는 cross-project 허용
+
 	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
-			throw new RuntimeException("Issues at SUBTASK or MICROTASK level must have a parent. Cannot stand alone.");
+			throw new ParentRequiredException(this.key, getHierarchy().toString());
 		}
 	}
 

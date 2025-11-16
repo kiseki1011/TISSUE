@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 public class KeyGenerator {
 
 	public static String generateWorkspaceKey() {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKSPACE, WorkspaceKeyGenerator.generateWorkspaceKeySuffix());
+		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKSPACE, WorkspaceKeyGenerator.generateWorkspaceKey());
 	}
 
 	public static String generateIssueKey(String prefix, long issueNumber) {
@@ -16,17 +16,5 @@ public class KeyGenerator {
 
 	public static String generateSprintKey(long sprintNumber) {
 		return KeyPrefixPolicy.format(KeyPrefixPolicy.SPRINT, sprintNumber);
-	}
-
-	public static String generateWorkflowKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.WORKFLOW, id);
-	}
-
-	public static String generateStatusKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.STATUS, id);
-	}
-
-	public static String generateTransitionKey(long id) {
-		return KeyPrefixPolicy.format(KeyPrefixPolicy.TRANSITION, id);
 	}
 }

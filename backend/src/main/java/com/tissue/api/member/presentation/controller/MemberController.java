@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.domain.service.MemberValidator;
 import com.tissue.api.member.presentation.dto.request.SignupMemberRequest;
@@ -58,7 +57,7 @@ public class MemberController {
 		@RequestBody @Valid UpdateMemberProfileRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		MemberResponse response = memberCommandService.updateInfo(request, userDetails.getMemberId());
+		MemberResponse response = memberCommandService.updateProfile(request, userDetails.getMemberId());
 
 		return ApiResponse.ok("Member info updated.", response);
 	}
@@ -70,7 +69,9 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
+			//  - 더 좋은 이름 있나?
+			throw new RuntimeException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
@@ -85,7 +86,9 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
+			//  - 더 좋은 이름 있나?
+			throw new RuntimeException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
@@ -100,7 +103,9 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
+			//  - 더 좋은 이름 있나?
+			throw new RuntimeException("Elevated permission required.");
 		}
 
 		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
@@ -124,7 +129,9 @@ public class MemberController {
 	) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new ForbiddenOperationException("Elevated permission required.");
+			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
+			//  - 더 좋은 이름 있나?
+			throw new RuntimeException("Elevated permission required.");
 		}
 
 		memberCommandService.withdraw(request, userDetails.getMemberId());
@@ -133,20 +140,11 @@ public class MemberController {
 	}
 
 	/**
-	 * Login ID 중복 검사
-	 */
-	@GetMapping("/check-loginid")
-	public ApiResponse<Void> checkLoginIdAvailability(@RequestParam String loginId) {
-		memberValidator.validateLoginIdIsUnique(loginId);
-		return ApiResponse.okWithNoContent("Login ID is available.");
-	}
-
-	/**
 	 * 이메일 중복 검사
 	 */
 	@GetMapping("/check-email")
 	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
-		memberValidator.validateEmailIsUnique(email);
+		memberValidator.ensureEmailIsUnique(email);
 		return ApiResponse.okWithNoContent("Email is available.");
 	}
 
@@ -155,7 +153,7 @@ public class MemberController {
 	 */
 	@GetMapping("/check-username")
 	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
-		memberValidator.validateUsernameIsUnique(username);
+		memberValidator.ensureUsernameIsUnique(username);
 		return ApiResponse.okWithNoContent("Username is available.");
 	}
 }

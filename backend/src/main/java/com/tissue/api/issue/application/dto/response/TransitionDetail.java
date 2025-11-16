@@ -1,6 +1,6 @@
 package com.tissue.api.issue.application.dto.response;
 
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 
 public record TransitionDetail(
 	Long workflowId,

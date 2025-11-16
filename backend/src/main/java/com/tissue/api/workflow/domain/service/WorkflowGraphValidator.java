@@ -14,10 +14,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,7 +50,8 @@ public class WorkflowGraphValidator {
 		WorkflowState initial
 	) {
 		if (toDelete.contains(initial)) {
-			throw new InvalidOperationException("Cannot delete the initial status.");
+			// TODO: InitialStateNotDeletableException
+			throw new RuntimeException("Cannot delete the initial state of a workflow.");
 		}
 	}
 
@@ -61,7 +61,8 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (initialCount != 1) {
-			throw new InvalidOperationException("Exactly one initial required.");
+			// TODO: SingleInitialStateRequiredException
+			throw new RuntimeException("Exactly one initial state is required for workflow.");
 		}
 	}
 
@@ -71,7 +72,8 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (count == 0) {
-			throw new InvalidOperationException("At least one terminal required.");
+			// TODO: OneOrMoreTerminalStateRequiredException, 더 좋은 이름이 있을까?
+			throw new RuntimeException("At least one terminal required.");
 		}
 	}
 
@@ -85,15 +87,16 @@ public class WorkflowGraphValidator {
 			.collect(Collectors.toSet());
 
 		if (refs.size() != stateValidations.size()) {
-			throw new InvalidOperationException("Duplicate state keys found.");
+			// TODO: IllegalStateException vs IllegalArgumentException
+			throw new IllegalStateException("Duplicate state keys found.");
 		}
 
 		for (var t : transitionValidations) {
 			if (!refs.contains(t.sourceStateRef())) {
-				throw new InvalidOperationException("Unknown source reference: " + t.sourceStateRef());
+				throw new IllegalStateException("Unknown source reference: " + t.sourceStateRef());
 			}
 			if (!refs.contains(t.targetStateRef())) {
-				throw new InvalidOperationException("Unknown target reference: " + t.targetStateRef());
+				throw new IllegalStateException("Unknown target reference: " + t.targetStateRef());
 			}
 		}
 	}
@@ -101,7 +104,8 @@ public class WorkflowGraphValidator {
 	private void ensureNoSelfLoops(List<TransitionValidationData> transitionValidations) {
 		for (var t : transitionValidations) {
 			if (Objects.equals(t.sourceStateRef(), t.targetStateRef())) {
-				throw new InvalidOperationException("Self-loop not allowed.");
+				// TODO: TransitionSelfLoopNotAllowedException
+				throw new RuntimeException("Self-loop not allowed.");
 			}
 		}
 	}
@@ -112,7 +116,8 @@ public class WorkflowGraphValidator {
 	) {
 		for (var t : allTransitions) {
 			if (t.getTargetState().equals(initial)) {
-				throw new InvalidOperationException("Transitions into the initial states are not allowed.");
+				// TODO: TransitionBeforeIntialNotAllowedException, 더 좋은 이름 있나?
+				throw new RuntimeException("Transitions into the initial states are not allowed.");
 			}
 		}
 	}
@@ -120,7 +125,8 @@ public class WorkflowGraphValidator {
 	private WorkflowState ensureInitialExists(Workflow wf) {
 		WorkflowState state = wf.getInitialState();
 		if (state == null || state.isArchived()) {
-			throw new InvalidOperationException("Initial must exist and be active.");
+			// TODO: InitialStateRequiredException vs SingleInitialStateRequiredException vs IllegalArgumentException vs IllegalStateException
+			throw new RuntimeException("Initial must exist and be active.");
 		}
 		return state;
 	}
@@ -164,7 +170,8 @@ public class WorkflowGraphValidator {
 			.count();
 
 		if (reachableStates.size() != totalStates) {
-			throw new InvalidOperationException("Orphan states exist (unreachable from initial).");
+			// TODO: OrphanStateNotAllowedException vs IllegalStateException
+			throw new RuntimeException("Orphan states exist (unreachable from initial).");
 		}
 	}
 }

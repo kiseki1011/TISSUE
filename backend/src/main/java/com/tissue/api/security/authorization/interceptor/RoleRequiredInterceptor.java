@@ -10,10 +10,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
-import com.tissue.api.common.exception.type.AuthenticationFailedException;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.security.authentication.MemberUserDetails;
+import com.tissue.api.security.authorization.exception.InsufficientRoleException;
 import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
@@ -22,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -53,7 +52,8 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
-			throw new AuthenticationFailedException("Authentication required.");
+			// TODO: 커스텀 예외 만들기? spring security에서 제공하는 예외를 사용해야 하나?
+			throw new RuntimeException("Authentication required.");
 		}
 
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
@@ -62,8 +62,8 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		// extract workspaceKey from path variable
 		String workspaceKey = getPathVariable(request, PATH_VAR_WORKSPACE_KEY);
 
-		// TODO: cache WorkspaceMember later
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(loginMemberId, workspaceKey);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(loginMemberId,
+			workspaceKey);
 
 		// check if workspaceMember has the minimum required role
 		log.debug("Validating workspace role of workspace member. memberId: {}, workspaceKey: {}",
@@ -79,7 +79,6 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		return Optional.ofNullable(handlerMethod.getMethodAnnotation(RoleRequired.class));
 	}
 
-	// TODO: consider separating to util class
 	private void validateRole(
 		WorkspaceMember workspaceMember,
 		RoleRequired roleRequired
@@ -87,8 +86,7 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		boolean isLowerThanRequiredRole = workspaceMember.getRole().isLowerThan(roleRequired.role());
 
 		if (isLowerThanRequiredRole) {
-			throw new ForbiddenOperationException(String.format("Workspace role must be at least %s. Current role: %s",
-				roleRequired.role(), workspaceMember.getRole()));
+			throw new InsufficientRoleException(roleRequired.role(), workspaceMember.getRole());
 		}
 	}
 
@@ -97,13 +95,13 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		Object attr = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
 		if (!(attr instanceof Map<?, ?> rawMap)) {
-			throw new InvalidRequestException("Path variables are not available in this request.");
+			throw new RuntimeException("Path variables are not available in this request.");
 		}
 
 		@SuppressWarnings("unchecked")
 		Map<String, String> pathVars = (Map<String, String>)rawMap;
 
 		return Optional.ofNullable(pathVars.get(name))
-			.orElseThrow(() -> new InvalidRequestException("{" + name + "} path variable is required."));
+			.orElseThrow(() -> new RuntimeException("{" + name + "} path variable is required."));
 	}
 }

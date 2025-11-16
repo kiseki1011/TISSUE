@@ -1,132 +1,371 @@
 package com.tissue.api.global;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.common.dto.FieldErrorDto;
 import com.tissue.api.common.exception.TissueException;
-import com.tissue.api.common.exception.type.ExternalServiceException;
-import com.tissue.api.common.exception.type.FieldValidationException;
-import com.tissue.api.common.exception.type.InternalServerException;
+import com.tissue.api.common.exception.base.AuthenticationException;
+import com.tissue.api.common.exception.base.ForbiddenException;
+import com.tissue.api.common.exception.base.InternalServerException;
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
+import jakarta.persistence.OptimisticLockException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * TODO: 커스텀 API 코드와 그 메세지를 enum으로 정의해서 사용
- *   - 어차피 Http 상태 코드는 헤더를 통해 설정.
- *   - ApiResponse의 필드명 code -> apiCode로 변경
- *   - apiCode에 커스텀 API 코드를 넣기
- *   - apiCode를 예외를 통해 전달하면 될 듯
- *   - apiCode에 맞는 메세지도 같이 정의해놓고, 해당 메세지를 응답 메세지에 사용(예외 메세지를 그대로 응답 메세지에 사용하지 말자)
- *   - apiCode의 메세지에 대한 국제화를 고려하자(예외 메세지는 그냥 영어로 유지)
- */
-@SuppressWarnings("checkstyle:ParameterName")
+@RestControllerAdvice
 @Slf4j
 @RequiredArgsConstructor
-@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
+		".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*",
+		Pattern.CASE_INSENSITIVE
+	);
+
 	@ExceptionHandler(Exception.class)
-	public ApiResponse<Void> unexpectedException(Exception ex) {
-		log.error("Unexpected exception: {}", ex.getMessage(), ex);
+	public ProblemDetail handleUnexpectedException(
+		Exception ex,
+		HttpServletRequest request
+	) {
+		log.error(
+			"Unexpected error | method={} | path={} | error={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getMessage(),
+			ex
+		);
 
-		return ApiResponse.failWithNoContent(HttpStatus.INTERNAL_SERVER_ERROR, "A unexpected problem has occured.");
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.INTERNAL_SERVER_ERROR,
+			"An unexpected error occurred"
+		);
+
+		// problem.setType(URI.create("/errors/internal_server_error"));
+		problem.setTitle("INTERNAL_SERVER_ERROR");
+		problem.setProperty("occurredAt", Instant.now());
+
+		return problem;
 	}
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(FieldValidationException.class)
-	public ApiResponse<List<FieldErrorDto>> handleFieldValidationException(FieldValidationException ex) {
-		log.info("Schema validation for custom fields failed: {}", ex.getMessage(), ex);
-		return ApiResponse.fail(ex.getHttpStatus(), ex.getMessage(), ex.getFieldErrors());
-	}
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ProblemDetail handleNotFoundException(
+		ResourceNotFoundException ex,
+		HttpServletRequest request
+	) {
+		log.debug(
+			"[{}] {} | method={} | path={}",
+			ex.getErrorCode(),
+			ex.getLoggingMessage(),
+			request.getMethod(),
+			request.getRequestURI()
+		);
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ApiResponse<List<FieldErrorDto>> handleValidationException(MethodArgumentNotValidException ex) {
-		log.info("Validation failed: {} ", ex.getMessage(), ex);
-		List<FieldErrorDto> errors = FieldErrorDto.fromBindingResult(ex.getBindingResult());
-
-		return ApiResponse.fail(HttpStatus.BAD_REQUEST, "One or more fields have failed validation.", errors);
-	}
-
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ApiResponse<Void> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
-		// enum type failure
-		if (ex.getCause() instanceof InvalidFormatException) {
-			log.warn("Invalid enum value provided: {} ", ex.getMessage(), ex);
-			return ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Invalid enum value provided.");
-		}
-
-		log.warn("Invalid request body provided: {} ", ex.getMessage(), ex);
-		return ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Invalid request body.");
-	}
-
-	// DB constraint violation (null/unique/fk/etc)
-	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-		// TODO: Branch HttpStatus on cause
-		log.warn("Data integrity violation: {}", ex.getMessage(), ex);
-
-		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-			.body(ApiResponse.failWithNoContent(HttpStatus.UNPROCESSABLE_ENTITY, "Data integrity violation."));
-	}
-
-	// TODO: Handle OptimisticLockException
-
-	@ExceptionHandler(MissingServletRequestParameterException.class)
-	public ResponseEntity<ApiResponse<Void>> handleMissingParam(MissingServletRequestParameterException ex) {
-		log.warn("Missing request parameter: {}", ex.getParameterName());
-
-		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ApiResponse.failWithNoContent(HttpStatus.BAD_REQUEST, "Missing parameter: " + ex.getParameterName()));
+		return createProblemDetail(ex);
 	}
 
 	@ExceptionHandler(InternalServerException.class)
-	public ResponseEntity<ApiResponse<Void>> handleInternalServerException(InternalServerException ex) {
-		log.error("Internal server problem: {}", ex.getMessage(), ex);
+	public ProblemDetail handleInternalServerException(
+		InternalServerException ex,
+		HttpServletRequest request
+	) {
+		log.error(
+			"[{}] {} | method={} | path={}",
+			ex.getErrorCode(),
+			ex.getLoggingMessage(),
+			request.getMethod(),
+			request.getRequestURI(),
+			ex
+		);
+		// TODO: 알림 발송 (Slack, Email 등)
+		// alertService.sendAlert(ex);
 
-		HttpStatus httpStatus = ex.getHttpStatus();
-
-		return ResponseEntity
-			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
-	}
-
-	@ExceptionHandler(ExternalServiceException.class)
-	public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException ex) {
-		log.error("External service problem: {}", ex.getMessage(), ex);
-
-		HttpStatus httpStatus = ex.getHttpStatus();
-
-		return ResponseEntity
-			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, ex.getMessage()));
+		return createProblemDetail(ex);
 	}
 
 	@ExceptionHandler(TissueException.class)
-	public ResponseEntity<ApiResponse<Void>> handleTissueException(TissueException ex) {
-		log.info("Tissue exception: {}", ex.getMessage(), ex);
+	public ProblemDetail handleTissueException(
+		TissueException ex,
+		HttpServletRequest request
+	) {
+		// TODO: 이 경우에는 ex를 로깅할 필요 없나?
+		log.info(
+			"[{}] {} | method={} | path={}",
+			ex.getErrorCode(),
+			ex.getLoggingMessage(),
+			request.getMethod(),
+			request.getRequestURI()
+		);
 
-		String message = ex.getMessage();
-		HttpStatus httpStatus = ex.getHttpStatus();
+		return createProblemDetail(ex);
+	}
 
-		return ResponseEntity
-			.status(httpStatus)
-			.body(ApiResponse.failWithNoContent(httpStatus, message));
+	@ExceptionHandler({AuthenticationException.class, ForbiddenException.class})
+	public ProblemDetail handleSecurityException(
+		TissueException ex,
+		HttpServletRequest request
+	) {
+		log.warn(
+			"[SECURITY] [{}] {} | method={} | path={} | ip={}",
+			ex.getErrorCode(),
+			ex.getLoggingMessage(),
+			request.getMethod(),
+			request.getRequestURI(),
+			request.getRemoteAddr()
+		);
+
+		// TODO: 보안 감사 로그
+		// securityAuditLogger.log(ex, request);
+
+		return createProblemDetail(ex);
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ProblemDetail handleMethodArgumentNotValid(
+		MethodArgumentNotValidException ex,
+		HttpServletRequest request
+	) {
+		Map<String, String> errors = new HashMap<>();
+		ex.getBindingResult().getAllErrors().forEach(error -> {
+			String fieldName = ((FieldError)error).getField();
+			String errorMessage = error.getDefaultMessage();
+			errors.put(fieldName, errorMessage);
+		});
+
+		log.info(
+			"Validation failed | method={} | path={} | errors={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			errors
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.BAD_REQUEST,
+			"Validation failed for one or more fields"
+		);
+
+		// problem.setType(URI.create("/errors/validation_failed"));
+		problem.setTitle("VALIDATION_FAILED");
+		problem.setProperty("occurredAt", Instant.now());
+		problem.setProperty("errors", errors);
+
+		return problem;
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ProblemDetail handleConstraintViolation(
+		ConstraintViolationException ex,
+		HttpServletRequest request
+	) {
+		Map<String, String> errors = new HashMap<>();
+
+		ex.getConstraintViolations().forEach(violation -> {
+			String path = violation.getPropertyPath().toString();
+			String fieldName = path.substring(path.lastIndexOf('.') + 1);
+			String message = violation.getMessage();
+
+			errors.put(fieldName, message);
+		});
+
+		log.info(
+			"Request parameter validation failed | method={} | path={} | errors={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			errors
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.BAD_REQUEST,
+			"Request parameter validation failed"
+		);
+
+		problem.setTitle("PARAMETER_VALIDATION_FAILED");
+		problem.setProperty("occurredAt", Instant.now());
+		problem.setProperty("errors", errors);
+
+		return problem;
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ProblemDetail handleHttpMessageNotReadable(
+		HttpMessageNotReadableException ex,
+		HttpServletRequest request
+	) {
+		log.warn(
+			"Malformed request body | method={} | path={} | error={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getMessage()
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.BAD_REQUEST,
+			"Malformed JSON request"
+		);
+
+		// problem.setType(URI.create("/errors/malformed_json"));
+		problem.setTitle("MALFORMED_JSON");
+		problem.setProperty("occurredAt", Instant.now());
+
+		return problem;
+	}
+
+	@ExceptionHandler(MissingServletRequestParameterException.class)
+	public ProblemDetail handleMissingServletRequestParameter(
+		MissingServletRequestParameterException ex,
+		HttpServletRequest request
+	) {
+		log.info(
+			"Missing request parameter | method={} | path={} | parameter={} | type={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getParameterName(),
+			ex.getParameterType()
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.BAD_REQUEST,
+			"Required parameter '" + ex.getParameterName() + "' is missing"
+		);
+
+		// problem.setType(URI.create("/errors/missing_request_parameter"));
+		problem.setTitle("MISSING_REQUEST_PARAMETER");
+		problem.setProperty("occurredAt", Instant.now());
+		problem.setProperty("parameterName", ex.getParameterName());
+		problem.setProperty("parameterType", ex.getParameterType());
+
+		return problem;
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ProblemDetail handleMethodArgumentTypeMismatch(
+		MethodArgumentTypeMismatchException ex,
+		HttpServletRequest request
+	) {
+		String requiredType = ex.getRequiredType() != null
+			? ex.getRequiredType().getSimpleName()
+			: "unknown";
+
+		log.info(
+			"Argument type mismatch | method={} | path={} | parameter={} | value={} | requiredType={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getName(),
+			ex.getValue(),
+			requiredType
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.BAD_REQUEST,
+			"Parameter '" + ex.getName() + "' has invalid type"
+		);
+
+		// problem.setType(URI.create("/errors/argument_type_mismatch"));
+		problem.setTitle("ARGUMENT_TYPE_MISMATCH");
+		problem.setProperty("occurredAt", Instant.now());
+		problem.setProperty("parameterName", ex.getName());
+		problem.setProperty("providedValue", ex.getValue());
+		problem.setProperty("requiredType", requiredType);
+
+		return problem;
+	}
+
+	@ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
+	public ProblemDetail handleOptimisticLockingFailure(
+		Exception ex,
+		HttpServletRequest request
+	) {
+		log.warn(
+			"Optimistic lock failed | method={} | path={} | error={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getMessage()
+		);
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.CONFLICT,
+			"The resource was modified by another user. Please refresh and try again."
+		);
+
+		// problem.setType(URI.create("/errors/optimistic_lock_failed"));
+		problem.setTitle("OPTIMISTIC_LOCK_FAILED");
+		problem.setProperty("occurredAt", Instant.now());
+
+		return problem;
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ProblemDetail handleDataIntegrityViolation(
+		DataIntegrityViolationException ex,
+		HttpServletRequest request
+	) {
+		log.warn(
+			"Data integrity violation | method={} | path={} | error={}",
+			request.getMethod(),
+			request.getRequestURI(),
+			ex.getMessage()
+		);
+
+		// 구체적인 에러 파싱
+		String detail = "A database constraint was violated";
+		if (ex.getMessage().contains("duplicate key")) {
+			detail = "Duplicate entry detected";
+		} else if (ex.getMessage().contains("foreign key")) {
+			detail = "Referenced resource does not exist";
+		}
+
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			HttpStatus.CONFLICT,
+			detail
+		);
+
+		// problem.setType(URI.create("/errors/data_integrity_violation"));
+		problem.setTitle("DATA_INTEGRITY_VIOLATION");
+		problem.setProperty("occurredAt", Instant.now());
+
+		return problem;
+	}
+
+	private ProblemDetail createProblemDetail(TissueException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+			ex.getHttpStatus(),
+			ex.getMessage()
+		);
+
+		// TODO: API 문서화 이후 추가
+		// problem.setType(URI.create("/errors/" + ex.getErrorCode().toLowerCase()));
+		problem.setTitle(ex.getErrorCode());
+		problem.setProperty("occurredAt", Instant.now());
+
+		ex.getContext().forEach((key, value) -> {
+			if (isSafeToExpose(key)) {
+				problem.setProperty(key, value);
+			}
+		});
+
+		return problem;
+	}
+
+	private boolean isSafeToExpose(String key) {
+		if (key == null || key.isEmpty()) {
+			return false;
+		}
+		return !SENSITIVE_PATTERN.matcher(key).matches();
 	}
 }

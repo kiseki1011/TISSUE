@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
+import com.tissue.api.issue.exception.IssueRelationAlreadyExistsException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
@@ -52,7 +52,9 @@ public class IssueRelations {
 		return all;
 	}
 
-	// 이 이슈가 blocking하는 이슈들
+	/**
+	 * @return List of issues that this issue BLOCKS
+	 */
 	public List<Issue> getBlockingIssues() {
 		return outgoingRelations.stream()
 			.filter(r -> r.getRelationType() == IssueRelationType.BLOCKS)
@@ -60,7 +62,9 @@ public class IssueRelations {
 			.toList();
 	}
 
-	// 이 이슈를 blocking하는 이슈들
+	/**
+	 * @return List of issues that BLOCKS this issue
+	 */
 	public List<Issue> getBlockedByIssues() {
 		return incomingRelations.stream()
 			.filter(r -> r.getRelationType() == IssueRelationType.BLOCKS)
@@ -84,7 +88,9 @@ public class IssueRelations {
 		return result;
 	}
 
-	// 이 이슈가 복제한 이슈들
+	/**
+	 * @return List of issues that this issue DUPLICATES
+	 */
 	public List<Issue> getDuplicates() {
 		return outgoingRelations.stream()
 			.filter(r -> r.getRelationType() == IssueRelationType.DUPLICATES)
@@ -92,7 +98,9 @@ public class IssueRelations {
 			.toList();
 	}
 
-	// 이 이슈를 복제한 이슈들
+	/**
+	 * @return List of issues that DUPLICATES this issue
+	 */
 	public List<Issue> getDuplicatedBy() {
 		return incomingRelations.stream()
 			.filter(r -> r.getRelationType() == IssueRelationType.DUPLICATES)
@@ -128,10 +136,7 @@ public class IssueRelations {
 			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 
 		if (exists) {
-			throw new InvalidOperationException(
-				"Relation already exists. sourceIssueKey: %s, targetIssueKey: %s"
-					.formatted(source.getKey(), target.getKey())
-			);
+			throw new IssueRelationAlreadyExistsException(source.getKey(), target.getKey());
 		}
 	}
 }

@@ -21,8 +21,8 @@ import com.tissue.api.invitation.application.service.query.InvitationQueryServic
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.adapter.in.web.IssueCommandController;
-import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.issue.application.service.IssueCommandService;
+import com.tissue.api.issue.domain.port.out.IssueCommandRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -38,7 +38,6 @@ import com.tissue.api.security.SecurityConfig;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
-import com.tissue.api.util.WorkspaceCodeParser;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
@@ -97,8 +96,8 @@ public abstract class ControllerTestHelper {
 	@Autowired
 	protected MessageSource messageSource;
 
-	@MockBean
-	protected WorkspaceCodeParser workspaceCodeParser;
+	// @MockBean
+	// protected WorkspaceCodeParser workspaceCodeParser;
 
 	/**
 	 * Spring Security

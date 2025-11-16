@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidCustomFieldException;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.IssueField;
 
@@ -76,7 +75,7 @@ public class IssueFieldValue extends BaseEntity {
 			case DATE -> this.dateValue = (LocalDate)value;
 			case BOOLEAN -> this.booleanValue = (Boolean)value;
 			case ENUM -> this.enumOption = (EnumFieldOption)value;
-			default -> throw new InvalidCustomFieldException("Unsupported: " + field.getFieldType());
+			default -> throw new IllegalArgumentException("Unsupported: " + field.getFieldType());
 		}
 		markPresent();
 	}

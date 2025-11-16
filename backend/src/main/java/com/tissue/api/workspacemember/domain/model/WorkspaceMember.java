@@ -4,12 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.persistence.CascadeType;
@@ -25,10 +23,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Soft-delete 사용
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -63,60 +61,26 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String email;
 
-	//  TODO: consider using a combined value of displayName, username(member's username) to use at the client
-	//   example1: displayName + member.getUsername()
-	//   example2: Make a VO called DisplayUsername
+	//  TODO: UI에 이름을 표시하기 위한 편의 필드?
+	//   - "%s(%s)".formatted(displayName, member.getUsername()); 처럼 사용할듯
+	//   - DisplayName VO를 만들어서 사용할까?
 	// private String displayWithUsername;
 
-	@Builder
-	public WorkspaceMember(
+	public static WorkspaceMember create(
 		Member member,
 		Workspace workspace,
 		WorkspaceRole role
 	) {
-		this.member = member;
-		this.workspace = workspace;
-		this.role = role;
-		this.displayName = member.getUsername();
-		this.email = member.getEmail();
-	}
-
-	// TODO: Should i make this private?
-	private static WorkspaceMember createWorkspaceMember(
-		Member member,
-		Workspace workspace,
-		WorkspaceRole role,
-		WorkspacePolicy workspacePolicy
-	) {
-		member.validateWorkspaceLimit();
-		workspace.ensureCanAddMember(workspacePolicy);
-
-		WorkspaceMember workspaceMember = WorkspaceMember.builder()
-			.member(member)
-			.workspace(workspace)
-			.role(role)
-			.build();
-
-		member.getWorkspaceMembers().add(workspaceMember);
-		workspace.getWorkspaceMembers().add(workspaceMember);
+		WorkspaceMember workspaceMember = new WorkspaceMember();
+		workspaceMember.member = member;
+		workspaceMember.email = member.getEmail();
+		// TODO: 지금은 기본 displayName으로 member.getUsername()를 사용하지만, Member의 name을 필수 필드로 변경하고
+		//  기본적으로 member.getName()을 사용하도록 설계 변경 고려
+		workspaceMember.displayName = member.getUsername();
+		workspaceMember.workspace = workspace;
+		workspaceMember.role = role;
 
 		return workspaceMember;
-	}
-
-	public static WorkspaceMember addOwnerWorkspaceMember(
-		Member member,
-		Workspace workspace,
-		WorkspacePolicy workspacePolicy
-	) {
-		return createWorkspaceMember(member, workspace, WorkspaceRole.OWNER, workspacePolicy);
-	}
-
-	public static WorkspaceMember addWorkspaceMember(
-		Member member,
-		Workspace workspace,
-		WorkspacePolicy workspacePolicy
-	) {
-		return createWorkspaceMember(member, workspace, WorkspaceRole.MEMBER, workspacePolicy);
 	}
 
 	public String getWorkspaceKey() {
@@ -127,33 +91,35 @@ public class WorkspaceMember extends BaseEntity {
 		return member.getId();
 	}
 
-	// TODO: For WorkspaceMember removal should I use hard-delete?
-	//  Im thinking about what would happen to exisiting resources (Issue, Sprint, Comment, etc...)
-	//  if the WorkspaceMember is kicked out of the Workspace.
-	//  If soft-delete is recommended, how should I implement it?
+	// TODO: 추후에 DisplayName VO로 분리하게 되면 거기로 옮기기?
+	public String getDisplayName() {
+		return "%s(%s)".formatted(displayName, member.getUsername());
+	}
+
+	// TODO: WorkspaceMember 제거는 hard-delete vs soft-delete 중 뭘 사용하는게 좋을까?
+	//  - WorkspaceMember를 Workspace에서 제거하는 경우 기존 해당 WorkspaceMember와 관련이 있는
+	//  리소스(Issue, Sprint, Comment, etc...)에 대한 처리를 어떻게 해야할지 고민이 됨.
+	//  - 만약 soft-delete이 권장된다면, 해당 soft-delete된 WorkspaceMember는 그대로 표시 가능한가?
+	//  archived=true이므로, UI에서는 회색이나 반투명 회색으로 표기하는 형태로 가는게 좋을까?
 	public void validateCanLeaveWorkspace() {
 		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Cannot leave workspace if OWNER.");
+			// TODO: OwnerCannotLeaveWorkspaceException
+			throw new RuntimeException("Cannot leave workspace if workspace role is OWNER.");
 		}
 	}
 
-	public void remove() {
-		this.member.getWorkspaceMembers().remove(this);
-		this.workspace.getWorkspaceMembers().remove(this);
+	public void changeRoleTo(WorkspaceRole newRole) {
+		if (role == newRole) {
+			return;
+		}
+		if (newRole == WorkspaceRole.OWNER) {
+			// TODO: DirectOwnerChangeNotAllowedException
+			throw new RuntimeException("Cannot directly change to OWNER role. Use ownership transfer.");
+		}
+		this.role = newRole;
 	}
-
-	public void updateRole(WorkspaceRole role) {
-		validateUpdateToOwnerRole(role);
-		this.role = role;
-	}
-
-	public void updateRoleToAdmin() {
-		validateCurrentRoleIsOwner();
-		updateRole(WorkspaceRole.ADMIN);
-	}
-
-	public void updateRoleToOwner() {
-		validateCurrentRoleIsNotOwner();
+	
+	public void changeRoleToOwner() {
 		this.role = WorkspaceRole.OWNER;
 	}
 
@@ -161,31 +127,12 @@ public class WorkspaceMember extends BaseEntity {
 		this.displayName = displayName;
 	}
 
-	// TODO: Should this be WorkspaceMember's responsibility? Or WorkspaceRole enum's responsibility?
-	public boolean roleIsHigherThan(WorkspaceRole role) {
-		return this.role.isHigherThan(role);
+	public boolean isOwner() {
+		return this.role == WorkspaceRole.OWNER;
 	}
 
 	public boolean roleIsLowerThan(WorkspaceRole role) {
 		return this.role.isLowerThan(role);
-	}
-
-	private void validateUpdateToOwnerRole(WorkspaceRole newRole) {
-		if (newRole == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Cannot directly change to OWNER role. Use ownership transfer.");
-		}
-	}
-
-	private void validateCurrentRoleIsOwner() {
-		if (this.role != WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role must be OWNER.");
-		}
-	}
-
-	private void validateCurrentRoleIsNotOwner() {
-		if (this.role == WorkspaceRole.OWNER) {
-			throw new InvalidOperationException("Current role cannot be OWNER.");
-		}
 	}
 
 	public void addPosition(Position position) {

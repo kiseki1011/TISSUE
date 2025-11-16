@@ -5,20 +5,20 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
-import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.service.validator.IssueValidator;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.TransitionGuardRegistry;
+import com.tissue.api.workflow.domain.TransitionGuardConfig;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.gaurd.GuardContext;
 import com.tissue.api.workflow.domain.gaurd.TransitionGuard;
-import com.tissue.api.workflow.domain.model.TransitionGuardConfig;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,28 +32,20 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 	private final IssueFinder issueFinder;
 	private final WorkflowFinder workflowFinder;
 	private final TransitionGuardRegistry guardRegistry;
+	private final IssueValidator issueValidator;
 
-	/**
-	 * Issue의 상태를 전이시킴
-	 * <p>
-	 * 실행 흐름:
-	 * 1. Issue 조회
-	 * 2. Transition 검증 (현재 상태가 source인지)
-	 * 3. 모든 Guard 순차 실행 (하나라도 실패하면 중단)
-	 * 4. 상태 전이 실행
-	 * 5. 도메인 이벤트 발행
-	 */
 	@Override
 	public IssueCommandResult performTransition(PerformTransitionCommand cmd) {
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
-		WorkflowTransition transition = findAndValidateTransition(issue, cmd.transitionId());
+		Workflow workflow = issue.getIssueType().getWorkflow();
+		WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, cmd.transitionId());
 
-		// 모든 Guard 실행
+		issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
+
 		executeGuards(cmd.workspaceKey(), issue, transition, cmd.actorMemberId());
 
 		WorkflowState previousStatus = issue.getCurrentState();
 
-		// 상태 전이
 		issue.transitionTo(transition.getTargetState());
 
 		log.info("Issue transitioned: workspace={}, issueKey={}, transition={}, {} -> {}",
@@ -64,7 +56,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 			transition.getTargetState().getLabel().getDisplay()
 		);
 
-		// 도메인 이벤트 발행 (알림, 히스토리 기록...)
+		// 이벤트 발행
 		// eventPublisher.publishEvent(new IssueTransitionedEvent(
 		// 	issue.getId(),
 		// 	issue.getKey(),
@@ -76,38 +68,6 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		// ));
 
 		return IssueCommandResult.from(issue);
-	}
-
-	/**
-	 * Transition 찾기 및 기본 검증
-	 * <p>
-	 * 검증 항목:
-	 * 1. Transition이 해당 Workflow에 존재하는지
-	 * 2. 현재 Issue 상태가 Transition의 source status인지
-	 */
-	private WorkflowTransition findAndValidateTransition(
-		Issue issue,
-		Long transitionId
-	) {
-		Workflow workflow = issue.getIssueType().getWorkflow();
-
-		// transition 조회
-		WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, transitionId);
-
-		// 현재 상태가 이 Transition의 source status인지 확인
-		// 예: 현재 "PLANNED"인데 "IN_PROGRESS -> DONE" transition 시도하면 실패
-		// TODO: IssueTransitionValidator로 로직 분리
-		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
-		if (transitionSourceStateNotMatch) {
-			throw new InvalidOperationException(
-				"Invalid transition. Current state is '%s' but transition requires '%s'".formatted(
-					issue.getCurrentState().getDisplayLabel(),
-					transition.getSourceState().getDisplayLabel()
-				)
-			);
-		}
-
-		return transition;
 	}
 
 	/**
@@ -129,7 +89,6 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		WorkflowTransition transition,
 		Long actorMemberId
 	) {
-		// Transition에 설정된 Guard Config들 (이미 executionOrder로 정렬됨)
 		List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
 		// Guard가 없으면 바로 통과
@@ -160,22 +119,19 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 			boolean failEvaluation = !guard.evaluate(context);
 
 			if (failEvaluation) {
-				// 실패 시 메시지 생성 및 예외 발생 (이후 Guard는 실행 안함)
 				String message = guard.getFailureMessage(context);
 
-				log.warn("Guard evaluation failed: guardType={}, issueKey={}, message={}",
-					guard.getType(),
-					issue.getKey(),
-					message
-				);
+				// TODO: warn 보다는 info 레벨 로깅이 맞지 않나?
+				log.info("Guard evaluation failed: guardType={}, issueKey={}, message={}",
+					guard.getType(), issue.getKey(), message);
 
+				// TODO: TransitionGuardEvaluationFailedException vs GuardEvaluationFailedException, 혹시 더 좋은 이름이 있나?
+				//  - 필요한 컨텍스트: 실패한 가드 종류, 해당 가드 종류의 실패 메세지
+				//  - GuardContext도 포함시켜야 할까? 만약 포함 시켜도, 객체를 넘기는게 아니라 풀어서 전달하는게 좋지 않을까?
 				throw new RuntimeException(guard.getType() + message);
 			}
-
 			log.debug("Guard evaluation passed: {}", guard.getType());
 		}
-
-		// 모든 Guard 통과
 		log.debug("All guard evaluation passed for transition: {}", transition.getDisplayLabel());
 	}
 }

@@ -5,28 +5,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.member.domain.model.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
-	Optional<Member> findByLoginId(String username);
 
-	@Query("SELECT m FROM Member m "
-		+ "WHERE m.email = :identifier OR m.loginId = :identifier")
-	Optional<Member> findByLoginIdOrEmail(@Param("identifier") String identifier);
+	Optional<Member> findByEmail(String email);
 
-	@Query("SELECT m FROM Member m "
-		+ "WHERE m.email IN :identifiers OR m.loginId IN :identifiers")
-	List<Member> findAllByEmailInOrLoginIdIn(@Param("identifiers") Set<String> identifiers);
-
-	@Query("SELECT m FROM Member m "
-		+ "LEFT JOIN FETCH m.workspaceMembers "
-		+ "WHERE m.id = :id")
-	Optional<Member> findByIdWithWorkspaceMembers(@Param("id") Long id);
-
-	boolean existsByLoginId(String loginId);
+	List<Member> findAllByEmailIn(Set<String> emails);
 
 	boolean existsByEmail(String email);
 

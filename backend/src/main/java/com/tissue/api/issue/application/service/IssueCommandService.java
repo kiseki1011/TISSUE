@@ -12,19 +12,19 @@ import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
-import com.tissue.api.issue.application.port.out.IssueCommandRepository;
-import com.tissue.api.issue.application.port.out.IssueFieldValueCommandRepository;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
-import com.tissue.api.issue.application.service.finder.IssueTypeFinder;
-import com.tissue.api.issue.application.service.sync.EpicStoryPointSyncService;
-import com.tissue.api.issue.application.service.sync.IssueProgressSyncService;
-import com.tissue.api.issue.application.service.validator.IssueFieldSchemaValidator;
-import com.tissue.api.issue.application.service.validator.IssueValidator;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueContent;
 import com.tissue.api.issue.domain.IssueFieldValue;
 import com.tissue.api.issue.domain.IssueParticipants;
 import com.tissue.api.issue.domain.IssueSchedule;
+import com.tissue.api.issue.domain.port.out.IssueCommandRepository;
+import com.tissue.api.issue.domain.port.out.IssueFieldValueCommandRepository;
+import com.tissue.api.issue.domain.service.sync.EpicStoryPointSyncService;
+import com.tissue.api.issue.domain.service.sync.IssueProgressSyncService;
+import com.tissue.api.issue.domain.service.validator.IssueFieldSchemaValidator;
+import com.tissue.api.issue.domain.service.validator.IssueValidator;
+import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
@@ -54,8 +54,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
 		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findIssueType(workspace, cmd.issueTypeId());
-		WorkspaceMember actor = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findByIdAndWorkspace(cmd.issueTypeId(), workspace);
+		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(), cmd.workspaceKey());
 
 		Issue issue = issueCommandRepository.save(Issue.create(
 			workspace,

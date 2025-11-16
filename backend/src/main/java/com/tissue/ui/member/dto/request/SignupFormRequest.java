@@ -12,7 +12,6 @@ import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
 import com.tissue.api.member.application.dto.SignupMemberCommand;
-import com.tissue.api.member.domain.model.enums.JobType;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,44 +20,27 @@ import lombok.Builder;
 
 @Builder
 public record SignupFormRequest(
-	@IdSize
-	@IdPattern
-	@NotBlank(message = "{valid.notblank}")
-	String loginId,
 
-	@EmailSize
-	@Email(message = "{valid.pattern.email}}")
-	@NotBlank(message = "{valid.notblank}")
-	String email,
+	@IdSize @IdPattern @NotBlank String loginId,
 
-	@UsernameSize
-	@UsernamePattern
-	@NotBlank(message = "{valid.notblank}")
-	String username,
+	@EmailSize @Email @NotBlank String email,
 
-	@PasswordSize
-	@PasswordPattern
-	@NotBlank(message = "{valid.notblank}")
-	String password,
+	@UsernameSize @UsernamePattern @NotBlank String username,
 
-	@NameSize
-	@NamePattern
-	String name,
+	@PasswordSize @PasswordPattern @NotBlank String password,
 
-	@Past(message = "{valid.birthdate}")
-	LocalDate birthDate,
+	@NameSize @NamePattern String name,
 
-	JobType jobType
+	@Past LocalDate birthDate
 ) {
+	// TODO: email, username, profile(name, birthdate) vo 만들어서 사용
 	public SignupMemberCommand toCommand() {
 		return SignupMemberCommand.builder()
-			.loginId(loginId.trim())
 			.email(email.trim())
 			.password(password)
 			.username(username.trim())
 			.name(name.trim())
 			.birthDate(birthDate)
-			.jobType(jobType)
 			.build();
 	}
 }

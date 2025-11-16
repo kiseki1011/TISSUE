@@ -21,7 +21,7 @@ class WorkspaceKeyGeneratorTest {
 	@DisplayName("워크스페이스 코드 생성기에 의해 8자리 코드가 생성되어야 한다")
 	void testGenerateWorkspaceCodeLength() {
 
-		String workspaceCode = workspaceKeyGenerator.generateWorkspaceKeySuffix();
+		String workspaceCode = workspaceKeyGenerator.generateWorkspaceKey();
 
 		assertThat(workspaceCode).isNotNull();
 		assertThat(workspaceCode.length()).isEqualTo(8);
@@ -31,7 +31,7 @@ class WorkspaceKeyGeneratorTest {
 	@DisplayName("워크스페이스 코드 생성기에 의해 생성된 코드는 Base62 형식이어야 한다")
 	void testGenerateWorkspaceCodeFormat() {
 
-		String workspaceCode = workspaceKeyGenerator.generateWorkspaceKeySuffix();
+		String workspaceCode = workspaceKeyGenerator.generateWorkspaceKey();
 
 		assertThat(workspaceCode).matches("[A-Za-z0-9]+");
 	}

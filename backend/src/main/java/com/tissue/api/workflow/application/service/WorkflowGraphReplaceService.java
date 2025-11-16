@@ -12,23 +12,21 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
-import com.tissue.api.workflow.domain.model.Workflow;
-import com.tissue.api.workflow.domain.model.WorkflowState;
-import com.tissue.api.workflow.domain.model.WorkflowTransition;
+import com.tissue.api.workflow.domain.Workflow;
+import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.service.EntityRef;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkflowGraphReplaceService {
@@ -37,9 +35,9 @@ public class WorkflowGraphReplaceService {
 	private final WorkflowFinder workflowFinder;
 	private final WorkflowGraphValidator graphValidator;
 
-	private record StatusResolver(
-		Map<Long, WorkflowState> existingStatuses,
-		Map<String, WorkflowState> newStatuses
+	private record StateResolver(
+		Map<Long, WorkflowState> existingStates,
+		Map<String, WorkflowState> newStates
 	) {
 		WorkflowState resolve(EntityRef ref) {
 			return ref.isExisting()
@@ -48,98 +46,103 @@ public class WorkflowGraphReplaceService {
 		}
 
 		private WorkflowState resolveExisting(Long id) {
-			return Optional.ofNullable(existingStatuses.get(id))
-				.orElseThrow(() -> new InvalidOperationException("Unknown status id: " + id));
+			return Optional.ofNullable(existingStates.get(id))
+				.orElseThrow(() -> new IllegalArgumentException("Invalid workflow state id '%d'."
+					.formatted(id)));
 		}
 
 		private WorkflowState resolveNew(String tempKey) {
-			return Optional.ofNullable(newStatuses.get(tempKey))
-				.orElseThrow(() -> new InvalidOperationException("Unknown status tempKey: " + tempKey));
+			return Optional.ofNullable(newStates.get(tempKey))
+				.orElseThrow(() -> new IllegalArgumentException("Invalid workflow state temporary key '%s'."
+					.formatted(tempKey)));
 		}
 	}
 
 	@Transactional
 	public WorkflowResponse replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
-		Workflow wf = loadWorkflowAndCheckVersion(cmd);
+		Workflow workflow = loadWorkflowAndCheckVersion(cmd);
 
 		graphValidator.validateWorkflowGraphStructure(
 			cmd.stateCommands().stream().map(s -> s.toValidationData()).toList(),
 			cmd.transitionCommands().stream().map(t -> t.toValidationData()).toList()
 		);
 
-		StatusResolver statusResolver = buildStatusResolver(wf, cmd.stateCommands());
-		syncTransitions(wf, cmd.transitionCommands(), statusResolver);
-		applyTerminalFlagChanges(wf, cmd.stateCommands(), statusResolver);
-		WorkflowState initial = resolveAndApplyInitial(wf, cmd.stateCommands(), statusResolver);
+		StateResolver stateResolver = buildStateResolver(workflow, cmd.stateCommands());
+		syncTransitions(workflow, cmd.transitionCommands(), stateResolver);
+		applyTerminalFlagChanges(workflow, cmd.stateCommands(), stateResolver);
+		WorkflowState initial = resolveAndApplyInitial(workflow, cmd.stateCommands(), stateResolver);
 
-		graphValidator.ensureValidWorkflowGraph(wf);
+		graphValidator.ensureValidWorkflowGraph(workflow);
 
-		deleteRemovedStatuses(cmd, wf, initial);
+		deleteRemovedStatuses(cmd.stateCommands(), workflow, initial);
 
-		return WorkflowResponse.from(wf);
+		return WorkflowResponse.from(workflow);
 	}
 
 	private void deleteRemovedStatuses(
-		ReplaceWorkflowGraphCommand cmd,
-		Workflow wf,
+		List<ReplaceWorkflowGraphCommand.StateCommand> states,
+		Workflow workflow,
 		WorkflowState initial
 	) {
-		Set<WorkflowState> toDelete = findStatusesToDelete(wf, cmd.stateCommands());
+		Set<WorkflowState> toDelete = findStatesToDelete(workflow, states);
 
-		// ensureNotDeletingStatusesInUse(toDelete);
+		// TODO: 아래 두 메서드를 ensureStateDeletable()로 묶기?
+		// graphValidator.ensureNotDeletingStatusesInUse(toDelete);
 		graphValidator.ensureNotDeletingInitial(toDelete, initial);
 
-		toDelete.forEach(wf::softDeleteState);
+		toDelete.forEach(workflow::softDeleteState);
 	}
 
-	// TODO: 요구사항이 생기면 이슈에 대한 WorkflowStatus 마이그레이션 제공
-	// private void ensureNotDeletingStatusesInUse(
-	// 	Set<WorkflowStatus> toDelete
+	// TODO: 현재 내 삭제 정책은 괜찮나?
+	// TODO: WorkflowGraphValidator로 이동
+	// private void ensureNotDeletingStatesInUse(
+	// 	Set<WorkflowState> toDelete
 	// ) {
-	// 	for (WorkflowStatus status : toDelete) {
-	// 		boolean hasIssues = issueRepository.existsByWorkflowStatus(status);
+	// 	for (WorkflowState state : toDelete) {
+	// 		boolean hasIssues = issueRepository.existsByWorkflowState(state);
 	// 		if (hasIssues) {
-	// 			throw new InvalidOperationException(
-	// 				"Cannot delete status '" + status.getLabel() +
-	// 					"' because it is currently in use by one or more issues. " +
-	// 					"Please move all issues to another status before deleting.");
+	// 			throw new WorkflowStateInUseNotDeletableException(
+	// 				"Cannot delete workflow state '" + state.getLabel() +
+	// 					"' because it is currently in use by one or more issues.");
 	// 		}
 	// 	}
 	// }
 
-	private Set<WorkflowState> findStatusesToDelete(
-		Workflow wf,
-		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands
+	private Set<WorkflowState> findStatesToDelete(
+		Workflow workflow,
+		List<ReplaceWorkflowGraphCommand.StateCommand> states
 	) {
-		Set<Long> keepIds = stateCommands.stream()
+		Set<Long> keepIds = states.stream()
 			.map(cmd -> cmd.ref().id())
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
-		return wf.getStates().stream()
+		return workflow.getStates().stream()
 			.filter(s -> !s.isArchived())
 			.filter(s -> s.getId() != null && !keepIds.contains(s.getId()))
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Workspace ws = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		Workflow wf = workflowFinder.findWorkflow(ws, cmd.workflowId());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
-		if (!Objects.equals(wf.getVersion(), cmd.version())) {
-			throw new IllegalStateException("Version mismatch");
+		if (!Objects.equals(workflow.getVersion(), cmd.version())) {
+			throw new OptimisticLockException(("Workflow version mismatch. "
+				+ "Workflow version from client was '%d', while current version is '%d'.")
+				.formatted(cmd.version(), workflow.getVersion()));
 		}
-		return wf;
+		return workflow;
 	}
 
-	private WorkflowGraphReplaceService.StatusResolver buildStatusResolver(
-		Workflow wf,
+	private StateResolver buildStateResolver(
+		Workflow workflow,
 		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands
 	) {
 		Map<Long, WorkflowState> existingStatuses = new HashMap<>();
 		Map<String, WorkflowState> newStatuses = new HashMap<>();
 
-		for (WorkflowState s : wf.getStates()) {
+		for (WorkflowState s : workflow.getStates()) {
 			existingStatuses.put(s.getId(), s);
 		}
 
@@ -147,7 +150,7 @@ public class WorkflowGraphReplaceService {
 			if (s.ref().isExisting()) {
 				continue;
 			}
-			WorkflowState created = wf.addState(
+			WorkflowState created = workflow.addState(
 				Label.of(s.label()),
 				s.description(),
 				s.color(),
@@ -157,32 +160,32 @@ public class WorkflowGraphReplaceService {
 			newStatuses.put(s.ref().tempKey(), created);
 		}
 
-		return new StatusResolver(existingStatuses, newStatuses);
+		return new StateResolver(existingStatuses, newStatuses);
 	}
 
 	private void syncTransitions(
-		Workflow wf,
+		Workflow workflow,
 		List<ReplaceWorkflowGraphCommand.TransitionCommand> transitionCommands,
-		StatusResolver statusResolver
+		StateResolver stateResolver
 	) {
-		deleteRemovedTransitions(wf, transitionCommands);
-		Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(wf);
+		deleteRemovedTransitions(workflow, transitionCommands);
+		Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(workflow);
 
 		for (var cmd : transitionCommands) {
-			WorkflowState src = statusResolver.resolve(cmd.source());
-			WorkflowState trg = statusResolver.resolve(cmd.target());
+			WorkflowState src = stateResolver.resolve(cmd.source());
+			WorkflowState trg = stateResolver.resolve(cmd.target());
 
 			if (cmd.ref().isExisting()) {
-				rewireExistingTransition(wf, cmd, src, trg, existingTransitions);
+				rewireExistingTransition(workflow, cmd, src, trg, existingTransitions);
 				continue;
 			}
 
-			addNewTransition(wf, cmd, src, trg);
+			addNewTransition(workflow, cmd, src, trg);
 		}
 	}
 
 	private void rewireExistingTransition(
-		Workflow wf,
+		Workflow workflow,
 		ReplaceWorkflowGraphCommand.TransitionCommand cmd,
 		WorkflowState src,
 		WorkflowState trg,
@@ -190,19 +193,19 @@ public class WorkflowGraphReplaceService {
 	) {
 		WorkflowTransition transition = existingTransitions.get(cmd.ref().id());
 		if (transition == null) {
-			throw new InvalidOperationException("Unknown transition id: " + cmd.ref().id());
+			throw new IllegalArgumentException("Invalid workflow transition id '%d'.".formatted(cmd.ref().id()));
 		}
-		wf.rewireTransitionSource(transition, src);
-		wf.rewireTransitionTarget(transition, trg);
+		workflow.rewireTransitionSource(transition, src);
+		workflow.rewireTransitionTarget(transition, trg);
 	}
 
 	private void addNewTransition(
-		Workflow wf,
+		Workflow workflow,
 		ReplaceWorkflowGraphCommand.TransitionCommand cmd,
 		WorkflowState src,
 		WorkflowState trg
 	) {
-		wf.addTransition(Label.of(cmd.label()), cmd.description(), src, trg);
+		workflow.addTransition(Label.of(cmd.label()), cmd.description(), src, trg);
 	}
 
 	private Map<Long, WorkflowTransition> indexExistingTransitions(Workflow wf) {
@@ -216,7 +219,7 @@ public class WorkflowGraphReplaceService {
 	}
 
 	private void deleteRemovedTransitions(
-		Workflow wf,
+		Workflow workflow,
 		List<ReplaceWorkflowGraphCommand.TransitionCommand> transitionCommands
 	) {
 		Set<Long> reqIds = transitionCommands.stream()
@@ -224,17 +227,17 @@ public class WorkflowGraphReplaceService {
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
-		for (WorkflowTransition t : List.copyOf(wf.getTransitions())) {
+		for (WorkflowTransition t : List.copyOf(workflow.getTransitions())) {
 			if (t.getId() != null && !reqIds.contains(t.getId())) {
-				wf.softDeleteTransition(t);
+				workflow.softDeleteTransition(t);
 			}
 		}
 	}
 
 	private void applyTerminalFlagChanges(
-		Workflow wf,
+		Workflow workflow,
 		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands,
-		StatusResolver statusResolver
+		StateResolver stateResolver
 	) {
 		for (var cmd : stateCommands) {
 			boolean isNewStatus = !cmd.ref().isExisting();
@@ -242,25 +245,25 @@ public class WorkflowGraphReplaceService {
 				continue;
 			}
 
-			WorkflowState status = statusResolver.resolve(cmd.ref());
-			wf.updateStateTerminalFlag(status, cmd.terminal());
+			WorkflowState status = stateResolver.resolve(cmd.ref());
+			workflow.updateStateTerminalFlag(status, cmd.terminal());
 		}
 	}
 
 	private WorkflowState resolveAndApplyInitial(
-		Workflow wf,
+		Workflow workflow,
 		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands,
-		StatusResolver statusResolver
+		StateResolver stateResolver
 	) {
 		var cmd = stateCommands.stream()
 			.filter(ReplaceWorkflowGraphCommand.StateCommand::initial)
 			.findFirst()
-			.orElseThrow(() -> new InvalidOperationException("Initial not provided"));
+			.orElseThrow(() -> new IllegalArgumentException("Initial workflow state must be provided."));
 
-		WorkflowState requested = statusResolver.resolve(cmd.ref());
+		WorkflowState requested = stateResolver.resolve(cmd.ref());
 
-		if (requested != wf.getInitialState()) {
-			wf.updateInitialState(requested);
+		if (requested != workflow.getInitialState()) {
+			workflow.updateInitialState(requested);
 		}
 		return requested;
 	}

@@ -12,11 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.tissue.api.common.exception.type.DuplicateResourceException;
-import com.tissue.api.common.exception.type.InvalidRequestException;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
-import com.tissue.api.member.domain.model.enums.JobType;
 import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 import com.tissue.ui.member.dto.request.SignupFormRequest;
 
@@ -31,7 +28,6 @@ public class MemberViewController {
 	private final MemberCommandService memberCommandService;
 	private final MemberEmailVerificationService memberEmailVerificationService;
 
-	// TODO: SignupMemberRequest 팩토리 메서드 구현
 	@GetMapping("/signup")
 	public String signupForm(Model model) {
 
@@ -40,7 +36,6 @@ public class MemberViewController {
 			.name("")
 			.password("")
 			.email("")
-			.jobType(JobType.ETC)
 			.build();
 
 		model.addAttribute("signupFormRequest", request);
@@ -60,21 +55,22 @@ public class MemberViewController {
 		RedirectAttributes redirectAttributes
 	) {
 
-		// 1. 기본 유효성 검사 실패 시
+		// 기본 유효성 검사 실패 시
 		if (bindingResult.hasErrors()) {
 			return handleSignupErrors(request, bindingResult, model);
 		}
 
 		try {
-			// 2. 비즈니스 로직 실행
+			// 비즈니스 로직 실행
 			MemberResponse memberResponse = memberCommandService.signup(request.toCommand());
 
-			// 3. 성공 시 리다이렉트
+			// 성공 시 리다이렉트
 			redirectAttributes.addFlashAttribute("memberResponse", memberResponse);
 			return "redirect:/members/signup/success";
 
-		} catch (DuplicateResourceException | InvalidRequestException e) {
-			// 4. 비즈니스 예외 처리
+		} // catch (DuplicateResourceException | InvalidRequestException e) {
+		catch (RuntimeException e) {
+			// 비즈니스 예외 처리
 			return handleBusinessException(request, e, model);
 		}
 	}

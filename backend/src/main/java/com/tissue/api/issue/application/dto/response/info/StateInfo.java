@@ -2,7 +2,7 @@ package com.tissue.api.issue.application.dto.response.info;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.workflow.domain.model.WorkflowState;
+import com.tissue.api.workflow.domain.WorkflowState;
 
 public record StateInfo(
 	Long id,

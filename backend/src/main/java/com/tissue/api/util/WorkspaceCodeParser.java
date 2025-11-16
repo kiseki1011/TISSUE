@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.exception.type.InvalidOperationException;
+import com.tissue.api.common.exception.base.BadRequestException;
+import com.tissue.api.workspace.exception.InvalidWorkspaceKeyUriException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +29,7 @@ public class WorkspaceCodeParser {
 	 *
 	 * @param uri HTTP 요청의 URI
 	 * @return 추출된 워크스페이스 코드
-	 * @throws InvalidOperationException URI가 올바르지 않거나 워크스페이스 코드가 패턴에 부합하지 않는 경우
+	 * @throws BadRequestException URI가 올바르지 않거나 워크스페이스 코드가 패턴에 부합하지 않는 경우
 	 */
 	public String extractWorkspaceCode(String uri) {
 		matcher.reset(uri);
@@ -36,6 +37,6 @@ public class WorkspaceCodeParser {
 		if (matcher.matches()) {
 			return matcher.group(1);
 		}
-		throw new InvalidOperationException(String.format("Invalid workspace code in URI. URI: %s", uri));
+		throw new InvalidWorkspaceKeyUriException(uri);
 	}
 }

@@ -7,6 +7,8 @@ import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.domain.model.Team;
+import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
+import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.application.dto.AssignPositionCommand;
 import com.tissue.api.workspacemember.application.dto.AssignTeamCommand;
 import com.tissue.api.workspacemember.application.dto.RemovePositionCommand;
@@ -30,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class WorkspaceMemberService {
 
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final PositionFinder positionFinder;
 	private final TeamFinder teamFinder;
@@ -40,7 +43,8 @@ public class WorkspaceMemberService {
 
 	@Transactional
 	public WorkspaceMemberResponse updateDisplayName(UpdateDisplayNameCommand cmd) {
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
 
 		workspaceMember.updateDisplayName(cmd.displayName());
 
@@ -49,15 +53,17 @@ public class WorkspaceMemberService {
 
 	@Transactional
 	public WorkspaceMemberResponse updateRole(UpdateRoleCommand cmd) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
+		WorkspaceMember requester = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
+		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.targetMemberId(),
+			cmd.workspaceKey());
 
 		// TODO: validateCanUpdateRole checks the WorkspaceRole hierarchy or if the target is yourself.
 		//  Should I move this permission related logic to the controller?
 		//  Or is there a way to use Spring-security for this?
 		workspaceMemberPermissionValidator.validateCanUpdateRole(requester, target);
 
-		target.updateRole(cmd.role());
+		target.changeRoleTo(cmd.role());
 
 		return WorkspaceMemberResponse.from(target);
 	}
@@ -65,7 +71,8 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceMemberResponse assignPosition(AssignPositionCommand cmd) {
 		Position position = positionFinder.findPosition(cmd.positionId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
 
 		workspaceMember.addPosition(position);
 
@@ -75,7 +82,8 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceMemberResponse removePosition(RemovePositionCommand cmd) {
 		Position position = positionFinder.findPosition(cmd.positionId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
 
 		workspaceMember.removePosition(position);
 
@@ -85,7 +93,8 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceMemberResponse assignTeam(AssignTeamCommand cmd) {
 		Team team = teamFinder.findTeam(cmd.teamId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
 
 		workspaceMember.addTeam(team);
 
@@ -95,7 +104,8 @@ public class WorkspaceMemberService {
 	@Transactional
 	public WorkspaceMemberResponse removeTeam(RemoveTeamCommand cmd) {
 		Team team = teamFinder.findTeam(cmd.teamId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(),
+			cmd.workspaceKey());
 
 		workspaceMember.removeTeam(team);
 
@@ -104,22 +114,23 @@ public class WorkspaceMemberService {
 
 	@Transactional
 	public WorkspaceMemberResponse transferOwnership(TransferOwnershipCommand cmd) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		WorkspaceMember requester = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.memberId(), workspace);
+		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.targetMemberId(), workspace);
 
-		requester.updateRoleToAdmin();
-		target.updateRoleToOwner();
+		workspace.transferOwnership(requester, target);
 
 		return WorkspaceMemberResponse.from(target);
 	}
 
 	@Transactional
 	public void removeWorkspaceMember(RemoveWorkspaceMemberCommand cmd) {
-		WorkspaceMember requester = workspaceMemberFinder.findWorkspaceMember(cmd.memberId(), cmd.workspaceKey());
-		WorkspaceMember target = workspaceMemberFinder.findWorkspaceMember(cmd.targetMemberId(), cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		WorkspaceMember requester = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.memberId(), workspace);
+		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.targetMemberId(), workspace);
 
 		workspaceMemberPermissionValidator.validateCanRemoveWorkspaceMember(requester, target);
 
-		target.remove();
+		workspace.removeMember(target);
 	}
 }

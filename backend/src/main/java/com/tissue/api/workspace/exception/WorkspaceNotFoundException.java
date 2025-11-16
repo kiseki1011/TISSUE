@@ -1,6 +1,6 @@
 package com.tissue.api.workspace.exception;
 
-import com.tissue.api.common.exception.type.ResourceNotFoundException;
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
 public class WorkspaceNotFoundException extends ResourceNotFoundException {
 

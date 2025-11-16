@@ -50,7 +50,7 @@ public class EnumFieldOption extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "issue_field_id", nullable = false)
-	private IssueField field;
+	private IssueField issueField;
 
 	@Embedded
 	@ToString.Include
@@ -61,22 +61,22 @@ public class EnumFieldOption extends BaseEntity {
 
 	@Builder(access = AccessLevel.PRIVATE)
 	private EnumFieldOption(
-		IssueField field,
+		IssueField issueField,
 		Label label,
 		Integer position
 	) {
-		this.field = field;
+		this.issueField = issueField;
 		this.label = label;
 		this.position = position;
 	}
 
 	public static EnumFieldOption create(
-		@NonNull IssueField field,
+		@NonNull IssueField issueField,
 		@NonNull Label label,
 		Integer position
 	) {
 		return EnumFieldOption.builder()
-			.field(field)
+			.issueField(issueField)
 			.label(label)
 			.position((position == null) ? 0 : position)
 			.build();

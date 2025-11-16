@@ -6,10 +6,7 @@ import java.util.List;
 
 import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.common.exception.type.ForbiddenOperationException;
-import com.tissue.api.common.exception.type.InvalidOperationException;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
@@ -94,10 +91,9 @@ public abstract class Comment extends BaseEntity {
 		if (author.equals(workspaceMember)) {
 			return;
 		}
-		if (workspaceMember.roleIsHigherThan(WorkspaceRole.MANAGER)) {
-			return;
-		}
-		throw new ForbiddenOperationException("Must either be the author or hold a workspace role of ADMIN or higher.");
+		// TODO: InvalidPermissionException vs EditPermissionException
+		//  - 컨텍스트로 author의 username을 넘기기? 또는 workspaceMemberId? memberId?
+		throw new RuntimeException("Must be the author to edit.");
 	}
 
 	// 대댓글 추가 시 1-depth 제한과 타입 검증
@@ -107,11 +103,13 @@ public abstract class Comment extends BaseEntity {
 		}
 
 		if (parentComment.getParentComment() != null) {
-			throw new InvalidOperationException("Comments can only be nested one level deep.");
+			// TODO: CommentDepthExceededException
+			throw new RuntimeException("Comments can only be nested one level deep.");
 		}
 
 		if (parentComment.getClass() != this.getClass()) {
-			throw new InvalidOperationException(
+			// TODO: CommentTypeMatchException
+			throw new RuntimeException(
 				String.format("Parent comment type(%s) and child comment type(%s) must match.",
 					parentComment.getClass().getSimpleName(),
 					this.getClass().getSimpleName())
