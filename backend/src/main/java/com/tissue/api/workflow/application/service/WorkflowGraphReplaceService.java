@@ -24,6 +24,7 @@ import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
 import com.tissue.api.workspace.domain.model.Workspace;
 
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -127,8 +128,9 @@ public class WorkflowGraphReplaceService {
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {
-			// TODO: WorkflowVersionMismatchException
-			throw new IllegalStateException("Version mismatch");
+			throw new OptimisticLockException(("Workflow version mismatch. "
+				+ "Workflow version from client was '%d', while current version is '%d'.")
+				.formatted(cmd.version(), workflow.getVersion()));
 		}
 		return workflow;
 	}

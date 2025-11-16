@@ -26,6 +26,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// TODO: Soft-delete 사용
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,7 +36,6 @@ public class WorkspaceMember extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// TODO: Member와는 양방향 아님
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
@@ -66,7 +66,6 @@ public class WorkspaceMember extends BaseEntity {
 	//   - DisplayName VO를 만들어서 사용할까?
 	// private String displayWithUsername;
 
-	// TODO: Workspace.addMember()에 이걸 응집시킬까?
 	public static WorkspaceMember create(
 		Member member,
 		Workspace workspace,
@@ -109,11 +108,6 @@ public class WorkspaceMember extends BaseEntity {
 		}
 	}
 
-	// public void remove() {
-	// 	// this.member.getWorkspaceMembers().remove(this);
-	// 	// this.workspace.getWorkspaceMembers().remove(this);
-	// }
-
 	public void changeRoleTo(WorkspaceRole newRole) {
 		if (role == newRole) {
 			return;
@@ -124,8 +118,7 @@ public class WorkspaceMember extends BaseEntity {
 		}
 		this.role = newRole;
 	}
-
-	// TODO: 패키지 private으로 변경
+	
 	public void changeRoleToOwner() {
 		this.role = WorkspaceRole.OWNER;
 	}

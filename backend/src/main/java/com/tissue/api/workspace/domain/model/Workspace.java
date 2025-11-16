@@ -169,10 +169,6 @@ public class Workspace extends BaseEntity {
 			.anyMatch(sprint -> sprint.getStatus() == SprintStatus.ACTIVE);
 	}
 
-	// public void ensureCanAddMember(WorkspacePolicy workspacePolicy) {
-	// 	workspacePolicy.ensureWithinMemberLimit(this);
-	// }
-
 	public int getMemberCount() {
 		return workspaceMembers.size();
 	}

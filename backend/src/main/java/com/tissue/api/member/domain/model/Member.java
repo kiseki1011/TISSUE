@@ -58,28 +58,8 @@ public class Member extends BaseDateEntity {
 	@Enumerated(EnumType.STRING)
 	private SystemRole role;
 
-	// @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-	// private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Invitation> invitations = new ArrayList<>();
-
-	// TODO: 생성자(빌더) 사용 대신 정적 팩토리 메서드 사용
-	// @Builder
-	// public Member(
-	// 	String email,
-	// 	String username,
-	// 	String password,
-	// 	String name,
-	// 	LocalDate birthDate
-	// ) {
-	// 	this.email = email;
-	// 	this.username = username;
-	// 	this.password = password;
-	// 	this.name = name;
-	// 	this.birthDate = birthDate;
-	// 	this.role = SystemRole.USER;
-	// }
 
 	public static Member create(
 		@NonNull String email,
@@ -118,13 +98,4 @@ public class Member extends BaseDateEntity {
 	public void updateBirthDate(LocalDate birthDate) {
 		this.birthDate = birthDate;
 	}
-
-	// TODO: 참여하는 워크스페이스의 수 vs OWNER로 가지고 있는 워크스페이스의 수 중 어떤걸 기준으로 검증할까?
-	// public void validateWorkspaceLimit() {
-	// 	if (getWorkspaceCount() >= MAX_WORKSPACE_COUNT) {
-	// 		// TODO: WorkspaceLimitExceededException
-	// 		throw new RuntimeException(
-	// 			String.format("Max number of workspaces a member can have is %d.", MAX_WORKSPACE_COUNT));
-	// 	}
-	// }
 }

@@ -75,9 +75,7 @@ public class IssueFieldValue extends BaseEntity {
 			case DATE -> this.dateValue = (LocalDate)value;
 			case BOOLEAN -> this.booleanValue = (Boolean)value;
 			case ENUM -> this.enumOption = (EnumFieldOption)value;
-			// TODO: InvalidCustomFieldException vs IllegalStateException vs IllegalArgumentException
-			// TODO: value도 예외에 파라미터로 넘기기
-			default -> throw new RuntimeException("Unsupported: " + field.getFieldType());
+			default -> throw new IllegalArgumentException("Unsupported: " + field.getFieldType());
 		}
 		markPresent();
 	}

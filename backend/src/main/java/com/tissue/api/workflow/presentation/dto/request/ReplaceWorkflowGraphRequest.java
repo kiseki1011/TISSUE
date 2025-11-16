@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Size;
  * TODO: 자세한 문서화 필요
  *  - 기존 status, transition은 id 전달
  *  - 새로 추가되는 status, transition은 tempKey 전달
- *  - tempKey는 클라이언트에서 생성. UUID 계열 권장(원한면 transliteration 사용)
+ *  - tempKey는 클라이언트에서 생성. UUID 계열 권장(원하면 transliteration 사용)
  */
 public record ReplaceWorkflowGraphRequest(
 	@NotNull Long version,
