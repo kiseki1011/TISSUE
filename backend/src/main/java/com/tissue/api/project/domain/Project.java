@@ -50,6 +50,9 @@ public class Project extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
+	@Column(name = "workspace_key", nullable = false)
+	private String workspaceKey;
+
 	@Column(name = "project_key", nullable = false)
 	private String key;
 
@@ -66,7 +69,7 @@ public class Project extends BaseEntity {
 	private Integer sprintNumber = 0;
 
 	// TODO: Sprint와 양방향 관계 고려. 하지만 웬만하면 단방향으로 설계하는게 좋을 것 같음.
-	//  Sprint의 수가 100개가 넘어가는 경우 getSprints()에 대한 성능 부담.
+	//  Sprint의 수가 1000개가 넘어가는 경우 getSprints()에 대한 성능 부담이 걱정됨.
 
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueType> issueTypes = new ArrayList<>();
@@ -82,14 +85,12 @@ public class Project extends BaseEntity {
 	) {
 		Project project = new Project();
 		project.workspace = workspace;
+		project.workspaceKey = workspace.getKey();
 		project.updateKey(key);
 		project.name = name;
 		project.description = nullToEmpty(description);
-		return project;
-	}
 
-	public String getWorkspaceKey() {
-		return this.workspace.getKey();
+		return project;
 	}
 
 	// TODO: 그런데 만약 프로젝트의 키를 업데이트하면 기존 이슈 키들은 어떻게 변해야 할까?
@@ -131,5 +132,5 @@ public class Project extends BaseEntity {
 		this.sprintNumber++;
 	}
 
-	// TODO: hasActiveSprint (Sprint와 양방향 관계인 경우에만 추가)
+	// TODO: getActiveSprints (Sprint와 양방향 관계인 경우에만 추가)
 }
