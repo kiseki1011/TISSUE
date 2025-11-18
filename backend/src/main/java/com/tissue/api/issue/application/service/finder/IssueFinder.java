@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
-import com.tissue.api.issue.exception.IssueNotFoundException;
+import com.tissue.api.issue.domain.exception.IssueNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 

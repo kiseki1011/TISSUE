@@ -20,8 +20,8 @@ import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
 import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 

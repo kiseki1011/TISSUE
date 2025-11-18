@@ -1,0 +1,16 @@
+package com.tissue.api.workspace.domain.exception;
+
+import com.tissue.api.common.exception.base.ResourceNotFoundException;
+
+public class WorkspaceNotFoundException extends ResourceNotFoundException {
+
+	private static final String MESSAGE = "Workspace not found with code: %s";
+
+	public WorkspaceNotFoundException(String workspaceCode) {
+		super(String.format(MESSAGE, workspaceCode));
+	}
+
+	public WorkspaceNotFoundException(String workspaceCode, Throwable cause) {
+		super(String.format(MESSAGE, workspaceCode), cause);
+	}
+}

@@ -12,7 +12,7 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.api.workflow.domain.Workflow;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

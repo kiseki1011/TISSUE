@@ -36,18 +36,18 @@ import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
-import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
-import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.application.service.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.application.service.WorkspaceCreateService;
+import com.tissue.api.workspace.application.service.WorkspaceQueryService;
 import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberInviteService;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceParticipationService;
-import com.tissue.api.workspacemember.application.service.query.WorkspaceParticipationQueryService;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.application.service.WorkspaceMemberInviteService;
+import com.tissue.api.workspace.application.service.WorkspaceMemberService;
+import com.tissue.api.workspace.application.service.WorkspaceParticipationService;
+import com.tissue.api.workspace.application.service.WorkspaceParticipationQueryService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 
 import deprecated.com.tissue.support.fixture.TestDataFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
@@ -106,7 +106,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected MemberQueryService memberQueryService;
 	@Autowired
-	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
+	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
 	protected InvitationCommandService invitationCommandService;
 	@Autowired

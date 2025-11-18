@@ -12,10 +12,10 @@ import com.tissue.api.position.application.service.command.PositionCommandServic
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
-import com.tissue.api.workspace.application.service.command.create.WorkspaceCreateRetryOnCodeCollisionService;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspacemember.application.service.command.WorkspaceMemberService;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.application.service.WorkspaceCreateService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
+import com.tissue.api.workspace.application.service.WorkspaceMemberService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 
 import deprecated.com.tissue.support.fixture.api.LoginApiFixture;
 import deprecated.com.tissue.support.fixture.api.MemberApiFixture;
@@ -43,7 +43,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected WorkspaceMemberService workspaceMemberService;
 	@Autowired
-	protected WorkspaceCreateRetryOnCodeCollisionService workspaceCreateService;
+	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
 	protected InvitationCommandService invitationCommandService;
 	@Autowired

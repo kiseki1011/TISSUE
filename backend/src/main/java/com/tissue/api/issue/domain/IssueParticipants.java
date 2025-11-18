@@ -3,7 +3,7 @@ package com.tissue.api.issue.domain;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;

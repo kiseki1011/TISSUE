@@ -3,7 +3,7 @@ package com.tissue.api.issue.domain;
 import java.time.LocalDateTime;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

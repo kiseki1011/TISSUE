@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class NotificationTargetServiceTest {

@@ -11,8 +11,8 @@ import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -26,10 +26,10 @@ import com.tissue.api.issue.domain.service.validator.IssueFieldSchemaValidator;
 import com.tissue.api.issue.domain.service.validator.IssueValidator;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 

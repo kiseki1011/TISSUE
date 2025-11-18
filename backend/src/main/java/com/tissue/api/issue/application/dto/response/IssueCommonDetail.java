@@ -9,7 +9,7 @@ import com.tissue.api.issue.application.dto.response.info.StateInfo;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueReviewer;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.Builder;
 

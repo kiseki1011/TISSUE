@@ -8,7 +8,7 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 import com.tissue.api.sprint.exception.InvalidSprintDateException;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -28,8 +28,8 @@ import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workflow.repository.WorkflowRepository;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

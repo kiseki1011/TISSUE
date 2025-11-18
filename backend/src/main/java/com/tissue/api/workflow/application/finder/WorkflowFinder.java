@@ -8,7 +8,7 @@ import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.repository.WorkflowRepository;
 import com.tissue.api.workflow.repository.WorkflowStateRepository;
 import com.tissue.api.workflow.repository.WorkflowTransitionRepository;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 

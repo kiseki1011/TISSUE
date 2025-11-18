@@ -19,8 +19,8 @@ import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
 import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.Workflow;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,7 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

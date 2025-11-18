@@ -4,7 +4,7 @@ import java.time.Instant;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.api.issue.exception.InvalidDueDateException;
+import com.tissue.api.issue.domain.exception.InvalidDueDateException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMemberPosition;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.WorkspaceMemberPosition;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

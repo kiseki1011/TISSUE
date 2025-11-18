@@ -2,9 +2,9 @@ package com.tissue.api.issue.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.exception.IssueSelfReferenceException;
-import com.tissue.api.issue.exception.IssueTypeMismatchForRelationException;
-import com.tissue.api.issue.exception.RelationWorkspaceMismatchException;
+import com.tissue.api.issue.domain.exception.IssueSelfReferenceException;
+import com.tissue.api.issue.domain.exception.IssueTypeMismatchForRelationException;
+import com.tissue.api.issue.domain.exception.RelationWorkspaceMismatchException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

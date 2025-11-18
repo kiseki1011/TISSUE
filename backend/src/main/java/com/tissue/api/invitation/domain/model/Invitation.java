@@ -3,7 +3,7 @@ package com.tissue.api.invitation.domain.model;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

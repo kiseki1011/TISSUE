@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.tissue.api.workspace.domain.util.WorkspaceKeyGenerator;
+import com.tissue.api.workspace.domain.WorkspaceKeyGenerator;
 
 class WorkspaceKeyGeneratorTest {
 

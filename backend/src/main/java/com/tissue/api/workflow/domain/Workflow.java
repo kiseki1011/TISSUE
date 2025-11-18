@@ -14,7 +14,7 @@ import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workflow.exception.DuplicateStateException;
 import com.tissue.api.workflow.exception.DuplicateTransitionException;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -21,8 +21,8 @@ import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.service.EntityRef;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;

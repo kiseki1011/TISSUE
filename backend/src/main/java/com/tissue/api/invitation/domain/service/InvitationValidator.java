@@ -2,7 +2,7 @@ package com.tissue.api.invitation.domain.service;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

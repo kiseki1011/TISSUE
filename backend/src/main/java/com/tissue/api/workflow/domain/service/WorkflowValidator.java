@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.repository.WorkflowRepository;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 

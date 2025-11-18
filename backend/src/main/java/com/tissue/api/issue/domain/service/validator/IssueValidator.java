@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
-import com.tissue.api.issue.exception.InvalidStateTransitionException;
+import com.tissue.api.issue.domain.exception.InvalidStateTransitionException;
 import com.tissue.api.workflow.domain.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;

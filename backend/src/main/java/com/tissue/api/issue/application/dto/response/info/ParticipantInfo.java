@@ -1,6 +1,6 @@
 package com.tissue.api.issue.application.dto.response.info;
 
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 public record ParticipantInfo(
 	Long memberId,

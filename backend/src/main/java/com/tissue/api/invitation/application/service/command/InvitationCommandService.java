@@ -14,11 +14,11 @@ import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
-import com.tissue.api.workspacemember.infrastructure.repository.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

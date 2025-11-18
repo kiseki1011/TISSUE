@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.data.repository.Repository;
 
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 public interface ProjectQueryRepository extends Repository<Project, Long> {
 

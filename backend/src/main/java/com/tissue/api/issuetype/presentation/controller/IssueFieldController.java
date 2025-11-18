@@ -21,7 +21,7 @@ import com.tissue.api.issuetype.presentation.dto.request.RenameOptionRequest;
 import com.tissue.api.issuetype.presentation.dto.request.ReorderOptionsRequest;
 import com.tissue.api.issuetype.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

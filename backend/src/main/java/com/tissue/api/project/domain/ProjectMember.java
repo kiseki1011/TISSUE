@@ -2,7 +2,7 @@ package com.tissue.api.project.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.project.domain.enums.ProjectRole;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -12,8 +12,8 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authorization.exception.InsufficientRoleException;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

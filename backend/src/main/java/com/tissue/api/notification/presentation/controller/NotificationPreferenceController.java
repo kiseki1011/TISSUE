@@ -12,7 +12,7 @@ import com.tissue.api.notification.presentation.dto.request.UpdateNotificationPr
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;
 

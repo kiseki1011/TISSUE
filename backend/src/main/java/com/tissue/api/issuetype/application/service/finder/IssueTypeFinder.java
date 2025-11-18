@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.exception.IssueTypeNotFoundException;
 import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 
