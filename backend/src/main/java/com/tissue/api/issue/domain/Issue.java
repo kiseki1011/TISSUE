@@ -1,9 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
@@ -19,12 +17,10 @@ import com.tissue.api.issue.exception.ParentRequiredException;
 import com.tissue.api.issue.exception.ParentWorkspaceMismatchException;
 import com.tissue.api.issue.exception.StoryPointNotAllowedForHierarchyException;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.sprint.domain.model.SprintIssue;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workspace.domain.model.Workspace;
 import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -36,7 +32,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -96,8 +91,8 @@ public class Issue extends BaseEntity {
 	private Issue parentIssue;
 
 	// TODO: 추후 Sprint 쪽 애그리거트 정리 후, 다시 리팩토링 진행. 일단은 보류.
-	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<SprintIssue> sprintIssues = new HashSet<>();
+	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	// private Set<SprintIssue> sprintIssues = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;

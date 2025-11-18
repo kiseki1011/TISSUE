@@ -7,6 +7,7 @@ import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 
 public interface IssueCommandUseCase {
+
 	IssueCommandResult create(CreateIssueCommand cmd);
 
 	IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd);
