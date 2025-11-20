@@ -43,7 +43,11 @@ public class WorkspaceMember extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	// TODO: 양방향 관계를 사용하는게 좋나? 아니면 단방향을 사용하는게 더 좋은가?
+	@Column(name = "workspace_key", nullable = false)
+	private String workspaceKey;
+
+	// TODO: memberId도 편의 필드로 둘까? (workspaceKey와 마찬가지로 불변임)
+
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
 
@@ -60,39 +64,26 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String email;
 
-	//  TODO: UI에 이름을 표시하기 위한 편의 필드?
-	//   - "%s(%s)".formatted(displayName, member.getUsername()); 처럼 사용할듯
-	//   - DisplayName VO를 만들어서 사용할까?
-	// private String displayWithUsername;
-
 	public static WorkspaceMember create(
 		Member member,
 		Workspace workspace,
 		WorkspaceRole role
 	) {
 		WorkspaceMember workspaceMember = new WorkspaceMember();
+		workspaceMember.workspace = workspace;
+		workspaceMember.workspaceKey = workspace.getKey();
 		workspaceMember.member = member;
 		workspaceMember.email = member.getEmail();
 		// TODO: 지금은 기본 displayName으로 member.getUsername()를 사용하지만, Member의 name을 필수 필드로 변경하고
 		//  기본적으로 member.getName()을 사용하도록 설계 변경 고려
 		workspaceMember.displayName = member.getUsername();
-		workspaceMember.workspace = workspace;
 		workspaceMember.role = role;
 
 		return workspaceMember;
 	}
 
-	public String getWorkspaceKey() {
-		return workspace.getKey();
-	}
-
 	public Long getMemberId() {
 		return member.getId();
-	}
-
-	// TODO: 추후에 DisplayName VO로 분리하게 되면 거기로 옮기기?
-	public String getDisplayName() {
-		return "%s(%s)".formatted(displayName, member.getUsername());
 	}
 
 	// TODO: WorkspaceMember 제거는 hard-delete vs soft-delete 중 뭘 사용하는게 좋을까?
@@ -117,7 +108,7 @@ public class WorkspaceMember extends BaseEntity {
 		}
 		this.role = newRole;
 	}
-	
+
 	public void changeRoleToOwner() {
 		this.role = WorkspaceRole.OWNER;
 	}
@@ -132,6 +123,10 @@ public class WorkspaceMember extends BaseEntity {
 
 	public boolean roleIsLowerThan(WorkspaceRole role) {
 		return this.role.isLowerThan(role);
+	}
+
+	public boolean roleIsEqualOrHigherThan(WorkspaceRole role) {
+		return this.role.isEqualOrHigherThan(role);
 	}
 
 	public void addPosition(Position position) {

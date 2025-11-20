@@ -17,7 +17,7 @@ public enum WorkspaceRole {
 		return level < role.getLevel();
 	}
 
-	public boolean isHigherThan(WorkspaceRole role) {
-		return level > role.getLevel();
+	public boolean isEqualOrHigherThan(WorkspaceRole role) {
+		return level >= role.getLevel();
 	}
 }

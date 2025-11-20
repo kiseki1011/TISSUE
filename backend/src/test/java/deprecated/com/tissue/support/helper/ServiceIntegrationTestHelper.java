@@ -36,18 +36,16 @@ import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
-import com.tissue.api.workspace.application.service.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.application.service.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspace.application.service.WorkspaceMemberInviteService;
-import com.tissue.api.workspace.application.service.WorkspaceMemberService;
-import com.tissue.api.workspace.application.service.WorkspaceParticipationService;
-import com.tissue.api.workspace.application.service.WorkspaceParticipationQueryService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
+import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.fixture.TestDataFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
@@ -69,8 +67,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected DatabaseCleaner databaseCleaner;
 	@Autowired
 	protected PasswordEncoder passwordEncoder;
-	// @Autowired
-	// protected WorkspaceCodeParser workspaceCodeParser;
 	@Autowired
 	protected EntityManager entityManager;
 
@@ -86,13 +82,11 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceMemberService workspaceMemberService;
-	@Autowired
-	protected WorkspaceMemberInviteService workspaceMemberInviteService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@Autowired
 	protected WorkspaceMemberFinder workspaceMemberFinder;
 	@Autowired
-	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
+	protected WorkspaceMemberQueryService workspaceMemberQueryService;
 	@Autowired
 	protected WorkspaceParticipationService workspaceParticipationService;
 	@Autowired
@@ -127,10 +121,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandService issueCommandService;
 	@Autowired
 	protected IssueRelationService issueRelationService;
-	// @Autowired
-	// protected ReviewCommandService reviewCommandService;
-	// @Autowired
-	// protected IssueReviewerService issueReviewerService;
 	@Autowired
 	protected IssueParticipantService issueParticipantService;
 	@Autowired
@@ -141,8 +131,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected SprintCommandService sprintCommandService;
 	@Autowired
 	protected SprintQueryService sprintQueryService;
-	@Autowired
-	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 	@Autowired
 	protected SprintFinder sprintFinder;
 
@@ -156,9 +144,9 @@ public abstract class ServiceIntegrationTestHelper {
 	 * Repository
 	 */
 	@Autowired
-	protected WorkspaceRepository workspaceRepository;
+	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@Autowired
-	protected WorkspaceMemberRepository workspaceMemberRepository;
+	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	@Autowired
 	protected MemberRepository memberRepository;
 	@Autowired

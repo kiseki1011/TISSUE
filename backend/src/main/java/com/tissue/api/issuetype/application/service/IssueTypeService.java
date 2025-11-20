@@ -40,7 +40,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		typeValidator.ensureUniqueLabel(workspace, cmd.label());
@@ -61,7 +61,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse rename(RenameIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
 
 		if (labelUnchanged(issueType, cmd.label())) {
@@ -76,7 +76,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse patch(PatchIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
@@ -87,7 +87,7 @@ public class IssueTypeService {
 
 	@Transactional
 	public IssueTypeResponse softDelete(String workspaceKey, Long id) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceKey);
+		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
 		IssueType issueType = typeFinder.findByIdAndWorkspace(id, workspace);
 
 		typeValidator.ensureDeletable(issueType);

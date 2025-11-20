@@ -8,7 +8,7 @@ import com.tissue.api.member.exception.DuplicateUsernameException;
 import com.tissue.api.member.exception.MemberHasOwnedWorkspacesException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberValidator {
 
 	private final MemberRepository memberRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 
 	public void ensureEmailIsUnique(String email) {
 		if (memberRepository.existsByEmail(email)) {
@@ -35,7 +35,8 @@ public class MemberValidator {
 		String message = "Member(id: %s, username:'%s') cannot withdraw. Delete or transfer ownership of all owned workspaces."
 			.formatted(member.getId(), member.getUsername());
 
-		boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
+		boolean hasOwnedWorkspaces = workspaceMemberCommandRepository.existsByMemberAndRole(member,
+			WorkspaceRole.OWNER);
 		if (hasOwnedWorkspaces) {
 			throw new MemberHasOwnedWorkspacesException(
 				message,

@@ -1,8 +1,9 @@
 package com.tissue.api.workspace.application.dto.request;
 
-public record AssignPositionCommand(
+public record AddPositionCommand(
 	String workspaceKey,
-	Long memberId,
+	Long actorMemberId,
+	Long targetMemberId,
 	Long positionId
 ) {
 }

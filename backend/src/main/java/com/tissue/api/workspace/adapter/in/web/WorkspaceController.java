@@ -1,6 +1,7 @@
 package com.tissue.api.workspace.adapter.in.web;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -8,24 +9,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.common.dto.ApiResponse;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspace.application.service.WorkspaceCommandService;
-import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
-import com.tissue.api.workspace.application.service.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.adapter.in.web.dto.WorkspaceDetail;
 import com.tissue.api.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.adapter.in.web.dto.request.DeleteWorkspaceRequest;
-import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateIssueKeyRequest;
+import com.tissue.api.workspace.adapter.in.web.dto.request.InviteMembersRequest;
 import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
-import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.adapter.in.web.dto.response.WorkspaceResponse;
+import com.tissue.api.workspace.application.dto.request.DeleteWorkspaceCommand;
+import com.tissue.api.workspace.application.dto.request.InviteMembersCommand;
+import com.tissue.api.workspace.application.dto.request.TransferOwnershipCommand;
+import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceDetail;
+import com.tissue.api.workspace.application.port.in.WorkspaceCommandUseCase;
+import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
+import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
+import com.tissue.api.workspace.application.port.in.WorkspaceQueryUseCase;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
@@ -39,85 +40,85 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkspaceController {
 
 	private final WorkspaceCreateUseCase workspaceCreateUseCase;
-	private final WorkspaceCommandService workspaceCommandService;
-	private final WorkspaceQueryService workspaceQueryService;
-	private final WorkspaceAuthenticationService workspaceAuthenticationService;
+	private final WorkspaceCommandUseCase workspaceCommandUseCase;
+	private final WorkspaceParticipationUseCase workspaceParticipationUseCase;
+	private final WorkspaceQueryUseCase workspaceQueryUseCase;
 
-	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<WorkspaceResponse> createWorkspace(
+	public ResponseEntity<WorkspaceCommandResult> create(
 		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid CreateWorkspaceRequest request
 	) {
-		WorkspaceResponse response = workspaceCreateUseCase.createWorkspace(
-			request,
-			userDetails.getMemberId()
+		WorkspaceCommandResult response = workspaceCreateUseCase.create(
+			request.toCommand(userDetails.getMemberId())
 		);
 
-		return ApiResponse.created("Workspace created.", response);
+		// TODO: ResponseEntity.created 사용법?
+		// return ResponseEntity.created();
+
+		return ResponseEntity
+			.status(HttpStatus.CREATED)
+			.body(response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{workspaceKey}/info")
-	public ApiResponse<WorkspaceResponse> updateWorkspaceInfo(
-		@PathVariable String workspaceCode,
+	public ResponseEntity<WorkspaceCommandResult> updateInfo(
+		@PathVariable String workspaceKey,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
 	) {
-		WorkspaceResponse response = workspaceCommandService.updateWorkspaceInfo(
-			request,
-			workspaceCode
-		);
-
-		return ApiResponse.ok("Workspace info updated.", response);
-	}
-
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@PatchMapping("/{code}/password")
-	public ApiResponse<WorkspaceResponse> updateWorkspacePassword(
-		@PathVariable String workspaceCode,
-		@RequestBody @Valid UpdateWorkspacePasswordRequest request
-	) {
-		workspaceAuthenticationService.authenticate(request.originalPassword(), workspaceCode);
-		WorkspaceResponse response = workspaceCommandService.updateWorkspacePassword(request, workspaceCode);
-
-		return ApiResponse.ok("Workspace password updated.", response);
+		WorkspaceCommandResult response = workspaceCommandUseCase.updateInfo(request.toCommand(workspaceKey));
+		return ResponseEntity.ok(response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.OWNER)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{workspaceKey}")
-	public ApiResponse<Void> deleteWorkspace(
-		@PathVariable String workspaceCode,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody DeleteWorkspaceRequest request
+	public ResponseEntity<WorkspaceCommandResult> delete(
+		@PathVariable String workspaceKey,
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceAuthenticationService.authenticate(request.password(), workspaceCode);
-		workspaceCommandService.deleteWorkspace(workspaceCode, userDetails.getMemberId());
+		WorkspaceCommandResult response = workspaceCommandUseCase.delete(new DeleteWorkspaceCommand(workspaceKey));
+		return ResponseEntity.ok(response);
+	}
 
-		return ApiResponse.okWithNoContent("Workspace deleted.");
+	@RoleRequired(role = WorkspaceRole.OWNER)
+	@PatchMapping("/{workspaceKey}/members/{memberId}/ownership")
+	public ResponseEntity<WorkspaceCommandResult> transferOwnership(
+		@PathVariable String workspaceKey,
+		@PathVariable Long memberId,
+		@CurrentMember MemberUserDetails userDetails
+	) {
+		WorkspaceCommandResult response = workspaceCommandUseCase.transferOwnership(
+			new TransferOwnershipCommand(
+				workspaceKey,
+				userDetails.getMemberId(),
+				memberId
+			)
+		);
+		return ResponseEntity.ok(response);
 	}
 
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@GetMapping("/{code}")
-	public ApiResponse<WorkspaceDetail> getWorkspaceDetail(
-		@PathVariable String code
+	@PostMapping("/invite")
+	public ResponseEntity<InviteMembersResult> inviteMembers(
+		@PathVariable String workspaceKey,
+		@RequestBody @Valid InviteMembersRequest request
 	) {
-		WorkspaceDetail response = workspaceQueryService.getWorkspaceDetail(code);
-
-		return ApiResponse.ok("Workspace found.", response);
+		InviteMembersResult response = workspaceParticipationUseCase.invite(
+			new InviteMembersCommand(
+				workspaceKey,
+				request.emails()
+			)
+		);
+		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@PatchMapping("/{code}/key")
-	public ApiResponse<WorkspaceResponse> updateIssueKey(
-		@PathVariable String code,
-		@RequestBody @Valid UpdateIssueKeyRequest request
+	@RoleRequired(role = WorkspaceRole.MEMBER)
+	@GetMapping("/{workspaceKey}")
+	public ResponseEntity<WorkspaceDetail> getDetail(
+		@PathVariable String workspaceKey
 	) {
-		WorkspaceResponse response = workspaceCommandService.updateIssueKeyPrefix(
-			code,
-			request
-		);
-
-		return ApiResponse.ok("Issue key prefix updated.", response);
+		WorkspaceDetail response = workspaceQueryUseCase.getDetail(workspaceKey);
+		return ResponseEntity.ok(response);
 	}
 }

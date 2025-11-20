@@ -5,7 +5,6 @@ import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateRoleRequest(
-	@NotNull(message = "{valid.notnull}")
-	WorkspaceRole role
+	@NotNull WorkspaceRole role
 ) {
 }

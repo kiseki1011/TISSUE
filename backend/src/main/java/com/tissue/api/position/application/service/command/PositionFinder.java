@@ -13,7 +13,7 @@ public class PositionFinder {
 
 	private final PositionRepository positionRepository;
 
-	public Position findPosition(Long positionId, String workspaceCode) {
+	public Position findByIdAndWorkspaceKey(Long positionId, String workspaceCode) {
 		return positionRepository.findByIdAndWorkspace_Key(positionId, workspaceCode)
 			// TODO: PositionNotFoundException
 			.orElseThrow(() -> new RuntimeException(String.format(

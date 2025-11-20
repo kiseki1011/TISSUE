@@ -18,7 +18,7 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +28,7 @@ public class InvitationCommandService {
 
 	private final InvitationFinder invitationFinder;
 	private final InvitationRepository invitationRepository;
-	private final WorkspaceMemberRepository workspaceMemberRepository;
+	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final InvitationValidator invitationValidator;
 	private final WorkspacePolicy workspacePolicy;
 	private final ApplicationEventPublisher eventPublisher;

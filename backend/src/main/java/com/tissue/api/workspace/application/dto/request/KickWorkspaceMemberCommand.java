@@ -1,8 +1,8 @@
 package com.tissue.api.workspace.application.dto.request;
 
-public record AssignTeamCommand(
+public record KickWorkspaceMemberCommand(
 	String workspaceKey,
-	Long memberId,
-	Long teamId
+	Long targetMemberId,
+	Long actorMemberId
 ) {
 }

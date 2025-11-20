@@ -1,15 +1,14 @@
 package com.tissue.api.workspace.adapter.in.web.dto.request;
 
 import com.tissue.api.common.validator.annotation.pattern.DisplayNamePattern;
-import com.tissue.api.common.validator.annotation.size.DisplayNameSize;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record UpdateDisplayNameRequest(
-
-	@DisplayNameSize
 	@DisplayNamePattern
-	@NotBlank(message = "{valid.notblank}")
+	@Size(min = 2, max = 24)
+	@NotBlank
 	String displayName
 ) {
 }

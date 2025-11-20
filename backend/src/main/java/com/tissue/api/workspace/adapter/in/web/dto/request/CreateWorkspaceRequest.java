@@ -1,32 +1,17 @@
 package com.tissue.api.workspace.adapter.in.web.dto.request;
 
-import com.tissue.api.common.validator.annotation.pattern.IssueKeyPrefixPattern;
-import com.tissue.api.common.validator.annotation.pattern.SimplePasswordPattern;
-import com.tissue.api.common.validator.annotation.size.IssueKeyPrefixSize;
-import com.tissue.api.common.validator.annotation.size.NameSize;
-import com.tissue.api.common.validator.annotation.size.password.SimplePasswordSize;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
+import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
+import jakarta.validation.constraints.Size;
 
-@Builder
 public record CreateWorkspaceRequest(
 
-	@NameSize
-	@NotBlank(message = "{valid.notblank}")
-	String name,
+	@Size(max = 100) @NotBlank String name,
 
-	@StandardText
-	@NotBlank(message = "{valid.notblank}")
-	String description,
-
-	@SimplePasswordSize
-	@SimplePasswordPattern
-	String password,
-
-	@IssueKeyPrefixSize
-	@IssueKeyPrefixPattern
-	String issueKeyPrefix
+	@Size(max = 255) @NotBlank String description
 ) {
+	public CreateWorkspaceCommand toCommand(Long memberId) {
+		return new CreateWorkspaceCommand(name, description, memberId);
+	}
 }

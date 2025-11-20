@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.member.domain.model.Member;
@@ -15,11 +13,9 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
-public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
+public interface WorkspaceMemberCommandRepository extends Repository<WorkspaceMember, Long> {
 
-	Page<WorkspaceMember> findByMember_Id(Long memberId, Pageable pageable);
-
-	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
+	Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
 	Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
 

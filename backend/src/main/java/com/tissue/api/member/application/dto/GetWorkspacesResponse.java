@@ -1,16 +1,14 @@
-package com.tissue.api.workspace.adapter.in.web.dto.response;
+package com.tissue.api.member.application.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.api.workspace.adapter.in.web.dto.WorkspaceDetail;
+import com.tissue.api.workspace.application.dto.response.WorkspaceDetail;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
-@ToString
 public class GetWorkspacesResponse {
 	/**
 	 * Todo

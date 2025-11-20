@@ -40,7 +40,7 @@ public class SprintCommandService {
 		String workspaceCode,
 		CreateSprintRequest request
 	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
 
 		Sprint sprint = Sprint.builder()
 			.title(request.title())

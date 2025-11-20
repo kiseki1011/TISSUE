@@ -1,8 +1,9 @@
 package com.tissue.api.workspace.application.dto.request;
 
-public record UpdateDisplayNameCommand(
+import java.util.Set;
+
+public record InviteMembersCommand(
 	String workspaceKey,
-	Long actorMemberId,
-	String displayName
+	Set<String> emails
 ) {
 }

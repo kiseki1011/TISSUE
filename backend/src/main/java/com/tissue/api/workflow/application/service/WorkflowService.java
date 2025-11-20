@@ -49,7 +49,7 @@ public class WorkflowService {
 	// TODO: spring-retry 적용
 	@Transactional
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
 		workflowValidator.ensureLabelUnique(workspace, cmd.label());
 		graphValidator.validateWorkflowGraphStructure(
@@ -93,7 +93,7 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse patch(PatchWorkflowCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.id());
 
 		Patchers.apply(cmd.label(), newLabel -> {
@@ -111,7 +111,7 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse softDelete(String workspaceKey, Long id) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceKey);
+		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
 		Workflow workflow = workflowFinder.findWorkflow(workspace, id);
 
 		// TODO: Workflow의 softDelete 주석 참고
@@ -124,7 +124,7 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse patchState(PatchStateCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 		WorkflowState state = workflowFinder.findWorkflowState(workflow, cmd.statusId());
 
@@ -137,7 +137,7 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse patchTransition(PatchTransitionCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 		WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, cmd.transitionId());
 
@@ -153,7 +153,7 @@ public class WorkflowService {
 		ConfigureTransitionGuardsCommand cmd
 	) {
 		// Workflow와 Transition 조회
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		WorkflowTransition transition = workflow.getTransitions().stream()
@@ -201,7 +201,7 @@ public class WorkflowService {
 	@Transactional
 	public WorkflowResponse configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
 		// Workflow와 Transition 조회
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		WorkflowTransition transition = workflow.getTransitions().stream()

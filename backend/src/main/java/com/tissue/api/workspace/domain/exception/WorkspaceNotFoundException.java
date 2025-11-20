@@ -4,13 +4,9 @@ import com.tissue.api.common.exception.base.ResourceNotFoundException;
 
 public class WorkspaceNotFoundException extends ResourceNotFoundException {
 
-	private static final String MESSAGE = "Workspace not found with code: %s";
+	private static final String MESSAGE = "Workspace not found with key '%s'";
 
-	public WorkspaceNotFoundException(String workspaceCode) {
-		super(String.format(MESSAGE, workspaceCode));
-	}
-
-	public WorkspaceNotFoundException(String workspaceCode, Throwable cause) {
-		super(String.format(MESSAGE, workspaceCode), cause);
+	public WorkspaceNotFoundException(String workspaceKey) {
+		super(MESSAGE.formatted(workspaceKey));
 	}
 }

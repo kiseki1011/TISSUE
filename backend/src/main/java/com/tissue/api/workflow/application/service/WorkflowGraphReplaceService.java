@@ -124,7 +124,7 @@ public class WorkflowGraphReplaceService {
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {

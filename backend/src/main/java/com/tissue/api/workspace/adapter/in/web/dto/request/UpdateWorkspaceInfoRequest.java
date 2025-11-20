@@ -1,31 +1,19 @@
 package com.tissue.api.workspace.adapter.in.web.dto.request;
 
-import com.tissue.api.common.validator.annotation.size.NameSize;
-import com.tissue.api.common.validator.annotation.size.text.StandardText;
+import org.openapitools.jackson.nullable.JsonNullable;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
+import com.tissue.api.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
 
-@Builder
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+
 public record UpdateWorkspaceInfoRequest(
 
-	@NameSize
-	@NotBlank(message = "{valid.notblank}")
-	String name,
+	JsonNullable<@Size(max = 100) @NotEmpty String> name,
 
-	@StandardText
-	@NotBlank(message = "{valid.notblank}")
-	String description
+	JsonNullable<@Size(max = 255) @NotEmpty String> description
 ) {
-	public boolean hasName() {
-		return isNotBlank(name);
-	}
-
-	public boolean hasDescription() {
-		return isNotBlank(description);
-	}
-
-	private boolean isNotBlank(String value) {
-		return value != null && !value.trim().isEmpty();
+	public UpdateWorkspaceInfoCommand toCommand(String workspaceKey) {
+		return new UpdateWorkspaceInfoCommand(workspaceKey, name, description);
 	}
 }

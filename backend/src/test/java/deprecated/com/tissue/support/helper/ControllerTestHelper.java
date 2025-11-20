@@ -38,21 +38,17 @@ import com.tissue.api.security.SecurityConfig;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
-import com.tissue.api.workspace.application.service.WorkspaceCommandService;
-import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.application.service.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.service.WorkspaceAuthenticationService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
 import com.tissue.api.workspace.adapter.in.web.WorkspaceController;
-import com.tissue.api.workspace.application.service.WorkspaceMemberInviteService;
-import com.tissue.api.workspace.application.service.WorkspaceMemberService;
-import com.tissue.api.workspace.application.service.WorkspaceParticipationService;
-import com.tissue.api.workspace.application.service.WorkspaceParticipationQueryService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
 import com.tissue.api.workspace.adapter.in.web.WorkspaceMemberController;
-import com.tissue.api.workspace.adapter.in.web.WorkspaceMembershipController;
-import com.tissue.api.workspace.adapter.in.web.WorkspaceParticipationController;
+import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceParticipationService;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
+import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.config.WebMvcTestConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -63,15 +59,11 @@ import lombok.extern.slf4j.Slf4j;
 		AuthenticationController.class,
 		InvitationController.class,
 		WorkspaceController.class,
-		WorkspaceMembershipController.class,
-		WorkspaceParticipationController.class,
 		WorkspaceMemberController.class,
 		MemberController.class,
 		MemberQueryController.class,
 		PositionController.class,
 		IssueCommandController.class,
-		// ReviewController.class,
-		// IssueReviewerController.class
 	},
 	excludeAutoConfiguration = SecurityAutoConfiguration.class,
 	excludeFilters = {
@@ -96,22 +88,11 @@ public abstract class ControllerTestHelper {
 	@Autowired
 	protected MessageSource messageSource;
 
-	// @MockBean
-	// protected WorkspaceCodeParser workspaceCodeParser;
-
 	/**
 	 * Spring Security
 	 */
 	@MockBean
 	protected JwtTokenService jwtTokenService;
-	// @MockBean
-	// protected JwtAuthenticationFilter jwtAuthenticationFilter;
-	// @MockBean
-	// protected ExceptionHandlerFilter exceptionHandlerFilter;
-	// @MockBean
-	// protected JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-	// @MockBean
-	// protected ApiAccessDeniedHandler apiAccessDeniedHandler;
 
 	/**
 	 * Service
@@ -121,11 +102,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean
-	protected WorkspaceMemberService workspaceMemberService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@MockBean
-	protected WorkspaceMemberInviteService workspaceMemberInviteService;
-	@MockBean
-	protected WorkspaceParticipationQueryService workspaceParticipationQueryService;
+	protected WorkspaceMemberQueryService workspaceMemberQueryService;
 	@MockBean
 	protected WorkspaceParticipationService workspaceParticipationService;
 	@MockBean
@@ -152,12 +131,6 @@ public abstract class ControllerTestHelper {
 	protected PositionQueryService positionQueryService;
 	@MockBean
 	protected IssueCommandService issueCommandService;
-	// @MockBean
-	// protected ReviewCommandService reviewCommandService;
-	// @MockBean
-	// protected IssueReviewerService issueReviewerService;
-	@MockBean
-	protected WorkspaceAuthenticationService workspaceAuthenticationService;
 
 	/**
 	 * Validator
@@ -171,9 +144,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberRepository memberRepository;
 	@MockBean
-	protected WorkspaceRepository workspaceRepository;
+	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@MockBean
-	protected WorkspaceMemberRepository workspaceMemberRepository;
+	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	@MockBean
 	protected InvitationRepository invitationRepository;
 	@MockBean

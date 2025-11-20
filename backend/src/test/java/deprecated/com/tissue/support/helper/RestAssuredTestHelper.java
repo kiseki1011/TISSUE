@@ -12,15 +12,14 @@ import com.tissue.api.position.application.service.command.PositionCommandServic
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
-import com.tissue.api.workspace.application.service.WorkspaceCreateService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
-import com.tissue.api.workspace.application.service.WorkspaceMemberService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberRepository;
+import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.fixture.api.LoginApiFixture;
 import deprecated.com.tissue.support.fixture.api.MemberApiFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +40,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceMemberService workspaceMemberService;
+	protected WorkspaceMemberCommandService workspaceMemberCommandService;
 	@Autowired
 	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
@@ -57,11 +56,11 @@ public abstract class RestAssuredTestHelper {
 	 * Repository
 	 */
 	@Autowired
-	protected WorkspaceRepository workspaceRepository;
+	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@Autowired
 	protected MemberRepository memberRepository;
 	@Autowired
-	protected WorkspaceMemberRepository workspaceMemberRepository;
+	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	@Autowired
 	protected InvitationRepository invitationRepository;
 	@Autowired

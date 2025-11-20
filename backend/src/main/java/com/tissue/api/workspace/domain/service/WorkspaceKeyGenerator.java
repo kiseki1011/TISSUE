@@ -1,4 +1,4 @@
-package com.tissue.api.workspace.domain;
+package com.tissue.api.workspace.domain.service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

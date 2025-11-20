@@ -4,25 +4,18 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspace.domain.port.out.WorkspaceRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkspaceFinder {
 
-	private final WorkspaceRepository workspaceRepository;
+	private final WorkspaceCommandRepository workspaceCommandRepository;
 
-	public Workspace findWorkspace(String workspaceKey) {
-		return workspaceRepository.findByKey(workspaceKey)
-			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
-	}
-
-	public Workspace findWorkspaceWithMembers(String workspaceKey) {
-		return workspaceRepository.findByKeyWithWorkspaceMembers(workspaceKey)
+	public Workspace findByKey(String workspaceKey) {
+		return workspaceCommandRepository.findByKey(workspaceKey)
 			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
 	}
 }

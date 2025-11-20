@@ -1,8 +1,9 @@
 package com.tissue.api.workspace.application.dto.request;
 
-public record RemoveWorkspaceMemberCommand(
+public record AddTeamCommand(
 	String workspaceKey,
+	Long actorMemberId,
 	Long targetMemberId,
-	Long memberId
+	Long teamId
 ) {
 }

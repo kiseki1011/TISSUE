@@ -27,8 +27,8 @@ import com.tissue.api.issue.domain.service.validator.IssueValidator;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
+
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findByIdAndWorkspace(cmd.issueTypeId(), workspace);
 		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(), cmd.workspaceKey());
 
@@ -76,6 +77,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd) {
+
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), issue::updateTitle);
@@ -89,6 +91,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateStoryPoint(UpdateStoryPointCommand cmd) {
+
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		issue.updateStoryPoint(cmd.storyPoint());
@@ -102,6 +105,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
+
 		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
 
 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
@@ -115,6 +119,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
+
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
 
@@ -129,6 +134,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult removeParent(String workspaceKey, String issueKey) {
+
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issue.getParentIssue();
 
@@ -143,6 +149,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult softDelete(String workspaceKey, String issueKey) {
+
 		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
 		Issue parent = issue.getParentIssue();
 

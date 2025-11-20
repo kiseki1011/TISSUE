@@ -11,8 +11,8 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Entity
-@SQLRestriction("archived = false")
+@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workspace extends BaseEntity {
@@ -46,8 +46,6 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private String description;
 
-	private String password;
-
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
 
@@ -55,14 +53,12 @@ public class Workspace extends BaseEntity {
 		@NonNull String key,
 		@NonNull String name,
 		@Nullable String description,
-		@Nullable String password, // TODO: 이후 초대와 임시 링크 참여 구현 후 제거
 		@NonNull Member member
 	) {
 		Workspace workspace = new Workspace();
 		workspace.key = key;
 		workspace.name = name;
 		workspace.description = nullToEmpty(description);
-		workspace.password = password;
 
 		workspace.workspaceMembers.add(WorkspaceMember.create(member, workspace, OWNER));
 
@@ -91,10 +87,6 @@ public class Workspace extends BaseEntity {
 		}
 		owner.changeRoleTo(ADMIN);
 		newOwner.changeRoleToOwner();
-	}
-
-	public void updatePassword(@Nullable String password) {
-		this.password = password;
 	}
 
 	public void updateName(@NonNull String name) {

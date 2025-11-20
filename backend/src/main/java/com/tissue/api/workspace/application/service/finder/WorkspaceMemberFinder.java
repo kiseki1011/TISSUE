@@ -2,7 +2,6 @@ package com.tissue.api.workspace.application.service.finder;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.exception.WorkspaceMemberNotFoundException;
@@ -25,11 +24,6 @@ public class WorkspaceMemberFinder {
 	public WorkspaceMember findByMemberIdAndWorkspace(Long memberId, Workspace workspace) {
 		return queryRepo.findByMember_IdAndWorkspace(memberId, workspace)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
-	}
-
-	public WorkspaceMember findByMemberAndWorkspace(Member member, Workspace workspace) {
-		return queryRepo.findByMemberAndWorkspace(member, workspace)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(member.getId(), workspace.getKey()));
 	}
 
 	public WorkspaceMember findIncludingArchived(Long memberId, String workspaceKey) {

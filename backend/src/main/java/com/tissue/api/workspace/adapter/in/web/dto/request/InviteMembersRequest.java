@@ -2,12 +2,11 @@ package com.tissue.api.workspace.adapter.in.web.dto.request;
 
 import java.util.Set;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public record InviteMembersRequest(
-	@NotEmpty Set<String> emails
+	@NotEmpty Set<@Email @NotBlank String> emails
 ) {
-	public static InviteMembersRequest of(Set<String> emails) {
-		return new InviteMembersRequest(emails);
-	}
 }

@@ -26,4 +26,17 @@ public class MemberQueryController {
 		GetProfileResponse response = memberQueryService.getProfile(userDetails.getMemberId());
 		return ApiResponse.ok("Found profile.", response);
 	}
+
+	// @GetMapping
+	// public ApiResponse<GetWorkspacesResponse> getWorkspaces(
+	// 	@CurrentMember MemberUserDetails userDetails,
+	// 	Pageable pageable
+	// ) {
+	// 	GetWorkspacesResponse response = workspaceParticipationQueryService.getWorkspaces(
+	// 		userDetails.getMemberId(),
+	// 		pageable
+	// 	);
+	//
+	// 	return ApiResponse.ok("Currently joined workspaces found.", response);
+	// }
 }
