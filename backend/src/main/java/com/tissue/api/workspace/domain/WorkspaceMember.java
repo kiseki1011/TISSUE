@@ -64,6 +64,9 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String email;
 
+	// TODO: bio? 자기소개? 추가 고려
+	// private String bio;
+
 	public static WorkspaceMember create(
 		Member member,
 		Workspace workspace,
