@@ -1,7 +1,7 @@
 package com.tissue.api.project.application.port.in;
 
 // TODO: ProjectMemberUseCase -> ProjectMemberCommandUseCase
-public interface ProjectMemberUseCase {
+public interface ProjectMemberCommandUseCase {
 
 	// TODO: 그냥 ProjectCommandUseCase에 옮길까?
 

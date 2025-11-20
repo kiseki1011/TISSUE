@@ -1,5 +1,7 @@
 package com.tissue.api.project.domain;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.project.domain.enums.ProjectRole;
 import com.tissue.api.workspace.domain.WorkspaceMember;
@@ -22,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Entity
+@SQLRestriction("softDeleted = false")
 @Table(
 	name = "project_member",
 	uniqueConstraints = {
@@ -39,6 +42,9 @@ public class ProjectMember extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "project_id", nullable = false)
 	private Project project;
+
+	// TODO: workspaceKey는 불변이기 때문에 편의 필드 추가 고려할까? 생성시 project.getWorkspaceKey
+	// TODO: projectKey는 불변이기 때문에 편의 필드 추가 고려할까? 생성시 project.getKey
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "workspace_member_id", nullable = false)
@@ -64,12 +70,15 @@ public class ProjectMember extends BaseEntity {
 		this.role = newRole;
 	}
 
-	// TODO: workspaceKey는 불변이기 때문에 편의 필드로 추가하는 것을 고려
 	public String getWorkspaceKey() {
 		return project.getWorkspaceKey();
 	}
 
 	public String getProjectKey() {
 		return project.getKey();
+	}
+
+	public void remove() {
+		softDelete();
 	}
 }

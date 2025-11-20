@@ -35,7 +35,7 @@ import lombok.NonNull;
  *  - workspace + key 유일성 제약
  */
 @Entity
-@SQLRestriction("archived = false")
+@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Project extends BaseEntity {
@@ -130,6 +130,10 @@ public class Project extends BaseEntity {
 
 	private void increaseSprintNumber() {
 		this.sprintNumber++;
+	}
+
+	private void delete() {
+		softDelete();
 	}
 
 	// TODO: getActiveSprints (Sprint와 양방향 관계인 경우에만 추가)

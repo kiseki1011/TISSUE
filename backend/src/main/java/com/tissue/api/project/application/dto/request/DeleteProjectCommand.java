@@ -1,8 +1,7 @@
 package com.tissue.api.project.application.dto.request;
 
-public record UpdateProjectKeyCommand(
+public record DeleteProjectCommand(
 	String workspaceKey,
-	String projectKey,
-	String newKey
+	String projectKey
 ) {
 }
