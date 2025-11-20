@@ -3,6 +3,8 @@ package com.tissue.api.workspace.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hibernate.annotations.SQLRestriction;
+
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.position.domain.model.Position;
@@ -25,8 +27,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// TODO: Soft-delete 사용
 @Entity
+@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {
@@ -133,18 +135,34 @@ public class WorkspaceMember extends BaseEntity {
 	}
 
 	public void addPosition(Position position) {
-		this.workspaceMemberPositions.add(new WorkspaceMemberPosition(this, position));
+		WorkspaceMemberPosition.create(this, position);
 	}
 
 	public void removePosition(Position position) {
-		this.workspaceMemberPositions.removeIf(wmp -> wmp.getPosition().equals(position));
+		WorkspaceMemberPosition wmp = this.workspaceMemberPositions.stream()
+			.filter(w -> w.getPosition().equals(position))
+			.findFirst()
+			.orElse(null);
+
+		if (wmp != null) {
+			this.workspaceMemberPositions.remove(wmp);
+			position.getWorkspaceMemberPositions().remove(wmp);
+		}
 	}
 
 	public void addTeam(Team team) {
-		this.workspaceMemberTeams.add(new WorkspaceMemberTeam(this, team));
+		WorkspaceMemberTeam.create(this, team);
 	}
 
 	public void removeTeam(Team team) {
-		this.workspaceMemberTeams.removeIf(wmp -> wmp.getTeam().equals(team));
+		WorkspaceMemberTeam wmp = this.workspaceMemberTeams.stream()
+			.filter(w -> w.getTeam().equals(team))
+			.findFirst()
+			.orElse(null);
+
+		if (wmp != null) {
+			this.workspaceMemberTeams.remove(wmp);
+			team.getWorkspaceMemberTeams().remove(wmp);
+		}
 	}
 }

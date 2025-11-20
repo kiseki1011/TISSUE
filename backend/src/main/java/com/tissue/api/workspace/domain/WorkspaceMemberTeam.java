@@ -43,8 +43,15 @@ public class WorkspaceMemberTeam extends BaseEntity {
 	public WorkspaceMemberTeam(WorkspaceMember workspaceMember, Team team) {
 		this.workspaceMember = workspaceMember;
 		this.team = team;
+	}
 
-		workspaceMember.getWorkspaceMemberTeams().add(this);
-		team.getWorkspaceMemberTeams().add(this);
+	public static WorkspaceMemberTeam create(
+		WorkspaceMember workspaceMember,
+		Team team
+	) {
+		WorkspaceMemberTeam wmt = new WorkspaceMemberTeam(workspaceMember, team);
+		workspaceMember.getWorkspaceMemberTeams().add(wmt);
+		team.getWorkspaceMemberTeams().add(wmt);
+		return wmt;
 	}
 }

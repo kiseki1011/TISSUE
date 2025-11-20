@@ -43,8 +43,15 @@ public class WorkspaceMemberPosition extends BaseEntity {
 	public WorkspaceMemberPosition(WorkspaceMember workspaceMember, Position position) {
 		this.workspaceMember = workspaceMember;
 		this.position = position;
+	}
 
-		workspaceMember.getWorkspaceMemberPositions().add(this);
-		position.getWorkspaceMemberPositions().add(this);
+	public static WorkspaceMemberPosition create(
+		WorkspaceMember workspaceMember,
+		Position position
+	) {
+		WorkspaceMemberPosition wmp = new WorkspaceMemberPosition(workspaceMember, position);
+		workspaceMember.getWorkspaceMemberPositions().add(wmp);
+		position.getWorkspaceMemberPositions().add(wmp);
+		return wmp;
 	}
 }

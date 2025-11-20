@@ -56,10 +56,6 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 			cmd.workspaceKey()
 		);
 
-		if (target.isOwner()) {
-			throw new RuntimeException("Cannot change role of OWNER. Use ownership transfer.");
-		}
-
 		target.changeRoleTo(cmd.role());
 
 		// TODO: WorkspaceMemberRoleChangedEvent
