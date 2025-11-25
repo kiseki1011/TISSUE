@@ -23,13 +23,13 @@ public class WorkspaceSecurityGuard {
 		return targetMemberId.equals(actorMemberId);
 	}
 
-	public boolean isHigherThanMember(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
+	public boolean isMember(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
 		return findWorkspaceMember(actorMemberId, workspaceKey)
 			.map(actor -> actor.roleIsEqualOrHigherThan(MEMBER))
 			.orElse(false);
 	}
 
-	public boolean isHigherThanAdmin(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
+	public boolean isAdmin(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
 		return findWorkspaceMember(actorMemberId, workspaceKey)
 			.map(actor -> actor.roleIsEqualOrHigherThan(ADMIN))
 			.orElse(false);
