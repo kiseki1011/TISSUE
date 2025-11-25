@@ -5,8 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 
+@Transactional
 public interface WorkspaceCreateUseCase {
 
-	@Transactional
 	WorkspaceCommandResult create(CreateWorkspaceCommand cmd);
 }

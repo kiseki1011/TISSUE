@@ -11,22 +11,19 @@ import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
 
+@Transactional
 public interface WorkspaceParticipationUseCase {
 
-	// TODO: MEMBER 이상도 초대를 허용할까?
-	@Transactional
 	@PreAuthorize(REQUIRES_ADMIN)
 	InviteMembersResult invite(InviteMembersCommand cmd);
 
+	// TODO: 이건 다른 usecase로 옮기는게 좋을까?
 	// WorkspaceMemberCommandResult acceptInvitation(AcceptInvitationCommand cmd);
 
-	@Transactional
 	WorkspaceMemberCommandResult join(String workspaceKey, Long memberId);
 
-	@Transactional
 	WorkspaceCommandResult leave(String workspaceKey, Long memberId);
 
-	@Transactional
-	@PreAuthorize(REQUIRES_ADMIN + " AND " + REQUIRES_HIGHER_ROLE_THAN_TARGET)
+	@PreAuthorize(REQUIRES_ADMIN + AND + REQUIRES_HIGHER_ROLE_THAN_TARGET)
 	WorkspaceMemberCommandResult kick(KickWorkspaceMemberCommand cmd);
 }
