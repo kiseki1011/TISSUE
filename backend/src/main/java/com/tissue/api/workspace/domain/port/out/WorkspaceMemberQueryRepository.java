@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
@@ -54,4 +55,8 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 		@Param("memberId") Long memberId,
 		@Param("workspaceKey") String workspaceKey
 	);
+
+	boolean existsByMemberAndRole(Member member, WorkspaceRole role);
+
+	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 }

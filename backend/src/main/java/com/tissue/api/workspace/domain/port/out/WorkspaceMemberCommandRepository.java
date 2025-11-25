@@ -11,17 +11,12 @@ import org.springframework.data.repository.query.Param;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 public interface WorkspaceMemberCommandRepository extends Repository<WorkspaceMember, Long> {
 
 	Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
 	Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
-
-	boolean existsByMemberAndRole(Member member, WorkspaceRole role);
-
-	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 
 	List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
