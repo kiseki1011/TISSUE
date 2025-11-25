@@ -8,5 +8,7 @@ public class WorkspaceNotFoundException extends ResourceNotFoundException {
 
 	public WorkspaceNotFoundException(String workspaceKey) {
 		super(MESSAGE.formatted(workspaceKey));
+
+		addContext("workspaceKey", workspaceKey);
 	}
 }
