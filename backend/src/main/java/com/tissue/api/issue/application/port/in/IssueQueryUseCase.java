@@ -2,6 +2,8 @@ package com.tissue.api.issue.application.port.in;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.tissue.api.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.api.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.api.issue.application.dto.response.IssueRelationsDetail;
@@ -12,6 +14,7 @@ import com.tissue.api.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.api.issue.application.dto.response.info.IssueIdentificationInfo;
 import com.tissue.api.issue.application.dto.response.info.ParticipantInfo;
 
+@Transactional(readOnly = true)
 public interface IssueQueryUseCase {
 
 	IssueBasicInfo getBasic(String workspaceKey, String issueKey);

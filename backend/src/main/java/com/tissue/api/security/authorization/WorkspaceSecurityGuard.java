@@ -1,4 +1,4 @@
-package com.tissue.api.workspace.domain.service;
+package com.tissue.api.security.authorization;
 
 import static com.tissue.api.workspace.domain.enums.WorkspaceRole.*;
 
@@ -13,6 +13,7 @@ import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+// TODO: 권한 redis 캐싱
 @Component
 @RequiredArgsConstructor
 public class WorkspaceSecurityGuard {
@@ -59,6 +60,7 @@ public class WorkspaceSecurityGuard {
 		return target.roleIsLowerThan(actor.getRole());
 	}
 
+	// TODO: findRoleByMemberIdAndWorkspaceKey 추가 후 사용
 	private Optional<WorkspaceMember> findWorkspaceMember(Long memberId, String workspaceKey) {
 		return workspaceMemberCommandRepository.findByMember_IdAndWorkspaceKey(
 			memberId,

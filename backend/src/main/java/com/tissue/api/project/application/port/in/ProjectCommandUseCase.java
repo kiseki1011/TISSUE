@@ -1,30 +1,30 @@
 package com.tissue.api.project.application.port.in;
 
+import static com.tissue.api.security.authorization.ProjectSecurityExpressions.*;
+import static com.tissue.api.security.authorization.WorkspaceSecurityExpressions.*;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.project.application.dto.request.CreateProjectCommand;
 import com.tissue.api.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.api.project.application.dto.request.UpdateProjectCommand;
-import com.tissue.api.project.application.dto.request.UpdateProjectKeyCommand;
 import com.tissue.api.project.application.dto.response.ProjectCommandResult;
-import com.tissue.api.security.authorization.WorkspaceSecurityExpressions;
 
+@Transactional
 public interface ProjectCommandUseCase {
 
-	@Transactional
+	@PreAuthorize(REQUIRES_WORKSPACE_MEMBER)
 	ProjectCommandResult create(CreateProjectCommand cmd);
 
-	//  TODO: ProjectRole.ADMIN 이상
-	@Transactional
-	// @PreAuthorize(ProjectSecurityExpressions.REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
 	ProjectCommandResult update(UpdateProjectCommand cmd);
 
-	@Transactional
-	@PreAuthorize(WorkspaceSecurityExpressions.REQUIRES_ADMIN)
-	ProjectCommandResult updateKey(UpdateProjectKeyCommand cmd);
-
-	@Transactional
-	@PreAuthorize(WorkspaceSecurityExpressions.REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	ProjectCommandResult delete(DeleteProjectCommand cmd);
+
+	// TODO: archive()
+	// TODO: migrateProjectKey()
+	//  - 선택사항. 여유 있으면 구현하기.
+	//  - softDelete 상태에서도 가능하도록?
 }

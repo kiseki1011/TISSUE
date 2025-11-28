@@ -19,8 +19,6 @@ import com.tissue.api.position.presentation.dto.request.UpdatePositionColorReque
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.GetPositionsResponse;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +31,6 @@ public class PositionController {
 	private final PositionCommandService positionCommandService;
 	private final PositionQueryService positionQueryService;
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<PositionResponse> createPosition(
@@ -44,7 +41,6 @@ public class PositionController {
 		return ApiResponse.created("Position created.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}")
 	public ApiResponse<PositionResponse> updatePosition(
 		@PathVariable String code,
@@ -55,7 +51,6 @@ public class PositionController {
 		return ApiResponse.ok("Position updated.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{positionId}/color")
 	public ApiResponse<PositionResponse> updatePositionColor(
 		@PathVariable String code,
@@ -66,7 +61,6 @@ public class PositionController {
 		return ApiResponse.ok("Position color updated.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{positionId}")
 	public ApiResponse<Void> deletePosition(
@@ -77,7 +71,6 @@ public class PositionController {
 		return ApiResponse.okWithNoContent("Position deleted.");
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping
 	public ApiResponse<GetPositionsResponse> getPositions(
 		@PathVariable String code

@@ -7,17 +7,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum WorkspaceRole {
 
-	OWNER(3),
+	OWNER(1),
 	ADMIN(2),
-	MEMBER(1);
+	MEMBER(3);
 
 	private final int level;
 
-	public boolean isLowerThan(WorkspaceRole role) {
-		return level < role.getLevel();
+	public boolean isLowerThan(WorkspaceRole other) {
+		return this.level > other.getLevel();
 	}
 
-	public boolean isEqualOrHigherThan(WorkspaceRole role) {
-		return level >= role.getLevel();
+	public boolean isEqualOrHigherThan(WorkspaceRole other) {
+		return this.level <= other.getLevel();
 	}
 }

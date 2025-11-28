@@ -78,7 +78,7 @@ public class IssueRelation extends BaseEntity {
 	}
 
 	private static void ensureSameWorkspace(Issue source, Issue target) {
-		if (!source.getWorkspace().equals(target.getWorkspace())) {
+		if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
 			throw new RelationWorkspaceMismatchException(
 				source.getWorkspaceKey(),
 				source.getKey(),

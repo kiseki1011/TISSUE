@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 // TODO: soft delete 적용
+//  BaseEntity의 softDelete을 사용하지 말고 따로 MemberStatus enum을 만들어서 사용
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,9 +51,10 @@ public class Member extends BaseDateEntity {
 	private String password;
 
 	// TODO: name, birthDate MemberProfile라는 VO로 묶기?
-	//  아니면 Profile VO는 만들지 않고 Name VO를 만들어서 사용하기?
+	//  아니면 Profile VO는 만들지 않고 Name VO만 만들어서 사용하기?
 	private String name;
 
+	// TODO: 필요 없으면 제거 고려
 	private LocalDate birthDate;
 
 	@Enumerated(EnumType.STRING)
@@ -79,23 +81,23 @@ public class Member extends BaseDateEntity {
 		return member;
 	}
 
-	public void updateEmail(String email) {
+	public void updateEmail(@NonNull String email) {
 		this.email = email;
 	}
 
-	public void updateUsername(String username) {
+	public void updateUsername(@NonNull String username) {
 		this.username = username;
 	}
 
-	public void updatePassword(String password) {
+	public void updatePassword(@NonNull String password) {
 		this.password = password;
 	}
 
-	public void updateName(String name) {
+	public void updateName(@NonNull String name) {
 		this.name = name;
 	}
 
-	public void updateBirthDate(LocalDate birthDate) {
+	public void updateBirthDate(@Nullable LocalDate birthDate) {
 		this.birthDate = birthDate;
 	}
 }

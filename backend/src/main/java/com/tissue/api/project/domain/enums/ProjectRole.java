@@ -7,19 +7,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ProjectRole {
 
-	ADMIN(3),
+	ADMIN(1),
 	MEMBER(2),
-	VIEWER(1);
-	
-	// TODO: GEUST 고려
+	VIEWER(3);
 
 	private final int level;
 
-	public boolean isLowerThan(ProjectRole role) {
-		return level < role.getLevel();
-	}
-
-	public boolean isHigherThan(ProjectRole role) {
-		return level > role.getLevel();
+	public boolean isEqualOrHigherThan(ProjectRole other) {
+		return this.level <= other.getLevel();
 	}
 }

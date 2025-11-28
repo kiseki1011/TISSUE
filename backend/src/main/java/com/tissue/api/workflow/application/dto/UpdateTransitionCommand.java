@@ -7,8 +7,9 @@ import com.tissue.api.common.vo.Label;
 import lombok.Builder;
 
 @Builder
-public record PatchTransitionCommand(
+public record UpdateTransitionCommand(
 	String workspaceKey,
+	String projectKey,
 	Long workflowId,
 	Long transitionId,
 	JsonNullable<Label> label,

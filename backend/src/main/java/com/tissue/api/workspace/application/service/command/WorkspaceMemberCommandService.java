@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.domain.model.Position;
+import com.tissue.api.security.authorization.WorkspaceSecurityGuard;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.workspace.application.dto.request.AddPositionCommand;
@@ -16,7 +17,6 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandR
 import com.tissue.api.workspace.application.port.in.WorkspaceMemberCommandUseCase;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.WorkspaceMember;
-import com.tissue.api.workspace.domain.service.WorkspaceSecurityGuard;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

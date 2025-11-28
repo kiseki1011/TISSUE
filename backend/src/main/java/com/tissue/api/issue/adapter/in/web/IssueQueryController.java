@@ -20,8 +20,6 @@ import com.tissue.api.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.api.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +30,6 @@ public class IssueQueryController {
 
 	private final IssueQueryUseCase issueQueryUseCase;
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/basic")
 	public ResponseEntity<IssueBasicInfo> getBasicInfo(
 		@PathVariable String workspaceKey,
@@ -44,7 +41,6 @@ public class IssueQueryController {
 	}
 
 	// TODO: content의 경우 크기가 클수 있어서 캐싱 정책을 적용을 고려해야 하지 않을까?
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}")
 	public ResponseEntity<IssueCommonDetail> getCommon(
 		@PathVariable String workspaceKey,
@@ -55,7 +51,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/custom-fields")
 	public ResponseEntity<IssueCustomDetail> getCustomFields(
 		@PathVariable String workspaceKey,
@@ -66,7 +61,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/parent")
 	public ResponseEntity<IssueIdentificationInfo> getParent(
 		@PathVariable String workspaceKey,
@@ -77,7 +71,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/children")
 	public ResponseEntity<List<IssueIdentificationInfo>> getChildren(
 		@PathVariable String workspaceKey,
@@ -88,7 +81,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/relations")
 	public ResponseEntity<IssueRelationsDetail> getRelations(
 		@PathVariable String workspaceKey,
@@ -100,7 +92,6 @@ public class IssueQueryController {
 	}
 
 	// TODO: author vs creator 더 좋은 표현은?
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/author")
 	public ResponseEntity<ParticipantInfo> getAuthor(
 		@PathVariable String workspaceKey,
@@ -111,7 +102,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/reviewers")
 	public ResponseEntity<IssueReviewersDetail> getReviewers(
 		@PathVariable String workspaceKey,
@@ -122,7 +112,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/subscribers")
 	public ResponseEntity<IssueSubscribersDetail> getSubscribers(
 		@PathVariable String workspaceKey,
@@ -133,7 +122,6 @@ public class IssueQueryController {
 		return ResponseEntity.ok(response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping("/{issueKey}/transitions")
 	public ResponseEntity<List<TransitionDetail>> getAvailableTransitions(
 		@PathVariable String workspaceKey,

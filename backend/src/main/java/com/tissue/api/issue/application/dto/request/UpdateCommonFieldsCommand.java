@@ -11,6 +11,7 @@ import lombok.Builder;
 @Builder
 public record UpdateCommonFieldsCommand(
 	String workspaceKey,
+	String projectKey,
 	String issueKey,
 	JsonNullable<String> title,
 	JsonNullable<String> content,

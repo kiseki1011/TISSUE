@@ -7,6 +7,6 @@ public record WorkflowResponse(
 	Long id
 ) {
 	public static WorkflowResponse from(Workflow workflow) {
-		return new WorkflowResponse(workflow.getWorkspace().getKey(), workflow.getId());
+		return new WorkflowResponse(workflow.getProject().getKey(), workflow.getId());
 	}
 }

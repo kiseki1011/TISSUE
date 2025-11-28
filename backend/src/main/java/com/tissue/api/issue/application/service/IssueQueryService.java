@@ -1,9 +1,10 @@
 package com.tissue.api.issue.application.service;
 
+import static com.tissue.api.common.util.IssueKeyUtil.*;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.api.issue.application.dto.response.IssueCustomDetail;
@@ -20,21 +21,21 @@ import com.tissue.api.issue.domain.IssueFieldValue;
 import com.tissue.api.issue.domain.IssueRelation;
 import com.tissue.api.issue.domain.IssueReviewer;
 import com.tissue.api.issue.domain.IssueSubscriber;
+import com.tissue.api.issue.domain.exception.IssueNotFoundException;
 import com.tissue.api.issue.domain.port.out.IssueFieldValueQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueRelationQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueReviewerQueryRepository;
 import com.tissue.api.issue.domain.port.out.IssueSubscriberQueryRepository;
-import com.tissue.api.issue.domain.exception.IssueNotFoundException;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.workflow.domain.Workflow;
-import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: project 애그리거트 추가 후 projectKey 관련 리팩토링
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class IssueQueryService implements IssueQueryUseCase {
 
@@ -43,15 +44,20 @@ public class IssueQueryService implements IssueQueryUseCase {
 	private final IssueSubscriberQueryRepository subscriberQueryRepo;
 	private final IssueReviewerQueryRepository reviewerQueryRepo;
 	private final IssueRelationQueryRepository relationQueryRepo;
-	private final WorkspaceMemberFinder wmFinder;
+	// private final WorkspaceMemberFinder wmFinder;
+
+	private final ProjectFinder projectFinder;
+	private final ProjectMemberFinder projectMemberFinder;
 
 	@Override
 	public IssueBasicInfo getBasic(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
-		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
-		WorkspaceMember updatedBy = wmFinder.findIncludingArchived(issue.getLastModifiedBy(), workspaceKey);
+		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+
+		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
+		ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
 
 		return IssueBasicInfo.from(issue, author, updatedBy);
 	}
@@ -59,10 +65,12 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCommonDetail getCommon(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithDetail(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
-		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
-		WorkspaceMember updatedBy = wmFinder.findIncludingArchived(issue.getLastModifiedBy(), workspaceKey);
+		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+
+		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
+		ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
 		List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
 
 		return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
@@ -71,7 +79,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCustomDetail getCustom(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
 		List<IssueFieldValue> fieldValues = issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(
 			workspaceKey,
@@ -84,7 +92,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueIdentificationInfo getParent(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithParent(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
 		Issue parent = issue.getParentIssue();
 		if (parent == null) {
@@ -121,9 +129,10 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public ParticipantInfo getAuthor(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
-		WorkspaceMember author = wmFinder.findIncludingArchived(issue.getCreatedBy(), workspaceKey);
+		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
 
 		return ParticipantInfo.from(author);
 	}
@@ -143,7 +152,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(issueKey, workspaceKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, "projectKey", workspaceKey));
+			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 
 		Workflow workflow = issue.getIssueType().getWorkflow();
 

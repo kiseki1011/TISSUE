@@ -10,6 +10,7 @@ import lombok.Builder;
 @Builder
 public record PatchWorkflowCommand(
 	String workspaceKey,
+	String projectKey,
 	Long id,
 	JsonNullable<Label> label,
 	JsonNullable<String> description,

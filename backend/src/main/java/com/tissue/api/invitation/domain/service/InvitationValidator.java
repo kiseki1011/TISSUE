@@ -2,7 +2,7 @@ package com.tissue.api.invitation.domain.service;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InvitationValidator {
 
-	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+	private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
 	public void validateInvitation(Long memberId, String workspaceKey) {
-		boolean alreadyJoined = workspaceMemberCommandRepository.existsByMember_IdAndWorkspace_Key(memberId,
+		boolean alreadyJoined = workspaceMemberQueryRepository.existsByMember_IdAndWorkspace_Key(memberId,
 			workspaceKey);
 
 		if (alreadyJoined) {

@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record RenameIssueTypeCommand(
 	String workspaceKey,
+	String projectKey,
 	Long id,
 	Label label
 ) {

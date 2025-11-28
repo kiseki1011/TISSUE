@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.api.sprint.domain.event.SprintStartedEvent;
 import com.tissue.api.sprint.domain.model.Sprint;
@@ -32,28 +34,30 @@ public class SprintCommandService {
 	private final SprintFinder sprintFinder;
 	private final SprintRepository sprintRepository;
 	private final WorkspaceFinder workspaceFinder;
+	private final ProjectFinder projectFinder;
 	private final IssueFinder issueFinder;
 	private final ApplicationEventPublisher eventPublisher;
 
+	// TODO: CreateSprintCommand
 	@Transactional
 	public SprintResponse createSprint(
-		String workspaceCode,
+		String workspaceKey,
 		CreateSprintRequest request
 	) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
-		Sprint sprint = Sprint.builder()
-			.title(request.title())
-			.goal(request.goal())
-			.plannedStartDate(request.plannedStartDate())
-			.plannedEndDate(request.plannedEndDate())
-			.workspace(workspace)
-			.build();
+		Sprint sprint = Sprint.create(
+			project,
+			cmd.title(),
+			cmd.goal()
+		);
 
-		Sprint savedSprint = sprintRepository.save(sprint);
-		return SprintResponse.from(savedSprint);
+		sprintRepository.save(sprint);
+
+		return SprintResponse.from(sprint);
 	}
 
+	// TODO: AddSprintIssueCommand
 	@Transactional
 	public SprintResponse addIssues(
 		String workspaceCode,
@@ -62,7 +66,7 @@ public class SprintCommandService {
 	) {
 		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
 
-		List<Issue> issues = issueFinder.findIssues(request.issueKeys(), workspaceCode);
+		List<Issue> issues = issueFinder.findAllBy(request.issueKeys(), workspaceCode);
 
 		for (Issue issue : issues) {
 			sprint.addIssue(issue);
@@ -71,6 +75,7 @@ public class SprintCommandService {
 		return SprintResponse.from(sprint);
 	}
 
+	// TODO: UpdateSprintCommand
 	@Transactional
 	public SprintResponse updateSprint(
 		String workspaceCode,
@@ -94,26 +99,30 @@ public class SprintCommandService {
 		return SprintResponse.from(sprint);
 	}
 
-	@Transactional
-	public SprintResponse updateSprintStatus(
-		String workspaceCode,
-		String sprintKey,
-		UpdateSprintStatusRequest request,
-		Long currentWorkspaceMemberId
-	) {
-		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
+	// @Transactional
+	// public SprintResponse updateSprintStatus(
+	// 	String workspaceCode,
+	// 	String sprintKey,
+	// 	UpdateSprintStatusRequest request,
+	// 	Long currentWorkspaceMemberId
+	// ) {
+	// 	Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
+	//
+	// 	sprint.updateStatus(request.newStatus());
+	//
+	// 	if (sprint.getStatus() == SprintStatus.ACTIVE) {
+	// 		eventPublisher.publishEvent(SprintStartedEvent.createEvent(sprint, currentWorkspaceMemberId));
+	// 	} else if (sprint.getStatus() == SprintStatus.COMPLETED) {
+	// 		eventPublisher.publishEvent(SprintCompletedEvent.createEvent(sprint, currentWorkspaceMemberId));
+	// 	}
+	//
+	// 	return SprintResponse.from(sprint);
+	// }
 
-		sprint.updateStatus(request.newStatus());
+	// TODO: StartSprintCommand
+	// TODO: CompleteSprintCommand
 
-		if (sprint.getStatus() == SprintStatus.ACTIVE) {
-			eventPublisher.publishEvent(SprintStartedEvent.createEvent(sprint, currentWorkspaceMemberId));
-		} else if (sprint.getStatus() == SprintStatus.COMPLETED) {
-			eventPublisher.publishEvent(SprintCompletedEvent.createEvent(sprint, currentWorkspaceMemberId));
-		}
-
-		return SprintResponse.from(sprint);
-	}
-
+	// TODO: RemoveSprintIssueCommand
 	@Transactional
 	public SprintResponse removeIssue(
 		String workspaceCode,

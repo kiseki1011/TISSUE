@@ -43,12 +43,18 @@ public class ProjectMember extends BaseEntity {
 	@JoinColumn(name = "project_id", nullable = false)
 	private Project project;
 
-	// TODO: workspaceKey는 불변이기 때문에 편의 필드 추가 고려할까? 생성시 project.getWorkspaceKey
-	// TODO: projectKey는 불변이기 때문에 편의 필드 추가 고려할까? 생성시 project.getKey
+	@Column(name = "project_key", nullable = false, updatable = false)
+	private String projectKey;
+
+	@Column(name = "workspace_key", nullable = false, updatable = false)
+	private String workspaceKey;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "workspace_member_id", nullable = false)
 	private WorkspaceMember workspaceMember;
+
+	@Column(name = "member_id", nullable = false, updatable = false)
+	private Long memberId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -61,21 +67,19 @@ public class ProjectMember extends BaseEntity {
 	) {
 		ProjectMember projectMember = new ProjectMember();
 		projectMember.project = project;
+		projectMember.projectKey = project.getKey();
+		projectMember.workspaceKey = project.getWorkspaceKey();
+
 		projectMember.workspaceMember = workspaceMember;
+		projectMember.memberId = workspaceMember.getMemberId();
+
 		projectMember.role = role;
+
 		return projectMember;
 	}
 
 	public void changeRole(@NonNull ProjectRole newRole) {
 		this.role = newRole;
-	}
-
-	public String getWorkspaceKey() {
-		return project.getWorkspaceKey();
-	}
-
-	public String getProjectKey() {
-		return project.getKey();
 	}
 
 	public void remove() {

@@ -9,9 +9,15 @@ import jakarta.validation.constraints.NotEmpty;
 public record ReorderOptionsRequest(
 	@NotEmpty List<Long> targetOrderedIds
 ) {
-	public ReorderOptionsCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
+	public ReorderOptionsCommand toCommand(
+		String workspaceKey,
+		String projectKey,
+		Long issueTypeId,
+		Long issueFieldId
+	) {
 		return ReorderOptionsCommand.builder()
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
 			.targetOrderedIds(targetOrderedIds)

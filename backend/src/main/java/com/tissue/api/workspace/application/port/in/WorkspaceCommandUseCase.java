@@ -13,14 +13,14 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 @Transactional
 public interface WorkspaceCommandUseCase {
 
-	@PreAuthorize(REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceCommandResult updateInfo(UpdateWorkspaceInfoCommand cmd);
 
 	// TODO: OWNER 이상으로 최소필요 권한을 변경할까?
-	@PreAuthorize(REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceCommandResult delete(DeleteWorkspaceCommand cmd);
 
-	@PreAuthorize(REQUIRES_OWNER)
+	@PreAuthorize(REQUIRES_WORKSPACE_OWNER)
 	WorkspaceCommandResult transferOwnership(TransferOwnershipCommand cmd);
 
 	// TODO: restoreWorkspace - softDeleted 상태를 복구

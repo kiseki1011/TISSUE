@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issuetype.application.dto.DeleteIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.DeleteOptionCommand;
 import com.tissue.api.issuetype.application.service.IssueFieldService;
 import com.tissue.api.issuetype.presentation.dto.request.AddOptionRequest;
 import com.tissue.api.issuetype.presentation.dto.request.CreateIssueFieldRequest;
@@ -27,111 +28,143 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issuetypes/{issueTypeId}")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/types/{typeId}/fields")
 @RequiredArgsConstructor
 public class IssueFieldController {
 
-	/**
-	 * TODO
-	 *  - add(create) field option -> allow batch creation?
-	 *  - delete field option -> allow batch delete?
-	 */
 	private final IssueFieldService issueFieldService;
 
-	@PostMapping("/fields")
+	@PostMapping
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> create(
+	public ResponseEntity<IssueFieldResponse> create(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@RequestBody @Valid CreateIssueFieldRequest req
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@RequestBody @Valid CreateIssueFieldRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.create(req.toCommand(workspaceKey, issueTypeId));
+		IssueFieldResponse response = issueFieldService.create(
+			request.toCommand(workspaceKey, projectKey, typeId));
+
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Issue field created.", res));
+			.body(response);
 	}
 
-	@PutMapping("/fields/{id}/rename")
+	@PutMapping("/{fieldId}/rename")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> rename(
+	public ResponseEntity<IssueFieldResponse> rename(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
-		@RequestBody @Valid RenameIssueFieldRequest req
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
+		@RequestBody @Valid RenameIssueFieldRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.rename(req.toCommand(workspaceKey, issueTypeId, id));
-		return ApiResponse.ok("Issue field renamed.", res);
+		IssueFieldResponse response = issueFieldService.rename(
+			request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+
+		return ResponseEntity.ok(response);
 	}
 
-	@PatchMapping("/fields/{id}")
+	@PatchMapping("/{fieldId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> patchMetaData(
+	public ResponseEntity<IssueFieldResponse> update(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
-		@RequestBody @Valid PatchIssueFieldRequest req
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
+		@RequestBody @Valid PatchIssueFieldRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.patch(req.toCommand(workspaceKey, issueTypeId, id));
-		return ApiResponse.ok("Issue field updated.", res);
+		IssueFieldResponse response = issueFieldService.update(
+			request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+
+		return ResponseEntity.ok(response);
 	}
 
-	@DeleteMapping("/fields/{id}")
+	@DeleteMapping("/{fieldId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> softDeleteIssueField(
+	public ResponseEntity<IssueFieldResponse> deleteIssueField(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId
 	) {
-		IssueFieldResponse res = issueFieldService.softDelete(workspaceKey, issueTypeId, id);
-		return ApiResponse.ok("Issue field archived.", res);
+		IssueFieldResponse response = issueFieldService.delete(
+			DeleteIssueFieldCommand.builder()
+				.workspaceKey(workspaceKey)
+				.projectKey(projectKey)
+				.issueTypeId(typeId)
+				.issueFieldId(fieldId)
+				.build()
+		);
+
+		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/fields/{id}/options")
+	@PostMapping("/{fieldId}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueFieldResponse>> addEnumFieldOption(
+	public ResponseEntity<ResponseEntity<IssueFieldResponse>> addIssueFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
-		@RequestBody @Valid AddOptionRequest req
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
+		@RequestBody @Valid AddOptionRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.addOption(req.toCommand(workspaceKey, issueTypeId, id));
+		IssueFieldResponse response = issueFieldService.addOption(
+			request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Option for ENUM type issue field added.", res));
+			.body(ResponseEntity.ok(response));
 	}
 
-	@PutMapping("/fields/{id}/options/{optionId}")
+	@PutMapping("/{fieldId}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> renameEnumFieldOption(
+	public ResponseEntity<IssueFieldResponse> renameIssueFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
 		@PathVariable Long optionId,
-		@RequestBody @Valid RenameOptionRequest req
+		@RequestBody @Valid RenameOptionRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.renameOption(req.toCommand(workspaceKey, issueTypeId, id, optionId));
-		return ApiResponse.ok("Option for ENUM type issue field renamed.", res);
+		IssueFieldResponse response = issueFieldService.renameOption(
+			request.toCommand(workspaceKey, projectKey, typeId, fieldId, optionId));
+
+		return ResponseEntity.ok(response);
 	}
 
-	@PutMapping("/fields/{id}/options")
+	@PutMapping("/{fieldId}/options")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> reorderEnumFieldOptions(
+	public ResponseEntity<IssueFieldResponse> reorderIssueFieldOptions(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
-		@RequestBody @Valid ReorderOptionsRequest req
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
+		@RequestBody @Valid ReorderOptionsRequest request
 	) {
-		IssueFieldResponse res = issueFieldService.reorderOptions(req.toCommand(workspaceKey, issueTypeId, id));
-		return ApiResponse.ok("Options for ENUM type issue field reordered.", res);
+		IssueFieldResponse response = issueFieldService.reorderOptions(
+			request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+
+		return ResponseEntity.ok(response);
 	}
 
-	@DeleteMapping("/fields/{id}/options/{optionId}")
+	@DeleteMapping("/{fieldId}/options/{optionId}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueFieldResponse> softDeleteEnumFieldOption(
+	public ResponseEntity<IssueFieldResponse> deleteIssueFieldOption(
 		@PathVariable String workspaceKey,
-		@PathVariable Long issueTypeId,
-		@PathVariable Long id,
+		@PathVariable String projectKey,
+		@PathVariable Long typeId,
+		@PathVariable Long fieldId,
 		@PathVariable Long optionId
 	) {
-		IssueFieldResponse res = issueFieldService.softDeleteOption(workspaceKey, issueTypeId, id, optionId);
-		return ApiResponse.ok("Option for ENUM type issue field archived.", res);
+		IssueFieldResponse response = issueFieldService.deleteOption(
+			DeleteOptionCommand.builder()
+				.workspaceKey(workspaceKey)
+				.projectKey(projectKey)
+				.issueTypeId(typeId)
+				.issueFieldId(fieldId)
+				.optionId(optionId)
+				.build()
+		);
+
+		return ResponseEntity.ok(response);
 	}
 }

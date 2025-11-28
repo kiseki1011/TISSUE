@@ -1,5 +1,7 @@
 package com.tissue.api.workspace.domain.port.out;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,7 @@ import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
+	// TODO: Workspace_Key -> WorkspaceKey
 	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(
 		Long memberId,
 		String workspaceKey
@@ -28,21 +31,11 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 		Workspace workspace
 	);
 
-	@Query("""
-		    SELECT wm
-		    FROM WorkspaceMember wm
-		    JOIN FETCH wm.member m
-		    JOIN FETCH wm.workspace w
-		    WHERE m.id = :memberId
-		      AND w.key = :workspaceKey
-		      AND wm.archived = false
-		""")
-	Optional<WorkspaceMember> findByMemberIdAndWorkspaceKey(
-		Long memberId,
+	List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(
+		Collection<Long> memberIds,
 		String workspaceKey
 	);
 
-	// TODO: 메서드명 괜찮나?
 	@Query("""
 		    SELECT wm
 		    FROM WorkspaceMember wm
@@ -58,5 +51,6 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
 	boolean existsByMemberAndRole(Member member, WorkspaceRole role);
 
+	// TODO: Workspace_Key -> WorkspaceKey
 	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
 }

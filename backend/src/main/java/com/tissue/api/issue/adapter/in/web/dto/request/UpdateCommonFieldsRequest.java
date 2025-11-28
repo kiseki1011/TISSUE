@@ -17,9 +17,10 @@ public record UpdateCommonFieldsRequest(
 	JsonNullable<IssuePriority> priority,
 	JsonNullable<Instant> dueAt
 ) {
-	public UpdateCommonFieldsCommand toCommand(String workspaceKey, String issueKey) {
+	public UpdateCommonFieldsCommand toCommand(String workspaceKey, String projectKey, String issueKey) {
 		return UpdateCommonFieldsCommand.builder()
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
 			.issueKey(issueKey)
 			.title(title)
 			.content(content)

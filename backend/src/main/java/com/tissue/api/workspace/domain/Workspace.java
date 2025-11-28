@@ -82,6 +82,8 @@ public class Workspace extends BaseEntity {
 
 	public void transferOwnership(@NonNull WorkspaceMember owner, @NonNull WorkspaceMember newOwner) {
 		if (!owner.isOwner()) {
+			// TODO: 상황에 맞는 더 구체적인 예외 이름을 사용하는게 좋을까?
+			//  예시: OwnerRequiredForOwnershipTransfer
 			throw new WorkspaceOwnershipRequiredException("Needs to be OWNER to transfer ownership.",
 				key, owner.getMemberId(), owner.getRole());
 		}

@@ -12,6 +12,7 @@ import lombok.Builder;
 @Builder
 public record CreateWorkflowCommand(
 	String workspaceKey,
+	String projectKey,
 	Label label,
 	String description,
 	ColorType color,

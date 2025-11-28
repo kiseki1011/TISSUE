@@ -9,6 +9,7 @@ import lombok.Builder;
 @Builder
 public record PatchIssueTypeCommand(
 	String workspaceKey,
+	String projectKey,
 	Long id,
 	JsonNullable<String> description,
 	JsonNullable<ColorType> color

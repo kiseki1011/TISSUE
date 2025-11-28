@@ -9,7 +9,7 @@ import com.tissue.api.issue.application.dto.response.info.StateInfo;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueReviewer;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 import lombok.Builder;
 
@@ -26,13 +26,16 @@ public record IssueCommonDetail(
 	Instant dueAt,
 	Instant startedAt,
 	Instant resolvedAt,
+
+	// TODO: 진행도는 따로 분리해서 조회하는거 고려(캐싱 고려)
 	Integer countBasedProgress,
 	Integer pointBasedProgress,
 
 	IssueTypeInfo issueType,
 
-	StateInfo state,
+	StateInfo currentState,
 
+	// TODO: 관련자 따로 분리해서 조회하는 것 고려
 	ParticipantInfo author,
 	ParticipantInfo assignee,
 	ParticipantInfo reporter,
@@ -44,13 +47,15 @@ public record IssueCommonDetail(
 	Instant createdAt,
 	Instant lastUpdatedAt
 
-	//  TODO(예정 중):
-	//   - 추후에 sprint 기능 완성 후, 현재 속한 sprint
-	//   - 추후에 파일 첨부 기능 염두
-	//   - 추후에 tag 필드 염두
+	//  TODO(예정):
+	//   - tag
 ) {
-	public static IssueCommonDetail from(Issue issue, WorkspaceMember author, WorkspaceMember updatedBy,
-		List<IssueReviewer> reviewers) {
+	public static IssueCommonDetail from(
+		Issue issue,
+		ProjectMember author,
+		ProjectMember updatedBy,
+		List<IssueReviewer> reviewers
+	) {
 		return IssueCommonDetail.builder()
 			.issueId(issue.getId())
 			.issueKey(issue.getKey())
@@ -66,7 +71,7 @@ public record IssueCommonDetail(
 			.pointBasedProgress(issue.getProgress().getPointBasedProgress())
 
 			.issueType(IssueTypeInfo.from(issue.getIssueType()))
-			.state(StateInfo.from(issue.getCurrentState()))
+			.currentState(StateInfo.from(issue.getCurrentState()))
 
 			.author(ParticipantInfo.from(author))
 			.assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))

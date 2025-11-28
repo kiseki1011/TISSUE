@@ -1,24 +1,33 @@
 package com.tissue.api.project.application.port.in;
 
-// TODO: ProjectMemberUseCase -> ProjectMemberCommandUseCase
+import static com.tissue.api.security.authorization.ProjectSecurityExpressions.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.tissue.api.project.application.dto.request.AddProjectMembersCommand;
+import com.tissue.api.project.application.dto.request.ChangeProjectRoleCommand;
+import com.tissue.api.project.application.dto.request.JoinProjectCommand;
+import com.tissue.api.project.application.dto.request.KickProjectMemberCommand;
+import com.tissue.api.project.application.dto.request.LeaveProjectCommand;
+import com.tissue.api.project.application.dto.response.ProjectMemberCommandResult;
+import com.tissue.api.project.application.dto.response.ProjectMembersCommandResult;
+
+@Transactional
 public interface ProjectMemberCommandUseCase {
 
-	// TODO: 그냥 ProjectCommandUseCase에 옮길까?
+	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
+	ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd);
 
-	// TODO: ProjectCommandResult addMembers(AddProjectMembersCommand cmd);
-	//  - ProjectRole.ADMIN 이상
-	//  - 흐름: Workspace의 모든 WorkspaceMember를 조회(getWorkspaceMembers API)해서 추가하고 싶은 멤버들을 한번에 모두 추가 허용
+	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
+	ProjectMemberCommandResult kickMember(KickProjectMemberCommand cmd);
 
-	// TODO: ProjectCommandResult kickMember(RemoveProjectMemberCommand cmd);
-	//  - ProjectRole.ADMIN 이상
+	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
+	ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd);
 
-	// TODO: ProjectCommandResult leave(RemoveProjectMemberCommand cmd);
+	@PreAuthorize(REQUIRES_PROJECT_JOINABLE)
+	ProjectMemberCommandResult join(JoinProjectCommand cmd);
 
-	// TODO: ProjectCommandResult join(JoinProjectCommand cmd);
-	//  - 허용하는게 좋을까? Project에 참여 제한은 있어야 하지 않나?
-	//  - 일단 WorkspaceRole.ADMIN 이상은 무조건 허용
-
-	// TODO: ProjectCommandResult changeProjectRole(ChangeProjectRoleCommand cmd);
-	//  - ProjectRole.ADMIN 이상
-	//  - 본인 변경 불가
+	@PreAuthorize(REQUIRES_PROJECT_ACCESS)
+	ProjectMemberCommandResult leave(LeaveProjectCommand cmd);
 }

@@ -8,8 +8,9 @@ import com.tissue.api.common.vo.Label;
 import lombok.Builder;
 
 @Builder
-public record PatchStateCommand(
+public record UpdateStateCommand(
 	String workspaceKey,
+	String projectKey,
 	Long workflowId,
 	Long statusId,
 	JsonNullable<Label> label,

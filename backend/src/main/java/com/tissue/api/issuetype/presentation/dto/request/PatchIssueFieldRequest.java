@@ -10,9 +10,15 @@ public record PatchIssueFieldRequest(
 	JsonNullable<@Size(max = 255) String> description,
 	JsonNullable<Boolean> required
 ) {
-	public PatchIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId, Long issueFieldId) {
+	public PatchIssueFieldCommand toCommand(
+		String workspaceKey,
+		String projectKey,
+		Long issueTypeId,
+		Long issueFieldId
+	) {
 		return PatchIssueFieldCommand.builder()
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
 			.description(description)

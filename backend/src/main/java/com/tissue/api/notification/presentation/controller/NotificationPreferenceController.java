@@ -11,8 +11,6 @@ import com.tissue.api.notification.application.service.command.NotificationPrefe
 import com.tissue.api.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +21,6 @@ public class NotificationPreferenceController {
 
 	private final NotificationPreferenceService preferenceService;
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@PostMapping
 	public ApiResponse<Void> updatePreferences(
 		@PathVariable String workspaceCode,

@@ -1,23 +1,22 @@
 package com.tissue.api.issue.application.dto.response.info;
 
-import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 public record ParticipantInfo(
 	Long memberId,
 	String username,
 	String displayName,
 	boolean archived
-	// String profileImg (예정 중)
 ) {
-	public static ParticipantInfo from(WorkspaceMember wm) {
-		if (wm == null) {
+	public static ParticipantInfo from(ProjectMember pm) {
+		if (pm == null) {
 			return null;
 		}
 		return new ParticipantInfo(
-			wm.getMember().getId(),
-			wm.getMember().getUsername(),
-			wm.getDisplayName(),
-			wm.isArchived()
+			pm.getWorkspaceMember().getMember().getId(),
+			pm.getWorkspaceMember().getMember().getUsername(),
+			pm.getWorkspaceMember().getDisplayName(),
+			pm.isArchived()
 		);
 	}
 }

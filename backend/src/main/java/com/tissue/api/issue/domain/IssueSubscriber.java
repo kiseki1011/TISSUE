@@ -3,7 +3,7 @@ package com.tissue.api.issue.domain;
 import java.time.LocalDateTime;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,18 +32,14 @@ public class IssueSubscriber extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(insertable = false, updatable = false)
-	private WorkspaceMember subscriber;
+	private ProjectMember subscriber;
 
 	@Column(nullable = false)
 	private LocalDateTime subscribedAt;
 
-	public IssueSubscriber(WorkspaceMember subscriber, Issue issue) {
+	public IssueSubscriber(ProjectMember subscriber, Issue issue) {
 		this.issue = issue;
 		this.subscriber = subscriber;
 		this.subscribedAt = LocalDateTime.now();
-	}
-
-	public Long getSubscriberMemberId() {
-		return subscriber.getMemberId();
 	}
 }

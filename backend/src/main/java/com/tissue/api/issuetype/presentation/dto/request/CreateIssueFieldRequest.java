@@ -6,9 +6,9 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.util.CollectionNormalizer;
 import com.tissue.api.common.validator.annotation.size.LabelSize;
+import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
 import com.tissue.api.issuetype.domain.enums.FieldType;
-import com.tissue.api.common.vo.Label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,9 +21,14 @@ public record CreateIssueFieldRequest(
 	@NotNull Boolean required,
 	@Nullable @Size(max = 100) List<@NotBlank @LabelSize String> initialOptions
 ) {
-	public CreateIssueFieldCommand toCommand(String workspaceKey, Long issueTypeId) {
+	public CreateIssueFieldCommand toCommand(
+		String workspaceKey,
+		String projectKey,
+		Long issueTypeId
+	) {
 		return CreateIssueFieldCommand.builder()
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
 			.issueTypeId(issueTypeId)
 			.label(Label.of(label))
 			.description(description)

@@ -1,5 +1,6 @@
 package com.tissue.api.workspace.application.port.in;
 
+import static com.tissue.api.security.authorization.SecurityKeyWords.*;
 import static com.tissue.api.security.authorization.WorkspaceSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,7 +15,7 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandR
 @Transactional
 public interface WorkspaceParticipationUseCase {
 
-	@PreAuthorize(REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	InviteMembersResult invite(InviteMembersCommand cmd);
 
 	// TODO: 이건 다른 usecase로 옮기는게 좋을까?
@@ -24,6 +25,6 @@ public interface WorkspaceParticipationUseCase {
 
 	WorkspaceCommandResult leave(String workspaceKey, Long memberId);
 
-	@PreAuthorize(REQUIRES_ADMIN + AND + REQUIRES_HIGHER_ROLE_THAN_TARGET)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
 	WorkspaceMemberCommandResult kick(KickWorkspaceMemberCommand cmd);
 }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.CreateIssueTypeCommand;
+import com.tissue.api.issuetype.application.dto.DeleteIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.RenameIssueTypeCommand;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
@@ -17,10 +18,10 @@ import com.tissue.api.issuetype.presentation.dto.response.IssueTypeResponse;
 import com.tissue.api.issuetype.repository.EnumFieldOptionCommandRepository;
 import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
 import com.tissue.api.issuetype.repository.IssueTypeQueryRepository;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.Workflow;
-import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,25 +29,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueTypeService {
 
-	private final WorkspaceFinder workspaceFinder;
+	private final ProjectFinder projectFinder;
 	private final WorkflowFinder workflowFinder;
-	private final IssueTypeFinder typeFinder;
+	private final IssueTypeFinder issueTypeFinder;
 
-	private final IssueTypeQueryRepository typeQueryRepo;
-	private final IssueFieldCommandRepository fieldCommandRepo;
+	private final IssueTypeQueryRepository issueTypeQueryRepo;
+	private final IssueFieldCommandRepository issueFieldCommandRepo;
 	private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
 
-	private final IssueTypeValidator typeValidator;
+	private final IssueTypeValidator issyeTypeValidator;
 
 	@Transactional
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
 
-		typeValidator.ensureUniqueLabel(workspace, cmd.label());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+
+		issyeTypeValidator.ensureUniqueLabel(project, cmd.label());
 
 		IssueType issueType = IssueType.create(
-			workspace,
+			project,
 			cmd.label(),
 			cmd.description(),
 			cmd.color(),
@@ -54,30 +56,32 @@ public class IssueTypeService {
 			workflow
 		);
 
-		IssueType savedType = typeQueryRepo.save(issueType);
+		IssueType savedType = issueTypeQueryRepo.save(issueType);
 
 		return IssueTypeResponse.from(savedType);
 	}
 
 	@Transactional
 	public IssueTypeResponse rename(RenameIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
 
 		if (labelUnchanged(issueType, cmd.label())) {
 			return IssueTypeResponse.from(issueType);
 		}
 
-		typeValidator.ensureUniqueLabel(workspace, cmd.label());
+		issyeTypeValidator.ensureUniqueLabel(project, cmd.label());
 		issueType.rename(cmd.label());
 
 		return IssueTypeResponse.from(issueType);
 	}
 
 	@Transactional
-	public IssueTypeResponse patch(PatchIssueTypeCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		IssueType issueType = typeFinder.findByIdAndWorkspace(cmd.id(), workspace);
+	public IssueTypeResponse update(PatchIssueTypeCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
 		Patchers.apply(cmd.color(), issueType::updateColor);
@@ -85,15 +89,18 @@ public class IssueTypeService {
 		return IssueTypeResponse.from(issueType);
 	}
 
+	// TODO: hard-delete 사용
 	@Transactional
-	public IssueTypeResponse softDelete(String workspaceKey, Long id) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-		IssueType issueType = typeFinder.findByIdAndWorkspace(id, workspace);
+	public IssueTypeResponse delete(DeleteIssueTypeCommand cmd) {
 
-		typeValidator.ensureDeletable(issueType);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+
+		// TODO: 해당 IssueType를 사용한 이슈가 단 하나라도 존재하면 삭제 불가
+		issyeTypeValidator.ensureDeletable(issueType);
 
 		fieldOptionCommandRepo.softDeleteByIssueType(issueType);
-		fieldCommandRepo.softDeleteByIssueType(issueType);
+		issueFieldCommandRepo.softDeleteByIssueType(issueType);
 		issueType.softDelete();
 
 		return IssueTypeResponse.from(issueType);

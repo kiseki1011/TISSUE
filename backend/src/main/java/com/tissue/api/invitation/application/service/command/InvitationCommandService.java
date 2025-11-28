@@ -13,12 +13,10 @@ import com.tissue.api.invitation.domain.service.InvitationValidator;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.dto.response.InvitationResponse;
 import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +26,6 @@ public class InvitationCommandService {
 
 	private final InvitationFinder invitationFinder;
 	private final InvitationRepository invitationRepository;
-	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final InvitationValidator invitationValidator;
 	private final WorkspacePolicy workspacePolicy;
 	private final ApplicationEventPublisher eventPublisher;
@@ -53,9 +50,9 @@ public class InvitationCommandService {
 
 		WorkspaceMember workspaceMember = workspace.addMember(member, WorkspaceRole.MEMBER);
 
-		eventPublisher.publishEvent(
-			MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
-		);
+		// eventPublisher.publishEvent(
+		// 	MemberJoinedWorkspaceEvent.createEvent(workspaceMember)
+		// );
 
 		return InvitationResponse.from(invitation);
 	}
@@ -86,7 +83,7 @@ public class InvitationCommandService {
 		Long invitationId
 	) {
 		Invitation invitation = invitationFinder.findPendingInvitation(invitationId);
-		String workspaceCode = invitation.getWorkspaceCode();
+		String workspaceCode = invitation.getWorkspaceKey();
 
 		invitationValidator.validateInvitation(memberId, workspaceCode);
 

@@ -27,19 +27,19 @@ public class Invitation extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "INVITATION_ID")
+	@Column(name = "invitation_id")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "MEMBER_ID", nullable = false)
+	@JoinColumn(name = "member_id", nullable = false)
 	private Member member;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "WORKSPACE_ID", nullable = false)
+	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(name = "WORKSPACE_CODE", nullable = false)
-	private String workspaceCode;
+	@Column(name = "workspace_key", nullable = false)
+	private String workspaceKey;
 
 	@Enumerated(EnumType.STRING)
 	private InvitationStatus status;
@@ -49,7 +49,7 @@ public class Invitation extends BaseEntity {
 		this.member = member;
 		this.workspace = workspace;
 		this.status = status;
-		this.workspaceCode = workspace.getKey();
+		this.workspaceKey = workspace.getKey();
 	}
 
 	public static Invitation addInvitation(Member member, Workspace workspace, InvitationStatus status) {
@@ -60,7 +60,7 @@ public class Invitation extends BaseEntity {
 			.build();
 
 		member.getInvitations().add(invitation);
-		workspace.getInvitations().add(invitation);
+		// workspace.getInvitations().add(invitation);
 
 		return invitation;
 	}

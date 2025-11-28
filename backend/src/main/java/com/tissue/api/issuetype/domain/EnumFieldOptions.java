@@ -41,8 +41,6 @@ public final class EnumFieldOptions {
 
 	// TODO: 아래의 메서드들에서 IllegalStateException들을 즐겨 사용했는데, 이렇게 사용해도 괜찮나?
 	//  IllegalStateException vs IllegalArgumentException
-	//  굳이 커스텀 예외를 만들어서 사용할 필요는 없겠지?
-	//  언제 커스텀 예외를 만들고, 언제 스프링이나 자바에서 기본으로 제공하는 예외를 사용하는게 좋을까?
 	public void reorderTo(List<Long> orderedIds) {
 		Map<Long, EnumFieldOption> byId = active.stream()
 			.collect(Collectors.toMap(EnumFieldOption::getId, x -> x));

@@ -2,7 +2,6 @@ package com.tissue.api.workflow.application.service;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,12 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.common.util.Patchers;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.GuardConfigData;
 import com.tissue.api.workflow.application.dto.ConfigureTransitionGuardsCommand;
 import com.tissue.api.workflow.application.dto.CreateWorkflowCommand;
-import com.tissue.api.workflow.application.dto.PatchStateCommand;
-import com.tissue.api.workflow.application.dto.PatchTransitionCommand;
+import com.tissue.api.workflow.application.dto.DeleteWorkflowCommand;
 import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
+import com.tissue.api.workflow.application.dto.UpdateStateCommand;
+import com.tissue.api.workflow.application.dto.UpdateTransitionCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
@@ -29,7 +31,6 @@ import com.tissue.api.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workflow.repository.WorkflowRepository;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkflowService {
 
 	private final WorkspaceFinder workspaceFinder;
+	private final ProjectFinder projectFinder;
 	private final WorkflowFinder workflowFinder;
 	private final WorkflowRepository workflowRepository;
 	private final WorkflowValidator workflowValidator;
@@ -49,9 +51,10 @@ public class WorkflowService {
 	// TODO: spring-retry 적용
 	@Transactional
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
-		workflowValidator.ensureLabelUnique(workspace, cmd.label());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+
+		workflowValidator.ensureLabelUnique(project, cmd.label());
 		graphValidator.validateWorkflowGraphStructure(
 			cmd.stateCommands().stream().map(s -> s.toValidationData()).toList(),
 			cmd.transitionCommands().stream().map(t -> t.toValidationData()).toList()
@@ -59,7 +62,7 @@ public class WorkflowService {
 
 		try {
 			Workflow workflow = workflowRepository.save(
-				Workflow.create(workspace, cmd.label(), cmd.description(), cmd.color())
+				Workflow.create(project, cmd.label(), cmd.description(), cmd.color())
 			);
 
 			Map<String, WorkflowState> stateByTempKey = new HashMap<>();
@@ -84,6 +87,7 @@ public class WorkflowService {
 			graphValidator.ensureValidWorkflowGraph(workflow);
 
 			return WorkflowResponse.from(workflow);
+
 		} catch (DataIntegrityViolationException e) {
 			log.info("Failed due to duplicate label.", e);
 			// TODO: DuplicateWorkflowException vs DuplicateWorkflowLabelException
@@ -93,12 +97,13 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse patch(PatchWorkflowCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.id());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.id());
 
 		Patchers.apply(cmd.label(), newLabel -> {
 			if (!workflow.getLabel().equals(newLabel)) {
-				workflowValidator.ensureLabelUnique(workspace, newLabel);
+				workflowValidator.ensureLabelUnique(project, newLabel);
 				workflow.rename(newLabel);
 			}
 		});
@@ -110,23 +115,25 @@ public class WorkflowService {
 	}
 
 	@Transactional
-	public WorkflowResponse softDelete(String workspaceKey, Long id) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-		Workflow workflow = workflowFinder.findWorkflow(workspace, id);
+	public WorkflowResponse softDelete(DeleteWorkflowCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.id());
 
 		// TODO: Workflow의 softDelete 주석 참고
 		// workflowValidator.ensureDeletable();
 
-		workflow.softDelete();
+		workflow.delete();
 
 		return WorkflowResponse.from(workflow);
 	}
 
 	@Transactional
-	public WorkflowResponse patchState(PatchStateCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
-		WorkflowState state = workflowFinder.findWorkflowState(workflow, cmd.statusId());
+	public WorkflowResponse updateState(UpdateStateCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		WorkflowState state = workflowFinder.findStateBy(workflow, cmd.statusId());
 
 		Patchers.apply(cmd.label(), l -> workflow.renameState(state, l));
 		Patchers.apply(cmd.description(), state::updateDescription);
@@ -136,10 +143,11 @@ public class WorkflowService {
 	}
 
 	@Transactional
-	public WorkflowResponse patchTransition(PatchTransitionCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
-		WorkflowTransition transition = workflowFinder.findWorkflowTransition(workflow, cmd.transitionId());
+	public WorkflowResponse updateTransition(UpdateTransitionCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
 
 		Patchers.apply(cmd.label(), l -> workflow.renameTransition(transition, l));
 		Patchers.apply(cmd.description(), transition::updateDescription);
@@ -147,14 +155,12 @@ public class WorkflowService {
 		return WorkflowResponse.from(workflow);
 	}
 
-	// TODO: configureTransitionGuards 대신 이 메서드를 사용해도 괜찮으려나?
 	@Transactional
-	public void configureTransitionGuards2(
-		ConfigureTransitionGuardsCommand cmd
-	) {
+	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
+
 		// Workflow와 Transition 조회
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
@@ -196,49 +202,5 @@ public class WorkflowService {
 			//  예외를 던지지 말고 이 로직을 반복문 안으로 옮기고, 중복된 가드 타입이 있다면 continue하는 식으로 구현할까?
 			throw new RuntimeException("Duplicate guard type: " + g.guardType());
 		}
-	}
-
-	@Transactional
-	public WorkflowResponse configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-		// Workflow와 Transition 조회
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
-
-		WorkflowTransition transition = workflow.getTransitions().stream()
-			.filter(t -> t.getId().equals(cmd.transitionId()))
-			.findFirst()
-			// TODO: TransitionNotFoundException vs WorkflowTransitionNotFoundException
-			.orElseThrow(() -> new RuntimeException("Transition not found"));
-
-		Set<GuardType> usedTypes = new HashSet<>();
-
-		// Guard 타입 검증 + 직렬화
-		List<SerializedGuard> serializedGuards = cmd.guards().stream()
-			.map(g -> {
-				ensureNoDuplicateGuard(g, usedTypes);
-				guardRegistry.getGuard(g.guardType());  // 검증
-				return new SerializedGuard(g.guardType(), serializeParams(g.params()), g.order());
-			})
-			.toList();
-
-		// 교체
-		workflow.clearGuardsForTransition(transition);
-		serializedGuards.forEach(sg -> workflow.addTransitionGuard(transition, sg.type(), sg.params(), sg.order()));
-
-		return WorkflowResponse.from(workflow);
-	}
-
-	private String serializeParams(Map<String, Object> params) {
-		if (params == null || params.isEmpty())
-			return null;
-		try {
-			return new ObjectMapper().writeValueAsString(params);
-		} catch (JsonProcessingException e) {
-			// TODO: IllegalStateException vs IllegalArgumentException
-			throw new IllegalArgumentException("Invalid guard parameters", e);
-		}
-	}
-
-	private record SerializedGuard(GuardType type, String params, int order) {
 	}
 }

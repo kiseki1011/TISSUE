@@ -17,7 +17,7 @@ public class IssueFieldFinder {
 
 	private final IssueFieldQueryRepository issueFieldRepo;
 
-	public IssueField findByIdAndType(Long issueFieldId, IssueType issueType) {
+	public IssueField findBy(Long issueFieldId, IssueType issueType) {
 		return issueFieldRepo.findByIdAndIssueType(issueFieldId, issueType)
 			.orElseThrow(() -> new IssueFieldNotFoundException(issueFieldId, issueType.getId()));
 	}

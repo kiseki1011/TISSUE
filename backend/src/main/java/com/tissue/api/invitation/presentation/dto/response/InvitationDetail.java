@@ -18,7 +18,7 @@ public record InvitationDetail(
 	public static InvitationDetail from(Invitation invitation) {
 		return InvitationDetail.builder()
 			.invitationId(invitation.getId())
-			.workspaceCode(invitation.getWorkspaceCode())
+			.workspaceCode(invitation.getWorkspaceKey())
 			.invitedBy(invitation.getCreatedBy())
 			.status(invitation.getStatus())
 			.invitedAt(invitation.getCreatedAt())

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
 import com.tissue.api.workflow.application.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.Workflow;
@@ -22,7 +24,6 @@ import com.tissue.api.workflow.domain.service.EntityRef;
 import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.domain.Workspace;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class WorkflowGraphReplaceService {
 
 	private final WorkspaceFinder workspaceFinder;
+	private final ProjectFinder projectFinder;
 	private final WorkflowFinder workflowFinder;
 	private final WorkflowGraphValidator graphValidator;
 
@@ -124,8 +126,9 @@ public class WorkflowGraphReplaceService {
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findWorkflow(workspace, cmd.workflowId());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {
 			throw new OptimisticLockException(("Workflow version mismatch. "

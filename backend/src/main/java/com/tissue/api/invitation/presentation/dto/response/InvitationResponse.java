@@ -7,6 +7,6 @@ public record InvitationResponse(
 	Long invitationId
 ) {
 	public static InvitationResponse from(Invitation invitation) {
-		return new InvitationResponse(invitation.getWorkspaceCode(), invitation.getId());
+		return new InvitationResponse(invitation.getWorkspaceKey(), invitation.getId());
 	}
 }

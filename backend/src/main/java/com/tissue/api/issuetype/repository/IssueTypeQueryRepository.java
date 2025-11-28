@@ -5,13 +5,13 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.project.domain.Project;
 
 public interface IssueTypeQueryRepository extends JpaRepository<IssueType, Long> {
 
-	boolean existsByLabel_NormalizedAndWorkspace(String label, Workspace workspace);
+	boolean existsByLabel_NormalizedAndProject(String label, Project project);
 
-	Optional<IssueType> findByIdAndWorkspace_Key(Long id, String workspaceKey);
+	Optional<IssueType> findByIdAndProjectKeyAndWorkspaceKey(Long id, String projectKey, String workspaceKey);
 
-	Optional<IssueType> findByIdAndWorkspace(Long id, Workspace workspace);
+	Optional<IssueType> findByIdAndProject(Long id, Project project);
 }

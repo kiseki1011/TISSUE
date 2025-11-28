@@ -18,15 +18,16 @@ public record CreateIssueRequest(
 	@NotBlank @Size(max = 100) String title,
 	@Nullable @ContentText String content,
 	@Nullable @LongText String summary,
-	IssuePriority priority, // TODO: not-null vs nullable?
+	@Nullable IssuePriority priority,
 	@Nullable Instant dueAt,
 	@NotNull Long issueTypeId,
 	@Nullable Map<Long, Object> customFields
 ) {
-	public CreateIssueCommand toCommand(String workspaceKey, Long currentMemberId) {
+	public CreateIssueCommand toCommand(String workspaceKey, String projectKey, Long currentMemberId) {
 		return CreateIssueCommand.builder()
-			.memberId(currentMemberId)
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
+			.memberId(currentMemberId)
 			.title(title)
 			.content(content)
 			.summary(summary)

@@ -1,5 +1,6 @@
 package com.tissue.api.workspace.application.port.in;
 
+import static com.tissue.api.security.authorization.SecurityKeyWords.*;
 import static com.tissue.api.security.authorization.WorkspaceSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,18 +20,18 @@ public interface WorkspaceMemberCommandUseCase {
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	WorkspaceMemberCommandResult updateDisplayName(UpdateDisplayNameCommand cmd);
 
-	@PreAuthorize(REQUIRES_ADMIN + AND + REQUIRES_HIGHER_ROLE_THAN_TARGET)
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
 	WorkspaceMemberCommandResult updateRole(UpdateRoleCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceMemberCommandResult addPosition(AddPositionCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceMemberCommandResult removePosition(RemovePositionCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceMemberCommandResult addTeam(AddTeamCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
 	WorkspaceMemberCommandResult removeTeam(RemoveTeamCommand cmd);
 }

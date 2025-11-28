@@ -6,7 +6,9 @@ import org.springframework.data.repository.Repository;
 
 import com.tissue.api.project.domain.ProjectMember;
 
-public interface ProjectMemberCommandController extends Repository<ProjectMember, Long> {
+public interface ProjectMemberCommandRepository extends Repository<ProjectMember, Long> {
+
+	ProjectMember save(ProjectMember projectMember);
 
 	List<ProjectMember> saveAll(Iterable<ProjectMember> projectMembers);
 }

@@ -6,7 +6,7 @@ import lombok.Builder;
 public record CreateProjectCommand(
 	String workspaceKey,
 	String projectKey,
-	String name,
+	String title,
 	String description
 ) {
 }

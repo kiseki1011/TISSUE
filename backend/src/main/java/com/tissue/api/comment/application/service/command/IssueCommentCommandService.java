@@ -34,7 +34,7 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findBy(issueKey, workspaceCode);
 
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 

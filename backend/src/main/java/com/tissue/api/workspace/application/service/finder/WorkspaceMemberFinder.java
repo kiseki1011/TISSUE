@@ -1,5 +1,8 @@
 package com.tissue.api.workspace.application.service.finder;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.workspace.domain.Workspace;
@@ -29,5 +32,9 @@ public class WorkspaceMemberFinder {
 	public WorkspaceMember findIncludingArchived(Long memberId, String workspaceKey) {
 		return queryRepo.findIncludingArchived(memberId, workspaceKey)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+	}
+
+	public List<WorkspaceMember> findAllBy(Collection<Long> memberIds, String workspaceKey) {
+		return queryRepo.findAllByMember_IdInAndWorkspaceKey(memberIds, workspaceKey);
 	}
 }
