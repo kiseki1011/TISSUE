@@ -43,6 +43,9 @@ public class Sprint extends BaseEntity {
 	@Column(name = "project_key", nullable = false, updatable = false)
 	private String projectKey;
 
+	@Column(name = "workspace_key", nullable = false, updatable = false)
+	private String workspaceKey;
+
 	// TODO: size max = 50
 	@Column(nullable = false)
 	private String title;
@@ -66,11 +69,16 @@ public class Sprint extends BaseEntity {
 		Sprint sprint = new Sprint();
 		sprint.project = project;
 		sprint.projectKey = project.getKey();
+		sprint.workspaceKey = project.getWorkspaceKey();
 		sprint.title = title;
 		sprint.goal = nullToEmpty(goal);
 		sprint.status = PLANNING;
 
 		return sprint;
+	}
+
+	public boolean isCompleted() {
+		return status == COMPLETED;
 	}
 
 	public void updateTitle(@NonNull String title) {
@@ -81,6 +89,22 @@ public class Sprint extends BaseEntity {
 		this.goal = nullToEmpty(goal);
 	}
 
+	public void updateStartedAt(@NonNull Instant startedAt) {
+		if (this.dueAt != null) {
+			ensureValidPeriod(startedAt, this.dueAt);
+		}
+		this.startedAt = startedAt;
+	}
+
+	public void updateDueAt(@NonNull Instant dueAt) {
+		if (this.startedAt != null) {
+			ensureValidPeriod(this.startedAt, dueAt);
+		}
+		this.dueAt = dueAt;
+	}
+
+	// TODO: 호출 전에 Project에 활성(ACTIVE) Sprint가 없다는 것을 보장해야 함
+	//  - 애플리케이션 계층에서 레포지토리 메서드를 통해 ACTIVE인 스프린트의 존재 여부 확인
 	public void start(@NonNull Instant startedAt, @NonNull Instant dueAt) {
 		if (this.status != PLANNING) {
 			// TODO: InvalidSprintStatusException
@@ -89,9 +113,10 @@ public class Sprint extends BaseEntity {
 
 		ensureValidPeriod(startedAt, dueAt);
 
-		this.status = ACTIVE;
 		this.startedAt = startedAt;
 		this.dueAt = dueAt;
+
+		this.status = ACTIVE;
 	}
 
 	public void complete() {

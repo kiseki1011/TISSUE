@@ -1,33 +1,20 @@
 package com.tissue.api.sprint.presentation.dto.request;
 
-import java.time.Instant;
+import com.tissue.api.sprint.application.dto.request.CreateSprintCommand;
 
-import com.tissue.api.common.validator.annotation.size.text.LongText;
-import com.tissue.api.common.validator.annotation.size.text.ShortText;
-
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
+import jakarta.validation.constraints.Size;
 
-@Builder
 public record CreateSprintRequest(
-
-	@ShortText
-	@NotBlank(message = "{valid.notblank}")
-	String title,
-
-	@LongText
-	@NotBlank(message = "{valid.notblank}")
-	String goal,
-
-	@NotNull(message = "{valid.notnull}")
-	@FutureOrPresent(message = "{valid.startdate}")
-	Instant plannedStartDate,
-
-	@NotNull(message = "{valid.notnull}")
-	@Future(message = "{valid.enddate}")
-	Instant plannedEndDate
+	@Size(max = 50) @NotBlank String title,
+	@Size(max = 255) String goal
 ) {
+	public CreateSprintCommand toCommand(String workspaceKey, String projectKey) {
+		return CreateSprintCommand.builder()
+			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
+			.title(title)
+			.goal(goal)
+			.build();
+	}
 }

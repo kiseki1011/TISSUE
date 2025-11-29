@@ -8,8 +8,10 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issue.domain.exception.IssueNotFoundException;
 import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,8 +30,15 @@ public class IssueFinder {
 		return issueQueryRepo.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
 	}
 
-	public Issue findIssueInSprint(String sprintKey, String issueKey, String workspaceKey) {
-		return issueQueryRepo.findIssueInSprint(sprintKey, issueKey, workspaceKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+	public boolean existsIncompleteIssuesBySprint(Sprint sprint) {
+		return issueQueryRepo.existsBySprintAndCategoryNot(sprint, StateCategory.DONE);
+	}
+
+	public List<Issue> findIncompleteIssuesBySprint(Sprint sprint) {
+		return issueQueryRepo.findIncompleteIssuesBySprint(sprint, StateCategory.DONE);
+	}
+
+	public List<String> findIncompleteIssueKeysBySprint(Sprint sprint) {
+		return issueQueryRepo.findIncompleteIssueKeysBySprint(sprint, StateCategory.DONE);
 	}
 }

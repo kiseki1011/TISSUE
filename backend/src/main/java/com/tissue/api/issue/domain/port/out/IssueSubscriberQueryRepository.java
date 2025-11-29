@@ -16,11 +16,13 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
 	@Query("""
 		    SELECT s
 		    FROM IssueSubscriber s
-		    JOIN FETCH s.subscriber wm
+		    JOIN FETCH s.subscriber pm
+		    JOIN FETCH pm.workspaceMember wm
 		    JOIN FETCH wm.member m
 		    JOIN FETCH s.issue i
-		    JOIN FETCH i.workspace w
-		    WHERE w.key = :workspaceKey 
+		    JOIN FETCH i.project p
+		    JOIN FETCH p.workspace w
+		    WHERE w.key = :workspaceKey
 		      AND i.key = :issueKey
 		""")
 	List<IssueSubscriber> findByIssue(
@@ -35,8 +37,9 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
 		    SELECT COUNT(s)
 		    FROM IssueSubscriber s
 		    JOIN s.issue i
-		    JOIN i.workspace w
-		    WHERE w.key = :workspaceKey 
+		    JOIN i.project p
+		    JOIN p.workspace w
+		    WHERE w.key = :workspaceKey
 		      AND i.key = :issueKey
 		""")
 	int countByIssue(
@@ -51,10 +54,11 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
 		    SELECT COUNT(s) > 0
 		    FROM IssueSubscriber s
 		    JOIN s.issue i
-		    JOIN i.workspace w
-		    WHERE w.key = :workspaceKey 
+		    JOIN i.project p
+		    JOIN p.workspace w
+		    WHERE w.key = :workspaceKey
 		      AND i.key = :issueKey
-		      AND s.subscriber.member.id = :memberId
+		      AND s.subscriber.memberId = :memberId
 		""")
 	boolean existsByIssueAndMember(
 		@Param("workspaceKey") String workspaceKey,

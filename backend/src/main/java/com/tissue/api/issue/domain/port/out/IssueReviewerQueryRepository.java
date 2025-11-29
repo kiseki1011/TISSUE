@@ -18,7 +18,8 @@ public interface IssueReviewerQueryRepository extends Repository<IssueReviewer, 
 		    JOIN FETCH pm.workspaceMember wm
 		    JOIN FETCH wm.member m
 		    JOIN r.issue i
-		    JOIN i.workspace w
+		    JOIN i.project p
+		    JOIN p.workspace w
 		    WHERE w.key = :workspaceKey
 		      AND i.key = :issueKey
 		""")

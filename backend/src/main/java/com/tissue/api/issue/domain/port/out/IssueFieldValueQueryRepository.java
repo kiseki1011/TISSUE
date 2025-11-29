@@ -22,7 +22,8 @@ public interface IssueFieldValueQueryRepository extends Repository<IssueFieldVal
 		    JOIN FETCH fv.field f
 		    LEFT JOIN FETCH fv.enumOption eo
 		    JOIN fv.issue i
-		    JOIN i.workspace w
+		    JOIN i.project p
+		    JOIN p.workspace w
 		    WHERE w.key = :workspaceKey AND i.key = :issueKey
 		    ORDER BY f.id
 		""")

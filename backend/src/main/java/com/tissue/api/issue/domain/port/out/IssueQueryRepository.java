@@ -9,24 +9,11 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
+import com.tissue.api.sprint.domain.model.Sprint;
 
 public interface IssueQueryRepository extends Repository<Issue, Long> {
-
-	@Query("""
-		select distinct i
-		from Issue i
-		join fetch i.sprintIssues si
-		join fetch si.sprint s
-		where s.key = :sprintKey
-		  and s.workspace.key = :workspaceKey
-		  and i.key = :issueKey
-		""")
-	Optional<Issue> findIssueInSprint(
-		@Param("sprintKey") String sprintKey,
-		@Param("issueKey") String issueKey,
-		@Param("workspaceKey") String workspaceKey
-	);
 
 	Optional<Issue> findByKeyAndWorkspaceKey(
 		String issueKey,
@@ -59,9 +46,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		    JOIN FETCH i.issueType it
 		    JOIN FETCH i.currentState cs
 		    LEFT JOIN FETCH i.participants.assignee a
-		    LEFT JOIN FETCH a.member am
+		    LEFT JOIN FETCH a.workspaceMember awm
 		    JOIN FETCH i.participants.reporter r
-		    JOIN FETCH r.member rm
+		    JOIN FETCH r.workspaceMember rwm
 		    WHERE p.workspaceKey = :workspaceKey AND i.key = :issueKey
 		""")
 	Optional<Issue> findWithDetail(
@@ -162,5 +149,37 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	int sumCompletedChildrenStoryPoints(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey
+	);
+
+	@Query("""
+		    SELECT i FROM Issue i
+		    WHERE i.sprint = :sprint
+		      AND i.currentState.category != :doneCategory
+		""")
+	List<Issue> findIncompleteIssuesBySprint(
+		@Param("sprint") Sprint sprint,
+		@Param("doneCategory") StateCategory doneCategory
+	);
+
+	@Query("""
+		    SELECT i.key
+		    FROM Issue i
+		    WHERE i.sprint = :sprint
+		      AND i.currentState.category != :doneCategory
+		""")
+	List<String> findIncompleteIssueKeysBySprint(
+		@Param("sprint") Sprint sprint,
+		@Param("doneCategory") StateCategory doneCategory
+	);
+
+	@Query("""
+		    SELECT COUNT(i) > 0
+		    FROM Issue i
+		    WHERE i.sprint = :sprint
+		      AND i.currentState.category != :doneCategory
+		""")
+	boolean existsBySprintAndCategoryNot(
+		@Param("sprint") Sprint sprint,
+		@Param("doneCategory") StateCategory doneCategory
 	);
 }

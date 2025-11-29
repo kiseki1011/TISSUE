@@ -19,8 +19,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		    JOIN FETCH r.targetIssue ti
 		    JOIN FETCH ti.issueType tit
 		    JOIN FETCH ti.currentState tcs
-		    WHERE (si.workspace.key = :workspaceKey AND si.key = :issueKey)
-		       OR (ti.workspace.key = :workspaceKey AND ti.key = :issueKey)
+		    WHERE (si.workspaceKey = :workspaceKey AND si.key = :issueKey)
+		       OR (ti.workspaceKey = :workspaceKey AND ti.key = :issueKey)
 		""")
 	List<IssueRelation> findAllRelations(
 		@Param("workspaceKey") String workspaceKey,
@@ -32,7 +32,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		    FROM IssueRelation r
 		    JOIN FETCH r.sourceIssue si
 		    JOIN FETCH r.targetIssue ti
-		    JOIN FETCH si.workspace w
+		    JOIN FETCH si.project p
+		    JOIN FETCH p.workspace w
 		    WHERE w.key = :workspaceKey
 		      AND si.key = :issueKey
 		""")
@@ -46,7 +47,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		    FROM IssueRelation r
 		    JOIN FETCH r.sourceIssue si
 		    JOIN FETCH r.targetIssue ti
-		    JOIN FETCH ti.workspace w
+		    JOIN FETCH ti.project p
+		    JOIN FETCH p.workspace w
 		    WHERE w.key = :workspaceKey
 		      AND ti.key = :issueKey
 		""")
@@ -60,7 +62,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
 		    FROM IssueRelation r
 		    JOIN r.sourceIssue si
 		    JOIN r.targetIssue ti
-		    JOIN si.workspace w
+		    JOIN si.project p
+		    JOIN p.workspace w
 		    WHERE w.key = :workspaceKey
 		      AND si.key = :sourceIssueKey
 		      AND ti.key = :targetIssueKey

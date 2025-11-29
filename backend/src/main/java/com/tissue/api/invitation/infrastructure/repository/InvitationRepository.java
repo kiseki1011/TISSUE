@@ -14,17 +14,10 @@ import com.tissue.api.invitation.domain.model.Invitation;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 
-	Optional<Invitation> findByWorkspaceCodeAndMemberId(
-		String workspaceCode,
-		Long memberId
-	);
-
 	Optional<Invitation> findByIdAndStatus(
 		Long id,
 		InvitationStatus status
 	);
-
-	List<Invitation> findAllByMemberId(Long id);
 
 	@Query("SELECT DISTINCT m.id FROM WorkspaceMember wm JOIN wm.member m "
 		+ "WHERE wm.workspace.key = :workspaceKey "

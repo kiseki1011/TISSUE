@@ -19,6 +19,7 @@ import com.tissue.api.issue.domain.exception.StoryPointNotAllowedForHierarchyExc
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
+import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
 
 import jakarta.persistence.Column;
@@ -89,9 +90,9 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
-	// TODO: 추후 Sprint 쪽 애그리거트 정리 후, 다시 리팩토링 진행. 일단은 보류.
-	// @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	// private Set<SprintIssue> sprintIssues = new HashSet<>();
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "sprint_id", nullable = false)
+	private Sprint sprint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;
@@ -101,6 +102,7 @@ public class Issue extends BaseEntity {
 
 	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
 
+	// TODO: 이슈 생성 시 Sprint 설정도 추가
 	public static Issue create(
 		@NonNull Project project,
 		@NonNull IssueType issueType,
@@ -129,6 +131,14 @@ public class Issue extends BaseEntity {
 		issue.relations = IssueRelations.init();
 
 		return issue;
+	}
+
+	public void setSprint(@NonNull Sprint sprint) {
+		this.sprint = sprint;
+	}
+
+	public void clearSprint() {
+		this.sprint = null;
 	}
 
 	public void changeReporter(@NonNull ProjectMember reporter) {

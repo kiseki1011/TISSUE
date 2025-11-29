@@ -69,7 +69,7 @@ public class IssueCommentCommandService {
 	) {
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,
 				issueKey,
 				workspaceCode
@@ -91,7 +91,7 @@ public class IssueCommentCommandService {
 	) {
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,
 				issueKey,
 				workspaceCode

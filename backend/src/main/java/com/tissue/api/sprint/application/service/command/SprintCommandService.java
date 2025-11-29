@@ -1,29 +1,26 @@
 package com.tissue.api.sprint.application.service.command;
 
-import java.time.Instant;
 import java.util.List;
 
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.sprint.domain.event.SprintCompletedEvent;
-import com.tissue.api.sprint.domain.event.SprintStartedEvent;
+import com.tissue.api.sprint.application.dto.request.AddSprintIssuesCommand;
+import com.tissue.api.sprint.application.dto.request.CompleteSprintCommand;
+import com.tissue.api.sprint.application.dto.request.CreateSprintCommand;
+import com.tissue.api.sprint.application.dto.request.MigrateSprintIssuesCommand;
+import com.tissue.api.sprint.application.dto.request.RemoveSprintIssuesCommand;
+import com.tissue.api.sprint.application.dto.request.StartSprintCommand;
+import com.tissue.api.sprint.application.dto.request.UpdateSprintCommand;
+import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.api.sprint.domain.model.Sprint;
-import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.sprint.domain.service.SprintValidator;
 import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
-import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
-import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
-import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssueRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintStatusRequest;
-import com.tissue.api.sprint.presentation.dto.response.SprintResponse;
-import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
-import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,18 +29,14 @@ import lombok.RequiredArgsConstructor;
 public class SprintCommandService {
 
 	private final SprintFinder sprintFinder;
-	private final SprintRepository sprintRepository;
-	private final WorkspaceFinder workspaceFinder;
 	private final ProjectFinder projectFinder;
 	private final IssueFinder issueFinder;
-	private final ApplicationEventPublisher eventPublisher;
+	private final SprintValidator sprintValidator;
+	private final SprintRepository sprintRepository;
 
-	// TODO: CreateSprintCommand
 	@Transactional
-	public SprintResponse createSprint(
-		String workspaceKey,
-		CreateSprintRequest request
-	) {
+	public SprintCommandResult createSprint(CreateSprintCommand cmd) {
+
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
 		Sprint sprint = Sprint.create(
@@ -54,86 +47,136 @@ public class SprintCommandService {
 
 		sprintRepository.save(sprint);
 
-		return SprintResponse.from(sprint);
+		// TODO: SprintCreatedEvent
+		//  - 대상: 해당 프로젝트 인원 전원
+
+		return SprintCommandResult.from(sprint);
 	}
 
-	// TODO: AddSprintIssueCommand
 	@Transactional
-	public SprintResponse addIssues(
-		String workspaceCode,
-		String sprintKey,
-		AddSprintIssuesRequest request
-	) {
-		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
+	public SprintCommandResult addIssues(AddSprintIssuesCommand cmd) {
 
-		List<Issue> issues = issueFinder.findAllBy(request.issueKeys(), workspaceCode);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+		List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
+
+		sprintValidator.ensureSprintNotClosed(sprint, project);
+
+		if (issues.isEmpty()) {
+			return SprintCommandResult.from(sprint);
+		}
 
 		for (Issue issue : issues) {
-			sprint.addIssue(issue);
+			sprintValidator.ensureIssueInSprintProject(issue, project);
+			issue.setSprint(sprint);
 		}
 
-		return SprintResponse.from(sprint);
+		// TODO: SprintIssuesAddedEvent
+		//  - 대상: 해당 이슈들의 관련자 전원
+
+		return SprintCommandResult.from(sprint);
 	}
 
-	// TODO: UpdateSprintCommand
 	@Transactional
-	public SprintResponse updateSprint(
-		String workspaceCode,
-		String sprintKey,
-		UpdateSprintRequest request
-	) {
-		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
+	public SprintCommandResult updateSprint(UpdateSprintCommand cmd) {
 
-		sprint.updateTitle(request.title() != null ? request.title() : sprint.getTitle());
-		sprint.updateGoal(request.goal() != null ? request.goal() : sprint.getGoal());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
-		Instant startDate =
-			request.plannedStartDate() != null ? request.plannedStartDate() : sprint.getPlannedStartDate();
-		Instant endDate =
-			request.plannedEndDate() != null ? request.plannedEndDate() : sprint.getPlannedEndDate();
+		Patchers.apply(cmd.title(), sprint::updateTitle);
+		Patchers.apply(cmd.goal(), sprint::updateGoal);
+		Patchers.apply(cmd.dueAt(), sprint::updateDueAt);
+		Patchers.apply(cmd.startedAt(), sprint::updateStartedAt);
 
-		if (request.plannedStartDate() != null || request.plannedEndDate() != null) {
-			sprint.updateDates(startDate, endDate);
+		// TODO: SprintUpdatedEvent
+		//  - 대상: 해당 프로젝트 인원 전원
+
+		return SprintCommandResult.from(sprint);
+	}
+
+	@Transactional
+	public SprintCommandResult start(StartSprintCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+		sprintValidator.ensureSprintNotClosed(sprint, project);
+		sprintValidator.ensureNoActiveSprint(project);
+
+		sprint.start(cmd.startedAt(), cmd.dueAt());
+
+		// TODO: SprintStartedEvent
+		//  - 대상: 해당 프로젝트 인원 전원
+
+		return SprintCommandResult.from(sprint);
+	}
+
+	@Transactional
+	public SprintCommandResult complete(CompleteSprintCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+		List<String> incompleteIssueKeys = issueFinder.findIncompleteIssueKeysBySprint(sprint);
+
+		if (sprint.isCompleted()) {
+			return SprintCommandResult.from(sprint);
 		}
 
-		return SprintResponse.from(sprint);
+		sprintValidator.ensureAllIssuesCompleted(incompleteIssueKeys, sprint, project);
+
+		sprint.complete();
+
+		// TODO: SprintCompletedEvent
+		//  - 대상: 해당 프로젝트 인원 전원
+
+		return SprintCommandResult.from(sprint);
 	}
 
-	// @Transactional
-	// public SprintResponse updateSprintStatus(
-	// 	String workspaceCode,
-	// 	String sprintKey,
-	// 	UpdateSprintStatusRequest request,
-	// 	Long currentWorkspaceMemberId
-	// ) {
-	// 	Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
-	//
-	// 	sprint.updateStatus(request.newStatus());
-	//
-	// 	if (sprint.getStatus() == SprintStatus.ACTIVE) {
-	// 		eventPublisher.publishEvent(SprintStartedEvent.createEvent(sprint, currentWorkspaceMemberId));
-	// 	} else if (sprint.getStatus() == SprintStatus.COMPLETED) {
-	// 		eventPublisher.publishEvent(SprintCompletedEvent.createEvent(sprint, currentWorkspaceMemberId));
-	// 	}
-	//
-	// 	return SprintResponse.from(sprint);
-	// }
-
-	// TODO: StartSprintCommand
-	// TODO: CompleteSprintCommand
-
-	// TODO: RemoveSprintIssueCommand
 	@Transactional
-	public SprintResponse removeIssue(
-		String workspaceCode,
-		String sprintKey,
-		RemoveSprintIssueRequest request
-	) {
-		Issue issue = issueFinder.findIssueInSprint(sprintKey, request.issueKey(), workspaceCode);
-		Sprint sprint = sprintFinder.findSprint(sprintKey, workspaceCode);
+	public SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd) {
 
-		sprint.removeIssue(issue);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint originalSprint = sprintFinder.findBy(cmd.originalSprintId(), project);
+		Sprint newSprint = sprintFinder.findBy(cmd.newSprintId(), project);
 
-		return SprintResponse.from(sprint);
+		sprintValidator.ensureSprintNotClosed(originalSprint, project);
+		sprintValidator.ensureSprintNotClosed(newSprint, project);
+
+		List<Issue> issues = issueFinder.findIncompleteIssuesBySprint(originalSprint);
+
+		if (issues.isEmpty()) {
+			return SprintCommandResult.from(originalSprint);
+		}
+
+		for (Issue issue : issues) {
+			issue.setSprint(newSprint);
+		}
+
+		// TODO: SprintIssuesMigratedEvent
+		//  - 대상: 해당 이슈들의 관련자 전원
+
+		return SprintCommandResult.from(originalSprint);
+	}
+
+	@Transactional
+	public SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+		sprintValidator.ensureSprintNotClosed(sprint, project);
+
+		List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
+
+		for (Issue issue : issues) {
+			sprintValidator.ensureIssueInSprintProject(issue, project);
+			issue.clearSprint();
+		}
+
+		// TODO: SprintIssuesRemovedEvent
+		//  - 대상: 해당 이슈들의 관련자 전원
+
+		return SprintCommandResult.from(sprint);
 	}
 }

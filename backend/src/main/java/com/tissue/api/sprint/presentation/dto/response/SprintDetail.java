@@ -14,26 +14,24 @@ public record SprintDetail(
 	String sprintKey,
 	String title,
 	String goal,
-	Instant plannedStartDate,
-	Instant plannedEndDate,
+	Instant startedAt,
+	Instant dueAt,
+	Instant completedAt,
 	SprintStatus status,
 	List<String> issueKeys,
 	Instant createdAt,
 	Long createdBy
 ) {
-	public static SprintDetail from(Sprint sprint) {
+	public static SprintDetail from(Sprint sprint, List<String> issueKeys) {
 		return SprintDetail.builder()
 			.id(sprint.getId())
-			.sprintKey(sprint.getKey())
 			.title(sprint.getTitle())
 			.goal(sprint.getGoal())
-			.plannedStartDate(sprint.getPlannedStartDate())
-			.plannedEndDate(sprint.getPlannedEndDate())
+			.startedAt(sprint.getStartedAt())
+			.dueAt(sprint.getDueAt())
+			.completedAt(sprint.getCompletedAt())
 			.status(sprint.getStatus())
-			.issueKeys(sprint.getSprintIssues().stream()
-				.map(si -> si.getIssue().getKey())
-				.sorted()
-				.toList())
+			.issueKeys(issueKeys)
 			.createdAt(sprint.getCreatedAt())
 			.createdBy(sprint.getCreatedBy())
 			.build();

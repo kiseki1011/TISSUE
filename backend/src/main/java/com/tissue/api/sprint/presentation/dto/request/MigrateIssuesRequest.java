@@ -3,10 +3,11 @@ package com.tissue.api.sprint.presentation.dto.request;
 import java.util.List;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record AddSprintIssuesRequest(
-	@NotEmpty @Size(max = 100, message = "Cannot add more than 100 issues to the sprint.")
-	List<String> issueKeys
+public record MigrateIssuesRequest(
+	@NotNull Long newSprintId,
+	@NotEmpty @Size(max = 100) List<String> issueKeys
 ) {
 }

@@ -2,29 +2,27 @@ package com.tissue.api.sprint.presentation.dto.request;
 
 import java.time.Instant;
 
-import com.tissue.api.common.validator.annotation.size.text.LongText;
-import com.tissue.api.common.validator.annotation.size.text.ShortText;
+import org.openapitools.jackson.nullable.JsonNullable;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
+import com.tissue.api.sprint.application.dto.request.UpdateSprintCommand;
 
-@Builder
+import jakarta.validation.constraints.Size;
+
 public record UpdateSprintRequest(
-
-	@ShortText
-	String title,
-
-	@LongText
-	String goal,
-
-	@NotNull(message = "{valid.notnull}")
-	@FutureOrPresent(message = "{valid.startdate}")
-	Instant plannedStartDate,
-
-	@NotNull(message = "{valid.notnull}")
-	@Future(message = "{valid.enddate}")
-	Instant plannedEndDate
+	JsonNullable<@Size(max = 50) String> title,
+	JsonNullable<@Size(max = 255) String> goal,
+	JsonNullable<Instant> startedAt,
+	JsonNullable<Instant> dueAt
 ) {
+	public UpdateSprintCommand toCommand(String workspaceKey, String projectKey, Long sprintId) {
+		return UpdateSprintCommand.builder()
+			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
+			.sprintId(sprintId)
+			.title(title)
+			.goal(goal)
+			.startedAt(startedAt)
+			.dueAt(dueAt)
+			.build();
+	}
 }
