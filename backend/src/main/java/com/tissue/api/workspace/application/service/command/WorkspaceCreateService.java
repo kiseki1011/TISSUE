@@ -13,7 +13,7 @@ import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.domain.service.WorkspaceKeyGenerator;
 
 import lombok.RequiredArgsConstructor;

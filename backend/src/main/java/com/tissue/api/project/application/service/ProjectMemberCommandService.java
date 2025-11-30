@@ -21,8 +21,8 @@ import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.project.domain.enums.ProjectRole;
-import com.tissue.api.project.domain.port.out.ProjectMemberCommandRepository;
-import com.tissue.api.project.domain.service.ProjectMemberValidator;
+import com.tissue.api.project.application.port.out.ProjectMemberCommandRepository;
+import com.tissue.api.project.application.service.validator.ProjectMemberValidator;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 

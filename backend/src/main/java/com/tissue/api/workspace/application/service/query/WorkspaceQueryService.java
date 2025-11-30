@@ -7,7 +7,7 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceDetail;
 import com.tissue.api.workspace.application.port.in.WorkspaceQueryUseCase;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.exception.WorkspaceNotFoundException;
-import com.tissue.api.workspace.domain.port.out.WorkspaceQueryRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

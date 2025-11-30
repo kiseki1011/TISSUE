@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
-import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.workspace.domain.Invitation;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 

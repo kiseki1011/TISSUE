@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseDateEntity;
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.security.authorization.enums.SystemRole;
+import com.tissue.api.workspace.domain.Invitation;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

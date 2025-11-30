@@ -3,8 +3,8 @@ package com.tissue.api.invitation.application.service.finder;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
+import com.tissue.api.workspace.domain.Invitation;
 
 import lombok.RequiredArgsConstructor;
 

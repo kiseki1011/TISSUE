@@ -14,8 +14,8 @@ import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
 import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.fixture.api.LoginApiFixture;
 import deprecated.com.tissue.support.fixture.api.MemberApiFixture;

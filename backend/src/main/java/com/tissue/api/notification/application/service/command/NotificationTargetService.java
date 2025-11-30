@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.workspace.domain.WorkspaceMember;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 

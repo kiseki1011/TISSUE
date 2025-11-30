@@ -3,7 +3,7 @@ package com.tissue.api.issuetype.domain.service.validator;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.issue.domain.port.out.IssueFieldValueQueryRepository;
+import com.tissue.api.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.repository.IssueFieldQueryRepository;

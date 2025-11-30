@@ -10,8 +10,8 @@ import com.tissue.api.project.application.dto.response.ProjectCommandResult;
 import com.tissue.api.project.application.port.in.ProjectCommandUseCase;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.project.domain.port.out.ProjectCommandRepository;
-import com.tissue.api.project.domain.service.ProjectValidator;
+import com.tissue.api.project.application.port.out.ProjectCommandRepository;
+import com.tissue.api.project.application.service.validator.ProjectValidator;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.domain.Workspace;
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.project.domain.exception.ProjectMemberNotFoundException;
-import com.tissue.api.project.domain.port.out.ProjectMemberQueryRepository;
+import com.tissue.api.project.application.port.out.ProjectMemberQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -3,7 +3,7 @@ package com.tissue.api.invitation.presentation.dto.response;
 import java.time.Instant;
 
 import com.tissue.api.invitation.domain.enums.InvitationStatus;
-import com.tissue.api.invitation.domain.model.Invitation;
+import com.tissue.api.workspace.domain.Invitation;
 
 import lombok.Builder;
 

@@ -22,7 +22,7 @@ import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.adapter.in.web.IssueCommandController;
 import com.tissue.api.issue.application.service.IssueCommandService;
-import com.tissue.api.issue.domain.port.out.IssueCommandRepository;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -47,8 +47,8 @@ import com.tissue.api.workspace.application.service.command.WorkspaceParticipati
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.config.WebMvcTestConfig;
 import lombok.extern.slf4j.Slf4j;

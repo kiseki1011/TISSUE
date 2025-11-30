@@ -18,7 +18,6 @@ public interface WorkspaceParticipationUseCase {
 	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	InviteMembersResult invite(InviteMembersCommand cmd);
 
-	// TODO: 이건 다른 usecase로 옮기는게 좋을까?
 	// WorkspaceMemberCommandResult acceptInvitation(AcceptInvitationCommand cmd);
 
 	WorkspaceMemberCommandResult join(String workspaceKey, Long memberId);

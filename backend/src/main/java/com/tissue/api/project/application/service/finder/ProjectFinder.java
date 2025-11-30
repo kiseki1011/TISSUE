@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.exception.ProjectNotFoundException;
-import com.tissue.api.project.domain.port.out.ProjectQueryRepository;
+import com.tissue.api.project.application.port.out.ProjectQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.exception.WorkspaceMemberNotFoundException;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

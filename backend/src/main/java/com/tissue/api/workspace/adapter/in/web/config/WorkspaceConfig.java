@@ -8,7 +8,7 @@ import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 
 @Configuration
 @EnableConfigurationProperties(WorkspaceProperties.class)

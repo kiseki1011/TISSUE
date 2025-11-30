@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.invitation.domain.model.Invitation;
 import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
@@ -19,11 +18,12 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandR
 import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.Invitation;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -8,7 +8,7 @@ import com.tissue.api.member.exception.DuplicateUsernameException;
 import com.tissue.api.member.exception.MemberHasOwnedWorkspacesException;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
