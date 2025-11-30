@@ -1,8 +1,8 @@
-package com.tissue.api.sprint.infrastructure.repository;
+package com.tissue.api.sprint.domain.port.out;
 
 import org.springframework.data.repository.Repository;
 
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 
 public interface SprintCommandRepository extends Repository<Sprint, Long> {
 

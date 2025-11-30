@@ -31,7 +31,7 @@ import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.sprint.application.service.SprintCommandService;
 import com.tissue.api.sprint.application.service.SprintQueryService;
 import com.tissue.api.sprint.application.service.finder.SprintFinder;
-import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
+import com.tissue.api.sprint.domain.port.out.SprintQueryRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;

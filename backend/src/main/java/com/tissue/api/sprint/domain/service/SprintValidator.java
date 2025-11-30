@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.sprint.application.service.finder.SprintFinder;
-import com.tissue.api.sprint.domain.model.Sprint;
-import com.tissue.api.sprint.exception.ActiveSprintExistsException;
-import com.tissue.api.sprint.exception.IncompleteSprintIssuesFoundException;
-import com.tissue.api.sprint.exception.SprintClosedException;
-import com.tissue.api.sprint.exception.SprintIssueProjectMismatchException;
+import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.exception.ActiveSprintExistsException;
+import com.tissue.api.sprint.domain.exception.IncompleteSprintIssuesFoundException;
+import com.tissue.api.sprint.domain.exception.SprintClosedException;
+import com.tissue.api.sprint.domain.exception.SprintIssueProjectMismatchException;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.tissue.api.sprint.domain.model;
+package com.tissue.api.sprint.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.Issue;

@@ -1,12 +1,12 @@
-package com.tissue.api.sprint.infrastructure.repository;
+package com.tissue.api.sprint.domain.port.out;
 
 import java.util.Optional;
 
 import org.springframework.data.repository.Repository;
 
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.sprint.domain.model.Sprint;
-import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
 
 public interface SprintQueryRepository extends Repository<Sprint, Long> {
 

@@ -19,7 +19,7 @@ import com.tissue.api.issue.domain.exception.StoryPointNotAllowedForHierarchyExc
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
 
 import jakarta.persistence.Column;

@@ -1,6 +1,6 @@
 package com.tissue.api.sprint.application.dto.response;
 
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 
 public record SprintCommandResult(
 	String workspaceKey,

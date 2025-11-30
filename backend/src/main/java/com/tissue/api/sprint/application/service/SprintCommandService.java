@@ -19,9 +19,9 @@ import com.tissue.api.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.api.sprint.application.port.in.SprintCommandUseCase;
 import com.tissue.api.sprint.application.service.finder.SprintFinder;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.service.SprintValidator;
-import com.tissue.api.sprint.infrastructure.repository.SprintCommandRepository;
+import com.tissue.api.sprint.domain.port.out.SprintCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 

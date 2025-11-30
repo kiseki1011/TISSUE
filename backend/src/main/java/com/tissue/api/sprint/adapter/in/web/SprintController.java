@@ -1,4 +1,4 @@
-package com.tissue.api.sprint.presentation.controller;
+package com.tissue.api.sprint.adapter.in.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +22,12 @@ import com.tissue.api.sprint.application.dto.response.SprintDetail;
 import com.tissue.api.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.api.sprint.application.port.in.SprintCommandUseCase;
 import com.tissue.api.sprint.application.port.in.SprintQueryUseCase;
-import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
-import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
-import com.tissue.api.sprint.presentation.dto.request.MigrateIssuesRequest;
-import com.tissue.api.sprint.presentation.dto.request.RemoveSprintIssuesRequest;
-import com.tissue.api.sprint.presentation.dto.request.StartSprintRequest;
-import com.tissue.api.sprint.presentation.dto.request.UpdateSprintRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.AddSprintIssuesRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.CreateSprintRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.MigrateIssuesRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.RemoveSprintIssuesRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.StartSprintRequest;
+import com.tissue.api.sprint.adapter.in.web.dto.request.UpdateSprintRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

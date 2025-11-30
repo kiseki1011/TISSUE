@@ -1,4 +1,4 @@
-package com.tissue.api.sprint.presentation.dto.request;
+package com.tissue.api.sprint.adapter.in.web.dto.request;
 
 import java.time.Instant;
 

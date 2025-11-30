@@ -11,7 +11,7 @@ import com.tissue.api.sprint.application.dto.response.SprintDetail;
 import com.tissue.api.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.api.sprint.application.port.in.SprintQueryUseCase;
 import com.tissue.api.sprint.application.service.finder.SprintFinder;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,7 +1,7 @@
-package com.tissue.api.sprint.domain.model;
+package com.tissue.api.sprint.domain;
 
 import static com.tissue.api.common.util.DomainPreconditions.*;
-import static com.tissue.api.sprint.domain.model.enums.SprintStatus.*;
+import static com.tissue.api.sprint.domain.enums.SprintStatus.*;
 
 import java.time.Instant;
 
@@ -9,7 +9,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.sprint.domain.enums.SprintStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

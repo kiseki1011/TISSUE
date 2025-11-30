@@ -1,4 +1,4 @@
-package com.tissue.api.sprint.exception;
+package com.tissue.api.sprint.domain.exception;
 
 import com.tissue.api.common.exception.base.ResourceNotFoundException;
 

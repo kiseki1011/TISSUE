@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.sprint.domain.model.Sprint;
+import com.tissue.api.sprint.domain.Sprint;
 
 public interface IssueQueryRepository extends Repository<Issue, Long> {
 
