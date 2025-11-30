@@ -16,7 +16,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,8 +31,7 @@ public class IssueFieldValue extends BaseEntity {
 	private Long version;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "field_value_seq_gen")
-	@SequenceGenerator(name = "field_value_seq_gen", sequenceName = "field_value_seq", allocationSize = 50)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	// TODO: Issue와 양방향 연관관계를 맺어서 Issue 애그리거트를 통해서만 제어하도록 리팩토링하는게 좋을까?

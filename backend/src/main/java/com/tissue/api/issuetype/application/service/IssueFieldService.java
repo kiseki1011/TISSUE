@@ -11,6 +11,8 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issuetype.application.dto.AddOptionCommand;
 import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.DeleteIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.DeleteOptionCommand;
 import com.tissue.api.issuetype.application.dto.PatchIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.RenameIssueFieldCommand;
 import com.tissue.api.issuetype.application.dto.RenameOptionCommand;
@@ -30,6 +32,8 @@ import com.tissue.api.issuetype.presentation.dto.response.IssueFieldResponse;
 import com.tissue.api.issuetype.repository.EnumFieldOptionCommandRepository;
 import com.tissue.api.issuetype.repository.EnumFieldOptionQueryRepository;
 import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -38,25 +42,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueFieldService {
 
-	private final IssueTypeFinder typeFinder;
-	private final IssueFieldFinder fieldFinder;
+	private final ProjectFinder projectFinder;
+	private final IssueTypeFinder issueTypeFinder;
+	private final IssueFieldFinder issueFieldFinder;
 	private final IssueFieldOptionFinder fieldOptionFinder;
 
-	private final IssueFieldCommandRepository fieldCommandRepo;
+	private final IssueFieldCommandRepository issueFieldCommandRepo;
 	private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
 	private final EnumFieldOptionQueryRepository fieldOptionQueryRepo;
 
-	private final IssueFieldValidator fieldValidator;
-	private final EnumFieldOptionValidator optionValidator;
+	private final IssueFieldValidator issueFieldValidator;
+	private final EnumFieldOptionValidator fieldOptionValidator;
 	private final FieldDefintionPolicy fieldDefintionPolicy;
 
 	private final EntityManager entityManager;
 
 	@Transactional
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
 
-		fieldValidator.ensureUniqueLabel(issueType, cmd.label());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+
+		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
 
 		IssueField issueField = IssueField.create(
 			cmd.label(),
@@ -66,7 +74,7 @@ public class IssueFieldService {
 			issueType
 		);
 
-		IssueField savedField = fieldCommandRepo.save(issueField);
+		IssueField savedField = issueFieldCommandRepo.save(issueField);
 
 		if (savedField.getFieldType() == FieldType.ENUM) {
 			fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
@@ -78,81 +86,98 @@ public class IssueFieldService {
 
 	@Transactional
 	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
-		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
 
-		if (labelUnchanged(field.getLabel(), cmd.label())) {
-			return IssueFieldResponse.from(field);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+
+		if (labelUnchanged(issueField.getLabel(), cmd.label())) {
+			return IssueFieldResponse.from(issueField);
 		}
 
-		fieldValidator.ensureUniqueLabel(type, cmd.label());
-		field.rename(cmd.label());
+		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
+		issueField.rename(cmd.label());
 
-		return IssueFieldResponse.from(field);
+		return IssueFieldResponse.from(issueField);
 	}
 
 	@Transactional
-	public IssueFieldResponse patch(PatchIssueFieldCommand cmd) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(cmd.issueTypeId(), cmd.workspaceKey());
-		IssueField field = fieldFinder.findByIdAndType(cmd.issueFieldId(), type);
+	public IssueFieldResponse update(PatchIssueFieldCommand cmd) {
 
-		Patchers.apply(cmd.description(), field::updateDescription);
-		Patchers.apply(cmd.required(), field::setRequired);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		return IssueFieldResponse.from(field);
+		Patchers.apply(cmd.description(), issueField::updateDescription);
+		Patchers.apply(cmd.required(), issueField::setRequired);
+
+		return IssueFieldResponse.from(issueField);
 	}
 
+	// TODO: hard-delete 정책 사용
 	@Transactional
-	public IssueFieldResponse softDelete(String workspaceKey, Long issueTypeId, Long issueFieldId) {
-		IssueType type = typeFinder.findByIdAndWorkspaceKey(issueTypeId, workspaceKey);
-		IssueField field = fieldFinder.findByIdAndType(issueFieldId, type);
+	public IssueFieldResponse delete(DeleteIssueFieldCommand cmd) {
 
-		fieldValidator.ensureDeletable(field);
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		fieldOptionCommandRepo.softDeleteByField(field);
-		field.softDelete();
+		// TODO: 해당 IssueField를 사용해서 값을 설정한 이슈가 단 하나라도 있으면 삭제 불가
+		issueFieldValidator.ensureDeletable(issueField);
 
-		return IssueFieldResponse.from(field);
+		fieldOptionCommandRepo.softDeleteByField(issueField);
+		issueField.softDelete();
+
+		return IssueFieldResponse.from(issueField);
 	}
 
-	// TODO: Add retry logic for DataIntegrityViolationException
-	//  - Catch the exception of the unique constraint (field_id, position)
-	//  - Concurrent request might cause duplicate position
 	@Transactional
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
-		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
 
-		optionValidator.ensureLabelUnique(field, cmd.label());
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		int nextPosition = fieldOptionQueryRepo.countByIssueField(field);
+		fieldOptionValidator.ensureLabelUnique(issueField, cmd.label());
+
+		int nextPosition = fieldOptionQueryRepo.countByIssueField(issueField);
 		fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
-		EnumFieldOption option = EnumFieldOption.create(field, cmd.label(), nextPosition);
+		EnumFieldOption option = EnumFieldOption.create(issueField, cmd.label(), nextPosition);
 		fieldOptionCommandRepo.save(option);
 
-		return IssueFieldResponse.from(field);
+		return IssueFieldResponse.from(issueField);
 	}
 
 	@Transactional
 	public IssueFieldResponse renameOption(RenameOptionCommand cmd) {
-		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), field);
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
 		if (labelUnchanged(option.getLabel(), cmd.label())) {
-			return IssueFieldResponse.from(field);
+			return IssueFieldResponse.from(issueField);
 		}
 
-		optionValidator.ensureLabelUnique(field, cmd.label());
+		fieldOptionValidator.ensureLabelUnique(issueField, cmd.label());
 		option.rename(cmd.label());
 
-		return IssueFieldResponse.from(field);
+		return IssueFieldResponse.from(issueField);
 	}
 
 	@Transactional
 	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
-		IssueField field = findIssueField(cmd.workspaceKey(), cmd.issueTypeId(), cmd.issueFieldId());
-		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(field,
-			fieldOptionFinder.findActiveOptions(field));
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+
+		EnumFieldOptions options = EnumFieldOptions.fromCurrentOptions(
+			issueField,
+			fieldOptionFinder.findActiveOptions(issueField)
+		);
 
 		options.ensureExactActiveIds(cmd.targetOrderedIds());
 		options.bumpPositions();
@@ -161,33 +186,27 @@ public class IssueFieldService {
 
 		options.reorderTo(cmd.targetOrderedIds());
 
-		return IssueFieldResponse.from(field);
+		return IssueFieldResponse.from(issueField);
 	}
 
+	// TODO: hard-delete 정책으로 변경
 	@Transactional
-	public IssueFieldResponse softDeleteOption(
-		String workspaceKey,
-		Long issueTypeId,
-		Long issueFieldId,
-		Long optionId
-	) {
-		IssueField field = findIssueField(workspaceKey, issueTypeId, issueFieldId);
-		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(optionId, field);
+	public IssueFieldResponse deleteOption(DeleteOptionCommand cmd) {
 
-		// TODO: 해당 EnumFieldOption을 사용하는 IssueFieldValue가 있어도 soft-delete 허용할까?
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
+		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
+
+		// TODO: 해당 option을 값으로 사용하는 이슈가 단 하나라도 있으면 삭제 불가
 		// optionValidator.ensureNotInUse(option);
 		option.softDelete();
 
-		return IssueFieldResponse.from(field);
+		return IssueFieldResponse.from(issueField);
 	}
 
 	private boolean labelUnchanged(Label currentLabel, Label newLabel) {
 		return Objects.equals(currentLabel, newLabel);
-	}
-
-	private IssueField findIssueField(String workspaceKey, Long issueTypeId, Long issueFieldId) {
-		IssueType issueType = typeFinder.findByIdAndWorkspaceKey(issueTypeId, workspaceKey);
-		return fieldFinder.findByIdAndType(issueFieldId, issueType);
 	}
 
 	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {

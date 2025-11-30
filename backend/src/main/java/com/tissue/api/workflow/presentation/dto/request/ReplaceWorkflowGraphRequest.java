@@ -54,9 +54,10 @@ public record ReplaceWorkflowGraphRequest(
 		}
 	}
 
-	public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, Long workflowId) {
+	public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
 		return new ReplaceWorkflowGraphCommand(
 			workspaceKey,
+			projectKey,
 			workflowId,
 			version,
 			replaceStatusRequests.stream()

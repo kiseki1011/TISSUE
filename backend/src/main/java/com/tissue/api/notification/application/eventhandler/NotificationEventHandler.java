@@ -13,7 +13,7 @@ import com.tissue.api.notification.domain.model.Notification;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

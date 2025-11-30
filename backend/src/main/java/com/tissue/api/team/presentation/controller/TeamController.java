@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.query.TeamQueryService;
 import com.tissue.api.team.presentation.dto.request.CreateTeamRequest;
@@ -20,7 +19,6 @@ import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.GetTeamsResponse;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +31,6 @@ public class TeamController {
 	private final TeamCommandService teamCommandService;
 	private final TeamQueryService teamQueryService;
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
 	public ApiResponse<TeamResponse> createTeam(
@@ -44,7 +41,6 @@ public class TeamController {
 		return ApiResponse.created("Team created.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}")
 	public ApiResponse<TeamResponse> updateTeam(
 		@PathVariable String code,
@@ -55,7 +51,6 @@ public class TeamController {
 		return ApiResponse.ok("Team updated.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@PatchMapping("/{teamId}/color")
 	public ApiResponse<TeamResponse> updateTeamColor(
 		@PathVariable String code,
@@ -66,7 +61,6 @@ public class TeamController {
 		return ApiResponse.ok("Team color updated.", response);
 	}
 
-	@RoleRequired(role = WorkspaceRole.MANAGER)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/{teamId}")
 	public ApiResponse<Void> deleteTeam(
@@ -77,7 +71,6 @@ public class TeamController {
 		return ApiResponse.okWithNoContent("Team deleted.");
 	}
 
-	@RoleRequired(role = WorkspaceRole.VIEWER)
 	@GetMapping
 	public ApiResponse<GetTeamsResponse> getTeams(
 		@PathVariable String code

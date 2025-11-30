@@ -11,78 +11,77 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.api.common.dto.ApiResponse;
+import com.tissue.api.issuetype.application.dto.DeleteIssueTypeCommand;
 import com.tissue.api.issuetype.application.service.IssueTypeService;
 import com.tissue.api.issuetype.presentation.dto.request.CreateIssueTypeRequest;
-import com.tissue.api.issuetype.presentation.dto.request.PatchIssueTypeRequest;
 import com.tissue.api.issuetype.presentation.dto.request.RenameIssueTypeRequest;
+import com.tissue.api.issuetype.presentation.dto.request.UpdateIssueTypeRequest;
 import com.tissue.api.issuetype.presentation.dto.response.IssueTypeResponse;
-import com.tissue.api.security.authentication.MemberUserDetails;
-import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspacemember.domain.model.enums.WorkspaceRole;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issuetypes")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issuetypes")
 @RequiredArgsConstructor
 public class IssueTypeController {
 
-	/**
-	 * TODO(In Consideration)
-	 *  - HierarchyLevel update using validation
-	 *  or increase/decrease HierarchyLevel of the whole IssueTypes by 1
-	 *  - Workflow update using validation or provide Issue migration
-	 */
 	private final IssueTypeService issueTypeService;
 
 	@PostMapping
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<ApiResponse<IssueTypeResponse>> create(
+	public ResponseEntity<IssueTypeResponse> create(
 		@PathVariable String workspaceKey,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid CreateIssueTypeRequest request
+		@PathVariable String projectKey,
+		@RequestBody @Valid CreateIssueTypeRequest req
 	) {
-		IssueTypeResponse response = issueTypeService.create(request.toCommand(workspaceKey));
+		IssueTypeResponse response = issueTypeService.create(
+			req.toCommand(workspaceKey, projectKey)
+		);
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(ApiResponse.created("Issue type created.", response));
+			.body(response);
 	}
 
 	@PutMapping("/{id}/rename")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> rename(
+	public ResponseEntity<IssueTypeResponse> rename(
 		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
 		@PathVariable Long id,
-		@CurrentMember MemberUserDetails userDetails,
 		@RequestBody @Valid RenameIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.rename(request.toCommand(workspaceKey, id));
-		return ApiResponse.ok("Issue type renamed.", response);
+		IssueTypeResponse response = issueTypeService.rename(
+			request.toCommand(workspaceKey, projectKey, id)
+		);
+		return ResponseEntity.ok(response);
 	}
 
-	// Don't allow HierachyLevel, Workflow update
 	@PatchMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> patchMetaData(
+	public ResponseEntity<IssueTypeResponse> update(
 		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
 		@PathVariable Long id,
-		@CurrentMember MemberUserDetails userDetails,
-		@RequestBody @Valid PatchIssueTypeRequest request
+		@RequestBody @Valid UpdateIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.patch(request.toCommand(workspaceKey, id));
-		return ApiResponse.ok("Issue type updated.", response);
+		IssueTypeResponse response = issueTypeService.update(
+			request.toCommand(workspaceKey, projectKey, id)
+		);
+		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{id}")
 	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueTypeResponse> softDelete(
+	public ResponseEntity<IssueTypeResponse> delete(
 		@PathVariable String workspaceKey,
-		@PathVariable Long id,
-		@CurrentMember MemberUserDetails userDetails
+		@PathVariable String projectKey,
+		@PathVariable Long id
 	) {
-		IssueTypeResponse response = issueTypeService.softDelete(workspaceKey, id);
-		return ApiResponse.ok("Issue type archived.", response);
+		IssueTypeResponse response = issueTypeService.delete(
+			new DeleteIssueTypeCommand(workspaceKey, projectKey, id)
+		);
+		return ResponseEntity.ok(response);
 	}
 }

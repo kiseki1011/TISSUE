@@ -13,8 +13,8 @@ import com.tissue.api.comment.presentation.dto.request.UpdateIssueCommentRequest
 import com.tissue.api.comment.presentation.dto.response.IssueCommentResponse;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +34,7 @@ public class IssueCommentCommandService {
 		CreateIssueCommentRequest request,
 		Long memberId
 	) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceCode);
+		Issue issue = issueFinder.findBy(issueKey, workspaceCode);
 
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 
@@ -69,7 +69,7 @@ public class IssueCommentCommandService {
 	) {
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,
 				issueKey,
 				workspaceCode
@@ -91,7 +91,7 @@ public class IssueCommentCommandService {
 	) {
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
 
-		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_Workspace_Key(
+		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,
 				issueKey,
 				workspaceCode

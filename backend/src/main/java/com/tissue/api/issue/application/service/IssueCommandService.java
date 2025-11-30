@@ -3,10 +3,12 @@ package com.tissue.api.issue.application.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
+import com.tissue.api.issue.application.dto.request.AssignParentCommand;
 import com.tissue.api.issue.application.dto.request.CreateIssueCommand;
+import com.tissue.api.issue.application.dto.request.DeleteIssueCommand;
+import com.tissue.api.issue.application.dto.request.RemoveParentCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
@@ -26,22 +28,21 @@ import com.tissue.api.issue.domain.service.validator.IssueFieldSchemaValidator;
 import com.tissue.api.issue.domain.service.validator.IssueValidator;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.project.domain.ProjectMember;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class IssueCommandService implements IssueCommandUseCase {
 
 	private final IssueFinder issueFinder;
 	private final IssueTypeFinder issueTypeFinder;
-	private final WorkspaceFinder workspaceFinder;
-	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final ProjectMemberFinder projectMemberFinder;
+	private final ProjectFinder projectFinder;
 
 	private final EpicStoryPointSyncService epicStoryPointSyncService;
 	private final IssueProgressSyncService issueProgressSyncService;
@@ -53,12 +54,13 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
-		Workspace workspace = workspaceFinder.findWorkspace(cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findByIdAndWorkspace(cmd.issueTypeId(), workspace);
-		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(cmd.memberId(), cmd.workspaceKey());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.memberId());
 
 		Issue issue = issueCommandRepository.save(Issue.create(
-			workspace,
+			project,
 			issueType,
 			cmd.title(),
 			IssueContent.of(cmd.content(), cmd.summary()),
@@ -76,7 +78,9 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), issue::updateTitle);
 		Patchers.apply(cmd.content(), issue::updateContent);
@@ -89,7 +93,9 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateStoryPoint(UpdateStoryPointCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		issue.updateStoryPoint(cmd.storyPoint());
 
@@ -102,21 +108,26 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
-		Issue issue = issueFinder.findIssue(cmd.issueKey(), cmd.workspaceKey());
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
 			cmd.customFields(),
 			issue
 		);
+
 		fieldValueRepository.saveAll(updateValues);
 
 		return IssueCommandResult.from(issue);
 	}
 
 	@Override
-	public IssueCommandResult assignParent(String workspaceKey, String issueKey, String parentIssueKey) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		Issue parent = issueFinder.findIssue(parentIssueKey, workspaceKey);
+	public IssueCommandResult assignParent(AssignParentCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+		Issue parent = issueFinder.findBy(cmd.parentIssueKey(), cmd.workspaceKey());
 
 		issue.setParentIssue(parent);
 
@@ -128,8 +139,10 @@ public class IssueCommandService implements IssueCommandUseCase {
 	}
 
 	@Override
-	public IssueCommandResult removeParent(String workspaceKey, String issueKey) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+	public IssueCommandResult removeParent(RemoveParentCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Issue parent = issue.getParentIssue();
 
 		issue.removeParentIssue();
@@ -141,9 +154,12 @@ public class IssueCommandService implements IssueCommandUseCase {
 		return IssueCommandResult.from(issue);
 	}
 
+	// TODO: 이슈 soft-delete에 대한 정책 수립이 필요
 	@Override
-	public IssueCommandResult softDelete(String workspaceKey, String issueKey) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+	public IssueCommandResult softDelete(DeleteIssueCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Issue parent = issue.getParentIssue();
 
 		issueValidator.ensureCanDelete(issue);

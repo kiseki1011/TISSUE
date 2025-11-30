@@ -8,6 +8,7 @@ import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 
 public record ReplaceWorkflowGraphCommand(
 	String workspaceKey,
+	String projectKey,
 	Long workflowId,
 	Long version,
 	List<StateCommand> stateCommands,

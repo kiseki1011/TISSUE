@@ -9,8 +9,9 @@ import lombok.Builder;
 
 @Builder
 public record CreateIssueCommand(
-	Long memberId,
 	String workspaceKey,
+	String projectKey,
+	Long memberId,
 	String title,
 	String content,
 	String summary,

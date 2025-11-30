@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record PatchIssueFieldCommand(
 	String workspaceKey,
+	String projectKey,
 	Long issueTypeId,
 	Long issueFieldId,
 	JsonNullable<String> description,

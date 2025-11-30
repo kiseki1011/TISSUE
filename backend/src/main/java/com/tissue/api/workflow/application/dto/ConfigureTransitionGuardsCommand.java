@@ -9,6 +9,7 @@ import lombok.Builder;
 @Builder
 public record ConfigureTransitionGuardsCommand(
 	String workspaceKey,
+	String projectKey,
 	Long workflowId,
 	Long transitionId,
 	List<GuardConfigData> guards

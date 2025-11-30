@@ -10,8 +10,8 @@ import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 

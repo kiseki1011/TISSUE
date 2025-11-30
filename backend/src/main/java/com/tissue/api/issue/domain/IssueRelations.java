@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.exception.IssueRelationAlreadyExistsException;
+import com.tissue.api.issue.domain.exception.IssueRelationAlreadyExistsException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;

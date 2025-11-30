@@ -12,40 +12,26 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
+// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("archived = false")
-@Table(
-	indexes = {
-		@Index(name = "idx_option_field_label", columnList = "issue_field_id,label"),
-		@Index(name = "idx_option_field_position", columnList = "issue_field_id,position")
-	}
-)
+@SQLRestriction("softDeleted = false")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EnumFieldOption extends BaseEntity {
 
-	// @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "field_option_seq_gen")
-	// @SequenceGenerator(name = "field_option_seq_gen", sequenceName = "field_option_seq", allocationSize = 50)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ToString.Include
 	private Long id;
 
 	@Version
-	@ToString.Include
 	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -53,33 +39,23 @@ public class EnumFieldOption extends BaseEntity {
 	private IssueField issueField;
 
 	@Embedded
-	@ToString.Include
 	private Label label;
 
 	@Column(nullable = false)
 	private int position;
-
-	@Builder(access = AccessLevel.PRIVATE)
-	private EnumFieldOption(
-		IssueField issueField,
-		Label label,
-		Integer position
-	) {
-		this.issueField = issueField;
-		this.label = label;
-		this.position = position;
-	}
 
 	public static EnumFieldOption create(
 		@NonNull IssueField issueField,
 		@NonNull Label label,
 		Integer position
 	) {
-		return EnumFieldOption.builder()
-			.issueField(issueField)
-			.label(label)
-			.position((position == null) ? 0 : position)
-			.build();
+		EnumFieldOption option = new EnumFieldOption();
+
+		option.issueField = issueField;
+		option.label = label;
+		option.position = (position == null) ? 0 : position;
+
+		return option;
 	}
 
 	public String getDisplayLabel() {
@@ -92,9 +68,5 @@ public class EnumFieldOption extends BaseEntity {
 
 	public void movePositionTo(int position) {
 		this.position = position;
-	}
-
-	public void softDelete() {
-		archive();
 	}
 }

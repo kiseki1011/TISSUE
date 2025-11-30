@@ -11,8 +11,8 @@ import com.tissue.api.team.presentation.dto.request.UpdateTeamColorRequest;
 import com.tissue.api.team.presentation.dto.request.UpdateTeamRequest;
 import com.tissue.api.team.presentation.dto.response.TeamResponse;
 import com.tissue.api.team.validator.TeamValidator;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
 
 		Team team = Team.builder()
 			.name(request.name())
@@ -50,7 +50,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamRequest request
 	) {
-		Team team = teamFinder.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findByIdAndWorkspaceKey(teamId, workspaceCode);
 
 		team.updateName(request.name());
 		team.updateDescription(request.description());
@@ -64,7 +64,7 @@ public class TeamCommandService {
 		Long teamId,
 		UpdateTeamColorRequest request
 	) {
-		Team team = teamFinder.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findByIdAndWorkspaceKey(teamId, workspaceCode);
 
 		team.updateColor(request.colorType());
 
@@ -76,7 +76,7 @@ public class TeamCommandService {
 		String workspaceCode,
 		Long teamId
 	) {
-		Team team = teamFinder.findTeam(teamId, workspaceCode);
+		Team team = teamFinder.findByIdAndWorkspaceKey(teamId, workspaceCode);
 
 		teamValidator.ensureDeletable(team);
 

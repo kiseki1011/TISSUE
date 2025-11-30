@@ -26,7 +26,12 @@ public abstract class BaseEntity extends BaseDateEntity {
 	@Column(nullable = false)
 	private boolean archived = false;
 
+	@Column(nullable = false)
+	private boolean softDeleted = false;
+
 	private Instant archivedAt;
+
+	private Instant softDeletedAt;
 
 	public abstract Long getId();
 
@@ -37,10 +42,24 @@ public abstract class BaseEntity extends BaseDateEntity {
 		}
 	}
 
+	public void softDelete() {
+		if (!softDeleted) {
+			this.softDeleted = true;
+			this.softDeletedAt = Instant.now();
+		}
+	}
+
 	/**
 	 * Disable if there is no restore policy.
 	 */
 	public void restore() {
+		if (softDeleted) {
+			this.softDeleted = false;
+			this.softDeletedAt = null;
+		}
+	}
+
+	public void unarchive() {
 		if (archived) {
 			this.archived = false;
 			this.archivedAt = null;

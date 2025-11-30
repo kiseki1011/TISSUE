@@ -18,42 +18,29 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
+// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("archived = false")
-@Table(
-	indexes = {
-		@Index(name = "idx_issue_field_issue_type_label", columnList = "issue_type_id,label")
-	}
-)
+@SQLRestriction("softDeleted = false")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueField extends BaseEntity {
 
-	// @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_field_seq_gen")
-	// @SequenceGenerator(name = "issue_field_seq_gen", sequenceName = "issue_field_seq", allocationSize = 50)
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ToString.Include
 	private Long id;
 
 	@Version
-	@ToString.Include
 	private Long version;
 
 	@Embedded
-	@ToString.Include
 	private Label label;
 
 	@Column(nullable = false, length = 255)
@@ -80,6 +67,7 @@ public class IssueField extends BaseEntity {
 		@NonNull IssueType issueType
 	) {
 		IssueField issueField = new IssueField();
+
 		issueField.label = label;
 		issueField.description = nullToEmpty(description);
 		issueField.fieldType = fieldType;
@@ -107,9 +95,5 @@ public class IssueField extends BaseEntity {
 
 	public void setRequired(@NonNull Boolean required) {
 		this.required = Boolean.TRUE.equals(required);
-	}
-
-	public void softDelete() {
-		archive();
 	}
 }

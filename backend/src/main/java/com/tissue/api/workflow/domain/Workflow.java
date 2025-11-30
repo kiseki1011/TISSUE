@@ -11,10 +11,10 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workflow.exception.DuplicateStateException;
 import com.tissue.api.workflow.exception.DuplicateTransitionException;
-import com.tissue.api.workspace.domain.model.Workspace;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -33,29 +33,25 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
+// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("archived = false")
+@SQLRestriction("softDeleted = false")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workflow extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ToString.Include
 	private Long id;
 
 	@Version
-	@ToString.Include
 	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	private Workspace workspace;
+	private Project project;
 
 	@Embedded
-	@ToString.Include
 	private Label label;
 
 	@Column(nullable = false, length = 255)
@@ -78,13 +74,13 @@ public class Workflow extends BaseEntity {
 	private boolean systemProvided;
 
 	public static Workflow create(
-		@NonNull Workspace workspace,
+		@NonNull Project project,
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color
 	) {
 		Workflow wf = new Workflow();
-		wf.workspace = workspace;
+		wf.project = project;
 		wf.label = label;
 		wf.description = nullToEmpty(description);
 		wf.color = color;
@@ -158,11 +154,16 @@ public class Workflow extends BaseEntity {
 	}
 
 	// TODO: 삭제 금지 정책을 정하자
-	//  전략 1: 하나 이상의 Issue가 intial status가 아니면서 Workflow를 진행 중이면 삭제 막기
-	//  전략 2: 하나 이상의 IssueType이 해당 Workflow를 선택했으면 삭제 막기
-	public void softDelete() {
+	//  전략 1: 하나 이상의 Issue가 intial status가 아니면서 Workflow를 진행했으면 삭제 불가
+	//  전략 2: 하나 이상의 IssueType이 해당 Workflow를 선택했으면 삭제 불가
+	//  전략 3: 전략 1 + 전략 2 둘다 사용
+
+	// TODO: soft delete vs hard delete
+	//  어떤게 좋을까? Workspace, Project, Issue 등과 같은 리소스는 soft-delete이 이해가지만,
+	//  Workflow도 soft-delete 정책을 사용하는게 좋을까?
+	public void delete() {
 		ensureNotSystemProvided();
-		archive();
+		softDelete();
 		states.forEach(WorkflowState::softDelete);
 		transitions.forEach(WorkflowTransition::softDelete);
 	}

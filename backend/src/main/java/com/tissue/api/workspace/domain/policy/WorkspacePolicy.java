@@ -1,6 +1,6 @@
 package com.tissue.api.workspace.domain.policy;
 
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.domain.Workspace;
 
 public record WorkspacePolicy(
 	int maxMemberCount

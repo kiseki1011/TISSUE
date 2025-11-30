@@ -4,11 +4,10 @@ import java.time.Instant;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssuePriority;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 import lombok.Builder;
 
-// TODO: 추후에 정말 필요한 필드만 사용하도록 리팩토링 하거나 새로운 응답 DTO 추가
 @Builder
 public record IssueBasicInfo(
 	String issueKey,
@@ -22,7 +21,7 @@ public record IssueBasicInfo(
 	IssuePriority priority,
 	StateInfo currentState
 ) {
-	public static IssueBasicInfo from(Issue issue, WorkspaceMember author, WorkspaceMember lastUpdatedBy) {
+	public static IssueBasicInfo from(Issue issue, ProjectMember author, ProjectMember lastUpdatedBy) {
 		return IssueBasicInfo.builder()
 			.issueKey(issue.getKey())
 			.issueType(IssueTypeInfo.from(issue.getIssueType()))

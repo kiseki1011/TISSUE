@@ -24,6 +24,10 @@ public enum IssueHierarchy {
 		return List.of(SUBTASK, MICROTASK);
 	}
 
+	public static List<IssueHierarchy> getCrossProjectChildAllowed() {
+		return List.of(EPIC);
+	}
+
 	public boolean canBeParentOf(IssueHierarchy hierarchy) {
 		return this.level == hierarchy.level - 1;
 	}
@@ -36,8 +40,8 @@ public enum IssueHierarchy {
 		return getParentRequired().contains(this);
 	}
 
-	public boolean cannotHaveParent() {
-		return this == EPIC;
+	public boolean cannotHaveCrossProjectChild() {
+		return !getCrossProjectChildAllowed().contains(this);
 	}
 
 	public boolean cannotModifyStoryPoint() {

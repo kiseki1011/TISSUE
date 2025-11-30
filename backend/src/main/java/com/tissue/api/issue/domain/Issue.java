@@ -1,9 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
@@ -13,18 +11,17 @@ import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
 import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.issue.exception.InvalidParentHierarchyException;
-import com.tissue.api.issue.exception.IssueSelfReferenceException;
-import com.tissue.api.issue.exception.ParentRequiredException;
-import com.tissue.api.issue.exception.ParentWorkspaceMismatchException;
-import com.tissue.api.issue.exception.StoryPointNotAllowedForHierarchyException;
+import com.tissue.api.issue.domain.exception.InvalidParentHierarchyException;
+import com.tissue.api.issue.domain.exception.IssueSelfReferenceException;
+import com.tissue.api.issue.domain.exception.ParentRequiredException;
+import com.tissue.api.issue.domain.exception.ParentWorkspaceMismatchException;
+import com.tissue.api.issue.domain.exception.StoryPointNotAllowedForHierarchyException;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.sprint.domain.model.SprintIssue;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.project.domain.ProjectMember;
+import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -36,14 +33,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Entity
-@SQLRestriction("archived = false")
+@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Issue extends BaseEntity {
@@ -57,14 +53,13 @@ public class Issue extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
-	private Workspace workspace;
+	private Project project;
+
+	@Column(name = "project_key", nullable = false, updatable = false)
+	private String projectKey;
 
 	@Column(name = "workspace_key", nullable = false, updatable = false)
 	private String workspaceKey;
-
-	// TODO: project 애그리거트 추가 후 추가
-	// @Column(name = "project_key", nullable = false, updatable = false)
-	// private String projectKey;
 
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -95,9 +90,9 @@ public class Issue extends BaseEntity {
 	@JoinColumn(name = "parent_issue_id")
 	private Issue parentIssue;
 
-	// TODO: 추후 Sprint 쪽 애그리거트 정리 후, 다시 리팩토링 진행. 일단은 보류.
-	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<SprintIssue> sprintIssues = new HashSet<>();
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "sprint_id", nullable = false)
+	private Sprint sprint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;
@@ -107,8 +102,9 @@ public class Issue extends BaseEntity {
 
 	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
 
+	// TODO: 이슈 생성 시 Sprint 설정도 추가
 	public static Issue create(
-		@NonNull Workspace workspace,
+		@NonNull Project project,
 		@NonNull IssueType issueType,
 		@NonNull String title,
 		@NonNull IssueContent content,
@@ -118,10 +114,11 @@ public class Issue extends BaseEntity {
 		@Nullable Integer storyPoint
 	) {
 		Issue issue = new Issue();
-		issue.workspace = workspace;
-		// issue.projectKey = project.getKey();
-		// issue.workspaceKey = project.getWorkspaceKey();
-		issue.key = workspace.generateCurrentIssueKey();
+		issue.project = project;
+		issue.projectKey = project.getKey();
+		issue.workspaceKey = project.getWorkspaceKey();
+
+		issue.key = project.generateNextIssueKey();
 		issue.issueType = issueType;
 		issue.title = title;
 		issue.content = content;
@@ -136,7 +133,15 @@ public class Issue extends BaseEntity {
 		return issue;
 	}
 
-	public void changeReporter(@NonNull WorkspaceMember reporter) {
+	public void setSprint(@NonNull Sprint sprint) {
+		this.sprint = sprint;
+	}
+
+	public void clearSprint() {
+		this.sprint = null;
+	}
+
+	public void changeReporter(@NonNull ProjectMember reporter) {
 		if (participants.isReporter(reporter)) {
 			return;
 		}
@@ -202,15 +207,15 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	public void addSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		participants.addSubscriber(workspaceMember, this);
+	public void addSubscriber(@NonNull ProjectMember projectMember) {
+		participants.addSubscriber(projectMember, this);
 	}
 
-	public void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		participants.removeSubscriber(workspaceMember);
+	public void removeSubscriber(@NonNull ProjectMember projectMember) {
+		participants.removeSubscriber(projectMember);
 	}
 
-	public void assignTo(@NonNull WorkspaceMember assignee) {
+	public void assignTo(@NonNull ProjectMember assignee) {
 		participants.assignTo(assignee);
 	}
 
@@ -218,12 +223,12 @@ public class Issue extends BaseEntity {
 		participants.unassign();
 	}
 
-	public void addReviewer(@NonNull WorkspaceMember workspaceMember) {
-		participants.addReviewer(workspaceMember, this);
+	public void addReviewer(@NonNull ProjectMember projectMember) {
+		participants.addReviewer(projectMember, this);
 	}
 
-	public void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		participants.removeReviewer(workspaceMember);
+	public void removeReviewer(@NonNull ProjectMember projectMember) {
+		participants.removeReviewer(projectMember);
 	}
 
 	public void setParentIssue(@NonNull Issue newParent) {
@@ -238,16 +243,16 @@ public class Issue extends BaseEntity {
 		clearParent();
 	}
 
-	public void softDelete() {
+	public void delete() {
 		ensureIsInitial();
 		clearParticipants();
 		clearRelations();
 		clearParent();
-		archive();
+		softDelete();
 	}
 
 	public String getWorkspaceKey() {
-		return workspace.getKey();
+		return project.getKey();
 	}
 
 	public boolean isNotEpic() {
@@ -270,22 +275,24 @@ public class Issue extends BaseEntity {
 		return participants.getSubscribers().size();
 	}
 
-	public boolean isParticipant(@NonNull WorkspaceMember wm) {
-		return isAuthor(wm.getMemberId()) ||
-			participants.isReporter(wm) ||
-			participants.isAssignee(wm) ||
-			participants.isReviewer(wm) ||
-			participants.isSubscriber(wm);
+	public boolean isParticipant(@NonNull ProjectMember pm) {
+		return isAuthor(pm.getMemberId()) ||
+			participants.isReporter(pm) ||
+			participants.isAssignee(pm) ||
+			participants.isReviewer(pm) ||
+			participants.isSubscriber(pm);
 	}
 
 	private void ensureIsInitial() {
 		if (!currentState.isInitial()) {
+			// TODO: InProgressIssueNotDeletable (이름 피드백 필요)
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}
 	}
 
 	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
 		if (hierarchy.cannotModifyStoryPoint()) {
+			// TODO: 예외 이름 개선
 			throw new StoryPointNotAllowedForHierarchyException(hierarchy);
 		}
 		return storyPoint;
@@ -302,7 +309,9 @@ public class Issue extends BaseEntity {
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
 		ensureSameWorkspace(parentIssue);
-		// TODO: ensureSameProject - SUB_TASK 이하인 경우
+		if (this.getHierarchy().cannotHaveCrossProjectChild()) {
+			ensureSameProject(parentIssue);
+		}
 		ensureNotSelfReference(parentIssue);
 		ensureValidParentHierarchy(parentIssue);
 	}
@@ -323,14 +332,28 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
-		boolean isDifferentWorkspace = !this.getWorkspace().equals(parentIssue.getWorkspace());
+		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
 			throw new ParentWorkspaceMismatchException(
-				parentIssue.workspace.getKey(),
+				parentIssue.getWorkspaceKey(),
 				parentIssue.key,
-				this.workspace.getKey(),
+				this.getWorkspaceKey(),
 				this.key
 			);
+		}
+	}
+
+	private void ensureSameProject(Issue parentIssue) {
+		boolean isDifferentProject = !this.getProject().equals(parentIssue.getProject());
+		if (isDifferentProject) {
+			throw new RuntimeException("Children of issues below EPIC level must be in the same project.");
+			// TODO:
+			// throw new ProjectMismatchException(
+			// 	parentIssue.getWorkspaceKey(),
+			// 	parentIssue.key,
+			// 	this.getWorkspaceKey(),
+			// 	this.key
+			// );
 		}
 	}
 
@@ -353,7 +376,7 @@ public class Issue extends BaseEntity {
 
 	@Override
 	public String toString() {
-		return "Issue{id=%d, key='%s', workspace='%s', title='%s'}"
-			.formatted(id, key, getWorkspaceKey(), title);
+		return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
+			.formatted(id, key, projectKey, getWorkspaceKey(), title);
 	}
 }

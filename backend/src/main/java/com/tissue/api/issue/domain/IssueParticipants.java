@@ -3,7 +3,7 @@ package com.tissue.api.issue.domain;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
@@ -23,11 +23,11 @@ public class IssueParticipants {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reporter_id", nullable = false)
-	private WorkspaceMember reporter;
+	private ProjectMember reporter;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "assignee_id")
-	private WorkspaceMember assignee;
+	private ProjectMember assignee;
 
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueReviewer> reviewers = new HashSet<>();
@@ -35,18 +35,18 @@ public class IssueParticipants {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
-	public static IssueParticipants of(@NonNull WorkspaceMember reporter) {
+	public static IssueParticipants of(@NonNull ProjectMember reporter) {
 		IssueParticipants participants = new IssueParticipants();
 		participants.reporter = reporter;
 
 		return participants;
 	}
 
-	void changeReporter(@NonNull WorkspaceMember reporter) {
+	void changeReporter(@NonNull ProjectMember reporter) {
 		this.reporter = reporter;
 	}
 
-	void assignTo(@NonNull WorkspaceMember assignee) {
+	void assignTo(@NonNull ProjectMember assignee) {
 		this.assignee = assignee;
 	}
 
@@ -54,26 +54,26 @@ public class IssueParticipants {
 		this.assignee = null;
 	}
 
-	void addReviewer(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
-		if (isReviewer(workspaceMember)) {
+	void addReviewer(@NonNull ProjectMember projectMember, @NonNull Issue issue) {
+		if (isReviewer(projectMember)) {
 			return;
 		}
-		reviewers.add(new IssueReviewer(workspaceMember, issue));
+		reviewers.add(new IssueReviewer(projectMember, issue));
 	}
 
-	void removeReviewer(@NonNull WorkspaceMember workspaceMember) {
-		reviewers.removeIf(r -> r.getReviewer().equals(workspaceMember));
+	void removeReviewer(@NonNull ProjectMember projectMember) {
+		reviewers.removeIf(r -> r.getReviewer().equals(projectMember));
 	}
 
-	void addSubscriber(@NonNull WorkspaceMember workspaceMember, @NonNull Issue issue) {
-		if (isSubscriber(workspaceMember)) {
+	void addSubscriber(@NonNull ProjectMember projectMember, @NonNull Issue issue) {
+		if (isSubscriber(projectMember)) {
 			return;
 		}
-		subscribers.add(new IssueSubscriber(workspaceMember, issue));
+		subscribers.add(new IssueSubscriber(projectMember, issue));
 	}
 
-	void removeSubscriber(@NonNull WorkspaceMember workspaceMember) {
-		subscribers.removeIf(s -> s.getSubscriber().equals(workspaceMember));
+	void removeSubscriber(@NonNull ProjectMember projectMember) {
+		subscribers.removeIf(s -> s.getSubscriber().equals(projectMember));
 	}
 
 	void clear() {
@@ -82,22 +82,22 @@ public class IssueParticipants {
 		this.subscribers.clear();
 	}
 
-	boolean isReporter(WorkspaceMember member) {
-		return reporter.equals(member);
+	boolean isReporter(ProjectMember projectMember) {
+		return reporter.equals(projectMember);
 	}
 
-	boolean isAssignee(WorkspaceMember member) {
-		return assignee != null && assignee.equals(member);
+	boolean isAssignee(ProjectMember projectMember) {
+		return assignee != null && assignee.equals(projectMember);
 	}
 
-	boolean isReviewer(WorkspaceMember member) {
+	boolean isReviewer(ProjectMember projectMember) {
 		return reviewers.stream()
-			.anyMatch(r -> r.getReviewer().equals(member));
+			.anyMatch(r -> r.getReviewer().equals(projectMember));
 	}
 
-	boolean isSubscriber(WorkspaceMember member) {
+	boolean isSubscriber(ProjectMember projectMember) {
 		return subscribers.stream()
-			.anyMatch(s -> s.getSubscriber().equals(member));
+			.anyMatch(s -> s.getSubscriber().equals(projectMember));
 	}
 
 }

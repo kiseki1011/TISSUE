@@ -1,7 +1,7 @@
 package com.tissue.api.issue.domain;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.project.domain.ProjectMember;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,14 +29,10 @@ public class IssueReviewer extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reviewer_id", insertable = false, updatable = false)
-	private WorkspaceMember reviewer;
+	private ProjectMember reviewer;
 
-	public IssueReviewer(WorkspaceMember reviewer, Issue issue) {
+	public IssueReviewer(ProjectMember reviewer, Issue issue) {
 		this.issue = issue;
 		this.reviewer = reviewer;
-	}
-
-	public Long getReviewerMemberId() {
-		return reviewer.getMemberId();
 	}
 }

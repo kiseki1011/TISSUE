@@ -11,8 +11,8 @@ import com.tissue.api.position.presentation.dto.request.UpdatePositionColorReque
 import com.tissue.api.position.presentation.dto.request.UpdatePositionRequest;
 import com.tissue.api.position.presentation.dto.response.PositionResponse;
 import com.tissue.api.position.validator.PositionValidator;
-import com.tissue.api.workspace.application.service.command.WorkspaceFinder;
-import com.tissue.api.workspace.domain.model.Workspace;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.domain.Workspace;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
 
 		Position position = Position.builder()
 			.name(request.name())
@@ -52,7 +52,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionRequest request
 	) {
-		Position position = positionFinder.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findByIdAndWorkspaceKey(positionId, workspaceCode);
 
 		position.updateName(request.name());
 		position.updateDescription(request.description());
@@ -67,7 +67,7 @@ public class PositionCommandService {
 		Long positionId,
 		UpdatePositionColorRequest request
 	) {
-		Position position = positionFinder.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findByIdAndWorkspaceKey(positionId, workspaceCode);
 
 		position.updateColor(request.colorType());
 
@@ -79,7 +79,7 @@ public class PositionCommandService {
 		String workspaceCode,
 		Long positionId
 	) {
-		Position position = positionFinder.findPosition(positionId, workspaceCode);
+		Position position = positionFinder.findByIdAndWorkspaceKey(positionId, workspaceCode);
 
 		positionValidator.ensureDeletable(position);
 

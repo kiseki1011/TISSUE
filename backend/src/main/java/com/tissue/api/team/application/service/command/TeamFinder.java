@@ -13,7 +13,7 @@ public class TeamFinder {
 
 	private final TeamRepository teamRepository;
 
-	public Team findTeam(Long teamId, String workspaceCode) {
+	public Team findByIdAndWorkspaceKey(Long teamId, String workspaceCode) {
 		return teamRepository.findByIdAndWorkspace_Key(teamId, workspaceCode)
 			// TODO: TeamNotFoundException
 			.orElseThrow(() -> new RuntimeException(String.format(

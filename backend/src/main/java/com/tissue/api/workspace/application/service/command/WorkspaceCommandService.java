@@ -1,103 +1,60 @@
 package com.tissue.api.workspace.application.service.command;
 
-import java.util.Optional;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.application.service.command.MemberFinder;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.model.Workspace;
-import com.tissue.api.workspace.infrastructure.repository.WorkspaceRepository;
-import com.tissue.api.workspace.presentation.dto.request.UpdateIssueKeyRequest;
-import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspaceInfoRequest;
-import com.tissue.api.workspace.presentation.dto.request.UpdateWorkspacePasswordRequest;
-import com.tissue.api.workspace.presentation.dto.response.WorkspaceResponse;
+import com.tissue.api.common.util.Patchers;
+import com.tissue.api.workspace.application.dto.request.DeleteWorkspaceCommand;
+import com.tissue.api.workspace.application.dto.request.TransferOwnershipCommand;
+import com.tissue.api.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
+import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
+import com.tissue.api.workspace.application.port.in.WorkspaceCommandUseCase;
+import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class WorkspaceCommandService {
+public class WorkspaceCommandService implements WorkspaceCommandUseCase {
 
-	private final MemberFinder memberFinder;
 	private final WorkspaceFinder workspaceFinder;
-	private final WorkspaceRepository workspaceRepository;
-	private final PasswordEncoder passwordEncoder;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
 
-	@Transactional
-	public WorkspaceResponse updateWorkspaceInfo(
-		UpdateWorkspaceInfoRequest request,
-		String workspaceCode
-	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+	public WorkspaceCommandResult updateInfo(UpdateWorkspaceInfoCommand cmd) {
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
-		updateWorkspaceInfoIfPresent(request, workspace);
+		Patchers.apply(cmd.name(), workspace::updateName);
+		Patchers.apply(cmd.description(), workspace::updateDescription);
 
-		return WorkspaceResponse.from(workspace);
-	}
-
-	@Transactional
-	public WorkspaceResponse updateWorkspacePassword(
-		UpdateWorkspacePasswordRequest request,
-		String workspaceCode
-	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
-
-		String encodedUpdatePassword = encodePasswordIfPresent(request.newPassword());
-		workspace.updatePassword(encodedUpdatePassword);
-
-		return WorkspaceResponse.from(workspace);
+		return WorkspaceCommandResult.from(workspace);
 	}
 
 	/**
 	 * Todo
-	 *  - hard delete 사용하지 않기(현재 서비스 메서드와 API 제거)
-	 *  - WorkspaceStatus를 두고 soft-delete 유도
-	 *  - WorkspaceStatus: ACTIVE, DELETED
-	 *  - 추후에 Member의 myWorkspaceCount 로직 변경이 필요
-	 *  - 워크스페이스 복구 로직 필요
-	 *  - 30일 이상 DELETED 상태인 워크스페이스는 배치(batch)로 삭제
-	 *  - soft delete으로 변경 후 응답으로 WorkspaceResponse 사용
+	 *  - 30일 이상 softDelete 상태인 워크스페이스는 배치(batch)로 삭제
 	 */
-	@Transactional
-	public void deleteWorkspace(
-		String workspaceCode,
-		Long memberId
-	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+	public WorkspaceCommandResult delete(DeleteWorkspaceCommand cmd) {
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
-		Member member = memberFinder.findMemberById(memberId);
-		// member.decreaseMyWorkspaceCount();
+		// TODO: Workspace 하위 리소스도 cascade로 soft-delete 처리 해야하나? 아니면 그냥 Workspace만 soft-delete?
 
-		workspaceRepository.delete(workspace);
+		workspace.softDelete();
+
+		return WorkspaceCommandResult.from(workspace);
 	}
 
-	@Transactional
-	public WorkspaceResponse updateIssueKeyPrefix(
-		String workspaceCode,
-		UpdateIssueKeyRequest request
-	) {
-		Workspace workspace = workspaceFinder.findWorkspace(workspaceCode);
+	public WorkspaceCommandResult transferOwnership(TransferOwnershipCommand cmd) {
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		WorkspaceMember originalOwner = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.actorMemberId(),
+			workspace);
+		WorkspaceMember newOwner = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.targetMemberId(), workspace);
 
-		workspace.updateIssueKeyPrefix(request.issueKeyPrefix());
+		workspace.transferOwnership(originalOwner, newOwner);
 
-		return WorkspaceResponse.from(workspace);
-	}
+		// TODO: WorkspaceOwnershipTransferredEvent
 
-	private void updateWorkspaceInfoIfPresent(UpdateWorkspaceInfoRequest request, Workspace workspace) {
-		if (request.hasName()) {
-			workspace.updateName(request.name());
-		}
-		if (request.hasDescription()) {
-			workspace.updateDescription(request.description());
-		}
-	}
-
-	private String encodePasswordIfPresent(String password) {
-		return Optional.ofNullable(password)
-			.map(passwordEncoder::encode)
-			.orElse(null);
+		return WorkspaceCommandResult.from(workspace);
 	}
 }

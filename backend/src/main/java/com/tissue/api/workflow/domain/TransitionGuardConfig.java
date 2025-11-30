@@ -24,19 +24,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
 // TODO: transition + guardType 기준으로 유니크 제약이 필요하지 않을까?
 // TODO: transition + executionOrder에 대한 유니크 제약이 필요할까?
 @Entity
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TransitionGuardConfig extends NoArchiveEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ToString.Include
 	private Long id;
 
 	// 어떤 Transition에 속해있는지
@@ -46,7 +43,6 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 50)
-	@ToString.Include
 	private GuardType guardType;
 
 	// Guard별 파라미터 (JSON 형식)
@@ -55,7 +51,6 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 
 	// Guard 실행 순서
 	@Column(nullable = false)
-	@ToString.Include
 	private int executionOrder;
 
 	public static TransitionGuardConfig create(

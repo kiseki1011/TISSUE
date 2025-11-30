@@ -1,31 +1,42 @@
 package com.tissue.api.issue.application.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.issue.application.dto.request.AddReviewerCommand;
+import com.tissue.api.issue.application.dto.request.AssignIssueCommand;
+import com.tissue.api.issue.application.dto.request.ChangeReporterCommand;
+import com.tissue.api.issue.application.dto.request.RemoveAssigneeCommand;
+import com.tissue.api.issue.application.dto.request.RemoveReviewerCommand;
+import com.tissue.api.issue.application.dto.request.SubscribeIssueCommand;
+import com.tissue.api.issue.application.dto.request.UnsubscribeIssueCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.policy.IssuePolicy;
-import com.tissue.api.workspacemember.application.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.project.domain.ProjectMember;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class IssueParticipantService implements IssueParticipantUseCase {
 
 	private final IssueFinder issueFinder;
-	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final ProjectFinder projectFinder;
+	private final ProjectMemberFinder projectMemberFinder;
 	private final IssuePolicy issuePolicy;
 
 	@Override
-	public IssueCommandResult changeReporter(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult changeReporter(ChangeReporterCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember target = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issue.changeReporter(target);
 
@@ -33,9 +44,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult assignTo(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember assignee = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult assign(AssignIssueCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember assignee = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issue.assignTo(assignee);
 
@@ -43,8 +57,9 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult unassign(String workspaceKey, String issueKey) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
+	public IssueCommandResult unassign(RemoveAssigneeCommand cmd) {
+
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		issue.unassign();
 
@@ -52,9 +67,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult subscribe(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember subscriber = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult subscribe(SubscribeIssueCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issue.addSubscriber(subscriber);
 
@@ -62,9 +80,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult unsubscribe(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember subscriber = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult unsubscribe(UnsubscribeIssueCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issue.removeSubscriber(subscriber);
 
@@ -72,9 +93,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult addReviewer(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember reviewer = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult addReviewer(AddReviewerCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issuePolicy.ensureCanAddReviewer(issue);
 		issue.addReviewer(reviewer);
@@ -83,9 +107,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	}
 
 	@Override
-	public IssueCommandResult removeReviewer(String workspaceKey, String issueKey, Long memberId) {
-		Issue issue = issueFinder.findIssue(issueKey, workspaceKey);
-		WorkspaceMember reviewer = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceKey);
+	public IssueCommandResult removeReviewer(RemoveReviewerCommand cmd) {
+
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+
+		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.memberId());
 
 		issue.removeReviewer(reviewer);
 

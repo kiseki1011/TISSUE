@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.tissue.api.comment.domain.enums.CommentStatus;
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.workspacemember.domain.model.WorkspaceMember;
+import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;

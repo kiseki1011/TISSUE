@@ -29,22 +29,19 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
+// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("archived = false")
+@SQLRestriction("softDeleted = false")
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@ToString.Include
 	private Long id;
 
 	@Version
-	@ToString.Include
 	private Long version;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -52,7 +49,6 @@ public class WorkflowTransition extends BaseEntity {
 	private Workflow workflow;
 
 	@Embedded
-	@ToString.Include
 	private Label label;
 
 	@Column(nullable = false, length = 255)
@@ -117,10 +113,6 @@ public class WorkflowTransition extends BaseEntity {
 	// 모든 Guard 제거
 	void clearGuards() {
 		guardConfigs.clear();
-	}
-
-	void softDelete() {
-		archive();
 	}
 
 	public String getDisplayLabel() {
