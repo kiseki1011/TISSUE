@@ -173,6 +173,13 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	);
 
 	@Query("""
+		    SELECT i.key
+		    FROM Issue i
+		    WHERE i.sprint = :sprint
+		""")
+	List<String> findIssueKeysBySprint(@Param("sprint") Sprint sprint);
+
+	@Query("""
 		    SELECT COUNT(i) > 0
 		    FROM Issue i
 		    WHERE i.sprint = :sprint

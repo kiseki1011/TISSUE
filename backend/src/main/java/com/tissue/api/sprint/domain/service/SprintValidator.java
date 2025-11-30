@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.sprint.application.service.command.SprintFinder;
+import com.tissue.api.sprint.application.service.finder.SprintFinder;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.exception.ActiveSprintExistsException;
 import com.tissue.api.sprint.exception.IncompleteSprintIssuesFoundException;

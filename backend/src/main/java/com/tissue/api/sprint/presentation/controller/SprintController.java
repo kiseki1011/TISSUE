@@ -3,6 +3,7 @@ package com.tissue.api.sprint.presentation.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,11 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.api.sprint.application.dto.request.CompleteSprintCommand;
+import com.tissue.api.sprint.application.dto.request.GetSprintDetailQuery;
+import com.tissue.api.sprint.application.dto.request.GetSprintIssueKeysQuery;
 import com.tissue.api.sprint.application.dto.request.MigrateSprintIssuesCommand;
 import com.tissue.api.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
-import com.tissue.api.sprint.application.service.command.SprintCommandService;
-import com.tissue.api.sprint.application.service.query.SprintQueryService;
+import com.tissue.api.sprint.application.dto.response.SprintDetail;
+import com.tissue.api.sprint.application.dto.response.SprintIssueKeys;
+import com.tissue.api.sprint.application.port.in.SprintCommandUseCase;
+import com.tissue.api.sprint.application.port.in.SprintQueryUseCase;
 import com.tissue.api.sprint.presentation.dto.request.AddSprintIssuesRequest;
 import com.tissue.api.sprint.presentation.dto.request.CreateSprintRequest;
 import com.tissue.api.sprint.presentation.dto.request.MigrateIssuesRequest;
@@ -32,8 +37,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/sprints")
 public class SprintController {
 
-	private final SprintCommandService sprintCommandService;
-	private final SprintQueryService sprintQueryService;
+	private final SprintCommandUseCase sprintCommandUseCase;
+	private final SprintQueryUseCase sprintQueryUseCase;
 
 	@PostMapping
 	public ResponseEntity<SprintCommandResult> createSprint(
@@ -41,7 +46,7 @@ public class SprintController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid CreateSprintRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.createSprint(
+		SprintCommandResult response = sprintCommandUseCase.createSprint(
 			request.toCommand(workspaceKey, projectKey)
 		);
 		return ResponseEntity.status(HttpStatus.CREATED)
@@ -55,7 +60,7 @@ public class SprintController {
 		@PathVariable Long sprintId,
 		@RequestBody @Valid UpdateSprintRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.updateSprint(
+		SprintCommandResult response = sprintCommandUseCase.updateSprint(
 			request.toCommand(workspaceKey, projectKey, sprintId)
 		);
 		return ResponseEntity.ok(response);
@@ -68,7 +73,7 @@ public class SprintController {
 		@PathVariable Long sprintId,
 		@RequestBody @Valid StartSprintRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.start(
+		SprintCommandResult response = sprintCommandUseCase.start(
 			request.toCommand(workspaceKey, projectKey, sprintId)
 		);
 		return ResponseEntity.ok(response);
@@ -80,7 +85,7 @@ public class SprintController {
 		@PathVariable String projectKey,
 		@PathVariable Long sprintId
 	) {
-		SprintCommandResult response = sprintCommandService.complete(
+		SprintCommandResult response = sprintCommandUseCase.complete(
 			new CompleteSprintCommand(workspaceKey, projectKey, sprintId)
 		);
 		return ResponseEntity.ok(response);
@@ -93,7 +98,7 @@ public class SprintController {
 		@PathVariable Long sprintId,
 		@RequestBody @Valid AddSprintIssuesRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.addIssues(
+		SprintCommandResult response = sprintCommandUseCase.addIssues(
 			new AddSprintIssuesCommand(workspaceKey, projectKey, sprintId, request.issueKeys())
 		);
 		return ResponseEntity.ok(response);
@@ -106,7 +111,7 @@ public class SprintController {
 		@PathVariable Long sprintId,
 		@RequestBody @Valid MigrateIssuesRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.migrateIssues(
+		SprintCommandResult response = sprintCommandUseCase.migrateIssues(
 			MigrateSprintIssuesCommand.builder()
 				.workspaceKey(workspaceKey)
 				.projectKey(projectKey)
@@ -125,8 +130,32 @@ public class SprintController {
 		@PathVariable Long sprintId,
 		@RequestBody @Valid RemoveSprintIssuesRequest request
 	) {
-		SprintCommandResult response = sprintCommandService.removeIssues(
+		SprintCommandResult response = sprintCommandUseCase.removeIssues(
 			new RemoveSprintIssuesCommand(workspaceKey, projectKey, sprintId, request.issueKeys())
+		);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{sprintId}")
+	public ResponseEntity<SprintDetail> getSprintDetail(
+		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
+		@PathVariable Long sprintId
+	) {
+		SprintDetail response = sprintQueryUseCase.getSprintDetail(
+			new GetSprintDetailQuery(workspaceKey, projectKey, sprintId)
+		);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/{sprintId}/issues")
+	public ResponseEntity<SprintIssueKeys> getSprintIssues(
+		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
+		@PathVariable Long sprintId
+	) {
+		SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(
+			new GetSprintIssueKeysQuery(workspaceKey, projectKey, sprintId)
 		);
 		return ResponseEntity.ok(response);
 	}

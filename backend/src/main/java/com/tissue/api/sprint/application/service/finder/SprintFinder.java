@@ -1,4 +1,4 @@
-package com.tissue.api.sprint.application.service.command;
+package com.tissue.api.sprint.application.service.finder;
 
 import java.util.Optional;
 
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
+import com.tissue.api.sprint.exception.SprintNotFoundException;
 import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,13 @@ public class SprintFinder {
 	private final SprintQueryRepository sprintQueryRepository;
 
 	public Sprint findBy(Long sprintId, Project project) {
-		return sprintQueryRepository.findByIdAndProjectKey(sprintId, project.getKey())
-			// TODO: SprintNotFoundException
-			.orElseThrow(() -> new RuntimeException(
-				"Sprint not found with sprint id '%d', project key '%s', workspace key '%s'."
-					.formatted(sprintId, project.getKey(), project.getWorkspaceKey()))
-			);
+		return sprintQueryRepository.findByIdAndProject(sprintId, project)
+			.orElseThrow(() -> new SprintNotFoundException(sprintId, project.getKey(), project.getWorkspaceKey()));
+	}
+
+	public Sprint findBy(Long sprintId, String projectKey, String workspaceKey) {
+		return sprintQueryRepository.findByIdAndProjectKey(sprintId, projectKey)
+			.orElseThrow(() -> new SprintNotFoundException(sprintId, projectKey, workspaceKey));
 	}
 
 	public Optional<Sprint> findActiveBy(Project project) {

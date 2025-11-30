@@ -10,6 +10,8 @@ import com.tissue.api.sprint.domain.model.enums.SprintStatus;
 
 public interface SprintQueryRepository extends Repository<Sprint, Long> {
 
+	Optional<Sprint> findById(Long id);
+
 	Optional<Sprint> findByIdAndProject(Long id, Project project);
 
 	Optional<Sprint> findByIdAndProjectKey(Long id, String projectKey);

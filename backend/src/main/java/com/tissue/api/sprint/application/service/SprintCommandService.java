@@ -1,9 +1,8 @@
-package com.tissue.api.sprint.application.service.command;
+package com.tissue.api.sprint.application.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
@@ -18,6 +17,8 @@ import com.tissue.api.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.api.sprint.application.dto.request.StartSprintCommand;
 import com.tissue.api.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
+import com.tissue.api.sprint.application.port.in.SprintCommandUseCase;
+import com.tissue.api.sprint.application.service.finder.SprintFinder;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.service.SprintValidator;
 import com.tissue.api.sprint.infrastructure.repository.SprintCommandRepository;
@@ -26,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SprintCommandService {
+public class SprintCommandService implements SprintCommandUseCase {
 
 	private final SprintFinder sprintFinder;
 	private final ProjectFinder projectFinder;
@@ -34,17 +35,12 @@ public class SprintCommandService {
 	private final SprintValidator sprintValidator;
 	private final SprintCommandRepository sprintRepository;
 
-	@Transactional
+	@Override
 	public SprintCommandResult createSprint(CreateSprintCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
-		Sprint sprint = Sprint.create(
-			project,
-			cmd.title(),
-			cmd.goal()
-		);
-
+		Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
 		sprintRepository.save(sprint);
 
 		// TODO: SprintCreatedEvent
@@ -53,7 +49,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(sprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult addIssues(AddSprintIssuesCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -77,7 +73,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(sprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult updateSprint(UpdateSprintCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -94,7 +90,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(sprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult start(StartSprintCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -111,7 +107,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(sprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult complete(CompleteSprintCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -133,7 +129,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(sprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -159,7 +155,7 @@ public class SprintCommandService {
 		return SprintCommandResult.from(originalSprint);
 	}
 
-	@Transactional
+	@Override
 	public SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());

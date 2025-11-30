@@ -1,7 +1,6 @@
-package com.tissue.api.sprint.presentation.dto.response;
+package com.tissue.api.sprint.application.dto.response;
 
 import java.time.Instant;
-import java.util.List;
 
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.model.enums.SprintStatus;
@@ -18,11 +17,10 @@ public record SprintDetail(
 	Instant dueAt,
 	Instant completedAt,
 	SprintStatus status,
-	List<String> issueKeys,
 	Instant createdAt,
 	Long createdBy
 ) {
-	public static SprintDetail from(Sprint sprint, List<String> issueKeys) {
+	public static SprintDetail from(Sprint sprint) {
 		return SprintDetail.builder()
 			.id(sprint.getId())
 			.title(sprint.getTitle())
@@ -31,7 +29,6 @@ public record SprintDetail(
 			.dueAt(sprint.getDueAt())
 			.completedAt(sprint.getCompletedAt())
 			.status(sprint.getStatus())
-			.issueKeys(issueKeys)
 			.createdAt(sprint.getCreatedAt())
 			.createdBy(sprint.getCreatedBy())
 			.build();
