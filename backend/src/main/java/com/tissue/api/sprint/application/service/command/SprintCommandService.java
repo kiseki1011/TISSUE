@@ -20,7 +20,7 @@ import com.tissue.api.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.api.sprint.domain.model.Sprint;
 import com.tissue.api.sprint.domain.service.SprintValidator;
-import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
+import com.tissue.api.sprint.infrastructure.repository.SprintCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +32,7 @@ public class SprintCommandService {
 	private final ProjectFinder projectFinder;
 	private final IssueFinder issueFinder;
 	private final SprintValidator sprintValidator;
-	private final SprintRepository sprintRepository;
+	private final SprintCommandRepository sprintRepository;
 
 	@Transactional
 	public SprintCommandResult createSprint(CreateSprintCommand cmd) {

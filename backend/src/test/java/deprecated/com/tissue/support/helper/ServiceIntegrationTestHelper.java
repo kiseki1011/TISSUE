@@ -32,7 +32,6 @@ import com.tissue.api.sprint.application.service.command.SprintCommandService;
 import com.tissue.api.sprint.application.service.command.SprintFinder;
 import com.tissue.api.sprint.application.service.query.SprintQueryService;
 import com.tissue.api.sprint.infrastructure.repository.SprintQueryRepository;
-import com.tissue.api.sprint.infrastructure.repository.SprintRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
@@ -44,8 +43,8 @@ import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
 import deprecated.com.tissue.support.fixture.TestDataFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
@@ -159,8 +158,6 @@ public abstract class ServiceIntegrationTestHelper {
 	protected IssueCommandRepository issueCommandRepository;
 	@Autowired
 	protected CommentRepository commentRepository;
-	@Autowired
-	protected SprintRepository sprintRepository;
 	@Autowired
 	protected SprintQueryRepository sprintQueryRepository;
 
