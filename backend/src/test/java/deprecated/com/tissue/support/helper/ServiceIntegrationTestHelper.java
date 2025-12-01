@@ -10,14 +10,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.tissue.api.comment.application.service.command.IssueCommentCommandService;
 import com.tissue.api.comment.application.service.command.ReviewCommentCommandService;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
-import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.application.service.finder.InvitationFinder;
-import com.tissue.api.invitation.application.service.query.InvitationQueryService;
-import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.issue.application.service.IssueCommandService;
 import com.tissue.api.issue.application.service.IssueParticipantService;
 import com.tissue.api.issue.application.service.IssueRelationService;
-import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.application.service.query.MemberQueryService;
 import com.tissue.api.member.domain.service.MemberValidator;
@@ -28,13 +24,15 @@ import com.tissue.api.position.application.service.query.PositionQueryService;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;
+import com.tissue.api.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.api.sprint.application.service.SprintCommandService;
 import com.tissue.api.sprint.application.service.SprintQueryService;
 import com.tissue.api.sprint.application.service.finder.SprintFinder;
-import com.tissue.api.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.api.team.application.service.command.TeamCommandService;
 import com.tissue.api.team.application.service.command.TeamFinder;
 import com.tissue.api.team.infrastructure.repository.TeamRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
 import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
@@ -43,8 +41,6 @@ import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import deprecated.com.tissue.support.fixture.TestDataFixture;
 import deprecated.com.tissue.support.util.DatabaseCleaner;
@@ -101,12 +97,6 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
-	protected InvitationCommandService invitationCommandService;
-	@Autowired
-	protected InvitationQueryService invitationQueryService;
-	@Autowired
-	protected InvitationFinder invitationFinder;
-	@Autowired
 	protected PositionCommandService positionCommandService;
 	@Autowired
 	protected PositionQueryService positionQueryService;
@@ -148,8 +138,8 @@ public abstract class ServiceIntegrationTestHelper {
 	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	@Autowired
 	protected MemberRepository memberRepository;
-	@Autowired
-	protected InvitationRepository invitationRepository;
+	// @Autowired
+	// protected InvitationRepository invitationRepository;
 	@Autowired
 	protected PositionRepository positionRepository;
 	@Autowired

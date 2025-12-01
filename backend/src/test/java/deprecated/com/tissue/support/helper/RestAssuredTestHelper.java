@@ -4,18 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
 import com.tissue.api.member.application.service.command.MemberCommandService;
 import com.tissue.api.member.infrastructure.repository.MemberRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
 import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.fixture.api.LoginApiFixture;
 import deprecated.com.tissue.support.fixture.api.MemberApiFixture;
@@ -44,8 +42,6 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
-	protected InvitationCommandService invitationCommandService;
-	@Autowired
 	protected MemberCommandService memberCommandService;
 	@Autowired
 	protected PositionCommandService positionCommandService;
@@ -61,8 +57,8 @@ public abstract class RestAssuredTestHelper {
 	protected MemberRepository memberRepository;
 	@Autowired
 	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-	@Autowired
-	protected InvitationRepository invitationRepository;
+	// @Autowired
+	// protected InvitationRepository invitationRepository;
 	@Autowired
 	protected PositionRepository positionRepository;
 
