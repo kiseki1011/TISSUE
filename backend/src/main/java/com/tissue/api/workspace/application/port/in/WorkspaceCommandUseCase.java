@@ -24,6 +24,6 @@ public interface WorkspaceCommandUseCase {
 	WorkspaceCommandResult transferOwnership(TransferOwnershipCommand cmd);
 
 	// TODO: restoreWorkspace - softDeleted 상태를 복구
-	// TODO: archiveWorkspace - 워크스페이스 아카이브(read-only로 변경). 하위 리소스 모두 archive 되어야 함.
+	// TODO: archiveWorkspace - 워크스페이스 아카이브(read-only로 변경). 하위 리소스 모두 archive 되어야 할까?
 	// TODO: unarchiveWorkspace - 워크스페이스 아카이브 해제. 하위 리소스도 모두 unarchive.
 }

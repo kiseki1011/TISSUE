@@ -16,9 +16,10 @@ import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandR
 public interface WorkspaceParticipationUseCase {
 
 	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
-	InviteMembersResult invite(InviteMembersCommand cmd);
+	InviteMembersResult inviteToWorkspace(InviteMembersCommand cmd);
 
-	// WorkspaceMemberCommandResult acceptInvitation(AcceptInvitationCommand cmd);
+	// @PreAuthorize(REQUIRES_TARGET_PROJECTS_ADMIN)
+	// InviteMembersResult inviteToProjects(InviteMembersToProjectCommand cmd);
 
 	WorkspaceMemberCommandResult join(String workspaceKey, Long memberId);
 
