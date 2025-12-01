@@ -1,12 +1,16 @@
 package com.tissue.api.security.authorization;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.api.project.application.port.out.ProjectQueryRepository;
+import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.project.domain.enums.ProjectRole;
 import com.tissue.api.project.domain.enums.ProjectVisibility;
 import com.tissue.api.project.domain.exception.ProjectNotFoundException;
-import com.tissue.api.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.api.project.application.port.out.ProjectQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +55,24 @@ public class ProjectSecurityGuard {
 		return projectQueryRepository.findVisibilityByKeys(workspaceKey, projectKey)
 			.map(visibility -> visibility == ProjectVisibility.PUBLIC)
 			.orElseThrow(() -> new ProjectNotFoundException(projectKey, workspaceKey));
+	}
+
+	public boolean hasProjectAdminPermission(
+		String workspaceKey,
+		Set<String> targetProjectKeys,
+		Long memberId
+	) {
+		if (targetProjectKeys == null || targetProjectKeys.isEmpty()) {
+			return false;
+		}
+		
+		List<ProjectMember> myAdminProjects = projectMemberRepository.findAllAdminsByKeysAndMemberId(
+			workspaceKey,
+			targetProjectKeys,
+			memberId
+		);
+
+		return myAdminProjects.size() == targetProjectKeys.size();
 	}
 
 	private boolean isNotWorkspaceMember(String workspaceKey, Long memberId) {

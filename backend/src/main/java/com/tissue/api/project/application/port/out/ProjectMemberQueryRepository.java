@@ -1,6 +1,7 @@
 package com.tissue.api.project.application.port.out;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -11,25 +12,8 @@ import org.springframework.data.repository.query.Param;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.project.domain.enums.ProjectRole;
-import com.tissue.api.workspace.domain.WorkspaceMember;
 
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
-
-	Optional<ProjectMember> findByWorkspaceMemberAndProject(
-		WorkspaceMember workspaceMember,
-		Project project
-	);
-
-	Optional<ProjectMember> findByWorkspaceKeyAndProjectKeyAndMemberId(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	);
-
-	Optional<ProjectMember> findByProjectAndMemberId(
-		Project project,
-		Long memberId
-	);
 
 	/**
 	 * Retrieves a project member regardless of their delete status (active or soft-deleted).
@@ -77,5 +61,19 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 	Set<Long> findMemberIdsByProjectAndMemberIds(
 		@Param("project") Project project,
 		@Param("memberIds") Collection<Long> memberIds
+	);
+
+	@Query("""
+		    SELECT pm
+		    FROM ProjectMember pm
+		    WHERE pm.workspaceKey = :workspaceKey
+		      AND pm.memberId = :memberId
+		      AND pm.projectKey IN :projectKeys
+		      AND pm.role = 'ADMIN'
+		""")
+	List<ProjectMember> findAllAdminsByKeysAndMemberId(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("projectKeys") Collection<String> projectKeys,
+		@Param("memberId") Long memberId
 	);
 }
