@@ -1,13 +1,12 @@
 package com.tissue.api.workspace.domain;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.invitation.domain.enums.InvitationStatus;
-import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.enums.ProjectRole;
 import com.tissue.api.workspace.domain.converter.ProjectJoinConfigListConverter;
@@ -32,26 +31,26 @@ import lombok.NonNull;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Invitation extends BaseEntity {
+public class WorkspaceInviteLink extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false)
-	private Member member;
+	@Column(nullable = false, unique = true)
+	private String token; // URL용 랜덤 토큰 (UUID 등)
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false)
 	private String workspaceKey;
 
-	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private InvitationStatus status;
+	private boolean active; // 파기 여부
+
+	@Column(nullable = true)
+	private Instant expiredAt; // 만료일 (null이면 무제한)
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -61,30 +60,47 @@ public class Invitation extends BaseEntity {
 	@Column(name = "project_configs", columnDefinition = "jsonb")
 	private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
-	public static Invitation create(
-		@NonNull Member member,
+	public static WorkspaceInviteLink create(
 		@NonNull Workspace workspace,
-		@Nullable WorkspaceRole workspaceRole
+		@NonNull String token,
+		@Nullable WorkspaceRole role,
+		@Nullable Instant expiredAt
 	) {
-		Invitation invitation = new Invitation();
-		invitation.member = member;
-		invitation.workspace = workspace;
-		invitation.workspaceKey = workspace.getKey();
-		invitation.status = InvitationStatus.PENDING;
-		invitation.workspaceRole = (workspaceRole != null) ? workspaceRole : WorkspaceRole.MEMBER;
+		WorkspaceInviteLink link = new WorkspaceInviteLink();
+		link.workspace = workspace;
+		link.workspaceKey = workspace.getKey();
+		link.token = token;
+		link.workspaceRole = role != null ? role : WorkspaceRole.MEMBER;
+		link.active = true;
+		link.expiredAt = expiredAt;
 
-		return invitation;
+		return link;
 	}
 
 	public void addProjectConfig(Project project, ProjectRole role) {
 		this.projectConfigs.add(ProjectJoinConfig.of(project, role));
 	}
 
-	public void accept() {
-		this.status = InvitationStatus.ACCEPTED;
+	public boolean isValid() {
+		if (!active) {
+			return false;
+		}
+		return isPermanentLink() || isNotExpired();
 	}
 
-	public void reject() {
-		this.status = InvitationStatus.REJECTED;
+	public boolean isPermanentLink() {
+		return expiredAt == null;
+	}
+
+	public boolean isExpired() {
+		return Instant.now().isAfter(expiredAt);
+	}
+
+	public boolean isNotExpired() {
+		return !isExpired();
+	}
+
+	public void expire() {
+		this.active = false;
 	}
 }
