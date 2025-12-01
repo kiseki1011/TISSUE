@@ -16,6 +16,7 @@ import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
 import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.Invitation;
@@ -23,7 +24,6 @@ import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,7 +41,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	// private final MemberPolicy memberPolicy;
 	// private final ApplicationEventPublisher eventPublisher;
 
-	public InviteMembersResult invite(InviteMembersCommand cmd) {
+	public InviteMembersResult inviteToWorkspace(InviteMembersCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
 		List<Member> members = filterInvitableMembers(cmd.workspaceKey(), cmd.emails());

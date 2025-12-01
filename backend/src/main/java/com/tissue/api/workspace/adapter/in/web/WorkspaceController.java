@@ -104,7 +104,7 @@ public class WorkspaceController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid InviteMembersRequest request
 	) {
-		InviteMembersResult response = workspaceParticipationUseCase.invite(
+		InviteMembersResult response = workspaceParticipationUseCase.inviteToWorkspace(
 			new InviteMembersCommand(
 				workspaceKey,
 				request.emails()
