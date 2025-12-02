@@ -62,7 +62,7 @@ public class RoleRequiredInterceptor implements HandlerInterceptor {
 		// extract workspaceKey from path variable
 		String workspaceKey = getPathVariable(request, PATH_VAR_WORKSPACE_KEY);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(loginMemberId,
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(loginMemberId,
 			workspaceKey);
 
 		// check if workspaceMember has the minimum required role

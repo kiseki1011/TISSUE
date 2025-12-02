@@ -62,9 +62,9 @@ class NotificationCommandServiceTest {
 		// 액터 모의 설정
 		WorkspaceMember actor = mock(WorkspaceMember.class);
 		when(actor.getDisplayName()).thenReturn("TestUser");
-		when(workspaceMemberFinder.findByMemberIdAndWorkspaceKey(actorId, workspaceCode)).thenReturn(actor);
+		when(workspaceMemberFinder.findBy(actorId, workspaceCode)).thenReturn(actor);
 		WorkspaceMember receiver = mock(WorkspaceMember.class);
-		when(workspaceMemberFinder.findByMemberIdAndWorkspaceKey(receiverId, workspaceCode)).thenReturn(receiver);
+		when(workspaceMemberFinder.findBy(receiverId, workspaceCode)).thenReturn(receiver);
 		when(receiver.getEmail()).thenReturn("receiver_email");
 
 		// when

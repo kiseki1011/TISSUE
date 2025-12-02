@@ -16,13 +16,13 @@ import com.tissue.api.project.application.dto.request.LeaveProjectCommand;
 import com.tissue.api.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.api.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.api.project.application.port.in.ProjectMemberCommandUseCase;
+import com.tissue.api.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.api.project.application.service.validator.ProjectMemberValidator;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.project.domain.enums.ProjectRole;
-import com.tissue.api.project.application.port.out.ProjectMemberCommandRepository;
-import com.tissue.api.project.application.service.validator.ProjectMemberValidator;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 
@@ -75,7 +75,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	public ProjectMemberCommandResult join(JoinProjectCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);

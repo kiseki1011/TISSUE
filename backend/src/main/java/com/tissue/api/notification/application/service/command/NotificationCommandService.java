@@ -29,12 +29,12 @@ public class NotificationCommandService {
 		Long receiverMemberId,
 		NotificationMessage message
 	) {
-		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember actor = workspaceMemberFinder.findBy(
 			event.getActorMemberId(),
 			event.getWorkspaceCode()
 		);
 
-		WorkspaceMember receiver = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember receiver = workspaceMemberFinder.findBy(
 			receiverMemberId,
 			event.getWorkspaceCode()
 		);
