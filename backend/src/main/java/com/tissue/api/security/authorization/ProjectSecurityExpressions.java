@@ -12,5 +12,7 @@ public interface ProjectSecurityExpressions {
 
 	String REQUIRES_PROJECT_JOINABLE = "@projectSecurityGuard.canJoin(#cmd.workspaceKey, #cmd.projectKey, principal.memberId)";
 
+	String REQUIRES_GRANTABLE_PROJECT_ROLE = "@projectSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.projectKey, principal.memberId, #cmd.role)";
+
 	String REQUIRES_TARGET_PROJECTS_ADMIN = "@projectSecurityGuard.hasProjectAdminPermission(#cmd.workspaceKey, #cmd.extractProjectKeys(), principal.memberId)";
 }

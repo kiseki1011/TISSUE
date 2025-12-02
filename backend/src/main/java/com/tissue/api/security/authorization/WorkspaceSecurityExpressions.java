@@ -13,4 +13,6 @@ public interface WorkspaceSecurityExpressions {
 	String REQUIRES_WORKSPACE_OWNER = "@workspaceSecurityGuard.isOwner(#cmd.workspaceKey(), principal.memberId)";
 
 	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.targetHasLowerRole(#cmd.workspaceKey(), #cmd.targetMemberId(), principal.memberId)";
+
+	String REQUIRES_GRANTABLE_WORKSPACE_ROLE = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, principal.memberId, #cmd.workspaceRole)";
 }
