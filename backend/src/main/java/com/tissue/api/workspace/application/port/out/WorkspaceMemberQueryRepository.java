@@ -3,6 +3,7 @@ package com.tissue.api.workspace.application.port.out;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -15,8 +16,7 @@ import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
-	// TODO: Workspace_Key -> WorkspaceKey
-	Optional<WorkspaceMember> findByMember_IdAndWorkspace_Key(
+	Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(
 		Long memberId,
 		String workspaceKey
 	);
@@ -31,26 +31,45 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 		Workspace workspace
 	);
 
+	/**
+	 * Retrieves a workspace member regardless of their delete status (active or soft-deleted).
+	 * <p>
+	 * Uses a <b>native query</b> to bypass Hibernate {@link org.hibernate.annotations.SQLRestriction @SqlRestriction}
+	 */
+	@Query(value = """
+		SELECT * FROM workspace_member
+		WHERE workspace_key = :workspaceKey
+		  AND member_id = :memberId
+		  """, nativeQuery = true)
+	Optional<WorkspaceMember> findAnyByMemberIdAndWorkspaceKey(
+		@Param("memberId") Long memberId,
+		@Param("workspaceKey") String workspaceKey
+	);
+
+	List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
+
+	@Query("SELECT wm FROM WorkspaceMember wm "
+		+ "WHERE wm.workspace.key = :workspaceKey AND wm.role "
+		+ "IN ('ADMIN', 'OWNER')")
+	Set<WorkspaceMember> findAdminsByWorkspace_Key(@Param("workspaceKey") String workspaceKey);
+
 	List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(
 		Collection<Long> memberIds,
 		String workspaceKey
 	);
 
-	@Query("""
-		    SELECT wm
-		    FROM WorkspaceMember wm
-		    JOIN FETCH wm.member m
-		    JOIN FETCH wm.workspace w
-		    WHERE m.id = :memberId
-		      AND w.key = :workspaceKey
-		""")
-	Optional<WorkspaceMember> findIncludingArchived(
-		@Param("memberId") Long memberId,
-		@Param("workspaceKey") String workspaceKey
+	@Query("SELECT wm.memberId FROM WorkspaceMember wm " +
+		"WHERE wm.workspaceKey = :workspaceKey " +
+		"AND wm.memberId IN :candidateIds " +
+		"AND wm.softDeleted = false")
+	Set<Long> findJoinedMemberIds(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("candidateIds") Collection<Long> candidateIds
 	);
 
 	boolean existsByMemberAndRole(Member member, WorkspaceRole role);
 
-	// TODO: Workspace_Key -> WorkspaceKey
-	boolean existsByMember_IdAndWorkspace_Key(Long memberId, String workspaceKey);
+	boolean existsByMemberAndWorkspace(Member member, Workspace workspace);
+
+	long countByWorkspaceKey(String workspaceKey);
 }

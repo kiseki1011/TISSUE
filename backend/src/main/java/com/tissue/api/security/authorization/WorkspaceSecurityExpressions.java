@@ -15,4 +15,6 @@ public interface WorkspaceSecurityExpressions {
 	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.targetHasLowerRole(#cmd.workspaceKey(), #cmd.targetMemberId(), principal.memberId)";
 
 	String REQUIRES_GRANTABLE_WORKSPACE_ROLE = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, principal.memberId, #cmd.workspaceRole)";
+
+	String REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN = "@workspaceInviteLinkSecurityGuard.canExpire(#cmd.token, principal.memberId)";
 }

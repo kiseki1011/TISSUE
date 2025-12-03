@@ -34,7 +34,7 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 
 	public WorkspaceMemberCommandResult updateDisplayName(UpdateDisplayNameCommand cmd) {
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);
@@ -46,12 +46,12 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 
 	public WorkspaceMemberCommandResult updateRole(UpdateRoleCommand cmd) {
 
-		WorkspaceMember requester = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember requester = workspaceMemberFinder.findBy(
 			cmd.memberId(),
 			cmd.workspaceKey()
 		);
 
-		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember target = workspaceMemberFinder.findBy(
 			cmd.targetMemberId(),
 			cmd.workspaceKey()
 		);
@@ -70,7 +70,7 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 			cmd.workspaceKey()
 		);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);
@@ -87,7 +87,7 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 			cmd.workspaceKey()
 		);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);
@@ -104,7 +104,7 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 			cmd.workspaceKey()
 		);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);
@@ -121,7 +121,7 @@ public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseC
 			cmd.workspaceKey()
 		);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
 		);

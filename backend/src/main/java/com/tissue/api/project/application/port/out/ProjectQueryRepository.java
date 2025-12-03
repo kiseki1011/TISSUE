@@ -15,6 +15,8 @@ import jakarta.persistence.LockModeType;
 
 public interface ProjectQueryRepository extends Repository<Project, Long> {
 
+	Optional<Project> findById(Long projectId);
+
 	Optional<Project> findByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
 
 	Optional<Project> findByKeyAndWorkspace(String projectKey, Workspace workspace);

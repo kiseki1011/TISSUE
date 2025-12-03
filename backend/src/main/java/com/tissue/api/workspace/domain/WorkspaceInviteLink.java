@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+// TODO: expiredAt을 사용해서 오래된 만료된 링크는 스케쥴러로 삭제
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,19 +39,23 @@ public class WorkspaceInviteLink extends BaseEntity {
 	private Long id;
 
 	@Column(nullable = false, unique = true)
-	private String token; // URL용 랜덤 토큰 (UUID 등)
+	private String token;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
+	@Column(name = "workspace_key", nullable = false, updatable = false)
 	private String workspaceKey;
 
 	@Column(nullable = false)
-	private boolean active; // 파기 여부
+	private boolean active;
 
+	/**
+	 * If expiredAt is null, the link is permanent.
+	 */
 	@Column(nullable = true)
-	private Instant expiredAt; // 만료일 (null이면 무제한)
+	private Instant expiredAt;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -81,26 +86,33 @@ public class WorkspaceInviteLink extends BaseEntity {
 		this.projectConfigs.add(ProjectJoinConfig.of(project, role));
 	}
 
+	public void expire() {
+		this.active = false;
+	}
+
 	public boolean isValid() {
 		if (!active) {
 			return false;
 		}
-		return isPermanentLink() || isNotExpired();
-	}
-
-	public boolean isPermanentLink() {
-		return expiredAt == null;
-	}
-
-	public boolean isExpired() {
-		return Instant.now().isAfter(expiredAt);
-	}
-
-	public boolean isNotExpired() {
 		return !isExpired();
 	}
 
-	public void expire() {
-		this.active = false;
+	public boolean isDisabled() {
+		return !active;
+	}
+
+	public boolean projectConfigsNotEmpty() {
+		return !projectConfigs.isEmpty();
+	}
+
+	private boolean isExpired() {
+		if (isPermanentLink()) {
+			return false;
+		}
+		return Instant.now().isAfter(expiredAt);
+	}
+
+	private boolean isPermanentLink() {
+		return expiredAt == null;
 	}
 }

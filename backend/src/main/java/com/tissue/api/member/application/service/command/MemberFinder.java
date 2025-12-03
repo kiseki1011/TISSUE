@@ -1,5 +1,7 @@
 package com.tissue.api.member.application.service.command;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.member.domain.model.Member;
@@ -17,5 +19,9 @@ public class MemberFinder {
 	public Member findMemberById(Long memberId) {
 		return memberRepository.findById(memberId)
 			.orElseThrow(() -> new MemberNotFoundException(memberId));
+	}
+
+	public Optional<Member> findOptionalBy(Long memberId) {
+		return memberRepository.findById(memberId);
 	}
 }

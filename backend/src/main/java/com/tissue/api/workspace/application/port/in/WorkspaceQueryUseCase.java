@@ -2,7 +2,7 @@ package com.tissue.api.workspace.application.port.in;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.workspace.application.dto.response.WorkspaceDetail;
+import com.tissue.api.workspace.application.dto.response.query.WorkspaceDetail;
 
 @Transactional(readOnly = true)
 public interface WorkspaceQueryUseCase {

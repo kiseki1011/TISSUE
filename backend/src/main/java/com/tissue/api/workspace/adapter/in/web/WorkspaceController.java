@@ -15,14 +15,14 @@ import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
 import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
-import com.tissue.api.workspace.adapter.in.web.dto.request.InviteMembersRequest;
+import com.tissue.api.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
 import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.api.workspace.application.dto.request.DeleteWorkspaceCommand;
-import com.tissue.api.workspace.application.dto.request.InviteMembersCommand;
+import com.tissue.api.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.request.TransferOwnershipCommand;
 import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceDetail;
+import com.tissue.api.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.api.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
@@ -102,10 +102,10 @@ public class WorkspaceController {
 	@PostMapping("/invite")
 	public ResponseEntity<InviteMembersResult> inviteMembers(
 		@PathVariable String workspaceKey,
-		@RequestBody @Valid InviteMembersRequest request
+		@RequestBody @Valid InviteToWorkspaceRequest request
 	) {
 		InviteMembersResult response = workspaceParticipationUseCase.inviteToWorkspace(
-			new InviteMembersCommand(
+			new InviteToWorkspaceCommand(
 				workspaceKey,
 				request.emails()
 			)

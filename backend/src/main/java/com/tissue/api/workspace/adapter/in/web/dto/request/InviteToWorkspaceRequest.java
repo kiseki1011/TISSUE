@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
-public record InviteMembersRequest(
+public record InviteToWorkspaceRequest(
 	@NotEmpty Set<@Email @NotBlank String> emails
 ) {
 }

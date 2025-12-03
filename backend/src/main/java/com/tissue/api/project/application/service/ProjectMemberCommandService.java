@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.exception.domain.SelfOperationNotAllowedException;
 import com.tissue.api.project.application.dto.request.AddProjectMembersCommand;
@@ -136,5 +137,19 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 		// TODO: ProjectMemberRoleChangedEvent
 
 		return ProjectMemberCommandResult.of(target);
+	}
+
+	// TODO: UseCase에 포함되지 않고 다른 애플리케이션 서비스에서 호출한다고 주석으로 명시
+	//  아예 새로운 클래스(ProjectParticipationService)로 분리할까?
+	@Transactional
+	public void addMember(Project project, Long memberId, ProjectRole role) {
+		if (projectMemberFinder.existsBy(project, memberId)) {
+			return;
+		}
+
+		WorkspaceMember wm = workspaceMemberFinder.findBy(memberId, project.getWorkspaceKey());
+
+		ProjectMember pm = ProjectMember.create(project, wm, role);
+		projectMemberRepository.save(pm);
 	}
 }

@@ -1,16 +1,18 @@
 package com.tissue.api.workspace.domain;
 
+import static com.tissue.api.workspace.domain.enums.InvitationStatus.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.invitation.domain.enums.InvitationStatus;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.enums.ProjectRole;
 import com.tissue.api.workspace.domain.converter.ProjectJoinConfigListConverter;
+import com.tissue.api.workspace.domain.enums.InvitationStatus;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.persistence.Column;
@@ -46,7 +48,7 @@ public class Invitation extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	@Column(nullable = false)
+	@Column(name = "workspace_key", nullable = false)
 	private String workspaceKey;
 
 	@Enumerated(EnumType.STRING)
@@ -62,15 +64,15 @@ public class Invitation extends BaseEntity {
 	private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
 	public static Invitation create(
-		@NonNull Member member,
 		@NonNull Workspace workspace,
+		@NonNull Member member,
 		@Nullable WorkspaceRole workspaceRole
 	) {
 		Invitation invitation = new Invitation();
 		invitation.member = member;
 		invitation.workspace = workspace;
 		invitation.workspaceKey = workspace.getKey();
-		invitation.status = InvitationStatus.PENDING;
+		invitation.status = PENDING;
 		invitation.workspaceRole = (workspaceRole != null) ? workspaceRole : WorkspaceRole.MEMBER;
 
 		return invitation;
@@ -81,10 +83,22 @@ public class Invitation extends BaseEntity {
 	}
 
 	public void accept() {
-		this.status = InvitationStatus.ACCEPTED;
+		this.status = ACCEPTED;
 	}
 
 	public void reject() {
-		this.status = InvitationStatus.REJECTED;
+		this.status = REJECTED;
+	}
+
+	public boolean isProcessed() {
+		return !isPending();
+	}
+
+	public boolean isPending() {
+		return this.status == PENDING;
+	}
+
+	public boolean projectConfigsNotEmpty() {
+		return !projectConfigs.isEmpty();
 	}
 }

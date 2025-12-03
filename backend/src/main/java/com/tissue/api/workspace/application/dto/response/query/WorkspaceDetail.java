@@ -1,4 +1,4 @@
-package com.tissue.api.workspace.application.dto.response;
+package com.tissue.api.workspace.application.dto.response.query;
 
 import java.time.Instant;
 

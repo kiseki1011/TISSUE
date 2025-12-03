@@ -12,8 +12,11 @@ import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
-import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.domain.Workspace;
+import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.service.WorkspaceKeyGenerator;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 
 	private final MemberFinder memberFinder;
 	private final WorkspaceCommandRepository workspaceCommandRepository;
+	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	// private final MemberPolicy memberPolicy;
 
 	@Override
@@ -43,22 +47,14 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 
-		// TODO: 추가 필요
-		// workspaceValidator.ensureKeyIsUnique(workspaceKey);
+		// memberPolicy.ensureCanCreateWorkspace(currentOwnedWorkspaces, currentJoinedWorkspaces); // 내부에 ensureCanJoinWorkspace() 호출
 
-		// memberPolicy.ensureCanCreateWorkspace();
-
-		Workspace workspace = Workspace.create(
-			workspaceKey,
-			cmd.name(),
-			cmd.description(),
-			member
-		);
-
-		// TODO: saveAndFlush가 꼭 필요한가?
-		//  내 기억상에는 일부러 flush를 통해 key의 유일성 검사(DB 유일성 제약을 통해)를 유도하려고 했던 것 같음.
+		Workspace workspace = Workspace.create(workspaceKey, cmd.name(), cmd.description());
 		Workspace savedWorkspace = workspaceCommandRepository.save(workspace);
 
+		WorkspaceMember owner = WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER);
+		workspaceMemberCommandRepository.save(owner);
+		
 		return WorkspaceCommandResult.from(savedWorkspace);
 	}
 

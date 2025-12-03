@@ -18,7 +18,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 	/**
 	 * Retrieves a project member regardless of their delete status (active or soft-deleted).
 	 * <p>
-	 * This method uses a <b>native query</b> to bypass the Hibernate {@code @SQLRestriction}.
+	 * Uses a <b>native query</b> to bypass Hibernate {@link org.hibernate.annotations.SQLRestriction @SqlRestriction}
 	 */
 	@Query(value = """
 		SELECT * FROM project_member
@@ -38,17 +38,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 		@Param("workspaceKey") String workspaceKey,
 		@Param("projectKey") String projectKey,
 		@Param("memberId") Long memberId
-	);
-
-	boolean existsByWorkspaceKeyAndProjectKeyAndMemberId(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	);
-
-	boolean existsByProjectAndMemberId(
-		Project project,
-		Long memberId
 	);
 
 	@Query("""
@@ -75,5 +64,16 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 		@Param("workspaceKey") String workspaceKey,
 		@Param("projectKeys") Collection<String> projectKeys,
 		@Param("memberId") Long memberId
+	);
+
+	boolean existsByWorkspaceKeyAndProjectKeyAndMemberId(
+		String workspaceKey,
+		String projectKey,
+		Long memberId
+	);
+
+	boolean existsByProjectAndMemberId(
+		Project project,
+		Long memberId
 	);
 }
