@@ -44,8 +44,8 @@ api:
 tissue:
   member:
     policy:
-    # max-owned-workspaces: 10
-    # max-joined-workspaces: 100
+      max-owned-workspaces: 10
+      max-joined-workspaces: 100
   workspace:
     policy:
       max-members: 1000

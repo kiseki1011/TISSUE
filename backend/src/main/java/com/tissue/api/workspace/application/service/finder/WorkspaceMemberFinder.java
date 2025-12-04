@@ -11,6 +11,7 @@ import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.exception.WorkspaceMemberNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,13 @@ public class WorkspaceMemberFinder {
 
 	public int countTotalMembersBy(String workspaceKey) {
 		return (int)workspaceMemberQueryRepository.countByWorkspaceKey(workspaceKey);
+	}
+
+	public int countOwnedWorkspacesBy(Member member) {
+		return (int)workspaceMemberQueryRepository.countByMemberAndRole(member, WorkspaceRole.OWNER);
+	}
+
+	public int countJoinedWorkspacesBy(Member member) {
+		return (int)workspaceMemberQueryRepository.countByMember(member);
 	}
 }

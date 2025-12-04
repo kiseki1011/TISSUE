@@ -72,4 +72,8 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 	boolean existsByMemberAndWorkspace(Member member, Workspace workspace);
 
 	long countByWorkspaceKey(String workspaceKey);
+
+	long countByMemberAndRole(Member member, WorkspaceRole role);
+
+	long countByMember(Member member);
 }

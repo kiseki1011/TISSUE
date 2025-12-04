@@ -11,8 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.Member;
 import com.tissue.api.member.application.port.out.MemberRepository;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.policy.MemberPolicy;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workspace.application.dto.ProjectJoinConfigDto;
@@ -46,6 +47,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	private final InvitationCommandRepository invitationRepository;
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final WorkspacePolicy workspacePolicy;
+	private final MemberPolicy memberPolicy;
 
 	// private final ApplicationEventPublisher eventPublisher;
 
@@ -111,6 +113,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		}
 
 		checkWorkspaceCapacity(workspace);
+		checkMemberJoinCapacity(member);
 
 		return workspaceMemberFinder.findAnyOptionalBy(member.getId(), workspace.getKey())
 			.map(returningMember -> {
@@ -176,9 +179,15 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
 	}
 
+	// TODO: 이름 개선 고려
 	private void checkWorkspaceCapacity(Workspace workspace) {
 		int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
 		workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);
+	}
+
+	private void checkMemberJoinCapacity(Member member) {
+		int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+		memberPolicy.ensureCanJoinWorkspace(joinedCount, member);
 	}
 
 	private record InvitationFilterResult(

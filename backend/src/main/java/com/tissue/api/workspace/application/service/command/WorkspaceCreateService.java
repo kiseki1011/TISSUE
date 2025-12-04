@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import com.tissue.api.common.exception.base.BadRequestException;
 import com.tissue.api.member.application.service.finder.MemberFinder;
 import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.policy.MemberPolicy;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
@@ -32,7 +34,8 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 	private final MemberFinder memberFinder;
 	private final WorkspaceCommandRepository workspaceCommandRepository;
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-	// private final MemberPolicy memberPolicy;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final MemberPolicy memberPolicy;
 
 	@Override
 	@Retryable(
@@ -47,7 +50,10 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 
-		// memberPolicy.ensureCanCreateWorkspace(currentOwnedWorkspaces, currentJoinedWorkspaces); // 내부에 ensureCanJoinWorkspace() 호출
+		int ownedCount = workspaceMemberFinder.countOwnedWorkspacesBy(member);
+		int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+
+		memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount, member);
 
 		Workspace workspace = Workspace.create(workspaceKey, cmd.name(), cmd.description());
 		Workspace savedWorkspace = workspaceCommandRepository.save(workspace);
