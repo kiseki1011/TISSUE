@@ -6,11 +6,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
-import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.issue.domain.port.out.IssueCommandRepository;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
+import com.tissue.api.member.application.port.out.MemberRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,8 +32,8 @@ public class TestDataFixture {
 	private final WorkspaceCommandRepository workspaceCommandRepository;
 	@Autowired
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-	@Autowired
-	private final InvitationRepository invitationRepository;
+	// @Autowired
+	// private final InvitationRepository invitationRepository;
 	@Autowired
 	private final PasswordEncoder passwordEncoder;
 

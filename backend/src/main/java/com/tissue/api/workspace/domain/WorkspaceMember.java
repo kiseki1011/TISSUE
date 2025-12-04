@@ -6,7 +6,7 @@ import java.util.Set;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
@@ -91,16 +91,12 @@ public class WorkspaceMember extends BaseEntity {
 		return member.getId();
 	}
 
-	// TODO: WorkspaceMember 제거는 hard-delete vs soft-delete 중 뭘 사용하는게 좋을까?
-	//  - WorkspaceMember를 Workspace에서 제거하는 경우 기존 해당 WorkspaceMember와 관련이 있는
-	//  리소스(Issue, Sprint, Comment, etc...)에 대한 처리를 어떻게 해야할지 고민이 됨.
-	//  - 만약 soft-delete이 권장된다면, 해당 soft-delete된 WorkspaceMember는 그대로 표시 가능한가?
-	//  archived=true이므로, UI에서는 회색이나 반투명 회색으로 표기하는 형태로 가는게 좋을까?
-	public void validateCanLeaveWorkspace() {
-		if (this.role == WorkspaceRole.OWNER) {
-			// TODO: OwnerCannotLeaveWorkspaceException
-			throw new RuntimeException("Cannot leave workspace if workspace role is OWNER.");
-		}
+	public String getUsername() {
+		return member.getUsername();
+	}
+
+	public String getEmail() {
+		return member.getEmail();
 	}
 
 	public void changeRoleTo(WorkspaceRole newRole) {
@@ -114,6 +110,7 @@ public class WorkspaceMember extends BaseEntity {
 		this.role = newRole;
 	}
 
+	// TODO: 함부러 호출하지 않도록 주석 필요
 	public void changeRoleToOwner() {
 		this.role = WorkspaceRole.OWNER;
 	}

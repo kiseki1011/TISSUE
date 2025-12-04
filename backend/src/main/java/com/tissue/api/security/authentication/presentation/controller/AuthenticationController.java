@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.common.dto.ApiResponse;
-import com.tissue.api.member.presentation.dto.request.PermissionRequest;
+import com.tissue.api.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.application.service.AuthenticationService;
 import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;

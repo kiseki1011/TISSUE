@@ -6,11 +6,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.exception.WorkspaceMemberNotFoundException;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 // TODO: 권한 redis 캐싱
@@ -18,41 +18,53 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceSecurityGuard {
 
-	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+	private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-	public boolean isSelfModification(@NonNull Long targetMemberId, @NonNull Long actorMemberId) {
-		return targetMemberId.equals(actorMemberId);
+	public boolean isSelfModification(
+		Long targetMemberId,
+		Long memberId
+	) {
+		return targetMemberId.equals(memberId);
 	}
 
-	public boolean isMember(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
-		return findWorkspaceMember(actorMemberId, workspaceKey)
+	public boolean isMember(
+		String workspaceKey,
+		Long memberId
+	) {
+		return findWorkspaceMember(memberId, workspaceKey)
 			.map(actor -> actor.roleIsEqualOrHigherThan(MEMBER))
 			.orElse(false);
 	}
 
-	public boolean isAdmin(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
-		return findWorkspaceMember(actorMemberId, workspaceKey)
+	public boolean isAdmin(
+		String workspaceKey,
+		Long memberId
+	) {
+		return findWorkspaceMember(memberId, workspaceKey)
 			.map(actor -> actor.roleIsEqualOrHigherThan(ADMIN))
 			.orElse(false);
 	}
 
-	public boolean isOwner(@NonNull String workspaceKey, @NonNull Long actorMemberId) {
-		return findWorkspaceMember(actorMemberId, workspaceKey)
+	public boolean isOwner(
+		String workspaceKey,
+		Long memberId
+	) {
+		return findWorkspaceMember(memberId, workspaceKey)
 			.map(actor -> actor.roleIsEqualOrHigherThan(OWNER))
 			.orElse(false);
 	}
 
 	public boolean targetHasLowerRole(
-		@NonNull String workspaceKey,
-		@NonNull Long targetMemberId,
-		@NonNull Long actorMemberId
+		String workspaceKey,
+		Long targetMemberId,
+		Long memberId
 	) {
-		if (targetMemberId.equals(actorMemberId)) {
+		if (targetMemberId.equals(memberId)) {
 			return false;
 		}
 
-		WorkspaceMember actor = findWorkspaceMember(actorMemberId, workspaceKey)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(actorMemberId, workspaceKey));
+		WorkspaceMember actor = findWorkspaceMember(memberId, workspaceKey)
+			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
 
 		WorkspaceMember target = findWorkspaceMember(targetMemberId, workspaceKey)
 			.orElseThrow(() -> new WorkspaceMemberNotFoundException(targetMemberId, workspaceKey));
@@ -60,9 +72,24 @@ public class WorkspaceSecurityGuard {
 		return target.roleIsLowerThan(actor.getRole());
 	}
 
+	// TODO: OWNER는 Transfer Ownership을 통해서만 가능하다는 걸 주석으로 추가
+	public boolean canGrantRole(
+		String workspaceKey,
+		Long memberId,
+		WorkspaceRole grantRole
+	) {
+		if (grantRole == WorkspaceRole.OWNER) {
+			return false;
+		}
+
+		return findWorkspaceMember(memberId, workspaceKey)
+			.map(actor -> actor.roleIsEqualOrHigherThan(grantRole))
+			.orElse(false);
+	}
+
 	// TODO: findRoleByMemberIdAndWorkspaceKey 추가 후 사용
 	private Optional<WorkspaceMember> findWorkspaceMember(Long memberId, String workspaceKey) {
-		return workspaceMemberCommandRepository.findByMember_IdAndWorkspaceKey(
+		return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(
 			memberId,
 			workspaceKey
 		);

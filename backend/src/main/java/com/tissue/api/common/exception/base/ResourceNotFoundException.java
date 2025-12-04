@@ -6,11 +6,11 @@ import com.tissue.api.common.exception.TissueException;
 
 public abstract class ResourceNotFoundException extends TissueException {
 
-	protected ResourceNotFoundException(String message) {
+	public ResourceNotFoundException(String message) {
 		super(message);
 	}
 
-	protected ResourceNotFoundException(String message, Throwable cause) {
+	public ResourceNotFoundException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.ProgressType;
-import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
+import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

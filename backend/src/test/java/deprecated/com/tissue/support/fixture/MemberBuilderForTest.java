@@ -2,7 +2,7 @@ package deprecated.com.tissue.support.fixture;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 
 public class MemberBuilderForTest {
 

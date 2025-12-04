@@ -13,7 +13,7 @@ import com.tissue.api.notification.application.service.command.NotificationTarge
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationEventHandlerTest {

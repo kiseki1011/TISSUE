@@ -10,62 +10,52 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.resolver.CurrentMember;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
 import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateDisplayNameRequest;
 import com.tissue.api.workspace.adapter.in.web.dto.request.UpdateRoleRequest;
 import com.tissue.api.workspace.application.dto.request.AddPositionCommand;
 import com.tissue.api.workspace.application.dto.request.AddTeamCommand;
-import com.tissue.api.workspace.application.dto.request.KickWorkspaceMemberCommand;
 import com.tissue.api.workspace.application.dto.request.RemovePositionCommand;
 import com.tissue.api.workspace.application.dto.request.RemoveTeamCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateDisplayNameCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateRoleCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
-import com.tissue.api.workspace.application.port.in.WorkspaceMemberCommandUseCase;
-import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
+import com.tissue.api.workspace.application.port.in.WorkspaceMemberManageUseCase;
+import com.tissue.api.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/members")
 public class WorkspaceMemberController {
 
-	private final WorkspaceMemberCommandUseCase workspaceMemberCommandUseCase;
-	private final WorkspaceParticipationUseCase workspaceParticipationUseCase;
+	private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
+	private final WorkspaceMemberQueryUseCase workspaceMemberQueryUseCase;
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{memberId}/display-name")
-	public ResponseEntity<WorkspaceMemberCommandResult> updateDisplayName(
+	public ResponseEntity<Void> updateDisplayName(
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid UpdateDisplayNameRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.updateDisplayName(
+		workspaceMemberManageUseCase.updateDisplayName(
 			new UpdateDisplayNameCommand(
 				workspaceKey,
 				userDetails.getMemberId(),
 				request.displayName()
 			)
 		);
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 
-	@RoleRequired(role = WorkspaceRole.ADMIN)
 	@PatchMapping("/{memberId}/role")
-	public ResponseEntity<WorkspaceMemberCommandResult> updateRole(
+	public ResponseEntity<Void> updateRole(
 		@PathVariable String workspaceKey,
 		@PathVariable Long memberId,
 		@RequestBody @Valid UpdateRoleRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.updateRole(
+		workspaceMemberManageUseCase.updateRole(
 			new UpdateRoleCommand(
 				workspaceKey,
 				memberId,
@@ -73,19 +63,17 @@ public class WorkspaceMemberController {
 				request.role()
 			)
 		);
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{memberId}/positions/{positionId}")
-	public ResponseEntity<WorkspaceMemberCommandResult> addPosition(
+	public ResponseEntity<Void> addPosition(
 		@PathVariable String workspaceKey,
 		@PathVariable Long memberId,
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.addPosition(
+		workspaceMemberManageUseCase.addPosition(
 			new AddPositionCommand(
 				workspaceKey,
 				memberId,
@@ -93,19 +81,17 @@ public class WorkspaceMemberController {
 				positionId
 			)
 		);
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{memberId}/positions/{positionId}")
-	public ResponseEntity<WorkspaceMemberCommandResult> removePosition(
+	public ResponseEntity<Void> removePosition(
 		@PathVariable String workspaceKey,
 		@PathVariable Long memberId,
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.removePosition(
+		workspaceMemberManageUseCase.removePosition(
 			new RemovePositionCommand(
 				workspaceKey,
 				memberId,
@@ -113,19 +99,17 @@ public class WorkspaceMemberController {
 				positionId
 			)
 		);
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@PatchMapping("/{memberId}/teams/{teamId}")
-	public ResponseEntity<WorkspaceMemberCommandResult> addTeam(
+	public ResponseEntity<Void> addTeam(
 		@PathVariable String workspaceKey,
 		@PathVariable Long memberId,
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.addTeam(
+		workspaceMemberManageUseCase.addTeam(
 			new AddTeamCommand(
 				workspaceKey,
 				memberId,
@@ -133,19 +117,17 @@ public class WorkspaceMemberController {
 				teamId
 			)
 		);
-
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	@DeleteMapping("/{memberId}/teams/{teamId}")
-	public ResponseEntity<WorkspaceMemberCommandResult> removeTeam(
+	public ResponseEntity<Void> removeTeam(
 		@PathVariable String workspaceKey,
 		@PathVariable Long memberId,
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceMemberCommandResult response = workspaceMemberCommandUseCase.removeTeam(
+		workspaceMemberManageUseCase.removeTeam(
 			new RemoveTeamCommand(
 				workspaceKey,
 				memberId,
@@ -153,37 +135,7 @@ public class WorkspaceMemberController {
 				teamId
 			)
 		);
-
-		return ResponseEntity.ok(response);
-	}
-
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	@DeleteMapping
-	public ResponseEntity<WorkspaceCommandResult> leaveWorkspace(
-		@PathVariable String workspaceKey,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		WorkspaceCommandResult response = workspaceParticipationUseCase.leave(
-			workspaceKey,
-			userDetails.getMemberId()
-		);
-		return ResponseEntity.ok(response);
-	}
-
-	@RoleRequired(role = WorkspaceRole.ADMIN)
-	@DeleteMapping("/{memberId}")
-	public ResponseEntity<WorkspaceMemberCommandResult> kickWorkspaceMember(
-		@PathVariable String workspaceKey,
-		@PathVariable Long memberId,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		WorkspaceMemberCommandResult response = workspaceParticipationUseCase.kick(
-			new KickWorkspaceMemberCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId()
-			)
-		);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.noContent().build();
 	}
 }
+

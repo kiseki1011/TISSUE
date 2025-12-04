@@ -33,7 +33,7 @@ public class SimpleNotificationMessageFactory implements NotificationMessageFact
 		String contentKey = "notification." + event.getNotificationType().name() + ".content";
 
 		// 기본 파라미터 준비
-		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(
+		WorkspaceMember actor = workspaceMemberFinder.findBy(
 			event.getActorMemberId(),
 			event.getWorkspaceCode()
 		);

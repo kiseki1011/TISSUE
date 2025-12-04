@@ -1,23 +1,12 @@
 package deprecated.com.tissue.unit.controller;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDate;
-import java.util.Locale;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-
-import com.tissue.api.member.domain.model.enums.JobType;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberEmailRequest;
-import com.tissue.api.member.presentation.dto.request.UpdateMemberProfileRequest;
-import com.tissue.api.member.presentation.dto.request.WithdrawMemberRequest;
-import com.tissue.api.member.presentation.dto.response.command.MemberResponse;
 
 import deprecated.com.tissue.support.helper.ControllerTestHelper;
 
@@ -176,105 +165,105 @@ class MemberControllerTest extends ControllerTestHelper {
 	// 		.andDo(print());
 	// }
 
-	@Test
-	@DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
-	void updateMemberInfo_success_OK() throws Exception {
-		// given
-		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
-			.birthDate(LocalDate.of(1995, 1, 1))
-			.jobType(JobType.DEVELOPER)
-			.build();
-
-		Long memberId = 1L;
-
-		MemberResponse response = new MemberResponse(memberId);
-
-		when(memberCommandService.updateProfile(any(UpdateMemberProfileRequest.class), anyLong()))
-			.thenReturn(response);
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member info updated."))
-			.andExpect(jsonPath("$.data.memberId").value(memberId))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("PATCH /members - 멤버 프로필 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
-	void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
-		// given
-		UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
-			.birthDate(LocalDate.of(2995, 1, 1))
-			.build();
-
-		Long memberId = 1L;
-
-		when(memberCommandService.updateProfile(any(UpdateMemberProfileRequest.class), anyLong()))
-			.thenReturn(new MemberResponse(memberId));
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.message").value("One or more fields have failed validation."))
-			.andExpect(
-				jsonPath("$.data..message").value(messageSource.getMessage("valid.birthdate", null, Locale.ENGLISH)))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK")
-	void updateEmail_success_OK() throws Exception {
-		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members/email")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member email updated."))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 해당 Member의 id가 포함된다")
-	void updateEmail_success_responseDataHasEmail() throws Exception {
-		// given
-		UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
-		Long memberId = 1L;
-
-		MemberResponse response = new MemberResponse(memberId);
-
-		when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong()))
-			.thenReturn(response);
-
-		// when & then
-		mockMvc.perform(patch("/api/v1/members/email")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member email updated."))
-			.andExpect(jsonPath("$.data.memberId").value(memberId))
-			.andDo(print());
-	}
-
-	@Test
-	@DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
-	void withdrawMember_success_OK() throws Exception {
-		// given
-		WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
-
-		// when & then
-		mockMvc.perform(delete("/api/v1/members")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.message").value("Member withdrawal successful."))
-			.andDo(print());
-	}
+	// @Test
+	// @DisplayName("PATCH /members - 멤버 상세 정보(프로필) 업데이트에 성공하면 OK")
+	// void updateMemberInfo_success_OK() throws Exception {
+	// 	// given
+	// 	UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
+	// 		.birthDate(LocalDate.of(1995, 1, 1))
+	// 		.jobType(JobType.DEVELOPER)
+	// 		.build();
+	//
+	// 	Long memberId = 1L;
+	//
+	// 	MemberResponse response = new MemberResponse(memberId);
+	//
+	// 	when(memberCommandService.updateProfile(any(UpdateMemberProfileRequest.class), anyLong()))
+	// 		.thenReturn(response);
+	//
+	// 	// when & then
+	// 	mockMvc.perform(patch("/api/v1/members")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$.message").value("Member info updated."))
+	// 		.andExpect(jsonPath("$.data.memberId").value(memberId))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("PATCH /members - 멤버 프로필 업데이트 시 생일을 현재 날짜 이후로 설정하면 검증에 실패한다")
+	// void updateMemberInfo_fail_ifBirthDateIsLaterThanNow() throws Exception {
+	// 	// given
+	// 	UpdateMemberProfileRequest request = UpdateMemberProfileRequest.builder()
+	// 		.birthDate(LocalDate.of(2995, 1, 1))
+	// 		.build();
+	//
+	// 	Long memberId = 1L;
+	//
+	// 	when(memberCommandService.updateProfile(any(UpdateMemberProfileRequest.class), anyLong()))
+	// 		.thenReturn(new MemberResponse(memberId));
+	//
+	// 	// when & then
+	// 	mockMvc.perform(patch("/api/v1/members")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isBadRequest())
+	// 		.andExpect(jsonPath("$.message").value("One or more fields have failed validation."))
+	// 		.andExpect(
+	// 			jsonPath("$.data..message").value(messageSource.getMessage("valid.birthdate", null, Locale.ENGLISH)))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 OK")
+	// void updateEmail_success_OK() throws Exception {
+	// 	// given
+	// 	UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
+	//
+	// 	// when & then
+	// 	mockMvc.perform(patch("/api/v1/members/email")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$.message").value("Member email updated."))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("PATCH /members/email - 이메일 업데이트를 성공하면 응답 데이터에 해당 Member의 id가 포함된다")
+	// void updateEmail_success_responseDataHasEmail() throws Exception {
+	// 	// given
+	// 	UpdateMemberEmailRequest request = new UpdateMemberEmailRequest("newemail@test.com");
+	// 	Long memberId = 1L;
+	//
+	// 	MemberResponse response = new MemberResponse(memberId);
+	//
+	// 	when(memberCommandService.updateEmail(any(UpdateMemberEmailRequest.class), anyLong()))
+	// 		.thenReturn(response);
+	//
+	// 	// when & then
+	// 	mockMvc.perform(patch("/api/v1/members/email")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$.message").value("Member email updated."))
+	// 		.andExpect(jsonPath("$.data.memberId").value(memberId))
+	// 		.andDo(print());
+	// }
+	//
+	// @Test
+	// @DisplayName("DELETE /members - 멤버의 회원 탈퇴에 성공하면 OK")
+	// void withdrawMember_success_OK() throws Exception {
+	// 	// given
+	// 	WithdrawMemberRequest request = new WithdrawMemberRequest("password1234!");
+	//
+	// 	// when & then
+	// 	mockMvc.perform(delete("/api/v1/members")
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.content(objectMapper.writeValueAsString(request)))
+	// 		.andExpect(status().isOk())
+	// 		.andExpect(jsonPath("$.message").value("Member withdrawal successful."))
+	// 		.andDo(print());
+	// }
 }

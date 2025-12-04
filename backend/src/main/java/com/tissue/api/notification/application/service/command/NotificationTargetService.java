@@ -7,8 +7,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.issue.application.service.finder.IssueFinder;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.api.workspace.domain.WorkspaceMember;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,14 +17,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationTargetService {
 
-	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+	private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 	private final IssueFinder issueFinder;
 
 	/**
 	 * Retrieve all members in the workspace as notification targets.
 	 */
 	public List<WorkspaceMember> getWorkspaceWideMemberTargets(String workspaceCode) {
-		return workspaceMemberCommandRepository.findAllByWorkspace_Key(workspaceCode);
+		return workspaceMemberQueryRepository.findAllByWorkspace_Key(workspaceCode);
 	}
 
 	/**
@@ -56,9 +56,9 @@ public class NotificationTargetService {
 	 */
 	public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
 
-		Set<WorkspaceMember> targets = workspaceMemberCommandRepository.findAdminsByWorkspace_Key(workspaceCode);
+		Set<WorkspaceMember> targets = workspaceMemberQueryRepository.findAdminsByWorkspace_Key(workspaceCode);
 
-		workspaceMemberCommandRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceCode)
+		workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceCode)
 			.ifPresent(targets::add);
 
 		return targets;
@@ -71,7 +71,7 @@ public class NotificationTargetService {
 
 		Set<WorkspaceMember> target = new HashSet<>();
 
-		workspaceMemberCommandRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceCode)
+		workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceCode)
 			.ifPresent(target::add);
 
 		return target;

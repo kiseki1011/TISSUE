@@ -7,13 +7,18 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.base.BadRequestException;
-import com.tissue.api.member.application.service.command.MemberFinder;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.application.service.finder.MemberFinder;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.policy.MemberPolicy;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.Workspace;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.domain.WorkspaceMember;
+import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.service.WorkspaceKeyGenerator;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +33,9 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 
 	private final MemberFinder memberFinder;
 	private final WorkspaceCommandRepository workspaceCommandRepository;
-	// private final MemberPolicy memberPolicy;
+	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+	private final WorkspaceMemberFinder workspaceMemberFinder;
+	private final MemberPolicy memberPolicy;
 
 	@Override
 	@Retryable(
@@ -37,33 +44,28 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 		maxAttempts = MAX_RETRIES,
 		backoff = @Backoff(delay = 300)
 	)
-	public WorkspaceCommandResult create(CreateWorkspaceCommand cmd) {
+	public WorkspaceCommandResponse create(CreateWorkspaceCommand cmd) {
 
 		Member member = memberFinder.findMemberById(cmd.memberId());
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 
-		// TODO: 추가 필요
-		// workspaceValidator.ensureKeyIsUnique(workspaceKey);
+		int ownedCount = workspaceMemberFinder.countOwnedWorkspacesBy(member);
+		int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
 
-		// memberPolicy.ensureCanCreateWorkspace();
+		memberPolicy.ensureCanCreateWorkspace(ownedCount, joinedCount, member);
 
-		Workspace workspace = Workspace.create(
-			workspaceKey,
-			cmd.name(),
-			cmd.description(),
-			member
-		);
-
-		// TODO: saveAndFlush가 꼭 필요한가?
-		//  내 기억상에는 일부러 flush를 통해 key의 유일성 검사(DB 유일성 제약을 통해)를 유도하려고 했던 것 같음.
+		Workspace workspace = Workspace.create(workspaceKey, cmd.name(), cmd.description());
 		Workspace savedWorkspace = workspaceCommandRepository.save(workspace);
 
-		return WorkspaceCommandResult.from(savedWorkspace);
+		WorkspaceMember owner = WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER);
+		workspaceMemberCommandRepository.save(owner);
+
+		return WorkspaceCommandResponse.from(savedWorkspace);
 	}
 
 	@Recover
-	public WorkspaceCommandResult recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
+	public WorkspaceCommandResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
 		// TODO: WorkspaceKeyCollisionException extends InternalServerException
 		throw new RuntimeException(

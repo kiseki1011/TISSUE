@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.exception.SprintNotFoundException;
-import com.tissue.api.sprint.domain.port.out.SprintQueryRepository;
+import com.tissue.api.sprint.application.port.out.SprintQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 

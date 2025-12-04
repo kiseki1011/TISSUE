@@ -3,24 +3,17 @@ package com.tissue.api.workspace.domain;
 import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.workspace.domain.enums.WorkspaceRole.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,40 +39,20 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private String description;
 
-	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<WorkspaceMember> workspaceMembers = new ArrayList<>();
-
 	public static Workspace create(
 		@NonNull String key,
 		@NonNull String name,
-		@Nullable String description,
-		@NonNull Member member
+		@Nullable String description
 	) {
 		Workspace workspace = new Workspace();
 		workspace.key = key;
 		workspace.name = name;
 		workspace.description = nullToEmpty(description);
 
-		workspace.workspaceMembers.add(WorkspaceMember.create(member, workspace, OWNER));
-
 		return workspace;
 	}
 
-	public WorkspaceMember addMember(@NonNull Member member, @NonNull WorkspaceRole role) {
-		WorkspaceMember workspaceMember = WorkspaceMember.create(
-			member,
-			this,
-			role
-		);
-		this.workspaceMembers.add(workspaceMember);
-
-		return workspaceMember;
-	}
-
-	public void removeMember(@NonNull WorkspaceMember workspaceMember) {
-		this.workspaceMembers.remove(workspaceMember);
-	}
-
+	// TODO: 도메인 서비스로 추출하거나, 애플리케이션 서비스에서 로직 진행하는게 좋을까?
 	public void transferOwnership(@NonNull WorkspaceMember owner, @NonNull WorkspaceMember newOwner) {
 		if (!owner.isOwner()) {
 			// TODO: 상황에 맞는 더 구체적인 예외 이름을 사용하는게 좋을까?
@@ -97,9 +70,5 @@ public class Workspace extends BaseEntity {
 
 	public void updateDescription(@Nullable String description) {
 		this.description = nullToEmpty(description);
-	}
-
-	public int getMemberCount() {
-		return workspaceMembers.size();
 	}
 }

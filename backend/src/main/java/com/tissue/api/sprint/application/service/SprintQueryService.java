@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.domain.port.out.IssueQueryRepository;
+import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.sprint.application.dto.request.GetSprintDetailQuery;
 import com.tissue.api.sprint.application.dto.request.GetSprintIssueKeysQuery;
 import com.tissue.api.sprint.application.dto.response.SprintDetail;

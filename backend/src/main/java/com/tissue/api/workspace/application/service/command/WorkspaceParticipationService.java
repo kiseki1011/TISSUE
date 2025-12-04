@@ -1,29 +1,37 @@
 package com.tissue.api.workspace.application.service.command;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.invitation.domain.model.Invitation;
-import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.member.application.service.command.MemberFinder;
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.workspace.application.dto.request.InviteMembersCommand;
+import com.tissue.api.member.application.port.out.MemberRepository;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.domain.policy.MemberPolicy;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.workspace.application.dto.ProjectJoinConfigDto;
+import com.tissue.api.workspace.application.dto.request.InviteToProjectCommand;
+import com.tissue.api.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
+import com.tissue.api.workspace.application.dto.response.InviteMembersResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
+import com.tissue.api.workspace.application.port.out.InvitationCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.api.workspace.application.service.finder.InvitationFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.api.workspace.domain.Invitation;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 import com.tissue.api.workspace.domain.policy.WorkspacePolicy;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,88 +40,159 @@ import lombok.RequiredArgsConstructor;
 public class WorkspaceParticipationService implements WorkspaceParticipationUseCase {
 
 	private final WorkspaceFinder workspaceFinder;
-	private final MemberFinder memberFinder;
+	private final ProjectFinder projectFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+	private final InvitationFinder invitationFinder;
 	private final MemberRepository memberRepository;
-	private final InvitationRepository invitationRepository;
+	private final InvitationCommandRepository invitationRepository;
+	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final WorkspacePolicy workspacePolicy;
-	// private final MemberPolicy memberPolicy;
+	private final MemberPolicy memberPolicy;
+
 	// private final ApplicationEventPublisher eventPublisher;
 
-	public InviteMembersResult invite(InviteMembersCommand cmd) {
+	@Override
+	public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
-		List<Member> members = filterInvitableMembers(cmd.workspaceKey(), cmd.emails());
-
-		members.forEach(member -> createInvitation(workspace, member));
-
-		// TODO: MembersInvitedEvent vs WorkspaceMembersInvitedEvent
-
-		return InviteMembersResult.from(cmd.workspaceKey(), members);
+		return processInvitation(
+			workspace,
+			cmd.emails(),
+			cmd.role(),
+			cmd.targetProjects()
+		);
 	}
 
-	public WorkspaceMemberCommandResult join(String workspaceKey, Long memberId) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-		Member member = memberFinder.findMemberById(memberId);
+	@Override
+	public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
+		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
-		Optional<WorkspaceMember> existingMemberOpt = workspaceMemberCommandRepository
-			.findByMemberAndWorkspace(member, workspace);
+		List<ProjectJoinConfigDto> singleProjectConfig = List.of(
+			new ProjectJoinConfigDto(cmd.projectKey(), cmd.role())
+		);
 
-		if (existingMemberOpt.isPresent()) {
-			return WorkspaceMemberCommandResult.from(existingMemberOpt.get());
-		}
-
-		// TODO: ensureCanJoin은 삭제할까? 아니면 일정 수준을 넘지 못하도록 제한을 둘까? 악의적인 참여 사용을 못하도록
-		//  500개 선에서 막는게 좋을 것 같긴함
-		// memberPolicy.ensureCanJoin(member);
-		// workspacePolicy.ensureCanAddMember(workspace);
-
-		// TODO: 서비스의 파라미터로 WorkspaceRole도 받아서 role을 넘기기
-		WorkspaceMember workspaceMember = workspace.addMember(member, WorkspaceRole.MEMBER);
-
-		// TODO: MemberJoinedWorkspaceEvent vs WorkspaceMemberJoinedEvent
-
-		return WorkspaceMemberCommandResult.from(workspaceMember);
+		return processInvitation(
+			workspace,
+			cmd.emails(),
+			WorkspaceRole.MEMBER,
+			singleProjectConfig
+		);
 	}
 
-	public WorkspaceCommandResult leave(String workspaceKey, Long memberId) {
+	@Override
+	public void leave(String workspaceKey, Long memberId) {
 		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspace(memberId, workspace);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspace);
 
-		// TODO: workspaceMemberValidator 또는 workspacePolicy 또는 workspaceMemberPolicy 만들어서 사용
-		//  예시: workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
-		workspaceMember.validateCanLeaveWorkspace();
-
-		workspace.removeMember(workspaceMember);
+		workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
+		workspaceMember.softDelete();
 
 		// TODO: WorkspaceMemberLeftEvent
-
-		return WorkspaceCommandResult.from(workspace);
 	}
 
-	public WorkspaceMemberCommandResult kick(KickWorkspaceMemberCommand cmd) {
+	@Override
+	public void kick(KickWorkspaceMemberCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
-		WorkspaceMember actor = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.actorMemberId(), workspace);
-		WorkspaceMember target = workspaceMemberFinder.findByMemberIdAndWorkspace(cmd.targetMemberId(), workspace);
+		WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
+		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
 
-		workspace.removeMember(target);
+		target.softDelete();
 
 		// TODO: WorkspaceMemberKickedEvent
-
-		return WorkspaceMemberCommandResult.from(target);
 	}
 
-	private List<Member> filterInvitableMembers(String workspaceKey, Set<String> emails) {
-		Set<Long> existingMemberIds = invitationRepository.findExistingMemberIds(workspaceKey);
+	// TODO: 주석에 UseCase에 포함되지 않고 다른 서비스에서 호출하는 용도로 구현되어 있다는 것을 설명
+	//   - UseCase 인터페이스에는 없지만 다른 서비스가 쓰도록 열어둔 메서드 (내부용)
+	//   - Controller는 이 메서드를 모름 (UseCase 인터페이스로 주입받으므로)
+	//   - 다른 애플리케이션 서비스(UseCase 구현체)는 이 구현체 클래스를 주입받아 호출 가능
+	@Transactional
+	public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
+		Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
+		if (activeMember.isPresent()) {
+			return activeMember.get();
+		}
 
-		return memberRepository.findAllByEmailIn(emails).stream()
-			.filter(member -> !existingMemberIds.contains(member.getId()))
+		checkWorkspaceCapacity(workspace);
+		checkMemberJoinCapacity(member);
+
+		return workspaceMemberFinder.findAnyOptionalBy(member.getId(), workspace.getKey())
+			.map(returningMember -> {
+				returningMember.restore();
+				return returningMember;
+			})
+			.orElseGet(() -> {
+				WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
+				return workspaceMemberCommandRepository.save(newMember);
+			});
+	}
+
+	private InviteMembersResponse processInvitation(
+		Workspace workspace,
+		Set<String> emails,
+		WorkspaceRole roleToGrant,
+		Collection<ProjectJoinConfigDto> projectConfigs
+	) {
+		InvitationFilterResult filterResult = filterInvitableMembers(workspace.getKey(), emails);
+
+		List<Member> targetMembers = filterResult.targets();
+		List<Member> skippedMembers = filterResult.skipped();
+
+		for (Member member : targetMembers) {
+			Invitation invitation = Invitation.create(workspace, member, roleToGrant);
+
+			if (projectConfigs != null) {
+				for (var config : projectConfigs) {
+					Project project = projectFinder.findBy(config.projectKey(), workspace.getKey());
+					invitation.addProjectConfig(project, config.role());
+				}
+			}
+			invitationRepository.save(invitation);
+		}
+
+		// TODO: InvitationSentEvent - targetMembers에게만 발송
+
+		return InviteMembersResponse.from(
+			workspace.getKey(),
+			targetMembers,
+			skippedMembers
+		);
+	}
+
+	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
+		List<Member> candidates = memberRepository.findAllByEmailIn(emails);
+		if (candidates.isEmpty()) {
+			return new InvitationFilterResult(Collections.emptyList(), Collections.emptyList());
+		}
+
+		List<Long> candidateIds = candidates.stream()
+			.map(Member::getId)
 			.toList();
+
+		Set<Long> joinedIds = workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
+		Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
+
+		Map<Boolean, List<Member>> partitioned = candidates.stream()
+			.collect(Collectors.partitioningBy(m ->
+				!joinedIds.contains(m.getId()) && !pendingIds.contains(m.getId())
+			));
+
+		return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
 	}
 
-	private void createInvitation(Workspace workspace, Member member) {
-		Invitation invitation = Invitation.createPendingInvitation(workspace, member);
-		invitationRepository.save(invitation);
+	// TODO: 이름 개선 고려
+	private void checkWorkspaceCapacity(Workspace workspace) {
+		int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
+		workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);
+	}
+
+	private void checkMemberJoinCapacity(Member member) {
+		int joinedCount = workspaceMemberFinder.countJoinedWorkspacesBy(member);
+		memberPolicy.ensureCanJoinWorkspace(joinedCount, member);
+	}
+
+	private record InvitationFilterResult(
+		List<Member> targets,
+		List<Member> skipped
+	) {
 	}
 }

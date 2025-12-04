@@ -11,7 +11,7 @@ import com.tissue.api.common.validator.annotation.size.IdSize;
 import com.tissue.api.common.validator.annotation.size.NameSize;
 import com.tissue.api.common.validator.annotation.size.UsernameSize;
 import com.tissue.api.common.validator.annotation.size.password.PasswordSize;
-import com.tissue.api.member.application.dto.SignupMemberCommand;
+import com.tissue.api.member.application.dto.request.SignupMemberCommand;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

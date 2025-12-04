@@ -13,9 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.tissue.api.email.domain.EmailClient;
-import com.tissue.api.member.application.service.command.MemberEmailVerificationService;
-import com.tissue.api.member.config.EmailVerificationProperties;
-import com.tissue.api.member.domain.repository.verification.EmailVerificationRepository;
+import com.tissue.api.member.adapter.in.web.config.EmailVerificationProperties;
+import com.tissue.api.member.application.service.MemberEmailVerificationService;
+import com.tissue.api.member.application.port.out.EmailVerificationRepository;
 
 @ExtendWith(MockitoExtension.class)
 class MemberEmailVerificationServiceTest {

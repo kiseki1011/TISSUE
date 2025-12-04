@@ -1,30 +1,28 @@
 package com.tissue.api.workspace.application.port.in;
 
+import static com.tissue.api.security.authorization.ProjectSecurityExpressions.*;
 import static com.tissue.api.security.authorization.SecurityKeyWords.*;
 import static com.tissue.api.security.authorization.WorkspaceSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.workspace.application.dto.request.InviteMembersCommand;
+import com.tissue.api.workspace.application.dto.request.InviteToProjectCommand;
+import com.tissue.api.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
+import com.tissue.api.workspace.application.dto.response.InviteMembersResponse;
 
 @Transactional
 public interface WorkspaceParticipationUseCase {
 
-	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
-	InviteMembersResult invite(InviteMembersCommand cmd);
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_GRANTABLE_WORKSPACE_ROLE)
+	InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd);
 
-	// TODO: 이건 다른 usecase로 옮기는게 좋을까?
-	// WorkspaceMemberCommandResult acceptInvitation(AcceptInvitationCommand cmd);
+	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
+	InviteMembersResponse inviteToProject(InviteToProjectCommand cmd);
 
-	WorkspaceMemberCommandResult join(String workspaceKey, Long memberId);
-
-	WorkspaceCommandResult leave(String workspaceKey, Long memberId);
+	void leave(String workspaceKey, Long memberId);
 
 	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
-	WorkspaceMemberCommandResult kick(KickWorkspaceMemberCommand cmd);
+	void kick(KickWorkspaceMemberCommand cmd);
 }

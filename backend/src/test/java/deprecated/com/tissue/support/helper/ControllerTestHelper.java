@@ -15,20 +15,15 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.global.config.webmvc.WebMvcConfig;
-import com.tissue.api.invitation.application.service.command.InvitationCommandService;
-import com.tissue.api.invitation.application.service.finder.InvitationFinder;
-import com.tissue.api.invitation.application.service.query.InvitationQueryService;
-import com.tissue.api.invitation.infrastructure.repository.InvitationRepository;
-import com.tissue.api.invitation.presentation.controller.command.InvitationController;
 import com.tissue.api.issue.adapter.in.web.IssueCommandController;
+import com.tissue.api.issue.application.port.out.IssueCommandRepository;
 import com.tissue.api.issue.application.service.IssueCommandService;
-import com.tissue.api.issue.domain.port.out.IssueCommandRepository;
-import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.application.service.query.MemberQueryService;
-import com.tissue.api.member.domain.service.MemberValidator;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
-import com.tissue.api.member.presentation.controller.MemberController;
-import com.tissue.api.member.presentation.controller.MemberQueryController;
+import com.tissue.api.member.application.service.MemberCommandService;
+import com.tissue.api.member.application.service.MemberQueryService;
+import com.tissue.api.member.application.service.validator.MemberValidator;
+import com.tissue.api.member.application.port.out.MemberRepository;
+import com.tissue.api.member.adapter.in.web.MemberController;
+import com.tissue.api.member.adapter.in.web.MemberQueryController;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.application.service.query.PositionQueryService;
@@ -40,15 +35,15 @@ import com.tissue.api.security.authentication.jwt.JwtTokenService;
 import com.tissue.api.security.authentication.presentation.controller.AuthenticationController;
 import com.tissue.api.workspace.adapter.in.web.WorkspaceController;
 import com.tissue.api.workspace.adapter.in.web.WorkspaceMemberController;
+import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberManageService;
 import com.tissue.api.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
 import com.tissue.api.workspace.application.service.query.WorkspaceQueryService;
-import com.tissue.api.workspace.domain.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.api.workspace.domain.port.out.WorkspaceCommandRepository;
 
 import deprecated.com.tissue.support.config.WebMvcTestConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 @WebMvcTest(
 	controllers = {
 		AuthenticationController.class,
-		InvitationController.class,
 		WorkspaceController.class,
 		WorkspaceMemberController.class,
 		MemberController.class,
@@ -102,7 +96,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean
-	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	protected WorkspaceMemberManageService workspaceMemberCommandService;
 	@MockBean
 	protected WorkspaceMemberQueryService workspaceMemberQueryService;
 	@MockBean
@@ -117,12 +111,6 @@ public abstract class ControllerTestHelper {
 	protected WorkspaceCommandService workspaceCommandService;
 	@MockBean
 	protected AuthenticationService authenticationService;
-	@MockBean
-	protected InvitationCommandService invitationCommandService;
-	@MockBean
-	protected InvitationQueryService invitationQueryService;
-	@MockBean
-	protected InvitationFinder invitationFinder;
 	@MockBean
 	protected PositionCommandService positionCommandService;
 	@MockBean
@@ -147,8 +135,8 @@ public abstract class ControllerTestHelper {
 	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@MockBean
 	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-	@MockBean
-	protected InvitationRepository invitationRepository;
+	// @MockBean
+	// protected InvitationRepository invitationRepository;
 	@MockBean
 	protected PositionRepository positionRepository;
 	@MockBean

@@ -34,7 +34,7 @@ email:
     failure-url: ${base-url}/members/email-verification/fail
     verification-url: ${base-url}/api/v1/members/email-verification/verify
 
-# move issue under tissue
+# move under tissue.issue
 api:
   issue:
     circular-dependency-cache:
@@ -43,27 +43,36 @@ api:
 
 tissue:
   member:
-  # max-workspace-count: 20
+    policy:
+      max-owned-workspaces: 10
+      max-joined-workspaces: 100
   workspace:
-    max-member-count: 500
-    # max-teams-per-member: 3
-    # max-positions-per-member: 3
-    # max-issue-count: 10000000
-    # max-sprint-count: 1000000
-    # max-issue-field-count: 10000
-    # max-issue-type-count: 10000
+    policy:
+      max-members: 1000
+      # max-teams-per-member: 3
+      # max-positions-per-member: 3
+      # max-projects: 10000
+  project:
+    policy:
+      max-members: 1000
+      # max-issues: 1000000
+      # max-sprints: 100000
+      # max-issue-fields: 1000
+      # max-issue-types: 1000
+      # max-workflows: 1000
   issue:
-    max-reviewers: 10
-    type:
-    # max-field-per-issue-type: 50
-    field:
-      max-enum-options: 100 # Max number of options a custom ENUM type field can have
-      decimal:
-        scale: 6           # normalize 시 소수 자릿수
-        rounding: HALF_UP  # HALF_UP / HALF_EVEN ...
-        digits:
-          integer: 14      # 최대 정수부 자리수
-          fraction: 6      # 최대 소수부 자리수
+    policy:
+      max-reviewers: 10
+      type:
+      # max-fields-per-issue-type: 20
+      field:
+        max-enum-options: 100 # Max number of options a custom ENUM type field can have
+        decimal:
+          scale: 6           # normalize 시 소수 자릿수
+          rounding: HALF_UP  # HALF_UP / HALF_EVEN ...
+          digits:
+            integer: 14      # 최대 정수부 자리수
+            fraction: 6      # 최대 소수부 자리수
 
 logging:
   level:

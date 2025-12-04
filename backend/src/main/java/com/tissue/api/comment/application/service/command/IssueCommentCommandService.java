@@ -36,7 +36,7 @@ public class IssueCommentCommandService {
 	) {
 		Issue issue = issueFinder.findBy(issueKey, workspaceCode);
 
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspaceCode);
 
 		IssueComment parentComment = request.hasParentComment()
 			? (IssueComment)commentRepository.findById(request.parentCommentId())
@@ -67,7 +67,7 @@ public class IssueCommentCommandService {
 		UpdateIssueCommentRequest request,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspaceCode);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,
@@ -89,7 +89,7 @@ public class IssueCommentCommandService {
 		Long commentId,
 		Long memberId
 	) {
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findByMemberIdAndWorkspaceKey(memberId, workspaceCode);
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspaceCode);
 
 		IssueComment comment = commentRepository.findByIdAndIssue_KeyAndIssue_WorkspaceKey(
 				commentId,

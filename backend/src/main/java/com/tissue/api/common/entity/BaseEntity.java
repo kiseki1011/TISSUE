@@ -49,21 +49,21 @@ public abstract class BaseEntity extends BaseDateEntity {
 		}
 	}
 
-	/**
-	 * Disable if there is no restore policy.
-	 */
+	// TODO: 공통 restore는 없애고 필요한 엔티티에서 따로 구현할까?
 	public void restore() {
-		if (softDeleted) {
-			this.softDeleted = false;
-			this.softDeletedAt = null;
+		if (!softDeleted) {
+			return;
 		}
+		this.softDeleted = false;
+		this.softDeletedAt = null;
 	}
 
 	public void unarchive() {
-		if (archived) {
-			this.archived = false;
-			this.archivedAt = null;
+		if (!archived) {
+			return;
 		}
+		this.archived = false;
+		this.archivedAt = null;
 	}
 
 	private static Class<?> effectiveClass(Object o) {
