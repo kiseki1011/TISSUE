@@ -58,9 +58,9 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 		String workspaceKey
 	);
 
-	@Query("SELECT wm.memberId FROM WorkspaceMember wm " +
+	@Query("SELECT wm.member.id FROM WorkspaceMember wm " +
 		"WHERE wm.workspaceKey = :workspaceKey " +
-		"AND wm.memberId IN :candidateIds " +
+		"AND wm.member.id IN :candidateIds " +
 		"AND wm.softDeleted = false")
 	Set<Long> findJoinedMemberIds(
 		@Param("workspaceKey") String workspaceKey,
