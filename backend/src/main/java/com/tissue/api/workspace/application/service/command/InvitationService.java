@@ -8,7 +8,6 @@ import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.project.application.service.ProjectMemberCommandService;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
-import com.tissue.api.workspace.application.dto.response.InvitationResult;
 import com.tissue.api.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.api.workspace.application.port.in.InvitationUseCase;
 import com.tissue.api.workspace.application.port.out.InvitationQueryRepository;
@@ -33,7 +32,7 @@ public class InvitationService implements InvitationUseCase {
 	private final InvitationQueryRepository invitationQueryRepository;
 
 	@Override
-	public InvitationResult accept(Long memberId, Long invitationId) {
+	public void accept(Long memberId, Long invitationId) {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
 		if (invitation.isProcessed()) {
@@ -55,12 +54,10 @@ public class InvitationService implements InvitationUseCase {
 		}
 
 		// TODO: InvitationAcceptedEvent
-
-		return InvitationResult.from(invitation);
 	}
 
 	@Override
-	public InvitationResult reject(Long memberId, Long invitationId) {
+	public void reject(Long memberId, Long invitationId) {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
 		if (invitation.isProcessed()) {
@@ -70,8 +67,6 @@ public class InvitationService implements InvitationUseCase {
 		invitation.reject();
 
 		// TODO: InvitationRejectedEvent
-
-		return InvitationResult.from(invitation);
 	}
 
 	@Override

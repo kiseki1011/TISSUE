@@ -14,18 +14,29 @@ public class WorkspaceInviteLinkSecurityGuard {
 	private final WorkspaceLinkQueryRepository linkRepository;
 	private final WorkspaceSecurityGuard workspaceSecurityGuard;
 
-	public boolean canExpire(String token, Long memberId) {
+	public boolean canExpire(String workspaceKey, String token, Long memberId) {
 		var linkOpt = linkRepository.findByToken(token);
-		// TODO: orElseThrow로 LinkNotFoundException(404) 고려
 		if (linkOpt.isEmpty()) {
 			return false;
 		}
+
 		WorkspaceInviteLink link = linkOpt.get();
 
-		if (link.getCreatedBy().equals(memberId)) {
+		if (workspaceNotMatch(workspaceKey, link)) {
+			return false;
+		}
+		if (isCreator(memberId, link)) {
 			return true;
 		}
 
 		return workspaceSecurityGuard.isAdmin(link.getWorkspaceKey(), memberId);
+	}
+
+	private boolean isCreator(Long memberId, WorkspaceInviteLink link) {
+		return link.getCreatedBy().equals(memberId);
+	}
+
+	private boolean workspaceNotMatch(String workspaceKey, WorkspaceInviteLink link) {
+		return !link.getWorkspaceKey().equals(workspaceKey);
 	}
 }

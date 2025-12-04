@@ -4,14 +4,10 @@ import java.util.Set;
 
 import com.tissue.api.project.domain.enums.ProjectRole;
 
-import lombok.Builder;
-
-@Builder
 public record InviteToProjectCommand(
+	Set<String> emails,
 	String workspaceKey,
 	String projectKey,
-	ProjectRole role,
-	Set<String> emails,
-	Long actorMemberId
+	ProjectRole role
 ) {
 }

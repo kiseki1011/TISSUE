@@ -10,7 +10,7 @@ import com.tissue.api.common.exception.base.BadRequestException;
 import com.tissue.api.member.application.service.command.MemberFinder;
 import com.tissue.api.member.domain.model.Member;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -41,7 +41,7 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 		maxAttempts = MAX_RETRIES,
 		backoff = @Backoff(delay = 300)
 	)
-	public WorkspaceCommandResult create(CreateWorkspaceCommand cmd) {
+	public WorkspaceCommandResponse create(CreateWorkspaceCommand cmd) {
 
 		Member member = memberFinder.findMemberById(cmd.memberId());
 
@@ -54,12 +54,12 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 
 		WorkspaceMember owner = WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER);
 		workspaceMemberCommandRepository.save(owner);
-		
-		return WorkspaceCommandResult.from(savedWorkspace);
+
+		return WorkspaceCommandResponse.from(savedWorkspace);
 	}
 
 	@Recover
-	public WorkspaceCommandResult recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
+	public WorkspaceCommandResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
 		// TODO: WorkspaceKeyCollisionException extends InternalServerException
 		throw new RuntimeException(

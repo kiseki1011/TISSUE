@@ -4,17 +4,17 @@ import java.util.List;
 
 import com.tissue.api.member.domain.model.Member;
 
-public record InviteMembersResult(
+public record InviteMembersResponse(
 	String workspaceKey,
 	List<String> invitedEmails,
 	List<String> skippedEmails
 ) {
-	public static InviteMembersResult from(
+	public static InviteMembersResponse from(
 		String workspaceKey,
 		List<Member> invitedMembers,
 		List<Member> skippedMembers
 	) {
-		return new InviteMembersResult(
+		return new InviteMembersResponse(
 			workspaceKey,
 			invitedMembers.stream()
 				.map(Member::getEmail)

@@ -35,7 +35,7 @@ import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberManageService;
 import com.tissue.api.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
@@ -77,7 +77,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected AuthenticationService authenticationService;
 	@Autowired
-	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	protected WorkspaceMemberManageService workspaceMemberCommandService;
 	@Autowired
 	protected WorkspaceMemberFinder workspaceMemberFinder;
 	@Autowired

@@ -15,7 +15,7 @@ import com.tissue.api.workspace.application.dto.request.CreateProjectInviteLinkC
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.api.workspace.application.dto.request.ExpireLinkCommand;
 import com.tissue.api.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResponse;
 import com.tissue.api.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 import com.tissue.api.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 import com.tissue.api.workspace.application.port.out.WorkspaceLinkCommandRepository;
@@ -78,7 +78,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 	}
 
 	@Override
-	public WorkspaceMemberCommandResult joinViaLink(JoinViaLinkCommand cmd) {
+	public WorkspaceMemberCommandResponse joinViaLink(JoinViaLinkCommand cmd) {
 		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
 			.orElseThrow(() -> new LinkNotFoundException(cmd.workspaceKey(), cmd.token()));
 
@@ -98,7 +98,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 			joinProjects(projectConfigs, workspaceMember);
 		}
 
-		return WorkspaceMemberCommandResult.from(workspaceMember);
+		return WorkspaceMemberCommandResponse.from(workspaceMember);
 
 	}
 
@@ -133,15 +133,20 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 			expiredAt
 		);
 
+		addProjectsToLink(workspaceKey, targetProjects, link);
+
+		linkRepository.save(link);
+		return token;
+	}
+
+	private void addProjectsToLink(String workspaceKey, List<ProjectJoinConfigDto> targetProjects,
+		WorkspaceInviteLink link) {
 		if (targetProjects != null) {
 			for (var dto : targetProjects) {
 				Project project = projectFinder.findBy(dto.projectKey(), workspaceKey);
 				link.addProjectConfig(project, dto.role());
 			}
 		}
-
-		linkRepository.save(link);
-		return token;
 	}
 
 	private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {

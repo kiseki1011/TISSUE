@@ -16,5 +16,5 @@ public interface WorkspaceSecurityExpressions {
 
 	String REQUIRES_GRANTABLE_WORKSPACE_ROLE = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, principal.memberId, #cmd.workspaceRole)";
 
-	String REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN = "@workspaceInviteLinkSecurityGuard.canExpire(#cmd.token, principal.memberId)";
+	String REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN = "@workspaceInviteLinkSecurityGuard.canExpire(#cmd.workspaceKey, #cmd.token, principal.memberId)";
 }

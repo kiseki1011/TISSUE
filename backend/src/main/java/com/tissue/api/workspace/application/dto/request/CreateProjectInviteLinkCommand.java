@@ -13,7 +13,6 @@ public record CreateProjectInviteLinkCommand(
 	String workspaceKey,
 	String projectKey,
 	ProjectRole role,
-	@Nullable Instant expiredAt,
-	Long actorMemberId
+	@Nullable Instant expiredAt
 ) {
 }

@@ -12,26 +12,25 @@ import com.tissue.api.workspace.application.dto.request.RemovePositionCommand;
 import com.tissue.api.workspace.application.dto.request.RemoveTeamCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateDisplayNameCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateRoleCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
 
 @Transactional
 public interface WorkspaceMemberManageUseCase {
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
-	WorkspaceMemberCommandResult updateDisplayName(UpdateDisplayNameCommand cmd);
+	void updateDisplayName(UpdateDisplayNameCommand cmd);
 
 	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
-	WorkspaceMemberCommandResult updateRole(UpdateRoleCommand cmd);
+	void updateRole(UpdateRoleCommand cmd);
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
-	WorkspaceMemberCommandResult addPosition(AddPositionCommand cmd);
+	void addPosition(AddPositionCommand cmd);
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
-	WorkspaceMemberCommandResult removePosition(RemovePositionCommand cmd);
+	void removePosition(RemovePositionCommand cmd);
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
-	WorkspaceMemberCommandResult addTeam(AddTeamCommand cmd);
+	void addTeam(AddTeamCommand cmd);
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
-	WorkspaceMemberCommandResult removeTeam(RemoveTeamCommand cmd);
+	void removeTeam(RemoveTeamCommand cmd);
 }

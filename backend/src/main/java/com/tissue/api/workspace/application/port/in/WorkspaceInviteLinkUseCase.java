@@ -11,25 +11,25 @@ import com.tissue.api.workspace.application.dto.request.CreateProjectInviteLinkC
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
 import com.tissue.api.workspace.application.dto.request.ExpireLinkCommand;
 import com.tissue.api.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
+import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResponse;
 import com.tissue.api.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
 
 public interface WorkspaceInviteLinkUseCase {
 
-	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	@Transactional
+	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN)
 	String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd);
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER + AND + REQUIRES_GRANTABLE_PROJECT_ROLE)
 	@Transactional
+	@PreAuthorize(REQUIRES_PROJECT_WRITER + AND + REQUIRES_GRANTABLE_PROJECT_ROLE)
 	String createProjectLink(CreateProjectInviteLinkCommand cmd);
 
-	@PreAuthorize(REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN)
 	@Transactional
+	@PreAuthorize(REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN)
 	void expireLink(ExpireLinkCommand cmd);
 
 	@Transactional
-	WorkspaceMemberCommandResult joinViaLink(JoinViaLinkCommand cmd);
+	WorkspaceMemberCommandResponse joinViaLink(JoinViaLinkCommand cmd);
 
 	@Transactional(readOnly = true)
 	WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token);

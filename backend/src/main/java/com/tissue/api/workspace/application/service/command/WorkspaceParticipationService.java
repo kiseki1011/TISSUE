@@ -19,9 +19,7 @@ import com.tissue.api.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.api.workspace.application.dto.request.InviteToProjectCommand;
 import com.tissue.api.workspace.application.dto.request.InviteToWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.api.workspace.application.dto.response.InviteMembersResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResult;
-import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
+import com.tissue.api.workspace.application.dto.response.InviteMembersResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.api.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -52,19 +50,19 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	// private final ApplicationEventPublisher eventPublisher;
 
 	@Override
-	public InviteMembersResult inviteToWorkspace(InviteToWorkspaceCommand cmd) {
+	public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
 		return processInvitation(
 			workspace,
 			cmd.emails(),
-			cmd.workspaceRole(),
+			cmd.role(),
 			cmd.targetProjects()
 		);
 	}
 
 	@Override
-	public InviteMembersResult inviteToProject(InviteToProjectCommand cmd) {
+	public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
 		List<ProjectJoinConfigDto> singleProjectConfig = List.of(
@@ -80,21 +78,18 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	}
 
 	@Override
-	public WorkspaceCommandResult leave(String workspaceKey, Long memberId) {
+	public void leave(String workspaceKey, Long memberId) {
 		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspace);
 
 		workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
-
 		workspaceMember.softDelete();
 
 		// TODO: WorkspaceMemberLeftEvent
-
-		return WorkspaceCommandResult.from(workspace);
 	}
 
 	@Override
-	public WorkspaceMemberCommandResult kick(KickWorkspaceMemberCommand cmd) {
+	public void kick(KickWorkspaceMemberCommand cmd) {
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 		WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
 		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
@@ -102,8 +97,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		target.softDelete();
 
 		// TODO: WorkspaceMemberKickedEvent
-
-		return WorkspaceMemberCommandResult.from(target);
 	}
 
 	// TODO: 주석에 UseCase에 포함되지 않고 다른 서비스에서 호출하는 용도로 구현되어 있다는 것을 설명
@@ -130,7 +123,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 			});
 	}
 
-	private InviteMembersResult processInvitation(
+	private InviteMembersResponse processInvitation(
 		Workspace workspace,
 		Set<String> emails,
 		WorkspaceRole roleToGrant,
@@ -141,7 +134,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		List<Member> targetMembers = filterResult.targets();
 		List<Member> skippedMembers = filterResult.skipped();
 
-		// 초대 가능한 대상에게만 초대장 생성 및 저장
 		for (Member member : targetMembers) {
 			Invitation invitation = Invitation.create(workspace, member, roleToGrant);
 
@@ -156,7 +148,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 		// TODO: InvitationSentEvent - targetMembers에게만 발송
 
-		return InviteMembersResult.from(
+		return InviteMembersResponse.from(
 			workspace.getKey(),
 			targetMembers,
 			skippedMembers

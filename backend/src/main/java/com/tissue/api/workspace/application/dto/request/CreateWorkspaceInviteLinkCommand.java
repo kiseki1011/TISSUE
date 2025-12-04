@@ -15,7 +15,6 @@ public record CreateWorkspaceInviteLinkCommand(
 	String workspaceKey,
 	WorkspaceRole workspaceRole,
 	List<ProjectJoinConfigDto> targetProjects,
-	@Nullable Instant expiredAt,
-	Long actorMemberId
+	@Nullable Instant expiredAt
 ) {
 }
