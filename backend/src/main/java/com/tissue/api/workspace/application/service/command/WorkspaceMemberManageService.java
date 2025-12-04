@@ -14,7 +14,7 @@ import com.tissue.api.workspace.application.dto.request.RemoveTeamCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateDisplayNameCommand;
 import com.tissue.api.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
-import com.tissue.api.workspace.application.port.in.WorkspaceMemberCommandUseCase;
+import com.tissue.api.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.api.workspace.domain.WorkspaceMember;
 
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WorkspaceMemberCommandService implements WorkspaceMemberCommandUseCase {
+public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final PositionFinder positionFinder;

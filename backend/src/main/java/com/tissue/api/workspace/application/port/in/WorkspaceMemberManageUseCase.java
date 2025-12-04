@@ -14,10 +14,8 @@ import com.tissue.api.workspace.application.dto.request.UpdateDisplayNameCommand
 import com.tissue.api.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceMemberCommandResult;
 
-// TODO: 더 어울리는 이름 찾기
-//  ex: WorkspaceMemberManagementUseCase, WorkspaceMemberProfileUseCase, WorkspaceMemberInfoUseCase
 @Transactional
-public interface WorkspaceMemberCommandUseCase {
+public interface WorkspaceMemberManageUseCase {
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	WorkspaceMemberCommandResult updateDisplayName(UpdateDisplayNameCommand cmd);

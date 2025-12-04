@@ -39,7 +39,7 @@ import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.api.workspace.application.service.command.WorkspaceCommandService;
 import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.command.WorkspaceMemberCommandService;
+import com.tissue.api.workspace.application.service.command.WorkspaceMemberManageService;
 import com.tissue.api.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.api.workspace.application.service.query.WorkspaceMemberQueryService;
@@ -96,7 +96,7 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected MemberQueryService memberQueryService;
 	@MockBean
-	protected WorkspaceMemberCommandService workspaceMemberCommandService;
+	protected WorkspaceMemberManageService workspaceMemberCommandService;
 	@MockBean
 	protected WorkspaceMemberQueryService workspaceMemberQueryService;
 	@MockBean
