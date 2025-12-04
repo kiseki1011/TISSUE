@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.member.application.port.out.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

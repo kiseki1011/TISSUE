@@ -7,8 +7,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.exception.base.BadRequestException;
-import com.tissue.api.member.application.service.command.MemberFinder;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.application.service.finder.MemberFinder;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.application.dto.request.CreateWorkspaceCommand;
 import com.tissue.api.workspace.application.dto.response.WorkspaceCommandResponse;
 import com.tissue.api.workspace.application.port.in.WorkspaceCreateUseCase;

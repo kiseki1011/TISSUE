@@ -2,7 +2,7 @@ package com.tissue.api.workspace.application.dto.response;
 
 import java.util.List;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 
 public record InviteMembersResponse(
 	String workspaceKey,

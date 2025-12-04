@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.api.workspace.domain.Workspace;
 import com.tissue.api.workspace.domain.WorkspaceMember;

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.member.application.service.command.MemberFinder;
+import com.tissue.api.member.application.service.finder.MemberFinder;
 import com.tissue.api.project.application.service.ProjectMemberCommandService;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;

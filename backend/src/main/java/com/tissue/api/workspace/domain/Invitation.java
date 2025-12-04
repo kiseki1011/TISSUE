@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.enums.ProjectRole;
 import com.tissue.api.workspace.domain.converter.ProjectJoinConfigListConverter;

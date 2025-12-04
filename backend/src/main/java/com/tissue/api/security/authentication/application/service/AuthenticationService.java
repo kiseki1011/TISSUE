@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.presentation.dto.request.PermissionRequest;
+import com.tissue.api.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.api.security.authentication.MemberUserDetails;
 import com.tissue.api.security.authentication.MemberUserDetailsService;
 import com.tissue.api.security.authentication.jwt.JwtTokenService;

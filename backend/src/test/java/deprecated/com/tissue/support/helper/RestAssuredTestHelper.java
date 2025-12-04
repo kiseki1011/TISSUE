@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.tissue.api.member.application.service.command.MemberCommandService;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.member.application.service.MemberCommandService;
+import com.tissue.api.member.application.port.out.MemberRepository;
 import com.tissue.api.position.application.service.command.PositionCommandService;
 import com.tissue.api.position.application.service.command.PositionFinder;
 import com.tissue.api.position.infrastructure.repository.PositionRepository;

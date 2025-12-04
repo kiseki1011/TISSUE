@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.api.workspace.domain.Invitation;
 import com.tissue.api.workspace.domain.enums.InvitationStatus;

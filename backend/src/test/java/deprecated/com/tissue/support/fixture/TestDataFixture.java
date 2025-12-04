@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
 import com.tissue.api.issue.application.port.out.IssueCommandRepository;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.member.application.port.out.MemberRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 

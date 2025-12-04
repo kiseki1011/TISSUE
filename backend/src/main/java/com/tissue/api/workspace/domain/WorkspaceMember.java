@@ -6,7 +6,7 @@ import java.util.Set;
 import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.api.common.entity.BaseEntity;
-import com.tissue.api.member.domain.model.Member;
+import com.tissue.api.member.domain.Member;
 import com.tissue.api.position.domain.model.Position;
 import com.tissue.api.team.domain.model.Team;
 import com.tissue.api.workspace.domain.enums.WorkspaceRole;

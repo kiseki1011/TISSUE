@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.member.domain.model.Member;
-import com.tissue.api.member.infrastructure.repository.MemberRepository;
+import com.tissue.api.member.domain.Member;
+import com.tissue.api.member.application.port.out.MemberRepository;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workspace.application.dto.ProjectJoinConfigDto;
