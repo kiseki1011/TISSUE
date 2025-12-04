@@ -3,8 +3,10 @@ package com.tissue.api.workspace.application.service.command;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,8 +136,12 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		WorkspaceRole roleToGrant,
 		Collection<ProjectJoinConfigDto> projectConfigs
 	) {
-		List<Member> targetMembers = filterInvitableMembers(workspace.getKey(), emails);
+		InvitationFilterResult filterResult = filterInvitableMembers(workspace.getKey(), emails);
 
+		List<Member> targetMembers = filterResult.targets();
+		List<Member> skippedMembers = filterResult.skipped();
+
+		// 초대 가능한 대상에게만 초대장 생성 및 저장
 		for (Member member : targetMembers) {
 			Invitation invitation = Invitation.create(workspace, member, roleToGrant);
 
@@ -148,16 +154,19 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 			invitationRepository.save(invitation);
 		}
 
-		// TODO: Event Publish (Email)
+		// TODO: InvitationSentEvent - targetMembers에게만 발송
 
-		return InviteMembersResult.from(workspace.getKey(), targetMembers);
+		return InviteMembersResult.from(
+			workspace.getKey(),
+			targetMembers,
+			skippedMembers
+		);
 	}
 
-	private List<Member> filterInvitableMembers(String workspaceKey, Set<String> emails) {
+	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
 		List<Member> candidates = memberRepository.findAllByEmailIn(emails);
-
 		if (candidates.isEmpty()) {
-			return Collections.emptyList();
+			return new InvitationFilterResult(Collections.emptyList(), Collections.emptyList());
 		}
 
 		List<Long> candidateIds = candidates.stream()
@@ -167,14 +176,22 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		Set<Long> joinedIds = workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
 		Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
 
-		return candidates.stream()
-			.filter(m -> !joinedIds.contains(m.getId()))
-			.filter(m -> !pendingIds.contains(m.getId()))
-			.toList();
+		Map<Boolean, List<Member>> partitioned = candidates.stream()
+			.collect(Collectors.partitioningBy(m ->
+				!joinedIds.contains(m.getId()) && !pendingIds.contains(m.getId())
+			));
+
+		return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
 	}
 
 	private void checkWorkspaceCapacity(Workspace workspace) {
 		int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
 		workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);
+	}
+
+	private record InvitationFilterResult(
+		List<Member> targets,
+		List<Member> skipped
+	) {
 	}
 }
