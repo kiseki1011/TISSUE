@@ -36,7 +36,7 @@ public class WorkspaceParticipationController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/projects/{projectKey}/invitations}")
+	@PostMapping("/projects/{projectKey}/invitations")
 	public ResponseEntity<InviteMembersResponse> inviteToProject(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
