@@ -7,7 +7,6 @@ import com.tissue.api.issue.domain.Issue;
 
 import lombok.Getter;
 
-// TODO: IssuePolicyConfig를 만들어서 해당 config에서 값을 주입하는 방식 권장
 @Component
 @Getter
 public class IssuePolicy {

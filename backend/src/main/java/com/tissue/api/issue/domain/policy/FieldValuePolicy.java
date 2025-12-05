@@ -3,7 +3,6 @@ package com.tissue.api.issue.domain.policy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-// TODO: IssuePolicy로 옮길까?
 public record FieldValuePolicy(
 	int decimalScale,
 	RoundingMode roundingMode,

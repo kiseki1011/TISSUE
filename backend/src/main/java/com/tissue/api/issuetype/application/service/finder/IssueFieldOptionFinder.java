@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.IssueField;
-import com.tissue.api.issuetype.exception.FieldOptionNotFoundException;
-import com.tissue.api.issuetype.repository.EnumFieldOptionQueryRepository;
+import com.tissue.api.issuetype.domain.exception.FieldOptionNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 

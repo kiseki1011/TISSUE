@@ -1,7 +1,5 @@
 package com.tissue.api.issuetype.domain;
 
-import org.hibernate.annotations.SQLRestriction;
-
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.vo.Label;
 
@@ -20,9 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EnumFieldOption extends BaseEntity {
