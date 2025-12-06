@@ -1,6 +1,9 @@
 package com.tissue.api.issue.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.hibernate.annotations.SQLRestriction;
@@ -16,12 +19,14 @@ import com.tissue.api.issue.domain.exception.IssueSelfReferenceException;
 import com.tissue.api.issue.domain.exception.ParentRequiredException;
 import com.tissue.api.issue.domain.exception.ParentWorkspaceMismatchException;
 import com.tissue.api.issue.domain.exception.StoryPointNotAllowedForHierarchyException;
+import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -33,6 +38,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -100,6 +106,9 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
 
+	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<IssueFieldValue> fieldValues = new ArrayList<>();
+
 	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
 
 	// TODO: 이슈 생성 시 Sprint 설정도 추가
@@ -131,6 +140,21 @@ public class Issue extends BaseEntity {
 		issue.relations = IssueRelations.init();
 
 		return issue;
+	}
+
+	public List<IssueFieldValue> getFieldValues() {
+		return Collections.unmodifiableList(fieldValues);
+	}
+
+	public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
+		return this.fieldValues.stream()
+			.filter(fv -> fv.getField().equals(field))
+			.findFirst()
+			.orElseGet(() -> {
+				IssueFieldValue newValue = IssueFieldValue.of(this, field);
+				this.fieldValues.add(newValue);
+				return newValue;
+			});
 	}
 
 	public void setSprint(@NonNull Sprint sprint) {
