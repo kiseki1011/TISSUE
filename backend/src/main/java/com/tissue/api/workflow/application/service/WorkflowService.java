@@ -9,8 +9,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
@@ -157,7 +155,7 @@ public class WorkflowService {
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
 			.findFirst()
-			// TODO: TransitionNotFoundException vs WorkflowTransitionNotFoundException
+			// TODO: TransitionNotFoundException
 			.orElseThrow(() -> new RuntimeException("Transition not found"));
 
 		workflow.clearGuardsForTransition(transition);
@@ -165,33 +163,16 @@ public class WorkflowService {
 		Set<GuardType> usedTypes = new HashSet<>();
 
 		for (var g : cmd.guards()) {
-			guardRegistry.getGuard(g.guardType());
+			guardRegistry.ensureGuardExists(g.guardType());
 			ensureNoDuplicateGuard(g, usedTypes);
-
-			String paramsJson = serializeParams(g);
-
-			workflow.addTransitionGuard(transition, g.guardType(), paramsJson, g.order());
+			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
 		}
-	}
-
-	private String serializeParams(GuardConfigData guardConfigData) {
-		String paramsJson = null;
-		if (guardConfigData.params() != null && !guardConfigData.params().isEmpty()) {
-			try {
-				paramsJson = new ObjectMapper().writeValueAsString(guardConfigData.params());
-			} catch (JsonProcessingException e) {
-				// TODO: IllegalStateException vs IllegalArgumentException
-				throw new IllegalArgumentException("Invalid guard parameters");
-			}
-		}
-		return paramsJson;
 	}
 
 	private void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
 		boolean dup = !usedTypes.add(g.guardType());
 		if (dup) {
-			// TODO: DuplicateGuardTypeException vs IllegalArgumentException vs IllegalStateException
-			//  예외를 던지지 말고 이 로직을 반복문 안으로 옮기고, 중복된 가드 타입이 있다면 continue하는 식으로 구현할까?
+			// TODO: DuplicateGuardTypeException
 			throw new RuntimeException("Duplicate guard type: " + g.guardType());
 		}
 	}

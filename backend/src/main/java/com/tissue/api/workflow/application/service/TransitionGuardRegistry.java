@@ -18,23 +18,22 @@ public class TransitionGuardRegistry {
 	private final Map<GuardType, TransitionGuard> guards;
 
 	public TransitionGuardRegistry(List<TransitionGuard> guardList) {
-		// Stream으로 Map 생성
-		// key: guard.getType() (GuardType enum)
-		// value: guard 인스턴스
 		this.guards = guardList.stream()
-			.collect(Collectors.toMap(
-				TransitionGuard::getType,
-				Function.identity()
-			));
+			.collect(Collectors.toMap(TransitionGuard::getType, Function.identity()));
 	}
 
-	// GuardType으로 Guard 인스턴스 조회
 	public TransitionGuard getGuard(GuardType type) {
 		TransitionGuard guard = guards.get(type);
 		if (guard == null) {
 			throw new IllegalStateException("Unknown guard type: " + type);
 		}
 		return guard;
+	}
+
+	public void ensureGuardExists(GuardType type) {
+		if (!guards.containsKey(type)) {
+			throw new IllegalArgumentException("Unsupported guard type: " + type);
+		}
 	}
 
 	// 사용 가능한 모든 Guard 타입 목록

@@ -14,7 +14,7 @@ public class GuardContext {
 	private final Issue issue; // 전이 대상 이슈
 	private final WorkflowTransition transition; // 실행하려는 전이
 	private final Long actorMemberId; // 전이를 실행하는 멤버 ID
-	// TODO: projectKey 추가
+	private final String projectKey;
 	private final String workspaceKey; // 전이가 일어나는 워크스페이스 키
 	private final Map<String, Object> params; // Guard별 파라미터 (JSON에서 파싱)
 }

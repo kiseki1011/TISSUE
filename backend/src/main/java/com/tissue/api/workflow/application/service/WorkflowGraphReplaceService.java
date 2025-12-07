@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
@@ -112,7 +111,7 @@ public class WorkflowGraphReplaceService {
 				continue;
 			}
 			WorkflowState created = workflow.addState(
-				Label.of(s.label()),
+				s.label(),
 				s.description(),
 				s.color(),
 				s.category()
@@ -159,7 +158,7 @@ public class WorkflowGraphReplaceService {
 
 			// 기본 속성 업데이트
 			// TODO: 기본 속성 변경은 실시간으로 반영되도록 따로 분리 고려
-			workflow.renameState(state, Label.of(cmd.label()));
+			workflow.renameState(state, cmd.label());
 			state.updateDescription(cmd.description());
 			state.updateColor(cmd.color());
 
@@ -232,7 +231,7 @@ public class WorkflowGraphReplaceService {
 		WorkflowState src,
 		WorkflowState trg
 	) {
-		workflow.addTransition(Label.of(cmd.label()), cmd.description(), src, trg);
+		workflow.addTransition(cmd.label(), cmd.description(), src, trg);
 	}
 
 	private Map<Long, WorkflowTransition> indexExistingTransitions(Workflow wf) {

@@ -4,6 +4,7 @@ import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.lang.Nullable;
 
@@ -97,7 +98,11 @@ public class WorkflowTransition extends BaseEntity {
 	}
 
 	// Guard 추가 (GuardType enum 사용)
-	void addGuard(@NonNull GuardType guardType, @Nullable String params, int order) {
+	void addGuard(
+		@NonNull GuardType guardType,
+		@Nullable Map<String, Object> params,
+		int order
+	) {
 		TransitionGuardConfig config = TransitionGuardConfig.create(
 			this,
 			guardType,
