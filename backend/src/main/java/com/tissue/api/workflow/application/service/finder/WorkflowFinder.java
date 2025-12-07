@@ -3,12 +3,12 @@ package com.tissue.api.workflow.application.service.finder;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.project.domain.Project;
+import com.tissue.api.workflow.application.port.out.WorkflowRepository;
+import com.tissue.api.workflow.application.port.out.WorkflowStateRepository;
+import com.tissue.api.workflow.application.port.out.WorkflowTransitionRepository;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
-import com.tissue.api.workflow.repository.WorkflowRepository;
-import com.tissue.api.workflow.repository.WorkflowStateRepository;
-import com.tissue.api.workflow.repository.WorkflowTransitionRepository;
 
 import lombok.RequiredArgsConstructor;
 

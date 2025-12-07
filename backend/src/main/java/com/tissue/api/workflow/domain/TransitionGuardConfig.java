@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.NoArchiveEntity;
-import com.tissue.api.workflow.domain.gaurd.GuardType;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -16,8 +16,8 @@ import com.tissue.api.workflow.domain.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
-import com.tissue.api.workflow.domain.gaurd.GuardContext;
-import com.tissue.api.workflow.domain.gaurd.TransitionGuard;
+import com.tissue.api.workflow.domain.guard.GuardContext;
+import com.tissue.api.workflow.domain.guard.TransitionGuard;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

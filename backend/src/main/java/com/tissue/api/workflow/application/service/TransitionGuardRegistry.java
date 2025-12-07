@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.workflow.domain.gaurd.GuardType;
-import com.tissue.api.workflow.domain.gaurd.TransitionGuard;
+import com.tissue.api.workflow.domain.guard.GuardType;
+import com.tissue.api.workflow.domain.guard.TransitionGuard;
 
+// TODO: 도메인 서비스로 이동?
 @Component
 public class TransitionGuardRegistry {
 
@@ -36,7 +37,6 @@ public class TransitionGuardRegistry {
 		}
 	}
 
-	// 사용 가능한 모든 Guard 타입 목록
 	public List<GuardType> getAvailableGuardTypes() {
 		return new ArrayList<>(guards.keySet());
 	}

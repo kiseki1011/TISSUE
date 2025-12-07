@@ -10,7 +10,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.workflow.domain.gaurd.GuardType;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

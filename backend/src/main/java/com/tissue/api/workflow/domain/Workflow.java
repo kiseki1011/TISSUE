@@ -14,9 +14,9 @@ import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.workflow.domain.gaurd.GuardType;
-import com.tissue.api.workflow.exception.DuplicateStateException;
-import com.tissue.api.workflow.exception.DuplicateTransitionException;
+import com.tissue.api.workflow.domain.exception.DuplicateStateException;
+import com.tissue.api.workflow.domain.exception.DuplicateTransitionException;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
