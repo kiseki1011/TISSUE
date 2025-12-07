@@ -189,4 +189,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		@Param("sprint") Sprint sprint,
 		@Param("doneCategory") StateCategory doneCategory
 	);
+
+	@Query("SELECT COUNT(i) > 0 FROM Issue i " +
+		"WHERE i.currentState.id IN :stateIds " +
+		"AND i.softDeleted = false")
+	boolean existsByCurrentStateIdIn(@Param("stateIds") Collection<Long> stateIds);
 }

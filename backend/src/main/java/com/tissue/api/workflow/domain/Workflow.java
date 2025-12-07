@@ -1,6 +1,7 @@
 package com.tissue.api.workflow.domain;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
+import static com.tissue.api.issue.domain.enums.StateCategory.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
 import com.tissue.api.workflow.exception.DuplicateStateException;
@@ -26,6 +28,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Version;
@@ -34,9 +37,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("archived = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workflow extends BaseEntity {
@@ -61,13 +63,14 @@ public class Workflow extends BaseEntity {
 	@Column(nullable = false)
 	private ColorType color;
 
-	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
+	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST)
 	private List<WorkflowState> states = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST, orphanRemoval = false)
+	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkflowTransition> transitions = new ArrayList<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "initial_state_id")
 	private WorkflowState initialState;
 
 	@Column(nullable = false)
@@ -93,14 +96,22 @@ public class Workflow extends BaseEntity {
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color,
-		boolean initial,
-		boolean terminal
+		@NonNull StateCategory stateCategory
 	) {
-		ensureNotSystemProvided();
 		ensureUniqueStateLabel(label);
 
-		WorkflowState state = WorkflowState.of(label, description, color, initial, terminal);
-		attachState(state);
+		// TODO: 그냥 initialState의 존재 여부를 검사하면 되는거 아님?
+		if (stateCategory.isTodo()) {
+			ensureNoExistingTodoState();
+		}
+
+		WorkflowState state = WorkflowState.of(label, description, color, stateCategory);
+		state.attachToWorkflow(this);
+		states.add(state);
+
+		if (stateCategory.isTodo()) {
+			this.initialState = state;
+		}
 
 		return state;
 	}
@@ -111,14 +122,43 @@ public class Workflow extends BaseEntity {
 		@NonNull WorkflowState source,
 		@NonNull WorkflowState target
 	) {
-		ensureNotSystemProvided();
 		ensureUniqueTransitionLabelForSource(label, source);
 		ensureNoDuplicateEdge(source, target);
 
 		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target);
-		attachTransition(transition);
+		transition.attachToWorkflow(this);
+		transitions.add(transition);
 
 		return transition;
+	}
+
+	public List<WorkflowState> getActiveStates() {
+		return states.stream()
+			.filter(s -> !s.isArchived())
+			.toList();
+	}
+
+	public List<WorkflowState> getStatesByCategory(StateCategory category) {
+		return states.stream()
+			.filter(s -> !s.isArchived() && s.getCategory() == category)
+			.toList();
+	}
+
+	private void ensureNoExistingTodoState() {
+		boolean hasTodo = !getStatesByCategory(TODO).isEmpty();
+		if (hasTodo) {
+			throw new RuntimeException("Workflow can have only one TODO state.");
+		}
+	}
+
+	public void setInitialState(@NonNull WorkflowState state) {
+		if (!states.contains(state)) {
+			throw new IllegalArgumentException("State must belong to this workflow.");
+		}
+		if (state.getCategory().isNotTodo()) {
+			throw new IllegalArgumentException("Initial state must be of category TODO.");
+		}
+		this.initialState = state;
 	}
 
 	public void setAsSystemProvided() {
@@ -126,7 +166,6 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void rename(@NonNull Label label) {
-		ensureNotSystemProvided();
 		this.label = label;
 	}
 
@@ -138,50 +177,28 @@ public class Workflow extends BaseEntity {
 		this.color = color;
 	}
 
-	public void updateInitialState(@NonNull WorkflowState newInitial) {
-		ensureNotSystemProvided();
+	public void changeInitialState(@NonNull WorkflowState newInitState) {
 		for (WorkflowState s : states) {
-			s.unmarkInitial();
+			this.initialState.categorizeAs(IN_PROGRESS);
 		}
-		newInitial.markInitial();
-		this.initialState = newInitial;
+		newInitState.categorizeAs(TODO);
+		this.initialState = newInitState;
 	}
 
-	public List<WorkflowState> getTerminalStates() {
-		return states.stream()
-			.filter(WorkflowState::isTerminal)
-			.toList();
-	}
-
-	// TODO: 삭제 금지 정책을 정하자
-	//  전략 1: 하나 이상의 Issue가 intial status가 아니면서 Workflow를 진행했으면 삭제 불가
-	//  전략 2: 하나 이상의 IssueType이 해당 Workflow를 선택했으면 삭제 불가
-	//  전략 3: 전략 1 + 전략 2 둘다 사용
-
-	// TODO: soft delete vs hard delete
-	//  어떤게 좋을까? Workspace, Project, Issue 등과 같은 리소스는 soft-delete이 이해가지만,
-	//  Workflow도 soft-delete 정책을 사용하는게 좋을까?
-	public void delete() {
-		ensureNotSystemProvided();
-		softDelete();
-		states.forEach(WorkflowState::softDelete);
-		transitions.forEach(WorkflowTransition::softDelete);
-	}
-
-	public void softDeleteState(WorkflowState state) {
-		ensureNotSystemProvided();
+	public void softDeleteState(@NonNull WorkflowState state) {
+		if (state.getCategory().isTodo()) {
+			// TODO: 예외 추가하기
+			throw new RuntimeException("Cannot delete the TODO state. It is the initial state.");
+		}
 		state.softDelete();
 		states.remove(state);
 	}
 
-	public void softDeleteTransition(WorkflowTransition transition) {
-		ensureNotSystemProvided();
-		transition.softDelete();
+	public void deleteTransition(@NonNull WorkflowTransition transition) {
 		transitions.remove(transition);
 	}
 
 	public void renameState(@NonNull WorkflowState state, @NonNull Label newLabel) {
-		ensureNotSystemProvided();
 		if (state.getLabel().equals(newLabel)) {
 			return;
 		}
@@ -190,7 +207,6 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
-		ensureNotSystemProvided();
 		if (transition.getLabel().equals(newLabel)) {
 			return;
 		}
@@ -198,25 +214,54 @@ public class Workflow extends BaseEntity {
 		transition.updateLabel(newLabel);
 	}
 
-	public void updateStateTerminalFlag(@NonNull WorkflowState state, boolean terminalFlag) {
-		ensureNotSystemProvided();
-		if (state.isTerminal() == terminalFlag) {
+	public void changeStateCategory(WorkflowState state, StateCategory newCategory) {
+		if (state.getCategory() == newCategory) {
 			return;
 		}
-		if (terminalFlag) {
-			state.markTerminal();
-			return;
+		if (newCategory.isTodo()) {
+			ensureNoExistingTodoState();
+			this.initialState = state;
 		}
-		state.unmarkTerminal();
+		if (state.getCategory().isTodo()) {
+			this.initialState = null;
+		}
+
+		state.categorizeAs(newCategory);
 	}
 
+	// public void categorizeStateAsTodo(@NonNull WorkflowState state) {
+	// 	if (state.getCategory().isTodo()) {
+	// 		return;
+	// 	}
+	// 	state.categorizeAs(TODO);
+	// 	this.initialState = state;
+	// }
+	//
+	// public void categorizeStateAsDone(@NonNull WorkflowState state) {
+	// 	if (state.getCategory().isDone()) {
+	// 		return;
+	// 	}
+	// 	if (state.getCategory().isTodo()) {
+	// 		this.initialState = null;
+	// 	}
+	// 	state.categorizeAs(DONE);
+	// }
+	//
+	// public void categorizeStateAsInProgress(@NonNull WorkflowState state) {
+	// 	if (state.getCategory().isInProgress()) {
+	// 		return;
+	// 	}
+	// 	if (state.getCategory().isTodo()) {
+	// 		this.initialState = null;
+	// 	}
+	// 	state.categorizeAs(IN_PROGRESS);
+	// }
+
 	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
-		ensureNotSystemProvided();
 		transition.rewireSource(newSource);
 	}
 
 	public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowState newTarget) {
-		ensureNotSystemProvided();
 		transition.rewireTarget(newTarget);
 	}
 
@@ -231,26 +276,6 @@ public class Workflow extends BaseEntity {
 
 	public void clearGuardsForTransition(@NonNull WorkflowTransition transition) {
 		transition.clearGuards();
-	}
-
-	private void attachState(WorkflowState state) {
-		state.attachToWorkflow(this);
-		states.add(state);
-
-		if (state.isInitial()) {
-			updateInitialState(state);
-		}
-	}
-
-	private void attachTransition(WorkflowTransition transition) {
-		transition.attachToWorkflow(this);
-		transitions.add(transition);
-	}
-
-	private void ensureNotSystemProvided() {
-		if (systemProvided) {
-			throw new RuntimeException("Cannot modify system provided workflow.");
-		}
 	}
 
 	private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {

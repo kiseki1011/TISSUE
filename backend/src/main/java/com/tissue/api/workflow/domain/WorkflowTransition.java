@@ -5,7 +5,6 @@ import static com.tissue.api.common.util.TextNormalizer.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -30,9 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition extends BaseEntity {
@@ -110,7 +107,6 @@ public class WorkflowTransition extends BaseEntity {
 		guardConfigs.add(config);
 	}
 
-	// 모든 Guard 제거
 	void clearGuards() {
 		guardConfigs.clear();
 	}

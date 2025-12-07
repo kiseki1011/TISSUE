@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.application.finder;
+package com.tissue.api.workflow.application.service.finder;
 
 import org.springframework.stereotype.Component;
 

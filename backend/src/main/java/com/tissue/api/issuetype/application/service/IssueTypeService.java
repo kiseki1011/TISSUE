@@ -20,7 +20,7 @@ import com.tissue.api.issuetype.application.service.validator.IssueTypeValidator
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.workflow.application.finder.WorkflowFinder;
+import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.Workflow;
 
 import lombok.RequiredArgsConstructor;

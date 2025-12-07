@@ -3,8 +3,9 @@ package com.tissue.api.workflow.application.dto;
 import java.util.List;
 
 import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.issue.domain.enums.StateCategory;
+import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.service.EntityRef;
-import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 
 public record ReplaceWorkflowGraphCommand(
 	String workspaceKey,
@@ -19,8 +20,7 @@ public record ReplaceWorkflowGraphCommand(
 		String label,
 		String description,
 		ColorType color,
-		boolean initial,
-		boolean terminal
+		StateCategory category
 	) {
 		public WorkflowGraphValidator.StateValidationData toValidationData() {
 			String key = ref.isExisting()

@@ -10,14 +10,19 @@ public enum StateCategory {
 	IN_PROGRESS,
 	DONE;
 
-	public static StateCategory derive(boolean initial, boolean terminal) {
-		if (initial) {
-			return TODO;
-		}
-		if (terminal) {
-			return DONE;
-		}
+	public boolean isDone() {
+		return this == DONE;
+	}
 
-		return IN_PROGRESS;
+	public boolean isInProgress() {
+		return this == IN_PROGRESS;
+	}
+
+	public boolean isTodo() {
+		return this == TODO;
+	}
+
+	public boolean isNotTodo() {
+		return !isTodo();
 	}
 }

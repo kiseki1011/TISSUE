@@ -21,12 +21,12 @@ import com.tissue.api.workflow.application.dto.DeleteWorkflowCommand;
 import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
 import com.tissue.api.workflow.application.dto.UpdateStateCommand;
 import com.tissue.api.workflow.application.dto.UpdateTransitionCommand;
-import com.tissue.api.workflow.application.finder.WorkflowFinder;
+import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
+import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.gaurd.GuardType;
-import com.tissue.api.workflow.domain.service.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.service.WorkflowValidator;
 import com.tissue.api.workflow.presentation.dto.response.WorkflowResponse;
 import com.tissue.api.workflow.repository.WorkflowRepository;
@@ -123,7 +123,7 @@ public class WorkflowService {
 		// TODO: Workflow의 softDelete 주석 참고
 		// workflowValidator.ensureDeletable();
 
-		workflow.delete();
+		workflow.archive();
 
 		return WorkflowResponse.from(workflow);
 	}
