@@ -1,10 +1,10 @@
 package com.tissue.api.workflow.domain;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
-import static com.tissue.api.issue.domain.enums.StateCategory.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
@@ -31,6 +31,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -69,7 +70,7 @@ public class Workflow extends BaseEntity {
 	@OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkflowTransition> transitions = new ArrayList<>();
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "initial_state_id")
 	private WorkflowState initialState;
 
@@ -99,11 +100,6 @@ public class Workflow extends BaseEntity {
 		@NonNull StateCategory stateCategory
 	) {
 		ensureUniqueStateLabel(label);
-
-		// TODO: 그냥 initialState의 존재 여부를 검사하면 되는거 아님?
-		if (stateCategory.isTodo()) {
-			ensureNoExistingTodoState();
-		}
 
 		WorkflowState state = WorkflowState.of(label, description, color, stateCategory);
 		state.attachToWorkflow(this);
@@ -144,8 +140,8 @@ public class Workflow extends BaseEntity {
 			.toList();
 	}
 
-	private void ensureNoExistingTodoState() {
-		boolean hasTodo = !getStatesByCategory(TODO).isEmpty();
+	private void ensureNoExistingInitialState() {
+		boolean hasTodo = initialState != null;
 		if (hasTodo) {
 			throw new RuntimeException("Workflow can have only one TODO state.");
 		}
@@ -175,14 +171,6 @@ public class Workflow extends BaseEntity {
 
 	public void updateColor(@Nullable ColorType color) {
 		this.color = color;
-	}
-
-	public void changeInitialState(@NonNull WorkflowState newInitState) {
-		for (WorkflowState s : states) {
-			this.initialState.categorizeAs(IN_PROGRESS);
-		}
-		newInitState.categorizeAs(TODO);
-		this.initialState = newInitState;
 	}
 
 	public void softDeleteState(@NonNull WorkflowState state) {
@@ -219,7 +207,6 @@ public class Workflow extends BaseEntity {
 			return;
 		}
 		if (newCategory.isTodo()) {
-			ensureNoExistingTodoState();
 			this.initialState = state;
 		}
 		if (state.getCategory().isTodo()) {
@@ -228,34 +215,6 @@ public class Workflow extends BaseEntity {
 
 		state.categorizeAs(newCategory);
 	}
-
-	// public void categorizeStateAsTodo(@NonNull WorkflowState state) {
-	// 	if (state.getCategory().isTodo()) {
-	// 		return;
-	// 	}
-	// 	state.categorizeAs(TODO);
-	// 	this.initialState = state;
-	// }
-	//
-	// public void categorizeStateAsDone(@NonNull WorkflowState state) {
-	// 	if (state.getCategory().isDone()) {
-	// 		return;
-	// 	}
-	// 	if (state.getCategory().isTodo()) {
-	// 		this.initialState = null;
-	// 	}
-	// 	state.categorizeAs(DONE);
-	// }
-	//
-	// public void categorizeStateAsInProgress(@NonNull WorkflowState state) {
-	// 	if (state.getCategory().isInProgress()) {
-	// 		return;
-	// 	}
-	// 	if (state.getCategory().isTodo()) {
-	// 		this.initialState = null;
-	// 	}
-	// 	state.categorizeAs(IN_PROGRESS);
-	// }
 
 	public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
 		transition.rewireSource(newSource);
@@ -268,7 +227,7 @@ public class Workflow extends BaseEntity {
 	public void addTransitionGuard(
 		@NonNull WorkflowTransition transition,
 		@NonNull GuardType guardType,
-		@Nullable String params,
+		@Nullable Map<String, Object> params,
 		int order
 	) {
 		transition.addGuard(guardType, params, order);
