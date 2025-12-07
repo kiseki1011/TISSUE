@@ -5,7 +5,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.JsonNullables;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
+import com.tissue.api.workflow.application.dto.UpdateWorkflowCommand;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,8 +16,8 @@ public record PatchWorkflowRequest(
 	JsonNullable<@Size(max = 255) String> description,
 	JsonNullable<@NotNull ColorType> color
 ) {
-	public PatchWorkflowCommand toCommand(String workspaceKey, Long id) {
-		return PatchWorkflowCommand.builder()
+	public UpdateWorkflowCommand toCommand(String workspaceKey, Long id) {
+		return UpdateWorkflowCommand.builder()
 			.workspaceKey(workspaceKey)
 			.id(id)
 			.label(JsonNullables.map(label, Label::of))

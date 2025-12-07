@@ -6,6 +6,8 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
+import com.tissue.api.workflow.application.dto.StateDefinition;
+import com.tissue.api.workflow.application.dto.TransitionDefinition;
 import com.tissue.api.workflow.domain.service.EntityRef;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -61,7 +63,7 @@ public record ReplaceWorkflowGraphRequest(
 			workflowId,
 			version,
 			replaceStatusRequests.stream()
-				.map(s -> new ReplaceWorkflowGraphCommand.StateCommand(
+				.map(s -> new StateDefinition(
 					new EntityRef(s.id(), s.tempKey()),
 					s.label(),
 					s.description(),
@@ -71,7 +73,7 @@ public record ReplaceWorkflowGraphRequest(
 				))
 				.toList(),
 			replaceTransitionRequests.stream()
-				.map(t -> new ReplaceWorkflowGraphCommand.TransitionCommand(
+				.map(t -> new TransitionDefinition(
 					new EntityRef(t.id(), t.tempKey()),
 					t.label(),
 					t.description(),

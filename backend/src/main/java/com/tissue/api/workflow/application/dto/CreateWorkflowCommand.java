@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
-import com.tissue.api.workflow.domain.service.EntityRef;
 
 import lombok.Builder;
 
@@ -16,37 +14,7 @@ public record CreateWorkflowCommand(
 	Label label,
 	String description,
 	ColorType color,
-	List<StateCommand> stateCommands,
-	List<TransitionCommand> transitionCommands
+	List<StateDefinition> stateDefinitions,
+	List<TransitionDefinition> transitionDefinitions
 ) {
-	public record StateCommand(
-		EntityRef ref,
-		Label label,
-		String description,
-		ColorType color,
-		boolean initial,
-		boolean terminal
-	) {
-		public WorkflowGraphValidator.StateValidationData toValidationData() {
-			return new WorkflowGraphValidator.StateValidationData(
-				ref.tempKey(),
-				initial,
-				terminal
-			);
-		}
-	}
-
-	public record TransitionCommand(
-		Label label,
-		String description,
-		EntityRef sourceRef,
-		EntityRef targetRef
-	) {
-		public WorkflowGraphValidator.TransitionValidationData toValidationData() {
-			return new WorkflowGraphValidator.TransitionValidationData(
-				sourceRef.tempKey(),
-				targetRef.tempKey()
-			);
-		}
-	}
 }

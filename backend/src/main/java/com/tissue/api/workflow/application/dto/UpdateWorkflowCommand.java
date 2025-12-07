@@ -8,7 +8,7 @@ import com.tissue.api.common.vo.Label;
 import lombok.Builder;
 
 @Builder
-public record PatchWorkflowCommand(
+public record UpdateWorkflowCommand(
 	String workspaceKey,
 	String projectKey,
 	Long id,

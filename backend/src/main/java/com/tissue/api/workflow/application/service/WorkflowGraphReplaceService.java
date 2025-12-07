@@ -16,6 +16,8 @@ import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.dto.ReplaceWorkflowGraphCommand;
+import com.tissue.api.workflow.application.dto.StateDefinition;
+import com.tissue.api.workflow.application.dto.TransitionDefinition;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.Workflow;
@@ -66,13 +68,13 @@ public class WorkflowGraphReplaceService {
 	public WorkflowResponse replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
 		Workflow workflow = loadWorkflowAndCheckVersion(cmd);
 
-		StateResolver stateResolver = buildStateResolver(workflow, cmd.stateCommands());
+		StateResolver stateResolver = buildStateResolver(workflow, cmd.stateDefinitions());
 
-		syncTransitions(workflow, cmd.transitionCommands(), stateResolver);
+		syncTransitions(workflow, cmd.transitionDefinitions(), stateResolver);
 
-		applyStateAttributesUpdates(workflow, cmd.stateCommands(), stateResolver);
+		applyStateAttributesUpdates(workflow, cmd.stateDefinitions(), stateResolver);
 
-		resolveAndSetInitial(workflow, cmd.stateCommands(), stateResolver);
+		resolveAndSetInitial(workflow, cmd.stateDefinitions(), stateResolver);
 
 		deleteRemovedStates(workflow, cmd);
 
@@ -96,7 +98,7 @@ public class WorkflowGraphReplaceService {
 
 	private StateResolver buildStateResolver(
 		Workflow workflow,
-		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands
+		List<StateDefinition> stateCommands
 	) {
 		Map<Long, WorkflowState> existingStatuses = new HashMap<>();
 		Map<String, WorkflowState> newStatuses = new HashMap<>();
@@ -106,7 +108,7 @@ public class WorkflowGraphReplaceService {
 		}
 
 		for (var s : stateCommands) {
-			if (s.ref().isExisting()) {
+			if (s.stateRef().isExisting()) {
 				continue;
 			}
 			WorkflowState created = workflow.addState(
@@ -115,7 +117,7 @@ public class WorkflowGraphReplaceService {
 				s.color(),
 				s.category()
 			);
-			newStatuses.put(s.ref().tempKey(), created);
+			newStatuses.put(s.stateRef().tempKey(), created);
 		}
 
 		return new StateResolver(existingStatuses, newStatuses);
@@ -123,17 +125,17 @@ public class WorkflowGraphReplaceService {
 
 	private void syncTransitions(
 		Workflow workflow,
-		List<ReplaceWorkflowGraphCommand.TransitionCommand> transitionCommands,
+		List<TransitionDefinition> transitionCommands,
 		StateResolver stateResolver
 	) {
 		deleteRemovedTransitions(workflow, transitionCommands);
 		Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(workflow);
 
 		for (var cmd : transitionCommands) {
-			WorkflowState src = stateResolver.resolve(cmd.source());
-			WorkflowState trg = stateResolver.resolve(cmd.target());
+			WorkflowState src = stateResolver.resolve(cmd.sourceStateRef());
+			WorkflowState trg = stateResolver.resolve(cmd.targetStateRef());
 
-			if (cmd.ref().isExisting()) {
+			if (cmd.transitionRef().isExisting()) {
 				rewireExistingTransition(workflow, cmd, src, trg, existingTransitions);
 				continue;
 			}
@@ -144,16 +146,16 @@ public class WorkflowGraphReplaceService {
 
 	private void applyStateAttributesUpdates(
 		Workflow workflow,
-		List<ReplaceWorkflowGraphCommand.StateCommand> cmds,
+		List<StateDefinition> cmds,
 		StateResolver resolver
 	) {
 		for (var cmd : cmds) {
 			// 신규 생성된 건 이미 addState 할 때 값이 들어갔으므로 패스
-			if (!cmd.ref().isExisting()) {
+			if (!cmd.stateRef().isExisting()) {
 				continue;
 			}
 
-			WorkflowState state = resolver.resolve(cmd.ref());
+			WorkflowState state = resolver.resolve(cmd.stateRef());
 
 			// 기본 속성 업데이트
 			// TODO: 기본 속성 변경은 실시간으로 반영되도록 따로 분리 고려
@@ -169,7 +171,7 @@ public class WorkflowGraphReplaceService {
 
 	private void resolveAndSetInitial(
 		Workflow workflow,
-		List<ReplaceWorkflowGraphCommand.StateCommand> stateCommands,
+		List<StateDefinition> stateCommands,
 		StateResolver stateResolver
 	) {
 		var todoCmds = stateCommands.stream()
@@ -182,7 +184,7 @@ public class WorkflowGraphReplaceService {
 			throw new IllegalArgumentException("Workflow must have exactly one 'TODO' state.");
 		}
 
-		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).ref());
+		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).stateRef());
 
 		workflow.setInitialState(todoState);
 	}
@@ -198,8 +200,8 @@ public class WorkflowGraphReplaceService {
 	}
 
 	private Set<WorkflowState> findStatesToDelete(Workflow workflow, ReplaceWorkflowGraphCommand cmd) {
-		Set<Long> keepStateIds = cmd.stateCommands().stream()
-			.map(s -> s.ref().id())
+		Set<Long> keepStateIds = cmd.stateDefinitions().stream()
+			.map(s -> s.stateRef().id())
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
@@ -210,14 +212,15 @@ public class WorkflowGraphReplaceService {
 
 	private void rewireExistingTransition(
 		Workflow workflow,
-		ReplaceWorkflowGraphCommand.TransitionCommand cmd,
+		TransitionDefinition cmd,
 		WorkflowState src,
 		WorkflowState trg,
 		Map<Long, WorkflowTransition> existingTransitions
 	) {
-		WorkflowTransition transition = existingTransitions.get(cmd.ref().id());
+		WorkflowTransition transition = existingTransitions.get(cmd.transitionRef().id());
 		if (transition == null) {
-			throw new IllegalArgumentException("Invalid workflow transition id '%d'.".formatted(cmd.ref().id()));
+			throw new IllegalArgumentException(
+				"Invalid workflow transition id '%d'.".formatted(cmd.transitionRef().id()));
 		}
 		workflow.rewireTransitionSource(transition, src);
 		workflow.rewireTransitionTarget(transition, trg);
@@ -225,7 +228,7 @@ public class WorkflowGraphReplaceService {
 
 	private void addNewTransition(
 		Workflow workflow,
-		ReplaceWorkflowGraphCommand.TransitionCommand cmd,
+		TransitionDefinition cmd,
 		WorkflowState src,
 		WorkflowState trg
 	) {
@@ -244,10 +247,10 @@ public class WorkflowGraphReplaceService {
 
 	private void deleteRemovedTransitions(
 		Workflow workflow,
-		List<ReplaceWorkflowGraphCommand.TransitionCommand> transitionCommands
+		List<TransitionDefinition> transitionCommands
 	) {
 		Set<Long> reqIds = transitionCommands.stream()
-			.map(t -> t.ref().id())
+			.map(t -> t.transitionRef().id())
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 

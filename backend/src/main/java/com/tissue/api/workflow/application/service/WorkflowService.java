@@ -15,12 +15,12 @@ import com.tissue.api.common.util.Patchers;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.GuardConfigData;
+import com.tissue.api.workflow.application.dto.ArchiveWorkflowCommand;
 import com.tissue.api.workflow.application.dto.ConfigureTransitionGuardsCommand;
 import com.tissue.api.workflow.application.dto.CreateWorkflowCommand;
-import com.tissue.api.workflow.application.dto.DeleteWorkflowCommand;
-import com.tissue.api.workflow.application.dto.PatchWorkflowCommand;
 import com.tissue.api.workflow.application.dto.UpdateStateCommand;
 import com.tissue.api.workflow.application.dto.UpdateTransitionCommand;
+import com.tissue.api.workflow.application.dto.UpdateWorkflowCommand;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
 import com.tissue.api.workflow.domain.Workflow;
@@ -48,17 +48,14 @@ public class WorkflowService {
 	private final WorkflowGraphValidator graphValidator;
 	private final TransitionGuardRegistry guardRegistry;
 
-	// TODO: spring-retry 적용
+	// TODO: spring-retry 필요한가?
+	//  어차피 중복될 확률은 매우 적으니깐 그냥 애플리케이션 레벨 검증만 할까?
+	//  만약 실패하면 그냥 실패하게 냅두거나 간단한게 GlobalExceptionHandler에서 간단하게 처리
 	@Transactional
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
 		workflowValidator.ensureLabelUnique(project, cmd.label());
-		graphValidator.validateWorkflowGraphStructure(
-			cmd.stateCommands().stream().map(s -> s.toValidationData()).toList(),
-			cmd.transitionCommands().stream().map(t -> t.toValidationData()).toList()
-		);
 
 		try {
 			Workflow workflow = workflowRepository.save(
@@ -66,20 +63,19 @@ public class WorkflowService {
 			);
 
 			Map<String, WorkflowState> stateByTempKey = new HashMap<>();
-			for (CreateWorkflowCommand.StateCommand s : cmd.stateCommands()) {
-				WorkflowState status = workflow.addState(
+			for (var s : cmd.stateDefinitions()) {
+				WorkflowState state = workflow.addState(
 					s.label(),
 					s.description(),
 					s.color(),
-					s.initial(),
-					s.terminal()
+					s.category()
 				);
-				stateByTempKey.put(s.ref().tempKey(), status);
+				stateByTempKey.put(s.stateRef().tempKey(), state);
 			}
 
-			for (CreateWorkflowCommand.TransitionCommand t : cmd.transitionCommands()) {
-				WorkflowState source = stateByTempKey.get(t.sourceRef().tempKey());
-				WorkflowState target = stateByTempKey.get(t.targetRef().tempKey());
+			for (var t : cmd.transitionDefinitions()) {
+				WorkflowState source = stateByTempKey.get(t.sourceStateRef().tempKey());
+				WorkflowState target = stateByTempKey.get(t.targetStateRef().tempKey());
 
 				workflow.addTransition(t.label(), t.description(), source, target);
 			}
@@ -96,8 +92,7 @@ public class WorkflowService {
 	}
 
 	@Transactional
-	public WorkflowResponse patch(PatchWorkflowCommand cmd) {
-
+	public WorkflowResponse update(UpdateWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.id());
 
@@ -107,7 +102,6 @@ public class WorkflowService {
 				workflow.rename(newLabel);
 			}
 		});
-
 		Patchers.apply(cmd.description(), workflow::updateDescription);
 		Patchers.apply(cmd.color(), workflow::updateColor);
 
@@ -115,12 +109,14 @@ public class WorkflowService {
 	}
 
 	@Transactional
-	public WorkflowResponse softDelete(DeleteWorkflowCommand cmd) {
-
+	public WorkflowResponse archive(ArchiveWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.id());
 
-		// TODO: Workflow의 softDelete 주석 참고
+		// TODO: archive(soft-delete) 정책 정하기
+		//  - 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
+		//  - 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
+		//    해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 또는 archived 되었다는 표시)
 		// workflowValidator.ensureDeletable();
 
 		workflow.archive();
@@ -130,7 +126,6 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse updateState(UpdateStateCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 		WorkflowState state = workflowFinder.findStateBy(workflow, cmd.statusId());
@@ -144,7 +139,6 @@ public class WorkflowService {
 
 	@Transactional
 	public WorkflowResponse updateTransition(UpdateTransitionCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
@@ -157,8 +151,6 @@ public class WorkflowService {
 
 	@Transactional
 	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-
-		// Workflow와 Transition 조회
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 

@@ -2,49 +2,12 @@ package com.tissue.api.workflow.application.dto;
 
 import java.util.List;
 
-import com.tissue.api.common.enums.ColorType;
-import com.tissue.api.issue.domain.enums.StateCategory;
-import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
-import com.tissue.api.workflow.domain.service.EntityRef;
-
 public record ReplaceWorkflowGraphCommand(
 	String workspaceKey,
 	String projectKey,
 	Long workflowId,
 	Long version,
-	List<StateCommand> stateCommands,
-	List<TransitionCommand> transitionCommands
+	List<StateDefinition> stateDefinitions,
+	List<TransitionDefinition> transitionDefinitions
 ) {
-	public record StateCommand(
-		EntityRef ref,
-		String label,
-		String description,
-		ColorType color,
-		StateCategory category
-	) {
-		public WorkflowGraphValidator.StateValidationData toValidationData() {
-			String key = ref.isExisting()
-				? String.valueOf(ref.id())
-				: ref.tempKey();
-			return new WorkflowGraphValidator.StateValidationData(key, initial, terminal);
-		}
-	}
-
-	public record TransitionCommand(
-		EntityRef ref,
-		String label,
-		String description,
-		EntityRef source,
-		EntityRef target
-	) {
-		public WorkflowGraphValidator.TransitionValidationData toValidationData() {
-			String srcKey = source.isExisting()
-				? String.valueOf(source.id())
-				: source.tempKey();
-			String trgKey = target.isExisting()
-				? String.valueOf(target.id())
-				: target.tempKey();
-			return new WorkflowGraphValidator.TransitionValidationData(srcKey, trgKey);
-		}
-	}
 }
