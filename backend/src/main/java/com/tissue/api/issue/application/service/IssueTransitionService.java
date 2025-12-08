@@ -34,14 +34,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 	@Override
 	public IssueCommandResult performTransition(PerformTransitionCommand cmd) {
-
+		// TODO: issueFinder.findBy(issueKey, projectKey, workspaceKey)
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Workflow workflow = issue.getIssueType().getWorkflow();
 		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
 
 		issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
 
-		executeGuards(cmd.workspaceKey(), issue, transition, cmd.actorMemberId());
+		executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, cmd.actorMemberId());
 
 		WorkflowState previousStatus = issue.getCurrentState();
 
@@ -63,20 +63,19 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 	private void executeGuards(
 		String workspaceKey,
+		String projectKey,
 		Issue issue,
 		WorkflowTransition transition,
 		Long actorMemberId
 	) {
 		List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
-		// Guard가 없으면 바로 통과
 		if (configs.isEmpty()) {
 			log.debug("No guards configured for transition: {}", transition.getDisplayLabel());
 			return;
 		}
 
-		log.debug("Executing {} guard(s) for transition: {}",
-			configs.size(), transition.getDisplayLabel());
+		log.debug("Executing {} guard(s) for transition: {}", configs.size(), transition.getDisplayLabel());
 
 		// 각 Guard Config에 대해 순서대로 실행
 		for (TransitionGuardConfig config : configs) {
@@ -85,11 +84,12 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 			// Guard 실행에 필요한 컨텍스트 생성
 			GuardContext context = GuardContext.builder()
-				.issue(issue)                      // 전이 대상 이슈
-				.transition(transition)            // 실행 중인 전이
-				.workspaceKey(workspaceKey)        // 워크스페이스 키
-				.actorMemberId(actorMemberId)      // 행위자 멤버 ID
-				.params(config.parseParams())      // JSON 파라미터를 Map으로 파싱
+				.issue(issue) // 전이 대상 이슈
+				.transition(transition)
+				.workspaceKey(workspaceKey)
+				.projectKey(projectKey)
+				.actorMemberId(actorMemberId)
+				.params(config.getGuardParams())
 				.build();
 
 			// Guard 조건 평가

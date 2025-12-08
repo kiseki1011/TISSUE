@@ -17,8 +17,6 @@ import com.tissue.api.issuetype.adapter.in.dto.request.UpdateIssueTypeRequest;
 import com.tissue.api.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.api.issuetype.application.service.IssueTypeService;
-import com.tissue.api.security.authorization.interceptor.RoleRequired;
-import com.tissue.api.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +29,6 @@ public class IssueTypeController {
 	private final IssueTypeService issueTypeService;
 
 	@PostMapping
-	@RoleRequired(role = WorkspaceRole.MEMBER)
 	public ResponseEntity<IssueTypeResponse> create(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
@@ -40,48 +37,40 @@ public class IssueTypeController {
 		IssueTypeResponse response = issueTypeService.create(
 			req.toCommand(workspaceKey, projectKey)
 		);
+		// TODO: created 사용
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(response);
 	}
 
 	@PutMapping("/{id}/rename")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<IssueTypeResponse> rename(
+	public ResponseEntity<Void> rename(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable Long id,
 		@RequestBody @Valid RenameIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.rename(
-			request.toCommand(workspaceKey, projectKey, id)
-		);
-		return ResponseEntity.ok(response);
+		issueTypeService.rename(request.toCommand(workspaceKey, projectKey, id));
+		return ResponseEntity.noContent().build();
 	}
 
 	@PatchMapping("/{id}")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<IssueTypeResponse> update(
+	public ResponseEntity<Void> update(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable Long id,
 		@RequestBody @Valid UpdateIssueTypeRequest request
 	) {
-		IssueTypeResponse response = issueTypeService.update(
-			request.toCommand(workspaceKey, projectKey, id)
-		);
-		return ResponseEntity.ok(response);
+		issueTypeService.update(request.toCommand(workspaceKey, projectKey, id));
+		return ResponseEntity.noContent().build();
 	}
 
 	@DeleteMapping("/{id}")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ResponseEntity<IssueTypeResponse> delete(
+	public ResponseEntity<Void> delete(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable Long id
 	) {
-		IssueTypeResponse response = issueTypeService.delete(
-			new DeleteIssueTypeCommand(workspaceKey, projectKey, id)
-		);
-		return ResponseEntity.ok(response);
+		issueTypeService.delete(new DeleteIssueTypeCommand(workspaceKey, projectKey, id));
+		return ResponseEntity.noContent().build();
 	}
 }

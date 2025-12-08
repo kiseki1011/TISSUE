@@ -1,5 +1,7 @@
 package com.tissue.api.workflow.domain.guard;
 
+import static com.tissue.api.issue.domain.enums.StateCategory.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,12 +20,12 @@ public class NotBlockedGuard implements TransitionGuard {
 		List<Issue> blockingIssues = issue.getRelations().getBlockedByIssues();
 
 		if (blockingIssues.isEmpty()) {
-			return true;  // 차단하는 이슈 없음
+			return true;
 		}
 
-		// 모든 blocking 이슈가 terminal 상태인지 확인
+		// 모든 blocking 이슈가 DONE 상태인지 확인
 		return blockingIssues.stream()
-			.allMatch(blocking -> blocking.getCurrentState().isTerminal());
+			.allMatch(blocking -> blocking.getCurrentState().isCategorizedAs(DONE));
 	}
 
 	@Override
@@ -31,7 +33,7 @@ public class NotBlockedGuard implements TransitionGuard {
 		Issue issue = context.getIssue();
 
 		List<Issue> unresolved = issue.getRelations().getBlockedByIssues().stream()
-			.filter(blocking -> !blocking.getCurrentState().isTerminal())
+			.filter(blocking -> !blocking.getCurrentState().isCategorizedAs(DONE))
 			.toList();
 
 		String blockingKeys = unresolved.stream()

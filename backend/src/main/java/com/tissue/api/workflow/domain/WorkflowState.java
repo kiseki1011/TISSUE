@@ -96,4 +96,8 @@ public class WorkflowState extends BaseEntity {
 	public String getDisplayLabel() {
 		return label.getDisplay();
 	}
+
+	public boolean isCategorizedAs(StateCategory category) {
+		return getCategory() == category;
+	}
 }
