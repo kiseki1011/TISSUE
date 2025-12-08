@@ -2,27 +2,26 @@ package com.tissue.api.workflow.adapter.in.web.dto.request;
 
 import org.openapitools.jackson.nullable.JsonNullable;
 
-import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.util.JsonNullables;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.workflow.application.dto.request.UpdateWorkflowCommand;
+import com.tissue.api.workflow.application.dto.request.UpdateTransitionCommand;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record PatchWorkflowRequest(
+public record UpdateTransitionRequest(
 	JsonNullable<@NotBlank @Size(max = 32) String> label,
-	JsonNullable<@Size(max = 255) String> description,
-	JsonNullable<@NotNull ColorType> color
+	JsonNullable<@Size(max = 255) String> description
 ) {
-	public UpdateWorkflowCommand toCommand(String workspaceKey, Long id) {
-		return UpdateWorkflowCommand.builder()
+	public UpdateTransitionCommand toCommand(String workspaceKey, String projectKey, Long workflowId,
+		Long transitionId) {
+		return UpdateTransitionCommand.builder()
 			.workspaceKey(workspaceKey)
-			.id(id)
+			.projectKey(projectKey)
+			.workflowId(workflowId)
+			.transitionId(transitionId)
 			.label(JsonNullables.map(label, Label::of))
 			.description(description)
-			.color(color)
 			.build();
 	}
 }

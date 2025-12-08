@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.project.domain.Project;
+import com.tissue.api.workflow.application.dto.GuardConfigData;
 import com.tissue.api.workflow.application.port.out.WorkflowRepository;
 import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +47,15 @@ public class WorkflowValidator {
 			throw new RuntimeException(
 				"Cannot delete workflow states that are currently assigned to active issues."
 			);
+		}
+	}
+
+	// TODO: TransitionGuardRegistry로 옮겨야 할까?
+	public void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
+		boolean dup = !usedTypes.add(g.guardType());
+		if (dup) {
+			// TODO: DuplicateGuardTypeException
+			throw new RuntimeException("Duplicate guard type: " + g.guardType());
 		}
 	}
 }

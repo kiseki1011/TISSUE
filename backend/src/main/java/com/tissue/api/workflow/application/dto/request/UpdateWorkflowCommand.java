@@ -11,7 +11,7 @@ import lombok.Builder;
 public record UpdateWorkflowCommand(
 	String workspaceKey,
 	String projectKey,
-	Long id,
+	Long workflowId,
 	JsonNullable<Label> label,
 	JsonNullable<String> description,
 	JsonNullable<ColorType> color

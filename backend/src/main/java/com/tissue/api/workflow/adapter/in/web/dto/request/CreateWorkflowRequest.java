@@ -6,7 +6,10 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.application.dto.EntityRef;
+import com.tissue.api.workflow.application.dto.StateDefinition;
+import com.tissue.api.workflow.application.dto.TransitionDefinition;
 import com.tissue.api.workflow.application.dto.request.CreateWorkflowCommand;
 
 import jakarta.validation.constraints.NotBlank;
@@ -26,8 +29,7 @@ public record CreateWorkflowRequest(
 		@NotBlank @Size(max = 32) String label,
 		@Nullable @Size(max = 255) String description,
 		@NotNull ColorType color,
-		@NotNull boolean initial,
-		@NotNull boolean terminal
+		@NotNull StateCategory category
 	) {
 	}
 
@@ -40,19 +42,19 @@ public record CreateWorkflowRequest(
 	}
 
 	public CreateWorkflowCommand toCommand(String workspaceKey) {
-		List<CreateWorkflowCommand.StateCommand> stateCommands = createStatusRequests.stream()
-			.map(s -> new CreateWorkflowCommand.StateCommand(
+		List<StateDefinition> stateDefinitions = createStatusRequests.stream()
+			.map(s -> new StateDefinition(
 				new EntityRef(null, s.tempKey()),
 				Label.of(s.label()),
 				s.description(),
 				s.color(),
-				s.initial(),
-				s.terminal()
+				s.category
 			))
 			.toList();
 
-		List<CreateWorkflowCommand.TransitionCommand> transitionCommands = createTransitionRequests.stream()
-			.map(t -> new CreateWorkflowCommand.TransitionCommand(
+		List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
+			.map(t -> new TransitionDefinition(
+				null,
 				Label.of(t.label()),
 				t.description(),
 				new EntityRef(null, t.sourceTempKey()),
@@ -65,8 +67,8 @@ public record CreateWorkflowRequest(
 			.label(Label.of(label))
 			.description(description)
 			.color(color)
-			.stateCommands(stateCommands)
-			.transitionCommands(transitionCommands)
+			.stateDefinitions(stateDefinitions)
+			.transitionDefinitions(transitionCommands)
 			.build();
 	}
 }

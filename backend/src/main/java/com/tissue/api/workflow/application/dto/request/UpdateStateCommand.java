@@ -12,7 +12,7 @@ public record UpdateStateCommand(
 	String workspaceKey,
 	String projectKey,
 	Long workflowId,
-	Long statusId,
+	Long stateId,
 	JsonNullable<Label> label,
 	JsonNullable<String> description,
 	JsonNullable<ColorType> color

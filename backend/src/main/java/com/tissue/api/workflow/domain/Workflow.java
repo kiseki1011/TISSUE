@@ -54,6 +54,12 @@ public class Workflow extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Project project;
 
+	@Column(name = "project_key", nullable = false, updatable = false)
+	private String projectKey;
+
+	@Column(name = "workspace_key", nullable = false, updatable = false)
+	private String workspaceKey;
+
 	@Embedded
 	private Label label;
 
@@ -85,6 +91,8 @@ public class Workflow extends BaseEntity {
 	) {
 		Workflow wf = new Workflow();
 		wf.project = project;
+		wf.projectKey = project.getKey();
+		wf.workspaceKey = project.getWorkspaceKey();
 		wf.label = label;
 		wf.description = nullToEmpty(description);
 		wf.color = color;

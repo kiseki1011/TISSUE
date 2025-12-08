@@ -7,12 +7,10 @@ import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.workflow.application.dto.GuardConfigData;
 import com.tissue.api.workflow.application.dto.request.ArchiveWorkflowCommand;
 import com.tissue.api.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.api.workflow.application.dto.request.CreateWorkflowCommand;
@@ -20,6 +18,7 @@ import com.tissue.api.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.api.workflow.application.dto.response.WorkflowResponse;
+import com.tissue.api.workflow.application.port.in.WorkflowCommandUseCase;
 import com.tissue.api.workflow.application.port.out.WorkflowRepository;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.application.service.validator.WorkflowGraphValidator;
@@ -28,7 +27,6 @@ import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.guard.GuardType;
-import com.tissue.api.workspace.application.service.finder.WorkspaceFinder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WorkflowService {
+public class WorkflowCommandService implements WorkflowCommandUseCase {
 
-	private final WorkspaceFinder workspaceFinder;
 	private final ProjectFinder projectFinder;
 	private final WorkflowFinder workflowFinder;
 	private final WorkflowRepository workflowRepository;
@@ -46,10 +43,7 @@ public class WorkflowService {
 	private final WorkflowGraphValidator graphValidator;
 	private final TransitionGuardRegistry guardRegistry;
 
-	// TODO: spring-retry 필요한가?
-	//  어차피 중복될 확률은 매우 적으니깐 그냥 애플리케이션 레벨 검증만 할까?
-	//  만약 실패하면 그냥 실패하게 냅두거나 간단한게 GlobalExceptionHandler에서 간단하게 처리
-	@Transactional
+	@Override
 	public WorkflowResponse create(CreateWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
@@ -89,10 +83,10 @@ public class WorkflowService {
 		}
 	}
 
-	@Transactional
-	public WorkflowResponse update(UpdateWorkflowCommand cmd) {
+	@Override
+	public void update(UpdateWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.id());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 
 		Patchers.apply(cmd.label(), newLabel -> {
 			if (!workflow.getLabel().equals(newLabel)) {
@@ -102,14 +96,12 @@ public class WorkflowService {
 		});
 		Patchers.apply(cmd.description(), workflow::updateDescription);
 		Patchers.apply(cmd.color(), workflow::updateColor);
-
-		return WorkflowResponse.from(workflow);
 	}
 
-	@Transactional
-	public WorkflowResponse archive(ArchiveWorkflowCommand cmd) {
+	@Override
+	public void archive(ArchiveWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.id());
+		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 
 		// TODO: archive(soft-delete) 정책 정하기
 		//  - 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
@@ -118,36 +110,30 @@ public class WorkflowService {
 		// workflowValidator.ensureDeletable();
 
 		workflow.archive();
-
-		return WorkflowResponse.from(workflow);
 	}
 
-	@Transactional
-	public WorkflowResponse updateState(UpdateStateCommand cmd) {
+	@Override
+	public void updateState(UpdateStateCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
-		WorkflowState state = workflowFinder.findStateBy(workflow, cmd.statusId());
+		WorkflowState state = workflowFinder.findStateBy(workflow, cmd.stateId());
 
 		Patchers.apply(cmd.label(), l -> workflow.renameState(state, l));
 		Patchers.apply(cmd.description(), state::updateDescription);
 		Patchers.apply(cmd.color(), state::updateColor);
-
-		return WorkflowResponse.from(workflow);
 	}
 
-	@Transactional
-	public WorkflowResponse updateTransition(UpdateTransitionCommand cmd) {
+	@Override
+	public void updateTransition(UpdateTransitionCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
 		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
 
 		Patchers.apply(cmd.label(), l -> workflow.renameTransition(transition, l));
 		Patchers.apply(cmd.description(), transition::updateDescription);
-
-		return WorkflowResponse.from(workflow);
 	}
 
-	@Transactional
+	@Override
 	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
@@ -164,16 +150,9 @@ public class WorkflowService {
 
 		for (var g : cmd.guards()) {
 			guardRegistry.ensureGuardExists(g.guardType());
-			ensureNoDuplicateGuard(g, usedTypes);
-			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
-		}
-	}
+			workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
 
-	private void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
-		boolean dup = !usedTypes.add(g.guardType());
-		if (dup) {
-			// TODO: DuplicateGuardTypeException
-			throw new RuntimeException("Duplicate guard type: " + g.guardType());
+			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
 		}
 	}
 }

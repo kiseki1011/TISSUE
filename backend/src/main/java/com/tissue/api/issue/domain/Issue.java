@@ -220,13 +220,13 @@ public class Issue extends BaseEntity {
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 
-		if (previousState.isInitial()) {
+		if (previousState.getCategory().isTodo()) {
 			this.schedule.markStarted();
 		}
-		if (newState.isTerminal()) {
+		if (newState.getCategory().isDone()) {
 			this.schedule.markResolved();
 		}
-		if (previousState.isTerminal() && !newState.isTerminal()) {
+		if (previousState.getCategory().isDone() && !newState.getCategory().isDone()) {
 			this.schedule.clearResolved();
 		}
 	}
@@ -308,7 +308,7 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureIsInitial() {
-		if (!currentState.isInitial()) {
+		if (!currentState.getCategory().isTodo()) {
 			// TODO: InProgressIssueNotDeletable (이름 피드백 필요)
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}

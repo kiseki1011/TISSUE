@@ -15,7 +15,6 @@ import com.tissue.api.workflow.domain.guard.TransitionGuard;
 @Component
 public class TransitionGuardRegistry {
 
-	// GuardType -> TransitionGuard 매핑
 	private final Map<GuardType, TransitionGuard> guards;
 
 	public TransitionGuardRegistry(List<TransitionGuard> guardList) {

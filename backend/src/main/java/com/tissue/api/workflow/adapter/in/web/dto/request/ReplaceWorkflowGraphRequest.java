@@ -2,9 +2,7 @@ package com.tissue.api.workflow.adapter.in.web.dto.request;
 
 import java.util.List;
 
-import org.springframework.lang.Nullable;
-
-import com.tissue.api.common.enums.ColorType;
+import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.application.dto.EntityRef;
 import com.tissue.api.workflow.application.dto.StateDefinition;
 import com.tissue.api.workflow.application.dto.TransitionDefinition;
@@ -12,7 +10,6 @@ import com.tissue.api.workflow.application.dto.request.ReplaceWorkflowGraphComma
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 /**
  * TODO: 자세한 문서화 필요
@@ -28,32 +25,16 @@ public record ReplaceWorkflowGraphRequest(
 	public record ReplaceStatusRequest(
 		Long id,
 		String tempKey,
-		@Nullable @Size(max = 32) String label,
-		@Nullable @Size(max = 255) String description,
-		@NotNull ColorType color,
-		@NotNull boolean initial,
-		@NotNull boolean terminal
+		@NotNull StateCategory category
 	) {
-		public ReplaceStatusRequest {
-			if ((id == null) == (tempKey == null)) {
-				throw new IllegalArgumentException("Status must have exactly one of id or tempKey");
-			}
-		}
 	}
 
 	public record ReplaceTransitionRequest(
 		Long id,
 		String tempKey,
-		@Nullable @Size(max = 32) String label,
-		@Nullable @Size(max = 255) String description,
 		@NotNull EntityRef source,
 		@NotNull EntityRef target
 	) {
-		public ReplaceTransitionRequest {
-			if ((id == null) == (tempKey == null)) {
-				throw new IllegalArgumentException("Transition must have exactly one of id or tempKey");
-			}
-		}
 	}
 
 	public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
@@ -63,24 +44,19 @@ public record ReplaceWorkflowGraphRequest(
 			workflowId,
 			version,
 			replaceStatusRequests.stream()
-				.map(s -> new StateDefinition(
-					new EntityRef(s.id(), s.tempKey()),
-					s.label(),
-					s.description(),
-					s.color(),
-					s.initial(),
-					s.terminal()
-				))
+				.map(s -> StateDefinition.builder()
+					.stateRef(new EntityRef(s.id(), s.tempKey()))
+					.category(s.category)
+					.build())
 				.toList(),
 			replaceTransitionRequests.stream()
-				.map(t -> new TransitionDefinition(
-					new EntityRef(t.id(), t.tempKey()),
-					t.label(),
-					t.description(),
-					t.source(),
-					t.target()
-				))
+				.map(t -> TransitionDefinition.builder()
+					.transitionRef(new EntityRef(t.id(), t.tempKey()))
+					.sourceStateRef(t.source)
+					.targetStateRef(t.target)
+					.build())
 				.toList()
 		);
 	}
+
 }
