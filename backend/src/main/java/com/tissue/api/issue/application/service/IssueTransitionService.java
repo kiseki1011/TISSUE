@@ -37,7 +37,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		// TODO: issueFinder.findBy(issueKey, projectKey, workspaceKey)
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Workflow workflow = issue.getIssueType().getWorkflow();
-		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
+		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
 		issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
 

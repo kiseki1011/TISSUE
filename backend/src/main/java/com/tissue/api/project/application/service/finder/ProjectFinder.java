@@ -17,8 +17,8 @@ public class ProjectFinder {
 	private final ProjectQueryRepository queryRepository;
 
 	public Project findBy(String projectKey, String workspaceKey) {
-		return queryRepository.findByKeyAndWorkspaceKey(projectKey, workspaceKey)
-			.orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
+		return queryRepository.findByKeyAndWorkspace_Key(projectKey, workspaceKey)
+			.orElseThrow(() -> new ProjectNotFoundException(projectKey, workspaceKey));
 	}
 
 	public Optional<Project> findOptionalBy(Long projectId) {

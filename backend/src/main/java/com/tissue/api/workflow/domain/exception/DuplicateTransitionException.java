@@ -10,9 +10,10 @@ public class DuplicateTransitionException extends ResourceConflictException {
 		String workflowName,
 		Long workflowId
 	) {
-		super("A transition named '%s' with source state '%s' already exists in workflow '%s'"
+		super("A transition named '%s' with source state '%s' already exists in workflow '%s'."
 			.formatted(transitionName, sourceStateName, workflowName));
 		addContext("transitionName", transitionName);
+		addContext("sourceStateName", sourceStateName);
 		addContext("workflowName", workflowName);
 		addContext("workflowId", workflowId);
 	}

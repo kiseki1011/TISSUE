@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.workflow.domain.guard.GuardType;
 import com.tissue.api.workflow.domain.guard.TransitionGuard;
 
-// TODO: 도메인 서비스로 이동?
+// TODO: 도메인 서비스로 이동해야 할까?
 @Component
 public class TransitionGuardRegistry {
 

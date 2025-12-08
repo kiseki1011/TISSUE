@@ -9,7 +9,7 @@ import com.tissue.api.common.vo.Label;
 import com.tissue.api.issue.application.port.out.IssueQueryRepository;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.dto.GuardConfigData;
-import com.tissue.api.workflow.application.port.out.WorkflowRepository;
+import com.tissue.api.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.guard.GuardType;
 
@@ -19,11 +19,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkflowValidator {
 
-	private final WorkflowRepository workflowRepository;
+	private final WorkflowQueryRepository workflowQueryRepository;
 	private final IssueQueryRepository issueRepository;
 
 	public void ensureLabelUnique(Project project, Label label) {
-		boolean dup = workflowRepository.existsByProjectAndLabel_Normalized(project, label.getNormalized());
+		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, label.getNormalized());
 		if (dup) {
 			// TODO: DuplicateWorkflowException vs DuplicateWorkflowLabelException
 			throw new RuntimeException("Label cannot be duplicate for workflow in a workspace scope.");

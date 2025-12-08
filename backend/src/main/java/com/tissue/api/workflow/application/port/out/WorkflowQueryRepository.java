@@ -16,4 +16,6 @@ public interface WorkflowQueryRepository extends Repository<Workflow, Long> {
 	Optional<Workflow> findByIdAndProject_Key(Long id, String projectKey);
 
 	Optional<Workflow> findByIdAndProject_KeyAndProject_Workspace_Key(Long id, String projectKey, String workspaceKey);
+
+	boolean existsByProjectAndLabel_Normalized(Project project, String label);
 }

@@ -26,6 +26,8 @@ import com.tissue.api.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.exception.DuplicateWorkflowException;
+import com.tissue.api.workflow.domain.exception.TransitionNotFoundException;
 import com.tissue.api.workflow.domain.guard.GuardType;
 
 import lombok.RequiredArgsConstructor;
@@ -75,18 +77,15 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 			graphValidator.ensureValidWorkflowGraph(workflow);
 
 			return WorkflowResponse.from(workflow);
-
 		} catch (DataIntegrityViolationException e) {
-			log.info("Failed due to duplicate label.", e);
-			// TODO: DuplicateWorkflowException vs DuplicateWorkflowLabelException
-			throw new RuntimeException("Duplicate label is not allowed.", e);
+			throw new DuplicateWorkflowException(cmd.label().getDisplay(), cmd.projectKey(), cmd.workspaceKey());
 		}
 	}
 
 	@Override
 	public void update(UpdateWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		Patchers.apply(cmd.label(), newLabel -> {
 			if (!workflow.getLabel().equals(newLabel)) {
@@ -101,7 +100,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	@Override
 	public void archive(ArchiveWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		// TODO: archive(soft-delete) 정책 정하기
 		//  - 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
@@ -115,8 +114,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	@Override
 	public void updateState(UpdateStateCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
-		WorkflowState state = workflowFinder.findStateBy(workflow, cmd.stateId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+		WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
 
 		Patchers.apply(cmd.label(), l -> workflow.renameState(state, l));
 		Patchers.apply(cmd.description(), state::updateDescription);
@@ -126,8 +125,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	@Override
 	public void updateTransition(UpdateTransitionCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
-		WorkflowTransition transition = workflowFinder.findTransitionBy(workflow, cmd.transitionId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
 		Patchers.apply(cmd.label(), l -> workflow.renameTransition(transition, l));
 		Patchers.apply(cmd.description(), transition::updateDescription);
@@ -136,13 +135,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	@Override
 	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
 			.findFirst()
-			// TODO: TransitionNotFoundException
-			.orElseThrow(() -> new RuntimeException("Transition not found"));
+			.orElseThrow(() -> new TransitionNotFoundException(cmd.transitionId(), workflow.getId()));
 
 		workflow.clearGuardsForTransition(transition);
 

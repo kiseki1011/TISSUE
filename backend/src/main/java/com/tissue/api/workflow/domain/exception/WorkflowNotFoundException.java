@@ -7,7 +7,6 @@ public class WorkflowNotFoundException extends ResourceNotFoundException {
 	public WorkflowNotFoundException(Long workflowId, String projectKey, String workspaceKey) {
 		super("Workflow was not found in workspace '%s' - project '%s', with workflow id '%d'."
 			.formatted(workspaceKey, projectKey, workflowId));
-
 		addContext("workspaceKey", workspaceKey);
 		addContext("projectKey", projectKey);
 		addContext("workflowId", workflowId);

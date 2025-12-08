@@ -12,8 +12,6 @@ import com.tissue.api.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.request.RenameIssueTypeCommand;
 import com.tissue.api.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.api.issuetype.application.port.in.IssueTypeUseCase;
-import com.tissue.api.issuetype.application.port.out.EnumFieldOptionCommandRepository;
-import com.tissue.api.issuetype.application.port.out.IssueFieldCommandRepository;
 import com.tissue.api.issuetype.application.port.out.IssueTypeCommandRepository;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.application.service.validator.IssueTypeValidator;
@@ -33,13 +31,11 @@ public class IssueTypeService implements IssueTypeUseCase {
 	private final WorkflowFinder workflowFinder;
 	private final IssueTypeFinder issueTypeFinder;
 	private final IssueTypeCommandRepository issueTypeCommandRepository;
-	private final IssueFieldCommandRepository issueFieldCommandRepository;
-	private final EnumFieldOptionCommandRepository fieldOptionCommandRepository;
 	private final IssueTypeValidator issueTypeValidator;
 
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(project, cmd.workflowId());
+		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
 

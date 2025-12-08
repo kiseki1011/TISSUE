@@ -1,11 +1,6 @@
 package com.tissue.api.workflow.domain.guard;
 
 public enum GuardType {
-	ASSIGNEE_REQUIRED,
-	REVIEWER_REQUIRED,
-	AUTHOR_ONLY,
-	ALL_REVIEWERS_APPROVED,
-	MIN_STORY_POINT,
-	ALL_SUBTASKS_DONE,
 	NOT_BLOCKED;
+	// TODO: 필요 가드 더 추가
 }

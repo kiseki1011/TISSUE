@@ -20,15 +20,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: transition + guardType 기준으로 유니크 제약이 필요하지 않을까?
-// TODO: transition + executionOrder에 대한 유니크 제약이 필요할까?
 @Entity
 @Getter
+@Table(
+	name = "transition_guard_config",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_guard_config_type",
+			columnNames = {"transition_id", "guard_type"}
+		),
+		@UniqueConstraint(
+			name = "uk_guard_config_order",
+			columnNames = {"transition_id", "execution_order"}
+		)
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TransitionGuardConfig extends NoArchiveEntity {
 
