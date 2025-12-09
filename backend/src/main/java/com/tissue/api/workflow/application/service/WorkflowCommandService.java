@@ -17,7 +17,7 @@ import com.tissue.api.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateWorkflowCommand;
-import com.tissue.api.workflow.application.dto.response.WorkflowResponse;
+import com.tissue.api.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.api.workflow.application.port.in.WorkflowCommandUseCase;
 import com.tissue.api.workflow.application.port.out.WorkflowRepository;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
@@ -46,7 +46,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	private final TransitionGuardRegistry guardRegistry;
 
 	@Override
-	public WorkflowResponse create(CreateWorkflowCommand cmd) {
+	public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 
 		workflowValidator.ensureLabelUnique(project, cmd.label());
@@ -76,7 +76,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 			graphValidator.ensureValidWorkflowGraph(workflow);
 
-			return WorkflowResponse.from(workflow);
+			return WorkflowCreateResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {
 			throw new DuplicateWorkflowException(cmd.label().getDisplay(), project);
 		}
