@@ -24,6 +24,7 @@ import com.tissue.api.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.exception.InvalidTodoStateCountException;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -139,8 +140,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 			.toList();
 
 		if (todoCmds.size() != 1) {
-			// TODO: InvalidWorkflowGraphException
-			throw new IllegalArgumentException("Workflow must have exactly a single 'TODO' state.");
+			throw new InvalidTodoStateCountException(todoCmds.size());
 		}
 
 		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).stateRef());
