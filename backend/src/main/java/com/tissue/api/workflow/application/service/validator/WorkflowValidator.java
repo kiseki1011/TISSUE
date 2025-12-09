@@ -2,6 +2,7 @@ package com.tissue.api.workflow.application.service.validator;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,9 @@ import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.dto.GuardConfigData;
 import com.tissue.api.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.exception.DuplicateGuardTypeException;
+import com.tissue.api.workflow.domain.exception.DuplicateWorkflowException;
+import com.tissue.api.workflow.domain.exception.WorkflowStateInUseException;
 import com.tissue.api.workflow.domain.guard.GuardType;
 
 import lombok.RequiredArgsConstructor;
@@ -25,37 +29,39 @@ public class WorkflowValidator {
 	public void ensureLabelUnique(Project project, Label label) {
 		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, label.getNormalized());
 		if (dup) {
-			// TODO: DuplicateWorkflowException vs DuplicateWorkflowLabelException
-			throw new RuntimeException("Label cannot be duplicate for workflow in a workspace scope.");
+			throw new DuplicateWorkflowException(label.getNormalized(), project);
 		}
 	}
 
 	public void ensureStatesDeletable(Set<WorkflowState> statesToDelete) {
-		if (statesToDelete.isEmpty()) {
+		List<WorkflowState> statesToCheck = statesToDelete.stream()
+			.filter(state -> !state.getCategory().isDone())
+			.toList();
+
+		if (statesToCheck.isEmpty()) {
 			return;
 		}
 
-		List<Long> stateIds = statesToDelete.stream()
+		List<Long> stateIds = statesToCheck.stream()
 			.map(WorkflowState::getId)
 			.toList();
 
-		// DB 조회
-		boolean inUse = issueRepository.existsByCurrentStateIdIn(stateIds);
+		List<Long> usedStateIds = issueRepository.findStateIdsUsedByActiveIssues(stateIds);
 
-		if (inUse) {
-			// TODO: WorkflowStateInUseException
-			throw new RuntimeException(
-				"Cannot delete workflow states that are currently assigned to active issues."
-			);
+		if (!usedStateIds.isEmpty()) {
+			String usedStateNames = statesToCheck.stream()
+				.filter(s -> usedStateIds.contains(s.getId()))
+				.map(WorkflowState::getDisplayLabel)
+				.collect(Collectors.joining(", "));
+
+			throw new WorkflowStateInUseException(usedStateNames);
 		}
 	}
 
-	// TODO: TransitionGuardRegistry로 옮겨야 할까?
 	public void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
 		boolean dup = !usedTypes.add(g.guardType());
 		if (dup) {
-			// TODO: DuplicateGuardTypeException
-			throw new RuntimeException("Duplicate guard type: " + g.guardType());
+			throw new DuplicateGuardTypeException(g.guardType());
 		}
 	}
 }

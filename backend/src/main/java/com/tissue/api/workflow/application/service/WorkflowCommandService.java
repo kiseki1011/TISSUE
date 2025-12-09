@@ -78,7 +78,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 			return WorkflowResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateWorkflowException(cmd.label().getDisplay(), cmd.projectKey(), cmd.workspaceKey());
+			throw new DuplicateWorkflowException(cmd.label().getDisplay(), project);
 		}
 	}
 

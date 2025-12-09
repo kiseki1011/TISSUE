@@ -18,6 +18,11 @@ import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.exception.DeadEndStateException;
+import com.tissue.api.workflow.domain.exception.InvalidTodoStateCountException;
+import com.tissue.api.workflow.domain.exception.InvalidTransitionTargetException;
+import com.tissue.api.workflow.domain.exception.MissingDoneStateException;
+import com.tissue.api.workflow.domain.exception.OrphanStateException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,43 +42,36 @@ public class WorkflowGraphValidator {
 		List<WorkflowState> todoStates = wf.getStatesByCategory(StateCategory.TODO);
 
 		if (todoStates.size() != 1) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException("Workflow must have exactly a single 'TODO' state.");
+			throw new InvalidTodoStateCountException(todoStates.size());
 		}
 
 		WorkflowState todoState = todoStates.get(0);
 		if (!todoState.equals(wf.getInitialState())) {
-			throw new IllegalStateException("Internal Error: Initial state pointer mismatch.");
+			throw new IllegalStateException("Initial state pointer mismatch.");
 		}
 	}
 
 	private void ensureAtLeastOneDone(Workflow wf) {
 		boolean doneNotExist = wf.getStatesByCategory(DONE).isEmpty();
 		if (doneNotExist) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException("Workflow must have at least one 'DONE' state.");
+			throw new MissingDoneStateException();
 		}
 	}
 
 	private void ensureNoIncomingToToDo(Workflow wf) {
-		WorkflowState todoState = wf.getInitialState();
+		WorkflowState initialState = wf.getInitialState();
 
-		boolean hasIncoming = wf.getTransitions().stream()
-			.anyMatch(t -> t.getTargetState().equals(todoState));
+		List<WorkflowTransition> invalidTransitions = wf.getTransitions().stream()
+			.filter(t -> t.getTargetState().equals(initialState))
+			.toList();
 
-		if (hasIncoming) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException("Transitions that point to a TODO state are not allowed.");
+		if (!invalidTransitions.isEmpty()) {
+			List<String> sourceNames = invalidTransitions.stream()
+				.map(t -> t.getSourceState().getDisplayLabel())
+				.toList();
+
+			throw new InvalidTransitionTargetException(sourceNames, initialState.getDisplayLabel());
 		}
-	}
-
-	private WorkflowState ensureInitialExists(Workflow wf) {
-		WorkflowState state = wf.getInitialState();
-		if (state == null || state.isArchived()) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException("Initial must exist and be active.");
-		}
-		return state;
 	}
 
 	private void ensureNoOrphans(Workflow wf) {
@@ -108,14 +106,13 @@ public class WorkflowGraphValidator {
 			}
 		}
 
-		// 살아있는 상태 수와 방문한 상태 수가 같아야 고아 없음
-		long totalStates = wf.getStates().stream()
-			.filter(s -> !s.isArchived())
-			.count();
+		List<String> orphanStates = wf.getActiveStates().stream()
+			.filter(s -> !reachableStates.contains(s))
+			.map(WorkflowState::getDisplayLabel)
+			.toList();
 
-		if (reachableStates.size() != totalStates) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException("Orphan states exist (unreachable from initial).");
+		if (!orphanStates.isEmpty()) {
+			throw new OrphanStateException(orphanStates, initial.getDisplayLabel());
 		}
 	}
 
@@ -132,12 +129,17 @@ public class WorkflowGraphValidator {
 			.toList();
 
 		if (!deadEnds.isEmpty()) {
-			// TODO: 커스텀 예외 추가 vs IllegalStateException
-			throw new RuntimeException(
-				"The following 'IN_PROGRESS' states have no outgoing transitions (Dead Ends): "
-					+ deadEnds + ". Please connect them to a next state or change their category to 'DONE'."
-			);
+			throw new DeadEndStateException(deadEnds);
 		}
 	}
 
+	// TODO: 어차피 ensureSingleToDo에서 보장이 되고, initial 여부도 확인 될텐데 굳이 필요한가?
+	//  중복 검증이지 않을까?
+	private WorkflowState ensureInitialExists(Workflow wf) {
+		WorkflowState state = wf.getInitialState();
+		if (state == null || state.isArchived()) {
+			throw new IllegalStateException("Initial must exist and be active.");
+		}
+		return state;
+	}
 }
