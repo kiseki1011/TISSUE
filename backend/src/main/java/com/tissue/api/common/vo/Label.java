@@ -11,17 +11,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
 
 @Embeddable
 @Getter
-@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(of = "normalized")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Label {
 
 	@Column(name = "label", nullable = false, length = 32)
-	@ToString.Include
 	private String display;
 
 	@Column(name = "label_normalized", nullable = false, length = 32)
@@ -38,5 +35,10 @@ public class Label {
 		String norm = normalizeForUniq(checked);
 
 		return new Label(display, norm);
+	}
+
+	@Override
+	public String toString() {
+		return display;
 	}
 }
