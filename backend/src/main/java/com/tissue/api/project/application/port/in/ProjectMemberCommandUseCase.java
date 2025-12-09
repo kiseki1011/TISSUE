@@ -9,7 +9,6 @@ import com.tissue.api.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.api.project.application.dto.request.ChangeProjectRoleCommand;
 import com.tissue.api.project.application.dto.request.JoinProjectCommand;
 import com.tissue.api.project.application.dto.request.KickProjectMemberCommand;
-import com.tissue.api.project.application.dto.request.LeaveProjectCommand;
 import com.tissue.api.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.api.project.application.dto.response.ProjectMembersCommandResult;
 
@@ -29,6 +28,6 @@ public interface ProjectMemberCommandUseCase {
 	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
 	ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd);
 
-	@PreAuthorize(REQUIRES_PROJECT_ACCESS)
-	ProjectMemberCommandResult leave(LeaveProjectCommand cmd);
+	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
+	ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long meberId);
 }

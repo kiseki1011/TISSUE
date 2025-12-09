@@ -15,7 +15,6 @@ import com.tissue.api.project.adapter.in.web.dto.request.ChangeProjectRoleReques
 import com.tissue.api.project.application.dto.request.ChangeProjectRoleCommand;
 import com.tissue.api.project.application.dto.request.JoinProjectCommand;
 import com.tissue.api.project.application.dto.request.KickProjectMemberCommand;
-import com.tissue.api.project.application.dto.request.LeaveProjectCommand;
 import com.tissue.api.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.api.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.api.project.application.port.in.ProjectMemberCommandUseCase;
@@ -63,10 +62,8 @@ public class ProjectMemberController {
 		@PathVariable String projectKey,
 		@CurrentMember MemberUserDetails currentMember
 	) {
-		ProjectMemberCommandResult response = commandUseCase.leave(
-			new LeaveProjectCommand(workspaceKey, projectKey, currentMember.getMemberId())
-		);
-
+		ProjectMemberCommandResult response = commandUseCase.leave(workspaceKey, projectKey,
+			currentMember.getMemberId());
 		return ResponseEntity.ok(response);
 	}
 

@@ -10,6 +10,6 @@ import com.tissue.api.workflow.application.dto.request.ReplaceWorkflowGraphComma
 @Transactional
 public interface WorkflowGraphReplaceUseCase {
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd);
 }

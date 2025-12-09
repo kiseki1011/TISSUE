@@ -21,7 +21,7 @@ public interface WorkspaceInviteLinkUseCase {
 	String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd);
 
 	@Transactional
-	@PreAuthorize(REQUIRES_PROJECT_WRITER + AND + REQUIRES_GRANTABLE_PROJECT_ROLE)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER + AND + REQUIRES_GRANTABLE_PROJECT_ROLE)
 	String createProjectLink(CreateProjectInviteLinkCommand cmd);
 
 	@Transactional

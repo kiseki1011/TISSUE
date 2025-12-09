@@ -17,7 +17,7 @@ import com.tissue.api.workflow.application.dto.response.WorkflowResponse;
 @Transactional
 public interface WorkflowCommandUseCase {
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	WorkflowResponse create(CreateWorkflowCommand cmd);
 
 	@PreAuthorize(REQUIRES_WORKFLOW_MANAGER)

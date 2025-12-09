@@ -34,7 +34,7 @@ public class ProjectSecurityGuard {
 			);
 	}
 
-	public boolean hasWritePermission(
+	public boolean isMember(
 		String workspaceKey,
 		String projectKey,
 		Long memberId
