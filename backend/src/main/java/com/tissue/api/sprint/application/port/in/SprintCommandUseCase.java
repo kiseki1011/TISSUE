@@ -18,10 +18,10 @@ import com.tissue.api.sprint.application.dto.response.SprintCommandResult;
 @Transactional
 public interface SprintCommandUseCase {
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult createSprint(CreateSprintCommand cmd);
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult addIssues(AddSprintIssuesCommand cmd);
 
 	@PreAuthorize(REQUIRES_SPRINT_MANAGER)
@@ -36,6 +36,6 @@ public interface SprintCommandUseCase {
 	@PreAuthorize(REQUIRES_SPRINT_MANAGER)
 	SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd);
 
-	@PreAuthorize(REQUIRES_PROJECT_WRITER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd);
 }

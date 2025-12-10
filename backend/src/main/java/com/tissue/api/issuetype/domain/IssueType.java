@@ -29,10 +29,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
+@SQLRestriction("softDeleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueType extends BaseEntity {
 
@@ -133,4 +132,3 @@ public class IssueType extends BaseEntity {
 		this.systemType = true;
 	}
 }
-

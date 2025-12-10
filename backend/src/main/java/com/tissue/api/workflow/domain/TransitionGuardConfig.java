@@ -1,14 +1,14 @@
 package com.tissue.api.workflow.domain;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.lang.Nullable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.api.common.entity.NoArchiveEntity;
-import com.tissue.api.workflow.domain.gaurd.GuardType;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,15 +20,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: transition + guardType 기준으로 유니크 제약이 필요하지 않을까?
-// TODO: transition + executionOrder에 대한 유니크 제약이 필요할까?
 @Entity
 @Getter
+@Table(
+	name = "transition_guard_config",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_guard_config_type",
+			columnNames = {"transition_id", "guard_type"}
+		),
+		@UniqueConstraint(
+			name = "uk_guard_config_order",
+			columnNames = {"transition_id", "execution_order"}
+		)
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TransitionGuardConfig extends NoArchiveEntity {
 
@@ -36,7 +49,6 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// 어떤 Transition에 속해있는지
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "transition_id", nullable = false)
 	private WorkflowTransition transition;
@@ -45,43 +57,25 @@ public class TransitionGuardConfig extends NoArchiveEntity {
 	@Column(nullable = false, length = 50)
 	private GuardType guardType;
 
-	// Guard별 파라미터 (JSON 형식)
-	@Column(columnDefinition = "jsonb")
-	private String guardParams;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "guard_params", columnDefinition = "jsonb")
+	private Map<String, Object> guardParams = new HashMap<>();
 
-	// Guard 실행 순서
 	@Column(nullable = false)
 	private int executionOrder;
 
 	public static TransitionGuardConfig create(
 		@NonNull WorkflowTransition transition,
 		@NonNull GuardType guardType,
-		@Nullable String guardParams,
+		@Nullable Map<String, Object> guardParams,
 		int executionOrder
 	) {
 		TransitionGuardConfig config = new TransitionGuardConfig();
 		config.transition = transition;
 		config.guardType = guardType;
-		config.guardParams = guardParams;
+		config.guardParams = guardParams != null ? guardParams : new HashMap<>();
 		config.executionOrder = executionOrder;
+
 		return config;
-	}
-
-	// JSON 파라미터를 Map으로 파싱
-	public Map<String, Object> parseParams() {
-		if (guardParams == null || guardParams.isBlank()) {
-			return Map.of();
-		}
-
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.readValue(
-				guardParams,
-				new TypeReference<Map<String, Object>>() {
-				}
-			);
-		} catch (JsonProcessingException e) {
-			return Map.of();
-		}
 	}
 }

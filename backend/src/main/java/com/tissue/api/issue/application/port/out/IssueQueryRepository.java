@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+import com.tissue.api.issue.application.dto.IssueCountProjection;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
@@ -189,4 +190,22 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		@Param("sprint") Sprint sprint,
 		@Param("doneCategory") StateCategory doneCategory
 	);
+
+	@Query("SELECT DISTINCT i.currentState.id " +
+		"FROM Issue i " +
+		"WHERE i.currentState.id IN :stateIds " +
+		"AND i.softDeleted = false")
+	List<Long> findStateIdsUsedByActiveIssues(@Param("stateIds") Collection<Long> stateIds);
+
+	@Query("""
+		    SELECT new com.tissue.api.issue.application.dto.IssueCountProjection(
+		        i.currentState.id,
+		        COUNT(i)
+		    )
+		    FROM Issue i
+		    WHERE i.currentState.id IN :stateIds
+		      AND i.softDeleted = false
+		    GROUP BY i.currentState.id
+		""")
+	List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
 }

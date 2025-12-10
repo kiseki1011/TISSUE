@@ -1,7 +1,5 @@
 package com.tissue.api.issue.application.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.tissue.api.common.util.Patchers;
@@ -14,18 +12,16 @@ import com.tissue.api.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.api.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.port.in.IssueCommandUseCase;
-import com.tissue.api.issue.application.service.finder.IssueFinder;
-import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.IssueContent;
-import com.tissue.api.issue.domain.IssueFieldValue;
-import com.tissue.api.issue.domain.IssueParticipants;
-import com.tissue.api.issue.domain.IssueSchedule;
 import com.tissue.api.issue.application.port.out.IssueCommandRepository;
-import com.tissue.api.issue.application.port.out.IssueFieldValueCommandRepository;
-import com.tissue.api.issue.domain.service.sync.EpicStoryPointSyncService;
-import com.tissue.api.issue.domain.service.sync.IssueProgressSyncService;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.service.validator.IssueFieldSchemaValidator;
 import com.tissue.api.issue.application.service.validator.IssueValidator;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueContent;
+import com.tissue.api.issue.domain.IssueParticipants;
+import com.tissue.api.issue.domain.IssueSchedule;
+import com.tissue.api.issue.domain.service.sync.EpicStoryPointSyncService;
+import com.tissue.api.issue.domain.service.sync.IssueProgressSyncService;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
@@ -50,16 +46,15 @@ public class IssueCommandService implements IssueCommandUseCase {
 	private final IssueValidator issueValidator;
 
 	private final IssueCommandRepository issueCommandRepository;
-	private final IssueFieldValueCommandRepository fieldValueRepository;
 
 	@Override
 	public IssueCommandResult create(CreateIssueCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIdAndProject_KeyAndProject_Workpsace_Key?
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.memberId());
 
-		Issue issue = issueCommandRepository.save(Issue.create(
+		Issue issue = Issue.create(
 			project,
 			issueType,
 			cmd.title(),
@@ -68,18 +63,19 @@ public class IssueCommandService implements IssueCommandUseCase {
 			IssueParticipants.of(actor),
 			cmd.priority(),
 			cmd.storyPoint()
-		));
+		);
 
-		List<IssueFieldValue> values = fieldSchemaValidator.validateAndExtract(cmd.customFields(), issue);
-		fieldValueRepository.saveAll(values);
+		fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
+
+		issueCommandRepository.save(issue);
 
 		return IssueCommandResult.from(issue);
 	}
 
 	@Override
 	public IssueCommandResult updateCommonFields(UpdateCommonFieldsCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), issue::updateTitle);
@@ -93,8 +89,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateStoryPoint(UpdateStoryPointCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
 		issue.updateStoryPoint(cmd.storyPoint());
@@ -108,24 +104,19 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult updateCustomFields(UpdateCustomFieldsCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 
-		List<IssueFieldValue> updateValues = fieldSchemaValidator.validateAndApplyPatch(
-			cmd.customFields(),
-			issue
-		);
-
-		fieldValueRepository.saveAll(updateValues);
+		fieldSchemaValidator.validateAndApplyPatch(cmd.customFields(), issue);
 
 		return IssueCommandResult.from(issue);
 	}
 
 	@Override
 	public IssueCommandResult assignParent(AssignParentCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Issue parent = issueFinder.findBy(cmd.parentIssueKey(), cmd.workspaceKey());
 
@@ -140,8 +131,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	@Override
 	public IssueCommandResult removeParent(RemoveParentCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Issue parent = issue.getParentIssue();
 
@@ -157,8 +148,8 @@ public class IssueCommandService implements IssueCommandUseCase {
 	// TODO: 이슈 soft-delete에 대한 정책 수립이 필요
 	@Override
 	public IssueCommandResult softDelete(DeleteIssueCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		// TODO: findByIssueKeyAndProject_KeyAndProject_Workpsace_Key?
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Issue parent = issue.getParentIssue();
 

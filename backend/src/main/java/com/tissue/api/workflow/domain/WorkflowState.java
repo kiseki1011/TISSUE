@@ -1,7 +1,6 @@
 package com.tissue.api.workflow.domain;
 
 import static com.tissue.api.common.util.TextNormalizer.*;
-import static com.tissue.api.issue.domain.enums.StateCategory.*;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
@@ -28,7 +27,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
 @SQLRestriction("softDeleted = false")
 @Getter
@@ -56,12 +54,6 @@ public class WorkflowState extends BaseEntity {
 	@Column(nullable = false)
 	private ColorType color;
 
-	@Column(nullable = false)
-	private boolean initial;
-
-	@Column(nullable = false)
-	private boolean terminal;
-
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private StateCategory category;
@@ -70,16 +62,13 @@ public class WorkflowState extends BaseEntity {
 		@NonNull Label label,
 		@Nullable String description,
 		@NonNull ColorType color,
-		boolean initial,
-		boolean terminal
+		@NonNull StateCategory category
 	) {
 		WorkflowState ws = new WorkflowState();
 		ws.label = label;
 		ws.description = nullToEmpty(description);
 		ws.color = color;
-		ws.initial = initial;
-		ws.terminal = terminal;
-		ws.category = derive(initial, terminal);
+		ws.category = category;
 
 		return ws;
 	}
@@ -100,27 +89,15 @@ public class WorkflowState extends BaseEntity {
 		this.color = color;
 	}
 
-	void markInitial() {
-		this.initial = true;
-		this.category = derive(true, terminal);
-	}
-
-	void unmarkInitial() {
-		this.initial = false;
-		this.category = derive(false, terminal);
-	}
-
-	void markTerminal() {
-		this.terminal = true;
-		this.category = derive(this.initial, true);
-	}
-
-	void unmarkTerminal() {
-		this.terminal = false;
-		this.category = derive(this.initial, false);
+	void categorizeAs(@NonNull StateCategory category) {
+		this.category = category;
 	}
 
 	public String getDisplayLabel() {
 		return label.getDisplay();
+	}
+
+	public boolean isCategorizedAs(StateCategory category) {
+		return getCategory() == category;
 	}
 }

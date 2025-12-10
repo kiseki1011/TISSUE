@@ -4,13 +4,13 @@ import static com.tissue.api.common.util.TextNormalizer.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.workflow.domain.gaurd.GuardType;
+import com.tissue.api.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,9 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: softDeleted = false인 경우에만 적용하는 unique constraint 필요 -> Postgres DDL 사용
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition extends BaseEntity {
@@ -100,7 +98,11 @@ public class WorkflowTransition extends BaseEntity {
 	}
 
 	// Guard 추가 (GuardType enum 사용)
-	void addGuard(@NonNull GuardType guardType, @Nullable String params, int order) {
+	void addGuard(
+		@NonNull GuardType guardType,
+		@Nullable Map<String, Object> params,
+		int order
+	) {
 		TransitionGuardConfig config = TransitionGuardConfig.create(
 			this,
 			guardType,
@@ -110,7 +112,6 @@ public class WorkflowTransition extends BaseEntity {
 		guardConfigs.add(config);
 	}
 
-	// 모든 Guard 제거
 	void clearGuards() {
 		guardConfigs.clear();
 	}

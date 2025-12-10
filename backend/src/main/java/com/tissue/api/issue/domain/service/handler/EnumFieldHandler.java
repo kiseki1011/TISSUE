@@ -5,9 +5,9 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.enums.FieldType;
-import com.tissue.api.issuetype.repository.EnumFieldOptionQueryRepository;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

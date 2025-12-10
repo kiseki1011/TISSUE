@@ -13,7 +13,6 @@ import com.tissue.api.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.api.project.application.dto.request.ChangeProjectRoleCommand;
 import com.tissue.api.project.application.dto.request.JoinProjectCommand;
 import com.tissue.api.project.application.dto.request.KickProjectMemberCommand;
-import com.tissue.api.project.application.dto.request.LeaveProjectCommand;
 import com.tissue.api.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.api.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.api.project.application.port.in.ProjectMemberCommandUseCase;
@@ -92,10 +91,10 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	}
 
 	@Override
-	public ProjectMemberCommandResult leave(LeaveProjectCommand cmd) {
+	public ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long memberId) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+		Project project = projectFinder.findBy(projectKey, workspaceKey);
+		ProjectMember actor = projectMemberFinder.findBy(project, memberId);
 
 		actor.remove();
 

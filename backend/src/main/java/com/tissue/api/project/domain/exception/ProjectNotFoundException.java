@@ -6,8 +6,8 @@ public class ProjectNotFoundException extends ResourceNotFoundException {
 
 	public ProjectNotFoundException(String projectKey, String workspaceKey) {
 		super("Project '%s' not found within workspace '%s'.".formatted(projectKey, workspaceKey));
-		addContext("workspaceKey", workspaceKey);
 		addContext("projectKey", projectKey);
+		addContext("workspaceKey", workspaceKey);
 	}
 
 	public ProjectNotFoundException(Long projectId) {

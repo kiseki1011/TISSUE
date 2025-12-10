@@ -4,10 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.api.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
-import com.tissue.api.issuetype.exception.IssueFieldNotFoundException;
-import com.tissue.api.issuetype.repository.IssueFieldQueryRepository;
+import com.tissue.api.issuetype.domain.exception.IssueFieldNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 

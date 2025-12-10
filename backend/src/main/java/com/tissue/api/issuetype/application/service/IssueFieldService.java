@@ -5,33 +5,33 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.issuetype.application.dto.AddOptionCommand;
-import com.tissue.api.issuetype.application.dto.CreateIssueFieldCommand;
-import com.tissue.api.issuetype.application.dto.DeleteIssueFieldCommand;
-import com.tissue.api.issuetype.application.dto.DeleteOptionCommand;
-import com.tissue.api.issuetype.application.dto.PatchIssueFieldCommand;
-import com.tissue.api.issuetype.application.dto.RenameIssueFieldCommand;
-import com.tissue.api.issuetype.application.dto.RenameOptionCommand;
-import com.tissue.api.issuetype.application.dto.ReorderOptionsCommand;
+import com.tissue.api.issuetype.application.dto.request.AddOptionCommand;
+import com.tissue.api.issuetype.application.dto.request.CreateIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.request.DeleteIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.request.DeleteOptionCommand;
+import com.tissue.api.issuetype.application.dto.request.PatchIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.request.RenameIssueFieldCommand;
+import com.tissue.api.issuetype.application.dto.request.RenameOptionCommand;
+import com.tissue.api.issuetype.application.dto.request.ReorderOptionsCommand;
+import com.tissue.api.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.api.issuetype.application.port.in.IssueFieldUseCase;
+import com.tissue.api.issuetype.application.port.out.EnumFieldOptionCommandRepository;
+import com.tissue.api.issuetype.application.port.out.EnumFieldOptionQueryRepository;
+import com.tissue.api.issuetype.application.port.out.IssueFieldCommandRepository;
 import com.tissue.api.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.api.issuetype.application.service.finder.IssueFieldOptionFinder;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
+import com.tissue.api.issuetype.application.service.validator.EnumFieldOptionValidator;
+import com.tissue.api.issuetype.application.service.validator.IssueFieldValidator;
 import com.tissue.api.issuetype.domain.EnumFieldOption;
 import com.tissue.api.issuetype.domain.EnumFieldOptions;
 import com.tissue.api.issuetype.domain.IssueField;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.issuetype.domain.enums.FieldType;
 import com.tissue.api.issuetype.domain.policy.FieldDefintionPolicy;
-import com.tissue.api.issuetype.domain.service.validator.EnumFieldOptionValidator;
-import com.tissue.api.issuetype.domain.service.validator.IssueFieldValidator;
-import com.tissue.api.issuetype.presentation.dto.response.IssueFieldResponse;
-import com.tissue.api.issuetype.repository.EnumFieldOptionCommandRepository;
-import com.tissue.api.issuetype.repository.EnumFieldOptionQueryRepository;
-import com.tissue.api.issuetype.repository.IssueFieldCommandRepository;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 
@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class IssueFieldService {
+public class IssueFieldService implements IssueFieldUseCase {
 
 	private final ProjectFinder projectFinder;
 	private final IssueTypeFinder issueTypeFinder;
@@ -57,11 +57,8 @@ public class IssueFieldService {
 
 	private final EntityManager entityManager;
 
-	@Transactional
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
-
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
@@ -84,54 +81,40 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(savedField);
 	}
 
-	@Transactional
-	public IssueFieldResponse rename(RenameIssueFieldCommand cmd) {
-
+	public void rename(RenameIssueFieldCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
 		if (labelUnchanged(issueField.getLabel(), cmd.label())) {
-			return IssueFieldResponse.from(issueField);
+			return;
 		}
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
 		issueField.rename(cmd.label());
-
-		return IssueFieldResponse.from(issueField);
 	}
 
-	@Transactional
-	public IssueFieldResponse update(PatchIssueFieldCommand cmd) {
-
+	public void update(PatchIssueFieldCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
 		Patchers.apply(cmd.description(), issueField::updateDescription);
 		Patchers.apply(cmd.required(), issueField::setRequired);
-
-		return IssueFieldResponse.from(issueField);
 	}
 
-	// TODO: hard-delete 정책 사용
-	@Transactional
-	public IssueFieldResponse delete(DeleteIssueFieldCommand cmd) {
-
+	// TODO: hard-delete 사용
+	public void delete(DeleteIssueFieldCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		// TODO: 해당 IssueField를 사용해서 값을 설정한 이슈가 단 하나라도 있으면 삭제 불가
+		// TODO: 삭제 시도하면 해당 필드 삭제 + 해당 모든 IssueFieldValue도 같이 삭제
 		issueFieldValidator.ensureDeletable(issueField);
 
-		fieldOptionCommandRepo.softDeleteByField(issueField);
-		issueField.softDelete();
-
-		return IssueFieldResponse.from(issueField);
+		issueFieldCommandRepo.delete(issueField);
 	}
 
-	@Transactional
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
@@ -149,26 +132,21 @@ public class IssueFieldService {
 		return IssueFieldResponse.from(issueField);
 	}
 
-	@Transactional
-	public IssueFieldResponse renameOption(RenameOptionCommand cmd) {
-
+	public void renameOption(RenameOptionCommand cmd) {
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
 		if (labelUnchanged(option.getLabel(), cmd.label())) {
-			return IssueFieldResponse.from(issueField);
+			return;
 		}
 
 		fieldOptionValidator.ensureLabelUnique(issueField, cmd.label());
 		option.rename(cmd.label());
-
-		return IssueFieldResponse.from(issueField);
 	}
 
-	@Transactional
-	public IssueFieldResponse reorderOptions(ReorderOptionsCommand cmd) {
+	public void reorderOptions(ReorderOptionsCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
@@ -185,24 +163,20 @@ public class IssueFieldService {
 		entityManager.flush();
 
 		options.reorderTo(cmd.targetOrderedIds());
-
-		return IssueFieldResponse.from(issueField);
 	}
 
-	// TODO: hard-delete 정책으로 변경
-	@Transactional
-	public IssueFieldResponse deleteOption(DeleteOptionCommand cmd) {
+	// TODO: hard-delete 사용
+	public void deleteOption(DeleteOptionCommand cmd) {
 
 		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
-		// TODO: 해당 option을 값으로 사용하는 이슈가 단 하나라도 있으면 삭제 불가
+		// TODO: 사용하고 있던 IssueFieldValue들의 모든걸 다른 EnumFieldOption 중 하나로 변경하거나, 그냥 null로 채우기
+		//  해당 EnumFieldOption은 삭제
 		// optionValidator.ensureNotInUse(option);
-		option.softDelete();
-
-		return IssueFieldResponse.from(issueField);
+		fieldOptionCommandRepo.delete(option);
 	}
 
 	private boolean labelUnchanged(Label currentLabel, Label newLabel) {
