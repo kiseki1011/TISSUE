@@ -1,8 +1,8 @@
 package com.tissue.api.workflow.adapter.in.web;
 
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.tissue.api.workflow.adapter.in.web.dto.request.CreateWorkflowRequest;
 import com.tissue.api.workflow.adapter.in.web.dto.request.ReplaceWorkflowGraphRequest;
@@ -45,10 +46,15 @@ public class WorkflowController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid CreateWorkflowRequest request
 	) {
-		WorkflowCreateResponse response = workflowCommandUseCase.create(request.toCommand(workspaceKey));
+		WorkflowCreateResponse response = workflowCommandUseCase.create(request.toCommand(workspaceKey, projectKey));
 
-		// TODO: created 사용
-		return ResponseEntity.status(HttpStatus.CREATED)
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentRequest()
+			.path("/{workflowId}")
+			.buildAndExpand(response.workflowId())
+			.toUri();
+
+		return ResponseEntity.created(location)
 			.body(response);
 	}
 
@@ -114,12 +120,7 @@ public class WorkflowController {
 		@PathVariable String projectKey,
 		@RequestParam(required = false, defaultValue = "false") boolean includeArchived
 	) {
-		List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(
-			workspaceKey,
-			projectKey,
-			includeArchived
-		);
-
+		List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(workspaceKey, projectKey, includeArchived);
 		return ResponseEntity.ok(workflows);
 	}
 
@@ -129,12 +130,7 @@ public class WorkflowController {
 		@PathVariable String projectKey,
 		@PathVariable Long workflowId
 	) {
-		WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(
-			workspaceKey,
-			projectKey,
-			workflowId
-		);
-
+		WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(workspaceKey, projectKey, workflowId);
 		return ResponseEntity.ok(detail);
 	}
 }
