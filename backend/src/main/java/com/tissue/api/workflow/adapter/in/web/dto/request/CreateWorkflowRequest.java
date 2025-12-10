@@ -41,7 +41,7 @@ public record CreateWorkflowRequest(
 	) {
 	}
 
-	public CreateWorkflowCommand toCommand(String workspaceKey) {
+	public CreateWorkflowCommand toCommand(String workspaceKey, String projectKey) {
 		List<StateDefinition> stateDefinitions = createStatusRequests.stream()
 			.map(s -> new StateDefinition(
 				new EntityRef(null, s.tempKey()),
@@ -64,6 +64,7 @@ public record CreateWorkflowRequest(
 
 		return CreateWorkflowCommand.builder()
 			.workspaceKey(workspaceKey)
+			.projectKey(projectKey)
 			.label(Label.of(label))
 			.description(description)
 			.color(color)
