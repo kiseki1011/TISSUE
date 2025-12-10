@@ -10,7 +10,6 @@ import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.service.validator.IssueValidator;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.workflow.application.service.TransitionGuardRegistry;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.Workflow;
@@ -18,6 +17,7 @@ import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.guard.GuardContext;
 import com.tissue.api.workflow.domain.guard.TransitionGuard;
+import com.tissue.api.workflow.domain.guard.TransitionGuardRegistry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,6 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 	@Override
 	public IssueCommandResult performTransition(PerformTransitionCommand cmd) {
-		// TODO: issueFinder.findBy(issueKey, projectKey, workspaceKey)
 		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
 		Workflow workflow = issue.getIssueType().getWorkflow();
 		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
@@ -84,7 +83,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 			// Guard 실행에 필요한 컨텍스트 생성
 			GuardContext context = GuardContext.builder()
-				.issue(issue) // 전이 대상 이슈
+				.issue(issue)
 				.transition(transition)
 				.workspaceKey(workspaceKey)
 				.projectKey(projectKey)

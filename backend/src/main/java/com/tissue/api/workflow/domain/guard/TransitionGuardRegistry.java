@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.application.service;
+package com.tissue.api.workflow.domain.guard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.workflow.domain.guard.GuardType;
-import com.tissue.api.workflow.domain.guard.TransitionGuard;
-
-// TODO: 도메인 서비스로 이동해야 할까?
 @Component
 public class TransitionGuardRegistry {
 

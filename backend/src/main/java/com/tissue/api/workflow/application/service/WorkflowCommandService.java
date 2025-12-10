@@ -29,6 +29,7 @@ import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.exception.DuplicateWorkflowException;
 import com.tissue.api.workflow.domain.exception.TransitionNotFoundException;
 import com.tissue.api.workflow.domain.guard.GuardType;
+import com.tissue.api.workflow.domain.guard.TransitionGuardRegistry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
