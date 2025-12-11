@@ -1,19 +1,12 @@
 package com.tissue.api.notification.application.eventhandler;
 
-import java.util.Collection;
-
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
-import com.tissue.api.notification.domain.model.ActivityLog;
-import com.tissue.api.notification.domain.model.Notification;
-import com.tissue.api.notification.domain.model.vo.NotificationMessage;
 import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -201,19 +194,19 @@ public class NotificationEventHandler {
 	// 	processNotifications(event, targets);
 	// }
 
-	private <T extends DomainEvent> void processNotifications(T event, Collection<WorkspaceMember> targets) {
-
-		NotificationMessage message = notificationMessageFactory.createMessage(event);
-		activityLogRepository.save(ActivityLog.from(event, message));
-
-		if (targets == null || targets.isEmpty()) {
-			log.debug("No notification targets for event: {}", event.getEventId());
-			return;
-		}
-
-		for (WorkspaceMember target : targets) {
-			Notification notification = commandService.createNotification(event, target.getMember().getId(), message);
-			notificationProcessor.process(notification);
-		}
-	}
+	// private <T extends DomainEvent> void processNotifications(T event, Collection<WorkspaceMember> targets) {
+	//
+	// 	NotificationMessage message = notificationMessageFactory.createMessage(event);
+	// 	activityLogRepository.save(ActivityLog.from(event, message));
+	//
+	// 	if (targets == null || targets.isEmpty()) {
+	// 		log.debug("No notification targets for event: {}", event.getEventId());
+	// 		return;
+	// 	}
+	//
+	// 	for (WorkspaceMember target : targets) {
+	// 		Notification notification = commandService.createNotification(event, target.getMember().getId(), message);
+	// 		notificationProcessor.process(notification);
+	// 	}
+	// }
 }

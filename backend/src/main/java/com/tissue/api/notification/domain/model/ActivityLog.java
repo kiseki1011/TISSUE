@@ -3,7 +3,6 @@ package com.tissue.api.notification.domain.model;
 import java.util.UUID;
 
 import com.tissue.api.common.entity.BaseDateEntity;
-import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.notification.domain.enums.NotificationType;
 import com.tissue.api.notification.domain.model.vo.EntityReference;
 import com.tissue.api.notification.domain.model.vo.NotificationMessage;
@@ -61,13 +60,13 @@ public class ActivityLog extends BaseDateEntity {
 		this.actorMemberId = actorMemberId;
 	}
 
-	public static ActivityLog from(DomainEvent event, NotificationMessage message) {
-		return ActivityLog.builder()
-			.eventId(event.getEventId())
-			.type(event.getNotificationType())
-			.entityReference(event.createEntityReference())
-			.message(message)
-			.actorMemberId(event.getActorMemberId())
-			.build();
-	}
+	// public static ActivityLog from(DomainEvent event, NotificationMessage message) {
+	// 	return ActivityLog.builder()
+	// 		.eventId(event.getEventId())
+	// 		.type(event.getNotificationType())
+	// 		.entityReference(event.createEntityReference())
+	// 		.message(message)
+	// 		.actorMemberId(event.getActorMemberId())
+	// 		.build();
+	// }
 }

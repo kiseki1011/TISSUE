@@ -1,38 +1,34 @@
 package com.tissue.api.comment.domain.event;
 
-import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.model.vo.EntityReference;
-
 import lombok.Getter;
 
 @Getter
-public class ReviewCommentAddedEvent extends CommentEvent {
+public class ReviewCommentAddedEvent {
 
-	private final Long reviewId;
-
-	public ReviewCommentAddedEvent(
-		Long issueId,
-		String issueKey,
-		String workspaceCode,
-		// IssueType issueType,
-		Long actorMemberId,
-		Long reviewId,
-		Long commentId
-	) {
-		super(
-			NotificationType.REVIEW_COMMENT_ADDED,
-			ResourceType.ISSUE,
-			workspaceCode,
-			issueId,
-			issueKey,
-			// issueType,
-			actorMemberId,
-			commentId
-		);
-
-		this.reviewId = reviewId;
-	}
+	// private final Long reviewId;
+	//
+	// public ReviewCommentAddedEvent(
+	// 	Long issueId,
+	// 	String issueKey,
+	// 	String workspaceCode,
+	// 	// IssueType issueType,
+	// 	Long actorMemberId,
+	// 	Long reviewId,
+	// 	Long commentId
+	// ) {
+	// 	super(
+	// 		NotificationType.REVIEW_COMMENT_ADDED,
+	// 		ResourceType.ISSUE,
+	// 		workspaceCode,
+	// 		issueId,
+	// 		issueKey,
+	// 		// issueType,
+	// 		actorMemberId,
+	// 		commentId
+	// 	);
+	//
+	// 	this.reviewId = reviewId;
+	// }
 
 	// public static ReviewCommentAddedEvent createEvent(
 	// 	Issue issue,
@@ -51,13 +47,4 @@ public class ReviewCommentAddedEvent extends CommentEvent {
 	// 	);
 	// }
 
-	@Override
-	public EntityReference createEntityReference() {
-		return EntityReference.forReviewComment(
-			getWorkspaceCode(),
-			getIssueKey(),
-			getReviewId(),
-			getCommentId()
-		);
-	}
 }
