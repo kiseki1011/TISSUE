@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
-import com.tissue.api.workflow.application.dto.request.ArchiveWorkflowCommand;
 import com.tissue.api.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.api.workflow.application.dto.request.CreateWorkflowCommand;
+import com.tissue.api.workflow.application.dto.request.DeleteWorkflowCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.api.workflow.application.dto.request.UpdateWorkflowCommand;
@@ -48,7 +48,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 
 		workflowValidator.ensureLabelUnique(project, cmd.label());
 
@@ -85,7 +85,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void update(UpdateWorkflowCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		Patchers.apply(cmd.label(), newLabel -> {
@@ -99,22 +99,22 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	}
 
 	@Override
-	public void archive(ArchiveWorkflowCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+	public void delete(DeleteWorkflowCommand cmd) {
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		// TODO: archive(soft-delete) 정책 정하기
-		//  - 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
-		//  - 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
-		//    해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 또는 archived 되었다는 표시)
+		//  - 정책1: 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
+		//  - 정책2: 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
+		//    UI에서 해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 되었다는 표시)
 		// workflowValidator.ensureDeletable();
 
-		workflow.archive();
+		workflow.softDelete();
 	}
 
 	@Override
 	public void updateState(UpdateStateCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
 
@@ -125,7 +125,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void updateTransition(UpdateTransitionCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
@@ -135,7 +135,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		WorkflowTransition transition = workflow.getTransitions().stream()

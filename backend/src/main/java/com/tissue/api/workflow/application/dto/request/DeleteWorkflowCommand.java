@@ -1,6 +1,6 @@
 package com.tissue.api.workflow.application.dto.request;
 
-public record ArchiveWorkflowCommand(
+public record DeleteWorkflowCommand(
 	String workspaceKey,
 	String projectKey,
 	Long workflowId

@@ -20,7 +20,7 @@ import com.tissue.api.workflow.adapter.in.web.dto.request.ReplaceWorkflowGraphRe
 import com.tissue.api.workflow.adapter.in.web.dto.request.UpdateStateRequest;
 import com.tissue.api.workflow.adapter.in.web.dto.request.UpdateTransitionRequest;
 import com.tissue.api.workflow.adapter.in.web.dto.request.UpdateWorkflowRequest;
-import com.tissue.api.workflow.application.dto.request.ArchiveWorkflowCommand;
+import com.tissue.api.workflow.application.dto.request.DeleteWorkflowCommand;
 import com.tissue.api.workflow.application.dto.response.WorkflowCreateResponse;
 import com.tissue.api.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.api.workflow.application.dto.response.WorkflowSummary;
@@ -86,7 +86,7 @@ public class WorkflowController {
 		@PathVariable String projectKey,
 		@PathVariable Long workflowId
 	) {
-		workflowCommandUseCase.archive(new ArchiveWorkflowCommand(workspaceKey, projectKey, workflowId));
+		workflowCommandUseCase.delete(new DeleteWorkflowCommand(workspaceKey, projectKey, workflowId));
 		return ResponseEntity.noContent().build();
 	}
 
