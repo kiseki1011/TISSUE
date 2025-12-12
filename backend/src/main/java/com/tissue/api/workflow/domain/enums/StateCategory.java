@@ -1,4 +1,4 @@
-package com.tissue.api.issue.domain.enums;
+package com.tissue.api.workflow.domain.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum StateCategory {
+
 	TODO,
 	IN_PROGRESS,
 	DONE;

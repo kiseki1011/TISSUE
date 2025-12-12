@@ -2,11 +2,11 @@ package com.tissue.api.workflow.adapter.in.web.dto.request;
 
 import java.util.List;
 
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.application.dto.EntityRef;
 import com.tissue.api.workflow.application.dto.StateDefinition;
 import com.tissue.api.workflow.application.dto.TransitionDefinition;
 import com.tissue.api.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

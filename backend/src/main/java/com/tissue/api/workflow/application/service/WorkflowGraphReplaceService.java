@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.dto.EntityRef;
@@ -24,6 +23,7 @@ import com.tissue.api.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 import com.tissue.api.workflow.domain.exception.InvalidTodoStateCountException;
 
 import jakarta.persistence.OptimisticLockException;
@@ -56,7 +56,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {
@@ -157,7 +157,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 		boolean toDeleteExist = !toDelete.isEmpty();
 		if (toDeleteExist) {
 			workflowValidator.ensureStatesDeletable(toDelete);
-			toDelete.forEach(workflow::softDeleteState);
+			toDelete.forEach(workflow::deleteState);
 		}
 	}
 

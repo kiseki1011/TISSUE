@@ -6,11 +6,11 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.enums.ColorType;
 import com.tissue.api.common.vo.Label;
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.application.dto.EntityRef;
 import com.tissue.api.workflow.application.dto.StateDefinition;
 import com.tissue.api.workflow.application.dto.TransitionDefinition;
 import com.tissue.api.workflow.application.dto.request.CreateWorkflowCommand;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

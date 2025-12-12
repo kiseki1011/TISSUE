@@ -1,6 +1,6 @@
 package com.tissue.api.workflow.application.service.validator;
 
-import static com.tissue.api.issue.domain.enums.StateCategory.*;
+import static com.tissue.api.workflow.domain.enums.StateCategory.*;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 import com.tissue.api.workflow.domain.exception.DeadEndStateException;
 import com.tissue.api.workflow.domain.exception.InvalidTodoStateCountException;
 import com.tissue.api.workflow.domain.exception.InvalidTransitionTargetException;
