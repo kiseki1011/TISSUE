@@ -7,13 +7,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.tissue.api.issue.domain.policy.FieldValuePolicy;
+import com.tissue.api.issue.domain.policy.IssuePolicy;
 
 // TODO: @ConfigurationProperties 고려
 @Configuration
 public class IssueConfig {
 
-	@Value("${tissue.issue.policy.max-reviewers}")
-	private int maxReviewers;
+	@Bean
+	public IssuePolicy issuePolicy(@Value("${tissue.issue.policy.max-reviewers}") int maxReviewers) {
+		return new IssuePolicy(maxReviewers);
+	}
 
 	@Bean
 	public FieldValuePolicy fieldValuePolicy(

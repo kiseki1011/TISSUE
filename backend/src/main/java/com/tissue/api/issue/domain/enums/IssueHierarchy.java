@@ -10,22 +10,31 @@ import lombok.RequiredArgsConstructor;
 public enum IssueHierarchy {
 
 	EPIC(1), // highest
-	STORY(2),
+	STANDARD(2),
 	SUBTASK(3),
 	MICROTASK(4); // lowest
 
 	private final int level;
 
+	public boolean isEpic() {
+		return this == EPIC;
+	}
+
+	public boolean isNotEpic() {
+		return !isEpic();
+	}
+
+	// TODO: 아래는 정책이나 비즈니스 로직에 가까운 것들인데, 여기(enum)에 정의해서 사용하는게 괜찮나?
 	public static List<IssueHierarchy> getStoryPointModifiable() {
-		return List.of(STORY);
+		return List.of(STANDARD);
 	}
 
 	public static List<IssueHierarchy> getParentRequired() {
 		return List.of(SUBTASK, MICROTASK);
 	}
 
-	public static List<IssueHierarchy> getCrossProjectChildAllowed() {
-		return List.of(EPIC);
+	public static List<IssueHierarchy> getCrossProjectParentAllowed() {
+		return List.of(STANDARD);
 	}
 
 	public boolean canBeParentOf(IssueHierarchy hierarchy) {
@@ -40,8 +49,8 @@ public enum IssueHierarchy {
 		return getParentRequired().contains(this);
 	}
 
-	public boolean cannotHaveCrossProjectChild() {
-		return !getCrossProjectChildAllowed().contains(this);
+	public boolean cannotHaveCrossProjectParent() {
+		return !getCrossProjectParentAllowed().contains(this);
 	}
 
 	public boolean cannotModifyStoryPoint() {
@@ -53,6 +62,6 @@ public enum IssueHierarchy {
 	}
 
 	public boolean canUseStoryPoint() {
-		return this == EPIC || this == STORY;
+		return this == EPIC || this == STANDARD;
 	}
 }

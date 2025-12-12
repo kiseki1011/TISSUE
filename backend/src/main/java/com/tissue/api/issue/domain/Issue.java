@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
@@ -13,7 +12,6 @@ import com.tissue.api.common.entity.BaseEntity;
 import com.tissue.api.issue.domain.enums.IssueHierarchy;
 import com.tissue.api.issue.domain.enums.IssuePriority;
 import com.tissue.api.issue.domain.enums.IssueRelationType;
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issue.domain.exception.InvalidParentHierarchyException;
 import com.tissue.api.issue.domain.exception.IssueSelfReferenceException;
 import com.tissue.api.issue.domain.exception.ParentRequiredException;
@@ -25,6 +23,7 @@ import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -133,7 +132,7 @@ public class Issue extends BaseEntity {
 		issue.content = content;
 		issue.schedule = schedule;
 		issue.participants = participants;
-		issue.priority = setDefaultPriorityIfNull(priority);
+		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
 		issue.storyPoint = ensureCanModifyStoryPoint(issue.getHierarchy(), storyPoint);
 
 		issue.progress = IssueProgress.init();
@@ -193,12 +192,12 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
-		ensureCanModifyStoryPoint(this.getHierarchy(), storyPoint);
+		ensureCanModifyStoryPoint(getHierarchy(), storyPoint);
 		this.storyPoint = storyPoint;
 	}
 
 	public void recalculateEpicStoryPoint(int totalChildrenStoryPoints) {
-		if (isNotEpic()) {
+		if (getHierarchy().isNotEpic()) {
 			return;
 		}
 		this.storyPoint = totalChildrenStoryPoints;
@@ -257,8 +256,6 @@ public class Issue extends BaseEntity {
 
 	public void setParentIssue(@NonNull Issue newParent) {
 		ensureCanSetParent(newParent);
-		clearParent();
-
 		this.parentIssue = newParent;
 	}
 
@@ -269,9 +266,6 @@ public class Issue extends BaseEntity {
 
 	public void delete() {
 		ensureIsInitial();
-		clearParticipants();
-		clearRelations();
-		clearParent();
 		softDelete();
 	}
 
@@ -279,37 +273,21 @@ public class Issue extends BaseEntity {
 		return project.getKey();
 	}
 
-	public boolean isNotEpic() {
-		return issueType.getIssueHierarchy() != IssueHierarchy.EPIC;
-	}
-
 	public IssueHierarchy getHierarchy() {
 		return issueType.getIssueHierarchy();
 	}
 
-	public boolean isDone() {
-		return currentState.getCategory() == StateCategory.DONE;
-	}
-
-	public boolean isAuthor(@NonNull Long memberId) {
-		return Objects.equals(getCreatedBy(), memberId);
+	public boolean currentStateIs(StateCategory category) {
+		return currentState.isCategorizedAs(category);
 	}
 
 	public int getSubscribersCount() {
 		return participants.getSubscribers().size();
 	}
 
-	public boolean isParticipant(@NonNull ProjectMember pm) {
-		return isAuthor(pm.getMemberId()) ||
-			participants.isReporter(pm) ||
-			participants.isAssignee(pm) ||
-			participants.isReviewer(pm) ||
-			participants.isSubscriber(pm);
-	}
-
 	private void ensureIsInitial() {
 		if (!currentState.getCategory().isTodo()) {
-			// TODO: InProgressIssueNotDeletable (이름 피드백 필요)
+			// TODO: 커스텀 예외 추가
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}
 	}
@@ -322,18 +300,13 @@ public class Issue extends BaseEntity {
 		return storyPoint;
 	}
 
-	private static IssuePriority setDefaultPriorityIfNull(IssuePriority priority) {
-		return priority == null ? IssuePriority.NORMAL : priority;
-	}
-
 	private void clearParent() {
 		parentIssue = null;
-
 	}
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
 		ensureSameWorkspace(parentIssue);
-		if (this.getHierarchy().cannotHaveCrossProjectChild()) {
+		if (this.getHierarchy().cannotHaveCrossProjectParent()) {
 			ensureSameProject(parentIssue);
 		}
 		ensureNotSelfReference(parentIssue);
@@ -358,6 +331,7 @@ public class Issue extends BaseEntity {
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
+			// TODO: 그냥 WorkspaceMismatchException을 만들고 여기서 메세지를 전달할까?
 			throw new ParentWorkspaceMismatchException(
 				parentIssue.getWorkspaceKey(),
 				parentIssue.key,
@@ -368,21 +342,12 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureSameProject(Issue parentIssue) {
-		boolean isDifferentProject = !this.getProject().equals(parentIssue.getProject());
+		boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
 		if (isDifferentProject) {
+			// TODO: ProjectMismatchException?
 			throw new RuntimeException("Children of issues below EPIC level must be in the same project.");
-			// TODO:
-			// throw new ProjectMismatchException(
-			// 	parentIssue.getWorkspaceKey(),
-			// 	parentIssue.key,
-			// 	this.getWorkspaceKey(),
-			// 	this.key
-			// );
 		}
 	}
-
-	// TODO: ensureSameProject - STORY 이하의 hierarchy를 가지는 경우 자식은 무조건 같은 Project 내에서만 할 수 있도록 허용
-	//  - EPIC과 STORY 사이의 경우에는 cross-project 허용
 
 	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
@@ -390,17 +355,9 @@ public class Issue extends BaseEntity {
 		}
 	}
 
-	private void clearParticipants() {
-		participants.clear();
-	}
-
-	private void clearRelations() {
-		relations.clear();
-	}
-
 	@Override
 	public String toString() {
 		return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
-			.formatted(id, key, projectKey, getWorkspaceKey(), title);
+			.formatted(id, key, projectKey, workspaceKey, title);
 	}
 }
