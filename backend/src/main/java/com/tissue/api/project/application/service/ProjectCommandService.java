@@ -50,7 +50,7 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	@Override
 	public ProjectCommandResult update(UpdateProjectCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), project::updateTitle);
 		Patchers.apply(cmd.description(), project::updateDescription);
@@ -65,7 +65,7 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	@Override
 	public ProjectCommandResult delete(DeleteProjectCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 
 		// TODO: Project soft-delete 시 안의 내용물(스프린트, 이슈, 프로젝트 멤버, 등)은 어떻게 처리해야할까?
 		//  - 다 같이 cascade로 soft-delete 처리? 너무 복잡한데? 다시 restore 하는 로직도 복잡할 것 같고.

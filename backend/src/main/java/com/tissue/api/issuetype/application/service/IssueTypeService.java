@@ -34,7 +34,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 	private final IssueTypeValidator issueTypeValidator;
 
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
@@ -54,7 +54,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 	}
 
 	public void rename(RenameIssueTypeCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
 
 		if (labelUnchanged(issueType, cmd.label())) {
@@ -66,7 +66,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 	}
 
 	public void update(PatchIssueTypeCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
@@ -75,7 +75,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 
 	// TODO: soft-delete 사용
 	public void delete(DeleteIssueTypeCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
 
 		// TODO: 해당 IssueType를 사용한 이슈가 WorkflowState의 StateCategory가 DONE이 아닌게 존재한다면 삭제 불가

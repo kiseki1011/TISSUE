@@ -142,7 +142,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 			if (projectConfigs != null) {
 				for (var config : projectConfigs) {
-					Project project = projectFinder.findBy(config.projectKey(), workspace.getKey());
+					Project project = projectFinder.findForCommand(config.projectKey(), workspace.getKey());
 					invitation.addProjectConfig(project, config.role());
 				}
 			}

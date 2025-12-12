@@ -41,7 +41,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	@Override
 	public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 
 		Set<Long> targetMemberIds = cmd.extractMemberIds();
 		Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
@@ -74,7 +74,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	@Override
 	public ProjectMemberCommandResult join(JoinProjectCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
 			cmd.workspaceKey()
@@ -93,7 +93,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	@Override
 	public ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long memberId) {
 
-		Project project = projectFinder.findBy(projectKey, workspaceKey);
+		Project project = projectFinder.findForCommand(projectKey, workspaceKey);
 		ProjectMember actor = projectMemberFinder.findBy(project, memberId);
 
 		actor.remove();
@@ -110,7 +110,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 			throw new SelfOperationNotAllowedException("Self kick not allowed. Use project leave instead.");
 		}
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
 
 		target.remove();
@@ -128,7 +128,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 			throw new SelfOperationNotAllowedException("Self project role modification not allowed.");
 		}
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
 
 		target.changeRole(cmd.newRole());

@@ -143,7 +143,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 		WorkspaceInviteLink link) {
 		if (targetProjects != null) {
 			for (var dto : targetProjects) {
-				Project project = projectFinder.findBy(dto.projectKey(), workspaceKey);
+				Project project = projectFinder.findForCommand(dto.projectKey(), workspaceKey);
 				link.addProjectConfig(project, dto.role());
 			}
 		}

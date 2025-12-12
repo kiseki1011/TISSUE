@@ -58,7 +58,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	private final EntityManager entityManager;
 
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
 		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
@@ -82,7 +82,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	}
 
 	public void rename(RenameIssueFieldCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
@@ -95,7 +95,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	}
 
 	public void update(PatchIssueFieldCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
@@ -105,7 +105,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 
 	// TODO: hard-delete 사용
 	public void delete(DeleteIssueFieldCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
@@ -117,7 +117,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
@@ -133,7 +133,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	}
 
 	public void renameOption(RenameOptionCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
@@ -148,7 +148,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 
 	public void reorderOptions(ReorderOptionsCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
@@ -168,7 +168,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	// TODO: hard-delete 사용
 	public void deleteOption(DeleteOptionCommand cmd) {
 
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);

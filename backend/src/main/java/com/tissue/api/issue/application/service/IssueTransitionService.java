@@ -1,20 +1,24 @@
 package com.tissue.api.issue.application.service;
 
+import static com.tissue.api.common.util.IssueKeyUtil.*;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.api.issue.application.dto.request.PerformTransitionCommand;
-import com.tissue.api.issue.application.dto.response.IssueCommandResult;
 import com.tissue.api.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.application.service.validator.IssueValidator;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.api.workflow.domain.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.Workflow;
-import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
+import com.tissue.api.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.api.workflow.domain.guard.GuardContext;
 import com.tissue.api.workflow.domain.guard.TransitionGuard;
 import com.tissue.api.workflow.domain.guard.TransitionGuardRegistry;
@@ -28,13 +32,17 @@ import lombok.extern.slf4j.Slf4j;
 public class IssueTransitionService implements IssueTransitionUseCase {
 
 	private final IssueFinder issueFinder;
+	private final ProjectFinder projectFinder;
 	private final WorkflowFinder workflowFinder;
 	private final IssueValidator issueValidator;
 	private final TransitionGuardRegistry guardRegistry;
 
 	@Override
-	public IssueCommandResult performTransition(PerformTransitionCommand cmd) {
-		Issue issue = issueFinder.findBy(cmd.issueKey(), cmd.workspaceKey());
+	@Transactional
+	public void performTransition(PerformTransitionCommand cmd) {
+		Project project = projectFinder.findForCommand(extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+
 		Workflow workflow = issue.getIssueType().getWorkflow();
 		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
@@ -42,22 +50,17 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
 		executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, cmd.actorMemberId());
 
-		WorkflowState previousStatus = issue.getCurrentState();
-
 		issue.transitionTo(transition.getTargetState());
 
-		log.info("Issue transition: workspaceKey= {}, issueKey= {}, transitionId= {}, [{}] {} -> {}",
-			cmd.workspaceKey(),
-			cmd.issueKey(),
-			transition.getId(),
-			transition.getLabel().getDisplay(),
-			previousStatus.getLabel().getDisplay(),
-			transition.getTargetState().getLabel().getDisplay()
+		log.info("[Transition Success] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
+			transition.getDisplayLabel(),
+			issue.getCurrentState().getDisplayLabel(),
+			transition.getTargetState().getDisplayLabel(),
+			issue.getKey(),
+			cmd.actorMemberId()
 		);
 
 		// TODO: IssueTransitionedEvent
-
-		return IssueCommandResult.from(issue);
 	}
 
 	private void executeGuards(
@@ -67,21 +70,18 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		WorkflowTransition transition,
 		Long actorMemberId
 	) {
+		// TODO: guardConfigs를 JOIN FETCH로 가져와서 N+1 방지
 		List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
 		if (configs.isEmpty()) {
-			log.debug("No guards configured for transition: {}", transition.getDisplayLabel());
 			return;
 		}
 
-		log.debug("Executing {} guard(s) for transition: {}", configs.size(), transition.getDisplayLabel());
+		log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayLabel());
 
-		// 각 Guard Config에 대해 순서대로 실행
 		for (TransitionGuardConfig config : configs) {
-			// guardType으로 실제 Guard 구현체 조회
 			TransitionGuard guard = guardRegistry.getGuard(config.getGuardType());
 
-			// Guard 실행에 필요한 컨텍스트 생성
 			GuardContext context = GuardContext.builder()
 				.issue(issue)
 				.transition(transition)
@@ -91,22 +91,15 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 				.params(config.getGuardParams())
 				.build();
 
-			// Guard 조건 평가
 			boolean failEvaluation = !guard.evaluate(context);
-
 			if (failEvaluation) {
-				String message = guard.getFailureMessage(context);
+				String failReason = guard.getFailureMessage(context);
 
-				log.info("Guard evaluation failed: guardType={}, issueKey={}, message={}",
-					guard.getType(), issue.getKey(), message);
+				log.info("[Guard Failed] guardType: {}, issueKey: {}, reason: {}",
+					guard.getType(), issue.getKey(), failReason);
 
-				// TODO: TransitionGuardEvaluationFailedException vs GuardEvaluationFailedException, 혹시 더 좋은 이름이 있나?
-				//  - 필요한 컨텍스트: 실패한 가드 종류, 해당 가드 종류의 실패 메세지
-				//  - GuardContext도 포함시켜야 할까? 만약 포함 시켜도, 객체를 넘기는게 아니라 풀어서 전달하는게 좋지 않을까?
-				throw new RuntimeException(guard.getType() + message);
+				throw new TransitionGuardFailedException(guard.getType(), failReason, issue.getKey(), workspaceKey);
 			}
-			log.debug("Guard evaluation passed: {}", guard.getType());
 		}
-		log.debug("All guard evaluation passed for transition: {}", transition.getDisplayLabel());
 	}
 }
