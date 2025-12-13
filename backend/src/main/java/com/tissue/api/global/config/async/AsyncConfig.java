@@ -1,47 +1,59 @@
 package com.tissue.api.global.config.async;
 
+import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @EnableAsync
 @Configuration
 public class AsyncConfig implements AsyncConfigurer {
 
-	/**
-	 * Todo
-	 *  - 필요한 경우 Epic의 StoryPoint 업데이트를 위한 이벤트 핸들러에 @Async를 적용하자(비동기로 구현)
-	 */
-	@Bean(name = "epicTaskExecutor")
-	public Executor epicTaskExecutor() {
+	@Override
+	public Executor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-
-		executor.setCorePoolSize(2); // 기본 스레드 풀 크기
-		executor.setMaxPoolSize(5); // 최대 스레드 풀 크기
-		executor.setQueueCapacity(50); // 작업 큐 용량 - 모든 스레드가 사용 중일 때 대기할 수 있는 작업 수
-		executor.setThreadNamePrefix("EpicEvent-");
-
-		// 작업을 처리하지 못한 경우의 정책
+		executor.setCorePoolSize(10);
+		executor.setMaxPoolSize(20);
+		executor.setQueueCapacity(200);
+		executor.setThreadNamePrefix("Event-");
 		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
 		executor.initialize();
 
-		return executor;
+		return new DelegatingSecurityContextAsyncTaskExecutor(executor);
 	}
 
 	@Bean(name = "notificationTaskExecutor")
 	public Executor notificationTaskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(3);
+		executor.setCorePoolSize(5);
 		executor.setMaxPoolSize(10);
 		executor.setQueueCapacity(100);
-		executor.setThreadNamePrefix("Notify-");
+		executor.setThreadNamePrefix("Notification-");
 		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
 		executor.initialize();
 		return executor;
+	}
+
+	@Override
+	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+		return (ex, method, params) -> {
+			// TODO: [UNCAUGHT ASYNC EXCEPTION]으로 변경할까?
+			log.error("[ASYNC TASK FAILED] method {}: {}", method.getName(), ex.getMessage(), ex);
+			log.error("method parameters: {}", Arrays.toString(params));
+		};
 	}
 }
