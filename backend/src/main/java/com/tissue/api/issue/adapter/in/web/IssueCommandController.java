@@ -76,6 +76,7 @@ public class IssueCommandController {
 		@RequestBody @Valid UpdateCommonFieldsRequest request
 	) {
 		commandUseCase.updateCommonFields(request.toCommand(workspaceKey, projectKey, issueKey));
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -87,8 +88,7 @@ public class IssueCommandController {
 		@RequestBody @Valid UpdateCustomFieldsRequest request
 	) {
 		commandUseCase.updateCustomFields(
-			new UpdateCustomFieldsCommand(workspaceKey, projectKey, issueKey, request.customFields())
-		);
+			new UpdateCustomFieldsCommand(workspaceKey, projectKey, issueKey, request.customFields()));
 
 		return ResponseEntity.noContent().build();
 	}
@@ -98,30 +98,28 @@ public class IssueCommandController {
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid UpdateStoryPointRequest request
+		@RequestBody @Valid UpdateStoryPointRequest request,
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		commandUseCase.updateStoryPoint(
-			new UpdateStoryPointCommand(workspaceKey, projectKey, issueKey, request.storyPoint())
-		);
+			new UpdateStoryPointCommand(workspaceKey, projectKey, issueKey, request.storyPoint(),
+				userDetails.getMemberId()));
 
 		return ResponseEntity.noContent().build();
 	}
 
+	// TODO: body로 전달하지 말고 "/{issueKey}/parent/{parentIssueKey}"를 사용할까?
 	@PutMapping("/{issueKey}/parent")
 	public ResponseEntity<IssueCreateResponse> assignParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable String issueKey,
-		@RequestBody @Valid AssignParentIssueRequest request
+		@RequestBody @Valid AssignParentIssueRequest request,
+		@CurrentMember MemberUserDetails userDetails
 	) {
 		commandUseCase.assignParent(
-			AssignParentCommand.builder()
-				.workspaceKey(workspaceKey)
-				.projectKey(projectKey)
-				.issueKey(issueKey)
-				.parentIssueKey(request.parentIssueKey())
-				.build()
-		);
+			new AssignParentCommand(workspaceKey, projectKey, issueKey, request.parentIssueKey(),
+				userDetails.getMemberId()));
 
 		return ResponseEntity.noContent().build();
 	}
@@ -130,9 +128,12 @@ public class IssueCommandController {
 	public ResponseEntity<IssueCreateResponse> removeParent(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
-		@PathVariable String issueKey
+		@PathVariable String issueKey,
+		@CurrentMember MemberUserDetails userDetails
 	) {
-		commandUseCase.removeParent(new RemoveParentCommand(workspaceKey, projectKey, issueKey));
+		commandUseCase.removeParent(
+			new RemoveParentCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId()));
+
 		return ResponseEntity.noContent().build();
 	}
 

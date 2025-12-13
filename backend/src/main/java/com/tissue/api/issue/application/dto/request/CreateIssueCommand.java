@@ -11,6 +11,9 @@ import lombok.Builder;
 public record CreateIssueCommand(
 	String workspaceKey,
 	String projectKey,
+	Long sprintId,
+	String parentProjectKey,
+	String parentKey,
 	Long memberId,
 	String title,
 	String content,

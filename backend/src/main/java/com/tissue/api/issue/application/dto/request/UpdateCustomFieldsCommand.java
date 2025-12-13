@@ -6,6 +6,7 @@ public record UpdateCustomFieldsCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Map<Long, Object> customFields
+	Map<Long, Object> customFields,
+	Long memberId
 ) {
 }

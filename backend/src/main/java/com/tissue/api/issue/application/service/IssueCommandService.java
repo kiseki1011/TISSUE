@@ -1,10 +1,14 @@
 package com.tissue.api.issue.application.service;
 
-import static com.tissue.api.common.util.IssueKeyUtil.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.api.common.dto.FieldChange;
 import com.tissue.api.common.util.Patchers;
 import com.tissue.api.issue.application.dto.request.AssignParentCommand;
 import com.tissue.api.issue.application.dto.request.CreateIssueCommand;
@@ -23,14 +27,20 @@ import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.issue.domain.IssueContent;
 import com.tissue.api.issue.domain.IssueParticipants;
 import com.tissue.api.issue.domain.IssueSchedule;
-import com.tissue.api.issue.domain.service.sync.EpicStoryPointSyncService;
-import com.tissue.api.issue.domain.service.sync.IssueProgressSyncService;
+import com.tissue.api.issue.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.domain.event.IssueDeletedEvent;
+import com.tissue.api.issue.domain.event.IssueFieldsUpdatedEvent;
+import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
+import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
+import com.tissue.api.issue.domain.service.IssueFieldChangeTracker;
 import com.tissue.api.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.api.issuetype.domain.IssueType;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
+import com.tissue.api.sprint.application.service.finder.SprintFinder;
+import com.tissue.api.sprint.domain.Sprint;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,15 +50,14 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 	private final IssueFinder issueFinder;
 	private final IssueTypeFinder issueTypeFinder;
-	private final ProjectMemberFinder projectMemberFinder;
+	private final SprintFinder sprintFinder;
 	private final ProjectFinder projectFinder;
-
-	private final EpicStoryPointSyncService epicStoryPointSyncService;
-	private final IssueProgressSyncService issueProgressSyncService;
+	private final ProjectMemberFinder projectMemberFinder;
 	private final IssueFieldSchemaValidator fieldSchemaValidator;
 	private final IssueValidator issueValidator;
-
+	private final IssueFieldChangeTracker fieldChangeTracker;
 	private final IssueCommandRepository issueCommandRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
 	@Transactional
@@ -57,23 +66,31 @@ public class IssueCommandService implements IssueCommandUseCase {
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.memberId());
 
+		Sprint sprint = sprintFinder.findOptBy(cmd.sprintId(), project)
+			.orElse(null);
+
+		// TODO: 만약 parentProjectKey가 null 이라면? 만약 parentKey가 null이라면?
+		Issue parent = Optional.ofNullable(cmd.parentKey())
+			.map(parentKey -> resolveParentIssue(parentKey, cmd.parentProjectKey(), project))
+			.orElse(null);
+
 		Issue issue = Issue.create(
 			project,
+			sprint,
 			issueType,
 			cmd.title(),
 			IssueContent.of(cmd.content(), cmd.summary()),
 			IssueSchedule.of(cmd.dueAt()),
 			IssueParticipants.of(actor),
 			cmd.priority(),
-			cmd.storyPoint()
+			cmd.storyPoint(),
+			parent
 		);
 
 		fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
-
 		issueCommandRepository.save(issue);
 
-		// TODO: IssueCreatedEvent
-		//  대상: author(creator), reporter
+		eventPublisher.publishEvent(IssueCreatedEvent.create(issue, cmd.memberId()));
 
 		return IssueCreateResponse.from(issue);
 	}
@@ -84,27 +101,21 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		Patchers.apply(cmd.title(), issue::updateTitle);
-		Patchers.apply(cmd.content(), issue::updateContent);
-		Patchers.apply(cmd.summary(), issue::updateSummary);
-		Patchers.apply(cmd.dueAt(), issue::updateDueAt);
-		Patchers.apply(cmd.priority(), issue::updatePriority);
-	}
+		Map<String, FieldChange> changes = new HashMap<>();
 
-	// TODO: IssueHierarchy.STANDARD만 허용하는 검증 로직을 IssuePolicy로 분리 고려
-	//  - 현재는 updateStoryPoint 내부에 응집 시킴
-	@Override
-	@Transactional
-	public void updateStoryPoint(UpdateStoryPointCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, "title", changes);
+		Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, "content", changes);
+		Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, "summary", changes);
+		Patchers.applyWithLog(cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, "dueAt", changes);
+		Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
-		issue.updateStoryPoint(cmd.storyPoint());
-
-		// TODO: StoryPointUpdatedEvent
-		//  - 대상: author, reporter, assignee
-		epicStoryPointSyncService.recalculateStoryPoint(issue.getParentIssue());
-		issueProgressSyncService.recalculateProgress(issue.getParentIssue());
+		if (!changes.isEmpty()) {
+			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
+				issue,
+				changes,
+				cmd.memberId()
+			));
+		}
 	}
 
 	@Override
@@ -113,26 +124,59 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
+		Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
+
 		fieldSchemaValidator.validateAndApplyPatch(cmd.customFields(), issue);
+
+		Map<String, Object> newSnapshot = fieldChangeTracker.captureSnapshot(issue);
+		Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
+
+		if (!changes.isEmpty()) {
+			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
+				issue,
+				changes,
+				cmd.memberId()
+			));
+		}
 	}
 
-	// TODO: 부모가 EPIC인 경우만 cross project 허용
+	@Override
+	@Transactional
+	public void updateStoryPoint(UpdateStoryPointCommand cmd) {
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+
+		Integer oldStoryPoint = issue.getStoryPoint();
+		issue.updateStoryPoint(cmd.storyPoint());
+
+		eventPublisher.publishEvent(IssueStoryPointChangedEvent.create(
+			issue,
+			issue.getParentIssue(),
+			oldStoryPoint,
+			cmd.memberId())
+		);
+	}
+
+	// TODO: assignParent과 removeParent를 통합하는게 나으려나?
 	@Override
 	@Transactional
 	public void assignParent(AssignParentCommand cmd) {
-		Project childProject = projectFinder.findForCommand(extractProjectKey(cmd.issueKey()), cmd.workspaceKey());
-		Issue child = issueFinder.findBy(cmd.issueKey(), childProject);
-		Project parentProject = projectFinder.findForCommand(extractProjectKey(cmd.parentIssueKey()),
-			cmd.workspaceKey());
+		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+
+		Project parentProject = projectFinder.findForCommand(cmd.parentProjectKey(), cmd.workspaceKey());
 		Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
 
-		child.setParentIssue(parent);
+		Issue oldParent = issue.getParentIssue();
 
-		// TODO: IssueParentAssignedEvent
-		//  - 대상: author, reporter, assignee
-		//  - 대상2: 부모 이슈의 author, reporter, assignee
-		epicStoryPointSyncService.recalculateStoryPoint(child.getParentIssue());
-		issueProgressSyncService.recalculateProgress(child.getParentIssue());
+		issue.setParentIssue(parent);
+
+		eventPublisher.publishEvent(IssueParentChangedEvent.create(
+			issue,
+			oldParent,
+			parent,
+			cmd.memberId())
+		);
 	}
 
 	@Override
@@ -144,11 +188,12 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 		issue.removeParentIssue();
 
-		// TODO: IssueParentRemovedEvent
-		//  - 대상: author, reporter, assignee
-		//  - 대상2: 부모 이슈의 author, reporter, assignee
-		epicStoryPointSyncService.recalculateStoryPoint(parent);
-		issueProgressSyncService.recalculateProgress(parent);
+		eventPublisher.publishEvent(IssueParentChangedEvent.create(
+			issue,
+			parent,
+			null,
+			cmd.memberId())
+		);
 	}
 
 	@Override
@@ -156,14 +201,20 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void softDelete(DeleteIssueCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-		Issue parent = issue.getParentIssue();
 
 		issueValidator.ensureCanDelete(issue);
 		issue.delete();
 
-		// TODO: IssueDeletedEvent
-		//  - 대상: author, reporter, assignee, subscribers, reviewers, 프로젝트의 ADMIN들
-		epicStoryPointSyncService.recalculateStoryPoint(parent);
-		issueProgressSyncService.recalculateProgress(parent);
+		eventPublisher.publishEvent(IssueDeletedEvent.create(issue, cmd.memberId()));
+	}
+
+	private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {
+		Project targetProject = currentProject;
+
+		if (parentProjectKey != null && !parentProjectKey.equals(currentProject.getKey())) {
+			targetProject = projectFinder.findForCommand(parentProjectKey, currentProject.getWorkspaceKey());
+		}
+
+		return issueFinder.findBy(parentKey, targetProject);
 	}
 }

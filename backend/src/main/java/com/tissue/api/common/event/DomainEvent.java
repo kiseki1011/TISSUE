@@ -1,11 +1,11 @@
 package com.tissue.api.common.event;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface DomainEvent {
 
-	UUID getEventId();
+	UUID eventId();
 
-	LocalDateTime getOccurredAt();
+	Instant occurredAt();
 }

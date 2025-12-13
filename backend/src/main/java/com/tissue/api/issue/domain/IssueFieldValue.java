@@ -72,7 +72,7 @@ public class IssueFieldValue extends BaseEntity {
 			case DATE -> this.dateValue = (LocalDate)value;
 			case BOOLEAN -> this.booleanValue = (Boolean)value;
 			case ENUM -> this.enumOption = (EnumFieldOption)value;
-			default -> throw new IllegalArgumentException("Unsupported: " + field.getFieldType());
+			default -> throw new IllegalArgumentException("Unsupported field type: " + field.getFieldType());
 		}
 		markPresent();
 	}
@@ -80,6 +80,23 @@ public class IssueFieldValue extends BaseEntity {
 	public void clearValue() {
 		clearColumnsOnly();
 		markEmpty();
+	}
+
+	public Object getValue() {
+		if (!this.valuePresent) {
+			return null;
+		}
+
+		return switch (field.getFieldType()) {
+			case TEXT -> this.stringValue;
+			case INTEGER -> this.integerValue;
+			case DECIMAL -> this.decimalValue;
+			case TIMESTAMP -> this.timestampValue;
+			case DATE -> this.dateValue;
+			case BOOLEAN -> this.booleanValue;
+			case ENUM -> this.enumOption;
+			default -> throw new IllegalStateException("Unexpected field type: " + field.getFieldType());
+		};
 	}
 
 	private void clearColumnsOnly() {

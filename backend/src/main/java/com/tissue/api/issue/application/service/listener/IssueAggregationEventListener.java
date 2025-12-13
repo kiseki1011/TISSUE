@@ -6,6 +6,8 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.tissue.api.issue.application.service.IssueAggregationService;
+import com.tissue.api.issue.domain.event.IssueCreatedEvent;
+import com.tissue.api.issue.domain.event.IssueDeletedEvent;
 import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
 
@@ -42,18 +44,24 @@ public class IssueAggregationEventListener {
 		}
 	}
 
-	// TODO: IssueDeletedEvent vs IssueSoftDeletedEvent 어느게 좋을까?
-	// @Async
-	// @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-	// public void handleStoryPointChange(IssueDeletedEvent event) {
-	// 	if (event.parentId() != null) {
-	// 		log.debug("Syncing aggregation for parent issue {}.", event.parentKey());
-	// 		aggregationService.syncStatistics(event.parentId());
-	// 	}
-	// }
+	// TODO:
+	//  - storyPoint를 설정하지 않은 경우 -> 스토리 포인트 재계산은 하지 않아도 되는거 아닌가?
+	//  - IssueHierarchy가 SUBTASK 또는 MICROTASK인 경우 -> 스토리 포인트 재계산은 하지 않아도 되는거 아닌가?
+	@Async
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleIssueCreated(IssueCreatedEvent event) {
+		if (event.parentId() != null) {
+			log.debug("Syncing aggregation for parent {} due to child creation.", event.parentKey());
+			aggregationService.syncStatistics(event.parentId());
+		}
+	}
 
-	// TODO: IssueWorkflowTransitionedEvent vs IssueTransitionedEvent 어느게 좋을까?
-	//  - Issue의 currentState의 StateCategory의 변화에 따라
-	//  - Issue의 부모 여부에 따라
-
+	@Async
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleIssueDeleted(IssueDeletedEvent event) {
+		if (event.parentId() != null) {
+			log.debug("Syncing aggregation for parent {} due to child deletion.", event.parentKey());
+			aggregationService.syncStatistics(event.parentId());
+		}
+	}
 }

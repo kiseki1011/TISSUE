@@ -4,6 +4,7 @@ public record UpdateStoryPointCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Integer storyPoint
+	Integer storyPoint,
+	Long memberId
 ) {
 }

@@ -116,7 +116,6 @@ public class Issue extends BaseEntity {
 
 	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
 
-	// TODO: 이슈 생성 시 Sprint 설정도 추가
 	public static Issue create(
 		@NonNull Project project,
 		@Nullable Sprint sprint,
@@ -126,7 +125,8 @@ public class Issue extends BaseEntity {
 		@NonNull IssueSchedule schedule,
 		@NonNull IssueParticipants participants,
 		@Nullable IssuePriority priority,
-		@Nullable Integer storyPoint
+		@Nullable Integer storyPoint,
+		@Nullable Issue parentIssue
 	) {
 		Issue issue = new Issue();
 		issue.project = project;
@@ -146,6 +146,10 @@ public class Issue extends BaseEntity {
 
 		issue.progress = IssueProgress.init();
 		issue.relations = IssueRelations.init();
+
+		if (parentIssue != null) {
+			issue.setParentIssue(parentIssue);
+		}
 
 		return issue;
 	}
