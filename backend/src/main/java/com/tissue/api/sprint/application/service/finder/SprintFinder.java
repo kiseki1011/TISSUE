@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.tissue.api.project.domain.Project;
+import com.tissue.api.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.sprint.domain.enums.SprintStatus;
 import com.tissue.api.sprint.domain.exception.SprintNotFoundException;
-import com.tissue.api.sprint.application.port.out.SprintQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +21,10 @@ public class SprintFinder {
 	public Sprint findBy(Long sprintId, Project project) {
 		return sprintQueryRepository.findByIdAndProject(sprintId, project)
 			.orElseThrow(() -> new SprintNotFoundException(sprintId, project.getKey(), project.getWorkspaceKey()));
+	}
+
+	public Optional<Sprint> findOptBy(Long sprintId, Project project) {
+		return sprintQueryRepository.findByIdAndProject(sprintId, project);
 	}
 
 	public Sprint findBy(Long sprintId, String projectKey, String workspaceKey) {

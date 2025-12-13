@@ -1,5 +1,7 @@
 package com.tissue.api.issue.domain;
 
+import static com.tissue.api.workflow.domain.enums.StateCategory.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +25,6 @@ import com.tissue.api.project.domain.Project;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.sprint.domain.Sprint;
 import com.tissue.api.workflow.domain.WorkflowState;
-import com.tissue.api.workflow.domain.enums.StateCategory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -96,11 +97,16 @@ public class Issue extends BaseEntity {
 	private Issue parentIssue;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sprint_id", nullable = false)
+	@JoinColumn(name = "sprint_id")
 	private Sprint sprint;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;
+
+	// TODO: issueType로 부터 얻은 issueHierarchy를 편의 필드로 둘까?
+	//  - 아니면 항상 issue를 조회할때 issueType도 join fetch로 가져오도록 할까?
+	//  - 그런데 이렇게 설계할거면 이슈에 대한 issueType는 절대로 변하지 않을거라는 정책을 사용해야 함
+	//   다른 플랫폼에서도 이렇게 하나?
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
@@ -113,6 +119,7 @@ public class Issue extends BaseEntity {
 	// TODO: 이슈 생성 시 Sprint 설정도 추가
 	public static Issue create(
 		@NonNull Project project,
+		@Nullable Sprint sprint,
 		@NonNull IssueType issueType,
 		@NonNull String title,
 		@NonNull IssueContent content,
@@ -125,6 +132,8 @@ public class Issue extends BaseEntity {
 		issue.project = project;
 		issue.projectKey = project.getKey();
 		issue.workspaceKey = project.getWorkspaceKey();
+
+		issue.sprint = sprint;
 
 		issue.key = project.generateNextIssueKey();
 		issue.issueType = issueType;
@@ -139,6 +148,14 @@ public class Issue extends BaseEntity {
 		issue.relations = IssueRelations.init();
 
 		return issue;
+	}
+
+	public String getContent() {
+		return content.getContent();
+	}
+
+	public String getSummary() {
+		return content.getSummary();
 	}
 
 	public List<IssueFieldValue> getFieldValues() {
@@ -277,16 +294,12 @@ public class Issue extends BaseEntity {
 		return issueType.getIssueHierarchy();
 	}
 
-	public boolean currentStateIs(StateCategory category) {
-		return currentState.isCategorizedAs(category);
-	}
-
 	public int getSubscribersCount() {
 		return participants.getSubscribers().size();
 	}
 
 	private void ensureIsInitial() {
-		if (!currentState.getCategory().isTodo()) {
+		if (!currentState.isCategorizedAs(TODO)) {
 			// TODO: 커스텀 예외 추가
 			throw new RuntimeException("Cannot delete issue that is not initial state.");
 		}
