@@ -9,22 +9,23 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import com.tissue.api.issue.application.dto.IssueCountProjection;
+import com.tissue.api.issue.application.dto.IssueCountStats;
+import com.tissue.api.issue.application.dto.IssuePointStats;
 import com.tissue.api.issue.domain.Issue;
-import com.tissue.api.issue.domain.enums.StateCategory;
 import com.tissue.api.issuetype.domain.IssueType;
+import com.tissue.api.project.domain.Project;
 import com.tissue.api.sprint.domain.Sprint;
+import com.tissue.api.workflow.domain.enums.StateCategory;
 
 public interface IssueQueryRepository extends Repository<Issue, Long> {
 
-	Optional<Issue> findByKeyAndWorkspaceKey(
-		String issueKey,
-		String workspaceKey
-	);
+	Optional<Issue> findById(Long id);
 
-	List<Issue> findByKeyInAndWorkspaceKey(
-		Collection<String> issueKeys,
-		String workspaceKey
-	);
+	Optional<Issue> findByKeyAndWorkspaceKey(String issueKey, String workspaceKey);
+
+	Optional<Issue> findByKeyAndProject(String issueKey, Project project);
+
+	List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys, String workspaceKey);
 
 	@Query("""
 		    SELECT i
@@ -124,33 +125,64 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		@Param("issueKey") String issueKey
 	);
 
-	@Query("""
-		    SELECT COALESCE(SUM(child.storyPoint), 0)
-		    FROM Issue child
-		    JOIN child.parentIssue pi
-		    JOIN pi.project p
-		    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-		      AND child.storyPoint IS NOT NULL
-		""")
-	int sumChildrenStoryPoints(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey
-	);
+	// @Query("""
+	// 	    SELECT COALESCE(SUM(child.storyPoint), 0)
+	// 	    FROM Issue child
+	// 	    JOIN child.parentIssue pi
+	// 	    JOIN pi.project p
+	// 	    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
+	// 	      AND child.storyPoint IS NOT NULL
+	// 	""")
+	// int sumChildrenStoryPoints(
+	// 	@Param("workspaceKey") String workspaceKey,
+	// 	@Param("issueKey") String issueKey
+	// );
 
 	@Query("""
-		    SELECT COALESCE(SUM(child.storyPoint), 0)
-		    FROM Issue child
-		    JOIN child.parentIssue pi
-		    JOIN pi.project p
-		    JOIN child.currentState cs
-		    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-		      AND cs.category = 'DONE'
-		      AND child.storyPoint IS NOT NULL
+		    SELECT SUM(i.storyPoint)
+		    FROM Issue i
+		    WHERE i.parentIssue.id = :parentId
+		      AND i.softDeleted = false
 		""")
-	int sumCompletedChildrenStoryPoints(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey
-	);
+	Integer sumChildrenStoryPoints(@Param("parentId") Long parentId);
+
+	@Query("""
+		    SELECT com.tissue.api.issue.application.dto.IssueCountStats(
+		        COUNT(i),
+		        SUM(CASE WHEN i.currentState.category = com.tissue.issue.domain.StateCategory.DONE THEN 1 ELSE 0 END)
+		    )
+		    FROM Issue i
+		    WHERE i.parentIssue.id = :parentId
+		      AND i.softDeleted = false
+		""")
+	IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
+
+	@Query("""
+		    SELECT new com.tissue.issue.application.dto.IssuePointStats(
+		        COALESCE(SUM(i.storyPoint), 0),
+		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.api.workflow.domain.enums.StateCategory.DONE
+		        THEN i.storyPoint ELSE 0 END), 0)
+		    )
+		    FROM Issue i
+		    WHERE i.parentIssue.id = :parentId
+		      AND i.softDeleted = false
+		""")
+	IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
+
+	// @Query("""
+	// 	    SELECT COALESCE(SUM(child.storyPoint), 0)
+	// 	    FROM Issue child
+	// 	    JOIN child.parentIssue pi
+	// 	    JOIN pi.project p
+	// 	    JOIN child.currentState cs
+	// 	    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
+	// 	      AND cs.category = 'DONE'
+	// 	      AND child.storyPoint IS NOT NULL
+	// 	""")
+	// int sumCompletedChildrenStoryPoints(
+	// 	@Param("workspaceKey") String workspaceKey,
+	// 	@Param("issueKey") String issueKey
+	// );
 
 	@Query("""
 		    SELECT i FROM Issue i

@@ -17,15 +17,9 @@ public class MemberAuditorProvider implements AuditorAware<Long> {
 
 	@Override
 	public Optional<Long> getCurrentAuditor() {
-
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (authentication == null) {
-			return Optional.empty();
-		}
-
-		boolean unauthenticated = !authentication.isAuthenticated();
-		if (unauthenticated) {
+		if (authentication == null || !authentication.isAuthenticated()) {
 			return Optional.empty();
 		}
 
