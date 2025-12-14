@@ -125,19 +125,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		@Param("issueKey") String issueKey
 	);
 
-	// @Query("""
-	// 	    SELECT COALESCE(SUM(child.storyPoint), 0)
-	// 	    FROM Issue child
-	// 	    JOIN child.parentIssue pi
-	// 	    JOIN pi.project p
-	// 	    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-	// 	      AND child.storyPoint IS NOT NULL
-	// 	""")
-	// int sumChildrenStoryPoints(
-	// 	@Param("workspaceKey") String workspaceKey,
-	// 	@Param("issueKey") String issueKey
-	// );
-
 	@Query("""
 		    SELECT SUM(i.storyPoint)
 		    FROM Issue i
@@ -149,7 +136,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT com.tissue.api.issue.application.dto.IssueCountStats(
 		        COUNT(i),
-		        SUM(CASE WHEN i.currentState.category = com.tissue.issue.domain.StateCategory.DONE THEN 1 ELSE 0 END)
+		        SUM(CASE WHEN i.currentState.category = com.tissue.api.workflow.domain.enums.StateCategory.DONE THEN 1 ELSE 0 END)
 		    )
 		    FROM Issue i
 		    WHERE i.parentIssue.id = :parentId
@@ -158,7 +145,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
 
 	@Query("""
-		    SELECT new com.tissue.issue.application.dto.IssuePointStats(
+		    SELECT new com.tissue.api.issue.application.dto.IssuePointStats(
 		        COALESCE(SUM(i.storyPoint), 0),
 		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.api.workflow.domain.enums.StateCategory.DONE
 		        THEN i.storyPoint ELSE 0 END), 0)
@@ -168,21 +155,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		      AND i.softDeleted = false
 		""")
 	IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
-
-	// @Query("""
-	// 	    SELECT COALESCE(SUM(child.storyPoint), 0)
-	// 	    FROM Issue child
-	// 	    JOIN child.parentIssue pi
-	// 	    JOIN pi.project p
-	// 	    JOIN child.currentState cs
-	// 	    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-	// 	      AND cs.category = 'DONE'
-	// 	      AND child.storyPoint IS NOT NULL
-	// 	""")
-	// int sumCompletedChildrenStoryPoints(
-	// 	@Param("workspaceKey") String workspaceKey,
-	// 	@Param("issueKey") String issueKey
-	// );
 
 	@Query("""
 		    SELECT i FROM Issue i
