@@ -3,6 +3,7 @@ package com.tissue.api.issue.domain.event;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.tissue.api.common.util.NullSafe;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.project.domain.ProjectMember;
 import com.tissue.api.workflow.domain.WorkflowState;
@@ -15,6 +16,9 @@ public record IssueTransitionedEvent(
 	String projectKey,
 	String issueKey,
 	Long issueId,
+
+	String parentKey,
+	Long parentId,
 
 	Long transitionId,
 	String transitionName,
@@ -34,6 +38,8 @@ public record IssueTransitionedEvent(
 		WorkflowState oldState,
 		ProjectMember actor
 	) {
+		Issue parentIssue = issue.getParentIssue();
+
 		return new IssueTransitionedEvent(
 			UUID.randomUUID(),
 			Instant.now(),
@@ -41,6 +47,8 @@ public record IssueTransitionedEvent(
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
+			NullSafe.get(parentIssue, Issue::getKey),
+			NullSafe.get(parentIssue, Issue::getId),
 			transition.getId(),
 			transition.getDisplayLabel(),
 			oldState.getId(),

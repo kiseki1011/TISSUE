@@ -10,6 +10,7 @@ import com.tissue.api.issue.domain.event.IssueCreatedEvent;
 import com.tissue.api.issue.domain.event.IssueDeletedEvent;
 import com.tissue.api.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.api.issue.domain.event.IssueStoryPointChangedEvent;
+import com.tissue.api.issue.domain.event.IssueTransitionedEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,16 +38,12 @@ public class IssueAggregationEventListener {
 			log.debug("Syncing aggregation for old parent {}.", event.oldParentKey());
 			aggregationService.syncStatistics(event.oldParentId());
 		}
-
 		if (event.newParentId() != null) {
 			log.debug("Syncing aggregation for new parent {}.", event.newParentKey());
 			aggregationService.syncStatistics(event.newParentId());
 		}
 	}
 
-	// TODO:
-	//  - storyPoint를 설정하지 않은 경우 -> 스토리 포인트 재계산은 하지 않아도 되는거 아닌가?
-	//  - IssueHierarchy가 SUBTASK 또는 MICROTASK인 경우 -> 스토리 포인트 재계산은 하지 않아도 되는거 아닌가?
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleIssueCreated(IssueCreatedEvent event) {
@@ -61,6 +58,15 @@ public class IssueAggregationEventListener {
 	public void handleIssueDeleted(IssueDeletedEvent event) {
 		if (event.parentId() != null) {
 			log.debug("Syncing aggregation for parent {} due to child deletion.", event.parentKey());
+			aggregationService.syncStatistics(event.parentId());
+		}
+	}
+
+	@Async
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleIssueTransitioned(IssueTransitionedEvent event) {
+		if (event.parentId() != null) {
+			log.debug("Syncing aggregation for parent {} due to issue workflow transition.", event.parentKey());
 			aggregationService.syncStatistics(event.parentId());
 		}
 	}
