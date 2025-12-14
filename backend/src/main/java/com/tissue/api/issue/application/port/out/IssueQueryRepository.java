@@ -100,33 +100,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	boolean existsByIssueType(IssueType issueType);
 
 	@Query("""
-		    SELECT COUNT(child)
-		    FROM Issue child
-		    JOIN child.parentIssue pi
-		    JOIN pi.project p
-		    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-		""")
-	int countChildren(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey
-	);
-
-	@Query("""
-		    SELECT COUNT(child)
-		    FROM Issue child
-		    JOIN child.parentIssue pi
-		    JOIN pi.project p
-		    JOIN child.currentState cs
-		    WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
-		      AND cs.category = 'DONE'
-		""")
-	int countCompletedChildren(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey
-	);
-
-	@Query("""
-		    SELECT SUM(i.storyPoint)
+		    SELECT COALESCE(SUM(i.storyPoint), 0)
 		    FROM Issue i
 		    WHERE i.parentIssue.id = :parentId
 		      AND i.softDeleted = false
