@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import com.tissue.api.notification.application.service.command.NotificationCommandService;
 import com.tissue.api.notification.application.service.command.NotificationProcessor;
 import com.tissue.api.notification.application.service.command.NotificationTargetService;
-import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
 import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ public class NotificationEventHandler {
 	private final NotificationCommandService commandService;
 	private final NotificationProcessor notificationProcessor;
 	private final NotificationTargetService targetResolver;
-	private final NotificationMessageFactory notificationMessageFactory;
 	private final ActivityLogRepository activityLogRepository;
 
 	// @Async("notificationTaskExecutor")

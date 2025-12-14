@@ -2,25 +2,25 @@ package com.tissue.api.common.util;
 
 import java.text.Normalizer;
 import java.util.Locale;
-import java.util.Objects;
+
+import org.springframework.lang.Nullable;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TextNormalizer {
-
-	public static String normalizeLabel(String value) {
-		Objects.requireNonNull(value);
+	// TODO: normalizeText
+	public static String normalizeLabel(@NonNull String value) {
 		return nfc(value.strip());
 	}
 
-	public static String normalizeForUniq(String value) {
-		Objects.requireNonNull(value);
+	public static String normalizeForUniq(@NonNull String value) {
 		return lower(nfc(value.strip()));
 	}
 
-	public static String nullToEmpty(String val) {
+	public static String nullToEmpty(@Nullable String val) {
 		return val == null ? "" : val;
 	}
 
