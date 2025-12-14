@@ -7,8 +7,11 @@ import lombok.Builder;
 @Builder
 public record AddIssueRelationCommand(
 	String workspaceKey,
+	String sourceProjectKey,
 	String sourceIssueKey,
+	String targetProjectKey,
 	String targetIssueKey,
-	IssueRelationType relationType
+	IssueRelationType relationType,
+	Long actorMemberId
 ) {
 }

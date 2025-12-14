@@ -64,14 +64,18 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public IssueCreateResponse create(CreateIssueCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
-		ProjectMember actor = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
-		Sprint sprint = sprintFinder.findOptBy(cmd.sprintId(), project)
+		Sprint sprint = Optional.ofNullable(cmd.sprintId())
+			.map(id -> sprintFinder.findBy(id, project))
 			.orElse(null);
 
-		// TODO: 만약 parentProjectKey가 null 이라면? 만약 parentKey가 null이라면?
 		Issue parent = Optional.ofNullable(cmd.parentKey())
 			.map(parentKey -> resolveParentIssue(parentKey, cmd.parentProjectKey(), project))
+			.orElse(null);
+
+		ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
+			.map(id -> projectMemberFinder.findBy(project, id))
 			.orElse(null);
 
 		Issue issue = Issue.create(
@@ -81,7 +85,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 			cmd.title(),
 			IssueContent.of(cmd.content(), cmd.summary()),
 			IssueSchedule.of(cmd.dueAt()),
-			IssueParticipants.of(actor),
+			IssueParticipants.of(actor, assignee),
 			cmd.priority(),
 			cmd.storyPoint(),
 			parent
@@ -90,7 +94,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
 		issueCommandRepository.save(issue);
 
-		eventPublisher.publishEvent(IssueCreatedEvent.create(issue, cmd.memberId()));
+		eventPublisher.publishEvent(IssueCreatedEvent.create(issue, cmd.actorMemberId()));
 
 		return IssueCreateResponse.from(issue);
 	}
@@ -113,7 +117,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
 				issue,
 				changes,
-				cmd.memberId()
+				cmd.actorMemberId()
 			));
 		}
 	}
@@ -135,7 +139,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
 				issue,
 				changes,
-				cmd.memberId()
+				cmd.actorMemberId()
 			));
 		}
 	}
@@ -153,11 +157,10 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue,
 			issue.getParentIssue(),
 			oldStoryPoint,
-			cmd.memberId())
+			cmd.actorMemberId())
 		);
 	}
 
-	// TODO: assignParent과 removeParent를 통합하는게 나으려나?
 	@Override
 	@Transactional
 	public void assignParent(AssignParentCommand cmd) {
@@ -175,7 +178,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue,
 			oldParent,
 			parent,
-			cmd.memberId())
+			cmd.actorMemberId())
 		);
 	}
 
@@ -192,7 +195,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 			issue,
 			parent,
 			null,
-			cmd.memberId())
+			cmd.actorMemberId())
 		);
 	}
 
@@ -205,7 +208,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		issueValidator.ensureCanDelete(issue);
 		issue.delete();
 
-		eventPublisher.publishEvent(IssueDeletedEvent.create(issue, cmd.memberId()));
+		eventPublisher.publishEvent(IssueDeletedEvent.create(issue, cmd.actorMemberId()));
 	}
 
 	private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {

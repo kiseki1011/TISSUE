@@ -3,6 +3,8 @@ package com.tissue.api.issue.domain;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.api.project.domain.ProjectMember;
 
 import jakarta.persistence.CascadeType;
@@ -35,9 +37,10 @@ public class IssueParticipants {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<IssueSubscriber> subscribers = new HashSet<>();
 
-	public static IssueParticipants of(@NonNull ProjectMember reporter) {
+	public static IssueParticipants of(@NonNull ProjectMember reporter, @Nullable ProjectMember assignee) {
 		IssueParticipants participants = new IssueParticipants();
 		participants.reporter = reporter;
+		participants.assignee = assignee;
 
 		return participants;
 	}

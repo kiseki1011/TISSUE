@@ -14,7 +14,6 @@ public record CreateIssueCommand(
 	Long sprintId,
 	String parentProjectKey,
 	String parentKey,
-	Long memberId,
 	String title,
 	String content,
 	String summary,
@@ -22,6 +21,8 @@ public record CreateIssueCommand(
 	Instant dueAt,
 	Integer storyPoint,
 	Long issueTypeId,
-	Map<Long, Object> customFields
+	Map<Long, Object> customFields,
+	Long assigneeMemberId,
+	Long actorMemberId
 ) {
 }

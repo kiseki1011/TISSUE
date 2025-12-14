@@ -232,8 +232,8 @@ public class Issue extends BaseEntity {
 		return relations.addRelation(this, targetIssue, type);
 	}
 
-	public void removeRelation(@NonNull Issue otherIssue) {
-		relations.removeRelation(otherIssue);
+	public IssueRelation removeRelation(@NonNull Issue otherIssue) {
+		return relations.removeRelation(otherIssue);
 	}
 
 	public void transitionTo(@NonNull WorkflowState newState) {

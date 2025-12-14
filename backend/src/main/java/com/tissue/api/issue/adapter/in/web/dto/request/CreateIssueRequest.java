@@ -21,13 +21,13 @@ public record CreateIssueRequest(
 	@Nullable IssuePriority priority,
 	@Nullable Instant dueAt,
 	@NotNull Long issueTypeId,
-	@Nullable Map<Long, Object> customFields
+	@Nullable Map<Long, Object> customFields,
+	@Nullable Long assigneeMemberId
 ) {
 	public CreateIssueCommand toCommand(String workspaceKey, String projectKey, Long currentMemberId) {
 		return CreateIssueCommand.builder()
 			.workspaceKey(workspaceKey)
 			.projectKey(projectKey)
-			.memberId(currentMemberId)
 			.title(title)
 			.content(content)
 			.summary(summary)
@@ -35,6 +35,8 @@ public record CreateIssueRequest(
 			.dueAt(dueAt)
 			.issueTypeId(issueTypeId)
 			.customFields(customFields == null ? Map.of() : customFields)
+			.actorMemberId(currentMemberId)
+			.assigneeMemberId(assigneeMemberId)
 			.build();
 	}
 }
