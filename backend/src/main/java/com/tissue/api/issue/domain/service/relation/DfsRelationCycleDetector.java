@@ -19,6 +19,9 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 		Issue target,
 		IssueRelationType relationType
 	) {
+		if (!relationType.requiresAcyclicCheck()) {
+			return;
+		}
 		if (hasCycle(source, target)) {
 			throw new IssueRelationCircularDependencyException(relationType, source.getKey(), target.getKey());
 		}
@@ -35,9 +38,9 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 	/**
 	 * DFS로 그래프 순회
 	 *
-	 * @param current 현재 노드
+	 * @param current     현재 노드
 	 * @param destination 목적지 (source)
-	 * @param visited 방문한 노드들
+	 * @param visited     방문한 노드들
 	 * @return destination에 도달하면 true
 	 */
 	private boolean dfs(
