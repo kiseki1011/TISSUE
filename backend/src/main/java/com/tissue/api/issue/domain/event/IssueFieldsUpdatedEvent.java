@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.tissue.api.common.dto.FieldChange;
 import com.tissue.api.common.event.DomainEvent;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.domain.ProjectMember;
 
 public record IssueFieldsUpdatedEvent(
 	UUID eventId,
@@ -15,15 +16,17 @@ public record IssueFieldsUpdatedEvent(
 	String projectKey,
 	String issueKey,
 	Long issueId,
-	String issueType,
-	Map<String, FieldChange> changes, // Key: 필드명, Value: 변경 전후 값
-	Long actorMemberId
+
+	Map<String, FieldChange> changes,
+
+	Long actorMemberId,
+	String actorDisplayName
 ) implements DomainEvent {
 
 	public static IssueFieldsUpdatedEvent create(
 		Issue issue,
 		Map<String, FieldChange> changes,
-		Long actorMemberId
+		ProjectMember actor
 	) {
 		return new IssueFieldsUpdatedEvent(
 			UUID.randomUUID(),
@@ -32,9 +35,9 @@ public record IssueFieldsUpdatedEvent(
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
-			issue.getIssueType().getDisplayLabel(),
 			changes,
-			actorMemberId
+			actor.getMemberId(),
+			actor.getDisplayName()
 		);
 	}
 }

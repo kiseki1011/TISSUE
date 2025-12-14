@@ -4,7 +4,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.api.comment.domain.model.IssueComment;
 import com.tissue.api.comment.exception.CommentNotFoundException;
 import com.tissue.api.comment.infrastructure.repository.CommentRepository;
@@ -51,10 +50,6 @@ public class IssueCommentCommandService {
 			.build();
 
 		IssueComment savedComment = commentRepository.save(comment);
-
-		eventPublisher.publishEvent(
-			IssueCommentAddedEvent.createEvent(issue, savedComment, memberId)
-		);
 
 		return IssueCommentResponse.from(savedComment);
 	}

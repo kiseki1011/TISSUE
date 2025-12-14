@@ -17,7 +17,8 @@ public record UpdateCommonFieldsRequest(
 	JsonNullable<IssuePriority> priority,
 	JsonNullable<Instant> dueAt
 ) {
-	public UpdateCommonFieldsCommand toCommand(String workspaceKey, String projectKey, String issueKey) {
+	public UpdateCommonFieldsCommand toCommand(String workspaceKey, String projectKey, String issueKey,
+		Long actorMemberId) {
 		return UpdateCommonFieldsCommand.builder()
 			.workspaceKey(workspaceKey)
 			.projectKey(projectKey)
@@ -27,6 +28,7 @@ public record UpdateCommonFieldsRequest(
 			.summary(summary)
 			.priority(priority)
 			.dueAt(dueAt)
+			.actorMemberId(actorMemberId)
 			.build();
 	}
 }

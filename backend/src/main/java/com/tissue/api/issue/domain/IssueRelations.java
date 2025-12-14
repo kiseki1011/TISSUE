@@ -2,6 +2,7 @@ package com.tissue.api.issue.domain;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -35,9 +36,24 @@ public class IssueRelations {
 		return IssueRelation.create(sourceIssue, targetIssue, type);
 	}
 
-	void removeRelation(Issue otherIssue) {
-		outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
-		incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
+	// void removeRelation(Issue otherIssue) {
+	// 	outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
+	// 	incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
+	// }
+
+	IssueRelation removeRelation(Issue otherIssue) {
+		Iterator<IssueRelation> iterator = outgoingRelations.iterator();
+		while (iterator.hasNext()) {
+			IssueRelation relation = iterator.next();
+
+			if (relation.getTargetIssue().equals(otherIssue)) {
+				iterator.remove();
+				relation.getTargetIssue().getRelations().removeIncomingInternal(relation);
+				return relation;
+			}
+		}
+
+		return null;
 	}
 
 	void clear() {
@@ -138,5 +154,9 @@ public class IssueRelations {
 		if (exists) {
 			throw new IssueRelationAlreadyExistsException(source.getKey(), target.getKey());
 		}
+	}
+
+	private void removeIncomingInternal(IssueRelation relation) {
+		this.incomingRelations.remove(relation);
 	}
 }

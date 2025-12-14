@@ -1,5 +1,6 @@
 package com.tissue.api.issue.application.service;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,11 @@ import com.tissue.api.issue.application.dto.request.UnsubscribeIssueCommand;
 import com.tissue.api.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.api.issue.application.service.finder.IssueFinder;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.event.IssueAssignedEvent;
+import com.tissue.api.issue.domain.event.IssueReporterChangedEvent;
+import com.tissue.api.issue.domain.event.IssueReviewerAddedEvent;
+import com.tissue.api.issue.domain.event.IssueReviewerRemovedEvent;
+import com.tissue.api.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.api.issue.domain.policy.IssuePolicy;
 import com.tissue.api.project.application.service.finder.ProjectFinder;
 import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
@@ -29,6 +35,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	private final ProjectFinder projectFinder;
 	private final ProjectMemberFinder projectMemberFinder;
 	private final IssuePolicy issuePolicy;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
 	@Transactional
@@ -36,9 +43,13 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember target = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember oldReporter = issue.getParticipants().getReporter();
+		ProjectMember newReporter = projectMemberFinder.findBy(project, cmd.targetMemberId());
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
-		issue.changeReporter(target);
+		issue.changeReporter(newReporter);
+
+		eventPublisher.publishEvent(IssueReporterChangedEvent.create(issue, oldReporter, newReporter, actor));
 	}
 
 	@Override
@@ -47,9 +58,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember assignee = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember assignee = projectMemberFinder.findBy(project, cmd.targetMemberId());
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issue.assignTo(assignee);
+
+		eventPublisher.publishEvent(IssueAssignedEvent.create(issue, assignee, actor));
 	}
 
 	@Override
@@ -58,7 +72,12 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
+		ProjectMember assignee = issue.getParticipants().getAssignee();
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+
 		issue.unassign();
+
+		eventPublisher.publishEvent(IssueUnassignedEvent.create(issue, assignee, actor));
 	}
 
 	@Override
@@ -67,7 +86,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issue.addSubscriber(subscriber);
 	}
@@ -78,7 +97,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issue.removeSubscriber(subscriber);
 	}
@@ -89,10 +108,13 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.targetMemberId());
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issuePolicy.ensureCanAddReviewer(issue);
 		issue.addReviewer(reviewer);
+
+		eventPublisher.publishEvent(IssueReviewerAddedEvent.create(issue, reviewer, actor));
 	}
 
 	@Override
@@ -101,8 +123,11 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.memberId());
+		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.targetMemberId());
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issue.removeReviewer(reviewer);
+
+		eventPublisher.publishEvent(IssueReviewerRemovedEvent.create(issue, reviewer, actor));
 	}
 }

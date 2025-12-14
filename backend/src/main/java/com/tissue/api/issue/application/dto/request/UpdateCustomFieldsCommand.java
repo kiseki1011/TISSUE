@@ -7,6 +7,6 @@ public record UpdateCustomFieldsCommand(
 	String projectKey,
 	String issueKey,
 	Map<Long, Object> customFields,
-	Long memberId
+	Long actorMemberId
 ) {
 }

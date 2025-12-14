@@ -64,6 +64,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public IssueCreateResponse create(CreateIssueCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+		// TODO: findWithWm을 고려 WorkspaceMember를 같이 가져오기 (Wm은 workspace member를 의미)
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Sprint sprint = Optional.ofNullable(cmd.sprintId())
@@ -94,7 +95,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
 		issueCommandRepository.save(issue);
 
-		eventPublisher.publishEvent(IssueCreatedEvent.create(issue, cmd.actorMemberId()));
+		eventPublisher.publishEvent(IssueCreatedEvent.create(issue, actor));
 
 		return IssueCreateResponse.from(issue);
 	}
@@ -104,6 +105,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Map<String, FieldChange> changes = new HashMap<>();
 
@@ -114,11 +116,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
 		if (!changes.isEmpty()) {
-			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
-				issue,
-				changes,
-				cmd.actorMemberId()
-			));
+			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
 		}
 	}
 
@@ -127,6 +125,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void updateCustomFields(UpdateCustomFieldsCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
@@ -136,11 +135,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
 
 		if (!changes.isEmpty()) {
-			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(
-				issue,
-				changes,
-				cmd.actorMemberId()
-			));
+			eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
 		}
 	}
 
@@ -149,15 +144,13 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void updateStoryPoint(UpdateStoryPointCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Integer oldStoryPoint = issue.getStoryPoint();
 		issue.updateStoryPoint(cmd.storyPoint());
 
-		eventPublisher.publishEvent(IssueStoryPointChangedEvent.create(
-			issue,
-			issue.getParentIssue(),
-			oldStoryPoint,
-			cmd.actorMemberId())
+		eventPublisher.publishEvent(
+			IssueStoryPointChangedEvent.create(issue, issue.getParentIssue(), oldStoryPoint, actor)
 		);
 	}
 
@@ -166,6 +159,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void assignParent(AssignParentCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Project parentProject = projectFinder.findForCommand(cmd.parentProjectKey(), cmd.workspaceKey());
 		Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
@@ -174,12 +168,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
 		issue.setParentIssue(parent);
 
-		eventPublisher.publishEvent(IssueParentChangedEvent.create(
-			issue,
-			oldParent,
-			parent,
-			cmd.actorMemberId())
-		);
+		eventPublisher.publishEvent(IssueParentChangedEvent.create(issue, oldParent, parent, actor));
 	}
 
 	@Override
@@ -188,15 +177,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		Issue parent = issue.getParentIssue();
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issue.removeParentIssue();
 
-		eventPublisher.publishEvent(IssueParentChangedEvent.create(
-			issue,
-			parent,
-			null,
-			cmd.actorMemberId())
-		);
+		eventPublisher.publishEvent(IssueParentChangedEvent.create(issue, parent, null, actor));
 	}
 
 	@Override
@@ -204,11 +189,12 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public void softDelete(DeleteIssueCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		issueValidator.ensureCanDelete(issue);
 		issue.delete();
 
-		eventPublisher.publishEvent(IssueDeletedEvent.create(issue, cmd.actorMemberId()));
+		eventPublisher.publishEvent(IssueDeletedEvent.create(issue, actor));
 	}
 
 	private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {

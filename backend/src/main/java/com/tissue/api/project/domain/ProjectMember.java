@@ -85,4 +85,8 @@ public class ProjectMember extends BaseEntity {
 	public void remove() {
 		softDelete();
 	}
+
+	public String getDisplayName() {
+		return workspaceMember.getDisplayName();
+	}
 }

@@ -5,6 +5,6 @@ public record UpdateStoryPointCommand(
 	String projectKey,
 	String issueKey,
 	Integer storyPoint,
-	Long memberId
+	Long actorMemberId
 ) {
 }

@@ -6,6 +6,6 @@ public record AssignParentCommand(
 	String issueKey,
 	String parentProjectKey,
 	String parentIssueKey,
-	Long memberId
+	Long actorMemberId
 ) {
 }

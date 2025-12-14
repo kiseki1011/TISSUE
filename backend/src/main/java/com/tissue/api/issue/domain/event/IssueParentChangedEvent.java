@@ -6,7 +6,9 @@ import java.util.UUID;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.event.DomainEvent;
+import com.tissue.api.common.util.NullSafe;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.domain.ProjectMember;
 
 public record IssueParentChangedEvent(
 	UUID eventId,
@@ -15,21 +17,22 @@ public record IssueParentChangedEvent(
 	String projectKey,
 	String issueKey,
 	Long issueId,
-	String issueType,
+
 	String oldParentKey,
 	Long oldParentId,
-	String oldParentType,
+
 	String newParentKey,
 	Long newParentId,
-	String newParentType,
-	Long actorMemberId
+
+	Long actorMemberId,
+	String actorDisplayName
 ) implements DomainEvent {
 
 	public static IssueParentChangedEvent create(
 		Issue issue,
 		@Nullable Issue oldParent,
 		@Nullable Issue newParent,
-		Long actorMemberId
+		ProjectMember actor
 	) {
 		return new IssueParentChangedEvent(
 			UUID.randomUUID(),
@@ -38,14 +41,12 @@ public record IssueParentChangedEvent(
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
-			issue.getIssueType().getDisplayLabel(),
-			oldParent != null ? oldParent.getKey() : null,
-			oldParent != null ? oldParent.getId() : null,
-			oldParent != null ? oldParent.getIssueType().getDisplayLabel() : null,
-			newParent != null ? newParent.getKey() : null,
-			newParent != null ? newParent.getId() : null,
-			newParent != null ? newParent.getIssueType().getDisplayLabel() : null,
-			actorMemberId
+			NullSafe.get(oldParent, Issue::getKey),
+			NullSafe.get(oldParent, Issue::getId),
+			NullSafe.get(newParent, Issue::getKey),
+			NullSafe.get(newParent, Issue::getId),
+			actor.getMemberId(),
+			actor.getDisplayName()
 		);
 	}
 }

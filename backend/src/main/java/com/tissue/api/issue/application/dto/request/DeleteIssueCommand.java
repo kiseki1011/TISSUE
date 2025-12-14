@@ -4,6 +4,6 @@ public record DeleteIssueCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Long memberId
+	Long actorMemberId
 ) {
 }

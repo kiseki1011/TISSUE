@@ -7,6 +7,6 @@ public record SubscribeIssueCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Long memberId
+	Long actorMemberId
 ) {
 }

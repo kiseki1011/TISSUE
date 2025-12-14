@@ -7,6 +7,7 @@ public record RemoveReviewerCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Long memberId
+	Long targetMemberId,
+	Long actorMemberId
 ) {
 }

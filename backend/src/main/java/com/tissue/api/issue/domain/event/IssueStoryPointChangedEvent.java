@@ -6,7 +6,9 @@ import java.util.UUID;
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.event.DomainEvent;
+import com.tissue.api.common.util.NullSafe;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.domain.ProjectMember;
 
 public record IssueStoryPointChangedEvent(
 	UUID eventId,
@@ -15,19 +17,22 @@ public record IssueStoryPointChangedEvent(
 	String projectKey,
 	String issueKey,
 	Long issueId,
-	String issueType,
+
 	String parentKey,
 	Long parentId,
+
 	Integer oldStoryPoint,
 	Integer newStoryPoint,
-	Long actorMemberId
+
+	Long actorMemberId,
+	String actorDisplayName
 ) implements DomainEvent {
 
 	public static IssueStoryPointChangedEvent create(
 		Issue issue,
 		@Nullable Issue parentIssue,
 		@Nullable Integer oldStoryPoint,
-		Long actorMemberId
+		ProjectMember actor
 	) {
 		return new IssueStoryPointChangedEvent(
 			UUID.randomUUID(),
@@ -36,12 +41,12 @@ public record IssueStoryPointChangedEvent(
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
-			issue.getIssueType().getDisplayLabel(),
-			parentIssue != null ? parentIssue.getKey() : null,
-			parentIssue != null ? parentIssue.getId() : null,
+			NullSafe.get(parentIssue, Issue::getKey),
+			NullSafe.get(parentIssue, Issue::getId),
 			oldStoryPoint,
 			issue.getStoryPoint(),
-			actorMemberId
+			actor.getMemberId(),
+			actor.getDisplayName()
 		);
 	}
 }

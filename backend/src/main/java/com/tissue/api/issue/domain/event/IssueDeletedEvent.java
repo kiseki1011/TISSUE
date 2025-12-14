@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.tissue.api.common.event.DomainEvent;
+import com.tissue.api.common.util.NullSafe;
 import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.project.domain.ProjectMember;
 
 public record IssueDeletedEvent(
 	UUID eventId,
@@ -13,17 +15,15 @@ public record IssueDeletedEvent(
 	String projectKey,
 	String issueKey,
 	Long issueId,
-	String issueType,
+
 	String parentKey,
 	Long parentId,
-	String parentIssueType,
-	Long actorMemberId
+
+	Long actorMemberId,
+	String actorDisplayName
 ) implements DomainEvent {
 
-	public static IssueDeletedEvent create(
-		Issue issue,
-		Long actorMemberId
-	) {
+	public static IssueDeletedEvent create(Issue issue, ProjectMember actor) {
 		Issue parentIssue = issue.getParentIssue();
 
 		return new IssueDeletedEvent(
@@ -33,11 +33,10 @@ public record IssueDeletedEvent(
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
-			issue.getIssueType().getDisplayLabel(),
-			parentIssue.getKey(),
-			parentIssue.getId(),
-			parentIssue.getIssueType().getDisplayLabel(),
-			actorMemberId
+			NullSafe.get(parentIssue, Issue::getKey),
+			NullSafe.get(parentIssue, Issue::getId),
+			actor.getMemberId(),
+			actor.getDisplayName()
 		);
 	}
 }

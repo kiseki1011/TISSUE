@@ -7,6 +7,7 @@ public record AssignIssueCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Long memberId
+	Long targetMemberId,
+	Long actorMemberId
 ) {
 }

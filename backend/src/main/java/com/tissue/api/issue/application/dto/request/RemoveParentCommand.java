@@ -4,6 +4,6 @@ public record RemoveParentCommand(
 	String workspaceKey,
 	String projectKey,
 	String issueKey,
-	Long memberId
+	Long actorMemberId
 ) {
 }

@@ -3,12 +3,10 @@ package com.tissue.api.issue.domain.event;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.tissue.api.common.event.DomainEvent;
-import com.tissue.api.common.util.NullSafe;
 import com.tissue.api.issue.domain.Issue;
 import com.tissue.api.project.domain.ProjectMember;
 
-public record IssueCreatedEvent(
+public record IssueUnassignedEvent(
 	UUID eventId,
 	Instant occurredAt,
 	String workspaceKey,
@@ -16,25 +14,27 @@ public record IssueCreatedEvent(
 	String issueKey,
 	Long issueId,
 
-	String parentKey,
-	Long parentId,
+	Long removedAssigneeMemberId,
+	String removedAssigneeDisplayName,
 
 	Long actorMemberId,
 	String actorDisplayName
-) implements DomainEvent {
+) {
 
-	public static IssueCreatedEvent create(Issue issue, ProjectMember actor) {
-		Issue parentIssue = issue.getParentIssue();
-
-		return new IssueCreatedEvent(
+	public static IssueUnassignedEvent create(
+		Issue issue,
+		ProjectMember removedAssignee,
+		ProjectMember actor
+	) {
+		return new IssueUnassignedEvent(
 			UUID.randomUUID(),
 			Instant.now(),
 			issue.getWorkspaceKey(),
 			issue.getProjectKey(),
 			issue.getKey(),
 			issue.getId(),
-			NullSafe.get(parentIssue, Issue::getKey),
-			NullSafe.get(parentIssue, Issue::getId),
+			removedAssignee.getMemberId(),
+			removedAssignee.getDisplayName(),
 			actor.getMemberId(),
 			actor.getDisplayName()
 		);
