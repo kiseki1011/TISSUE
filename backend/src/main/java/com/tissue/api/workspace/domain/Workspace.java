@@ -1,6 +1,5 @@
 package com.tissue.api.workspace.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.workspace.domain.enums.WorkspaceRole.*;
 
 import org.hibernate.annotations.SQLRestriction;
@@ -47,7 +46,7 @@ public class Workspace extends BaseEntity {
 		Workspace workspace = new Workspace();
 		workspace.key = key;
 		workspace.name = name;
-		workspace.description = nullToEmpty(description);
+		workspace.description = description;
 
 		return workspace;
 	}
@@ -69,6 +68,6 @@ public class Workspace extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 }

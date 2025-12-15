@@ -1,7 +1,5 @@
 package com.tissue.api.issuetype.domain;
 
-import static com.tissue.api.common.util.TextNormalizer.*;
-
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
@@ -91,7 +89,7 @@ public class IssueType extends BaseEntity {
 		issueType.projectKey = project.getKey();
 		issueType.workspaceKey = project.getWorkspaceKey();
 		issueType.label = label;
-		issueType.description = nullToEmpty(description);
+		issueType.description = description;
 		issueType.color = color;
 		issueType.issueHierarchy = issueHierarchy;
 		issueType.workflow = workflow;
@@ -117,7 +115,7 @@ public class IssueType extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	public void updateColor(@NonNull ColorType color) {

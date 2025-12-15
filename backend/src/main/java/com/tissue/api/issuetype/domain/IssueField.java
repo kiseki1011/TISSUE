@@ -1,7 +1,5 @@
 package com.tissue.api.issuetype.domain;
 
-import static com.tissue.api.common.util.TextNormalizer.*;
-
 import org.springframework.lang.Nullable;
 
 import com.tissue.api.common.entity.BaseEntity;
@@ -66,7 +64,7 @@ public class IssueField extends BaseEntity {
 		IssueField issueField = new IssueField();
 
 		issueField.label = label;
-		issueField.description = nullToEmpty(description);
+		issueField.description = description;
 		issueField.fieldType = fieldType;
 		issueField.required = Boolean.TRUE.equals(required);
 		issueField.issueType = issueType;
@@ -87,7 +85,7 @@ public class IssueField extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	public void setRequired(@NonNull Boolean required) {

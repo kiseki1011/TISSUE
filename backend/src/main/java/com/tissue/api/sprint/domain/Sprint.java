@@ -1,6 +1,5 @@
 package com.tissue.api.sprint.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
 import static com.tissue.api.sprint.domain.enums.SprintStatus.*;
 
 import java.time.Instant;
@@ -71,7 +70,7 @@ public class Sprint extends BaseEntity {
 		sprint.projectKey = project.getKey();
 		sprint.workspaceKey = project.getWorkspaceKey();
 		sprint.title = title;
-		sprint.goal = nullToEmpty(goal);
+		sprint.goal = goal;
 		sprint.status = PLANNING;
 
 		return sprint;
@@ -86,7 +85,7 @@ public class Sprint extends BaseEntity {
 	}
 
 	public void updateGoal(@Nullable String goal) {
-		this.goal = nullToEmpty(goal);
+		this.goal = goal;
 	}
 
 	public void updateStartedAt(@NonNull Instant startedAt) {

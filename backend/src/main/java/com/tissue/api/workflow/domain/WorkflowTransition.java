@@ -1,7 +1,5 @@
 package com.tissue.api.workflow.domain;
 
-import static com.tissue.api.common.util.TextNormalizer.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +68,7 @@ public class WorkflowTransition extends BaseEntity {
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
 		wt.label = label;
-		wt.description = nullToEmpty(description);
+		wt.description = description;
 		wt.sourceState = sourceState;
 		wt.targetState = targetState;
 
@@ -82,7 +80,7 @@ public class WorkflowTransition extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	void attachToWorkflow(@NonNull Workflow workflow) {

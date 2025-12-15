@@ -1,7 +1,5 @@
 package com.tissue.api.workflow.domain;
 
-import static com.tissue.api.common.util.TextNormalizer.*;
-
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
@@ -66,7 +64,7 @@ public class WorkflowState extends BaseEntity {
 	) {
 		WorkflowState ws = new WorkflowState();
 		ws.label = label;
-		ws.description = nullToEmpty(description);
+		ws.description = description;
 		ws.color = color;
 		ws.category = category;
 
@@ -82,7 +80,7 @@ public class WorkflowState extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	public void updateColor(@NonNull ColorType color) {

@@ -1,7 +1,5 @@
 package com.tissue.api.issue.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
-
 import org.springframework.lang.Nullable;
 
 import jakarta.persistence.Column;
@@ -28,17 +26,17 @@ public class IssueContent {
 
 	public static IssueContent of(@Nullable String content, @Nullable String summary) {
 		IssueContent issueContent = new IssueContent();
-		issueContent.content = nullToEmpty(content);
-		issueContent.summary = nullToEmpty(summary);
+		issueContent.content = content;
+		issueContent.summary = summary;
 
 		return issueContent;
 	}
 
 	void updateContent(@Nullable String content) {
-		this.content = nullToEmpty(content);
+		this.content = content;
 	}
 
 	void updateSummary(@Nullable String summary) {
-		this.summary = nullToEmpty(summary);
+		this.summary = summary;
 	}
 }

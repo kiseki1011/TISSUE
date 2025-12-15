@@ -7,12 +7,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DomainPreconditions {
+
 	private final static int MIN_PERCENTAGE = 0;
 	private final static int MAX_PERCENTAGE = 100;
-
-	public static String nullToEmpty(String val) {
-		return val == null ? "" : val;
-	}
 
 	public static Integer ensureValidPercentageRange(Integer value) {
 		if (value == null) {

@@ -1,7 +1,5 @@
 package com.tissue.api.workflow.domain;
 
-import static com.tissue.api.common.util.TextNormalizer.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +92,7 @@ public class Workflow extends BaseEntity {
 		wf.projectKey = project.getKey();
 		wf.workspaceKey = project.getWorkspaceKey();
 		wf.label = label;
-		wf.description = nullToEmpty(description);
+		wf.description = description;
 		wf.color = color;
 		wf.systemProvided = false;
 
@@ -174,7 +172,7 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	public void updateColor(@Nullable ColorType color) {

@@ -1,7 +1,5 @@
 package com.tissue.api.project.domain;
 
-import static com.tissue.api.common.util.DomainPreconditions.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +98,7 @@ public class Project extends BaseEntity {
 
 		project.setKey(key);
 		project.title = title;
-		project.description = nullToEmpty(description);
+		project.description = description;
 
 		project.visibility = ProjectVisibility.PRIVATE;
 		project.defaultJoinRole = ProjectRole.VIEWER;
@@ -125,7 +123,7 @@ public class Project extends BaseEntity {
 	}
 
 	public void updateDescription(@Nullable String description) {
-		this.description = nullToEmpty(description);
+		this.description = description;
 	}
 
 	public void updateVisibility(@NonNull ProjectVisibility visibility) {

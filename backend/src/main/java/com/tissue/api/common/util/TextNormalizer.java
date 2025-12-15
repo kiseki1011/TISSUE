@@ -3,8 +3,6 @@ package com.tissue.api.common.util;
 import java.text.Normalizer;
 import java.util.Locale;
 
-import org.springframework.lang.Nullable;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -18,10 +16,6 @@ public class TextNormalizer {
 
 	public static String normalizeForUniq(@NonNull String value) {
 		return lower(nfc(value.strip()));
-	}
-
-	public static String nullToEmpty(@Nullable String val) {
-		return val == null ? "" : val;
 	}
 
 	public static String lower(String value) {
