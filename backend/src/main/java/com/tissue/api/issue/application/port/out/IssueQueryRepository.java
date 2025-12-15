@@ -190,8 +190,8 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT COUNT(i) > 0
 		    FROM Issue i
-		    WHERE i.workspace.key = :workspaceKey
-		    WHERE i.key = :issueKey
+		    WHERE i.workspaceKey = :workspaceKey
+		    AND i.key = :issueKey
 		      AND (
 		          i.createdBy = :memberId
 		          OR i.participants.assignee.memberId = :memberId
@@ -206,7 +206,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT COUNT(i) > 0
 		    FROM Issue i
-		    WHERE i.workspace.key = :workspaceKey
+		    WHERE i.workspaceKey = :workspaceKey
 		      AND i.key = :issueKey
 		      AND i.createdBy = :memberId
 		""")
