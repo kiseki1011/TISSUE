@@ -15,6 +15,7 @@ import com.tissue.api.project.domain.exception.ProjectNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 // TODO: 권한 redis 캐싱
+// TODO: 각 메서드 주석 추가(WorkspaceRole.ADMIN을 왜 전부 허용하는 cascade authorization을 사용하는지)
 @Component
 @RequiredArgsConstructor
 public class ProjectSecurityGuard {
