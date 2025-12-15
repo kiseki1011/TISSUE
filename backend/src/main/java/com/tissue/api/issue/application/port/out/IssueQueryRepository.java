@@ -186,4 +186,33 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		    GROUP BY i.currentState.id
 		""")
 	List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
+
+	@Query("""
+		    SELECT COUNT(i) > 0
+		    FROM Issue i
+		    WHERE i.workspace.key = :workspaceKey
+		    WHERE i.key = :issueKey
+		      AND (
+		          i.createdBy = :memberId
+		          OR i.participants.assignee.memberId = :memberId
+		      )
+		""")
+	boolean existsByKeysAndAuthorOrAssignee(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey,
+		@Param("memberId") Long memberId
+	);
+
+	@Query("""
+		    SELECT COUNT(i) > 0
+		    FROM Issue i
+		    WHERE i.workspace.key = :workspaceKey
+		      AND i.key = :issueKey
+		      AND i.createdBy = :memberId
+		""")
+	boolean existsByKeysAndAuthor(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey,
+		@Param("memberId") Long memberId
+	);
 }
