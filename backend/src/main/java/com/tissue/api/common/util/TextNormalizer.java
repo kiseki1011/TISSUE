@@ -11,8 +11,8 @@ import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TextNormalizer {
-	// TODO: normalizeText
-	public static String normalizeLabel(@NonNull String value) {
+
+	public static String normalizeText(@NonNull String value) {
 		return nfc(value.strip());
 	}
 

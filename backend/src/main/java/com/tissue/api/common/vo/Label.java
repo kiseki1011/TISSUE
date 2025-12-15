@@ -31,7 +31,7 @@ public class Label {
 
 	public static Label of(@NonNull String raw) {
 		String checked = Objects.requireNonNull(raw);
-		String display = normalizeLabel(checked);
+		String display = normalizeText(checked);
 		String norm = normalizeForUniq(checked);
 
 		return new Label(display, norm);
