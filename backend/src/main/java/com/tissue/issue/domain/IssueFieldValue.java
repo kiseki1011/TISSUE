@@ -1,0 +1,119 @@
+package com.tissue.issue.domain;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+
+import com.tissue.common.entity.BaseEntity;
+import com.tissue.issuetype.domain.EnumFieldOption;
+import com.tissue.issuetype.domain.IssueField;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class IssueFieldValue extends BaseEntity {
+
+	@Version
+	private Long version;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private Issue issue;
+
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	private IssueField field;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "enum_option_id")
+	private EnumFieldOption enumOption;
+
+	private String stringValue;
+	private Integer integerValue;
+	private BigDecimal decimalValue;
+	private Instant timestampValue;
+	private LocalDate dateValue;
+	private Boolean booleanValue;
+
+	@Column(name = "value_present", nullable = false)
+	private boolean valuePresent;
+
+	public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field) {
+		IssueFieldValue fieldValue = new IssueFieldValue();
+		fieldValue.issue = issue;
+		fieldValue.field = field;
+		fieldValue.valuePresent = false;
+		return fieldValue;
+	}
+
+	public void apply(@NonNull Object value) {
+		clearColumnsOnly();
+		switch (field.getFieldType()) {
+			case TEXT -> this.stringValue = (String)value;
+			case INTEGER -> this.integerValue = (Integer)value;
+			case DECIMAL -> this.decimalValue = (BigDecimal)value;
+			case TIMESTAMP -> this.timestampValue = (Instant)value;
+			case DATE -> this.dateValue = (LocalDate)value;
+			case BOOLEAN -> this.booleanValue = (Boolean)value;
+			case ENUM -> this.enumOption = (EnumFieldOption)value;
+			default -> throw new IllegalArgumentException("Unsupported field type: " + field.getFieldType());
+		}
+		markPresent();
+	}
+
+	public void clearValue() {
+		clearColumnsOnly();
+		markEmpty();
+	}
+
+	public Object getValue() {
+		if (!this.valuePresent) {
+			return null;
+		}
+
+		return switch (field.getFieldType()) {
+			case TEXT -> this.stringValue;
+			case INTEGER -> this.integerValue;
+			case DECIMAL -> this.decimalValue;
+			case TIMESTAMP -> this.timestampValue;
+			case DATE -> this.dateValue;
+			case BOOLEAN -> this.booleanValue;
+			case ENUM -> this.enumOption;
+			default -> throw new IllegalStateException("Unexpected field type: " + field.getFieldType());
+		};
+	}
+
+	private void clearColumnsOnly() {
+		this.stringValue = null;
+		this.integerValue = null;
+		this.decimalValue = null;
+		this.timestampValue = null;
+		this.dateValue = null;
+		this.booleanValue = null;
+		this.enumOption = null;
+	}
+
+	private void markPresent() {
+		this.valuePresent = true;
+	}
+
+	private void markEmpty() {
+		this.valuePresent = false;
+	}
+}

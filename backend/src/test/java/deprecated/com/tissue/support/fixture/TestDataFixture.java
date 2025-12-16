@@ -5,11 +5,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.api.comment.infrastructure.repository.CommentRepository;
-import com.tissue.api.issue.application.port.out.IssueCommandRepository;
-import com.tissue.api.member.application.port.out.MemberRepository;
-import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.comment.infrastructure.repository.CommentRepository;
+import com.tissue.issue.application.port.out.IssueCommandRepository;
+import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 import lombok.RequiredArgsConstructor;
 

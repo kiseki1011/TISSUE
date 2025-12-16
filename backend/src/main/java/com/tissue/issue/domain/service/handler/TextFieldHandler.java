@@ -1,0 +1,35 @@
+package com.tissue.issue.domain.service.handler;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.ConverterNotFoundException;
+import org.springframework.stereotype.Component;
+
+import com.tissue.issuetype.domain.IssueField;
+import com.tissue.issuetype.domain.enums.FieldType;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class TextFieldHandler implements FieldTypeHandler {
+
+	@Qualifier("domainConversionService")
+	private final ConversionService cs;
+
+	@Override
+	public FieldType type() {
+		return FieldType.TEXT;
+	}
+
+	@Override
+	public Object parse(@NonNull IssueField field, @NonNull Object raw) {
+		try {
+			return cs.convert(raw, String.class);
+		} catch (ConversionFailedException | ConverterNotFoundException ex) {
+			throw new IllegalArgumentException("must be a string");
+		}
+	}
+}

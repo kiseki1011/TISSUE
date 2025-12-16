@@ -8,8 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.tissue.api.common.exception.base.BadRequestException;
-import com.tissue.api.util.WorkspaceCodeParser;
+import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.util.WorkspaceCodeParser;
 
 class WorkspaceCodeParserTest {
 	private WorkspaceCodeParser workspaceCodeParser;

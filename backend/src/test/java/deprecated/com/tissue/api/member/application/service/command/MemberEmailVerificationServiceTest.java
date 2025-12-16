@@ -12,10 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.email.domain.EmailClient;
-import com.tissue.api.member.adapter.in.web.config.EmailVerificationProperties;
-import com.tissue.api.member.application.service.MemberEmailVerificationService;
-import com.tissue.api.member.application.port.out.EmailVerificationRepository;
+import com.tissue.email.domain.EmailClient;
+import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
+import com.tissue.member.application.service.MemberEmailVerificationService;
+import com.tissue.member.application.port.out.EmailVerificationRepository;
 
 @ExtendWith(MockitoExtension.class)
 class MemberEmailVerificationServiceTest {
