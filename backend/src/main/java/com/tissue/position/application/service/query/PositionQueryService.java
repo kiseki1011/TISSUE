@@ -1,0 +1,35 @@
+package com.tissue.position.application.service.query;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.tissue.common.enums.ColorType;
+import com.tissue.position.domain.model.Position;
+import com.tissue.position.infrastructure.repository.PositionQueryRepository;
+import com.tissue.position.presentation.dto.response.GetPositionsResponse;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class PositionQueryService {
+
+	private final PositionQueryRepository positionQueryRepository;
+
+	@Transactional(readOnly = true)
+	public GetPositionsResponse getPositions(String workspaceCode) {
+		List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceCode);
+		return GetPositionsResponse.from(positions);
+	}
+
+	public Set<ColorType> getUsedColors(String workspaceCode) {
+		List<Position> positions = positionQueryRepository.findAllByWorkspace_Key(workspaceCode);
+		return positions.stream()
+			.map(Position::getColor)
+			.collect(Collectors.toSet());
+	}
+}

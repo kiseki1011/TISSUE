@@ -1,49 +1,10 @@
 package deprecated.com.tissue.unit.service;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.tissue.api.issue.application.service.finder.IssueFinder;
-import com.tissue.api.notification.application.eventhandler.NotificationEventHandler;
-import com.tissue.api.notification.application.service.command.NotificationCommandService;
-import com.tissue.api.notification.application.service.command.NotificationProcessor;
-import com.tissue.api.notification.application.service.command.NotificationTargetService;
-import com.tissue.api.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.api.notification.infrastructure.repository.ActivityLogRepository;
-import com.tissue.api.workspace.application.service.finder.WorkspaceMemberFinder;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationEventHandlerTest {
-
-	@Mock
-	private NotificationCommandService notificationService;
-
-	@Mock
-	private IssueFinder issueFinder;
-
-	@Mock
-	private WorkspaceMemberFinder workspaceMemberFinder;
-
-	@Mock
-	private WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
-
-	@Mock
-	private NotificationTargetService targetService;
-
-	@Mock
-	private NotificationProcessor notificationProcessor;
-
-	@Mock
-	private NotificationMessageFactory notificationMessageFactory;
-
-	@Mock
-	private ActivityLogRepository activityLogRepository;
-
-	@InjectMocks
-	private NotificationEventHandler notificationEventHandler;
 
 	// @Test
 	// @DisplayName("이슈 생성 이벤트 발생 시 워크스페이스 멤버들에게 알림이 처리되어야 함")

@@ -4,16 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.tissue.api.member.application.service.MemberCommandService;
-import com.tissue.api.member.application.port.out.MemberRepository;
-import com.tissue.api.position.application.service.command.PositionCommandService;
-import com.tissue.api.position.application.service.command.PositionFinder;
-import com.tissue.api.position.infrastructure.repository.PositionRepository;
-import com.tissue.api.security.authentication.application.service.AuthenticationService;
-import com.tissue.api.workspace.application.port.out.WorkspaceCommandRepository;
-import com.tissue.api.workspace.application.port.out.WorkspaceMemberCommandRepository;
-import com.tissue.api.workspace.application.service.command.WorkspaceCreateService;
-import com.tissue.api.workspace.application.service.command.WorkspaceMemberManageService;
+import com.tissue.member.application.service.MemberCommandService;
+import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.position.application.service.command.PositionCommandService;
+import com.tissue.position.application.service.command.PositionFinder;
+import com.tissue.position.infrastructure.repository.PositionRepository;
+import com.tissue.security.authentication.application.service.AuthenticationService;
+import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.workspace.application.service.command.WorkspaceCreateService;
+import com.tissue.workspace.application.service.command.WorkspaceMemberManageService;
 
 import deprecated.com.tissue.support.fixture.api.LoginApiFixture;
 import deprecated.com.tissue.support.fixture.api.MemberApiFixture;

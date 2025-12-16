@@ -13,15 +13,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.tissue.api.notification.application.service.command.NotificationProcessor;
-import com.tissue.api.notification.domain.enums.NotificationChannel;
-import com.tissue.api.notification.domain.enums.NotificationType;
-import com.tissue.api.notification.domain.enums.ResourceType;
-import com.tissue.api.notification.domain.model.Notification;
-import com.tissue.api.notification.domain.model.NotificationPreference;
-import com.tissue.api.notification.domain.model.vo.EntityReference;
-import com.tissue.api.notification.domain.service.sender.NotificationSender;
-import com.tissue.api.notification.infrastructure.repository.NotificationPreferenceRepository;
+import com.tissue.notification.application.service.command.NotificationProcessor;
+import com.tissue.notification.domain.enums.NotificationChannel;
+import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.enums.ResourceType;
+import com.tissue.notification.domain.model.Notification;
+import com.tissue.notification.domain.model.NotificationPreference;
+import com.tissue.notification.domain.model.vo.EntityReference;
+import com.tissue.notification.domain.service.sender.NotificationSender;
+import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationProcessorTest {

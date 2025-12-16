@@ -1,0 +1,14 @@
+package com.tissue.member.adapter.in.web.dto.request;
+
+import com.tissue.common.validator.annotation.size.EmailSize;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record UpdateMemberEmailRequest(
+	@EmailSize
+	@Email(message = "{valid.pattern.email}")
+	@NotBlank(message = "{valid.notblank}")
+	String newEmail
+) {
+}

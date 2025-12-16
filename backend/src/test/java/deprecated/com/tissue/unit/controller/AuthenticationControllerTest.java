@@ -11,9 +11,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import com.tissue.api.member.adapter.in.web.dto.request.PermissionRequest;
-import com.tissue.api.security.authentication.presentation.dto.request.LoginRequest;
-import com.tissue.api.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.member.adapter.in.web.dto.request.PermissionRequest;
+import com.tissue.security.authentication.presentation.dto.request.LoginRequest;
+import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 
 import deprecated.com.tissue.support.helper.ControllerTestHelper;
 

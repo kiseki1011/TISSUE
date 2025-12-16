@@ -1,0 +1,32 @@
+package com.tissue.comment.domain.event;
+
+import lombok.Getter;
+
+@Getter
+public abstract class CommentEvent {
+
+	// private final Long commentId;
+	//
+	// protected CommentEvent(
+	// 	NotificationType notificationType,
+	// 	ResourceType resourceType,
+	// 	String workspaceCode,
+	// 	Long issueId,
+	// 	String issueKey,
+	// 	// IssueType issueType,
+	// 	Long actorMemberId,
+	// 	Long commentId
+	// ) {
+	// 	super(
+	// 		notificationType,
+	// 		resourceType,
+	// 		workspaceCode,
+	// 		issueId,
+	// 		issueKey,
+	// 		// issueType,
+	// 		actorMemberId
+	// 	);
+	//
+	// 	this.commentId = commentId;
+	// }
+}
