@@ -6,7 +6,7 @@ import com.tissue.api.workflow.domain.guard.GuardType;
 public class TransitionGuardFailedException extends BadRequestException {
 
 	public TransitionGuardFailedException(GuardType guardType, String reason, String issueKey, String workspaceKey) {
-		super("[%s] Guard failed: %s".formatted(guardType, reason));
+		super("%s evaluation failed: %s".formatted(guardType, reason));
 
 		addContext("failedGuardType", guardType);
 		addContext("failureReason", reason);

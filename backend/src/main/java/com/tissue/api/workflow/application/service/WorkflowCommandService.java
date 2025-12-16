@@ -29,7 +29,8 @@ import com.tissue.api.workflow.domain.WorkflowTransition;
 import com.tissue.api.workflow.domain.exception.DuplicateWorkflowException;
 import com.tissue.api.workflow.domain.exception.TransitionNotFoundException;
 import com.tissue.api.workflow.domain.guard.GuardType;
-import com.tissue.api.workflow.domain.guard.TransitionGuardRegistry;
+import com.tissue.api.workflow.domain.guard.TransitionGuard;
+import com.tissue.api.workflow.domain.service.TransitionGuardRegistry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +151,9 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 		for (var g : cmd.guards()) {
 			guardRegistry.ensureGuardExists(g.guardType());
 			workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
+
+			TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
+			guardImplementation.validateParams(g.params());
 
 			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
 		}

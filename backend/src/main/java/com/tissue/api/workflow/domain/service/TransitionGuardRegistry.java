@@ -1,4 +1,4 @@
-package com.tissue.api.workflow.domain.guard;
+package com.tissue.api.workflow.domain.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+
+import com.tissue.api.workflow.domain.guard.GuardType;
+import com.tissue.api.workflow.domain.guard.TransitionGuard;
 
 @Component
 public class TransitionGuardRegistry {

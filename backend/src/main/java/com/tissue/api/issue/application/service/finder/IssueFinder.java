@@ -28,6 +28,11 @@ public class IssueFinder {
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
 	}
 
+	public Issue findBy(Long id) {
+		return issueQueryRepo.findById(id)
+			.orElseThrow(() -> new RuntimeException("Issue not found"));
+	}
+
 	public Issue findBy(String issueKey, Project project) {
 		return issueQueryRepo.findByKeyAndProject(issueKey, project)
 			.orElseThrow(() -> new IssueNotFoundException(issueKey, project.getKey(), project.getWorkspaceKey()));

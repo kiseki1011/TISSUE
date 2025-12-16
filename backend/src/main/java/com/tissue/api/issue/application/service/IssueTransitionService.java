@@ -23,10 +23,9 @@ import com.tissue.api.workflow.domain.TransitionGuardConfig;
 import com.tissue.api.workflow.domain.Workflow;
 import com.tissue.api.workflow.domain.WorkflowState;
 import com.tissue.api.workflow.domain.WorkflowTransition;
-import com.tissue.api.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.api.workflow.domain.guard.GuardContext;
 import com.tissue.api.workflow.domain.guard.TransitionGuard;
-import com.tissue.api.workflow.domain.guard.TransitionGuardRegistry;
+import com.tissue.api.workflow.domain.service.TransitionGuardRegistry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,15 +100,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 				.params(config.getGuardParams())
 				.build();
 
-			boolean failEvaluation = !guard.evaluate(context);
-			if (failEvaluation) {
-				String failReason = guard.getFailureMessage(context);
-
-				log.info("[GUARD FAILED] guardType: {}, issueKey: {}, reason: {}",
-					guard.getType(), issue.getKey(), failReason);
-
-				throw new TransitionGuardFailedException(guard.getType(), failReason, issue.getKey(), workspaceKey);
-			}
+			guard.evaluate(context);
 		}
 	}
 }

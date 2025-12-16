@@ -1,0 +1,56 @@
+package com.tissue.api.issue.application.service;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import com.tissue.api.issue.application.dto.request.SubmitReviewCommand;
+import com.tissue.api.issue.application.port.in.IssueReviewUseCase;
+import com.tissue.api.issue.application.service.finder.IssueFinder;
+import com.tissue.api.issue.domain.Issue;
+import com.tissue.api.issue.domain.IssueReviewer;
+import com.tissue.api.issue.domain.event.IssueReviewSubmittedEvent;
+import com.tissue.api.project.application.service.finder.ProjectFinder;
+import com.tissue.api.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.api.project.domain.Project;
+import com.tissue.api.project.domain.ProjectMember;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class IssueReviewService implements IssueReviewUseCase {
+
+	private final IssueFinder issueFinder;
+	private final ProjectFinder projectFinder;
+	private final ProjectMemberFinder projectMemberFinder;
+	private final ApplicationEventPublisher eventPublisher;
+
+	@Override
+	public void submitReview(SubmitReviewCommand cmd) {
+		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+		ProjectMember actor = projectMemberFinder.findBy(issue.getProject(), cmd.actorMemberId());
+
+		IssueReviewer reviewer = findReviewerEntry(issue, actor);
+
+		if (cmd.approved()) {
+			reviewer.approve();
+		} else {
+			reviewer.reject();
+		}
+
+		eventPublisher.publishEvent(IssueReviewSubmittedEvent.create(
+			issue,
+			reviewer.getStatus(),
+			actor
+		));
+	}
+
+	private IssueReviewer findReviewerEntry(Issue issue, ProjectMember actor) {
+		return issue.getParticipants().getReviewers().stream()
+			.filter(r -> r.getReviewer().equals(actor))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("Could not find matching reviewer for member id: %d"
+				.formatted(actor.getMemberId())));
+	}
+}
