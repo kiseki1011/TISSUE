@@ -108,9 +108,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	Integer sumChildrenStoryPoints(@Param("parentId") Long parentId);
 
 	@Query("""
-		    SELECT com.tissue.api.issue.application.dto.IssueCountStats(
+		    SELECT com.tissue.issue.application.dto.IssueCountStats(
 		        COUNT(i),
-		        SUM(CASE WHEN i.currentState.category = com.tissue.api.workflow.domain.enums.StateCategory.DONE THEN 1 ELSE 0 END)
+		        SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE THEN 1 ELSE 0 END)
 		    )
 		    FROM Issue i
 		    WHERE i.parentIssue.id = :parentId
@@ -119,9 +119,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
 
 	@Query("""
-		    SELECT new com.tissue.api.issue.application.dto.IssuePointStats(
+		    SELECT new com.tissue.issue.application.dto.IssuePointStats(
 		        COALESCE(SUM(i.storyPoint), 0),
-		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.api.workflow.domain.enums.StateCategory.DONE
+		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE
 		        THEN i.storyPoint ELSE 0 END), 0)
 		    )
 		    FROM Issue i
@@ -176,7 +176,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	List<Long> findStateIdsUsedByActiveIssues(@Param("stateIds") Collection<Long> stateIds);
 
 	@Query("""
-		    SELECT new com.tissue.api.issue.application.dto.IssueCountProjection(
+		    SELECT new com.tissue.issue.application.dto.IssueCountProjection(
 		        i.currentState.id,
 		        COUNT(i)
 		    )
