@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.tissue.security.authorization.interceptor.RoleRequiredInterceptor;
+import com.tissue.global.logging.MdcContextInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -12,11 +12,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-	private final RoleRequiredInterceptor roleRequiredInterceptor;
+	private final MdcContextInterceptor mdcContextInterceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(roleRequiredInterceptor)
-			.order(1);
+		registry.addInterceptor(mdcContextInterceptor)
+			.addPathPatterns("/api/**");
 	}
 }
