@@ -19,7 +19,7 @@ public class IssueFieldTypeHandlerRegistry {
 		for (FieldTypeHandler h : handlerBeans) {
 			FieldType prev = (h.type());
 			if (handlers.putIfAbsent(prev, h) != null) {
-				throw new IllegalStateException("Duplicate handler for " + prev);
+				throw new IllegalStateException("Duplicate handler: " + prev);
 			}
 		}
 	}
@@ -39,8 +39,7 @@ public class IssueFieldTypeHandlerRegistry {
 	private FieldTypeHandler requireHandler(IssueField field) {
 		FieldTypeHandler handler = handlers.get(field.getFieldType());
 		if (handler == null) {
-			// TODO: InvalidHandlerException vs IllegalArgumentException vs IllegalStateException
-			throw new IllegalArgumentException("No handler for field type " + field.getFieldType());
+			throw new IllegalStateException("Handler not configured for field type: " + field.getFieldType());
 		}
 		return handler;
 	}

@@ -2,20 +2,17 @@ package com.tissue.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
+import com.tissue.common.exception.ErrorCode;
 import com.tissue.common.exception.TissueException;
 
-public abstract class ForbiddenException extends TissueException {
-
-	public ForbiddenException(String message) {
-		super(message);
-	}
-
-	protected ForbiddenException(String message, Throwable cause) {
-		super(message, cause);
-	}
+public class ForbiddenException extends TissueException {
 
 	@Override
 	public final HttpStatus getHttpStatus() {
 		return HttpStatus.FORBIDDEN;
+	}
+
+	public ForbiddenException(ErrorCode errorCode) {
+		super(errorCode);
 	}
 }

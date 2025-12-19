@@ -2,20 +2,21 @@ package com.tissue.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
+import com.tissue.common.exception.ErrorCode;
 import com.tissue.common.exception.TissueException;
 
-public abstract class BadRequestException extends TissueException {
-
-	public BadRequestException(String message) {
-		super(message);
-	}
-
-	protected BadRequestException(String message, Throwable cause) {
-		super(message, cause);
-	}
+public class BadRequestException extends TissueException {
 
 	@Override
 	public final HttpStatus getHttpStatus() {
 		return HttpStatus.BAD_REQUEST;
+	}
+
+	public BadRequestException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public BadRequestException(ErrorCode errorCode, String loggingMessage) {
+		super(errorCode, loggingMessage);
 	}
 }

@@ -1,5 +1,8 @@
 package com.tissue.issue.domain;
 
+import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,14 +12,12 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
+import com.tissue.common.exception.ContextKeys;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.InvalidParentHierarchyException;
-import com.tissue.issue.domain.exception.IssueSelfReferenceException;
-import com.tissue.issue.domain.exception.ParentRequiredException;
-import com.tissue.issue.domain.exception.ParentWorkspaceMismatchException;
-import com.tissue.issue.domain.exception.StoryPointNotAllowedForHierarchyException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
@@ -141,7 +142,10 @@ public class Issue extends BaseEntity {
 		issue.schedule = schedule;
 		issue.participants = participants;
 		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
-		issue.storyPoint = ensureCanModifyStoryPoint(issue.getHierarchy(), storyPoint);
+
+		if (storyPoint != null) {
+			issue.updateStoryPoint(storyPoint);
+		}
 
 		issue.progress = IssueProgress.init();
 		issue.relations = IssueRelations.init();
@@ -212,7 +216,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
-		ensureCanModifyStoryPoint(getHierarchy(), storyPoint);
+		ensureCanModifyStoryPoint();
 		this.storyPoint = storyPoint;
 	}
 
@@ -235,6 +239,7 @@ public class Issue extends BaseEntity {
 		return relations.removeRelation(otherIssue);
 	}
 
+	// TODO: 도메인 서비스로 분리할까?
 	public void transitionTo(@NonNull WorkflowState newState) {
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
@@ -281,16 +286,12 @@ public class Issue extends BaseEntity {
 
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
-		clearParent();
+		parentIssue = null;
 	}
 
 	public void delete() {
 		ensureIsInitial();
 		softDelete();
-	}
-
-	public String getWorkspaceKey() {
-		return project.getKey();
 	}
 
 	public IssueHierarchy getHierarchy() {
@@ -303,21 +304,22 @@ public class Issue extends BaseEntity {
 
 	private void ensureIsInitial() {
 		if (!currentState.isCategorizedAs(StateCategory.TODO)) {
-			// TODO: 커스텀 예외 추가
-			throw new RuntimeException("Cannot delete issue that is not initial state.");
+			throw new BadRequestException(ONLY_INITIAL_STATE_DELETION_ALLOWED)
+				.addContext(ContextKeys.WORKSPACE_KEY, this.getWorkspaceKey())
+				.addContext(ContextKeys.ISSUE_KEY, this.getKey())
+				.addContext(ContextKeys.CURRENT_STATE, this.getCurrentState().getDisplayLabel())
+				.addContext(ContextKeys.STATE_CATEGORY, this.getCurrentState().getCategory());
 		}
 	}
 
-	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
-		if (hierarchy.cannotModifyStoryPoint()) {
-			// TODO: 예외 이름 개선
-			throw new StoryPointNotAllowedForHierarchyException(hierarchy);
+	private void ensureCanModifyStoryPoint() {
+		if (this.getHierarchy().cannotModifyStoryPoint()) {
+			throw new BadRequestException(STORY_POINT_NOT_ALLOWED)
+				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
+				.addContext(ISSUE_KEY, this.getKey())
+				.addContext(CURRENT_HIERARCHY, this.getHierarchy())
+				.addContext(STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
 		}
-		return storyPoint;
-	}
-
-	private void clearParent() {
-		parentIssue = null;
 	}
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
@@ -334,40 +336,53 @@ public class Issue extends BaseEntity {
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
 		if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
-			throw new InvalidParentHierarchyException(parentIssue.getKey(), parentHierarchy, this.key, childHierarchy);
+			throw IssueExceptions.invalidParentHierarchy(
+				this.getWorkspaceKey(),
+				parentIssue.getKey(),
+				parentHierarchy,
+				this.getKey(),
+				childHierarchy
+			);
 		}
 	}
 
 	private void ensureNotSelfReference(Issue parentIssue) {
 		if (this.equals(parentIssue)) {
-			throw new IssueSelfReferenceException(this.key);
+			throw new BadRequestException(ISSUE_SELF_REFERENCE)
+				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
+				.addContext(ISSUE_KEY, this.getKey());
 		}
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
-			// TODO: 그냥 WorkspaceMismatchException을 만들고 여기서 메세지를 전달할까?
-			throw new ParentWorkspaceMismatchException(
-				parentIssue.getWorkspaceKey(),
-				parentIssue.key,
-				this.getWorkspaceKey(),
-				this.key
-			);
+			throw new BadRequestException(PARENT_WORKSPACE_MISMATCH)
+				.addContext(PARENT_WORKSPACE_KEY, parentIssue.getWorkspaceKey())
+				.addContext(PARENT_ISSUE_KEY, parentIssue.getKey())
+				.addContext(CHILD_WORKSPACE_KEY, this.getWorkspaceKey())
+				.addContext(CHILD_ISSUE_KEY, this.getKey());
 		}
 	}
 
 	private void ensureSameProject(Issue parentIssue) {
 		boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
 		if (isDifferentProject) {
-			// TODO: ProjectMismatchException?
-			throw new RuntimeException("Children of issues below EPIC level must be in the same project.");
+			throw new BadRequestException(PARENT_PROJECT_MISMATCH)
+				.addContext(PARENT_HIERARCHY, parentIssue.getHierarchy())
+				.addContext(PARENT_ISSUE_KEY, parentIssue.getKey())
+				.addContext(CHILD_HIERARCHY, this.getHierarchy())
+				.addContext(CHILD_ISSUE_KEY, this.getKey());
 		}
 	}
 
 	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
-			throw new ParentRequiredException(this.key, getHierarchy().toString());
+			throw new BadRequestException(PARENT_REQUIRED)
+				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
+				.addContext(ISSUE_KEY, this.getKey())
+				.addContext(CURRENT_HIERARCHY, this.getHierarchy())
+				.addContext(HIERARCHIES_REQUIRING_PARENT, IssueHierarchy.getParentRequired());
 		}
 	}
 

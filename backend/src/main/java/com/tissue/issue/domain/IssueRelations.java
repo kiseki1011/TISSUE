@@ -1,13 +1,15 @@
 package com.tissue.issue.domain;
 
+import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueRelationAlreadyExistsException;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
@@ -35,11 +37,6 @@ public class IssueRelations {
 		ensureNoRelationExists(sourceIssue, targetIssue);
 		return IssueRelation.create(sourceIssue, targetIssue, type);
 	}
-
-	// void removeRelation(Issue otherIssue) {
-	// 	outgoingRelations.removeIf(r -> r.getTargetIssue().equals(otherIssue));
-	// 	incomingRelations.removeIf(r -> r.getSourceIssue().equals(otherIssue));
-	// }
 
 	IssueRelation removeRelation(Issue otherIssue) {
 		Iterator<IssueRelation> iterator = outgoingRelations.iterator();
@@ -124,35 +121,15 @@ public class IssueRelations {
 			.toList();
 	}
 
-	public int getTotalRelationCount() {
-		return outgoingRelations.size() + incomingRelations.size();
-	}
-
-	public boolean hasRelationWith(Issue otherIssue) {
-		return outgoingRelations.stream()
-			.anyMatch(r -> r.getTargetIssue().equals(otherIssue)) ||
-			incomingRelations.stream()
-				.anyMatch(r -> r.getSourceIssue().equals(otherIssue));
-	}
-
-	public boolean isBlockedBy(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) &&
-				r.getRelationType() == IssueRelationType.BLOCKS);
-	}
-
-	public boolean isDuplicateOf(Issue otherIssue) {
-		return incomingRelations.stream()
-			.anyMatch(r -> r.getSourceIssue().equals(otherIssue) &&
-				r.getRelationType() == IssueRelationType.DUPLICATES);
-	}
-
 	private static void ensureNoRelationExists(Issue source, Issue target) {
 		boolean exists = source.getRelations().getOutgoingRelations().stream()
 			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 
 		if (exists) {
-			throw new IssueRelationAlreadyExistsException(source.getKey(), target.getKey());
+			throw new BadRequestException(RELATION_ALREADY_EXISTS)
+				.addContext("workspaceKey", source.getWorkspaceKey())
+				.addContext("sourceIssueKey", source.getKey())
+				.addContext("targetIssueKey", target.getKey());
 		}
 	}
 

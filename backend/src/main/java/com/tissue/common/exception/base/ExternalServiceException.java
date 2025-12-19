@@ -2,20 +2,25 @@ package com.tissue.common.exception.base;
 
 import org.springframework.http.HttpStatus;
 
+import com.tissue.common.exception.ErrorCode;
 import com.tissue.common.exception.TissueException;
 
-public abstract class ExternalServiceException extends TissueException {
-
-	public ExternalServiceException(String message) {
-		super(message);
-	}
-
-	protected ExternalServiceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+public class ExternalServiceException extends TissueException {
 
 	@Override
 	public final HttpStatus getHttpStatus() {
 		return HttpStatus.SERVICE_UNAVAILABLE;
+	}
+
+	public ExternalServiceException(ErrorCode errorCode) {
+		super(errorCode);
+	}
+
+	public ExternalServiceException(ErrorCode errorCode, String debugMessage) {
+		super(errorCode, debugMessage);
+	}
+
+	public ExternalServiceException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode, cause);
 	}
 }

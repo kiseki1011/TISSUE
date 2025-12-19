@@ -1,10 +1,10 @@
 package com.tissue.issue.domain;
 
+import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+
 import com.tissue.common.entity.BaseEntity;
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueSelfReferenceException;
-import com.tissue.issue.domain.exception.IssueTypeMismatchForRelationException;
-import com.tissue.issue.domain.exception.RelationWorkspaceMismatchException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -73,18 +73,19 @@ public class IssueRelation extends BaseEntity {
 
 	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new IssueSelfReferenceException(sourceIssue.getKey());
+			throw new BadRequestException(ISSUE_SELF_REFERENCE)
+				.addContext("workspaceKey", sourceIssue.getWorkspaceKey())
+				.addContext("issueKey", sourceIssue.getKey());
 		}
 	}
 
 	private static void ensureSameWorkspace(Issue source, Issue target) {
 		if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-			throw new RelationWorkspaceMismatchException(
-				source.getWorkspaceKey(),
-				source.getKey(),
-				target.getWorkspaceKey(),
-				target.getKey()
-			);
+			throw new BadRequestException(RELATION_WORKSPACE_MISMATCH)
+				.addContext("sourceWorkspaceKey", source.getWorkspaceKey())
+				.addContext("sourceIssueKey", source.getKey())
+				.addContext("targetWorkspaceKey", target.getWorkspaceKey())
+				.addContext("targetIssueKey", target.getKey());
 		}
 	}
 
@@ -95,16 +96,15 @@ public class IssueRelation extends BaseEntity {
 	) {
 		switch (type) {
 			case DUPLICATES -> {
-				boolean issueTypeNotMatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
-				if (issueTypeNotMatch) {
-					throw new IssueTypeMismatchForRelationException(
-						type,
-						sourceIssue.getIssueType(),
-						targetIssue.getIssueType(),
-						sourceIssue.getWorkspaceKey(),
-						sourceIssue.getKey(),
-						targetIssue.getKey()
-					);
+				boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
+				if (issueTypeMismatch) {
+					throw new BadRequestException(RELATION_ISSUE_TYPE_MISMATCH)
+						.addContext("workspaceKey", sourceIssue.getWorkspaceKey())
+						.addContext("relationType", type)
+						.addContext("sourceIssueKey", sourceIssue.getKey())
+						.addContext("sourceIssueType", sourceIssue.getIssueType().getDisplayLabel())
+						.addContext("targetIssueKey", targetIssue.getKey())
+						.addContext("targetIssueType", targetIssue.getIssueType().getDisplayLabel());
 				}
 			}
 			case BLOCKS, RELEVANT -> {

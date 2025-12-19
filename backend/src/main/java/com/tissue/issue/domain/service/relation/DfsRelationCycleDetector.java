@@ -1,6 +1,8 @@
 package com.tissue.issue.domain.service.relation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -8,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueRelationCircularDependencyException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 @Component
 public class DfsRelationCycleDetector implements RelationCycleDetector {
@@ -22,36 +24,39 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 		if (!relationType.requiresAcyclicCheck()) {
 			return;
 		}
-		if (hasCycle(source, target)) {
-			throw new IssueRelationCircularDependencyException(relationType, source.getKey(), target.getKey());
-		}
-	}
 
-	private boolean hasCycle(
-		Issue source,
-		Issue target
-	) {
-		Set<Issue> visited = new HashSet<>();
-		return dfs(target, source, visited);
+		List<String> cyclePath = new ArrayList<>();
+		if (findPath(target, source, new HashSet<>(), cyclePath)) {
+			cyclePath.add(0, source.getKey());
+			cyclePath.add(source.getKey());
+
+			throw IssueExceptions.relationCycleDetected(source.getKey(), target.getKey(), relationType, cyclePath);
+		}
 	}
 
 	/**
-	 * DFS로 그래프 순회
+	 * DFS로 경로를 탐색하며 기록하는 메서드
 	 *
 	 * @param current     현재 노드
-	 * @param destination 목적지 (source)
-	 * @param visited     방문한 노드들
-	 * @return destination에 도달하면 true
+	 * @param destination 목표 노드 (Source)
+	 * @param visited     방문 체크
+	 * @param pathTrace   경로를 기록할 리스트 (성공 시에만 채워짐)
+	 * @return 목적지 도달 시 true
 	 */
-	private boolean dfs(
+	private boolean findPath(
 		Issue current,
 		Issue destination,
-		Set<Issue> visited
+		Set<Issue> visited,
+		List<String> pathTrace
 	) {
+		// 이미 방문한 노드면 사이클 방지를 위해 중단
 		if (!visited.add(current)) {
 			return false;
 		}
+
+		// 목적지 도달
 		if (current.equals(destination)) {
+			pathTrace.add(current.getKey());
 			return true;
 		}
 
@@ -61,10 +66,13 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
 			}
 
 			Issue nextIssue = relation.getTargetIssue();
-			if (dfs(nextIssue, destination, visited)) {
+
+			if (findPath(nextIssue, destination, visited, pathTrace)) {
+				pathTrace.add(0, current.getKey());
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

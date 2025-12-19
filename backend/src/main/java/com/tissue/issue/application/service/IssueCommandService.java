@@ -64,7 +64,6 @@ public class IssueCommandService implements IssueCommandUseCase {
 	public IssueCreateResponse create(CreateIssueCommand cmd) {
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
-		// TODO: findWithWm을 고려 WorkspaceMember를 같이 가져오기 (Wm은 workspace member를 의미)
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
 		Sprint sprint = Optional.ofNullable(cmd.sprintId())

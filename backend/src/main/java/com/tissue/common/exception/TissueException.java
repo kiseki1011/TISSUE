@@ -3,52 +3,66 @@ package com.tissue.common.exception;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 
+import lombok.Getter;
+
+@Getter
 public abstract class TissueException extends RuntimeException {
 
+	private final ErrorCode errorCode;
+	private final String detailMessage;
 	private final Map<String, Object> context = new HashMap<>();
-
-	protected TissueException(String message) {
-		super(message);
-	}
-
-	protected TissueException(String message, Throwable cause) {
-		super(message, cause);
-	}
 
 	public abstract HttpStatus getHttpStatus();
 
-	public String getErrorCode() {
-		return this.getClass().getSimpleName()
-			.replaceAll("Exception$", "")
-			.replaceAll("([a-z])([A-Z])", "$1_$2")
-			.toUpperCase();
+	public TissueException(ErrorCode errorCode) {
+		super(errorCode.getDefaultMessage());
+		this.errorCode = errorCode;
+		this.detailMessage = null;
+	}
+
+	public TissueException(ErrorCode errorCode, Throwable cause) {
+		super(errorCode.getDefaultMessage(), cause);
+		this.errorCode = errorCode;
+		this.detailMessage = null;
+	}
+
+	public TissueException(ErrorCode errorCode, String detailMessage) {
+		super(errorCode.getDefaultMessage());
+		this.errorCode = errorCode;
+		this.detailMessage = detailMessage;
+	}
+
+	public TissueException(ErrorCode errorCode, String detailMessage, Throwable cause) {
+		super(errorCode.getDefaultMessage(), cause);
+		this.errorCode = errorCode;
+		this.detailMessage = detailMessage;
 	}
 
 	public String getLoggingMessage() {
+		String logMessage = (detailMessage != null && !detailMessage.isBlank())
+			? detailMessage
+			: getMessage();
+
 		if (context.isEmpty()) {
-			return getMessage();
+			return logMessage;
 		}
 
-		StringBuilder sb = new StringBuilder(getMessage());
-		sb.append(" | context={");
+		String contextStr = context.entrySet().stream()
+			.map(entry -> entry.getKey() + "=" + entry.getValue())
+			.collect(Collectors.joining(", ", "{", "}"));
 
-		context.forEach((key, value) ->
-			sb.append(key).append("=").append(value).append(", ")
-		);
-
-		if (!context.isEmpty()) {
-			sb.setLength(sb.length() - 2);
-		}
-		sb.append("}");
-
-		return sb.toString();
+		return logMessage + " | context=" + contextStr;
 	}
 
-	protected void addContext(String key, Object value) {
+	// TODO: 정적 팩토리 내에서만 사용 가능하다는 javadoc 추가
+	@SuppressWarnings("unchecked")
+	public <T extends TissueException> T addContext(String key, Object value) {
 		this.context.put(key, value);
+		return (T)this;
 	}
 
 	public Map<String, Object> getContext() {

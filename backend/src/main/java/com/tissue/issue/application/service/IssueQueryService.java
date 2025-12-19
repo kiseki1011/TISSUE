@@ -27,7 +27,7 @@ import com.tissue.issue.domain.IssueFieldValue;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.IssueSubscriber;
-import com.tissue.issue.domain.exception.IssueNotFoundException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
@@ -46,15 +46,13 @@ public class IssueQueryService implements IssueQueryUseCase {
 	private final IssueSubscriberQueryRepository subscriberQueryRepo;
 	private final IssueReviewerQueryRepository reviewerQueryRepo;
 	private final IssueRelationQueryRepository relationQueryRepo;
-	// private final WorkspaceMemberFinder wmFinder;
-
 	private final ProjectFinder projectFinder;
 	private final ProjectMemberFinder projectMemberFinder;
 
 	@Override
 	public IssueBasicInfo getBasic(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
 
@@ -67,7 +65,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCommonDetail getCommon(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithDetail(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
 
@@ -81,7 +79,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueCustomDetail getCustom(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		List<IssueFieldValue> fieldValues = issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(
 			workspaceKey,
@@ -94,7 +92,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public IssueIdentificationInfo getParent(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithParent(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		Issue parent = issue.getParentIssue();
 		if (parent == null) {
@@ -131,7 +129,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public ParticipantInfo getAuthor(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
 		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
@@ -154,7 +152,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 	@Override
 	public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey) {
 		Issue issue = issueQueryRepo.findWithBasicInfo(issueKey, workspaceKey)
-			.orElseThrow(() -> new IssueNotFoundException(issueKey, extractProjectKey(issueKey), workspaceKey));
+			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
 		Workflow workflow = issue.getIssueType().getWorkflow();
 

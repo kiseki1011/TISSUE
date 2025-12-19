@@ -1,26 +1,10 @@
 package com.tissue.comment.presentation.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.comment.application.service.command.IssueCommentCommandService;
-import com.tissue.comment.presentation.dto.request.CreateIssueCommentRequest;
-import com.tissue.comment.presentation.dto.request.UpdateIssueCommentRequest;
-import com.tissue.comment.presentation.dto.response.IssueCommentResponse;
-import com.tissue.common.dto.ApiResponse;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
-import com.tissue.security.authorization.interceptor.RoleRequired;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -48,61 +32,61 @@ public class IssueCommentController {
 
 	private final IssueCommentCommandService issueCommentCommandService;
 
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueCommentResponse> createComment(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@Valid @RequestBody CreateIssueCommentRequest request,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueCommentResponse response = issueCommentCommandService.createComment(
-			workspaceCode,
-			issueKey,
-			request,
-			userDetails.getMemberId()
-		);
-
-		return ApiResponse.created("Comment created.", response);
-	}
-
-	@PatchMapping("/{commentId}")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueCommentResponse> updateComment(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@PathVariable Long commentId,
-		@Valid @RequestBody UpdateIssueCommentRequest request,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueCommentResponse response = issueCommentCommandService.updateComment(
-			workspaceCode,
-			issueKey,
-			commentId,
-			request,
-			userDetails.getMemberId()
-		);
-
-		return ApiResponse.ok("Comment updated.", response);
-	}
-
-	@DeleteMapping("/{commentId}")
-	@RoleRequired(role = WorkspaceRole.MEMBER)
-	public ApiResponse<IssueCommentResponse> deleteComment(
-		@PathVariable String workspaceCode,
-		@PathVariable String issueKey,
-		@PathVariable Long commentId,
-		@CurrentMember MemberUserDetails userDetails
-	) {
-		IssueCommentResponse response = issueCommentCommandService.deleteComment(
-			workspaceCode,
-			issueKey,
-			commentId,
-			userDetails.getMemberId()
-		);
-
-		return ApiResponse.ok("Comment deleted.", response);
-	}
+	// @PostMapping
+	// @ResponseStatus(HttpStatus.CREATED)
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// public ApiResponse<IssueCommentResponse> createComment(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@Valid @RequestBody CreateIssueCommentRequest request,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	IssueCommentResponse response = issueCommentCommandService.createComment(
+	// 		workspaceCode,
+	// 		issueKey,
+	// 		request,
+	// 		userDetails.getMemberId()
+	// 	);
+	//
+	// 	return ApiResponse.created("Comment created.", response);
+	// }
+	//
+	// @PatchMapping("/{commentId}")
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// public ApiResponse<IssueCommentResponse> updateComment(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@PathVariable Long commentId,
+	// 	@Valid @RequestBody UpdateIssueCommentRequest request,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	IssueCommentResponse response = issueCommentCommandService.updateComment(
+	// 		workspaceCode,
+	// 		issueKey,
+	// 		commentId,
+	// 		request,
+	// 		userDetails.getMemberId()
+	// 	);
+	//
+	// 	return ApiResponse.ok("Comment updated.", response);
+	// }
+	//
+	// @DeleteMapping("/{commentId}")
+	// @RoleRequired(role = WorkspaceRole.MEMBER)
+	// public ApiResponse<IssueCommentResponse> deleteComment(
+	// 	@PathVariable String workspaceCode,
+	// 	@PathVariable String issueKey,
+	// 	@PathVariable Long commentId,
+	// 	@CurrentMember MemberUserDetails userDetails
+	// ) {
+	// 	IssueCommentResponse response = issueCommentCommandService.deleteComment(
+	// 		workspaceCode,
+	// 		issueKey,
+	// 		commentId,
+	// 		userDetails.getMemberId()
+	// 	);
+	//
+	// 	return ApiResponse.ok("Comment deleted.", response);
+	// }
 
 }

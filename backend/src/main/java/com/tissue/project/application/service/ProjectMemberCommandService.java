@@ -40,7 +40,6 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
-
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 
 		Set<Long> targetMemberIds = cmd.extractMemberIds();
@@ -73,7 +72,6 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	public ProjectMemberCommandResult join(JoinProjectCommand cmd) {
-
 		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
 			cmd.actorMemberId(),
@@ -92,7 +90,6 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	public ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long memberId) {
-
 		Project project = projectFinder.findForCommand(projectKey, workspaceKey);
 		ProjectMember actor = projectMemberFinder.findBy(project, memberId);
 
@@ -105,7 +102,6 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	public ProjectMemberCommandResult kickMember(KickProjectMemberCommand cmd) {
-
 		if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
 			throw new SelfOperationNotAllowedException("Self kick not allowed. Use project leave instead.");
 		}
@@ -123,7 +119,6 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	public ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd) {
-
 		if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
 			throw new SelfOperationNotAllowedException("Self project role modification not allowed.");
 		}

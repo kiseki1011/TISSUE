@@ -1,10 +1,12 @@
 package com.tissue.issue.application.service.validator;
 
+import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+
 import org.springframework.stereotype.Component;
 
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
-import com.tissue.issue.domain.exception.InvalidStateTransitionException;
 import com.tissue.workflow.domain.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
@@ -19,14 +21,20 @@ public class IssueValidator {
 		ensureNoChildren(issue);
 	}
 
-	public void ensureValidTransition(Issue issue, Long transitionId, String workspaceKey,
-		WorkflowTransition transition) {
-		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
-		if (transitionSourceStateNotMatch) {
-			throw new InvalidStateTransitionException(
-				issue.getKey(), "projectKey", workspaceKey, transitionId,
-				issue.getCurrentState().getDisplayLabel(), transition.getSourceState().getDisplayLabel()
-			);
+	public void ensureValidTransition(
+		Issue issue,
+		Long transitionId,
+		String workspaceKey,
+		WorkflowTransition transition
+	) {
+		boolean sourceStateMisMatch = !issue.getCurrentState().equals(transition.getSourceState());
+		if (sourceStateMisMatch) {
+			throw new BadRequestException(TRANSITION_SOURCE_STATE_NOT_MATCH)
+				.addContext("workspaceKey", workspaceKey)
+				.addContext("issueKey", issue.getKey())
+				.addContext("transitionId", transitionId)
+				.addContext("currentState", issue.getCurrentState().getDisplayLabel())
+				.addContext("requiredState", transition.getSourceState().getDisplayLabel());
 		}
 	}
 

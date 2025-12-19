@@ -1,11 +1,15 @@
 package com.tissue.issue.domain.service.handler;
 
+import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.FieldType;
 
@@ -28,8 +32,13 @@ public class TextFieldHandler implements FieldTypeHandler {
 	public Object parse(@NonNull IssueField field, @NonNull Object raw) {
 		try {
 			return cs.convert(raw, String.class);
+			// TODO: Is it the client's fault for ConverterNotFoundException?
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new IllegalArgumentException("must be a string");
+			throw new BadRequestException(CUSTOM_FIELD_TYPE_MISMATCH)
+				.addContext(ISSUE_FIELD_ID, field.getId())
+				.addContext(ISSUE_FIELD, field.getDisplayLabel())
+				.addContext(EXPECTED_TYPE, field.getFieldType())
+				.addContext(INPUT_VALUE, raw);
 		}
 	}
 }

@@ -22,10 +22,8 @@ public class ProjectMemberFinder {
 		return queryRepository.existsByProjectAndMemberId(project, memberId);
 	}
 
-	public ProjectMember findBy(
-		Project project,
-		Long memberId
-	) {
+	// TODO: WorkspaceMember를 같이 가져오기(JOIN FETCH)
+	public ProjectMember findBy(Project project, Long memberId) {
 		return queryRepository.findAnyByProjectIdAndMemberId(project.getId(), memberId)
 			.orElseThrow(
 				() -> new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId)

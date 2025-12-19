@@ -95,7 +95,7 @@ public class IssueFieldValue extends BaseEntity {
 			case DATE -> this.dateValue;
 			case BOOLEAN -> this.booleanValue;
 			case ENUM -> this.enumOption;
-			default -> throw new IllegalStateException("Unexpected field type: " + field.getFieldType());
+			default -> throw new IllegalArgumentException("Unexpected field type: " + field.getFieldType());
 		};
 	}
 
