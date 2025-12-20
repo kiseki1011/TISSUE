@@ -1,6 +1,7 @@
 package com.tissue.project.adapter.in.web;
 
-import org.springframework.http.HttpStatus;
+import java.net.URI;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.tissue.project.adapter.in.web.dto.request.CreateProjectRequest;
 import com.tissue.project.adapter.in.web.dto.request.UpdateProjectRequest;
@@ -34,8 +36,13 @@ public class ProjectController {
 		var command = request.toCommand(workspaceKey);
 		ProjectCommandResult response = projectCommandUseCase.create(command);
 
-		// TODO: use ResponseEntity.created
-		return ResponseEntity.status(HttpStatus.CREATED)
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentRequest()
+			.path("/{projectKey}")
+			.buildAndExpand(response.projectKey())
+			.toUri();
+
+		return ResponseEntity.created(location)
 			.body(response);
 	}
 
