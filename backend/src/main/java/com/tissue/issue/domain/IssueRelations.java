@@ -1,15 +1,13 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.issue.domain.exception.IssueErrorCode.*;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueRelationType;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
@@ -126,10 +124,11 @@ public class IssueRelations {
 			.anyMatch(relation -> relation.getTargetIssue().equals(target));
 
 		if (exists) {
-			throw new BadRequestException(RELATION_ALREADY_EXISTS)
-				.addContext("workspaceKey", source.getWorkspaceKey())
-				.addContext("sourceIssueKey", source.getKey())
-				.addContext("targetIssueKey", target.getKey());
+			throw IssueExceptions.relationAlreadyExists(
+				source.getWorkspaceKey(),
+				source.getKey(),
+				target.getKey()
+			);
 		}
 	}
 

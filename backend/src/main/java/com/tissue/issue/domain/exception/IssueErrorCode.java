@@ -13,13 +13,13 @@ public enum IssueErrorCode implements ErrorCode {
 
 	INVALID_PARENT_HIERARCHY("Parent hierarchy must be exactly one level above the child issue"),
 
-	STORY_POINT_NOT_ALLOWED("Story points are not supported for this hierarchy level"),
+	STORY_POINT_NOT_ALLOWED("Story points are not supported for this hierarchy"),
 
-	PARENT_REQUIRED("Issues of this hierarchy level require a parent and cannot stand alone"),
+	PARENT_REQUIRED("Issues of this hierarchy require a parent and cannot stand alone"),
 
 	PARENT_WORKSPACE_MISMATCH("Parent must belong to the same workspace as the child issue"),
 
-	PARENT_PROJECT_MISMATCH("Cross project parent-child relations are only allowed when the parent is EPIC level"),
+	PARENT_PROJECT_MISMATCH("Cross project parent-child relations are only allowed when the parent is EPIC hierarchy"),
 
 	TRANSITION_SOURCE_STATE_NOT_MATCH("Issue's current state does not match the required source state for transition"),
 
@@ -43,7 +43,18 @@ public enum IssueErrorCode implements ErrorCode {
 
 	UNKNOWN_CUSTOM_FIELD_ID("The provided custom field ID is unknown"),
 
-	CUSTOM_FIELD_TYPE_MISMATCH("Invalid value format for the custom field");
+	CUSTOM_FIELD_TYPE_MISMATCH("Invalid value format for the custom field"),
+
+	DECIMAL_SCALE_EXCEEDED("Field value exceeds maximum allowed fraction digits"),
+
+	INTEGER_DIGITS_EXCEEDED("Field value exceeds maximum allowed integer digits"),
+
+	MAX_REVIEWERS_EXCEEDED("Maximum number of reviewers reached"),
+
+	UNKNOWN_ENUM_OPTION("Unknown enum option for field"),
+
+	// TODO: I think the next message is more context correct "The actor(requester? submitter?) was not a reviewer"
+	REVIEWER_NOT_FOUND("Reviewer not found in issue participants");
 
 	private final String defaultMessage;
 }

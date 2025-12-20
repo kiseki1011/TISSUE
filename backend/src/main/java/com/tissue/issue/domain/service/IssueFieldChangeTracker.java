@@ -15,6 +15,8 @@ import com.tissue.issuetype.domain.EnumFieldOption;
 @Component
 public class IssueFieldChangeTracker {
 
+	// TODO: "customFields."를 상수로 정의
+
 	/**
 	 * 현재 이슈의 커스텀 필드 상태를 비교하기 쉬운 Map 형태(Snapshot)로 추출
 	 * Key: IssueField ID (String)
@@ -26,7 +28,7 @@ public class IssueFieldChangeTracker {
 			.collect(Collectors.toMap(
 				fv -> String.valueOf(fv.getField().getId()),
 				this::formatValue,
-				(oldVal, newVal) -> newVal // 중복 발생 시(방어 코드) 최신 값 사용
+				(oldVal, newVal) -> newVal // 중복 발생 시 최신 값 사용
 			));
 	}
 
@@ -47,7 +49,6 @@ public class IssueFieldChangeTracker {
 
 			if (!Objects.equals(oldValue, newValue)) {
 				// Key를 "customFields.{ID}" 형태로 저장
-				// TODO: "customFields."를 상수로 정의
 				changes.put("customFields." + fieldIdStr, new FieldChange(oldValue, newValue));
 			}
 		}

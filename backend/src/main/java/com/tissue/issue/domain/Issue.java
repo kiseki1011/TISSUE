@@ -1,8 +1,5 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.common.exception.ContextKeys.*;
-import static com.tissue.issue.domain.exception.IssueErrorCode.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +9,6 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.exception.ContextKeys;
-import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
@@ -304,21 +299,22 @@ public class Issue extends BaseEntity {
 
 	private void ensureIsInitial() {
 		if (!currentState.isCategorizedAs(StateCategory.TODO)) {
-			throw new BadRequestException(ONLY_INITIAL_STATE_DELETION_ALLOWED)
-				.addContext(ContextKeys.WORKSPACE_KEY, this.getWorkspaceKey())
-				.addContext(ContextKeys.ISSUE_KEY, this.getKey())
-				.addContext(ContextKeys.CURRENT_STATE, this.getCurrentState().getDisplayLabel())
-				.addContext(ContextKeys.STATE_CATEGORY, this.getCurrentState().getCategory());
+			throw IssueExceptions.onlyInitialStateDeletionAllowed(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getCurrentState().getDisplayLabel(),
+				this.getCurrentState().getCategory()
+			);
 		}
 	}
 
 	private void ensureCanModifyStoryPoint() {
 		if (this.getHierarchy().cannotModifyStoryPoint()) {
-			throw new BadRequestException(STORY_POINT_NOT_ALLOWED)
-				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
-				.addContext(ISSUE_KEY, this.getKey())
-				.addContext(CURRENT_HIERARCHY, this.getHierarchy())
-				.addContext(STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
+			throw IssueExceptions.storyPointNotAllowed(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getHierarchy()
+			);
 		}
 	}
 
@@ -348,41 +344,44 @@ public class Issue extends BaseEntity {
 
 	private void ensureNotSelfReference(Issue parentIssue) {
 		if (this.equals(parentIssue)) {
-			throw new BadRequestException(ISSUE_SELF_REFERENCE)
-				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
-				.addContext(ISSUE_KEY, this.getKey());
+			throw IssueExceptions.issueSelfReference(
+				this.getWorkspaceKey(),
+				this.getKey()
+			);
 		}
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
-			throw new BadRequestException(PARENT_WORKSPACE_MISMATCH)
-				.addContext(PARENT_WORKSPACE_KEY, parentIssue.getWorkspaceKey())
-				.addContext(PARENT_ISSUE_KEY, parentIssue.getKey())
-				.addContext(CHILD_WORKSPACE_KEY, this.getWorkspaceKey())
-				.addContext(CHILD_ISSUE_KEY, this.getKey());
+			throw IssueExceptions.parentWorkspaceMismatch(
+				parentIssue.getWorkspaceKey(),
+				parentIssue.getKey(),
+				this.getWorkspaceKey(),
+				this.getKey()
+			);
 		}
 	}
 
 	private void ensureSameProject(Issue parentIssue) {
 		boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
 		if (isDifferentProject) {
-			throw new BadRequestException(PARENT_PROJECT_MISMATCH)
-				.addContext(PARENT_HIERARCHY, parentIssue.getHierarchy())
-				.addContext(PARENT_ISSUE_KEY, parentIssue.getKey())
-				.addContext(CHILD_HIERARCHY, this.getHierarchy())
-				.addContext(CHILD_ISSUE_KEY, this.getKey());
+			throw IssueExceptions.parentProjectMismatch(
+				parentIssue.getHierarchy(),
+				parentIssue.getKey(),
+				this.getHierarchy(),
+				this.getKey()
+			);
 		}
 	}
 
 	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
-			throw new BadRequestException(PARENT_REQUIRED)
-				.addContext(WORKSPACE_KEY, this.getWorkspaceKey())
-				.addContext(ISSUE_KEY, this.getKey())
-				.addContext(CURRENT_HIERARCHY, this.getHierarchy())
-				.addContext(HIERARCHIES_REQUIRING_PARENT, IssueHierarchy.getParentRequired());
+			throw IssueExceptions.parentRequired(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getHierarchy()
+			);
 		}
 	}
 

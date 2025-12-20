@@ -1,17 +1,14 @@
 package com.tissue.issue.application.service.validator;
 
-import static com.tissue.common.exception.ContextKeys.*;
-import static com.tissue.issue.domain.exception.IssueErrorCode.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueFieldValue;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
@@ -93,19 +90,19 @@ public class IssueFieldSchemaValidator {
 			return;
 		}
 		if (isEmptyValue(field, raw)) {
-			throw new BadRequestException(CUSTOM_FIELD_REQUIRED)
-				.addContext(ISSUE_TYPE_ID, field.getIssueType().getId())
-				.addContext(ISSUE_TYPE, field.getIssueType().getDisplayLabel())
-				.addContext(ISSUE_FIELD_ID, field.getId())
-				.addContext(ISSUE_FIELD, field.getDisplayLabel());
+			throw IssueExceptions.customFieldRequired(
+				field.getIssueType().getId(),
+				field.getIssueType().getDisplayLabel(),
+				field.getId(),
+				field.getDisplayLabel()
+			);
 		}
 	}
 
 	private IssueField requireKnownField(Map<Long, IssueField> map, Long id) {
 		IssueField field = map.get(id);
 		if (field == null) {
-			throw new BadRequestException(UNKNOWN_CUSTOM_FIELD_ID)
-				.addContext(ISSUE_FIELD_ID, id);
+			throw IssueExceptions.unknownCustomFieldId(id);
 		}
 		return field;
 	}

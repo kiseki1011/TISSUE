@@ -1,13 +1,10 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.common.exception.ContextKeys.*;
-import static com.tissue.issue.domain.exception.IssueErrorCode.*;
-
 import java.time.Instant;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -63,8 +60,7 @@ public class IssueSchedule {
 
 		Instant now = Instant.now();
 		if (instant.isBefore(now)) {
-			throw new BadRequestException(DUE_DATE_MUST_BE_FUTURE)
-				.addContext(INPUT_DATE, instant);
+			throw IssueExceptions.dueDateMustBeFuture(instant);
 		}
 
 		return instant;
