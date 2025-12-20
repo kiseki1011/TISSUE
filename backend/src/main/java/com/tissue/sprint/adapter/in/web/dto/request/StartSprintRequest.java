@@ -7,7 +7,6 @@ import com.tissue.sprint.application.dto.request.StartSprintCommand;
 import lombok.NonNull;
 
 public record StartSprintRequest(
-	@NonNull Instant startedAt,
 	@NonNull Instant dueAt
 ) {
 	public StartSprintCommand toCommand(String workspaceKey, String projectKey, Long sprintId) {
@@ -15,7 +14,6 @@ public record StartSprintRequest(
 			.workspaceKey(workspaceKey)
 			.projectKey(projectKey)
 			.sprintId(sprintId)
-			.startedAt(startedAt)
 			.dueAt(dueAt)
 			.build();
 	}

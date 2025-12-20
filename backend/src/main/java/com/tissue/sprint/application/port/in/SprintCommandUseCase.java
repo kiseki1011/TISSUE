@@ -1,8 +1,9 @@
 package com.tissue.sprint.application.port.in;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.security.authorization.ProjectSecurityExpressions;
+import com.tissue.security.authorization.SprintSecurityExpressions;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
 import com.tissue.sprint.application.dto.request.CreateSprintCommand;
@@ -11,10 +12,7 @@ import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.StartSprintCommand;
 import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
-import com.tissue.security.authorization.ProjectSecurityExpressions;
-import com.tissue.security.authorization.SprintSecurityExpressions;
 
-@Transactional
 public interface SprintCommandUseCase {
 
 	@PreAuthorize(ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER)

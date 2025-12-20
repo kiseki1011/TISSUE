@@ -3,6 +3,7 @@ package com.tissue.sprint.application.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.issue.application.service.finder.IssueFinder;
@@ -26,6 +27,7 @@ import com.tissue.sprint.domain.Sprint;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class SprintCommandService implements SprintCommandUseCase {
 
@@ -37,26 +39,23 @@ public class SprintCommandService implements SprintCommandUseCase {
 
 	@Override
 	public SprintCommandResult createSprint(CreateSprintCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
 		Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
 		sprintRepository.save(sprint);
 
 		// TODO: SprintCreatedEvent
-		//  - 대상: 해당 프로젝트 인원 전원
 
 		return SprintCommandResult.from(sprint);
 	}
 
 	@Override
 	public SprintCommandResult addIssues(AddSprintIssuesCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 		List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
 
-		sprintValidator.ensureSprintNotClosed(sprint, project);
+		sprintValidator.ensureSprintNotClosed(sprint);
 
 		if (issues.isEmpty()) {
 			return SprintCommandResult.from(sprint);
@@ -68,14 +67,12 @@ public class SprintCommandService implements SprintCommandUseCase {
 		}
 
 		// TODO: SprintIssuesAddedEvent
-		//  - 대상: 해당 이슈들의 관련자 전원
 
 		return SprintCommandResult.from(sprint);
 	}
 
 	@Override
 	public SprintCommandResult updateSprint(UpdateSprintCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
@@ -85,31 +82,27 @@ public class SprintCommandService implements SprintCommandUseCase {
 		Patchers.apply(cmd.startedAt(), sprint::updateStartedAt);
 
 		// TODO: SprintUpdatedEvent
-		//  - 대상: 해당 프로젝트 인원 전원
 
 		return SprintCommandResult.from(sprint);
 	}
 
 	@Override
 	public SprintCommandResult start(StartSprintCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
-		sprintValidator.ensureSprintNotClosed(sprint, project);
+		sprintValidator.ensureSprintNotClosed(sprint);
 		sprintValidator.ensureNoActiveSprint(project);
 
-		sprint.start(cmd.startedAt(), cmd.dueAt());
+		sprint.start(cmd.dueAt());
 
 		// TODO: SprintStartedEvent
-		//  - 대상: 해당 프로젝트 인원 전원
 
 		return SprintCommandResult.from(sprint);
 	}
 
 	@Override
 	public SprintCommandResult complete(CompleteSprintCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
@@ -119,25 +112,23 @@ public class SprintCommandService implements SprintCommandUseCase {
 			return SprintCommandResult.from(sprint);
 		}
 
-		sprintValidator.ensureAllIssuesCompleted(incompleteIssueKeys, sprint, project);
+		sprintValidator.ensureAllIssuesCompleted(incompleteIssueKeys, sprint);
 
 		sprint.complete();
 
 		// TODO: SprintCompletedEvent
-		//  - 대상: 해당 프로젝트 인원 전원
 
 		return SprintCommandResult.from(sprint);
 	}
 
 	@Override
 	public SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint originalSprint = sprintFinder.findBy(cmd.originalSprintId(), project);
 		Sprint newSprint = sprintFinder.findBy(cmd.newSprintId(), project);
 
-		sprintValidator.ensureSprintNotClosed(originalSprint, project);
-		sprintValidator.ensureSprintNotClosed(newSprint, project);
+		sprintValidator.ensureSprintNotClosed(originalSprint);
+		sprintValidator.ensureSprintNotClosed(newSprint);
 
 		List<Issue> issues = issueFinder.findIncompleteIssuesBySprint(originalSprint);
 
@@ -150,7 +141,6 @@ public class SprintCommandService implements SprintCommandUseCase {
 		}
 
 		// TODO: SprintIssuesMigratedEvent
-		//  - 대상: 해당 이슈들의 관련자 전원
 
 		return SprintCommandResult.from(originalSprint);
 	}
@@ -161,7 +151,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
-		sprintValidator.ensureSprintNotClosed(sprint, project);
+		sprintValidator.ensureSprintNotClosed(sprint);
 
 		List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
 
@@ -171,7 +161,6 @@ public class SprintCommandService implements SprintCommandUseCase {
 		}
 
 		// TODO: SprintIssuesRemovedEvent
-		//  - 대상: 해당 이슈들의 관련자 전원
 
 		return SprintCommandResult.from(sprint);
 	}

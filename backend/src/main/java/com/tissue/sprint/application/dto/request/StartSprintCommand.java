@@ -9,7 +9,6 @@ public record StartSprintCommand(
 	String workspaceKey,
 	String projectKey,
 	Long sprintId,
-	Instant startedAt,
 	Instant dueAt
 ) {
 }

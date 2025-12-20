@@ -8,10 +8,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.sprint.domain.exception.ActiveSprintExistsException;
-import com.tissue.sprint.domain.exception.IncompleteSprintIssuesFoundException;
-import com.tissue.sprint.domain.exception.SprintClosedException;
-import com.tissue.sprint.domain.exception.SprintIssueProjectMismatchException;
+import com.tissue.sprint.domain.exception.SprintExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,33 +20,25 @@ public class SprintValidator {
 
 	public void ensureIssueInSprintProject(Issue issue, Project project) {
 		if (!issue.getProjectKey().equals(project.getKey())) {
-			throw new SprintIssueProjectMismatchException(
-				issue.getKey(),
-				issue.getProjectKey(),
-				project.getKey()
-			);
+			throw SprintExceptions.issueProjectMismatch(issue, project.getKey());
 		}
 	}
 
-	public void ensureAllIssuesCompleted(List<String> incompleteIssueKeys, Sprint sprint, Project project) {
+	public void ensureAllIssuesCompleted(List<String> incompleteIssueKeys, Sprint sprint) {
 		if (!incompleteIssueKeys.isEmpty()) {
-			throw new IncompleteSprintIssuesFoundException(incompleteIssueKeys, sprint.getId(), project.getKey());
+			throw SprintExceptions.incompleteIssuesFound(incompleteIssueKeys, sprint);
 		}
 	}
 
-	public void ensureSprintNotClosed(Sprint sprint, Project project) {
+	public void ensureSprintNotClosed(Sprint sprint) {
 		if (sprint.isCompleted()) {
-			throw new SprintClosedException(sprint.getId(), project.getKey(), project.getWorkspaceKey());
+			throw SprintExceptions.sprintClosed(sprint);
 		}
 	}
 
 	public void ensureNoActiveSprint(Project project) {
 		sprintFinder.findActiveBy(project).ifPresent(activeSprint -> {
-			throw new ActiveSprintExistsException(
-				project.getKey(),
-				activeSprint.getId(),
-				activeSprint.getTitle()
-			);
+			throw SprintExceptions.activeSprintAlreadyExists(project.getKey(), activeSprint);
 		});
 	}
 
