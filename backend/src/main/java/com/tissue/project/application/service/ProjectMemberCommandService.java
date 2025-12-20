@@ -18,7 +18,7 @@ import com.tissue.project.application.port.in.ProjectMemberCommandUseCase;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.application.service.validator.ProjectMemberValidator;
+import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
@@ -35,7 +35,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	private final ProjectFinder projectFinder;
 	private final ProjectMemberFinder projectMemberFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final ProjectMemberValidator projectMemberValidator;
+	private final ProjectValidator projectValidator;
 	private final ProjectMemberCommandRepository projectMemberRepository;
 
 	@Override
@@ -77,7 +77,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
-		projectMemberValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
+		projectValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
 
 		ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
 		projectMemberRepository.save(projectMember);
