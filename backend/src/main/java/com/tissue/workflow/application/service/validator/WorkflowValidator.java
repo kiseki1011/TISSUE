@@ -12,9 +12,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.dto.GuardConfigData;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workflow.domain.WorkflowState;
-import com.tissue.workflow.domain.exception.DuplicateGuardTypeException;
-import com.tissue.workflow.domain.exception.DuplicateWorkflowException;
-import com.tissue.workflow.domain.exception.WorkflowStateInUseException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,11 @@ public class WorkflowValidator {
 	public void ensureLabelUnique(Project project, Label label) {
 		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, label.getNormalized());
 		if (dup) {
-			throw new DuplicateWorkflowException(label.getNormalized(), project);
+			throw WorkflowExceptions.duplicateWorkflowName(
+				label.getNormalized(),
+				project.getKey(),
+				project.getWorkspaceKey()
+			);
 		}
 	}
 
@@ -54,14 +56,14 @@ public class WorkflowValidator {
 				.map(WorkflowState::getDisplayLabel)
 				.collect(Collectors.joining(", "));
 
-			throw new WorkflowStateInUseException(usedStateNames);
+			throw WorkflowExceptions.workflowStateInUse(usedStateNames);
 		}
 	}
 
 	public void ensureNoDuplicateGuard(GuardConfigData g, Set<GuardType> usedTypes) {
 		boolean dup = !usedTypes.add(g.guardType());
 		if (dup) {
-			throw new DuplicateGuardTypeException(g.guardType());
+			throw WorkflowExceptions.duplicateGuardType(g.guardType());
 		}
 	}
 }

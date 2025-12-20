@@ -12,8 +12,7 @@ import com.tissue.common.enums.ColorType;
 import com.tissue.common.vo.Label;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.DuplicateStateException;
-import com.tissue.workflow.domain.exception.DuplicateTransitionException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
@@ -146,19 +145,12 @@ public class Workflow extends BaseEntity {
 			.toList();
 	}
 
-	private void ensureNoExistingInitialState() {
-		boolean hasTodo = initialState != null;
-		if (hasTodo) {
-			throw new RuntimeException("Workflow can have only one TODO state.");
-		}
-	}
-
 	public void setInitialState(@NonNull WorkflowState state) {
 		if (!states.contains(state)) {
-			throw new IllegalArgumentException("State must belong to this workflow.");
+			throw WorkflowExceptions.initialStateBelongMismatch();
 		}
 		if (state.getCategory().isNotTodo()) {
-			throw new IllegalArgumentException("Initial state must be of category TODO.");
+			throw WorkflowExceptions.initialStateCategoryMismatch();
 		}
 		this.initialState = state;
 	}
@@ -181,8 +173,7 @@ public class Workflow extends BaseEntity {
 
 	public void deleteState(@NonNull WorkflowState state) {
 		if (state.getCategory().isTodo()) {
-			// TODO: 예외 추가하기
-			throw new RuntimeException("Cannot delete the TODO state. It is the initial state.");
+			throw WorkflowExceptions.cannotDeleteInitialState(state.getDisplayLabel());
 		}
 		state.softDelete();
 		states.remove(state);
@@ -248,7 +239,7 @@ public class Workflow extends BaseEntity {
 			.filter(t -> !t.isArchived())
 			.anyMatch(x -> x.getSourceState().equals(source) && x.getTargetState().equals(target));
 		if (dup) {
-			throw new RuntimeException("Duplicate transition (source,target) is not allowed.");
+			throw WorkflowExceptions.duplicateTransitionEdge(source.getDisplayLabel(), target.getDisplayLabel());
 		}
 	}
 
@@ -257,7 +248,7 @@ public class Workflow extends BaseEntity {
 			.filter(t -> !t.isArchived())
 			.anyMatch(s -> s.getLabel().equals(newLabel));
 		if (dup) {
-			throw new DuplicateStateException(
+			throw WorkflowExceptions.duplicateStateName(
 				newLabel.getDisplay(),
 				label.getDisplay(),
 				id
@@ -271,7 +262,7 @@ public class Workflow extends BaseEntity {
 			.filter(t -> t.getSourceState().equals(source))
 			.anyMatch(t -> t.getLabel().equals(newLabel));
 		if (dup) {
-			throw new DuplicateTransitionException(
+			throw WorkflowExceptions.duplicateTransitionName(
 				newLabel.getDisplay(),
 				source.getDisplayLabel(),
 				label.getDisplay(),

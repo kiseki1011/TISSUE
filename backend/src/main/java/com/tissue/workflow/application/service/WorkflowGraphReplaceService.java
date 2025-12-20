@@ -24,7 +24,7 @@ import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.InvalidTodoStateCountException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -140,7 +140,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 			.toList();
 
 		if (todoCmds.size() != 1) {
-			throw new InvalidTodoStateCountException(todoCmds.size());
+			throw WorkflowExceptions.invalidTodoStateCount(todoCmds.size());
 		}
 
 		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).stateRef());
@@ -226,7 +226,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 		private WorkflowState resolveExisting(Long id) {
 			return Optional.ofNullable(existingStates.get(id))
 				.orElseThrow(
-					() -> new IllegalArgumentException("Invalid workflow state id '%d'.".formatted(id))
+					() -> new IllegalArgumentException("Invalid workflow state id '%d'".formatted(id))
 				);
 		}
 

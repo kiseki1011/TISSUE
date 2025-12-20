@@ -26,8 +26,7 @@ import com.tissue.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.DuplicateWorkflowException;
-import com.tissue.workflow.domain.exception.TransitionNotFoundException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
 import com.tissue.workflow.domain.service.TransitionGuardRegistry;
@@ -80,7 +79,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 			return WorkflowCreateResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateWorkflowException(cmd.label().getDisplay(), project);
+			throw WorkflowExceptions.duplicateWorkflowName(
+				cmd.label().getDisplay(),
+				project.getKey(),
+				project.getWorkspaceKey()
+			);
 		}
 	}
 
@@ -142,7 +145,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 		WorkflowTransition transition = workflow.getTransitions().stream()
 			.filter(t -> t.getId().equals(cmd.transitionId()))
 			.findFirst()
-			.orElseThrow(() -> new TransitionNotFoundException(cmd.transitionId(), workflow.getId()));
+			.orElseThrow(() -> WorkflowExceptions.transitionNotFound(cmd.transitionId(), workflow.getId()));
 
 		workflow.clearGuardsForTransition(transition);
 

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workflow.domain.Workflow;
-import com.tissue.workflow.domain.exception.WorkflowNotFoundException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,12 +15,9 @@ public class WorkflowSecurityGuard {
 	private final WorkflowQueryRepository workflowQueryRepository;
 	private final ProjectSecurityGuard projectSecurityGuard;
 
-	public boolean isWorkflowManager(Long workflowId, Long memberId) {
-		// Workflow workflow = workflowQueryRepository.findByIdAndProject_KeyAndProject_Workspace_Key(workflowId, projectKey, workspaceKey)
-		// 	.orElseThrow(() -> new WorkflowNotFoundException(workflowId, projectKey, workspaceKey));
-
+	public boolean isWorkflowManager(Long workflowId, String projectKey, Long memberId) {
 		Workflow workflow = workflowQueryRepository.findById(workflowId)
-			.orElseThrow(() -> new WorkflowNotFoundException(workflowId));
+			.orElseThrow(() -> WorkflowExceptions.notFound(workflowId));
 
 		if (workflow.getCreatedBy().equals(memberId)) {
 			return true;

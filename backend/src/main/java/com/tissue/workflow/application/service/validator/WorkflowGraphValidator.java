@@ -16,11 +16,7 @@ import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.DeadEndStateException;
-import com.tissue.workflow.domain.exception.InvalidTodoStateCountException;
-import com.tissue.workflow.domain.exception.InvalidTransitionTargetException;
-import com.tissue.workflow.domain.exception.MissingDoneStateException;
-import com.tissue.workflow.domain.exception.OrphanStateException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +36,7 @@ public class WorkflowGraphValidator {
 		List<WorkflowState> todoStates = wf.getStatesByCategory(StateCategory.TODO);
 
 		if (todoStates.size() != 1) {
-			throw new InvalidTodoStateCountException(todoStates.size());
+			throw WorkflowExceptions.invalidTodoStateCount(todoStates.size());
 		}
 
 		WorkflowState todoState = todoStates.get(0);
@@ -52,7 +48,7 @@ public class WorkflowGraphValidator {
 	private void ensureAtLeastOneDone(Workflow wf) {
 		boolean doneNotExist = wf.getStatesByCategory(StateCategory.DONE).isEmpty();
 		if (doneNotExist) {
-			throw new MissingDoneStateException();
+			throw WorkflowExceptions.missingDoneState();
 		}
 	}
 
@@ -68,7 +64,7 @@ public class WorkflowGraphValidator {
 				.map(t -> t.getSourceState().getDisplayLabel())
 				.toList();
 
-			throw new InvalidTransitionTargetException(sourceNames, initialState.getDisplayLabel());
+			throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayLabel());
 		}
 	}
 
@@ -110,7 +106,7 @@ public class WorkflowGraphValidator {
 			.toList();
 
 		if (!orphanStates.isEmpty()) {
-			throw new OrphanStateException(orphanStates, initial.getDisplayLabel());
+			throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayLabel());
 		}
 	}
 
@@ -127,7 +123,7 @@ public class WorkflowGraphValidator {
 			.toList();
 
 		if (!deadEnds.isEmpty()) {
-			throw new DeadEndStateException(deadEnds);
+			throw WorkflowExceptions.deadEndState(deadEnds);
 		}
 	}
 
