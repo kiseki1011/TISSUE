@@ -1,5 +1,6 @@
 package com.tissue.workflow.domain.exception;
 
+import static com.tissue.common.exception.ContextKeys.*;
 import static com.tissue.workflow.domain.exception.WorkflowErrorCode.*;
 
 import java.util.Collection;
@@ -17,25 +18,25 @@ public class WorkflowExceptions {
 
 	public static ResourceNotFoundException notFound(Long workflowId) {
 		return new ResourceNotFoundException(WORKFLOW_NOT_FOUND)
-			.addContext("workflowId", workflowId);
+			.addContext(WORKFLOW_ID, workflowId);
 	}
 
 	public static ResourceNotFoundException notFound(Long workflowId, String projectKey) {
 		return new ResourceNotFoundException(WORKFLOW_NOT_FOUND)
-			.addContext("workflowId", workflowId)
-			.addContext("projectKey", projectKey);
+			.addContext(WORKFLOW_ID, workflowId)
+			.addContext(PROJECT_KEY, projectKey);
 	}
 
 	public static ResourceNotFoundException stateNotFound(Long stateId, Long workflowId) {
 		return new ResourceNotFoundException(WORKFLOW_STATE_NOT_FOUND)
-			.addContext("stateId", stateId)
-			.addContext("workflowId", workflowId);
+			.addContext(STATE_ID, stateId)
+			.addContext(WORKFLOW_ID, workflowId);
 	}
 
 	public static ResourceNotFoundException transitionNotFound(Long transitionId, Long workflowId) {
 		return new ResourceNotFoundException(WORKFLOW_TRANSITION_NOT_FOUND)
-			.addContext("transitionId", transitionId)
-			.addContext("workflowId", workflowId);
+			.addContext(TRANSITION_ID, transitionId)
+			.addContext(WORKFLOW_ID, workflowId);
 	}
 
 	public static InternalServerException autoTransitionTargetNotFound(
@@ -44,8 +45,8 @@ public class WorkflowExceptions {
 		String targetTransitionName
 	) {
 		return new InternalServerException(AUTO_TRANSITION_TARGET_NOT_FOUND)
-			.addContext("issueKey", issueKey)
-			.addContext("currentState", currentStateName)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(CURRENT_STATE, currentStateName)
 			.addContext("targetTransition", targetTransitionName);
 	}
 
@@ -60,7 +61,7 @@ public class WorkflowExceptions {
 
 	public static ResourceConflictException duplicateGuardType(GuardType guardType) {
 		return new ResourceConflictException(DUPLICATE_GUARD_TYPE)
-			.addContext("guardType", guardType);
+			.addContext(GUARD_TYPE, guardType);
 	}
 
 	public static ResourceConflictException duplicateStateName(
@@ -69,9 +70,9 @@ public class WorkflowExceptions {
 		Long workflowId
 	) {
 		return new ResourceConflictException(DUPLICATE_STATE_NAME)
-			.addContext("stateName", stateName)
-			.addContext("workflowName", workflowName)
-			.addContext("workflowId", workflowId);
+			.addContext(STATE, stateName)
+			.addContext(WORKFLOW, workflowName)
+			.addContext(WORKFLOW_ID, workflowId);
 	}
 
 	public static ResourceConflictException duplicateTransitionName(
@@ -81,10 +82,10 @@ public class WorkflowExceptions {
 		Long workflowId
 	) {
 		return new ResourceConflictException(DUPLICATE_TRANSITION_NAME)
-			.addContext("transitionName", transitionName)
+			.addContext(TRANSITION, transitionName)
 			.addContext("sourceStateName", sourceStateName)
-			.addContext("workflowName", workflowName)
-			.addContext("workflowId", workflowId);
+			.addContext(WORKFLOW, workflowName)
+			.addContext(WORKFLOW_ID, workflowId);
 	}
 
 	public static ResourceConflictException duplicateWorkflowName(
@@ -93,9 +94,9 @@ public class WorkflowExceptions {
 		String workspaceKey
 	) {
 		return new ResourceConflictException(DUPLICATE_WORKFLOW_NAME)
-			.addContext("workflowName", workflowName)
-			.addContext("projectKey", projectKey)
-			.addContext("workspaceKey", workspaceKey);
+			.addContext(WORKFLOW, workflowName)
+			.addContext(PROJECT_KEY, projectKey)
+			.addContext(WORKSPACE_KEY, workspaceKey);
 	}
 
 	public static BadRequestException invalidInitialStateCount(int foundCount) {
@@ -134,10 +135,10 @@ public class WorkflowExceptions {
 		String detailMessage = "%s evaluation failed. Reason: %s.".formatted(guardType, reason);
 
 		return new BadRequestException(TRANSITION_GUARD_FAILED, detailMessage)
-			.addContext("failedGuardType", guardType)
-			.addContext("failureReason", reason)
-			.addContext("issueKey", issueKey)
-			.addContext("workspaceKey", workspaceKey);
+			.addContext(GUARD_TYPE, guardType)
+			.addContext(REASON, reason)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(WORKSPACE_KEY, workspaceKey);
 	}
 
 	public static BadRequestException workflowStateInUse(String stateNames) {
@@ -145,10 +146,10 @@ public class WorkflowExceptions {
 			.addContext("activeStates", stateNames);
 	}
 
-	public static BadRequestException duplicateTransitionEdge(String sourceState, String targetState) {
+	public static BadRequestException duplicateTransitionEdge(String sourceStateName, String targetStateName) {
 		return new BadRequestException(DUPLICATE_TRANSITION_EDGE)
-			.addContext("sourceState", sourceState)
-			.addContext("targetState", targetState);
+			.addContext("sourceState", sourceStateName)
+			.addContext("targetState", targetStateName);
 	}
 
 	public static BadRequestException cannotDeleteInitialState(
@@ -157,9 +158,9 @@ public class WorkflowExceptions {
 		String stateName
 	) {
 		return new BadRequestException(CANNOT_DELETE_INITIAL_STATE)
-			.addContext("workflowId", workflowId)
-			.addContext("workflowName", workflowName)
-			.addContext("stateName", stateName);
+			.addContext(WORKFLOW_ID, workflowId)
+			.addContext(WORKFLOW, workflowName)
+			.addContext(STATE, stateName);
 	}
 
 	public static BadRequestException initialStateBelongMismatch() {

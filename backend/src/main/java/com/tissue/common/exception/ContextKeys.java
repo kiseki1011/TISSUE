@@ -23,6 +23,7 @@ public interface ContextKeys {
 	/**
 	 * Issue
 	 */
+	String ISSUE_ID = "issueId";
 	String ISSUE_KEY = "issueKey";
 	String ISSUE_RELATION_ID = "issueRelationId";
 	String CHILD_ISSUE_KEY = "childIssueKey";
@@ -41,9 +42,9 @@ public interface ContextKeys {
 	 * IssueType
 	 */
 	String ISSUE_TYPE_ID = "issueTypeId";
-	String ISSUE_TYPE = "issueType";
-	String SOURCE_ISSUE_TYPE = "sourceIssueType";
-	String TARGET_ISSUE_TYPE = "targetIssueType";
+	String ISSUE_TYPE = "issueTypeName";
+	String SOURCE_ISSUE_TYPE = "sourceIssueTypeName";
+	String TARGET_ISSUE_TYPE = "targetIssueTypeName";
 
 	/**
 	 * IssueField
@@ -61,11 +62,13 @@ public interface ContextKeys {
 	String WORKFLOW_ID = "workflowId";
 	String STATE_ID = "stateId";
 	String TRANSITION_ID = "transitionId";
-	String STATE = "state";
-	String TRANSITION = "transition";
-	String CURRENT_STATE = "currentState";
-	String REQUIRED_STATE = "requiredState";
+	String WORKFLOW = "workflowName";
+	String STATE = "stateName";
+	String TRANSITION = "transitionName";
+	String CURRENT_STATE = "currentStateName";
+	String REQUIRED_STATE = "requiredStateName";
 	String STATE_CATEGORY = "stateCategory";
+	String GUARD_TYPE = "guardType";
 
 	/**
 	 * Sprint

@@ -1,5 +1,6 @@
 package com.tissue.issue.domain.exception;
 
+import static com.tissue.common.exception.ContextKeys.*;
 import static com.tissue.issue.domain.exception.IssueErrorCode.*;
 
 import java.time.Instant;
@@ -19,165 +20,218 @@ public class IssueExceptions {
 
 	public static ResourceNotFoundException notFound(String workspaceKey, String issueKey) {
 		return new ResourceNotFoundException(ISSUE_NOT_FOUND)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey);
 	}
 
 	public static ResourceNotFoundException notFound(Long issueId) {
 		return new ResourceNotFoundException(ISSUE_NOT_FOUND)
-			.addContext("issueId", issueId);
+			.addContext(ISSUE_ID, issueId);
 	}
 
-	public static BadRequestException invalidParentHierarchy(String workspaceKey, String parentIssueKey,
-		IssueHierarchy parentHierarchy, String childIssueKey, IssueHierarchy childHierarchy) {
+	public static BadRequestException invalidParentHierarchy(
+		String workspaceKey,
+		String parentIssueKey,
+		IssueHierarchy parentHierarchy,
+		String childIssueKey,
+		IssueHierarchy childHierarchy
+	) {
 		return new BadRequestException(INVALID_PARENT_HIERARCHY)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("parentIssueKey", parentIssueKey)
-			.addContext("parentHierarchy", parentHierarchy)
-			.addContext("childIssueKey", childIssueKey)
-			.addContext("childHierarchy", childHierarchy);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(PARENT_ISSUE_KEY, parentIssueKey)
+			.addContext(PARENT_HIERARCHY, parentHierarchy)
+			.addContext(CHILD_ISSUE_KEY, childIssueKey)
+			.addContext(CHILD_HIERARCHY, childHierarchy);
 	}
 
-	public static BadRequestException storyPointNotAllowed(String workspaceKey, String issueKey,
-		IssueHierarchy currentHierarchy) {
+	public static BadRequestException storyPointNotAllowed(
+		String workspaceKey,
+		String issueKey,
+		IssueHierarchy currentHierarchy
+	) {
 		return new BadRequestException(STORY_POINT_NOT_ALLOWED)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey)
-			.addContext("currentHierarchy", currentHierarchy)
-			.addContext("storyPointAllowedHierarchies", IssueHierarchy.getStoryPointModifiable());
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(CURRENT_HIERARCHY, currentHierarchy)
+			.addContext(STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
 	}
 
-	public static BadRequestException relationCycleDetected(String sourceIssueKey, String targetIssueKey,
-		IssueRelationType relationType, List<String> path) {
+	public static BadRequestException relationCycleDetected(
+		String sourceIssueKey,
+		String targetIssueKey,
+		IssueRelationType relationType,
+		List<String> path
+	) {
 		return new BadRequestException(RELATION_CIRCULAR_DEPENDENCY)
-			.addContext("sourceIssueKey", sourceIssueKey)
-			.addContext("targetIssueKey", targetIssueKey)
-			.addContext("relationType", relationType.name())
+			.addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
+			.addContext(TARGET_ISSUE_KEY, targetIssueKey)
+			.addContext(RELATION_TYPE, relationType.name())
 			.addContext("detectedCyclePath", path);
 	}
 
-	public static BadRequestException parentRequired(String workspaceKey, String issueKey,
-		IssueHierarchy currentHierarchy) {
+	public static BadRequestException parentRequired(
+		String workspaceKey,
+		String issueKey,
+		IssueHierarchy currentHierarchy
+	) {
 		return new BadRequestException(PARENT_REQUIRED)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey)
-			.addContext("currentHierarchy", currentHierarchy)
-			.addContext("hierarchiesRequiringParent", IssueHierarchy.getParentRequired());
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(CURRENT_HIERARCHY, currentHierarchy)
+			.addContext(HIERARCHIES_REQUIRING_PARENT, IssueHierarchy.getParentRequired());
 	}
 
-	public static BadRequestException parentWorkspaceMismatch(String parentWorkspaceKey, String parentIssueKey,
-		String childWorkspaceKey, String childIssueKey) {
+	public static BadRequestException parentWorkspaceMismatch(
+		String parentWorkspaceKey,
+		String parentIssueKey,
+		String childWorkspaceKey,
+		String childIssueKey
+	) {
 		return new BadRequestException(PARENT_WORKSPACE_MISMATCH)
-			.addContext("parentWorkspaceKey", parentWorkspaceKey)
-			.addContext("parentIssueKey", parentIssueKey)
-			.addContext("childWorkspaceKey", childWorkspaceKey)
-			.addContext("childIssueKey", childIssueKey);
+			.addContext(PARENT_WORKSPACE_KEY, parentWorkspaceKey)
+			.addContext(PARENT_ISSUE_KEY, parentIssueKey)
+			.addContext(CHILD_WORKSPACE_KEY, childWorkspaceKey)
+			.addContext(CHILD_ISSUE_KEY, childIssueKey);
 	}
 
-	public static BadRequestException parentProjectMismatch(IssueHierarchy parentHierarchy, String parentIssueKey,
-		IssueHierarchy childHierarchy, String childIssueKey) {
+	public static BadRequestException parentProjectMismatch(
+		IssueHierarchy parentHierarchy,
+		String parentIssueKey,
+		IssueHierarchy childHierarchy,
+		String childIssueKey
+	) {
 		return new BadRequestException(PARENT_PROJECT_MISMATCH)
-			.addContext("parentHierarchy", parentHierarchy)
-			.addContext("parentIssueKey", parentIssueKey)
-			.addContext("childHierarchy", childHierarchy)
-			.addContext("childIssueKey", childIssueKey);
+			.addContext(PARENT_HIERARCHY, parentHierarchy)
+			.addContext(PARENT_ISSUE_KEY, parentIssueKey)
+			.addContext(CHILD_HIERARCHY, childHierarchy)
+			.addContext(CHILD_ISSUE_KEY, childIssueKey);
 	}
 
-	public static BadRequestException transitionSourceStateMismatch(String workspaceKey, String issueKey,
-		Long transitionId, String currentState, String requiredState) {
+	public static BadRequestException transitionSourceStateMismatch(
+		String workspaceKey,
+		String issueKey,
+		Long transitionId,
+		String currentState,
+		String requiredState
+	) {
 		return new BadRequestException(TRANSITION_SOURCE_STATE_NOT_MATCH)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey)
-			.addContext("transitionId", transitionId)
-			.addContext("currentState", currentState)
-			.addContext("requiredState", requiredState);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(TRANSITION_ID, transitionId)
+			.addContext(CURRENT_STATE, currentState)
+			.addContext(REQUIRED_STATE, requiredState);
 	}
 
 	public static BadRequestException issueSelfReference(String workspaceKey, String issueKey) {
 		return new BadRequestException(ISSUE_SELF_REFERENCE)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey);
 	}
 
-	public static BadRequestException relationIssueTypeMismatch(String workspaceKey, IssueRelationType relationType,
-		String sourceIssueKey, String sourceIssueType, String targetIssueKey, String targetIssueType) {
+	public static BadRequestException relationIssueTypeMismatch(
+		String workspaceKey,
+		IssueRelationType relationType,
+		String sourceIssueKey,
+		String sourceIssueType,
+		String targetIssueKey,
+		String targetIssueType
+	) {
 		return new BadRequestException(RELATION_ISSUE_TYPE_MISMATCH)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("relationType", relationType)
-			.addContext("sourceIssueKey", sourceIssueKey)
-			.addContext("sourceIssueType", sourceIssueType)
-			.addContext("targetIssueKey", targetIssueKey)
-			.addContext("targetIssueType", targetIssueType);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(RELATION_TYPE, relationType)
+			.addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
+			.addContext(SOURCE_ISSUE_TYPE, sourceIssueType)
+			.addContext(TARGET_ISSUE_KEY, targetIssueKey)
+			.addContext(TARGET_ISSUE_TYPE, targetIssueType);
 	}
 
-	public static BadRequestException relationAlreadyExists(String workspaceKey, String sourceIssueKey,
-		String targetIssueKey) {
+	public static BadRequestException relationAlreadyExists(
+		String workspaceKey,
+		String sourceIssueKey,
+		String targetIssueKey
+	) {
 		return new BadRequestException(RELATION_ALREADY_EXISTS)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("sourceIssueKey", sourceIssueKey)
-			.addContext("targetIssueKey", targetIssueKey);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
+			.addContext(TARGET_ISSUE_KEY, targetIssueKey);
 	}
 
-	public static BadRequestException relationWorkspaceMismatch(String sourceWorkspaceKey, String sourceIssueKey,
-		String targetWorkspaceKey, String targetIssueKey) {
+	public static BadRequestException relationWorkspaceMismatch(
+		String sourceWorkspaceKey,
+		String sourceIssueKey,
+		String targetWorkspaceKey,
+		String targetIssueKey
+	) {
 		return new BadRequestException(RELATION_WORKSPACE_MISMATCH)
-			.addContext("sourceWorkspaceKey", sourceWorkspaceKey)
-			.addContext("sourceIssueKey", sourceIssueKey)
-			.addContext("targetWorkspaceKey", targetWorkspaceKey)
-			.addContext("targetIssueKey", targetIssueKey);
+			.addContext(SOURCE_WORKSPACE_KEY, sourceWorkspaceKey)
+			.addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
+			.addContext(TARGET_WORKSPACE_KEY, targetWorkspaceKey)
+			.addContext(TARGET_ISSUE_KEY, targetIssueKey);
 	}
 
-	public static BadRequestException onlyInitialStateDeletionAllowed(String workspaceKey, String issueKey,
-		String currentState, StateCategory stateCategory) {
+	public static BadRequestException onlyInitialStateDeletionAllowed(
+		String workspaceKey,
+		String issueKey,
+		String currentState,
+		StateCategory stateCategory
+	) {
 		return new BadRequestException(ONLY_INITIAL_STATE_DELETION_ALLOWED)
-			.addContext("workspaceKey", workspaceKey)
-			.addContext("issueKey", issueKey)
-			.addContext("currentState", currentState)
-			.addContext("stateCategory", stateCategory);
+			.addContext(WORKSPACE_KEY, workspaceKey)
+			.addContext(ISSUE_KEY, issueKey)
+			.addContext(CURRENT_STATE, currentState)
+			.addContext(STATE_CATEGORY, stateCategory);
 	}
 
 	public static BadRequestException cannotDeleteIssueWithChildren(String issueKey) {
 		return new BadRequestException(CANNOT_DELETE_ISSUE_WITH_CHILDREN)
-			.addContext("issueKey", issueKey);
+			.addContext(ISSUE_KEY, issueKey);
 	}
 
 	public static BadRequestException dueDateMustBeFuture(Instant inputDate) {
 		return new BadRequestException(DUE_DATE_MUST_BE_FUTURE)
-			.addContext("inputDate", inputDate);
+			.addContext(INPUT_DATE, inputDate);
 	}
 
-	public static BadRequestException customFieldRequired(Long issueTypeId, String issueTypeName, Long fieldId,
-		String fieldName) {
+	public static BadRequestException customFieldRequired(
+		Long issueTypeId,
+		String issueTypeName,
+		Long fieldId,
+		String fieldName
+	) {
 		return new BadRequestException(CUSTOM_FIELD_REQUIRED)
-			.addContext("issueTypeId", issueTypeId)
-			.addContext("issueType", issueTypeName)
-			.addContext("issueFieldId", fieldId)
-			.addContext("issueField", fieldName);
+			.addContext(ISSUE_TYPE_ID, issueTypeId)
+			.addContext(ISSUE_TYPE, issueTypeName)
+			.addContext(ISSUE_FIELD_ID, fieldId)
+			.addContext(ISSUE_FIELD, fieldName);
 	}
 
 	public static BadRequestException unknownCustomFieldId(Long fieldId) {
 		return new BadRequestException(UNKNOWN_CUSTOM_FIELD_ID)
-			.addContext("issueFieldId", fieldId);
+			.addContext(ISSUE_FIELD_ID, fieldId);
 	}
 
-	public static BadRequestException customFieldTypeMismatch(Long fieldId, String fieldName, FieldType expectedType,
-		Object inputValue) {
+	public static BadRequestException customFieldTypeMismatch(
+		Long fieldId,
+		String fieldName,
+		FieldType expectedType,
+		Object inputValue
+	) {
 		return new BadRequestException(CUSTOM_FIELD_TYPE_MISMATCH)
-			.addContext("issueFieldId", fieldId)
-			.addContext("issueField", fieldName)
-			.addContext("expectedType", expectedType)
-			.addContext("inputValue", inputValue);
+			.addContext(ISSUE_FIELD_ID, fieldId)
+			.addContext(ISSUE_FIELD, fieldName)
+			.addContext(EXPECTED_TYPE, expectedType)
+			.addContext(INPUT_VALUE, inputValue);
 	}
 
 	public static BadRequestException decimalScaleExceeded(Long fieldId, int maxFractionDigits) {
 		return new BadRequestException(DECIMAL_SCALE_EXCEEDED)
-			.addContext("issueFieldId", fieldId)
+			.addContext(ISSUE_FIELD_ID, fieldId)
 			.addContext("maxFractionDigits", maxFractionDigits);
 	}
 
 	public static BadRequestException integerDigitsExceeded(Long fieldId, int maxIntegerDigits) {
 		return new BadRequestException(INTEGER_DIGITS_EXCEEDED)
-			.addContext("issueFieldId", fieldId)
+			.addContext(ISSUE_FIELD_ID, fieldId)
 			.addContext("maxIntegerDigits", maxIntegerDigits);
 	}
 
@@ -188,12 +242,12 @@ public class IssueExceptions {
 
 	public static BadRequestException unknownEnumOption(Long fieldId, Long optionId) {
 		return new BadRequestException(UNKNOWN_ENUM_OPTION)
-			.addContext("issueFieldId", fieldId)
-			.addContext("optionId", optionId);
+			.addContext(ISSUE_FIELD_ID, fieldId)
+			.addContext(FIELD_OPTION_ID, optionId);
 	}
 
 	public static ResourceNotFoundException reviewerNotFound(Long memberId) {
 		return new ResourceNotFoundException(REVIEWER_NOT_FOUND)
-			.addContext("memberId", memberId);
+			.addContext(MEMBER_ID, memberId);
 	}
 }
