@@ -15,6 +15,7 @@ public interface ContextKeys {
 	 * Project
 	 */
 	String PROJECT_KEY = "projectKey";
+	String PROJECT_ID = "projectId";
 	String CHILD_PROJECT_KEY = "childProjectKey";
 	String PARENT_PROJECT_KEY = "parentProjectKey";
 	String SOURCE_PROJECT_KEY = "sourceProjectKey";
@@ -50,8 +51,8 @@ public interface ContextKeys {
 	 * IssueField
 	 */
 	String ISSUE_FIELD_ID = "issueFieldId";
-	String ISSUE_FIELD = "issueField";
-	String FIELD_OPTION = "fieldOption";
+	String ISSUE_FIELD = "issueFieldName";
+	String FIELD_OPTION = "fieldOptionName";
 	String FIELD_OPTION_ID = "fieldOptionId";
 	String EXPECTED_TYPE = "expectedType";
 	String INPUT_VALUE = "inputValue";
