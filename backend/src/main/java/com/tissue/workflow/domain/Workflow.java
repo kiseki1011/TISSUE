@@ -1,5 +1,7 @@
 package com.tissue.workflow.domain;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +112,7 @@ public class Workflow extends BaseEntity {
 		state.attachToWorkflow(this);
 		states.add(state);
 
-		if (stateCategory.isTodo()) {
+		if (stateCategory.isInitial()) {
 			this.initialState = state;
 		}
 
@@ -133,6 +135,10 @@ public class Workflow extends BaseEntity {
 		return transition;
 	}
 
+	public String getDisplayName() {
+		return label.getDisplay();
+	}
+
 	public List<WorkflowState> getActiveStates() {
 		return states.stream()
 			.filter(s -> !s.isArchived())
@@ -149,7 +155,7 @@ public class Workflow extends BaseEntity {
 		if (!states.contains(state)) {
 			throw WorkflowExceptions.initialStateBelongMismatch();
 		}
-		if (state.getCategory().isNotTodo()) {
+		if (!state.isCategorizedAs(INITIAL)) {
 			throw WorkflowExceptions.initialStateCategoryMismatch();
 		}
 		this.initialState = state;
@@ -172,8 +178,12 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void deleteState(@NonNull WorkflowState state) {
-		if (state.getCategory().isTodo()) {
-			throw WorkflowExceptions.cannotDeleteInitialState(state.getDisplayLabel());
+		if (state.getCategory().isInitial()) {
+			throw WorkflowExceptions.cannotDeleteInitialState(
+				this.getId(),
+				this.getDisplayName(),
+				state.getDisplayLabel()
+			);
 		}
 		state.softDelete();
 		states.remove(state);
@@ -200,13 +210,13 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void changeStateCategory(WorkflowState state, StateCategory newCategory) {
-		if (state.getCategory() == newCategory) {
+		if (state.isCategorizedAs(newCategory)) {
 			return;
 		}
-		if (newCategory.isTodo()) {
+		if (newCategory.isInitial()) {
 			this.initialState = state;
 		}
-		if (state.getCategory().isTodo()) {
+		if (state.getCategory().isInitial()) {
 			this.initialState = null;
 		}
 

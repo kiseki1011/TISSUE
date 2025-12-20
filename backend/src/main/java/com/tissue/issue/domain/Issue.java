@@ -1,5 +1,7 @@
 package com.tissue.issue.domain;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +21,6 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.WorkflowState;
-import com.tissue.workflow.domain.enums.StateCategory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -98,10 +99,7 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;
 
-	// TODO: issueType로 부터 얻은 issueHierarchy를 편의 필드로 둘까?
-	//  - 아니면 항상 issue를 조회할때 issueType도 join fetch로 가져오도록 할까?
-	//  - 그런데 이렇게 설계할거면 이슈에 대한 issueType는 절대로 변하지 않을거라는 정책을 사용해야 함
-	//   다른 플랫폼에서도 이렇게 하나?
+	// TODO: when adding a issueType update feature, must need to clear storyPoint if the hierarchy doesnt support it
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
@@ -109,7 +107,7 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueFieldValue> fieldValues = new ArrayList<>();
 
-	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
+	// TODO: need to add Tag entity(used for search and categorization)
 
 	public static Issue create(
 		@NonNull Project project,
@@ -234,18 +232,18 @@ public class Issue extends BaseEntity {
 		return relations.removeRelation(otherIssue);
 	}
 
-	// TODO: 도메인 서비스로 분리할까?
+	// TODO: should i separate this to a separate domain service?
 	public void transitionTo(@NonNull WorkflowState newState) {
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 
-		if (previousState.getCategory().isTodo()) {
+		if (previousState.getCategory().isInitial()) {
 			this.schedule.markStarted();
 		}
-		if (newState.getCategory().isDone()) {
+		if (newState.getCategory().isCompleted()) {
 			this.schedule.markResolved();
 		}
-		if (previousState.getCategory().isDone() && !newState.getCategory().isDone()) {
+		if (previousState.isCategorizedAs(COMPLETED) && !newState.isCategorizedAs(COMPLETED)) {
 			this.schedule.clearResolved();
 		}
 	}
@@ -298,7 +296,7 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureIsInitial() {
-		if (!currentState.isCategorizedAs(StateCategory.TODO)) {
+		if (!currentState.isCategorizedAs(INITIAL)) {
 			throw IssueExceptions.onlyInitialStateDeletionAllowed(
 				this.getWorkspaceKey(),
 				this.getKey(),

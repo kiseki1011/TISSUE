@@ -32,7 +32,7 @@ public class NotBlockedGuard implements TransitionGuard {
 		}
 
 		List<String> unresolvedKeys = blockingIssues.stream()
-			.filter(blocking -> !blocking.getCurrentState().isCategorizedAs(DONE))
+			.filter(blocking -> !blocking.getCurrentState().isCategorizedAs(COMPLETED))
 			.map(Issue::getKey)
 			.toList();
 

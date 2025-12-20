@@ -136,11 +136,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 		StateResolver stateResolver
 	) {
 		var todoCmds = stateDefinitions.stream()
-			.filter(cmd -> cmd.category() == StateCategory.TODO)
+			.filter(cmd -> cmd.category() == StateCategory.INITIAL)
 			.toList();
 
 		if (todoCmds.size() != 1) {
-			throw WorkflowExceptions.invalidTodoStateCount(todoCmds.size());
+			throw WorkflowExceptions.invalidInitialStateCount(todoCmds.size());
 		}
 
 		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).stateRef());

@@ -110,7 +110,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT com.tissue.issue.application.dto.IssueCountStats(
 		        COUNT(i),
-		        SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE THEN 1 ELSE 0 END)
+		        SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED THEN 1 ELSE 0 END)
 		    )
 		    FROM Issue i
 		    WHERE i.parentIssue.id = :parentId
@@ -121,7 +121,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT new com.tissue.issue.application.dto.IssuePointStats(
 		        COALESCE(SUM(i.storyPoint), 0),
-		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE
+		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED
 		        THEN i.storyPoint ELSE 0 END), 0)
 		    )
 		    FROM Issue i

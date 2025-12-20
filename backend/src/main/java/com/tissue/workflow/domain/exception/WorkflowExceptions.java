@@ -38,19 +38,24 @@ public class WorkflowExceptions {
 			.addContext("workflowId", workflowId);
 	}
 
-	public static InternalServerException autoTransitionTargetNotFound(String issueKey, String currentStateName,
-		String targetTransitionName) {
+	public static InternalServerException autoTransitionTargetNotFound(
+		String issueKey,
+		String currentStateName,
+		String targetTransitionName
+	) {
 		return new InternalServerException(AUTO_TRANSITION_TARGET_NOT_FOUND)
 			.addContext("issueKey", issueKey)
 			.addContext("currentState", currentStateName)
 			.addContext("targetTransition", targetTransitionName);
 	}
 
-	public static BadRequestException deadEndState(Collection<String> deadEndLabels) {
-		return new BadRequestException(DEAD_END_STATE,
-			"The following 'IN_PROGRESS' states have no outgoing transitions: %s. Please connect them to a next state or change their category to 'DONE'."
-				.formatted(deadEndLabels))
-			.addContext("deadEndStates", deadEndLabels);
+	public static BadRequestException deadEndState(Collection<String> deadEndStateNames) {
+		String detailMessage = ("The following 'ACTIVE' states have no outgoing transitions: %s. "
+			+ "Please connect them to a next state or change their category to 'COMPLETED'.")
+			.formatted(deadEndStateNames);
+
+		return new BadRequestException(DEAD_END_STATE, detailMessage)
+			.addContext("deadEndStates", deadEndStateNames);
 	}
 
 	public static ResourceConflictException duplicateGuardType(GuardType guardType) {
@@ -58,15 +63,23 @@ public class WorkflowExceptions {
 			.addContext("guardType", guardType);
 	}
 
-	public static ResourceConflictException duplicateStateName(String stateName, String workflowName, Long workflowId) {
+	public static ResourceConflictException duplicateStateName(
+		String stateName,
+		String workflowName,
+		Long workflowId
+	) {
 		return new ResourceConflictException(DUPLICATE_STATE_NAME)
 			.addContext("stateName", stateName)
 			.addContext("workflowName", workflowName)
 			.addContext("workflowId", workflowId);
 	}
 
-	public static ResourceConflictException duplicateTransitionName(String transitionName, String sourceStateName,
-		String workflowName, Long workflowId) {
+	public static ResourceConflictException duplicateTransitionName(
+		String transitionName,
+		String sourceStateName,
+		String workflowName,
+		Long workflowId
+	) {
 		return new ResourceConflictException(DUPLICATE_TRANSITION_NAME)
 			.addContext("transitionName", transitionName)
 			.addContext("sourceStateName", sourceStateName)
@@ -74,42 +87,53 @@ public class WorkflowExceptions {
 			.addContext("workflowId", workflowId);
 	}
 
-	public static ResourceConflictException duplicateWorkflowName(String workflowName, String projectKey,
-		String workspaceKey) {
+	public static ResourceConflictException duplicateWorkflowName(
+		String workflowName,
+		String projectKey,
+		String workspaceKey
+	) {
 		return new ResourceConflictException(DUPLICATE_WORKFLOW_NAME)
 			.addContext("workflowName", workflowName)
 			.addContext("projectKey", projectKey)
 			.addContext("workspaceKey", workspaceKey);
 	}
 
-	public static BadRequestException invalidTodoStateCount(int foundCount) {
-		return new BadRequestException(INVALID_TODO_STATE_COUNT)
+	public static BadRequestException invalidInitialStateCount(int foundCount) {
+		return new BadRequestException(INVALID_INITIAL_STATE_COUNT)
 			.addContext("foundCount", foundCount);
 	}
 
-	public static BadRequestException invalidTransitionTarget(Collection<String> sourceStateNames,
-		String targetStateName) {
+	public static BadRequestException invalidTransitionTarget(
+		Collection<String> sourceStateNames,
+		String targetStateName
+	) {
 		return new BadRequestException(INVALID_TRANSITION_TARGET)
 			.addContext("invalidSourceStates", sourceStateNames)
 			.addContext("targetState", targetStateName);
 	}
 
-	public static BadRequestException missingDoneState() {
-		return new BadRequestException(MISSING_DONE_STATE);
+	public static BadRequestException missingCompletedState() {
+		return new BadRequestException(MISSING_COMPLETED_STATE);
 	}
 
-	public static BadRequestException orphanState(Collection<String> orphanStates, String initialLabel) {
-		return new BadRequestException(ORPHAN_STATE,
-			"Unreachable states detected: %s. All states must be reachable from '%s'."
-				.formatted(orphanStates, initialLabel))
-			.addContext("orphanStates", orphanStates)
-			.addContext("initialState", initialLabel);
+	public static BadRequestException orphanState(Collection<String> orphanStateNames, String initialStateName) {
+		String detailMessage = "Unreachable states detected: %s. All states must be reachable from '%s'."
+			.formatted(orphanStateNames, initialStateName);
+
+		return new BadRequestException(ORPHAN_STATE, detailMessage)
+			.addContext("orphanStates", orphanStateNames)
+			.addContext("initialState", initialStateName);
 	}
 
-	public static BadRequestException transitionGuardFailed(GuardType guardType, String reason, String issueKey,
-		String workspaceKey) {
-		return new BadRequestException(TRANSITION_GUARD_FAILED,
-			"%s evaluation failed: %s".formatted(guardType, reason))
+	public static BadRequestException transitionGuardFailed(
+		GuardType guardType,
+		String reason,
+		String issueKey,
+		String workspaceKey
+	) {
+		String detailMessage = "%s evaluation failed. Reason: %s.".formatted(guardType, reason);
+
+		return new BadRequestException(TRANSITION_GUARD_FAILED, detailMessage)
 			.addContext("failedGuardType", guardType)
 			.addContext("failureReason", reason)
 			.addContext("issueKey", issueKey)
@@ -127,8 +151,14 @@ public class WorkflowExceptions {
 			.addContext("targetState", targetState);
 	}
 
-	public static BadRequestException cannotDeleteInitialState(String stateName) {
+	public static BadRequestException cannotDeleteInitialState(
+		Long workflowId,
+		String workflowName,
+		String stateName
+	) {
 		return new BadRequestException(CANNOT_DELETE_INITIAL_STATE)
+			.addContext("workflowId", workflowId)
+			.addContext("workflowName", workflowName)
 			.addContext("stateName", stateName);
 	}
 

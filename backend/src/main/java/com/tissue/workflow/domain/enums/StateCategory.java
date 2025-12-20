@@ -7,23 +7,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum StateCategory {
 
-	TODO,
-	IN_PROGRESS,
-	DONE;
+	INITIAL,
+	ACTIVE,
+	COMPLETED;
 
-	public boolean isDone() {
-		return this == DONE;
+	public boolean isCompleted() {
+		return this == COMPLETED;
 	}
 
-	public boolean isInProgress() {
-		return this == IN_PROGRESS;
+	public boolean isActive() {
+		return this == ACTIVE;
 	}
 
-	public boolean isTodo() {
-		return this == TODO;
+	public boolean isInitial() {
+		return this == INITIAL;
 	}
 
-	public boolean isNotTodo() {
-		return !isTodo();
+	public boolean isNotInitial() {
+		return !isInitial();
 	}
 }

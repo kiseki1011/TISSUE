@@ -1,5 +1,7 @@
 package com.tissue.issue.application.service.finder;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -10,7 +12,6 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.workflow.domain.enums.StateCategory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,10 +31,10 @@ public class IssueFinder {
 	}
 
 	public List<Issue> findIncompleteIssuesBySprint(Sprint sprint) {
-		return issueQueryRepo.findIncompleteIssuesBySprint(sprint, StateCategory.DONE);
+		return issueQueryRepo.findIncompleteIssuesBySprint(sprint, COMPLETED);
 	}
 
 	public List<String> findIncompleteIssueKeysBySprint(Sprint sprint) {
-		return issueQueryRepo.findIncompleteIssueKeysBySprint(sprint, StateCategory.DONE);
+		return issueQueryRepo.findIncompleteIssueKeysBySprint(sprint, COMPLETED);
 	}
 }

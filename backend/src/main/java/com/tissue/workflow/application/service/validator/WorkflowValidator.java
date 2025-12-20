@@ -1,5 +1,7 @@
 package com.tissue.workflow.application.service.validator;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,7 +39,7 @@ public class WorkflowValidator {
 
 	public void ensureStatesDeletable(Set<WorkflowState> statesToDelete) {
 		List<WorkflowState> statesToCheck = statesToDelete.stream()
-			.filter(state -> !state.getCategory().isDone())
+			.filter(state -> !state.isCategorizedAs(COMPLETED))
 			.toList();
 
 		if (statesToCheck.isEmpty()) {
