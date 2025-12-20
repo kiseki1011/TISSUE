@@ -31,10 +31,10 @@ public class ProjectController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateProjectRequest request
 	) {
-		ProjectCommandResult response = projectCommandUseCase.create(
-			request.toCommand(workspaceKey)
-		);
+		var command = request.toCommand(workspaceKey);
+		ProjectCommandResult response = projectCommandUseCase.create(command);
 
+		// TODO: use ResponseEntity.created
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(response);
 	}
@@ -45,9 +45,8 @@ public class ProjectController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid UpdateProjectRequest request
 	) {
-		ProjectCommandResult response = projectCommandUseCase.update(
-			request.toCommand(workspaceKey, projectKey)
-		);
+		var command = request.toCommand(workspaceKey, projectKey);
+		ProjectCommandResult response = projectCommandUseCase.update(command);
 
 		return ResponseEntity.ok(response);
 	}
@@ -57,9 +56,8 @@ public class ProjectController {
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey
 	) {
-		ProjectCommandResult response = projectCommandUseCase.delete(
-			new DeleteProjectCommand(workspaceKey, projectKey)
-		);
+		var command = new DeleteProjectCommand(workspaceKey, projectKey);
+		ProjectCommandResult response = projectCommandUseCase.delete(command);
 
 		return ResponseEntity.ok(response);
 	}

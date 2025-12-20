@@ -2,8 +2,8 @@ package com.tissue.project.application.service.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.project.domain.exception.DuplicateProjectKeyException;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
+import com.tissue.project.domain.exception.ProjectExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,9 +15,7 @@ public class ProjectValidator {
 
 	public void ensureUniqueProjectKey(String projectKey, String workspaceKey) {
 		if (queryRepository.existsByKeyAndWorkspaceKey(projectKey, workspaceKey)) {
-			throw new DuplicateProjectKeyException(projectKey, workspaceKey);
+			throw ProjectExceptions.duplicateKey(workspaceKey, projectKey);
 		}
 	}
-
-	// TODO: ensureActive (notArchived)
 }

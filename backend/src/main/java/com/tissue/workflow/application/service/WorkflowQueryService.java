@@ -29,7 +29,7 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
 
 	@Override
 	public List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived) {
-		Project project = projectFinder.findBy(projectKey, workspaceKey);
+		Project project = projectFinder.getBy(projectKey, workspaceKey);
 
 		List<Workflow> workflows;
 		if (includeArchived) {
@@ -45,7 +45,7 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
 
 	@Override
 	public WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId) {
-		Project project = projectFinder.findBy(projectKey, workspaceKey);
+		Project project = projectFinder.getBy(projectKey, workspaceKey);
 		Workflow workflow = workflowFinder.findBy(workflowId, project);
 
 		List<Long> stateIds = workflow.getActiveStates().stream()

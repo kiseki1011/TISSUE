@@ -48,7 +48,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
 		workflowValidator.ensureLabelUnique(project, cmd.label());
 
@@ -89,7 +89,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void update(UpdateWorkflowCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		Patchers.apply(cmd.label(), newLabel -> {
@@ -104,7 +104,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void delete(DeleteWorkflowCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		// TODO: archive(soft-delete) 정책 정하기
@@ -118,7 +118,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void updateState(UpdateStateCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
 
@@ -129,7 +129,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void updateTransition(UpdateTransitionCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
@@ -139,7 +139,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
 	@Override
 	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		WorkflowTransition transition = workflow.getTransitions().stream()

@@ -28,7 +28,7 @@ public class IssueReviewService implements IssueReviewUseCase {
 
 	@Override
 	public void submitReview(SubmitReviewCommand cmd) {
-		Project project = projectFinder.findBy(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(issue.getProject(), cmd.actorMemberId());
 

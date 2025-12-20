@@ -24,9 +24,11 @@ public interface IssueParticipantUseCase {
 	@PreAuthorize(REQUIRES_ISSUE_PARTICIPANT_MANAGER)
 	void unassign(RemoveAssigneeCommand cmd);
 
+	// TODO: consider expanding the parameters instead of using a command dto(for REQUIRES_PROJECT_VIEWER spel)
 	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
 	void subscribe(SubscribeIssueCommand cmd);
 
+	// TODO: consider expanding the parameters instead of using a command dto(for REQUIRES_PROJECT_VIEWER spel)
 	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
 	void unsubscribe(UnsubscribeIssueCommand cmd);
 

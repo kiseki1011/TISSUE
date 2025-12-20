@@ -62,7 +62,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public IssueCreateResponse create(CreateIssueCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -102,7 +102,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -122,7 +122,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void updateCustomFields(UpdateCustomFieldsCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -141,7 +141,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void updateStoryPoint(UpdateStoryPointCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -156,11 +156,11 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void assignParent(AssignParentCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
-		Project parentProject = projectFinder.findForCommand(cmd.parentProjectKey(), cmd.workspaceKey());
+		Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
 		Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
 
 		Issue oldParent = issue.getParentIssue();
@@ -173,7 +173,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void removeParent(RemoveParentCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		Issue parent = issue.getParentIssue();
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
@@ -186,7 +186,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 	@Override
 	@Transactional
 	public void softDelete(DeleteIssueCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -200,7 +200,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 		Project targetProject = currentProject;
 
 		if (parentProjectKey != null && !parentProjectKey.equals(currentProject.getKey())) {
-			targetProject = projectFinder.findForCommand(parentProjectKey, currentProject.getWorkspaceKey());
+			targetProject = projectFinder.getModifiableBy(parentProjectKey, currentProject.getWorkspaceKey());
 		}
 
 		return issueFinder.findBy(parentKey, targetProject);

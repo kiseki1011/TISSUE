@@ -33,9 +33,9 @@ public class IssueRelationService implements IssueRelationUseCase {
 	@Override
 	@Transactional
 	public void add(AddIssueRelationCommand cmd) {
-		Project sourceProject = projectFinder.findForCommand(cmd.sourceProjectKey(), cmd.workspaceKey());
+		Project sourceProject = projectFinder.getModifiableBy(cmd.sourceProjectKey(), cmd.workspaceKey());
 		Issue source = issueFinder.findBy(cmd.sourceIssueKey(), sourceProject);
-		Project targetProject = projectFinder.findForCommand(cmd.targetProjectKey(), cmd.workspaceKey());
+		Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
 		Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
 
 		ProjectMember actor = projectMemberFinder.findBy(sourceProject, cmd.actorMemberId());
@@ -55,9 +55,9 @@ public class IssueRelationService implements IssueRelationUseCase {
 	@Override
 	@Transactional
 	public void remove(RemoveIssueRelationCommand cmd) {
-		Project sourceProject = projectFinder.findForCommand(cmd.sourceProjectKey(), cmd.workspaceKey());
+		Project sourceProject = projectFinder.getModifiableBy(cmd.sourceProjectKey(), cmd.workspaceKey());
 		Issue source = issueFinder.findBy(cmd.sourceIssueKey(), sourceProject);
-		Project targetProject = projectFinder.findForCommand(cmd.targetProjectKey(), cmd.workspaceKey());
+		Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
 		Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
 
 		ProjectMember actor = projectMemberFinder.findBy(sourceProject, cmd.actorMemberId());

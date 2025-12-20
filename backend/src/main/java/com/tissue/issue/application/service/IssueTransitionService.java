@@ -46,7 +46,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 	@Override
 	@Transactional
 	public void performTransition(PerformTransitionCommand cmd) {
-		Project project = projectFinder.findForCommand(extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 

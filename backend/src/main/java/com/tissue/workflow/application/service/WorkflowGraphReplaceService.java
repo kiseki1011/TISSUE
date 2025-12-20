@@ -56,7 +56,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {

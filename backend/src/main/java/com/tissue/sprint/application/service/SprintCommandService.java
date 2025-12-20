@@ -38,7 +38,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult createSprint(CreateSprintCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
 		Sprint sprint = Sprint.create(project, cmd.title(), cmd.goal());
 		sprintRepository.save(sprint);
@@ -52,7 +52,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult addIssues(AddSprintIssuesCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 		List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
 
@@ -76,7 +76,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult updateSprint(UpdateSprintCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
 		Patchers.apply(cmd.title(), sprint::updateTitle);
@@ -93,7 +93,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult start(StartSprintCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
 		sprintValidator.ensureSprintNotClosed(sprint, project);
@@ -110,7 +110,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult complete(CompleteSprintCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
 		List<String> incompleteIssueKeys = issueFinder.findIncompleteIssueKeysBySprint(sprint);
@@ -132,7 +132,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint originalSprint = sprintFinder.findBy(cmd.originalSprintId(), project);
 		Sprint newSprint = sprintFinder.findBy(cmd.newSprintId(), project);
 
@@ -158,7 +158,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 	@Override
 	public SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd) {
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
 
 		sprintValidator.ensureSprintNotClosed(sprint, project);

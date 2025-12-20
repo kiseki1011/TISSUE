@@ -101,10 +101,11 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		// TODO: WorkspaceMemberKickedEvent
 	}
 
-	// TODO: 주석에 UseCase에 포함되지 않고 다른 서비스에서 호출하는 용도로 구현되어 있다는 것을 설명
-	//   - UseCase 인터페이스에는 없지만 다른 서비스가 쓰도록 열어둔 메서드 (내부용)
-	//   - Controller는 이 메서드를 모름 (UseCase 인터페이스로 주입받으므로)
-	//   - 다른 애플리케이션 서비스(UseCase 구현체)는 이 구현체 클래스를 주입받아 호출 가능
+	// TODO: add a javadoc for the next information
+	//  - this method is not a implementation of a UseCase
+	//  - this method is called from other services (a method for internal use)
+	//  - controller does not know this method unless it directly depends on this service
+	// TODO: currently considering if i should separate this to a application service of its own
 	@Transactional
 	public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
 		Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
@@ -117,7 +118,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 		return workspaceMemberFinder.findAnyOptionalBy(member.getId(), workspace.getKey())
 			.map(returningMember -> {
-				returningMember.restore();
+				returningMember.restoreSoftDeleted();
 				return returningMember;
 			})
 			.orElseGet(() -> {
@@ -142,7 +143,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 			if (projectConfigs != null) {
 				for (var config : projectConfigs) {
-					Project project = projectFinder.findForCommand(config.projectKey(), workspace.getKey());
+					Project project = projectFinder.getModifiableBy(config.projectKey(), workspace.getKey());
 					invitation.addProjectConfig(project, config.role());
 				}
 			}
@@ -179,7 +180,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
 	}
 
-	// TODO: 이름 개선 고려
 	private void checkWorkspaceCapacity(Workspace workspace) {
 		int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
 		workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);

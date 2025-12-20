@@ -1,6 +1,7 @@
 package com.tissue.project.application.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.project.application.dto.request.CreateProjectCommand;
@@ -8,10 +9,10 @@ import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 import com.tissue.project.application.port.in.ProjectCommandUseCase;
-import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.domain.Project;
 import com.tissue.project.application.port.out.ProjectCommandRepository;
+import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
+import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;
 
@@ -27,8 +28,8 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	private final ProjectCommandRepository projectRepository;
 
 	@Override
+	@Transactional
 	public ProjectCommandResult create(CreateProjectCommand cmd) {
-
 		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
 
 		Project project = Project.create(
@@ -48,9 +49,9 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	}
 
 	@Override
+	@Transactional
 	public ProjectCommandResult update(UpdateProjectCommand cmd) {
-
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
 		Patchers.apply(cmd.title(), project::updateTitle);
 		Patchers.apply(cmd.description(), project::updateDescription);
@@ -63,13 +64,13 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	}
 
 	@Override
+	@Transactional
 	public ProjectCommandResult delete(DeleteProjectCommand cmd) {
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-
-		// TODO: Project soft-delete 시 안의 내용물(스프린트, 이슈, 프로젝트 멤버, 등)은 어떻게 처리해야할까?
-		//  - 다 같이 cascade로 soft-delete 처리? 너무 복잡한데? 다시 restore 하는 로직도 복잡할 것 같고.
 		project.softDelete();
+
+		// TODO: ProjectSoftDeletedEvent
 
 		return ProjectCommandResult.from(project);
 	}

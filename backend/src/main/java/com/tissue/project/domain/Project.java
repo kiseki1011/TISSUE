@@ -10,6 +10,7 @@ import com.tissue.common.entity.BaseEntity;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
+import com.tissue.project.domain.exception.ProjectExceptions;
 import com.tissue.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workspace.domain.Workspace;
@@ -44,10 +45,6 @@ import lombok.NonNull;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Project extends BaseEntity {
-
-	private final static String SPRINT_KEY_PREFIX = "SPRINT";
-
-	// TODO: @Version 추가?
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,11 +92,9 @@ public class Project extends BaseEntity {
 		Project project = new Project();
 		project.workspace = workspace;
 		project.workspaceKey = workspace.getKey();
-
 		project.setKey(key);
 		project.title = title;
 		project.description = description;
-
 		project.visibility = ProjectVisibility.PRIVATE;
 		project.defaultJoinRole = ProjectRole.VIEWER;
 
@@ -107,14 +102,13 @@ public class Project extends BaseEntity {
 	}
 
 	private void setKey(@NonNull String key) {
+		// TODO: validate key length(3~10), pattern(letters + number, number must come behind if used)
+		// TODO: dd bean validation for CreateProjectRequest
+
 		String upperKey = key.toUpperCase();
 		if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
-			// TODO: ReservedProjectKeyException
-			throw new RuntimeException("Cannot use reserved key: " + upperKey);
+			throw ProjectExceptions.reservedKey(upperKey);
 		}
-		// TODO: key 길이, 정규식 검증 -> 3~10자, 영문 대문자 + 숫자(선택 사항, 숫자는 무조건 뒤에 와야함)
-		// TODO: CreateProjectRequest에도 bean validation 추가하기
-
 		this.key = upperKey;
 	}
 
@@ -132,18 +126,13 @@ public class Project extends BaseEntity {
 
 	public void updateDefaultJoinRole(@NonNull ProjectRole defaultJoinRole) {
 		if (defaultJoinRole.isEqualOrHigherThan(ProjectRole.ADMIN)) {
-			// TODO: AdminDefaultJoinNotAllowedException, 더 좋은 이름이 있을까?
-			throw new RuntimeException("Cannot set default join role as ADMIN.");
+			throw ProjectExceptions.invalidDefaultJoinRole(defaultJoinRole);
 		}
 		this.defaultJoinRole = defaultJoinRole;
 	}
 
 	public String generateNextIssueKey() {
-		increaseIssueNumber();
-		return "%s-%s".formatted(this.key, this.issueNumber);
-	}
-
-	private void increaseIssueNumber() {
 		this.issueNumber++;
+		return "%s-%s".formatted(this.key, this.issueNumber);
 	}
 }

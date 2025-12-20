@@ -54,7 +54,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
 			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+		Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
 
 		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
 		ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
@@ -67,7 +67,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 		Issue issue = issueQueryRepo.findWithDetail(workspaceKey, issueKey)
 			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+		Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
 
 		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
 		ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
@@ -131,7 +131,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 		Issue issue = issueQueryRepo.findWithBasicInfo(workspaceKey, issueKey)
 			.orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-		Project project = projectFinder.findBy(extractProjectKey(issueKey), workspaceKey);
+		Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
 		ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
 
 		return ParticipantInfo.from(author);

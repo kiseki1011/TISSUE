@@ -40,7 +40,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void changeReporter(ChangeReporterCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember oldReporter = issue.getParticipants().getReporter();
@@ -55,7 +55,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void assign(AssignIssueCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember assignee = projectMemberFinder.findBy(project, cmd.targetMemberId());
@@ -69,7 +69,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void unassign(RemoveAssigneeCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember assignee = issue.getParticipants().getAssignee();
@@ -83,7 +83,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void subscribe(SubscribeIssueCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.actorMemberId());
@@ -94,7 +94,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void unsubscribe(UnsubscribeIssueCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember subscriber = projectMemberFinder.findBy(project, cmd.actorMemberId());
@@ -105,7 +105,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void addReviewer(AddReviewerCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.targetMemberId());
@@ -120,7 +120,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 	@Override
 	@Transactional
 	public void removeReviewer(RemoveReviewerCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
 		ProjectMember reviewer = projectMemberFinder.findBy(project, cmd.targetMemberId());

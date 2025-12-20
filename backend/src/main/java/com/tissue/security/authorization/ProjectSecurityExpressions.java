@@ -4,7 +4,7 @@ package com.tissue.security.authorization;
 //  - 사용하는 메서드로의 참조 추가하면 좋을듯?
 public interface ProjectSecurityExpressions {
 
-	String REQUIRES_PROJECT_VIEWER = "@projectSecurityGuard.hasReadPermission(#cmd.workspaceKey, #cmd.projectKey, principal.memberId)";
+	String REQUIRES_PROJECT_VIEWER = "@projectSecurityGuard.hasReadPermission(#workspaceKey, #projectKey, principal.memberId)";
 
 	String REQUIRES_PROJECT_MEMBER = "@projectSecurityGuard.isMember(#cmd.workspaceKey, #cmd.projectKey, principal.memberId)";
 
