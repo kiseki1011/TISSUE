@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.issue;
 
 public interface IssueSecurityExpressions {
 

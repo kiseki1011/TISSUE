@@ -10,8 +10,8 @@ import com.tissue.workflow.application.dto.request.UpdateStateCommand;
 import com.tissue.workflow.application.dto.request.UpdateTransitionCommand;
 import com.tissue.workflow.application.dto.request.UpdateWorkflowCommand;
 import com.tissue.workflow.application.dto.response.WorkflowCreateResponse;
-import com.tissue.security.authorization.ProjectSecurityExpressions;
-import com.tissue.security.authorization.WorkflowSecurityExpressions;
+import com.tissue.security.authorization.project.ProjectSecurityExpressions;
+import com.tissue.security.authorization.project.workflow.WorkflowSecurityExpressions;
 
 @Transactional
 public interface WorkflowCommandUseCase {

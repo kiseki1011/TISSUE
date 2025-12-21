@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project;
 
 // TODO: add javadoc that explains each permission
 public interface ProjectSecurityExpressions {

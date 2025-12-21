@@ -1,4 +1,4 @@
-package com.tissue.security.authorization.enums;
+package com.tissue.security.authorization;
 
 public enum SystemRole {
 

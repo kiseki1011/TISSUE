@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.invitation;
 
 public interface InvitationSecurityExpressions {
 

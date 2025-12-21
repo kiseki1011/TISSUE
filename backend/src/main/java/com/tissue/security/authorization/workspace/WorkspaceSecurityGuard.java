@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.workspace;
 
 import static com.tissue.workspace.domain.enums.WorkspaceRole.*;
 

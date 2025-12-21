@@ -1,7 +1,8 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.workflow;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.security.authorization.project.ProjectSecurityGuard;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.exception.WorkflowExceptions;

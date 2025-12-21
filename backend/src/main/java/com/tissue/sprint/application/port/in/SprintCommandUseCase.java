@@ -2,8 +2,8 @@ package com.tissue.sprint.application.port.in;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.security.authorization.ProjectSecurityExpressions;
-import com.tissue.security.authorization.SprintSecurityExpressions;
+import com.tissue.security.authorization.project.ProjectSecurityExpressions;
+import com.tissue.security.authorization.project.sprint.SprintSecurityExpressions;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
 import com.tissue.sprint.application.dto.request.CreateSprintCommand;

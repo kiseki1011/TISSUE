@@ -1,6 +1,6 @@
 package com.tissue.issue.application.port.in;
 
-import static com.tissue.security.authorization.IssueSecurityExpressions.*;
+import static com.tissue.security.authorization.project.issue.IssueSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 

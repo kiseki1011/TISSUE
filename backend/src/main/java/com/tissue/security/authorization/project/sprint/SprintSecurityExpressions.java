@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.sprint;
 
 // TODO: integrate into ProjectSecurityExpressions
 public interface SprintSecurityExpressions {

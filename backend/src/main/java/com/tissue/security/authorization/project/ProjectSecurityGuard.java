@@ -1,4 +1,4 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project;
 
 import java.util.List;
 import java.util.Set;
@@ -11,6 +11,7 @@ import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
 import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.security.authorization.workspace.WorkspaceSecurityGuard;
 
 import lombok.RequiredArgsConstructor;
 

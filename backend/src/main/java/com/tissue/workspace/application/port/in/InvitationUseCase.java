@@ -1,6 +1,6 @@
 package com.tissue.workspace.application.port.in;
 
-import static com.tissue.security.authorization.InvitationSecurityExpressions.*;
+import static com.tissue.security.authorization.invitation.InvitationSecurityExpressions.*;
 
 import java.util.List;
 

@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseDateEntity;
-import com.tissue.security.authorization.enums.SystemRole;
+import com.tissue.security.authorization.SystemRole;
 import com.tissue.workspace.domain.Invitation;
 
 import jakarta.persistence.CascadeType;

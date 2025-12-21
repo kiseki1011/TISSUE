@@ -1,7 +1,8 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.sprint;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.security.authorization.project.ProjectSecurityGuard;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.sprint.domain.exception.SprintNotFoundException;
 import com.tissue.sprint.application.port.out.SprintQueryRepository;

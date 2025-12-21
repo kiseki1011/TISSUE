@@ -1,9 +1,10 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.issue;
 
 import org.springframework.stereotype.Component;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.security.authorization.project.ProjectSecurityGuard;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;

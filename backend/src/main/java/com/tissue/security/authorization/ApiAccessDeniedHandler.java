@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: refactor to use ProblemDetail
+// TODO: this is a spring-security dependant code. where should i place this?
 @Slf4j
 @Component
 @RequiredArgsConstructor

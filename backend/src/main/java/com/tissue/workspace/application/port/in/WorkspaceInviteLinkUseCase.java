@@ -9,9 +9,9 @@ import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
 import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
 import com.tissue.workspace.application.dto.response.WorkspaceMemberCommandResponse;
 import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
-import com.tissue.security.authorization.ProjectSecurityExpressions;
+import com.tissue.security.authorization.project.ProjectSecurityExpressions;
 import com.tissue.security.authorization.SecurityKeyWords;
-import com.tissue.security.authorization.WorkspaceSecurityExpressions;
+import com.tissue.security.authorization.workspace.WorkspaceSecurityExpressions;
 
 public interface WorkspaceInviteLinkUseCase {
 
@@ -21,7 +21,8 @@ public interface WorkspaceInviteLinkUseCase {
 
 	@Transactional
 	@PreAuthorize(
-		ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER + SecurityKeyWords.AND + ProjectSecurityExpressions.REQUIRES_GRANTABLE_PROJECT_ROLE)
+		ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER + SecurityKeyWords.AND
+			+ ProjectSecurityExpressions.REQUIRES_GRANTABLE_PROJECT_ROLE)
 	String createProjectLink(CreateProjectInviteLinkCommand cmd);
 
 	@Transactional

@@ -8,14 +8,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tissue.member.domain.Member;
-import com.tissue.security.authorization.enums.SystemRole;
+import com.tissue.security.authorization.SystemRole;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Member 엔티티를 스프링 시큐리티의 UserDetails로 변환하는 어댑터
- *
+ * <p>
  * 역할:
  * - 도메인 모델(Member)과 스프링 시큐리티 사이의 브릿지
  * - 스프링 시큐리티가 이해할 수 있는 형태로 사용자 정보 제공

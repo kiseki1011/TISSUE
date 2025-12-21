@@ -1,8 +1,9 @@
-package com.tissue.security.authorization;
+package com.tissue.security.authorization.project.issueconfig;
 
 import org.springframework.stereotype.Component;
 
 import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
+import com.tissue.security.authorization.project.ProjectSecurityGuard;
 
 import lombok.RequiredArgsConstructor;
 
