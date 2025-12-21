@@ -10,7 +10,7 @@ import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
-import com.tissue.project.domain.exception.ProjectNotFoundException;
+import com.tissue.project.domain.exception.ProjectExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -71,9 +71,10 @@ public class ProjectSecurityGuard {
 
 		return projectQueryRepository.findVisibilityByKeys(workspaceKey, projectKey)
 			.map(visibility -> visibility == ProjectVisibility.PUBLIC)
-			.orElseThrow(() -> new ProjectNotFoundException(projectKey, workspaceKey));
+			.orElseThrow(() -> ProjectExceptions.notFound(workspaceKey, projectKey));
 	}
 
+	// TODO: improve name (must change spel expression too!)
 	public boolean hasProjectAdminPermission(
 		String workspaceKey,
 		Set<String> targetProjectKeys,

@@ -1,7 +1,6 @@
 package com.tissue.security.authorization;
 
-// TODO: 각 expression을 설명하는 주석
-//  - 사용하는 메서드로의 참조 추가하면 좋을듯?
+// TODO: add javadoc that explains each permission
 public interface ProjectSecurityExpressions {
 
 	String REQUIRES_PROJECT_VIEWER = "@projectSecurityGuard.hasReadPermission(#workspaceKey, #projectKey, principal.memberId)";
@@ -15,4 +14,6 @@ public interface ProjectSecurityExpressions {
 	String REQUIRES_GRANTABLE_PROJECT_ROLE = "@projectSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.projectKey, principal.memberId, #cmd.role)";
 
 	String REQUIRES_TARGET_PROJECTS_ADMIN = "@projectSecurityGuard.hasProjectAdminPermission(#cmd.workspaceKey, #cmd.extractProjectKeys(), principal.memberId)";
+
+	String REQUIRES_ISSUE_TYPE_MANAGE = "@issueConfigSecurityGuard.canManageIssueType(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueTypeId, principal.memberId)";
 }
