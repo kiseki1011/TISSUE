@@ -13,6 +13,7 @@ import com.tissue.issuetype.application.dto.request.RenameIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.RenameOptionCommand;
 import com.tissue.issuetype.application.dto.request.ReorderOptionsCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 
 public interface IssueFieldUseCase {
 
@@ -34,9 +35,8 @@ public interface IssueFieldUseCase {
 	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
 	void renameOption(RenameOptionCommand cmd);
 
-	// TODO: should i return the reordered list of options for convenience even though its a command API?
 	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
-	void reorderOptions(ReorderOptionsCommand cmd);
+	ReorderedOptionsResponse reorderOptions(ReorderOptionsCommand cmd);
 
 	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
 	void deleteOption(DeleteOptionCommand cmd);

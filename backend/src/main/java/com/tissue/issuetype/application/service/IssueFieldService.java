@@ -18,6 +18,7 @@ import com.tissue.issuetype.application.dto.request.RenameIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.RenameOptionCommand;
 import com.tissue.issuetype.application.dto.request.ReorderOptionsCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.issuetype.application.port.in.IssueFieldUseCase;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionCommandRepository;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
@@ -25,8 +26,7 @@ import com.tissue.issuetype.application.port.out.IssueFieldCommandRepository;
 import com.tissue.issuetype.application.service.finder.IssueFieldFinder;
 import com.tissue.issuetype.application.service.finder.IssueFieldOptionFinder;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
-import com.tissue.issuetype.application.service.validator.EnumFieldOptionValidator;
-import com.tissue.issuetype.application.service.validator.IssueFieldValidator;
+import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.EnumFieldOptions;
 import com.tissue.issuetype.domain.IssueField;
@@ -53,8 +53,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 	private final EnumFieldOptionCommandRepository fieldOptionCommandRepo;
 	private final EnumFieldOptionQueryRepository fieldOptionQueryRepo;
 
-	private final IssueFieldValidator issueFieldValidator;
-	private final EnumFieldOptionValidator fieldOptionValidator;
+	private final IssueTypeValidator issueTypeValidator;
 	private final FieldDefintionPolicy fieldDefintionPolicy;
 
 	private final EntityManager entityManager;
@@ -64,7 +63,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
+		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.label());
 
 		IssueField issueField = IssueField.create(
 			cmd.label(),
@@ -94,7 +93,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 			return;
 		}
 
-		issueFieldValidator.ensureUniqueLabel(issueType, cmd.label());
+		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.label());
 		issueField.rename(cmd.label());
 	}
 
@@ -108,17 +107,13 @@ public class IssueFieldService implements IssueFieldUseCase {
 		Patchers.apply(cmd.required(), issueField::setRequired);
 	}
 
-	// TODO: if using hard-delete, delete all the IssueFieldValue of the issues too?
-	//  or just leave the original values?
-	//  or should i give a option to choose whether to delete original values or leave them?
-	//  but if i leave original IssueFieldValue of issues, how do i show them when showing the details of a issue?
 	@Override
 	public void delete(DeleteIssueFieldCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		// issueFieldValidator.ensureDeletable(issueField);
+		issueTypeValidator.ensureFieldDeletable(issueField);
 
 		issueFieldCommandRepo.delete(issueField);
 	}
@@ -129,7 +124,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		fieldOptionValidator.ensureLabelUnique(issueField, cmd.label());
+		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.label());
 
 		int nextPosition = fieldOptionQueryRepo.countByIssueField(issueField);
 		fieldDefintionPolicy.ensureCanAddOption(nextPosition);
@@ -151,12 +146,12 @@ public class IssueFieldService implements IssueFieldUseCase {
 			return;
 		}
 
-		fieldOptionValidator.ensureLabelUnique(issueField, cmd.label());
+		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.label());
 		option.rename(cmd.label());
 	}
 
 	@Override
-	public void reorderOptions(ReorderOptionsCommand cmd) {
+	public ReorderedOptionsResponse reorderOptions(ReorderOptionsCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
@@ -172,11 +167,10 @@ public class IssueFieldService implements IssueFieldUseCase {
 		entityManager.flush();
 
 		options.reorderTo(cmd.targetOrderedIds());
+
+		return ReorderedOptionsResponse.from(issueField.getId(), options.getSortedOptions());
 	}
 
-	// TODO: hard-delete
-	//  - should i change all the IssueFieldValue that was this option to another option(EnumFieldOption),
-	//  or just fill them as null(not selected)?
 	@Override
 	public void deleteOption(DeleteOptionCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
@@ -184,7 +178,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
-		// optionValidator.ensureNotInUse(option);
+		issueTypeValidator.ensureOptionDeletable(option);
 
 		fieldOptionCommandRepo.delete(option);
 	}

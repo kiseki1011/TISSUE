@@ -81,6 +81,21 @@ public class IssueTypeExceptions {
 			.addContext("currentOptions", current);
 	}
 
+	public static BadRequestException optionReorderSizeMismatch(int expected, int actual) {
+		return new BadRequestException(OPTION_REORDER_SIZE_MISMATCH)
+			.addContext("expectedSize", expected)
+			.addContext("actualSize", actual);
+	}
+
+	public static BadRequestException optionReorderDuplicateId() {
+		return new BadRequestException(OPTION_REORDER_DUPLICATE_ID);
+	}
+
+	public static BadRequestException optionReorderUnknownId(Long unknownId) {
+		return new BadRequestException(OPTION_REORDER_UNKNOWN_ID)
+			.addContext("unknownOptionId", unknownId);
+	}
+
 	public static BadRequestException unsupportedFieldType(String fieldType, Object rawValue) {
 		return new BadRequestException(UNSUPPORTED_FIELD_TYPE)
 			.addContext("fieldType", fieldType)

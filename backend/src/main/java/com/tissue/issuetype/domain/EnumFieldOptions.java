@@ -1,11 +1,14 @@
 package com.tissue.issuetype.domain;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
 
 public final class EnumFieldOptions {
 
@@ -23,6 +26,12 @@ public final class EnumFieldOptions {
 
 	public static EnumFieldOptions fromCurrentOptions(IssueField field, List<EnumFieldOption> currentOptions) {
 		return new EnumFieldOptions(field, currentOptions);
+	}
+
+	public List<EnumFieldOption> getSortedOptions() {
+		return active.stream()
+			.sorted(Comparator.comparingInt(EnumFieldOption::getPosition))
+			.toList();
 	}
 
 	public void ensureExactActiveIds(List<Long> orderedIds) {
@@ -46,7 +55,7 @@ public final class EnumFieldOptions {
 			Long id = orderedIds.get(i);
 			EnumFieldOption option = byId.get(id);
 			if (option == null) {
-				throw new IllegalStateException("Unknown option id: " + id);
+				throw IssueTypeExceptions.optionReorderUnknownId(id);
 			}
 			if (option.getPosition() != i) {
 				option.movePositionTo(i);
@@ -56,20 +65,20 @@ public final class EnumFieldOptions {
 
 	private void ensureSameSizeAsActive(List<Long> orderedIds) {
 		if (orderedIds.size() != active.size()) {
-			throw new IllegalStateException("Order size mismatch.");
+			throw IssueTypeExceptions.optionReorderSizeMismatch(active.size(), orderedIds.size());
 		}
 	}
 
 	private void ensureNoNullElements(List<Long> orderedIds) {
 		if (orderedIds.contains(null)) {
-			throw new IllegalStateException("Order contains null id.");
+			throw IssueTypeExceptions.optionReorderUnknownId(null);
 		}
 	}
 
 	private void ensureNoDuplicateIds(List<Long> orderedIds) {
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (uniq.size() != orderedIds.size()) {
-			throw new IllegalStateException("Order contains duplicates.");
+			throw IssueTypeExceptions.optionReorderDuplicateId();
 		}
 	}
 
@@ -79,14 +88,16 @@ public final class EnumFieldOptions {
 			.collect(Collectors.toSet());
 		Set<Long> uniq = new HashSet<>(orderedIds);
 		if (!uniq.equals(actual)) {
-			throw new IllegalStateException("Order keys must match the active option set exactly.");
+			uniq.removeAll(actual);
+			Long unknown = uniq.isEmpty() ? null : uniq.iterator().next();
+			throw IssueTypeExceptions.optionReorderUnknownId(unknown);
 		}
 	}
 
 	private void ensureSameField() {
-		Long fid = field.getId();
+		Long fieldId = field.getId();
 		for (EnumFieldOption o : active) {
-			if (!Objects.equals(o.getIssueField().getId(), fid)) {
+			if (!Objects.equals(o.getIssueField().getId(), fieldId)) {
 				throw new IllegalStateException("Option belongs to another field.");
 			}
 		}

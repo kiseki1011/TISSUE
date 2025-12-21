@@ -23,6 +23,10 @@ public enum IssueTypeErrorCode implements ErrorCode {
 	FIELD_OPTION_IN_USE("Field option is currently in use"),
 
 	OPTION_LIMIT_EXCEEDED("Maximum number of options exceeded"),
+	OPTION_REORDER_SIZE_MISMATCH("Number of provided options does not match current options"),
+	OPTION_REORDER_DUPLICATE_ID("Duplicate option IDs provided"),
+	OPTION_REORDER_UNKNOWN_ID("Provided option ID does not exist in this field"),
+
 	UNSUPPORTED_FIELD_TYPE("Unsupported field type");
 
 	private final String defaultMessage;

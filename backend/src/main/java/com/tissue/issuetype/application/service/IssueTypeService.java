@@ -78,14 +78,13 @@ public class IssueTypeService implements IssueTypeUseCase {
 		Patchers.apply(cmd.color(), issueType::updateColor);
 	}
 
-	// TODO: soft-delete
 	@Override
 	public void delete(DeleteIssueTypeCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		// TODO: if there is a issue for this IssueType that has its currentState not StateCategory.COMPLETED,
-		//  do not allow deletion
+		// TODO: consider IssueType migration feature(make it in IssueConfigUseCase)
+		//  current policy: cant delete if there is a issue that uses this IssueType
 		issueTypeValidator.ensureDeletable(issueType);
 
 		issueType.softDelete();

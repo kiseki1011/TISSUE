@@ -20,6 +20,7 @@ import com.tissue.issuetype.adapter.in.dto.request.ReorderOptionsRequest;
 import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.DeleteOptionCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 import com.tissue.issuetype.application.service.IssueFieldService;
 
 import jakarta.validation.Valid;
@@ -138,20 +139,20 @@ public class IssueFieldController {
 	}
 
 	@PutMapping("/{fieldId}/options")
-	public ResponseEntity<Void> reorderIssueFieldOptions(
+	public ResponseEntity<ReorderedOptionsResponse> reorderIssueFieldOptions(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@PathVariable Long typeId,
 		@PathVariable Long fieldId,
 		@RequestBody @Valid ReorderOptionsRequest request
 	) {
-		issueFieldService.reorderOptions(request.toCommand(
+		ReorderedOptionsResponse response = issueFieldService.reorderOptions(request.toCommand(
 			workspaceKey,
 			projectKey,
 			typeId,
 			fieldId
 		));
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(response);
 	}
 
 	@DeleteMapping("/{fieldId}/options/{optionId}")
