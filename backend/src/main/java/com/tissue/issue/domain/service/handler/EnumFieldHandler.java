@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,8 @@ public class EnumFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.ENUM;
+	public IssueFieldType type() {
+		return IssueFieldType.ENUM;
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class EnumFieldHandler implements FieldTypeHandler {
 			throw IssueExceptions.customFieldTypeMismatch(
 				field.getId(),
 				field.getDisplayLabel(),
-				field.getFieldType(),
+				field.getIssueFieldType(),
 				raw
 			);
 		}

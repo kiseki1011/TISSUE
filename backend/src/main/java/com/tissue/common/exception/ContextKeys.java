@@ -52,7 +52,7 @@ public interface ContextKeys {
 	 */
 	String ISSUE_FIELD_ID = "issueFieldId";
 	String ISSUE_FIELD = "issueFieldName";
-	String FIELD_OPTION = "fieldOptionName";
+	String ISSUE_FIELD_OPTION = "fieldOptionName";
 	String FIELD_OPTION_ID = "fieldOptionId";
 	String EXPECTED_TYPE = "expectedType";
 	String INPUT_VALUE = "inputValue";

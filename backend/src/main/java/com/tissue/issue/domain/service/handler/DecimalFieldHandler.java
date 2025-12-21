@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issue.domain.policy.FieldValuePolicy;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +26,8 @@ public class DecimalFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.DECIMAL;
+	public IssueFieldType type() {
+		return IssueFieldType.DECIMAL;
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
 			throw IssueExceptions.customFieldTypeMismatch(
 				field.getId(),
 				field.getDisplayLabel(),
-				field.getFieldType(),
+				field.getIssueFieldType(),
 				raw
 			);
 		}

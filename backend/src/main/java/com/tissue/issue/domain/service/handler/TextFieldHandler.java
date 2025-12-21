@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ public class TextFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.TEXT;
+	public IssueFieldType type() {
+		return IssueFieldType.TEXT;
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class TextFieldHandler implements FieldTypeHandler {
 			throw IssueExceptions.customFieldTypeMismatch(
 				field.getId(),
 				field.getDisplayLabel(),
-				field.getFieldType(),
+				field.getIssueFieldType(),
 				raw
 			);
 		}
