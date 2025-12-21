@@ -14,8 +14,7 @@ import com.tissue.project.domain.exception.ProjectExceptions;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: 권한 redis 캐싱
-// TODO: 각 메서드 주석 추가(WorkspaceRole.ADMIN을 왜 전부 허용하는 cascade authorization을 사용하는지)
+// TODO: should i consider redis caching for permission?
 @Component
 @RequiredArgsConstructor
 public class ProjectSecurityGuard {
@@ -24,44 +23,29 @@ public class ProjectSecurityGuard {
 	private final ProjectQueryRepository projectQueryRepository;
 	private final WorkspaceSecurityGuard workspaceSecurityGuard;
 
-	public boolean hasReadPermission(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	) {
+	public boolean hasReadPermission(String workspaceKey, String projectKey, Long memberId) {
 		return isWorkspaceAdmin(workspaceKey, memberId) ||
 			projectMemberRepository.existsByWorkspaceKeyAndProjectKeyAndMemberId(
 				workspaceKey, projectKey, memberId
 			);
 	}
 
-	public boolean isMember(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	) {
+	public boolean isMember(String workspaceKey, String projectKey, Long memberId) {
 		return isWorkspaceAdmin(workspaceKey, memberId) ||
 			projectMemberRepository.findRoleByKeysAndMemberId(workspaceKey, projectKey, memberId)
 				.map(role -> role.isEqualOrHigherThan(ProjectRole.MEMBER))
 				.orElse(false);
 	}
 
-	public boolean isAdmin(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	) {
+	public boolean isAdmin(String workspaceKey, String projectKey, Long memberId) {
 		return isWorkspaceAdmin(workspaceKey, memberId) ||
 			projectMemberRepository.findRoleByKeysAndMemberId(workspaceKey, projectKey, memberId)
-				.map(role -> role == ProjectRole.ADMIN)
+				.map(role -> role.isEqualOrHigherThan(ProjectRole.ADMIN))
 				.orElse(false);
 	}
 
-	public boolean canJoin(
-		String workspaceKey,
-		String projectKey,
-		Long memberId
-	) {
+	// TODO: improve name, canJoin -> hasJoinPermission (must change spel expression too!)
+	public boolean canJoin(String workspaceKey, String projectKey, Long memberId) {
 		if (isNotWorkspaceMember(workspaceKey, memberId)) {
 			return false;
 		}
@@ -75,11 +59,7 @@ public class ProjectSecurityGuard {
 	}
 
 	// TODO: improve name (must change spel expression too!)
-	public boolean hasProjectAdminPermission(
-		String workspaceKey,
-		Set<String> targetProjectKeys,
-		Long memberId
-	) {
+	public boolean hasProjectAdminPermission(String workspaceKey, Set<String> targetProjectKeys, Long memberId) {
 		if (targetProjectKeys == null || targetProjectKeys.isEmpty()) {
 			return false;
 		}
@@ -93,16 +73,11 @@ public class ProjectSecurityGuard {
 		return myAdminProjects.size() == targetProjectKeys.size();
 	}
 
-	public boolean canGrantRole(
-		String workspaceKey,
-		String projectKey,
-		Long memberId,
-		ProjectRole grantRole
-	) {
+	// TODO: improve name, canGrantRole -> hasRoleGrantPermission (must change spel expression too!)
+	public boolean canGrantRole(String workspaceKey, String projectKey, Long memberId, ProjectRole grantRole) {
 		if (isWorkspaceAdmin(workspaceKey, memberId)) {
 			return true;
 		}
-
 		return projectMemberRepository.findRoleByKeysAndMemberId(workspaceKey, projectKey, memberId)
 			.map(actorRole -> actorRole.isEqualOrHigherThan(grantRole))
 			.orElse(false);
