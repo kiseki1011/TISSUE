@@ -8,7 +8,7 @@ import com.tissue.common.util.CollectionNormalizer;
 import com.tissue.common.validator.annotation.size.LabelSize;
 import com.tissue.common.vo.Label;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +17,7 @@ import jakarta.validation.constraints.Size;
 public record CreateIssueFieldRequest(
 	@NotBlank @LabelSize String label,
 	@Nullable @Size(max = 255) String description,
-	@NotNull FieldType fieldType,
+	@NotNull IssueFieldType issueFieldType,
 	@NotNull Boolean required,
 	@Nullable @Size(max = 100) List<@NotBlank @LabelSize String> initialOptions
 ) {
@@ -32,7 +32,7 @@ public record CreateIssueFieldRequest(
 			.issueTypeId(issueTypeId)
 			.label(Label.of(label))
 			.description(description)
-			.fieldType(fieldType)
+			.fieldType(issueFieldType)
 			.required(required)
 			.initialOptions(CollectionNormalizer.toUniqueLabels(initialOptions))
 			.build();

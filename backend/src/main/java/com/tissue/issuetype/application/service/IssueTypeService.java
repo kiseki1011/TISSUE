@@ -3,6 +3,7 @@ package com.tissue.issuetype.application.service;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.common.vo.Label;
@@ -24,6 +25,7 @@ import com.tissue.workflow.domain.Workflow;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueTypeService implements IssueTypeUseCase {
 
@@ -33,6 +35,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 	private final IssueTypeCommandRepository issueTypeCommandRepository;
 	private final IssueTypeValidator issueTypeValidator;
 
+	@Override
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
@@ -53,9 +56,10 @@ public class IssueTypeService implements IssueTypeUseCase {
 		return IssueTypeResponse.from(savedType);
 	}
 
+	@Override
 	public void rename(RenameIssueTypeCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
 		if (labelUnchanged(issueType, cmd.label())) {
 			return;
@@ -65,20 +69,23 @@ public class IssueTypeService implements IssueTypeUseCase {
 		issueType.rename(cmd.label());
 	}
 
+	@Override
 	public void update(PatchIssueTypeCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
 		Patchers.apply(cmd.color(), issueType::updateColor);
 	}
 
-	// TODO: soft-delete 사용
+	// TODO: soft-delete
+	@Override
 	public void delete(DeleteIssueTypeCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		// TODO: 해당 IssueType를 사용한 이슈가 WorkflowState의 StateCategory가 DONE이 아닌게 존재한다면 삭제 불가
+		// TODO: if there is a issue for this IssueType that has its currentState not StateCategory.COMPLETED,
+		//  do not allow deletion
 		issueTypeValidator.ensureDeletable(issueType);
 
 		issueType.softDelete();

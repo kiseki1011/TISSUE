@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
 import com.tissue.common.vo.Label;
@@ -30,7 +31,7 @@ import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.EnumFieldOptions;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 import com.tissue.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
@@ -39,6 +40,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueFieldService implements IssueFieldUseCase {
 
@@ -57,6 +59,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 
 	private final EntityManager entityManager;
 
+	@Override
 	public IssueFieldResponse create(CreateIssueFieldCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
@@ -66,21 +69,22 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueField issueField = IssueField.create(
 			cmd.label(),
 			cmd.description(),
-			cmd.fieldType(),
+			cmd.issueFieldType(),
 			cmd.required(),
 			issueType
 		);
 
 		IssueField savedField = issueFieldCommandRepo.save(issueField);
 
-		if (savedField.getFieldType() == FieldType.ENUM) {
+		if (savedField.getIssueFieldType() == IssueFieldType.ENUM) {
 			fieldDefintionPolicy.ensureOptionsWithinLimit(cmd.initialOptions());
 			saveInitialEnumOptions(savedField, cmd.initialOptions());
 		}
 
-		return IssueFieldResponse.from(savedField);
+		return IssueFieldResponse.from(savedField, issueType);
 	}
 
+	@Override
 	public void rename(RenameIssueFieldCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
@@ -94,6 +98,7 @@ public class IssueFieldService implements IssueFieldUseCase {
 		issueField.rename(cmd.label());
 	}
 
+	@Override
 	public void update(PatchIssueFieldCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
@@ -103,20 +108,23 @@ public class IssueFieldService implements IssueFieldUseCase {
 		Patchers.apply(cmd.required(), issueField::setRequired);
 	}
 
-	// TODO: hard-delete 사용
+	// TODO: if using hard-delete, delete all the IssueFieldValue of the issues too?
+	//  or just leave the original values?
+	//  or should i give a option to choose whether to delete original values or leave them?
+	//  but if i leave original IssueFieldValue of issues, how do i show them when showing the details of a issue?
+	@Override
 	public void delete(DeleteIssueFieldCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		// TODO: 삭제 시도하면 해당 필드 삭제 + 해당 모든 IssueFieldValue도 같이 삭제
-		issueFieldValidator.ensureDeletable(issueField);
+		// issueFieldValidator.ensureDeletable(issueField);
 
 		issueFieldCommandRepo.delete(issueField);
 	}
 
+	@Override
 	public IssueFieldResponse addOption(AddOptionCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
@@ -129,9 +137,10 @@ public class IssueFieldService implements IssueFieldUseCase {
 		EnumFieldOption option = EnumFieldOption.create(issueField, cmd.label(), nextPosition);
 		fieldOptionCommandRepo.save(option);
 
-		return IssueFieldResponse.from(issueField);
+		return IssueFieldResponse.from(issueField, issueType);
 	}
 
+	@Override
 	public void renameOption(RenameOptionCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
@@ -146,8 +155,8 @@ public class IssueFieldService implements IssueFieldUseCase {
 		option.rename(cmd.label());
 	}
 
+	@Override
 	public void reorderOptions(ReorderOptionsCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
@@ -165,17 +174,18 @@ public class IssueFieldService implements IssueFieldUseCase {
 		options.reorderTo(cmd.targetOrderedIds());
 	}
 
-	// TODO: hard-delete 사용
+	// TODO: hard-delete
+	//  - should i change all the IssueFieldValue that was this option to another option(EnumFieldOption),
+	//  or just fill them as null(not selected)?
+	@Override
 	public void deleteOption(DeleteOptionCommand cmd) {
-
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
-		// TODO: 사용하고 있던 IssueFieldValue들의 모든걸 다른 EnumFieldOption 중 하나로 변경하거나, 그냥 null로 채우기
-		//  해당 EnumFieldOption은 삭제
 		// optionValidator.ensureNotInUse(option);
+
 		fieldOptionCommandRepo.delete(option);
 	}
 

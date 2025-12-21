@@ -7,10 +7,11 @@ import org.springframework.stereotype.Component;
 import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
-import com.tissue.issuetype.domain.exception.IssueFieldNotFoundException;
+import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: should i just integrate this into IssueTypeFinder?
 @Component
 @RequiredArgsConstructor
 public class IssueFieldFinder {
@@ -19,7 +20,7 @@ public class IssueFieldFinder {
 
 	public IssueField findBy(Long issueFieldId, IssueType issueType) {
 		return issueFieldRepo.findByIdAndIssueType(issueFieldId, issueType)
-			.orElseThrow(() -> new IssueFieldNotFoundException(issueFieldId, issueType.getId()));
+			.orElseThrow(() -> IssueTypeExceptions.fieldNotFound(issueFieldId, issueType));
 	}
 
 	public List<IssueField> findByIssueType(IssueType issueType) {

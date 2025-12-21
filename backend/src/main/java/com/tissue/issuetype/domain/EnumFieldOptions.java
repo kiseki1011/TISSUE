@@ -39,8 +39,6 @@ public final class EnumFieldOptions {
 		}
 	}
 
-	// TODO: 아래의 메서드들에서 IllegalStateException들을 즐겨 사용했는데, 이렇게 사용해도 괜찮나?
-	//  IllegalStateException vs IllegalArgumentException
 	public void reorderTo(List<Long> orderedIds) {
 		Map<Long, EnumFieldOption> byId = active.stream()
 			.collect(Collectors.toMap(EnumFieldOption::getId, x -> x));

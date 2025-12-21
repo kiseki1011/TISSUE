@@ -13,8 +13,6 @@ public class IssueFieldConfig {
 	public FieldDefintionPolicy fieldDefintionPolicy(
 		@Value("${tissue.issue.policy.field.max-enum-options:100}") int maxEnumOptions
 	) {
-		return new FieldDefintionPolicy(
-			maxEnumOptions
-		);
+		return new FieldDefintionPolicy(maxEnumOptions);
 	}
 }

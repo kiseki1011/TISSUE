@@ -6,6 +6,7 @@ import com.tissue.common.vo.Label;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
 import com.tissue.project.domain.Project;
 
 import lombok.RequiredArgsConstructor;
@@ -20,27 +21,25 @@ public class IssueTypeValidator {
 	public void ensureUniqueLabel(Project project, Label label) {
 		boolean duplicated = issueTypeQueryRepo.existsByLabel_NormalizedAndProject(label.getNormalized(), project);
 		if (duplicated) {
-			// TODO: DuplicateIssueTypeException
-			throw new RuntimeException("Issue type label already exists in this workspace.");
+			throw IssueTypeExceptions.duplicateTypeName(label, project);
 		}
 	}
 
+	// TODO: should i just allow deletion of a IssueType even if its a system provided type?
 	public void ensureDeletable(IssueType type) {
-		ensureNotSystemType(type);
+		// ensureNotSystemType(type);
 		ensureNotInUse(type);
 	}
 
-	private void ensureNotSystemType(IssueType type) {
-		if (type.isSystemType()) {
-			// TODO: SystemTypeNotDeletableException -> extends BadRequestException
-			throw new RuntimeException("Cannot delete system(default) issue types.");
+	private void ensureNotSystemType(IssueType issueType) {
+		if (issueType.isSystemType()) {
+			throw IssueTypeExceptions.systemTypeNotDeletable(issueType);
 		}
 	}
 
-	private void ensureNotInUse(IssueType type) {
-		if (issueQueryRepo.existsByIssueType(type)) {
-			// TODO: IssueTypeInUseException
-			throw new RuntimeException("Cannot delete: issues exist for this issue type.");
+	private void ensureNotInUse(IssueType issueType) {
+		if (issueQueryRepo.existsByIssueType(issueType)) {
+			throw IssueTypeExceptions.typeInUse(issueType);
 		}
 	}
 }

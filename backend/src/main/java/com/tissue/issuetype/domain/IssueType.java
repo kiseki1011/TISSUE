@@ -73,7 +73,7 @@ public class IssueType extends BaseEntity {
 	@Column(nullable = false)
 	private boolean systemType;
 
-	// TODO: IssueField와 관계가 깊은데 양방향 관계를 맺을까?
+	// TODO: should i make this(IssueType) bi-directional relation with IssueField
 
 	public static IssueType create(
 		@NonNull Project project,

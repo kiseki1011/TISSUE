@@ -11,7 +11,7 @@ public interface IssueTypeQueryRepository extends Repository<IssueType, Long> {
 
 	boolean existsByLabel_NormalizedAndProject(String label, Project project);
 
-	Optional<IssueType> findByIdAndProjectKeyAndWorkspaceKey(Long id, String projectKey, String workspaceKey);
+	Optional<IssueType> findByIdAndProjectKey(Long id, String projectKey);
 
 	Optional<IssueType> findByIdAndProject(Long id, Project project);
 }

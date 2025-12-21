@@ -4,7 +4,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.vo.Label;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -43,7 +43,7 @@ public class IssueField extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private FieldType fieldType;
+	private IssueFieldType issueFieldType;
 
 	@Column(nullable = false)
 	private boolean required;
@@ -57,16 +57,16 @@ public class IssueField extends BaseEntity {
 	public static IssueField create(
 		@NonNull Label label,
 		@Nullable String description,
-		@NonNull FieldType fieldType,
-		@NonNull Boolean required,
+		@NonNull IssueFieldType issueFieldType,
+		boolean required,
 		@NonNull IssueType issueType
 	) {
 		IssueField issueField = new IssueField();
 
 		issueField.label = label;
 		issueField.description = description;
-		issueField.fieldType = fieldType;
-		issueField.required = Boolean.TRUE.equals(required);
+		issueField.issueFieldType = issueFieldType;
+		issueField.required = required;
 		issueField.issueType = issueType;
 
 		return issueField;
@@ -88,7 +88,7 @@ public class IssueField extends BaseEntity {
 		this.description = description;
 	}
 
-	public void setRequired(@NonNull Boolean required) {
-		this.required = Boolean.TRUE.equals(required);
+	public void setRequired(boolean required) {
+		this.required = required;
 	}
 }

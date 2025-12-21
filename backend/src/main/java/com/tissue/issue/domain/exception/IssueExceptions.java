@@ -10,7 +10,7 @@ import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.common.exception.base.ResourceNotFoundException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 import com.tissue.workflow.domain.enums.StateCategory;
 
 public class IssueExceptions {
@@ -213,7 +213,7 @@ public class IssueExceptions {
 	public static BadRequestException customFieldTypeMismatch(
 		Long fieldId,
 		String fieldName,
-		FieldType expectedType,
+		IssueFieldType expectedType,
 		Object inputValue
 	) {
 		return new BadRequestException(CUSTOM_FIELD_TYPE_MISMATCH)
