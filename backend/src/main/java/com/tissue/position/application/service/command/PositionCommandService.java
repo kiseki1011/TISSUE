@@ -27,13 +27,13 @@ public class PositionCommandService {
 	private final PositionRepository positionRepository;
 	private final PositionValidator positionValidator;
 
-	// TODO: 포지션 생성 시, 색을 정할 수 있도록 설정
+	// TODO: refactor so the user can set the color
 	@Transactional
 	public PositionResponse createPosition(
 		String workspaceCode,
 		CreatePositionRequest request
 	) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
+		Workspace workspace = workspaceFinder.getModifiableBy(workspaceCode);
 
 		Position position = Position.builder()
 			.name(request.name())
@@ -45,7 +45,8 @@ public class PositionCommandService {
 		return PositionResponse.from(positionRepository.save(position));
 	}
 
-	// TODO: 포지션 업데이트 시, 색을 정할 수 있도록 설정(null인 필드는 업데이트 하지 않는 방식으로 진행)
+	// TODO: refactor so the user can set the color
+	// TODO: refactor to use Patchers.apply
 	@Transactional
 	public PositionResponse updatePosition(
 		String workspaceCode,
@@ -60,7 +61,7 @@ public class PositionCommandService {
 		return PositionResponse.from(position);
 	}
 
-	// TODO: 색 업데이트를 updatePosition에 포함할 시, 이 메서드와 API 삭제
+	// TODO: remove after refactoring createPosition()
 	@Transactional
 	public PositionResponse updatePositionColor(
 		String workspaceCode,

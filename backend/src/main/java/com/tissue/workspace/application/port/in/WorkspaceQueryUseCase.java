@@ -3,11 +3,9 @@ package com.tissue.workspace.application.port.in;
 import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
 
-@Transactional(readOnly = true)
 public interface WorkspaceQueryUseCase {
 
 	@PreAuthorize(REQUIRES_WORKSPACE_MEMBER)

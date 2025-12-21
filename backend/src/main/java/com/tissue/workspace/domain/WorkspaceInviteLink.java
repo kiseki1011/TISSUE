@@ -28,7 +28,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: expiredAt을 사용해서 오래된 만료된 링크는 스케쥴러로 삭제
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

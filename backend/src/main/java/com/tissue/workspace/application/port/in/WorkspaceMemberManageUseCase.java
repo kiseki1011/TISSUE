@@ -4,7 +4,6 @@ import static com.tissue.security.authorization.SecurityKeyWords.*;
 import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.workspace.application.dto.request.AddPositionCommand;
 import com.tissue.workspace.application.dto.request.AddTeamCommand;
@@ -13,7 +12,6 @@ import com.tissue.workspace.application.dto.request.RemoveTeamCommand;
 import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
 import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
 
-@Transactional
 public interface WorkspaceMemberManageUseCase {
 
 	@PreAuthorize(REQUIRES_SELF_MODIFICATION)

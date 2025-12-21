@@ -1,8 +1,9 @@
-package com.tissue.workspace.application.service.command;
+package com.tissue.workspace.application.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
@@ -11,6 +12,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.response.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import com.tissue.workspace.application.port.out.InvitationQueryRepository;
+import com.tissue.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.ProjectJoinConfig;
@@ -32,6 +34,7 @@ public class InvitationService implements InvitationUseCase {
 	private final InvitationQueryRepository invitationQueryRepository;
 
 	@Override
+	@Transactional
 	public void accept(Long memberId, Long invitationId) {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
@@ -57,6 +60,7 @@ public class InvitationService implements InvitationUseCase {
 	}
 
 	@Override
+	@Transactional
 	public void reject(Long memberId, Long invitationId) {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
@@ -70,8 +74,9 @@ public class InvitationService implements InvitationUseCase {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<InvitationDetail> getMyInvitations(Long memberId) {
-		// TODO: N+1 발생, 최적화 고려
+		// TODO: N+1, consider optimization
 		return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING)
 			.stream()
 			.map(invitation -> {

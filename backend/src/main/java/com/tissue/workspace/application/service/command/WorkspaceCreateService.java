@@ -5,6 +5,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.member.application.service.finder.MemberFinder;
@@ -44,8 +45,8 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 		maxAttempts = MAX_RETRIES,
 		backoff = @Backoff(delay = 300)
 	)
+	@Transactional
 	public WorkspaceCommandResponse create(CreateWorkspaceCommand cmd) {
-
 		Member member = memberFinder.findMemberById(cmd.memberId());
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
@@ -67,7 +68,6 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 	@Recover
 	public WorkspaceCommandResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
-		// TODO: WorkspaceKeyCollisionException extends InternalServerException
 		throw new RuntimeException(
 			"Failed to solve workspace code collision after %d attempts.".formatted(MAX_RETRIES),
 			exception

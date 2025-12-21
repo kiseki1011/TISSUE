@@ -38,6 +38,8 @@ public class Workspace extends BaseEntity {
 	@Column(nullable = false)
 	private String description;
 
+	// TODO: consider adding a icon field
+
 	public static Workspace create(
 		@NonNull String key,
 		@NonNull String name,
@@ -51,11 +53,9 @@ public class Workspace extends BaseEntity {
 		return workspace;
 	}
 
-	// TODO: 도메인 서비스로 추출하거나, 애플리케이션 서비스에서 로직 진행하는게 좋을까?
+	// TODO: should i separate this into a separate domain service?
 	public void transferOwnership(@NonNull WorkspaceMember owner, @NonNull WorkspaceMember newOwner) {
 		if (!owner.isOwner()) {
-			// TODO: 상황에 맞는 더 구체적인 예외 이름을 사용하는게 좋을까?
-			//  예시: OwnerRequiredForOwnershipTransfer
 			throw new WorkspaceOwnershipRequiredException("Needs to be OWNER to transfer ownership.",
 				key, owner.getMemberId(), owner.getRole());
 		}

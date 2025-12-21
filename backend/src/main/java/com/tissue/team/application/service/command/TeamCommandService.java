@@ -27,12 +27,13 @@ public class TeamCommandService {
 	private final TeamRepository teamRepository;
 	private final TeamValidator teamValidator;
 
+	// TODO: refactor so the user can set the color
 	@Transactional
 	public TeamResponse createTeam(
 		String workspaceCode,
 		CreateTeamRequest request
 	) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceCode);
+		Workspace workspace = workspaceFinder.getModifiableBy(workspaceCode);
 
 		Team team = Team.builder()
 			.name(request.name())
@@ -44,6 +45,8 @@ public class TeamCommandService {
 		return TeamResponse.from(teamRepository.save(team));
 	}
 
+	// TODO: refactor so the user can set the color
+	// TODO: refactor to use Patchers.apply
 	@Transactional
 	public TeamResponse updateTeam(
 		String workspaceCode,
@@ -58,6 +61,7 @@ public class TeamCommandService {
 		return TeamResponse.from(team);
 	}
 
+	// TODO: remove after refactoring createTeam()
 	@Transactional
 	public TeamResponse updateTeamColor(
 		String workspaceCode,

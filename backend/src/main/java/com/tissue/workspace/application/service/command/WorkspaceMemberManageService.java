@@ -1,6 +1,7 @@
 package com.tissue.workspace.application.service.command;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.position.application.service.command.PositionFinder;
 import com.tissue.position.domain.model.Position;
@@ -17,10 +18,9 @@ import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
@@ -29,11 +29,13 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 	private final TeamFinder teamFinder;
 	// private final ApplicationEventPublisher eventPublisher;
 
+	@Override
 	public void updateDisplayName(UpdateDisplayNameCommand cmd) {
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 		workspaceMember.updateDisplayName(cmd.displayName());
 	}
 
+	@Override
 	public void updateRole(UpdateRoleCommand cmd) {
 		WorkspaceMember requester = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
@@ -43,31 +45,43 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 		// TODO: WorkspaceMemberRoleChangedEvent
 	}
 
+	@Override
 	public void addPosition(AddPositionCommand cmd) {
 		Position position = positionFinder.findByIdAndWorkspaceKey(cmd.positionId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.addPosition(position);
+
+		// TODO: WorkspaceMemberPositionChangedEvent
 	}
 
+	@Override
 	public void removePosition(RemovePositionCommand cmd) {
 		Position position = positionFinder.findByIdAndWorkspaceKey(cmd.positionId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.removePosition(position);
+
+		// TODO: WorkspaceMemberPositionChangedEvent
 	}
 
+	@Override
 	public void addTeam(AddTeamCommand cmd) {
 		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.addTeam(team);
+
+		// TODO: WorkspaceMemberTeamChangedEvent
 	}
 
+	@Override
 	public void removeTeam(RemoveTeamCommand cmd) {
 		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.removeTeam(team);
+
+		// TODO: WorkspaceMemberTeamChangedEvent
 	}
 }

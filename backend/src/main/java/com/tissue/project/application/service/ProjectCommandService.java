@@ -30,7 +30,7 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 	@Override
 	@Transactional
 	public ProjectCommandResult create(CreateProjectCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
 		Project project = Project.create(
 			workspace,

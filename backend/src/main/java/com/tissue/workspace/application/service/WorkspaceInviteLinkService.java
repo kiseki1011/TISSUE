@@ -1,10 +1,11 @@
-package com.tissue.workspace.application.service.command;
+package com.tissue.workspace.application.service;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.project.application.service.ProjectMemberCommandService;
@@ -20,6 +21,7 @@ import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDe
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
+import com.tissue.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.ProjectJoinConfig;
@@ -46,30 +48,26 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 	private final ProjectMemberCommandService projectMemberCommandService;
 
 	@Override
+	@Transactional
 	public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
-		return saveLink(
-			cmd.workspaceKey(),
-			cmd.workspaceRole(),
-			cmd.targetProjects(),
-			cmd.expiredAt()
-		);
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+
+		return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjects(), cmd.expiredAt());
 	}
 
 	@Override
+	@Transactional
 	public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
-		List<ProjectJoinConfigDto> singleProjectConfig = List.of(
-			new ProjectJoinConfigDto(cmd.projectKey(), cmd.role())
-		);
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
-		return saveLink(
-			cmd.workspaceKey(),
-			WorkspaceRole.MEMBER,
-			singleProjectConfig,
-			cmd.expiredAt()
-		);
+		var projectJoinConfig = new ProjectJoinConfigDto(cmd.projectKey(), cmd.role());
+		List<ProjectJoinConfigDto> singleProjectConfig = List.of(projectJoinConfig);
+
+		return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectConfig, cmd.expiredAt());
 	}
 
 	@Override
+	@Transactional
 	public void expireLink(ExpireLinkCommand cmd) {
 		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
 			.orElseThrow(() -> new LinkNotFoundException(cmd.workspaceKey(), cmd.token()));
@@ -78,6 +76,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 	}
 
 	@Override
+	@Transactional
 	public WorkspaceMemberCommandResponse joinViaLink(JoinViaLinkCommand cmd) {
 		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
 			.orElseThrow(() -> new LinkNotFoundException(cmd.workspaceKey(), cmd.token()));
@@ -103,6 +102,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
 		WorkspaceInviteLink link = linkQueryRepository.findByToken(token)
 			.orElseThrow(() -> new LinkNotFoundException(workspaceKey, token));
@@ -116,14 +116,8 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 		return WorkspaceInviteLinkDetail.of(link, linkCreator);
 	}
 
-	private String saveLink(
-		String workspaceKey,
-		WorkspaceRole roleToGrant,
-		List<ProjectJoinConfigDto> targetProjects,
-		Instant expiredAt
-	) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-
+	private String saveLink(Workspace workspace, WorkspaceRole roleToGrant, List<ProjectJoinConfigDto> targetProjects,
+		Instant expiredAt) {
 		String token = UUID.randomUUID().toString();
 
 		WorkspaceInviteLink link = WorkspaceInviteLink.create(
@@ -133,7 +127,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 			expiredAt
 		);
 
-		addProjectsToLink(workspaceKey, targetProjects, link);
+		addProjectsToLink(workspace.getKey(), targetProjects, link);
 
 		linkRepository.save(link);
 		return token;

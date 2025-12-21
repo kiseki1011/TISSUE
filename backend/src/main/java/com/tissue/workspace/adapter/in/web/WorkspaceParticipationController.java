@@ -31,8 +31,9 @@ public class WorkspaceParticipationController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid InviteToWorkspaceRequest request
 	) {
-		InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(
-			request.toCommand(workspaceKey));
+		var command = request.toCommand(workspaceKey);
+		InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -42,8 +43,9 @@ public class WorkspaceParticipationController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid InviteToProjectRequest request
 	) {
-		InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(
-			request.toCommand(workspaceKey, projectKey));
+		var command = request.toCommand(workspaceKey, projectKey);
+		InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -62,8 +64,9 @@ public class WorkspaceParticipationController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceParticipationUseCase.kick(
-			new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId()));
+		var command = new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId());
+		workspaceParticipationUseCase.kick(command);
+
 		return ResponseEntity.noContent().build();
 	}
 }

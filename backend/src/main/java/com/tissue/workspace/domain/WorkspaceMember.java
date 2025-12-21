@@ -48,8 +48,6 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(name = "workspace_key", nullable = false)
 	private String workspaceKey;
 
-	// TODO: memberId도 편의 필드로 둘까? (workspaceKey와 마찬가지로 불변임)
-
 	@OneToMany(mappedBy = "workspaceMember", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<WorkspaceMemberPosition> workspaceMemberPositions = new HashSet<>();
 
@@ -66,7 +64,7 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private String email;
 
-	// TODO: bio? 자기소개? 추가 고려
+	// TODO: consider adding a bio field
 	// private String bio;
 
 	public static WorkspaceMember create(
@@ -79,8 +77,9 @@ public class WorkspaceMember extends BaseEntity {
 		workspaceMember.workspaceKey = workspace.getKey();
 		workspaceMember.member = member;
 		workspaceMember.email = member.getEmail();
-		// TODO: 지금은 기본 displayName으로 member.getUsername()를 사용하지만, Member의 name을 필수 필드로 변경하고
-		//  기본적으로 member.getName()을 사용하도록 설계 변경 고려
+		// TODO(considering): after refactoring Member so the "name" field is required, use it for the default displayName
+		//  member.getUsername() -> member.getName()
+		// TODO: what kind of policy should i use for displayName?
 		workspaceMember.displayName = member.getUsername();
 		workspaceMember.role = role;
 
@@ -104,14 +103,12 @@ public class WorkspaceMember extends BaseEntity {
 			return;
 		}
 		if (newRole == WorkspaceRole.OWNER) {
-			// TODO: DirectOwnerChangeNotAllowedException
 			throw new RuntimeException("Cannot directly change to OWNER role. Use ownership transfer.");
 		}
 		this.role = newRole;
 	}
 
-	// TODO: 함부러 호출하지 않도록 주석 필요
-	public void changeRoleToOwner() {
+	protected void changeRoleToOwner() {
 		this.role = WorkspaceRole.OWNER;
 	}
 

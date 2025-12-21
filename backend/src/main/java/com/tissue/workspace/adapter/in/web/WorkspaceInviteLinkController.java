@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/invite-links")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/inviteLinks")
 public class WorkspaceInviteLinkController {
 
 	private final WorkspaceInviteLinkUseCase inviteLinkUseCase;
@@ -38,10 +38,11 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateWorkspaceInviteLinkRequest request
 	) {
-		String token = inviteLinkUseCase.createWorkspaceLink(request.toCommand(workspaceKey));
+		var command = request.toCommand(workspaceKey);
+		String token = inviteLinkUseCase.createWorkspaceLink(command);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/invite-links/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
@@ -55,10 +56,11 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid CreateProjectInviteLinkRequest request
 	) {
-		String token = inviteLinkUseCase.createProjectLink(request.toCommand(workspaceKey, projectKey));
+		var command = request.toCommand(workspaceKey, projectKey);
+		String token = inviteLinkUseCase.createProjectLink(command);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/invite-links/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
@@ -71,7 +73,9 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String workspaceKey,
 		@PathVariable String token
 	) {
-		inviteLinkUseCase.expireLink(new ExpireLinkCommand(workspaceKey, token));
+		var command = new ExpireLinkCommand(workspaceKey, token);
+		inviteLinkUseCase.expireLink(command);
+
 		return ResponseEntity.noContent().build();
 	}
 

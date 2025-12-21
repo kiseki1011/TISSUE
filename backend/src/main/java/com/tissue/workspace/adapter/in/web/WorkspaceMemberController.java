@@ -32,19 +32,15 @@ public class WorkspaceMemberController {
 	private final WorkspaceMemberManageUseCase workspaceMemberManageUseCase;
 	private final WorkspaceMemberQueryUseCase workspaceMemberQueryUseCase;
 
-	@PatchMapping("/{memberId}/display-name")
+	@PatchMapping("/{memberId}/displayName")
 	public ResponseEntity<Void> updateDisplayName(
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid UpdateDisplayNameRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.updateDisplayName(
-			new UpdateDisplayNameCommand(
-				workspaceKey,
-				userDetails.getMemberId(),
-				request.displayName()
-			)
-		);
+		var command = new UpdateDisplayNameCommand(workspaceKey, userDetails.getMemberId(), request.displayName());
+		workspaceMemberManageUseCase.updateDisplayName(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -55,14 +51,9 @@ public class WorkspaceMemberController {
 		@RequestBody @Valid UpdateRoleRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.updateRole(
-			new UpdateRoleCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId(),
-				request.role()
-			)
-		);
+		var command = new UpdateRoleCommand(workspaceKey, memberId, userDetails.getMemberId(), request.role());
+		workspaceMemberManageUseCase.updateRole(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -73,14 +64,9 @@ public class WorkspaceMemberController {
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.addPosition(
-			new AddPositionCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId(),
-				positionId
-			)
-		);
+		var command = new AddPositionCommand(workspaceKey, memberId, userDetails.getMemberId(), positionId);
+		workspaceMemberManageUseCase.addPosition(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -91,14 +77,9 @@ public class WorkspaceMemberController {
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.removePosition(
-			new RemovePositionCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId(),
-				positionId
-			)
-		);
+		var command = new RemovePositionCommand(workspaceKey, memberId, userDetails.getMemberId(), positionId);
+		workspaceMemberManageUseCase.removePosition(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -109,14 +90,9 @@ public class WorkspaceMemberController {
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.addTeam(
-			new AddTeamCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId(),
-				teamId
-			)
-		);
+		var command = new AddTeamCommand(workspaceKey, memberId, userDetails.getMemberId(), teamId);
+		workspaceMemberManageUseCase.addTeam(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -127,14 +103,9 @@ public class WorkspaceMemberController {
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceMemberManageUseCase.removeTeam(
-			new RemoveTeamCommand(
-				workspaceKey,
-				memberId,
-				userDetails.getMemberId(),
-				teamId
-			)
-		);
+		var command = new RemoveTeamCommand(workspaceKey, memberId, userDetails.getMemberId(), teamId);
+		workspaceMemberManageUseCase.removeTeam(command);
+
 		return ResponseEntity.noContent().build();
 	}
 }

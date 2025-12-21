@@ -36,6 +36,7 @@ import com.tissue.workspace.domain.policy.WorkspacePolicy;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkspaceParticipationService implements WorkspaceParticipationUseCase {
 
@@ -53,7 +54,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
 		return processInvitation(
 			workspace,
@@ -65,7 +66,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
 		List<ProjectJoinConfigDto> singleProjectConfig = List.of(
 			new ProjectJoinConfigDto(cmd.projectKey(), cmd.role())
@@ -81,7 +82,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public void leave(String workspaceKey, Long memberId) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
+		Workspace workspace = workspaceFinder.getModifiableBy(workspaceKey);
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspace);
 
 		workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
@@ -92,7 +93,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public void kick(KickWorkspaceMemberCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 		WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
 		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
 
@@ -106,7 +107,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	//  - this method is called from other services (a method for internal use)
 	//  - controller does not know this method unless it directly depends on this service
 	// TODO: currently considering if i should separate this to a application service of its own
-	@Transactional
 	public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
 		Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
 		if (activeMember.isPresent()) {
@@ -152,11 +152,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 		// TODO: InvitationSentEvent - targetMembers에게만 발송
 
-		return InviteMembersResponse.from(
-			workspace.getKey(),
-			targetMembers,
-			skippedMembers
-		);
+		return InviteMembersResponse.from(workspace.getKey(), targetMembers, skippedMembers);
 	}
 
 	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
