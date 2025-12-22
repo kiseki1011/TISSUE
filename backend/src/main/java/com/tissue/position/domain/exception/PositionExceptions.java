@@ -26,7 +26,7 @@ public class PositionExceptions {
 	}
 
 	public static BadRequestException inUse(Position position) {
-		return new BadRequestException(POSITION_NOT_FOUND)
+		return new BadRequestException(POSITION_IN_USE)
 			.addContext(WORKSPACE_KEY, position.getWorkspaceKey())
 			.addContext(POSITION_ID, position.getId())
 			.addContext(POSITION_NAME, position.getDisplayName());

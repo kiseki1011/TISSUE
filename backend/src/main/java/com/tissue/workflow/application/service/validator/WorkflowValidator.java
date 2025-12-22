@@ -27,7 +27,7 @@ public class WorkflowValidator {
 	private final IssueQueryRepository issueRepository;
 
 	public void ensureLabelUnique(Project project, Name name) {
-		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, name.getNormalized());
+		boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project, name.getNormalized());
 		if (dup) {
 			throw WorkflowExceptions.duplicateWorkflowName(
 				name.getNormalized(),
