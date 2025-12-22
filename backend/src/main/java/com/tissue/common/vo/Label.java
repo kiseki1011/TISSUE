@@ -12,16 +12,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+// TODO: change class name to Name
 @Embeddable
 @Getter
 @EqualsAndHashCode(of = "normalized")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Label {
 
-	@Column(name = "label", nullable = false, length = 32)
+	// TODO: change field name to value
+	@Column(nullable = false, length = 64)
 	private String display;
 
-	@Column(name = "label_normalized", nullable = false, length = 32)
+	@Column(nullable = false, length = 64)
 	private String normalized;
 
 	private Label(String display, String normalized) {
@@ -29,16 +31,27 @@ public class Label {
 		this.normalized = normalized;
 	}
 
+	// TODO: change raw -> name
 	public static Label of(@NonNull String raw) {
 		String checked = Objects.requireNonNull(raw);
+
+		// TODO: add length check if(>64)
+
 		String display = TextNormalizer.normalizeText(checked);
 		String norm = TextNormalizer.normalizeForUniq(checked);
 
 		return new Label(display, norm);
 	}
 
+	public boolean isSameAs(@NonNull String name) {
+		String otherNormalized = TextNormalizer.normalizeForUniq(name);
+		return this.normalized.equals(otherNormalized);
+	}
+
 	@Override
 	public String toString() {
 		return display;
 	}
+
+	// TODO: consider adding Label equal compare method?
 }
