@@ -1,15 +1,21 @@
-package com.tissue.team.domain.model;
+package com.tissue.team.domain;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
+import com.tissue.common.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberTeam;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,13 +32,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Entity
 @Getter
 @Table(uniqueConstraints = {
 	@UniqueConstraint(
 		name = "uk_workspace_team_name",
-		columnNames = {"workspace_id", "name"}
+		columnNames = {"workspace_id", "team_name_norm"}
 	)
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -43,10 +50,13 @@ public class Team extends BaseEntity {
 	@Column(name = "team_id")
 	private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+	@Embedded
+	@AttributeOverrides({
+		@AttributeOverride(name = "value", column = @Column(name = "team_name", nullable = false, length = 64)),
+		@AttributeOverride(name = "normalized", column = @Column(name = "team_name_norm", nullable = false, length = 64))
+	})
+	private Name name;
 
-	// TODO: should i allow null for description
 	@Column(name = "description")
 	private String description;
 
@@ -58,36 +68,39 @@ public class Team extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	// TODO: Should i use Set, and override EqualsAndHashCode as {"workspaceMember", "team"}?
+	@Column(name = "workspace_key", nullable = false)
+	private String workspaceKey;
+
 	@OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberTeam> workspaceMemberTeams = new ArrayList<>();
 
 	@Builder
 	public Team(
-		String name,
-		String description,
-		Workspace workspace,
-		ColorType color
+		@NonNull Workspace workspace,
+		@NonNull String name,
+		@Nullable String description,
+		@NonNull ColorType color
 	) {
-		this.name = name;
-		this.description = description;
 		this.workspace = workspace;
+		this.workspaceKey = workspace.getKey();
+		this.name = Name.of(name);
+		this.description = description;
 		this.color = color;
 	}
 
-	public void updateName(String name) {
-		this.name = name;
+	public void updateName(@NonNull String name) {
+		this.name = Name.of(name);
 	}
 
-	public void updateDescription(String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
 
-	public void updateColor(ColorType color) {
+	public void updateColor(@NonNull ColorType color) {
 		this.color = color;
 	}
 
-	public String getWorkspaceKey() {
-		return workspace.getKey();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 }
