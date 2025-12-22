@@ -15,7 +15,9 @@ public interface ContextKeys {
 	 * WorkspaceMember
 	 */
 	String POSITION_ID = "positionId";
+	String POSITION_NAME = "positionName";
 	String TEAM_ID = "teamId";
+	String TEAM_NAME = "teamName";
 
 	/**
 	 * Project

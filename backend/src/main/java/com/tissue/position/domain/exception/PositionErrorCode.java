@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PositionErrorCode implements ErrorCode {
 
-	POSITION_NOT_FOUND("Position not found");
+	POSITION_NOT_FOUND("Position not found"),
+	DUPLICATE_POSITION_NAME("Position name must be unique for workspace"),
+	POSITION_IN_USE("Postion is in use by a workspace member");
 
 	private final String defaultMessage;
 }

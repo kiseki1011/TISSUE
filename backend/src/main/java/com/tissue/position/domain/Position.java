@@ -102,4 +102,8 @@ public class Position extends BaseEntity {
 	public void updateColor(@NonNull ColorType color) {
 		this.color = color;
 	}
+
+	public String getDisplayName() {
+		return name.getDisplay();
+	}
 }
