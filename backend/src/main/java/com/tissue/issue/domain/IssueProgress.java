@@ -1,7 +1,5 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.common.util.DomainPreconditions.*;
-
 import org.springframework.lang.Nullable;
 
 import com.tissue.issue.domain.enums.ProgressType;
@@ -16,6 +14,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueProgress {
+
+	private final static int MIN_PERCENTAGE = 0;
+	private final static int MAX_PERCENTAGE = 100;
 
 	@Column(name = "count_based_progress")
 	private Integer countBasedProgress;
@@ -37,5 +38,18 @@ public class IssueProgress {
 			case COUNT_BASED -> countBasedProgress;
 			case POINT_BASED -> pointBasedProgress;
 		};
+	}
+
+	// TODO: should i consider separating this into a separate util class?
+	//  currently im only using this here
+	private Integer ensureValidPercentageRange(Integer value) {
+		if (value == null) {
+			return null;
+		}
+		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
+			throw new RuntimeException("Percentage must be a value of 0 ~ 100. Input value was %d.".formatted(value));
+		}
+
+		return value;
 	}
 }

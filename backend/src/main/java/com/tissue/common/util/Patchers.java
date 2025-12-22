@@ -9,11 +9,10 @@ import org.openapitools.jackson.nullable.JsonNullable;
 
 import com.tissue.common.dto.FieldChange;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Patchers {
+	private Patchers() {
+		throw new UnsupportedOperationException("Utility class cannot be instantiated");
+	}
 
 	public static <T> void apply(JsonNullable<T> jn, Consumer<? super T> set) {
 		if (jn == null || !jn.isPresent()) {
