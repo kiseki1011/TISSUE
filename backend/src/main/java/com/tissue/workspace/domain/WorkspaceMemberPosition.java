@@ -1,7 +1,7 @@
 package com.tissue.workspace.domain;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.position.domain.model.Position;
+import com.tissue.position.domain.Position;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -3,8 +3,8 @@ package com.tissue.workspace.application.service.command;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.position.application.service.command.PositionFinder;
-import com.tissue.position.domain.model.Position;
+import com.tissue.position.application.service.finder.PositionFinder;
+import com.tissue.position.domain.Position;
 import com.tissue.team.application.service.command.TeamFinder;
 import com.tissue.team.domain.model.Team;
 import com.tissue.workspace.application.dto.request.AddPositionCommand;
@@ -14,7 +14,9 @@ import com.tissue.workspace.application.dto.request.RemoveTeamCommand;
 import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
 import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
+import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
+	private final WorkspaceFinder workspaceFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final PositionFinder positionFinder;
 	private final TeamFinder teamFinder;
@@ -31,12 +34,16 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
 	@Override
 	public void updateDisplayName(UpdateDisplayNameCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		// TODO: pass workspace instead of workspaceKey
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 		workspaceMember.updateDisplayName(cmd.displayName());
 	}
 
 	@Override
 	public void updateRole(UpdateRoleCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		// TODO: pass workspace instead of workspaceKey
 		WorkspaceMember requester = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
 
@@ -47,7 +54,9 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
 	@Override
 	public void addPosition(AddPositionCommand cmd) {
-		Position position = positionFinder.findByIdAndWorkspaceKey(cmd.positionId(), cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		Position position = positionFinder.getBy(cmd.positionId(), workspace);
+		// TODO: pass workspace instead of workspaceKey
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.addPosition(position);
@@ -57,7 +66,9 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
 	@Override
 	public void removePosition(RemovePositionCommand cmd) {
-		Position position = positionFinder.findByIdAndWorkspaceKey(cmd.positionId(), cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		Position position = positionFinder.getBy(cmd.positionId(), workspace);
+		// TODO: pass workspace instead of workspaceKey
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.removePosition(position);
@@ -67,6 +78,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
 	@Override
 	public void addTeam(AddTeamCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
@@ -77,6 +89,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
 	@Override
 	public void removeTeam(RemoveTeamCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 

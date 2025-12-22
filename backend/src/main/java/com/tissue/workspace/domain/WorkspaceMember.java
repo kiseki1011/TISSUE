@@ -7,7 +7,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.member.domain.Member;
-import com.tissue.position.domain.model.Position;
+import com.tissue.position.domain.Position;
 import com.tissue.team.domain.model.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 

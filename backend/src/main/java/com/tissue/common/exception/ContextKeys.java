@@ -12,6 +12,12 @@ public interface ContextKeys {
 	String TARGET_WORKSPACE_KEY = "targetWorkspaceKey";
 
 	/**
+	 * WorkspaceMember
+	 */
+	String POSITION_ID = "positionId";
+	String TEAM_ID = "teamId";
+
+	/**
 	 * Project
 	 */
 	String PROJECT_KEY = "projectKey";

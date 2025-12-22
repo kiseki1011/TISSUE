@@ -1,31 +1,25 @@
-package com.tissue.position.presentation.dto.response;
-
-import java.time.Instant;
+package com.tissue.position.application.dto.response;
 
 import com.tissue.common.enums.ColorType;
-import com.tissue.position.domain.model.Position;
+import com.tissue.position.domain.Position;
 
 import lombok.Builder;
 
 @Builder
 public record PositionDetail(
+	String workspaceKey,
 	Long positionId,
-
 	String name,
 	String description,
-	ColorType color,
-
-	Instant createdAt,
-	Instant updatedAt
+	ColorType color
 ) {
 	public static PositionDetail from(Position position) {
 		return PositionDetail.builder()
+			.workspaceKey(position.getWorkspaceKey())
 			.positionId(position.getId())
-			.name(position.getName())
+			.name(position.getName().getDisplay())
 			.description(position.getDescription())
 			.color(position.getColor())
-			.createdAt(position.getCreatedAt())
-			.updatedAt(position.getLastModifiedAt())
 			.build();
 	}
 }

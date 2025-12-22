@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.member.application.port.out.MemberRepository;
-import com.tissue.position.application.service.command.PositionCommandService;
-import com.tissue.position.application.service.command.PositionFinder;
-import com.tissue.position.infrastructure.repository.PositionRepository;
+import com.tissue.member.application.service.MemberCommandService;
+import com.tissue.position.application.port.out.PositionCommandRepository;
+import com.tissue.position.application.service.PositionService;
+import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.security.authentication.application.service.AuthenticationService;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -44,7 +44,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected MemberCommandService memberCommandService;
 	@Autowired
-	protected PositionCommandService positionCommandService;
+	protected PositionService positionService;
 	@Autowired
 	protected PositionFinder positionFinder;
 
@@ -60,7 +60,7 @@ public abstract class RestAssuredTestHelper {
 	// @Autowired
 	// protected InvitationRepository invitationRepository;
 	@Autowired
-	protected PositionRepository positionRepository;
+	protected PositionCommandRepository positionCommandRepository;
 
 	/**
 	 * Fixture

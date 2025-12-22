@@ -14,14 +14,13 @@ import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.IssueCommandService;
 import com.tissue.issue.application.service.IssueParticipantService;
 import com.tissue.issue.application.service.IssueRelationService;
+import com.tissue.member.application.port.out.MemberRepository;
 import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.member.application.service.MemberQueryService;
 import com.tissue.member.application.service.validator.MemberValidator;
-import com.tissue.member.application.port.out.MemberRepository;
-import com.tissue.position.application.service.command.PositionCommandService;
-import com.tissue.position.application.service.command.PositionFinder;
-import com.tissue.position.application.service.query.PositionQueryService;
-import com.tissue.position.infrastructure.repository.PositionRepository;
+import com.tissue.position.application.port.out.PositionCommandRepository;
+import com.tissue.position.application.service.PositionService;
+import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.security.authentication.application.service.AuthenticationService;
 import com.tissue.security.authentication.jwt.JwtTokenService;
 import com.tissue.sprint.application.port.out.SprintQueryRepository;
@@ -97,9 +96,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceCreateService workspaceCreateService;
 	@Autowired
-	protected PositionCommandService positionCommandService;
-	@Autowired
-	protected PositionQueryService positionQueryService;
+	protected PositionService positionService;
 	@Autowired
 	protected PositionFinder positionFinder;
 	@Autowired
@@ -141,7 +138,7 @@ public abstract class ServiceIntegrationTestHelper {
 	// @Autowired
 	// protected InvitationRepository invitationRepository;
 	@Autowired
-	protected PositionRepository positionRepository;
+	protected PositionCommandRepository positionCommandRepository;
 	@Autowired
 	protected TeamRepository teamRepository;
 	@Autowired

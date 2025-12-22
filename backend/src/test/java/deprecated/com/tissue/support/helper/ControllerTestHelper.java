@@ -18,17 +18,16 @@ import com.tissue.global.config.webmvc.WebMvcConfig;
 import com.tissue.issue.adapter.in.web.IssueCommandController;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.IssueCommandService;
+import com.tissue.member.adapter.in.web.MemberController;
+import com.tissue.member.adapter.in.web.MemberQueryController;
+import com.tissue.member.application.port.out.MemberRepository;
 import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.member.application.service.MemberQueryService;
 import com.tissue.member.application.service.validator.MemberValidator;
-import com.tissue.member.application.port.out.MemberRepository;
-import com.tissue.member.adapter.in.web.MemberController;
-import com.tissue.member.adapter.in.web.MemberQueryController;
-import com.tissue.position.application.service.command.PositionCommandService;
-import com.tissue.position.application.service.command.PositionFinder;
-import com.tissue.position.application.service.query.PositionQueryService;
-import com.tissue.position.infrastructure.repository.PositionRepository;
-import com.tissue.position.presentation.controller.PositionController;
+import com.tissue.position.adapter.in.web.PositionController;
+import com.tissue.position.application.port.out.PositionCommandRepository;
+import com.tissue.position.application.service.PositionService;
+import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.security.SecurityConfig;
 import com.tissue.security.authentication.application.service.AuthenticationService;
 import com.tissue.security.authentication.jwt.JwtTokenService;
@@ -112,11 +111,9 @@ public abstract class ControllerTestHelper {
 	@MockBean
 	protected AuthenticationService authenticationService;
 	@MockBean
-	protected PositionCommandService positionCommandService;
+	protected PositionService positionService;
 	@MockBean
 	protected PositionFinder positionFinder;
-	@MockBean
-	protected PositionQueryService positionQueryService;
 	@MockBean
 	protected IssueCommandService issueCommandService;
 
@@ -138,7 +135,7 @@ public abstract class ControllerTestHelper {
 	// @MockBean
 	// protected InvitationRepository invitationRepository;
 	@MockBean
-	protected PositionRepository positionRepository;
+	protected PositionCommandRepository positionCommandRepository;
 	@MockBean
 	protected IssueCommandRepository issueCommandRepository;
 

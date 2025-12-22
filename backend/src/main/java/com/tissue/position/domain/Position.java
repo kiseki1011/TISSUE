@@ -1,15 +1,21 @@
-package com.tissue.position.domain.model;
+package com.tissue.position.domain;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
+import com.tissue.common.vo.Label;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberPosition;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,13 +32,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
+// TODO: should position use soft-delete or hard-delete?
+//  current policy: check if anybody uses it, if nobody uses, then hard-delete
 @Entity
 @Getter
 @Table(uniqueConstraints = {
 	@UniqueConstraint(
 		name = "uk_workspace_position_name",
-		columnNames = {"workspace_id", "name"}
+		columnNames = {"workspace_id", "position_name_norm"}
 	)
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -43,10 +52,13 @@ public class Position extends BaseEntity {
 	@Column(name = "position_id")
 	private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+	@Embedded
+	@AttributeOverrides({
+		@AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
+		@AttributeOverride(name = "normalized", column = @Column(name = "position_name_norm", nullable = false, length = 64))
+	})
+	private Label name;
 
-	// TODO: should i allow null for description
 	@Column(name = "description")
 	private String description;
 
@@ -58,36 +70,36 @@ public class Position extends BaseEntity {
 	@JoinColumn(name = "workspace_id", nullable = false)
 	private Workspace workspace;
 
-	// TODO: Should i use Set, and override EqualsAndHashCode as {"workspaceMember", "position"}?
+	@Column(name = "workspace_key", nullable = false)
+	private String workspaceKey;
+
 	@OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
+	// TODO: should i consider using a static factory method?
 	@Builder
 	public Position(
-		String name,
-		String description,
-		Workspace workspace,
-		ColorType color
+		@NonNull Workspace workspace,
+		@NonNull String name,
+		@Nullable String description,
+		@NonNull ColorType color
 	) {
-		this.name = name;
-		this.description = description != null ? description : "";
 		this.workspace = workspace;
+		this.workspaceKey = workspace.getKey();
+		this.name = Label.of(name);
+		this.description = description;
 		this.color = color;
 	}
 
-	public void updateName(String name) {
-		this.name = name;
+	public void updateName(@NonNull String name) {
+		this.name = Label.of(name);
 	}
 
-	public void updateDescription(String description) {
+	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
 
-	public void updateColor(ColorType color) {
+	public void updateColor(@NonNull ColorType color) {
 		this.color = color;
-	}
-
-	public String getWorkspaceKey() {
-		return workspace.getKey();
 	}
 }
