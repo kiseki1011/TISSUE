@@ -8,8 +8,9 @@ import org.hibernate.annotations.SQLRestriction;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.member.domain.Member;
 import com.tissue.position.domain.Position;
-import com.tissue.team.domain.model.Team;
+import com.tissue.team.domain.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -103,7 +104,7 @@ public class WorkspaceMember extends BaseEntity {
 			return;
 		}
 		if (newRole == WorkspaceRole.OWNER) {
-			throw new RuntimeException("Cannot directly change to OWNER role. Use ownership transfer.");
+			throw WorkspaceExceptions.cannotChangeRoleToOwner();
 		}
 		this.role = newRole;
 	}

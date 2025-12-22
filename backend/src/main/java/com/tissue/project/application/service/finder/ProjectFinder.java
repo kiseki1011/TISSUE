@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectExceptions;
-import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +32,7 @@ public class ProjectFinder {
 		Project project = getBy(projectKey, workspaceKey);
 
 		if (project.getWorkspace().isArchived()) {
-			throw new WorkspaceArchivedException(project.getWorkspaceKey());
+			throw WorkspaceExceptions.archived(project.getWorkspace());
 		}
 		if (project.isArchived()) {
 			throw ProjectExceptions.isArchived(project);

@@ -5,8 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.domain.Position;
-import com.tissue.team.application.service.command.TeamFinder;
-import com.tissue.team.domain.model.Team;
+import com.tissue.team.application.service.finder.TeamFinder;
+import com.tissue.team.domain.Team;
 import com.tissue.workspace.application.dto.request.AddPositionCommand;
 import com.tissue.workspace.application.dto.request.AddTeamCommand;
 import com.tissue.workspace.application.dto.request.RemovePositionCommand;
@@ -79,7 +79,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 	@Override
 	public void addTeam(AddTeamCommand cmd) {
 		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
+		Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.addTeam(team);
@@ -90,7 +90,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 	@Override
 	public void removeTeam(RemoveTeamCommand cmd) {
 		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Team team = teamFinder.findByIdAndWorkspaceKey(cmd.teamId(), cmd.workspaceKey());
+		Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
 		workspaceMember.removeTeam(team);

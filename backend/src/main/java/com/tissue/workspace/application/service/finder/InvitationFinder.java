@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.workspace.application.port.out.InvitationQueryRepository;
 import com.tissue.workspace.domain.Invitation;
-import com.tissue.workspace.domain.exception.InvitationNotFoundException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ public class InvitationFinder {
 
 	public Invitation findBy(Long id) {
 		return invitationQueryRepository.findById(id)
-			.orElseThrow(() -> new InvitationNotFoundException(id));
+			.orElseThrow(() -> WorkspaceExceptions.invitationNotFound(id));
 	}
 
 	public Set<Long> findPendingMemberIds(String workspaceKey, Collection<Long> memberIds) {

@@ -49,9 +49,11 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 	List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
 	@Query("SELECT wm FROM WorkspaceMember wm "
-		+ "WHERE wm.workspace.key = :workspaceKey AND wm.role "
-		+ "IN ('ADMIN', 'OWNER')")
-	Set<WorkspaceMember> findAdminsByWorkspace_Key(@Param("workspaceKey") String workspaceKey);
+		+ "WHERE wm.workspace.key = :workspaceKey AND wm.role IN :roles")
+	Set<WorkspaceMember> findAdminsByWorkspace_Key(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("roles") Set<WorkspaceRole> roles
+	);
 
 	List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(
 		Collection<Long> memberIds,

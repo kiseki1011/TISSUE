@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.WorkspaceMember;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,7 +57,10 @@ public class NotificationTargetService {
 	 */
 	public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
 
-		Set<WorkspaceMember> targets = workspaceMemberQueryRepository.findAdminsByWorkspace_Key(workspaceCode);
+		Set<WorkspaceMember> targets = workspaceMemberQueryRepository.findAdminsByWorkspace_Key(
+			workspaceCode,
+			Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER)
+		);
 
 		workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceCode)
 			.ifPresent(targets::add);

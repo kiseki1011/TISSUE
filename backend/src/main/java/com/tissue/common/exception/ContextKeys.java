@@ -12,6 +12,16 @@ public interface ContextKeys {
 	String TARGET_WORKSPACE_KEY = "targetWorkspaceKey";
 
 	/**
+	 * Invitation
+	 */
+	String INVITATION_ID = "invitationId";
+
+	/**
+	 * Link
+	 */
+	String TOKEN = "token";
+
+	/**
 	 * WorkspaceMember
 	 */
 	String POSITION_ID = "positionId";
@@ -98,4 +108,6 @@ public interface ContextKeys {
 	String UPDATED_AT = "updatedAt";
 	String DELETED_AT = "deletedAt";
 	String REASON = "reason";
+	String STATUS = "status";
+	String LIMIT = "limit";
 }

@@ -18,7 +18,7 @@ import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.ProjectJoinConfig;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.InvitationStatus;
-import com.tissue.workspace.domain.exception.InvitationAlreadyProcessedException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +39,7 @@ public class InvitationService implements InvitationUseCase {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
 		if (invitation.isProcessed()) {
-			throw new InvitationAlreadyProcessedException(invitationId, invitation.getStatus());
+			throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
 		}
 
 		invitation.accept();
@@ -65,7 +65,7 @@ public class InvitationService implements InvitationUseCase {
 		Invitation invitation = invitationFinder.findBy(invitationId);
 
 		if (invitation.isProcessed()) {
-			throw new InvitationAlreadyProcessedException(invitationId, invitation.getStatus());
+			throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
 		}
 
 		invitation.reject();

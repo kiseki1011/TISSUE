@@ -2,7 +2,7 @@ package com.tissue.workspace.domain.policy;
 
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceMemberLimitExceededException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,13 +13,13 @@ public class WorkspacePolicy {
 
 	public void ensureCanAddMember(String workspaceKey, int currentCount) {
 		if (currentCount >= maxMembers) {
-			throw new WorkspaceMemberLimitExceededException(workspaceKey, maxMembers);
+			throw WorkspaceExceptions.memberLimitExceeded(workspaceKey, maxMembers);
 		}
 	}
 
 	public void ensureCanLeaveWorkspace(WorkspaceMember workspaceMember) {
 		if (workspaceMember.getRole() == WorkspaceRole.OWNER) {
-			throw new RuntimeException("Cannot leave workspace if workspace role is OWNER.");
+			throw WorkspaceExceptions.ownerCannotLeave(workspaceMember);
 		}
 	}
 

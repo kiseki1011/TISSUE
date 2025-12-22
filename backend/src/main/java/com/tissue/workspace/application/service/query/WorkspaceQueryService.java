@@ -7,7 +7,7 @@ import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceQueryRepository;
 import com.tissue.workspace.domain.Workspace;
-import com.tissue.workspace.domain.exception.WorkspaceNotFoundException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 	@Override
 	public WorkspaceDetail getDetail(String workspaceKey) {
 		Workspace workspace = workspaceQueryRepository.findByKey(workspaceKey)
-			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
+			.orElseThrow(() -> WorkspaceExceptions.notFound(workspaceKey));
 
 		return WorkspaceDetail.from(workspace);
 	}

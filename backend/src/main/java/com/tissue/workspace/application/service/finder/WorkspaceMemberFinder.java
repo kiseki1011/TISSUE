@@ -12,7 +12,7 @@ import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceMemberNotFoundException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,12 +28,12 @@ public class WorkspaceMemberFinder {
 
 	public WorkspaceMember findBy(Long memberId, String workspaceKey) {
 		return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+			.orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
 	}
 
 	public WorkspaceMember findBy(Long memberId, Workspace workspace) {
 		return workspaceMemberQueryRepository.findByMember_IdAndWorkspace(memberId, workspace)
-			.orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
+			.orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
 	}
 
 	public Optional<WorkspaceMember> findOptionalBy(Member member, Workspace workspace) {

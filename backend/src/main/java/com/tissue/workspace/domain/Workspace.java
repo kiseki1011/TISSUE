@@ -6,7 +6,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.workspace.domain.exception.WorkspaceOwnershipRequiredException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,8 +56,7 @@ public class Workspace extends BaseEntity {
 	// TODO: should i separate this into a separate domain service?
 	public void transferOwnership(@NonNull WorkspaceMember owner, @NonNull WorkspaceMember newOwner) {
 		if (!owner.isOwner()) {
-			throw new WorkspaceOwnershipRequiredException("Needs to be OWNER to transfer ownership.",
-				key, owner.getMemberId(), owner.getRole());
+			throw WorkspaceExceptions.ownershipRequired(owner);
 		}
 		owner.changeRoleTo(ADMIN);
 		newOwner.changeRoleToOwner();

@@ -7,7 +7,7 @@ import com.tissue.workspace.domain.WorkspaceInviteLink;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: integrate into WorkspaceSecurityGuard
+// TODO: consider integration into WorkspaceSecurityGuard (must change spel for security expression too!)
 @Component
 @RequiredArgsConstructor
 public class WorkspaceInviteLinkSecurityGuard {

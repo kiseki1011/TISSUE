@@ -4,8 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.domain.Workspace;
-import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
-import com.tissue.workspace.domain.exception.WorkspaceNotFoundException;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,7 @@ public class WorkspaceFinder {
 		Workspace workspace = getBy(workspaceKey);
 
 		if (workspace.isArchived()) {
-			throw new WorkspaceArchivedException(workspaceKey);
+			throw WorkspaceExceptions.archived(workspace);
 		}
 
 		return workspace;
@@ -32,6 +31,6 @@ public class WorkspaceFinder {
 	//  - its only for query API's
 	public Workspace getBy(String workspaceKey) {
 		return workspaceCommandRepository.findByKey(workspaceKey)
-			.orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
+			.orElseThrow(() -> WorkspaceExceptions.notFound(workspaceKey));
 	}
 }

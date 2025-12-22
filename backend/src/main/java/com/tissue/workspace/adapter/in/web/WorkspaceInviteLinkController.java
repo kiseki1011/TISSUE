@@ -41,8 +41,9 @@ public class WorkspaceInviteLinkController {
 		var command = request.toCommand(workspaceKey);
 		String token = inviteLinkUseCase.createWorkspaceLink(command);
 
+		// TODO: do i have to write the full uri path? cant i just do "/{token}"?
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
@@ -59,8 +60,9 @@ public class WorkspaceInviteLinkController {
 		var command = request.toCommand(workspaceKey, projectKey);
 		String token = inviteLinkUseCase.createProjectLink(command);
 
+		// TODO: do i have to write the full uri path? cant i just do "/{token}"?
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
