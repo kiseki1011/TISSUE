@@ -13,7 +13,7 @@ public record RelatedIssueInfo(
 		return new RelatedIssueInfo(
 			issue.getKey(),
 			issue.getTitle(),
-			issue.getCurrentState().getDisplayLabel(),
+			issue.getCurrentState().getDisplayName(),
 			issue.getPriority()
 		);
 	}

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.application.dto.GuardConfigData;
@@ -26,11 +26,11 @@ public class WorkflowValidator {
 	private final WorkflowQueryRepository workflowQueryRepository;
 	private final IssueQueryRepository issueRepository;
 
-	public void ensureLabelUnique(Project project, Label label) {
-		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, label.getNormalized());
+	public void ensureLabelUnique(Project project, Name name) {
+		boolean dup = workflowQueryRepository.existsByProjectAndLabel_Normalized(project, name.getNormalized());
 		if (dup) {
 			throw WorkflowExceptions.duplicateWorkflowName(
-				label.getNormalized(),
+				name.getNormalized(),
 				project.getKey(),
 				project.getWorkspaceKey()
 			);
@@ -55,7 +55,7 @@ public class WorkflowValidator {
 		if (!usedStateIds.isEmpty()) {
 			String usedStateNames = statesToCheck.stream()
 				.filter(s -> usedStateIds.contains(s.getId()))
-				.map(WorkflowState::getDisplayLabel)
+				.map(WorkflowState::getDisplayName)
 				.collect(Collectors.joining(", "));
 
 			throw WorkflowExceptions.workflowStateInUse(usedStateNames);

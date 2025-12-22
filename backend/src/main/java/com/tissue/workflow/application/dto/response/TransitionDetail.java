@@ -15,7 +15,7 @@ public record TransitionDetail(
 	public static TransitionDetail from(WorkflowTransition t) {
 		return new TransitionDetail(
 			t.getId(),
-			t.getDisplayLabel(),
+			t.getDisplayName(),
 			t.getDescription(),
 			t.getSourceState().getId(),
 			t.getTargetState().getId(),

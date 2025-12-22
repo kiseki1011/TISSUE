@@ -7,7 +7,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMemberPosition;
 
@@ -57,7 +57,7 @@ public class Position extends BaseEntity {
 		@AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
 		@AttributeOverride(name = "normalized", column = @Column(name = "position_name_norm", nullable = false, length = 64))
 	})
-	private Label name;
+	private Name name;
 
 	@Column(name = "description")
 	private String description;
@@ -86,13 +86,13 @@ public class Position extends BaseEntity {
 	) {
 		this.workspace = workspace;
 		this.workspaceKey = workspace.getKey();
-		this.name = Label.of(name);
+		this.name = Name.of(name);
 		this.description = description;
 		this.color = color;
 	}
 
 	public void updateName(@NonNull String name) {
-		this.name = Label.of(name);
+		this.name = Name.of(name);
 	}
 
 	public void updateDescription(@Nullable String description) {

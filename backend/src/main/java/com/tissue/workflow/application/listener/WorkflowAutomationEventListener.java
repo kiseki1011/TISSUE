@@ -61,7 +61,7 @@ public class WorkflowAutomationEventListener {
 		WorkflowTransition targetTransition = findTransitionByName(outgoingTransitions, targetTransitionName)
 			.orElseThrow(() -> WorkflowExceptions.autoTransitionTargetNotFound(
 				issue.getKey(),
-				issue.getCurrentState().getDisplayLabel(),
+				issue.getCurrentState().getDisplayName(),
 				targetTransitionName
 			));
 
@@ -97,7 +97,7 @@ public class WorkflowAutomationEventListener {
 
 	private Optional<WorkflowTransition> findTransitionByName(List<WorkflowTransition> transitions, String name) {
 		return transitions.stream()
-			.filter(t -> t.getLabel().getDisplay().equals(name))
+			.filter(t -> t.getName().getDisplay().equals(name))
 			.findFirst();
 	}
 

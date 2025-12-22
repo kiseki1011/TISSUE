@@ -300,7 +300,7 @@ public class Issue extends BaseEntity {
 			throw IssueExceptions.onlyInitialStateDeletionAllowed(
 				this.getWorkspaceKey(),
 				this.getKey(),
-				this.getCurrentState().getDisplayLabel(),
+				this.getCurrentState().getDisplayName(),
 				this.getCurrentState().getCategory()
 			);
 		}

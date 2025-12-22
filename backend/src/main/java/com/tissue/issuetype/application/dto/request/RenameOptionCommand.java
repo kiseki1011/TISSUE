@@ -1,6 +1,6 @@
 package com.tissue.issuetype.application.dto.request;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import lombok.Builder;
 
@@ -11,6 +11,6 @@ public record RenameOptionCommand(
 	Long issueTypeId,
 	Long issueFieldId,
 	Long optionId,
-	Label label
+	Name name
 ) {
 }

@@ -62,10 +62,10 @@ public class WorkflowGraphValidator {
 
 		if (!invalidTransitions.isEmpty()) {
 			List<String> sourceNames = invalidTransitions.stream()
-				.map(t -> t.getSourceState().getDisplayLabel())
+				.map(t -> t.getSourceState().getDisplayName())
 				.toList();
 
-			throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayLabel());
+			throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayName());
 		}
 	}
 
@@ -103,11 +103,11 @@ public class WorkflowGraphValidator {
 
 		List<String> orphanStates = wf.getActiveStates().stream()
 			.filter(s -> !reachableStates.contains(s))
-			.map(WorkflowState::getDisplayLabel)
+			.map(WorkflowState::getDisplayName)
 			.toList();
 
 		if (!orphanStates.isEmpty()) {
-			throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayLabel());
+			throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayName());
 		}
 	}
 
@@ -120,7 +120,7 @@ public class WorkflowGraphValidator {
 
 		List<String> deadEnds = wf.getStatesByCategory(ACTIVE).stream()
 			.filter(state -> !statesWithOutgoing.contains(state))
-			.map(WorkflowState::getDisplayLabel)
+			.map(WorkflowState::getDisplayName)
 			.toList();
 
 		if (!deadEnds.isEmpty()) {

@@ -10,14 +10,14 @@ public record ReorderedOptionsResponse(
 ) {
 	public record OptionDetail(
 		Long id,
-		String label,
+		String name,
 		int position
 	) {
 	}
 
 	public static ReorderedOptionsResponse from(Long fieldId, List<EnumFieldOption> options) {
 		List<OptionDetail> details = options.stream()
-			.map(opt -> new OptionDetail(opt.getId(), opt.getDisplayLabel(), opt.getPosition()))
+			.map(opt -> new OptionDetail(opt.getId(), opt.getDisplayName(), opt.getPosition()))
 			.toList();
 		return new ReorderedOptionsResponse(fieldId, details);
 	}

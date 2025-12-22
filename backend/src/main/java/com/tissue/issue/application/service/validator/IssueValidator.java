@@ -31,8 +31,8 @@ public class IssueValidator {
 				workspaceKey,
 				issue.getKey(),
 				transitionId,
-				issue.getCurrentState().getDisplayLabel(),
-				transition.getSourceState().getDisplayLabel()
+				issue.getCurrentState().getDisplayName(),
+				transition.getSourceState().getDisplayName()
 			);
 		}
 	}

@@ -50,17 +50,17 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 	public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
-		workflowValidator.ensureLabelUnique(project, cmd.label());
+		workflowValidator.ensureLabelUnique(project, cmd.name());
 
 		try {
 			Workflow workflow = workflowRepository.save(
-				Workflow.create(project, cmd.label(), cmd.description(), cmd.color())
+				Workflow.create(project, cmd.name(), cmd.description(), cmd.color())
 			);
 
 			Map<String, WorkflowState> stateByTempKey = new HashMap<>();
 			for (var s : cmd.stateDefinitions()) {
 				WorkflowState state = workflow.addState(
-					s.label(),
+					s.name(),
 					s.description(),
 					s.color(),
 					s.category()
@@ -72,7 +72,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 				WorkflowState source = stateByTempKey.get(t.sourceStateRef().tempKey());
 				WorkflowState target = stateByTempKey.get(t.targetStateRef().tempKey());
 
-				workflow.addTransition(t.label(), t.description(), source, target);
+				workflow.addTransition(t.name(), t.description(), source, target);
 			}
 
 			graphValidator.ensureValidWorkflowGraph(workflow);
@@ -80,7 +80,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 			return WorkflowCreateResponse.from(workflow);
 		} catch (DataIntegrityViolationException e) {
 			throw WorkflowExceptions.duplicateWorkflowName(
-				cmd.label().getDisplay(),
+				cmd.name().getDisplay(),
 				project.getKey(),
 				project.getWorkspaceKey()
 			);
@@ -92,8 +92,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		Patchers.apply(cmd.label(), newLabel -> {
-			if (!workflow.getLabel().equals(newLabel)) {
+		Patchers.apply(cmd.name(), newLabel -> {
+			if (!workflow.getName().equals(newLabel)) {
 				workflowValidator.ensureLabelUnique(project, newLabel);
 				workflow.rename(newLabel);
 			}
@@ -122,7 +122,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
 
-		Patchers.apply(cmd.label(), l -> workflow.renameState(state, l));
+		Patchers.apply(cmd.name(), l -> workflow.renameState(state, l));
 		Patchers.apply(cmd.description(), state::updateDescription);
 		Patchers.apply(cmd.color(), state::updateColor);
 	}
@@ -133,7 +133,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
-		Patchers.apply(cmd.label(), l -> workflow.renameTransition(transition, l));
+		Patchers.apply(cmd.name(), l -> workflow.renameTransition(transition, l));
 		Patchers.apply(cmd.description(), transition::updateDescription);
 	}
 

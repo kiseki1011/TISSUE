@@ -2,7 +2,7 @@ package com.tissue.position.application.service.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.position.application.port.out.PositionQueryRepository;
 import com.tissue.position.domain.Position;
 import com.tissue.position.domain.exception.PositionExceptions;
@@ -17,7 +17,7 @@ public class PositionValidator {
 	private final PositionQueryRepository positionQueryRepository;
 
 	public void ensureUniqueName(Workspace workspace, String name) {
-		String normalizedName = Label.of(name).getNormalized();
+		String normalizedName = Name.of(name).getNormalized();
 
 		if (positionQueryRepository.existsByWorkspaceAndNameNormalized(workspace, normalizedName)) {
 			throw PositionExceptions.duplicateName(name, workspace.getKey());

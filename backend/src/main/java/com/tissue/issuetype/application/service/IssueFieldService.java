@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueFieldCommand;
@@ -63,10 +63,10 @@ public class IssueFieldService implements IssueFieldUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.label());
+		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.name());
 
 		IssueField issueField = IssueField.create(
-			cmd.label(),
+			cmd.name(),
 			cmd.description(),
 			cmd.issueFieldType(),
 			cmd.required(),
@@ -89,12 +89,12 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		if (labelUnchanged(issueField.getLabel(), cmd.label())) {
+		if (labelUnchanged(issueField.getName(), cmd.name())) {
 			return;
 		}
 
-		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.label());
-		issueField.rename(cmd.label());
+		issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.name());
+		issueField.rename(cmd.name());
 	}
 
 	@Override
@@ -124,12 +124,12 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
-		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.label());
+		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.name());
 
 		int nextPosition = fieldOptionQueryRepo.countByIssueField(issueField);
 		fieldDefintionPolicy.ensureCanAddOption(nextPosition);
 
-		EnumFieldOption option = EnumFieldOption.create(issueField, cmd.label(), nextPosition);
+		EnumFieldOption option = EnumFieldOption.create(issueField, cmd.name(), nextPosition);
 		fieldOptionCommandRepo.save(option);
 
 		return IssueFieldResponse.from(issueField, issueType);
@@ -142,12 +142,12 @@ public class IssueFieldService implements IssueFieldUseCase {
 		IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 		EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
-		if (labelUnchanged(option.getLabel(), cmd.label())) {
+		if (labelUnchanged(option.getName(), cmd.name())) {
 			return;
 		}
 
-		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.label());
-		option.rename(cmd.label());
+		issueTypeValidator.ensureUniqueOptionLabel(issueField, cmd.name());
+		option.rename(cmd.name());
 	}
 
 	@Override
@@ -183,15 +183,15 @@ public class IssueFieldService implements IssueFieldUseCase {
 		fieldOptionCommandRepo.delete(option);
 	}
 
-	private boolean labelUnchanged(Label currentLabel, Label newLabel) {
-		return Objects.equals(currentLabel, newLabel);
+	private boolean labelUnchanged(Name currentName, Name newName) {
+		return Objects.equals(currentName, newName);
 	}
 
-	private void saveInitialEnumOptions(IssueField field, List<Label> labels) {
+	private void saveInitialEnumOptions(IssueField field, List<Name> names) {
 		int pos = 0;
-		List<EnumFieldOption> options = new ArrayList<>(labels.size());
-		for (Label label : labels) {
-			options.add(EnumFieldOption.create(field, label, pos++));
+		List<EnumFieldOption> options = new ArrayList<>(names.size());
+		for (Name name : names) {
+			options.add(EnumFieldOption.create(field, name, pos++));
 		}
 		fieldOptionCommandRepo.saveAll(options);
 	}

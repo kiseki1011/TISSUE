@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.domain.Workflow;
@@ -51,7 +51,7 @@ public class IssueType extends BaseEntity {
 	private String workspaceKey;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
@@ -77,7 +77,7 @@ public class IssueType extends BaseEntity {
 
 	public static IssueType create(
 		@NonNull Project project,
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull ColorType color,
 		@NonNull IssueHierarchy issueHierarchy,
@@ -88,7 +88,7 @@ public class IssueType extends BaseEntity {
 		issueType.project = project;
 		issueType.projectKey = project.getKey();
 		issueType.workspaceKey = project.getWorkspaceKey();
-		issueType.label = label;
+		issueType.name = name;
 		issueType.description = description;
 		issueType.color = color;
 		issueType.issueHierarchy = issueHierarchy;
@@ -106,12 +106,12 @@ public class IssueType extends BaseEntity {
 		return project.getKey();
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
-	public void rename(@NonNull Label label) {
-		this.label = label;
+	public void rename(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {

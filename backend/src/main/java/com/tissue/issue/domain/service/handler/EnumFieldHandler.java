@@ -36,7 +36,7 @@ public class EnumFieldHandler implements FieldTypeHandler {
 		} catch (ConversionFailedException e) {
 			throw IssueExceptions.customFieldTypeMismatch(
 				field.getId(),
-				field.getDisplayLabel(),
+				field.getDisplayName(),
 				field.getIssueFieldType(),
 				raw
 			);

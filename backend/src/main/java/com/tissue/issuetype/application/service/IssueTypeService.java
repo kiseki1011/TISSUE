@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
@@ -40,11 +40,11 @@ public class IssueTypeService implements IssueTypeUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
+		issueTypeValidator.ensureUniqueLabel(project, cmd.name());
 
 		IssueType issueType = IssueType.create(
 			project,
-			cmd.label(),
+			cmd.name(),
 			cmd.description(),
 			cmd.color(),
 			cmd.issueHierarchy(),
@@ -61,12 +61,12 @@ public class IssueTypeService implements IssueTypeUseCase {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		if (labelUnchanged(issueType, cmd.label())) {
+		if (labelUnchanged(issueType, cmd.name())) {
 			return;
 		}
 
-		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
-		issueType.rename(cmd.label());
+		issueTypeValidator.ensureUniqueLabel(project, cmd.name());
+		issueType.rename(cmd.name());
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class IssueTypeService implements IssueTypeUseCase {
 		issueType.softDelete();
 	}
 
-	private boolean labelUnchanged(IssueType it, Label newLabel) {
-		return Objects.equals(it.getLabel(), newLabel);
+	private boolean labelUnchanged(IssueType it, Name newName) {
+		return Objects.equals(it.getName(), newName);
 	}
 }

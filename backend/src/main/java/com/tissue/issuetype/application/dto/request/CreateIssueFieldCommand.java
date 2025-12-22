@@ -2,7 +2,7 @@ package com.tissue.issuetype.application.dto.request;
 
 import java.util.List;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.Builder;
@@ -12,10 +12,10 @@ public record CreateIssueFieldCommand(
 	String workspaceKey,
 	String projectKey,
 	Long issueTypeId,
-	Label label,
+	Name name,
 	String description,
 	IssueFieldType issueFieldType,
 	Boolean required,
-	List<Label> initialOptions
+	List<Name> initialOptions
 ) {
 }

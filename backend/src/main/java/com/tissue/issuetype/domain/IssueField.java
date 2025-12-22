@@ -3,7 +3,7 @@ package com.tissue.issuetype.domain;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import jakarta.persistence.Column;
@@ -36,7 +36,7 @@ public class IssueField extends BaseEntity {
 	private Long version;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
@@ -55,7 +55,7 @@ public class IssueField extends BaseEntity {
 	// private String icon;
 
 	public static IssueField create(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull IssueFieldType issueFieldType,
 		boolean required,
@@ -63,7 +63,7 @@ public class IssueField extends BaseEntity {
 	) {
 		IssueField issueField = new IssueField();
 
-		issueField.label = label;
+		issueField.name = name;
 		issueField.description = description;
 		issueField.issueFieldType = issueFieldType;
 		issueField.required = required;
@@ -76,12 +76,12 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceKey();
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
-	public void rename(@NonNull Label label) {
-		this.label = label;
+	public void rename(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {

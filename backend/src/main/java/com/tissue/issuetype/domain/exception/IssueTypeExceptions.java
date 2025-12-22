@@ -6,7 +6,7 @@ import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.*;
 import com.tissue.common.exception.base.BadRequestException;
 import com.tissue.common.exception.base.ResourceConflictException;
 import com.tissue.common.exception.base.ResourceNotFoundException;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
@@ -36,20 +36,20 @@ public class IssueTypeExceptions {
 			.addContext(ISSUE_FIELD_ID, issueField.getId());
 	}
 
-	public static ResourceConflictException duplicateTypeName(Label name, Project project) {
+	public static ResourceConflictException duplicateTypeName(Name name, Project project) {
 		return new ResourceConflictException(DUPLICATE_ISSUE_TYPE_NAME)
 			.addContext(ISSUE_TYPE, name.getNormalized())
 			.addContext(PROJECT_KEY, project.getKey());
 	}
 
-	public static ResourceConflictException duplicateFieldName(Label name, IssueType issueType) {
+	public static ResourceConflictException duplicateFieldName(Name name, IssueType issueType) {
 		return new ResourceConflictException(DUPLICATE_ISSUE_FIELD_NAME)
 			.addContext(ISSUE_FIELD, name.getNormalized())
-			.addContext(ISSUE_TYPE, issueType.getDisplayLabel())
+			.addContext(ISSUE_TYPE, issueType.getDisplayName())
 			.addContext(ISSUE_TYPE_ID, issueType.getId());
 	}
 
-	public static ResourceConflictException duplicateOptionName(Label name, IssueField issueField) {
+	public static ResourceConflictException duplicateOptionName(Name name, IssueField issueField) {
 		return new ResourceConflictException(DUPLICATE_FIELD_OPTION_NAME)
 			.addContext(ISSUE_FIELD_OPTION, name)
 			.addContext(ISSUE_FIELD_ID, issueField.getId());

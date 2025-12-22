@@ -33,7 +33,7 @@ public class TextFieldHandler implements FieldTypeHandler {
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
 			throw IssueExceptions.customFieldTypeMismatch(
 				field.getId(),
-				field.getDisplayLabel(),
+				field.getDisplayName(),
 				field.getIssueFieldType(),
 				raw
 			);

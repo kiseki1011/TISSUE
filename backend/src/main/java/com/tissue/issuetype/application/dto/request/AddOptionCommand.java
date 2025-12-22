@@ -1,6 +1,6 @@
 package com.tissue.issuetype.application.dto.request;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import lombok.Builder;
 
@@ -10,6 +10,6 @@ public record AddOptionCommand(
 	String projectKey,
 	Long issueTypeId,
 	Long issueFieldId,
-	Label label
+	Name name
 ) {
 }

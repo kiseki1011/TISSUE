@@ -71,12 +71,12 @@ public class IssueFieldChangeTracker {
 
 		if (value == null) {
 			throw new IllegalStateException("Field value is missing for field '%s'(id: %d)."
-				.formatted(fv.getField().getDisplayLabel(), fv.getField().getId()));
+				.formatted(fv.getField().getDisplayName(), fv.getField().getId()));
 		}
 
 		// EnumOption인 경우 ID나 객체 주소 대신 Label을 저장
 		if (value instanceof EnumFieldOption option) {
-			return option.getDisplayLabel();
+			return option.getDisplayName();
 		}
 
 		return value;

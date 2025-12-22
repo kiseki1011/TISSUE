@@ -92,9 +92,9 @@ public class IssueFieldSchemaValidator {
 		if (isEmptyValue(field, raw)) {
 			throw IssueExceptions.customFieldRequired(
 				field.getIssueType().getId(),
-				field.getIssueType().getDisplayLabel(),
+				field.getIssueType().getDisplayName(),
 				field.getId(),
-				field.getDisplayLabel()
+				field.getDisplayName()
 			);
 		}
 	}

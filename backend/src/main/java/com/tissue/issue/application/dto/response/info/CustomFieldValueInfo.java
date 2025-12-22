@@ -18,7 +18,7 @@ public record CustomFieldValueInfo(
 
 		return new CustomFieldValueInfo(
 			field.getId(),
-			field.getDisplayLabel(),
+			field.getDisplayName(),
 			field.getIssueFieldType(),
 			field.isRequired(),
 			value

@@ -1,7 +1,7 @@
 package com.tissue.issuetype.domain;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -35,31 +35,31 @@ public class EnumFieldOption extends BaseEntity {
 	private IssueField issueField;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false)
 	private int position;
 
 	public static EnumFieldOption create(
 		@NonNull IssueField issueField,
-		@NonNull Label label,
+		@NonNull Name name,
 		Integer position
 	) {
 		EnumFieldOption option = new EnumFieldOption();
 
 		option.issueField = issueField;
-		option.label = label;
+		option.name = name;
 		option.position = (position == null) ? 0 : position;
 
 		return option;
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
-	public void rename(@NonNull Label label) {
-		this.label = label;
+	public void rename(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void movePositionTo(int position) {

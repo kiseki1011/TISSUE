@@ -50,11 +50,11 @@ public record IssueTransitionedEvent(
 			NullSafe.get(parentIssue, Issue::getKey),
 			NullSafe.get(parentIssue, Issue::getId),
 			transition.getId(),
-			transition.getDisplayLabel(),
+			transition.getDisplayName(),
 			oldState.getId(),
-			oldState.getDisplayLabel(),
+			oldState.getDisplayName(),
 			transition.getTargetState().getId(),
-			transition.getTargetState().getDisplayLabel(),
+			transition.getTargetState().getDisplayName(),
 			actor.getMemberId(),
 			actor.getDisplayName()
 		);

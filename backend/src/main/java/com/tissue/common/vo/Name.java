@@ -17,7 +17,7 @@ import lombok.NonNull;
 @Getter
 @EqualsAndHashCode(of = "normalized")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Label {
+public class Name {
 
 	// TODO: change field name to value
 	@Column(nullable = false, length = 64)
@@ -26,13 +26,13 @@ public class Label {
 	@Column(nullable = false, length = 64)
 	private String normalized;
 
-	private Label(String display, String normalized) {
+	private Name(String display, String normalized) {
 		this.display = display;
 		this.normalized = normalized;
 	}
 
 	// TODO: change raw -> name
-	public static Label of(@NonNull String raw) {
+	public static Name of(@NonNull String raw) {
 		String checked = Objects.requireNonNull(raw);
 
 		// TODO: add length check if(>64)
@@ -40,7 +40,7 @@ public class Label {
 		String display = TextNormalizer.normalizeText(checked);
 		String norm = TextNormalizer.normalizeForUniq(checked);
 
-		return new Label(display, norm);
+		return new Name(display, norm);
 	}
 
 	public boolean isSameAs(@NonNull String name) {

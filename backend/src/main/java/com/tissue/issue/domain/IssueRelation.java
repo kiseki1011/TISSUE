@@ -102,9 +102,9 @@ public class IssueRelation extends BaseEntity {
 						sourceIssue.getWorkspaceKey(),
 						type,
 						sourceIssue.getKey(),
-						sourceIssue.getIssueType().getDisplayLabel(),
+						sourceIssue.getIssueType().getDisplayName(),
 						targetIssue.getKey(),
-						targetIssue.getIssueType().getDisplayLabel()
+						targetIssue.getIssueType().getDisplayName()
 					);
 				}
 			}

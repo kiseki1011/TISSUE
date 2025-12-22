@@ -83,7 +83,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 				continue;
 			}
 			WorkflowState created = workflow.addState(
-				s.label(),
+				s.name(),
 				s.description(),
 				s.color(),
 				s.category()
@@ -111,7 +111,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 				continue;
 			}
 
-			workflow.addTransition(cmd.label(), cmd.description(), src, trg);
+			workflow.addTransition(cmd.name(), cmd.description(), src, trg);
 		}
 	}
 

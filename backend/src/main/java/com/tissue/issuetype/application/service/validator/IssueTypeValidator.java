@@ -2,7 +2,7 @@ package com.tissue.issuetype.application.service.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
@@ -27,10 +27,10 @@ public class IssueTypeValidator {
 	private final IssueQueryRepository issueQueryRepo;
 	private final IssueFieldValueQueryRepository fieldValueRepo;
 
-	public void ensureUniqueLabel(Project project, Label label) {
-		boolean duplicated = issueTypeQueryRepo.existsByLabel_NormalizedAndProject(label.getNormalized(), project);
+	public void ensureUniqueLabel(Project project, Name name) {
+		boolean duplicated = issueTypeQueryRepo.existsByLabel_NormalizedAndProject(name.getNormalized(), project);
 		if (duplicated) {
-			throw IssueTypeExceptions.duplicateTypeName(label, project);
+			throw IssueTypeExceptions.duplicateTypeName(name, project);
 		}
 	}
 
@@ -38,10 +38,10 @@ public class IssueTypeValidator {
 		ensureTypeNotInUse(type);
 	}
 
-	public void ensureUniqueFieldLabel(IssueType issueType, Label label) {
-		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel_Normalized(issueType, label.getNormalized());
+	public void ensureUniqueFieldLabel(IssueType issueType, Name name) {
+		boolean duplicated = issueFieldRepo.existsByIssueTypeAndLabel_Normalized(issueType, name.getNormalized());
 		if (duplicated) {
-			throw IssueTypeExceptions.duplicateFieldName(label, issueType);
+			throw IssueTypeExceptions.duplicateFieldName(name, issueType);
 		}
 	}
 
@@ -49,9 +49,9 @@ public class IssueTypeValidator {
 		ensureFieldNotInUse(issueField);
 	}
 
-	public void ensureUniqueOptionLabel(IssueField field, Label label) {
-		if (optionRepo.existsByIssueFieldAndLabel_Normalized(field, label.getNormalized())) {
-			throw IssueTypeExceptions.duplicateOptionName(label, field);
+	public void ensureUniqueOptionLabel(IssueField field, Name name) {
+		if (optionRepo.existsByIssueFieldAndLabel_Normalized(field, name.getNormalized())) {
+			throw IssueTypeExceptions.duplicateOptionName(name, field);
 		}
 	}
 
