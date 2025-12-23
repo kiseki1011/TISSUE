@@ -11,6 +11,7 @@ import com.tissue.member.application.port.out.EmailVerificationRepository;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: do i need to make a usecase interface for this?
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
@@ -19,11 +20,10 @@ public class MemberEmailVerificationService {
 	private final EmailClient emailClient;
 	private final EmailVerificationProperties properties;
 
-	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
+	// TODO: use application.yml to get configuration value(do not hard code)
 	private static final Duration TTL = Duration.ofMinutes(30);
 
-	// TODO: 도메인을 포함한 스트링값들 하드 코딩하지 않기
-	// TODO: 이메일 포맷에 thymeleaf 사용
+	// TODO(later): improve email format to a better design
 	public void sendVerificationEmail(String email) {
 		String tokenValue = UUID.randomUUID().toString();
 		repository.saveToken(email, tokenValue, TTL);
@@ -54,7 +54,7 @@ public class MemberEmailVerificationService {
 	public void validateEmailVerified(String email) {
 		boolean emailNotVerified = !repository.isVerified(email);
 		if (emailNotVerified) {
-			// TODO: EmailNotVerifiedException
+			// TODO: EmailExceptions.emailNotVerified
 			throw new RuntimeException("Email is not verified. Please complete verification before signing up.");
 		}
 	}

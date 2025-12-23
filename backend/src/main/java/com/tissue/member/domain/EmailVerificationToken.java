@@ -15,40 +15,42 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "email_verification_token", uniqueConstraints = {
-	@UniqueConstraint(name = "UK_EMAIL_VERIFICATION_EMAIL", columnNames = "email")
+	@UniqueConstraint(name = "uk_email_verification_token", columnNames = "email")
 })
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerificationToken {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String email;
 
 	@Column(nullable = false)
 	private String tokenValue;
 
 	@Column(nullable = false)
-	private boolean verified = false;
+	private boolean verified;
 
 	@Column(nullable = false)
 	private LocalDateTime expiresAt;
 
 	@Builder
-	public EmailVerificationToken(String email, String tokenValue, boolean verified, LocalDateTime expiresAt) {
+	private EmailVerificationToken(String email, String tokenValue, boolean verified, LocalDateTime expiresAt) {
 		this.email = email;
 		this.tokenValue = tokenValue;
 		this.verified = verified;
 		this.expiresAt = expiresAt;
 	}
 
-	public static EmailVerificationToken create(String email, String tokenValue, Duration ttl) {
+	public static EmailVerificationToken create(@NonNull String email, @NonNull String tokenValue,
+		@NonNull Duration ttl) {
 		return EmailVerificationToken.builder()
 			.email(email)
 			.tokenValue(tokenValue)

@@ -1,13 +1,14 @@
 package com.tissue.member.adapter.in.web.dto.request;
 
-import jakarta.validation.constraints.Email;
+import com.tissue.common.validator.annotation.pattern.NamePattern;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record UpdateMemberEmailRequest(
+public record UpdateMemberNameRequest(
 	@NotBlank
-	@Email
-	@Size(min = 4, max = 255)
-	String newEmail
+	@NamePattern
+	@Size(min = 2, max = 50)
+	String newName
 ) {
 }

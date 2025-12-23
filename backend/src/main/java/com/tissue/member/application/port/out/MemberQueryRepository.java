@@ -1,8 +1,25 @@
 package com.tissue.member.application.port.out;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+import org.springframework.data.repository.Repository;
 
 import com.tissue.member.domain.Member;
+import com.tissue.member.domain.MemberStatus;
 
-public interface MemberQueryRepository extends JpaRepository<Member, Long> {
+public interface MemberQueryRepository extends Repository<Member, Long> {
+
+	Optional<Member> findById(Long id);
+
+	Optional<Member> findByEmail(String email);
+
+	Optional<Member> findByIdAndStatus(Long id, MemberStatus status);
+
+	Optional<Member> findByEmailAndStatus(String email, MemberStatus status);
+
+	Optional<Member> findByUsernameAndStatus(String username, MemberStatus status);
+
+	boolean existsByEmail(String email);
+
+	boolean existsByUsername(String username);
 }

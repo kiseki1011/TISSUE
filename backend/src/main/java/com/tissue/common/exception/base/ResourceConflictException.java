@@ -16,6 +16,10 @@ public class ResourceConflictException extends TissueException {
 		super(errorCode);
 	}
 
+	public ResourceConflictException(ErrorCode errorCode, Throwable e) {
+		super(errorCode, e);
+	}
+
 	public ResourceConflictException(ErrorCode errorCode, String debugMessage) {
 		super(errorCode, debugMessage);
 	}

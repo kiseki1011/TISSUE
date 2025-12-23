@@ -18,6 +18,7 @@ import com.tissue.security.authentication.presentation.dto.response.RefreshToken
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: should i make a usecase interface for this?
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -28,7 +29,6 @@ public class AuthenticationService {
 
 	@Transactional
 	public LoginResponse login(LoginRequest request) {
-
 		Authentication authentication = authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(request.loginEmail(), request.password())
 		);
@@ -43,7 +43,6 @@ public class AuthenticationService {
 
 	@Transactional
 	public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-
 		String refreshToken = request.refreshToken();
 
 		// validate refresh token
@@ -63,7 +62,6 @@ public class AuthenticationService {
 
 	@Transactional
 	public ElevatedTokenResponse elevatePermission(PermissionRequest request, String loginEmail, Long memberId) {
-
 		authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(loginEmail, request.password())
 		);

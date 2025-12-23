@@ -98,6 +98,9 @@ public interface ContextKeys {
 	 * Member
 	 */
 	String MEMBER_ID = "memberId";
+	String EMAIL = "email";
+	String USERNAME = "username";
+	String MEMBER_STATUS = "memberStatus";
 
 	/**
 	 * ETC

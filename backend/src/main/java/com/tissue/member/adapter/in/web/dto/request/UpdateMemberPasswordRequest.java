@@ -1,16 +1,16 @@
 package com.tissue.member.adapter.in.web.dto.request;
 
 import com.tissue.common.validator.annotation.pattern.PasswordPattern;
-import com.tissue.common.validator.annotation.size.password.PasswordSize;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record UpdateMemberPasswordRequest(
 	String originalPassword,
 
-	@PasswordSize
+	@NotBlank
 	@PasswordPattern
-	@NotBlank(message = "{valid.notblank}")
+	@Size(min = 8, max = 100)
 	String newPassword
 ) {
 }

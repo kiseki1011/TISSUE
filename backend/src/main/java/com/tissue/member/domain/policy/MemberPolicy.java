@@ -1,7 +1,7 @@
 package com.tissue.member.domain.policy;
 
 import com.tissue.member.domain.Member;
-import com.tissue.member.domain.exception.WorkspaceLimitExceededException;
+import com.tissue.member.domain.exception.MemberExceptions;
 
 public class MemberPolicy {
 
@@ -15,11 +15,7 @@ public class MemberPolicy {
 
 	public void ensureCanCreateWorkspace(int currentOwnedCount, int currentJoinedCount, Member member) {
 		if (currentOwnedCount >= maxOwnedWorkspaces) {
-			throw new WorkspaceLimitExceededException(
-				"Member(id: '%d') cannot create more than %d workspaces."
-					.formatted(member.getId(), maxOwnedWorkspaces),
-				member.getId()
-			);
+			throw MemberExceptions.workspaceOwnageLimit(member, maxOwnedWorkspaces);
 		}
 
 		ensureCanJoinWorkspace(currentJoinedCount, member);
@@ -27,11 +23,7 @@ public class MemberPolicy {
 
 	public void ensureCanJoinWorkspace(int currentJoinedCount, Member member) {
 		if (currentJoinedCount >= maxJoinedWorkspaces) {
-			throw new WorkspaceLimitExceededException(
-				"Member(id: '%d') cannot join more than %d workspaces."
-					.formatted(member.getId(), maxJoinedWorkspaces),
-				member.getId()
-			);
+			throw MemberExceptions.workspaceJoinLimit(member, maxJoinedWorkspaces);
 		}
 	}
 }

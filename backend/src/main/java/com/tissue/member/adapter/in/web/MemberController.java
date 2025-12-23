@@ -1,6 +1,8 @@
 package com.tissue.member.adapter.in.web;
 
-import org.springframework.http.HttpStatus;
+import java.net.URI;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -8,152 +10,142 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.tissue.common.dto.ApiResponse;
-import com.tissue.member.application.service.MemberCommandService;
-import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
+import com.tissue.member.adapter.in.web.dto.request.UpdateMemberNameRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberPasswordRequest;
-import com.tissue.member.adapter.in.web.dto.request.UpdateMemberProfileRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.member.adapter.in.web.dto.request.WithdrawMemberRequest;
-import com.tissue.member.application.dto.response.MemberResponse;
+import com.tissue.member.application.dto.response.MemberSignupResponse;
+import com.tissue.member.application.port.in.MemberCommandUseCase;
+import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+// TODO(later): consdier OAuth
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
 public class MemberController {
-	/**
-	 * Todo
-	 *  - 비밀번호 찾기 (세션 불필요)
-	 * 	  - 가입한 이메일, 로그인 ID를 통한 비밀번호 찾기
-	 * 	  - 기입한 로그인 ID, 이메일이 일치하면 이메일로 임시 비밀번호 보내기
-	 * 	  - 또는 비밀번호 재설정 링크 보내기
-	 * 	- 회원 가입 시, 이메일 확인 로직 필요(이메일로 확인 이메일 보내기)
-	 *  - 이메일 업데이트 시, 이메일로 확인(검증) 이메일 보내기
-	 */
-	private final MemberCommandService memberCommandService;
+
+	private final MemberCommandUseCase memberCommandUseCase;
 	private final MemberValidator memberValidator;
 
-	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
-	public ApiResponse<MemberResponse> signup(
+	public ResponseEntity<MemberSignupResponse> signup(
 		@Valid @RequestBody SignupMemberRequest request
 	) {
-		MemberResponse response = memberCommandService.signup(request.toCommand());
-		return ApiResponse.created("Signup successful.", response);
+		var command = request.toCommand();
+		MemberSignupResponse response = memberCommandUseCase.signup(command);
+
+		URI location = ServletUriComponentsBuilder
+			.fromCurrentRequest()
+			.path("/{memberId}")
+			.buildAndExpand(response.memberId())
+			.toUri();
+
+		return ResponseEntity.created(location)
+			.body(response);
 	}
 
-	@PatchMapping
-	public ApiResponse<MemberResponse> updateMemberInfo(
-		@RequestBody @Valid UpdateMemberProfileRequest request,
+	@PatchMapping("/name")
+	public ResponseEntity<Void> updateMemberName(
+		@RequestBody @Valid UpdateMemberNameRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		MemberResponse response = memberCommandService.updateProfile(request, userDetails.getMemberId());
+		memberCommandUseCase.updateName(request.newName(), userDetails.getMemberId());
 
-		return ApiResponse.ok("Member info updated.", response);
+		return ResponseEntity.noContent().build();
 	}
 
+	// TODO: consider 2-factor
 	@PatchMapping("/email")
-	public ApiResponse<MemberResponse> updateMemberEmail(
+	public ResponseEntity<Void> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		boolean notElevated = !userDetails.isElevated();
-		if (notElevated) {
-			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
-			//  - 더 좋은 이름 있나?
-			throw new RuntimeException("Elevated permission required.");
-		}
+		validatePermissionElevated(userDetails);
 
-		MemberResponse response = memberCommandService.updateEmail(request, userDetails.getMemberId());
+		memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
 
-		return ApiResponse.ok("Member email updated.", response);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PatchMapping("/username")
-	public ApiResponse<MemberResponse> updateMemberUsername(
+	public ResponseEntity<MemberSignupResponse> updateMemberUsername(
 		@RequestBody @Valid UpdateMemberUsernameRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		boolean notElevated = !userDetails.isElevated();
-		if (notElevated) {
-			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
-			//  - 더 좋은 이름 있나?
-			throw new RuntimeException("Elevated permission required.");
-		}
+		validatePermissionElevated(userDetails);
 
-		MemberResponse response = memberCommandService.updateUsername(request, userDetails.getMemberId());
+		memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
 
-		return ApiResponse.ok("Member username updated.", response);
+		return ResponseEntity.noContent().build();
 	}
 
+	// TODO: consider 2-factor
 	@PatchMapping("/password")
-	public ApiResponse<MemberResponse> updateMemberPassword(
+	public ResponseEntity<MemberSignupResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		boolean notElevated = !userDetails.isElevated();
-		if (notElevated) {
-			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
-			//  - 더 좋은 이름 있나?
-			throw new RuntimeException("Elevated permission required.");
-		}
+		validatePermissionElevated(userDetails);
 
-		MemberResponse response = memberCommandService.updatePassword(request, userDetails.getMemberId());
+		memberCommandUseCase.updatePassword(
+			request.originalPassword(),
+			request.newPassword(),
+			userDetails.getMemberId()
+		);
 
-		return ApiResponse.ok("Member password updated.", response);
+		return ResponseEntity.noContent().build();
 	}
 
-	/**
-	 * Todo
-	 *  - soft delete으로 변경
-	 *  - INACTIVE 또는 WITHDRAW_REQUESTED 상태로 변경(MembershipStatus 만들기)
-	 *  - 추후에 스케쥴을 사용해서 배치로 삭제
-	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기(기존 로그인 세션도 전부 제거)
-	 *  - soft delete으로 변경 시 MemberResponse 사용
-	 */
-
 	@DeleteMapping
-	public ApiResponse<Void> withdrawMember(
+	public ResponseEntity<Void> withdrawMember(
 		@RequestBody WithdrawMemberRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
+		validatePermissionElevated(userDetails);
+
+		memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());
+
+		return ResponseEntity.noContent().build();
+	}
+
+	// TODO(later): resetPassword
+	//  1. send email with a short-life(15~30 min) token
+	//  2. email should have a password reset link
+	//  3. change password through that link -> expire token
+
+	/**
+	 * Check email uniqueness
+	 */
+	@GetMapping("/checkEmail")
+	public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
+		// TODO: should i delegate this to a service and not call member validator directly?
+		memberValidator.ensureUniqueEmail(email);
+		return ResponseEntity.noContent().build();
+	}
+
+	/**
+	 * Check username uniqueness
+	 */
+	@GetMapping("/checkUsername")
+	public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
+		memberValidator.ensureUniqueUsername(username);
+		return ResponseEntity.noContent().build();
+	}
+
+	private void validatePermissionElevated(MemberUserDetails userDetails) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			// TODO: ElevatedPermissionRequiredException extends ForbiddenException
-			//  - 더 좋은 이름 있나?
-			throw new RuntimeException("Elevated permission required.");
+			throw new RuntimeException("Elevated permission required");
 		}
-
-		memberCommandService.withdraw(request, userDetails.getMemberId());
-
-		return ApiResponse.okWithNoContent("Member withdrawal successful.");
-	}
-
-	/**
-	 * 이메일 중복 검사
-	 */
-	@GetMapping("/check-email")
-	public ApiResponse<Void> checkEmailAvailability(@RequestParam String email) {
-		memberValidator.ensureEmailIsUnique(email);
-		return ApiResponse.okWithNoContent("Email is available.");
-	}
-
-	/**
-	 * 사용자명 중복 검사
-	 */
-	@GetMapping("/check-username")
-	public ApiResponse<Void> checkUsernameAvailability(@RequestParam String username) {
-		memberValidator.ensureUsernameIsUnique(username);
-		return ApiResponse.okWithNoContent("Username is available.");
 	}
 }

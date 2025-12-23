@@ -34,7 +34,7 @@ public class MemberUserDetails implements UserDetails {
 
 	private boolean elevated;
 
-	// TODO: should i consider using a DTO or a factory method instead of directly using Member entity?
+	// TODO: does this need improvement?
 	public MemberUserDetails(Member member) {
 		this.memberId = member.getId();
 		this.email = member.getEmail();
@@ -61,13 +61,12 @@ public class MemberUserDetails implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		// identifier that spring security uses internally (logging, etc...)
 		return email;
 	}
 
 	@Override
 	public boolean isAccountNonExpired() {
-		// user a seperate field to check account expiration in Member
+		// check account expiration in Member
 		return true;
 	}
 
@@ -79,13 +78,14 @@ public class MemberUserDetails implements UserDetails {
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// use if you need credential expiration
+		// use if credential expiration needed
 		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		// use if you need account activation status (probably can use for Member soft delete)
+		// use if you need account activation status (probably can use for Member)
+		// TODO: how can i use this with MemberStatus
 		return true;
 	}
 }

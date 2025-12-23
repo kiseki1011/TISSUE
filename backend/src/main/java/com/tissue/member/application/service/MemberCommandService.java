@@ -8,38 +8,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.member.application.dto.request.SignupMemberCommand;
+import com.tissue.member.application.dto.response.MemberSignupResponse;
+import com.tissue.member.application.port.in.MemberCommandUseCase;
+import com.tissue.member.application.port.out.MemberRepository;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
-import com.tissue.member.domain.exception.DuplicateEmailException;
-import com.tissue.member.domain.exception.DuplicateUsernameException;
-import com.tissue.member.domain.exception.MemberSignupConflictException;
-import com.tissue.member.application.port.out.MemberRepository;
-import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
-import com.tissue.member.adapter.in.web.dto.request.UpdateMemberPasswordRequest;
-import com.tissue.member.adapter.in.web.dto.request.UpdateMemberProfileRequest;
-import com.tissue.member.adapter.in.web.dto.request.UpdateMemberUsernameRequest;
-import com.tissue.member.adapter.in.web.dto.request.WithdrawMemberRequest;
-import com.tissue.member.application.dto.response.MemberResponse;
+import com.tissue.member.domain.exception.MemberExceptions;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MemberCommandService {
+public class MemberCommandService implements MemberCommandUseCase {
 
 	private final MemberFinder memberFinder;
 	private final MemberRepository memberRepository;
 	private final MemberValidator memberValidator;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
-	// TODO: MemberVerificationUseCase
 	private final MemberEmailVerificationService memberEmailVerificationService;
 
+	@Override
 	@Transactional
-	public MemberResponse signup(SignupMemberCommand cmd) {
-		memberValidator.ensureEmailIsUnique(cmd.email());
-		memberValidator.ensureUsernameIsUnique(cmd.username());
+	public MemberSignupResponse signup(SignupMemberCommand cmd) {
+		memberValidator.ensureUniqueEmail(cmd.email());
+		memberValidator.ensureUniqueUsername(cmd.username());
 
 		memberEmailVerificationService.validateEmailVerified(cmd.email());
 
@@ -47,107 +41,83 @@ public class MemberCommandService {
 			cmd.email(),
 			cmd.username(),
 			passwordEncoder.encode(cmd.password()),
-			cmd.name(),
-			cmd.birthDate()
+			cmd.name()
 		);
 
 		try {
 			Member savedMember = memberRepository.save(member);
 			memberEmailVerificationService.clearVerification(cmd.email());
-
-			return MemberResponse.from(savedMember);
-
+			return MemberSignupResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
-			throw new MemberSignupConflictException(cmd.email(), cmd.username(), e);
+			throw MemberExceptions.signUpConflict(cmd.email(), cmd.username(), e);
 		}
 	}
 
-	// TODO: UpdateMemberProfileCommand
+	@Override
 	@Transactional
-	public MemberResponse updateProfile(UpdateMemberProfileRequest request, Long memberId) {
-		Member member = memberFinder.findMemberById(memberId);
-
-		// TODO: Patchers.apply를 사용하도록 리팩토링
-		updateMemberInfoIfPresent(request, member);
-
-		return MemberResponse.from(member);
+	public void updateName(String name, Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
+		member.updateName(name);
 	}
 
-	// TODO: UpdateMemberEmailRequest -> String newEmail
+	@Override
 	@Transactional
-	public MemberResponse updateEmail(UpdateMemberEmailRequest request, Long memberId) {
-		Member member = memberFinder.findMemberById(memberId);
+	public void updateEmail(String newEmail, Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
 
-		memberValidator.ensureEmailIsUnique(request.newEmail());
-		memberEmailVerificationService.validateEmailVerified(request.newEmail());
+		memberValidator.ensureUniqueEmail(newEmail);
+		memberEmailVerificationService.validateEmailVerified(newEmail);
 
 		try {
-			member.updateEmail(request.newEmail());
-			memberEmailVerificationService.clearVerification(request.newEmail());
-			return MemberResponse.from(member);
+			member.updateEmail(newEmail);
+			memberEmailVerificationService.clearVerification(newEmail);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateEmailException(request.newEmail(), e);
+			throw MemberExceptions.duplicateEmail(newEmail, e);
 		}
 	}
 
-	// TODO: UpdateMemberUsernameRequest -> String newUsername
+	@Override
 	@Transactional
-	public MemberResponse updateUsername(UpdateMemberUsernameRequest request, Long memberId) {
-		Member member = memberFinder.findMemberById(memberId);
+	public void updateUsername(String newUsername, Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
 
-		memberValidator.ensureUsernameIsUnique(request.newUsername());
+		memberValidator.ensureUniqueUsername(newUsername);
 
 		try {
-			member.updateUsername(request.newUsername());
-			return MemberResponse.from(member);
+			member.updateUsername(newUsername);
 		} catch (DataIntegrityViolationException e) {
-			throw new DuplicateUsernameException(request.newUsername(), e);
+			throw MemberExceptions.duplicateUsername(newUsername, e);
 		}
 	}
 
-	// TODO: UpdateMemberPasswordCommand
+	@Override
 	@Transactional
-	public MemberResponse updatePassword(UpdateMemberPasswordRequest request, Long memberId) {
-		Member member = memberFinder.findMemberById(memberId);
+	public void updatePassword(String originalPassword, String newPassword, Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
 
+		// TODO: is there a better way to do this?
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(member.getEmail(), request.originalPassword())
+			new UsernamePasswordAuthenticationToken(member.getEmail(), originalPassword)
 		);
 
-		member.updatePassword(passwordEncoder.encode(request.newPassword()));
-
-		return MemberResponse.from(member);
+		member.updatePassword(passwordEncoder.encode(newPassword));
 	}
 
-	/**
-	 * Todo
-	 *  - hard delete X
-	 *  - 기존에 사용하던 soft-delete(base entity의 archived 필드) 방식 대신
-	 *  INACTIVE 또는 WITHDRAW_REQUESTED 상태를 가진 MembershipStatus 만들어서 사용할까?
-	 *  - 추후에 스케쥴을 사용해서 배치로 물리 삭제?
-	 *  - INACTIVE 상태인 멤버는 로그인 불가능하도록 막기
-	 */
-	// TODO: WithdrawMemberRequest -> String password
+	// TODO(later): will implement a scheduler that batch (hard) deletes Members with DELETED status
+	//  - set policy to store Member for 30 days(configurable), then hard-delete
+	// TODO(now): but how should i handle the WorkspaceMembers and ProjectMembers of this member? soft-delete(kick) them all?
+	@Override
 	@Transactional
-	public void withdraw(WithdrawMemberRequest request, Long memberId) {
-		Member member = memberFinder.findMemberById(memberId);
+	public void withdraw(String password, Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
 
+		// TODO: is there a better way to do this?
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(member.getEmail(), request.password())
+			new UsernamePasswordAuthenticationToken(member.getEmail(), password)
 		);
 
 		memberValidator.ensureWithdrawable(member);
 
-		memberRepository.delete(member);
-	}
-
-	// TODO: Patchers.apply를 사용하도록 리팩토링
-	private void updateMemberInfoIfPresent(UpdateMemberProfileRequest request, Member member) {
-		if (request.hasName()) {
-			member.updateName(request.name());
-		}
-		if (request.hasBirthDate()) {
-			member.updateBirthDate(request.birthDate());
-		}
+		member.withdraw();
 	}
 }
