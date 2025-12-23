@@ -1,11 +1,11 @@
 package com.tissue.position.domain.exception;
 
-import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.global.exception.ContextKeys.*;
 import static com.tissue.position.domain.exception.PositionErrorCode.*;
 
-import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.common.exception.base.ResourceConflictException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.position.domain.Position;
 
 public class PositionExceptions {

@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: change class name to Name
 @Embeddable
 @Getter
 @EqualsAndHashCode(of = "normalized")
@@ -31,7 +30,6 @@ public class Name {
 		this.normalized = normalized;
 	}
 
-	// TODO: change raw -> name
 	public static Name of(@NonNull String raw) {
 		String checked = Objects.requireNonNull(raw);
 
@@ -52,6 +50,4 @@ public class Name {
 	public String toString() {
 		return display;
 	}
-
-	// TODO: consider adding Label equal compare method?
 }

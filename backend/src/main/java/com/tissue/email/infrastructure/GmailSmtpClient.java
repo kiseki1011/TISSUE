@@ -4,6 +4,7 @@ import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.tissue.email.domain.EmailClient;
 
@@ -17,6 +18,9 @@ public class GmailSmtpClient implements EmailClient {
 
 	private final JavaMailSender mailSender;
 
+	@Value("${spring.mail.username}")
+	private String senderEmail;
+
 	// TODO: needs refactor
 	@Override
 	public void send(String to, String subject, String body) {
@@ -26,7 +30,7 @@ public class GmailSmtpClient implements EmailClient {
 
 			helper.setTo(to);
 			helper.setSubject(subject);
-			helper.setFrom("your-email@gmail.com");
+			helper.setFrom(senderEmail);
 			helper.setText(body, false); // false = plain text
 
 			mailSender.send(message);

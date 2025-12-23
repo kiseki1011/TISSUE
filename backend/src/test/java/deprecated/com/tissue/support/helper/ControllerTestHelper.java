@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.tissue.global.config.webmvc.WebMvcConfig;
+import com.tissue.global.config.WebMvcConfig;
 import com.tissue.security.SecurityConfig;
 
 import lombok.extern.slf4j.Slf4j;

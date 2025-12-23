@@ -1,14 +1,14 @@
 package com.tissue.workflow.domain.exception;
 
-import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.global.exception.ContextKeys.*;
 import static com.tissue.workflow.domain.exception.WorkflowErrorCode.*;
 
 import java.util.Collection;
 
-import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.common.exception.base.InternalServerException;
-import com.tissue.common.exception.base.ResourceConflictException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.global.exception.base.InternalServerException;
+import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.workflow.domain.guard.GuardType;
 
 public class WorkflowExceptions {

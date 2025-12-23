@@ -7,7 +7,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;

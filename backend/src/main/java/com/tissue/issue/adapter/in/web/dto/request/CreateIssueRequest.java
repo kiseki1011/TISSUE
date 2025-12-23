@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.common.validator.annotation.size.text.ContentText;
-import com.tissue.common.validator.annotation.size.text.LongText;
+import com.tissue.common.validator.annotation.size.ContentText;
+import com.tissue.common.validator.annotation.size.LongText;
 import com.tissue.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.issue.domain.enums.IssuePriority;
 

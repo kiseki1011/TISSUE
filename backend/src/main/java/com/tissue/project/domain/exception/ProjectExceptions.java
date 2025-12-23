@@ -1,11 +1,11 @@
 package com.tissue.project.domain.exception;
 
-import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.global.exception.ContextKeys.*;
 import static com.tissue.project.domain.exception.ProjectErrorCode.*;
 
-import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.common.exception.base.ResourceConflictException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.global.exception.base.ResourceConflictException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.enums.ProjectRole;
 

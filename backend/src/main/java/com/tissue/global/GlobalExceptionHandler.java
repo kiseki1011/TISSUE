@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.tissue.common.exception.TissueException;
-import com.tissue.common.exception.base.ForbiddenException;
-import com.tissue.common.exception.base.InternalServerException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.TissueException;
+import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.global.exception.base.InternalServerException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolationException;

@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import com.tissue.util.Base62Encoder;
+import com.tissue.common.util.Base62Encoder;
 import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.AccessLevel;

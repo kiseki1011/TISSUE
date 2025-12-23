@@ -1,6 +1,6 @@
 package com.tissue.notification.exception;
 
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 
 public class NotificationNotFoundException extends ResourceNotFoundException {
 

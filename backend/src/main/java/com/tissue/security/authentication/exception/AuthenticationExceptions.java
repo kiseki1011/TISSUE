@@ -2,8 +2,8 @@ package com.tissue.security.authentication.exception;
 
 import static com.tissue.security.authentication.exception.AuthenticationErrorCode.*;
 
-import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.common.exception.base.ForbiddenException;
+import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.global.exception.base.ForbiddenException;
 
 public class AuthenticationExceptions {
 

@@ -7,7 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.lang.Nullable;
 
-import com.tissue.common.entity.NoArchiveEntity;
+import com.tissue.common.entity.BaseEntity;
 import com.tissue.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.Column;
@@ -43,7 +43,7 @@ import lombok.NonNull;
 	}
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TransitionGuardConfig extends NoArchiveEntity {
+public class TransitionGuardConfig extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

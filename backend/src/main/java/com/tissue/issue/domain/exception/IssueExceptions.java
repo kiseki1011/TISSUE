@@ -1,13 +1,13 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.common.exception.ContextKeys.*;
+import static com.tissue.global.exception.ContextKeys.*;
 import static com.tissue.issue.domain.exception.IssueErrorCode.*;
 
 import java.time.Instant;
 import java.util.List;
 
-import com.tissue.common.exception.base.BadRequestException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssueRelationType;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
