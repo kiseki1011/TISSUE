@@ -27,7 +27,8 @@ public enum WorkflowErrorCode implements ErrorCode {
 	DUPLICATE_TRANSITION_EDGE("Duplicate transition between these two states already exists"),
 	CANNOT_DELETE_INITIAL_STATE("Cannot delete the 'INITIAL' state"),
 	INITIAL_STATE_BELONG_MISMATCH("State must belong to the workflow"),
-	INITIAL_STATE_CATEGORY_MISMATCH("Initial state must be of category 'INITIAL'");
+	INITIAL_STATE_CATEGORY_MISMATCH("Initial state must be of category 'INITIAL'"),
+	INVALID_GUARD_PARAMETER("Invalid parameter for transition guard");
 
 	private final String defaultMessage;
 }

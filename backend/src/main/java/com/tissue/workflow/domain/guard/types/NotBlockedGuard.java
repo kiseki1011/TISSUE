@@ -47,6 +47,6 @@ public class NotBlockedGuard implements TransitionGuard {
 	}
 
 	@Override
-	public void validateParams(Map<String, Object> params) {
+	public void validateParams(Map<String, Object> params, GuardType guardType) {
 	}
 }

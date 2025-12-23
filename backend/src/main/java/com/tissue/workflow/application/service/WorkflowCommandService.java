@@ -156,7 +156,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 			workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
 
 			TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
-			guardImplementation.validateParams(g.params());
+			guardImplementation.validateParams(g.params(), g.guardType());
 
 			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
 		}

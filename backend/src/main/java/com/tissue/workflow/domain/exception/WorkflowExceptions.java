@@ -170,4 +170,10 @@ public class WorkflowExceptions {
 	public static BadRequestException initialStateCategoryMismatch() {
 		return new BadRequestException(INITIAL_STATE_CATEGORY_MISMATCH);
 	}
+
+	public static BadRequestException invalidGuardParameter(String reason, GuardType guardType) {
+		return new BadRequestException(INVALID_GUARD_PARAMETER, reason)
+			.addContext(GUARD_TYPE, guardType)
+			.addContext(REASON, reason);
+	}
 }

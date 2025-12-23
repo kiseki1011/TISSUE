@@ -42,12 +42,9 @@ public class ApprovalGuard implements TransitionGuard {
 				.anyMatch(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED);
 
 			if (hasReject) {
-				throw WorkflowExceptions.transitionGuardFailed(
-					getType(),
-					"Transition blocked by change requests",
-					context.getIssue().getKey(),
-					context.getWorkspaceKey()
-				);
+				String reason = "Transition blocked by change requests";
+				throw WorkflowExceptions.transitionGuardFailed(getType(), reason, context.getIssue().getKey(),
+					context.getWorkspaceKey());
 			}
 		}
 
@@ -56,29 +53,27 @@ public class ApprovalGuard implements TransitionGuard {
 			.count();
 
 		if (approvedCount < minApprovals) {
-			throw WorkflowExceptions.transitionGuardFailed(
-				getType(),
-				"Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals),
-				context.getIssue().getKey(),
-				context.getWorkspaceKey()
-			);
+			String reason = "Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals);
+			throw WorkflowExceptions.transitionGuardFailed(getType(), reason, context.getIssue().getKey(),
+				context.getWorkspaceKey());
 		}
 	}
 
 	@Override
-	public void validateParams(Map<String, Object> params) {
-		// TODO: minApprovals defaultValue 외부 설정값으로 설정
+	public void validateParams(Map<String, Object> params, GuardType guardType) {
+		// TODO: use application.yml for minApprovals defaultValue
 		int min = getInt(params, KEY_MIN_APPROVALS, 1);
 		if (min < 1) {
-			throw new RuntimeException("%s must be at least 1".formatted(KEY_MIN_APPROVALS));
+			String reason = "%s must be at least 1".formatted(KEY_MIN_APPROVALS);
+			throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
 		}
 
 		boolean autoReject = getBool(params, KEY_AUTO_REJECT, false);
 		String rejectTransName = (String)params.get(KEY_REJECT_TRANSITION);
 
 		if (autoReject && (rejectTransName == null || rejectTransName.isBlank())) {
-			throw new RuntimeException(
-				"%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION));
+			String reason = "%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION);
+			throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
 		}
 	}
 
