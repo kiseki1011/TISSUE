@@ -6,31 +6,29 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.MemberUserDetailsService;
+import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.security.authentication.jwt.JwtTokenService;
-import com.tissue.security.authentication.presentation.dto.request.LoginRequest;
-import com.tissue.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: should i make a usecase interface for this?
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class AuthenticationService implements AuthenticationUseCase {
 
 	private final AuthenticationManager authenticationManager;
 	private final JwtTokenService jwtTokenService;
 	private final MemberUserDetailsService userDetailsService;
 
+	@Override
 	@Transactional
-	public LoginResponse login(LoginRequest request) {
+	public LoginResponse login(String loginEmail, String password) {
 		Authentication authentication = authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(request.loginEmail(), request.password())
+			new UsernamePasswordAuthenticationToken(loginEmail, password)
 		);
 
 		MemberUserDetails userDetails = (MemberUserDetails)authentication.getPrincipal();
@@ -41,10 +39,9 @@ public class AuthenticationService {
 		return LoginResponse.from(accessToken, refreshToken);
 	}
 
+	@Override
 	@Transactional
-	public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-		String refreshToken = request.refreshToken();
-
+	public RefreshTokenResponse refreshToken(String refreshToken) {
 		// validate refresh token
 		jwtTokenService.validateRefreshToken(refreshToken);
 
@@ -60,10 +57,11 @@ public class AuthenticationService {
 		return new RefreshTokenResponse(newAccessToken);
 	}
 
+	@Override
 	@Transactional
-	public ElevatedTokenResponse elevatePermission(PermissionRequest request, String loginEmail, Long memberId) {
+	public ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId) {
 		authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(loginEmail, request.password())
+			new UsernamePasswordAuthenticationToken(loginEmail, password)
 		);
 
 		String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginEmail);

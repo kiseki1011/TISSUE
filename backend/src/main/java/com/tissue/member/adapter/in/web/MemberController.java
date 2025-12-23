@@ -23,6 +23,7 @@ import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.security.authentication.MemberUserDetails;
+import com.tissue.security.authentication.exception.AuthenticationExceptions;
 import com.tissue.security.authentication.resolver.CurrentMember;
 
 import jakarta.validation.Valid;
@@ -64,7 +65,7 @@ public class MemberController {
 		return ResponseEntity.noContent().build();
 	}
 
-	// TODO: consider 2-factor
+	// TODO(later): consider 2-factor
 	@PatchMapping("/email")
 	public ResponseEntity<Void> updateMemberEmail(
 		@RequestBody @Valid UpdateMemberEmailRequest request,
@@ -89,7 +90,7 @@ public class MemberController {
 		return ResponseEntity.noContent().build();
 	}
 
-	// TODO: consider 2-factor
+	// TODO(later): consider 2-factor
 	@PatchMapping("/password")
 	public ResponseEntity<MemberSignupResponse> updateMemberPassword(
 		@RequestBody @Valid UpdateMemberPasswordRequest request,
@@ -145,7 +146,7 @@ public class MemberController {
 	private void validatePermissionElevated(MemberUserDetails userDetails) {
 		boolean notElevated = !userDetails.isElevated();
 		if (notElevated) {
-			throw new RuntimeException("Elevated permission required");
+			throw AuthenticationExceptions.elevatedPermissionRequired();
 		}
 	}
 }

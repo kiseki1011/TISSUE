@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.comment.infrastructure.repository.CommentRepository;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 
@@ -27,7 +27,7 @@ public class TestDataFixture {
 	@Autowired
 	private final CommentRepository commentRepository;
 	@Autowired
-	private final MemberRepository memberRepository;
+	private final MemberCommandRepository memberCommandRepository;
 	@Autowired
 	private final WorkspaceCommandRepository workspaceCommandRepository;
 	@Autowired

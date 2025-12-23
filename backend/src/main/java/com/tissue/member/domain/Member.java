@@ -66,7 +66,7 @@ public class Member extends BaseDateEntity {
 		member.username = username;
 		member.password = password;
 		member.name = name;
-		member.status = MemberStatus.PENDING;
+		member.status = MemberStatus.ACTIVE;
 		member.role = SystemRole.USER;
 
 		return member;

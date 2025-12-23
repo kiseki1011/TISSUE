@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.domain.EmailVerificationToken;
+import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.security.authentication.exception.AuthenticationExceptions;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +29,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 	public void saveToken(String email, String tokenValue, Duration ttl) {
 		EmailVerificationToken verificationToken = tokenRepository.findByEmail(email)
 			.map(t -> {
-				t.markVerified(); // 이전 토큰 무효화
+				t.markVerified(); // invalidate token
 				return EmailVerificationToken.create(email, tokenValue, ttl);
 			})
 			.orElse(EmailVerificationToken.create(email, tokenValue, ttl));
@@ -35,9 +37,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 			tokenRepository.save(verificationToken);
 		} catch (DataIntegrityViolationException e) {
 			log.warn("Duplicate verification token for email: {}", email, e);
-			// TODO: VerificationTokenAlreadyExistsException 또는 DuplicateVerificationTokenException
-			//  extends ResourceConflictException
-			throw new RuntimeException("A verification email was already sent. Please try again shortly.");
+			throw MemberExceptions.verificationTokenDuplicate(email, e);
 		}
 	}
 
@@ -45,8 +45,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
 	@Transactional
 	public boolean verify(String email, String tokenValue) {
 		EmailVerificationToken token = tokenRepository.findByEmail(email)
-			// TODO: VerificationTokenNotFoundException
-			.orElseThrow(() -> new RuntimeException("Invalid token"));
+			.orElseThrow(AuthenticationExceptions::invalidVerificationToken);
 
 		if (token.isExpired() || token.tokenValueNotMatch(tokenValue)) {
 			return false;

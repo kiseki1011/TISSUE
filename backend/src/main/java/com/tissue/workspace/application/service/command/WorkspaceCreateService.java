@@ -48,7 +48,7 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 	)
 	@Transactional
 	public WorkspaceCommandResponse create(CreateWorkspaceCommand cmd) {
-		Member member = memberFinder.findMemberById(cmd.memberId());
+		Member member = memberFinder.getActiveBy(cmd.memberId());
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 
@@ -69,6 +69,6 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 	@Recover
 	public WorkspaceCommandResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
-		throw WorkspaceExceptions.keyGenerationFailed();
+		throw WorkspaceExceptions.keyGenerationFailed(exception);
 	}
 }

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.position.application.port.out.PositionCommandRepository;
 import com.tissue.position.application.service.PositionService;
@@ -54,7 +54,7 @@ public abstract class RestAssuredTestHelper {
 	@Autowired
 	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@Autowired
-	protected MemberRepository memberRepository;
+	protected MemberCommandRepository memberCommandRepository;
 	@Autowired
 	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	// @Autowired

@@ -2,6 +2,7 @@ package com.tissue.issue.domain;
 
 import org.springframework.lang.Nullable;
 
+import com.tissue.common.exception.domain.InvalidPercentageException;
 import com.tissue.issue.domain.enums.ProgressType;
 
 import jakarta.persistence.Column;
@@ -40,14 +41,12 @@ public class IssueProgress {
 		};
 	}
 
-	// TODO: should i consider separating this into a separate util class?
-	//  currently im only using this here
 	private Integer ensureValidPercentageRange(Integer value) {
 		if (value == null) {
 			return null;
 		}
 		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
-			throw new RuntimeException("Percentage must be a value of 0 ~ 100. Input value was %d.".formatted(value));
+			throw new InvalidPercentageException(value, MIN_PERCENTAGE, MAX_PERCENTAGE);
 		}
 
 		return value;

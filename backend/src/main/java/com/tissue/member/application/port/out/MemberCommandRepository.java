@@ -6,7 +6,7 @@ import org.springframework.data.repository.Repository;
 
 import com.tissue.member.domain.Member;
 
-public interface MemberRepository extends Repository<Member, Long> {
+public interface MemberCommandRepository extends Repository<Member, Long> {
 
 	Member save(Member member);
 

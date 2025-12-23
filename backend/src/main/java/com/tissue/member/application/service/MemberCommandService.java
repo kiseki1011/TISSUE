@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberCommandService implements MemberCommandUseCase {
 
 	private final MemberFinder memberFinder;
-	private final MemberRepository memberRepository;
+	private final MemberCommandRepository memberCommandRepository;
 	private final MemberValidator memberValidator;
 	private final AuthenticationManager authenticationManager;
 	private final PasswordEncoder passwordEncoder;
@@ -35,7 +35,9 @@ public class MemberCommandService implements MemberCommandUseCase {
 		memberValidator.ensureUniqueEmail(cmd.email());
 		memberValidator.ensureUniqueUsername(cmd.username());
 
-		memberEmailVerificationService.validateEmailVerified(cmd.email());
+		if (!memberEmailVerificationService.isEmailVerified(cmd.email())) {
+			throw MemberExceptions.emailNotVerified(cmd.email());
+		}
 
 		Member member = Member.create(
 			cmd.email(),
@@ -45,7 +47,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 		);
 
 		try {
-			Member savedMember = memberRepository.save(member);
+			Member savedMember = memberCommandRepository.save(member);
 			memberEmailVerificationService.clearVerification(cmd.email());
 			return MemberSignupResponse.from(savedMember);
 		} catch (DataIntegrityViolationException e) {
@@ -66,7 +68,10 @@ public class MemberCommandService implements MemberCommandUseCase {
 		Member member = memberFinder.getActiveBy(memberId);
 
 		memberValidator.ensureUniqueEmail(newEmail);
-		memberEmailVerificationService.validateEmailVerified(newEmail);
+
+		if (!memberEmailVerificationService.isEmailVerified(newEmail)) {
+			throw MemberExceptions.emailNotVerified(newEmail);
+		}
 
 		try {
 			member.updateEmail(newEmail);
@@ -95,7 +100,6 @@ public class MemberCommandService implements MemberCommandUseCase {
 	public void updatePassword(String originalPassword, String newPassword, Long memberId) {
 		Member member = memberFinder.getActiveBy(memberId);
 
-		// TODO: is there a better way to do this?
 		authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(member.getEmail(), originalPassword)
 		);
@@ -103,15 +107,11 @@ public class MemberCommandService implements MemberCommandUseCase {
 		member.updatePassword(passwordEncoder.encode(newPassword));
 	}
 
-	// TODO(later): will implement a scheduler that batch (hard) deletes Members with DELETED status
-	//  - set policy to store Member for 30 days(configurable), then hard-delete
-	// TODO(now): but how should i handle the WorkspaceMembers and ProjectMembers of this member? soft-delete(kick) them all?
 	@Override
 	@Transactional
 	public void withdraw(String password, Long memberId) {
 		Member member = memberFinder.getActiveBy(memberId);
 
-		// TODO: is there a better way to do this?
 		authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(member.getEmail(), password)
 		);

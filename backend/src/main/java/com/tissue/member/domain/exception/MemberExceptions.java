@@ -2,13 +2,16 @@ package com.tissue.member.domain.exception;
 
 import static com.tissue.common.exception.ContextKeys.*;
 import static com.tissue.member.domain.exception.MemberErrorCode.*;
+import static com.tissue.security.authentication.exception.AuthenticationErrorCode.*;
 
 import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.common.exception.base.ForbiddenException;
 import com.tissue.common.exception.base.ResourceConflictException;
 import com.tissue.common.exception.base.ResourceNotFoundException;
 import com.tissue.member.domain.Member;
 
 public final class MemberExceptions {
+
 	private MemberExceptions() {
 	}
 
@@ -51,20 +54,35 @@ public final class MemberExceptions {
 	public static BadRequestException ownerNotWithdrawable(Member member) {
 		return new BadRequestException(OWNER_NOT_WITHDRAWABLE)
 			.addContext(MEMBER_ID, member.getId())
-			.addContext(MEMBER_ID, member.getUsername());
+			.addContext(USERNAME, member.getUsername());
 	}
 
 	public static BadRequestException workspaceOwnageLimit(Member member, int limit) {
 		return new BadRequestException(WORKSPACE_OWNAGE_LIMIT_EXCEEDED)
 			.addContext(MEMBER_ID, member.getId())
-			.addContext(MEMBER_ID, member.getUsername())
+			.addContext(USERNAME, member.getUsername())
 			.addContext("workspaceCreateLimit", limit);
 	}
 
 	public static BadRequestException workspaceJoinLimit(Member member, int limit) {
 		return new BadRequestException(WORKSPACE_JOIN_LIMIT_EXCEEDED)
 			.addContext(MEMBER_ID, member.getId())
-			.addContext(MEMBER_ID, member.getUsername())
+			.addContext(USERNAME, member.getUsername())
 			.addContext("workspaceJoinLimit", limit);
+	}
+
+	public static ResourceConflictException verificationTokenDuplicate(String email) {
+		return new ResourceConflictException(VERIFICATION_TOKEN_DUPLICATE)
+			.addContext(EMAIL, email);
+	}
+
+	public static ResourceConflictException verificationTokenDuplicate(String email, Throwable e) {
+		return new ResourceConflictException(VERIFICATION_TOKEN_DUPLICATE, e)
+			.addContext(EMAIL, email);
+	}
+
+	public static ForbiddenException emailNotVerified(String email) {
+		return new ForbiddenException(EMAIL_NOT_VERIFIED)
+			.addContext(EMAIL, email);
 	}
 }

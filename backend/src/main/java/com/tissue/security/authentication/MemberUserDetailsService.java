@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.tissue.member.application.port.out.MemberQueryRepository;
+import com.tissue.member.domain.MemberStatus;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,8 +35,9 @@ public class MemberUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		return memberRepository.findByEmail(email)
+			.filter(member -> member.getStatus() != MemberStatus.DELETED)
 			.map(MemberUserDetails::new)
-			// TODO: custom exception needed?
-			.orElseThrow(() -> new RuntimeException("Member not found for email: " + email));
+			// TODO: Is using UsernameNotFoundException better than using a custom exception?
+			.orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 	}
 }

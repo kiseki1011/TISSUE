@@ -20,7 +20,7 @@ import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.IssueCommandService;
 import com.tissue.member.adapter.in.web.MemberController;
 import com.tissue.member.adapter.in.web.MemberQueryController;
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.member.application.service.MemberQueryService;
 import com.tissue.member.application.service.validator.MemberValidator;
@@ -127,7 +127,7 @@ public abstract class ControllerTestHelper {
 	 * Repository
 	 */
 	@MockBean
-	protected MemberRepository memberRepository;
+	protected MemberCommandRepository memberCommandRepository;
 	@MockBean
 	protected WorkspaceCommandRepository workspaceCommandRepository;
 	@MockBean

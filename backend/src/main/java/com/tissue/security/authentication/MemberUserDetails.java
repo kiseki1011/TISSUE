@@ -8,10 +8,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tissue.member.domain.Member;
+import com.tissue.member.domain.MemberStatus;
 import com.tissue.security.authorization.SystemRole;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Member 엔티티를 스프링 시큐리티의 UserDetails로 변환하는 어댑터
@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
  * - 스프링 시큐리티가 이해할 수 있는 형태로 사용자 정보 제공
  */
 @Getter
-@RequiredArgsConstructor
 public class MemberUserDetails implements UserDetails {
 
 	private final Long memberId;
@@ -29,18 +28,19 @@ public class MemberUserDetails implements UserDetails {
 	private final String username;
 	private final String password;
 	private final SystemRole role;
+	private final MemberStatus status;
 
 	private final Collection<? extends GrantedAuthority> authorities;
 
 	private boolean elevated;
 
-	// TODO: does this need improvement?
 	public MemberUserDetails(Member member) {
 		this.memberId = member.getId();
 		this.email = member.getEmail();
 		this.username = member.getUsername();
 		this.password = member.getPassword();
 		this.role = member.getRole();
+		this.status = member.getStatus();
 
 		this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
 	}
@@ -66,26 +66,21 @@ public class MemberUserDetails implements UserDetails {
 
 	@Override
 	public boolean isAccountNonExpired() {
-		// check account expiration in Member
 		return true;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
-		// use if account lock is needed
-		return true;
+		return this.status != MemberStatus.LOCKED;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// use if credential expiration needed
 		return true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		// use if you need account activation status (probably can use for Member)
-		// TODO: how can i use this with MemberStatus
-		return true;
+		return this.status != MemberStatus.DELETED;
 	}
 }

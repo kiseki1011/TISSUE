@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.application.service.AuthenticationService;
+import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
@@ -24,13 +24,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-	private final AuthenticationService authenticationService;
+	private final AuthenticationUseCase authenticationUseCase;
 
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(
 		@Valid @RequestBody LoginRequest request
 	) {
-		LoginResponse response = authenticationService.login(request);
+		LoginResponse response = authenticationUseCase.login(request.loginEmail(), request.password());
 		return ResponseEntity.ok(response);
 	}
 
@@ -38,7 +38,7 @@ public class AuthenticationController {
 	public ResponseEntity<RefreshTokenResponse> refreshToken(
 		@RequestBody RefreshTokenRequest request
 	) {
-		RefreshTokenResponse response = authenticationService.refreshToken(request);
+		RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
 		return ResponseEntity.ok(response);
 	}
 
@@ -47,9 +47,9 @@ public class AuthenticationController {
 		@RequestBody @Valid PermissionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		ElevatedTokenResponse response = authenticationService.elevatePermission(
-			request,
+		ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
 			userDetails.getEmail(),
+			request.password(),
 			userDetails.getMemberId()
 		);
 

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
 import com.tissue.project.application.service.finder.ProjectFinder;
@@ -44,7 +44,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	private final ProjectFinder projectFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final InvitationFinder invitationFinder;
-	private final MemberRepository memberRepository;
+	private final MemberCommandRepository memberCommandRepository;
 	private final InvitationCommandRepository invitationRepository;
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final WorkspacePolicy workspacePolicy;
@@ -156,7 +156,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	}
 
 	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
-		List<Member> candidates = memberRepository.findAllByEmailIn(emails);
+		List<Member> candidates = memberCommandRepository.findAllByEmailIn(emails);
 		if (candidates.isEmpty()) {
 			return new InvitationFilterResult(Collections.emptyList(), Collections.emptyList());
 		}

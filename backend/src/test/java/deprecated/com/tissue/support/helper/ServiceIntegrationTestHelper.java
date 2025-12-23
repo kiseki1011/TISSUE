@@ -14,7 +14,7 @@ import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.IssueCommandService;
 import com.tissue.issue.application.service.IssueParticipantService;
 import com.tissue.issue.application.service.IssueRelationService;
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.application.service.MemberCommandService;
 import com.tissue.member.application.service.MemberQueryService;
 import com.tissue.member.application.service.validator.MemberValidator;
@@ -134,7 +134,7 @@ public abstract class ServiceIntegrationTestHelper {
 	@Autowired
 	protected WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	@Autowired
-	protected MemberRepository memberRepository;
+	protected MemberCommandRepository memberCommandRepository;
 	// @Autowired
 	// protected InvitationRepository invitationRepository;
 	@Autowired

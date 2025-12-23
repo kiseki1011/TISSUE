@@ -8,25 +8,24 @@ import org.springframework.stereotype.Service;
 import com.tissue.email.domain.EmailClient;
 import com.tissue.member.adapter.in.web.config.EmailVerificationProperties;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
+import com.tissue.member.domain.exception.MemberExceptions;
 
 import lombok.RequiredArgsConstructor;
 
-// TODO: do i need to make a usecase interface for this?
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
+
+	// TODO: use a property class to get value from application.yml
+	private static final Duration DEFAULT_TTL = Duration.ofMinutes(30);
 
 	private final EmailVerificationRepository repository;
 	private final EmailClient emailClient;
 	private final EmailVerificationProperties properties;
 
-	// TODO: use application.yml to get configuration value(do not hard code)
-	private static final Duration TTL = Duration.ofMinutes(30);
-
-	// TODO(later): improve email format to a better design
 	public void sendVerificationEmail(String email) {
 		String tokenValue = UUID.randomUUID().toString();
-		repository.saveToken(email, tokenValue, TTL);
+		repository.saveToken(email, tokenValue, DEFAULT_TTL);
 
 		String link = properties.getVerificationUrl() + "?email=%s&token=%s"
 			.formatted(email, tokenValue);
@@ -54,8 +53,7 @@ public class MemberEmailVerificationService {
 	public void validateEmailVerified(String email) {
 		boolean emailNotVerified = !repository.isVerified(email);
 		if (emailNotVerified) {
-			// TODO: EmailExceptions.emailNotVerified
-			throw new RuntimeException("Email is not verified. Please complete verification before signing up.");
+			throw MemberExceptions.emailNotVerified(email);
 		}
 	}
 

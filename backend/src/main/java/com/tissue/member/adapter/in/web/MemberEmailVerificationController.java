@@ -31,13 +31,16 @@ public class MemberEmailVerificationController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/verify")
+	@PostMapping("/verify")
 	public ResponseEntity<Void> verifyEmail(
 		@RequestParam String email,
 		@RequestParam String token
 	) {
 		boolean verified = memberEmailVerificationService.verifyEmail(email, token);
 
+		// TODO: what is the use for the redirect url?
+		//  send the user to the designated url after the user clicks the verification link?
+		//  in this case shouldnt i create a thymeleaf page for each url?
 		String redirectUrl = verified
 			? properties.getSuccessUrl() : properties.getFailureUrl();
 

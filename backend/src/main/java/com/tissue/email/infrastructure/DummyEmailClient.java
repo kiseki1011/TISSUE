@@ -12,7 +12,6 @@ public class DummyEmailClient implements EmailClient {
 
 	@Override
 	public void send(String to, String subject, String body) {
-		// 실제 전송하지 않고 로그로만 출력
 		log.info("[DummyEmailClient] Email sent - receiver: {}, title: {}\nbody: {}", to, subject, body);
 	}
 }

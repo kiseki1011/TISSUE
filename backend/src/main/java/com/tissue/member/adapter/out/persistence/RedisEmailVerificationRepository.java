@@ -48,7 +48,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 		return Objects.equals(VERIFIED, storedValue);
 	}
 
-	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
+	// TODO: use application properties
 	private Duration ttl() {
 		return Duration.ofMinutes(30);
 	}

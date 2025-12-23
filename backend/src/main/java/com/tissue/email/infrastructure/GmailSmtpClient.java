@@ -17,6 +17,7 @@ public class GmailSmtpClient implements EmailClient {
 
 	private final JavaMailSender mailSender;
 
+	// TODO: needs refactor
 	@Override
 	public void send(String to, String subject, String body) {
 		try {
@@ -25,7 +26,7 @@ public class GmailSmtpClient implements EmailClient {
 
 			helper.setTo(to);
 			helper.setSubject(subject);
-			helper.setFrom("your-email@gmail.com"); // 보내는 사람
+			helper.setFrom("your-email@gmail.com");
 			helper.setText(body, false); // false = plain text
 
 			mailSender.send(message);

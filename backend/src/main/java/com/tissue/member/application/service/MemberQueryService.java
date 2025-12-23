@@ -20,7 +20,6 @@ public class MemberQueryService implements MemberQueryUseCase {
 	@Transactional(readOnly = true)
 	public GetMemberProfile getMyProfile(Long memberId) {
 		Member member = memberFinder.getActiveBy(memberId);
-
 		return GetMemberProfile.from(member);
 	}
 }

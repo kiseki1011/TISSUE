@@ -79,7 +79,7 @@ public class WorkspaceExceptions {
 		return new BadRequestException(CANNOT_CHANGE_ROLE_TO_OWNER);
 	}
 
-	public static InternalServerException keyGenerationFailed() {
-		return new InternalServerException(WORKSPACE_KEY_GENERATION_FAILED);
+	public static InternalServerException keyGenerationFailed(Throwable e) {
+		return new InternalServerException(WORKSPACE_KEY_GENERATION_FAILED, e);
 	}
 }

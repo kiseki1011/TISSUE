@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import com.tissue.util.Base62Encoder;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,7 @@ public class WorkspaceKeyGenerator {
 			MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
 			return md.digest(inputString.getBytes());
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
+			throw WorkspaceExceptions.keyGenerationFailed(e);
 		}
 	}
 }
