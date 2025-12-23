@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tissue.comment.domain.model.Comment;
-import com.tissue.comment.domain.model.IssueComment;
+import com.tissue.comment.domain.Comment;
+import com.tissue.comment.domain.IssueComment;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 

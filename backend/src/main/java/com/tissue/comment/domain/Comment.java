@@ -1,10 +1,10 @@
-package com.tissue.comment.domain.model;
+package com.tissue.comment.domain;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tissue.comment.domain.enums.CommentStatus;
+import com.tissue.comment.domain.exception.CommentExceptions;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.workspace.domain.WorkspaceMember;
 
@@ -91,29 +91,19 @@ public abstract class Comment extends BaseEntity {
 		if (author.equals(workspaceMember)) {
 			return;
 		}
-		// TODO: InvalidPermissionException vs EditPermissionException
-		//  - 컨텍스트로 author의 username을 넘기기? 또는 workspaceMemberId? memberId?
-		throw new RuntimeException("Must be the author to edit.");
+		throw CommentExceptions.notAuthor(this.id, workspaceMember.getMemberId());
 	}
 
-	// 대댓글 추가 시 1-depth 제한과 타입 검증
 	protected void validateParentComment() {
 		if (parentComment == null) {
 			return;
 		}
-
 		if (parentComment.getParentComment() != null) {
-			// TODO: CommentDepthExceededException
-			throw new RuntimeException("Comments can only be nested one level deep.");
+			throw CommentExceptions.nestedLimitExceeded(parentComment.getId());
 		}
 
-		if (parentComment.getClass() != this.getClass()) {
-			// TODO: CommentTypeMatchException
-			throw new RuntimeException(
-				String.format("Parent comment type(%s) and child comment type(%s) must match.",
-					parentComment.getClass().getSimpleName(),
-					this.getClass().getSimpleName())
-			);
-		}
+		// if (parentComment.getClass() != this.getClass()) {
+		// 	throw CommentExceptions.relationMismatch(parentComment.getId(), this.getClass().getSimpleName());
+		// }
 	}
 }

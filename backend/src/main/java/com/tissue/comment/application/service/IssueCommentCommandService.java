@@ -1,4 +1,4 @@
-package com.tissue.comment.application.service.command;
+package com.tissue.comment.application.service;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

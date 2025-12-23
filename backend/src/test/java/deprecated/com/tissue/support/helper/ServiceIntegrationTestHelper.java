@@ -7,8 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.tissue.comment.application.service.command.IssueCommentCommandService;
-import com.tissue.comment.application.service.command.ReviewCommentCommandService;
+import com.tissue.comment.application.service.IssueCommentCommandService;
+import com.tissue.comment.application.service.ReviewCommentCommandService;
 import com.tissue.comment.infrastructure.repository.CommentRepository;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.IssueCommandService;

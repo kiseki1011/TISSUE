@@ -1,4 +1,4 @@
-package com.tissue.comment.domain.model;
+package com.tissue.comment.domain;
 
 import com.tissue.issue.domain.Issue;
 import com.tissue.workspace.domain.WorkspaceMember;

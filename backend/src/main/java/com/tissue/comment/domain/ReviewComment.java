@@ -1,4 +1,4 @@
-package com.tissue.comment.domain.model;
+package com.tissue.comment.domain;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
