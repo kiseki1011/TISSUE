@@ -3,18 +3,19 @@ package com.tissue.security.authentication.jwt;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.common.dto.ApiResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: refactor to use ProblemDetail
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -32,13 +33,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		HttpServletResponse response,
 		AuthenticationException authException
 	) throws IOException {
-
-		log.warn("Authentication exception occurred during a security filter process.");
+		log.warn("Authentication exception occurred during a security filter process");
 
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = "Authentication is required to access.";
 
-		ApiResponse<Void> apiResponse = ApiResponse.failWithNoContent(status, message);
+		ResponseEntity<String> apiResponse = ResponseEntity.status(status).body(message);
 
 		response.setStatus(status.value());
 		response.setContentType("application/json;charset=UTF-8");
