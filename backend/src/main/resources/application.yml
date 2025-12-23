@@ -20,24 +20,30 @@ spring:
 
 tissue:
   base-url: http://localhost:8080
+
+  # place jwt under security
   jwt:
     secret: ${JWT_SECRET}
     access-token-validity: 3600        # 1 hour
     refresh-token-validity: 604800     # 1 week
-    elevated-token-validity: 300       # 5 minutes
+    elevated-token-validity: 600       # 10 minutes
+
   email:
     verification:
       strategy: redis  # or rdb
       success-url: ${tissue.base-url}/members/verification/success
       failure-url: ${tissue.base-url}/members/verification/fail
       verification-url: ${tissue.base-url}/api/v1/members/verification/verify
+
   member:
     policy:
       max-owned-workspaces: 10
-      max-joined-workspaces: 100
+      max-joined-workspaces: 10
+
   workspace:
     policy:
       max-members: 1000
+
   project:
     policy:
       max-members: 1000
@@ -46,6 +52,7 @@ tissue:
       # max-issue-fields: 1000
       # max-issue-types: 1000
       # max-workflows: 1000
+
   issue:
     policy:
       max-reviewers: 10
