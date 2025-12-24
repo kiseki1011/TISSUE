@@ -1,7 +1,7 @@
 package com.tissue.security.authorization.project.sprint;
 
-// TODO: integrate into ProjectSecurityExpressions
+// TODO: should i integrate into ProjectSecurityExpressions?
 public interface SprintSecurityExpressions {
 
-	String REQUIRES_SPRINT_MANAGER = "@sprintSecurityGuard.isSprintManager(#cmd.sprintId, principal.memberId)";
+	String REQUIRES_SPRINT_MANAGER = "@sprintSecurityGuard.isSprintManager(#cmd.sprintId, #cmd.projectKey, principal.memberId)";
 }

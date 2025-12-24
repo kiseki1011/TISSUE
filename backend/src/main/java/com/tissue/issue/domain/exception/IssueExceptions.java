@@ -192,6 +192,11 @@ public class IssueExceptions {
 			.addContext(INPUT_DATE, inputDate);
 	}
 
+	public static ResourceNotFoundException reviewerNotFound(Long memberId) {
+		return new ResourceNotFoundException(REVIEWER_NOT_FOUND)
+			.addContext(MEMBER_ID, memberId);
+	}
+
 	public static BadRequestException customFieldRequired(
 		Long issueTypeId,
 		String issueTypeName,
@@ -246,8 +251,8 @@ public class IssueExceptions {
 			.addContext(FIELD_OPTION_ID, optionId);
 	}
 
-	public static ResourceNotFoundException reviewerNotFound(Long memberId) {
-		return new ResourceNotFoundException(REVIEWER_NOT_FOUND)
-			.addContext(MEMBER_ID, memberId);
+	public static BadRequestException invalidPercentage(Integer inputValue) {
+		return new BadRequestException(INVALID_PERCENTAGE_EXCEPTION)
+			.addContext(PROVIDED_VALUE, inputValue);
 	}
 }

@@ -2,8 +2,8 @@ package com.tissue.issue.domain;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.common.exception.domain.InvalidPercentageException;
 import com.tissue.issue.domain.enums.ProgressType;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -46,7 +46,7 @@ public class IssueProgress {
 			return null;
 		}
 		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
-			throw new InvalidPercentageException(value, MIN_PERCENTAGE, MAX_PERCENTAGE);
+			throw IssueExceptions.invalidPercentage(value);
 		}
 
 		return value;

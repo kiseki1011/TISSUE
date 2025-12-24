@@ -1,6 +1,8 @@
 package com.tissue.member.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.repository.Repository;
 
@@ -18,6 +20,8 @@ public interface MemberQueryRepository extends Repository<Member, Long> {
 	Optional<Member> findByEmailAndStatus(String email, MemberStatus status);
 
 	Optional<Member> findByUsernameAndStatus(String username, MemberStatus status);
+
+	List<Member> findAllByEmailInAndStatus(Set<String> emails, MemberStatus status);
 
 	boolean existsByEmail(String email);
 

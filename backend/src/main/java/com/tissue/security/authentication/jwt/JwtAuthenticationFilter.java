@@ -74,25 +74,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		return null;
 	}
-
-	/**
-	 * Skip JWT authentication for certain endpoints
-	 *
-	 * - login API
-	 * - token refresh API
-	 * - signup API
-	 * - resource duplication check APIs
-	 * - public APIs (health, API docs, etc...)
-	 */
-	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) {
-		String path = request.getRequestURI();
-		String method = request.getMethod();
-
-		return path.startsWith("/api/v1/auth/")
-			|| (path.equals("/api/v1/members") && "POST".equals(method))
-			|| path.startsWith("/api/v1/members/check-")
-			|| path.startsWith("/actuator/")
-			|| path.startsWith("/swagger-ui/");
-	}
 }

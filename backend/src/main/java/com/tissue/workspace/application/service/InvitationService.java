@@ -46,7 +46,7 @@ public class InvitationService implements InvitationUseCase {
 
 		WorkspaceMember workspaceMember = workspaceParticipationService.join(
 			invitation.getWorkspace(),
-			memberFinder.findMemberById(memberId),
+			memberFinder.getActiveBy(memberId),
 			invitation.getWorkspaceRole()
 		);
 
@@ -80,7 +80,7 @@ public class InvitationService implements InvitationUseCase {
 		return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING)
 			.stream()
 			.map(invitation -> {
-				Member inviter = memberFinder.findOptionalBy(invitation.getCreatedBy())
+				Member inviter = memberFinder.getOptActiveBy(invitation.getCreatedBy())
 					.orElse(null);
 				return InvitationDetail.from(invitation, inviter);
 			})

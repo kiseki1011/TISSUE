@@ -31,7 +31,6 @@ public class Member extends BaseDateEntity {
 	@Column(name = "member_id")
 	private Long id;
 
-	// TODO: should i make a Email vo?
 	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 

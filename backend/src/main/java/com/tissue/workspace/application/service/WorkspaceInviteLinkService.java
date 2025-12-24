@@ -86,7 +86,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
 		WorkspaceMember workspaceMember = workspaceParticipationService.join(
 			link.getWorkspace(),
-			memberFinder.findMemberById(cmd.memberId()),
+			memberFinder.getActiveBy(cmd.memberId()),
 			link.getWorkspaceRole()
 		);
 

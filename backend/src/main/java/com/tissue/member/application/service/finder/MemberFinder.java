@@ -22,7 +22,7 @@ public class MemberFinder {
 			.orElseThrow(() -> MemberExceptions.activeNotFound(memberId));
 	}
 
-	public Optional<Member> findOptionalActiveBy(Long memberId) {
+	public Optional<Member> getOptActiveBy(Long memberId) {
 		return memberRepository.findByIdAndStatus(memberId, MemberStatus.ACTIVE);
 	}
 }

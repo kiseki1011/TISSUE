@@ -21,6 +21,7 @@ import com.tissue.member.adapter.in.web.dto.request.UpdateMemberUsernameRequest;
 import com.tissue.member.adapter.in.web.dto.request.WithdrawMemberRequest;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
+import com.tissue.member.application.port.in.MemberQueryUseCase;
 import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.exception.AuthenticationExceptions;
@@ -36,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 
 	private final MemberCommandUseCase memberCommandUseCase;
-	private final MemberValidator memberValidator;
+	private final MemberQueryUseCase memberQueryUseCase;
 
 	@PostMapping
 	public ResponseEntity<MemberSignupResponse> signup(
@@ -129,8 +130,8 @@ public class MemberController {
 	 */
 	@GetMapping("/checkEmail")
 	public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
-		// TODO: should i delegate this to a service and not call member validator directly?
-		memberValidator.ensureUniqueEmail(email);
+		// Refactored: now uses the query use case instead of direct validator call
+		memberQueryUseCase.checkEmailAvailability(email);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -139,7 +140,7 @@ public class MemberController {
 	 */
 	@GetMapping("/checkUsername")
 	public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
-		memberValidator.ensureUniqueUsername(username);
+		memberQueryUseCase.checkUsernameAvailability(username);
 		return ResponseEntity.noContent().build();
 	}
 

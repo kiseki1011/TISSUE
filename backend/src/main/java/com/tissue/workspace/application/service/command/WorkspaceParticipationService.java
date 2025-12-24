@@ -1,5 +1,7 @@
 package com.tissue.workspace.application.service.command;
 
+import static com.tissue.member.domain.MemberStatus.*;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.member.application.port.out.MemberCommandRepository;
+import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
 import com.tissue.project.application.service.finder.ProjectFinder;
@@ -44,7 +46,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	private final ProjectFinder projectFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final InvitationFinder invitationFinder;
-	private final MemberCommandRepository memberCommandRepository;
+	private final MemberQueryRepository memberQueryRepository;
 	private final InvitationCommandRepository invitationRepository;
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final WorkspacePolicy workspacePolicy;
@@ -156,7 +158,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	}
 
 	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
-		List<Member> candidates = memberCommandRepository.findAllByEmailIn(emails);
+		List<Member> candidates = memberQueryRepository.findAllByEmailInAndStatus(emails, ACTIVE);
 		if (candidates.isEmpty()) {
 			return new InvitationFilterResult(Collections.emptyList(), Collections.emptyList());
 		}

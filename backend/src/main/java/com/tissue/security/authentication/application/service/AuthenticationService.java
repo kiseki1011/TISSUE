@@ -54,7 +54,10 @@ public class AuthenticationService implements AuthenticationUseCase {
 		// create new access token
 		String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
 
-		return new RefreshTokenResponse(newAccessToken);
+		// RTR (Refresh Token Rotation): Issue a new refresh token
+		String newRefreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+
+		return new RefreshTokenResponse(newAccessToken, newRefreshToken);
 	}
 
 	@Override
