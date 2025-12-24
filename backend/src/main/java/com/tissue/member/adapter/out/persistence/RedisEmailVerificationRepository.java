@@ -20,6 +20,9 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 
 	private final RedisTemplate<String, String> redisTemplate;
 
+	@org.springframework.beans.factory.annotation.Value("${tissue.email.verification.ttl}")
+	private Duration ttl;
+
 	private static final String PREFIX = "email_verification:";
 	private static final String VERIFIED = "verified";
 
@@ -38,7 +41,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 			return false;
 		}
 
-		redisTemplate.opsForValue().set(PREFIX + email, VERIFIED, ttl());
+		redisTemplate.opsForValue().set(PREFIX + email, VERIFIED, ttl);
 		return true;
 	}
 
@@ -46,11 +49,6 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 	public boolean isVerified(String email) {
 		String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
 		return Objects.equals(VERIFIED, storedValue);
-	}
-
-	// TODO: use application properties
-	private Duration ttl() {
-		return Duration.ofMinutes(30);
 	}
 
 	@Override

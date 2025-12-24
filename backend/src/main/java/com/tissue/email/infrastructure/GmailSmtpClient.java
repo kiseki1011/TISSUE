@@ -1,5 +1,6 @@
 package com.tissue.email.infrastructure;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 public class GmailSmtpClient implements EmailClient {
 
 	private final JavaMailSender mailSender;
+
+	@Value("${tissue.email.sender}")
 	private String senderEmail;
 
 	/**
