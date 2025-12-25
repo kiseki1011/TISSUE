@@ -1,6 +1,7 @@
 package com.tissue.security.authorization;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -35,7 +36,7 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 			"You do not have permission to access this resource"
 		);
 		problemDetail.setTitle("Forbidden");
-		problemDetail.setInstance(java.net.URI.create(request.getRequestURI()));
+		problemDetail.setInstance(URI.create(request.getRequestURI()));
 
 		response.setStatus(HttpStatus.FORBIDDEN.value());
 		response.setContentType("application/json;charset=UTF-8");
