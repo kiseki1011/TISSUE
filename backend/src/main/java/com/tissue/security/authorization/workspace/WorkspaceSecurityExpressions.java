@@ -27,9 +27,9 @@ public interface WorkspaceSecurityExpressions {
 	String REQUIRES_SELF_MODIFICATION = "@workspaceSecurityGuard.isSelfModification(#cmd.workspaceKey, #cmd.memberId(), principal)";
 
 	/**
-	 * @see WorkspaceSecurityGuard#isHigherRoleThanTarget(String, Long, MemberUserDetails)
+	 * @see WorkspaceSecurityGuard#hasHigherRoleThanTarget(String, Long, MemberUserDetails)
 	 */
-	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.isHigherRoleThanTarget(#cmd.workspaceKey(), #cmd.targetMemberId(), principal)";
+	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.hasHigherRoleThanTarget(#cmd.workspaceKey(), #cmd.targetMemberId(), principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#canGrantRole(String, WorkspaceRole, MemberUserDetails)

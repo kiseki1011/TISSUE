@@ -158,17 +158,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		""")
 	List<String> findIssueKeysBySprint(@Param("sprint") Sprint sprint);
 
-	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.sprint = :sprint
-		      AND i.currentState.category != :doneCategory
-		""")
-	boolean existsBySprintAndCategoryNot(
-		@Param("sprint") Sprint sprint,
-		@Param("doneCategory") StateCategory doneCategory
-	);
-
 	@Query("SELECT DISTINCT i.currentState.id " +
 		"FROM Issue i " +
 		"WHERE i.currentState.id IN :stateIds " +
@@ -187,41 +176,8 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		""")
 	List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
 
-	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.workspaceKey = :workspaceKey
-		    AND i.key = :issueKey
-		      AND (
-		          i.createdBy = :memberId
-		          OR i.participants.assignee.memberId = :memberId
-		      )
-		""")
-	boolean existsByKeysAndAuthorOrAssignee(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey,
-		@Param("memberId") Long memberId
-	);
-
-	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.workspaceKey = :workspaceKey
-		      AND i.key = :issueKey
-		      AND i.createdBy = :memberId
-		""")
-	boolean existsByKeysAndAuthor(
-		@Param("workspaceKey") String workspaceKey,
-		@Param("issueKey") String issueKey,
-		@Param("memberId") Long memberId
-	);
-
 	/**
-	 * Checks modification permission in a single query.
-	 * <p>
-	 * Optimization for:
-	 * Workspace Admin OR Project Admin OR Issue Author OR Issue Assignee
-	 * </p>
+	 * Checks if the member is the author or assignee of the issue
 	 */
 	@Query("""
 		SELECT COUNT(i) > 0
@@ -229,59 +185,27 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		WHERE i.workspaceKey = :workspaceKey
 		  AND i.key = :issueKey
 		  AND (
-		      EXISTS (
-		          SELECT wm FROM WorkspaceMember wm
-		          WHERE wm.member.id = :memberId
-		            AND wm.workspaceKey = :workspaceKey
-		            AND wm.role IN ('OWNER', 'ADMIN')
-		      )
-		      OR
-		      EXISTS (
-		          SELECT pm FROM ProjectMember pm
-		          WHERE pm.member.id = :memberId
-		            AND pm.project = i.project
-		            AND pm.role = 'ADMIN'
-		      )
-		      OR i.createdBy = :memberId
+		      i.createdBy = :memberId
 		      OR i.participants.assignee.memberId = :memberId
 		  )
 		""")
-	boolean canModifyIssue(
+	boolean isAuthorOrAssignee(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey,
 		@Param("memberId") Long memberId
 	);
 
 	/**
-	 * Checks delete permission in a single query.
-	 * <p>
-	 * Optimization for:
-	 * Workspace Admin OR Project Admin OR Issue Author
-	 * </p>
+	 * Checks if the member is the author of the issue
 	 */
 	@Query("""
 		SELECT COUNT(i) > 0
 		FROM Issue i
 		WHERE i.workspaceKey = :workspaceKey
 		  AND i.key = :issueKey
-		  AND (
-		      EXISTS (
-		          SELECT wm FROM WorkspaceMember wm
-		          WHERE wm.member.id = :memberId
-		            AND wm.workspaceKey = :workspaceKey
-		            AND wm.role IN ('OWNER', 'ADMIN')
-		      )
-		      OR
-		      EXISTS (
-		          SELECT pm FROM ProjectMember pm
-		          WHERE pm.member.id = :memberId
-		            AND pm.project = i.project
-		            AND pm.role = 'ADMIN'
-		      )
-		      OR i.createdBy = :memberId
-		  )
+		  AND i.createdBy = :memberId
 		""")
-	boolean canDeleteIssue(
+	boolean isAuthor(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey,
 		@Param("memberId") Long memberId

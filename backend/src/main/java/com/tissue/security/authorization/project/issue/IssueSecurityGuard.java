@@ -29,13 +29,10 @@ public class IssueSecurityGuard {
 	 * </ul>
 	 */
 	public boolean canEdit(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-		// TODO: should i use projectSecurityGuard.isAdmin ?
-		if (userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN)) {
+		if (projectSecurityGuard.isAdmin(workspaceKey, projectKey, userDetails)) {
 			return true;
 		}
-		// TODO: shouldnt i change to only check if userDetails is the author or assignee of the issue?
-		//  (ADMIN permission already checked above)
-		return issueQueryRepository.canModifyIssue(workspaceKey, issueKey, userDetails.getMemberId());
+		return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, userDetails.getMemberId());
 	}
 
 	/**
@@ -50,13 +47,10 @@ public class IssueSecurityGuard {
 	 * </ul>
 	 */
 	public boolean canDelete(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-		// TODO: should i use projectSecurityGuard.isAdmin ?
-		if (userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN)) {
+		if (projectSecurityGuard.isAdmin(workspaceKey, projectKey, userDetails)) {
 			return true;
 		}
-		// TODO: shouldnt i change to only check if userDetails is the author of the issue?
-		//  (ADMIN permission already checked above)
-		return issueQueryRepository.canDeleteIssue(workspaceKey, issueKey, userDetails.getMemberId());
+		return issueQueryRepository.isAuthor(workspaceKey, issueKey, userDetails.getMemberId());
 	}
 
 	/**
@@ -70,7 +64,6 @@ public class IssueSecurityGuard {
 	 *   <li>The member is the author or assignee of the issue</li>
 	 * </ul>
 	 */
-	// TODO: should i remove this method and just use REQUIRES_ISSUE_EDIT_PERMISSION for reviewer manage?
 	public boolean canManageReviewers(String workspaceKey, String projectKey, String issueKey,
 		MemberUserDetails userDetails) {
 		return canEdit(workspaceKey, projectKey, issueKey, userDetails);

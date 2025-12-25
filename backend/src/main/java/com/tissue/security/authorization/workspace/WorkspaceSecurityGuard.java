@@ -35,21 +35,21 @@ public class WorkspaceSecurityGuard {
 			|| memberId.equals(userDetails.getMemberId());
 	}
 
-	public boolean isHigherRoleThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+	public boolean hasHigherRoleThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
 		if (targetMemberId.equals(userDetails.getMemberId())) {
 			return false;
 		}
-		if (isLowerThanAdmin(workspaceKey, userDetails)) {
+		if (isNotAdmin(workspaceKey, userDetails)) {
 			return false;
 		}
-		return isHigherThanTarget(workspaceKey, targetMemberId, userDetails);
+		return hasHigherRoleThan(workspaceKey, targetMemberId, userDetails);
 	}
 
 	public boolean canGrantRole(String workspaceKey, WorkspaceRole grantRole, MemberUserDetails userDetails) {
 		if (grantRole == WorkspaceRole.OWNER) {
 			return false;
 		}
-		if (isLowerThanAdmin(workspaceKey, userDetails)) {
+		if (isNotAdmin(workspaceKey, userDetails)) {
 			return false;
 		}
 		return userDetails.hasWorkspaceRole(workspaceKey, grantRole);
@@ -66,13 +66,13 @@ public class WorkspaceSecurityGuard {
 			.orElse(false);
 	}
 
-	private boolean isHigherThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+	private boolean hasHigherRoleThan(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
 		return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
 			.map(target -> userDetails.hasWorkspaceRole(workspaceKey, target.getRole()))
 			.orElse(false);
 	}
 
-	private boolean isLowerThanAdmin(String workspaceKey, MemberUserDetails userDetails) {
+	private boolean isNotAdmin(String workspaceKey, MemberUserDetails userDetails) {
 		return !userDetails.hasWorkspaceRole(workspaceKey, ADMIN);
 	}
 }
