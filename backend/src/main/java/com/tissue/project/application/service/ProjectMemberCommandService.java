@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
-import com.tissue.project.application.dto.request.JoinProjectCommand;
+import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
@@ -73,7 +73,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 	@Override
 	@Transactional
-	public ProjectMemberCommandResult join(JoinProjectCommand cmd) {
+	public ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd) {
 		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
@@ -95,7 +95,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
 		actor.remove();
 
-		// TODO: ProjectMemberLeavedEvent
+		// TODO: ProjectMemberLeftEvent
 
 		return ProjectMemberCommandResult.of(actor);
 	}

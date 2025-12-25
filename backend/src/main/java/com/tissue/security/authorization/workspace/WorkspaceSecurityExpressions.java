@@ -1,20 +1,43 @@
 package com.tissue.security.authorization.workspace;
 
-// TODO: 각 expression을 설명하는 주석
-//  - 사용하는 메서드로의 참조 추가하면 좋을듯?
+import com.tissue.security.authentication.MemberUserDetails;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
+
+// TODO: should i add javadoc that explains each permission?
 public interface WorkspaceSecurityExpressions {
 
-	String REQUIRES_SELF_MODIFICATION = "@workspaceSecurityGuard.isSelfModification(#cmd.actorMemberId(), principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#isMember(String, MemberUserDetails)
+	 */
+	String REQUIRES_WORKSPACE_MEMBER = "@workspaceSecurityGuard.isMember(#cmd.workspaceKey(), principal)";
 
-	String REQUIRES_WORKSPACE_MEMBER = "@workspaceSecurityGuard.isMember(#cmd.workspaceKey(), principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#isAdmin(String, MemberUserDetails)
+	 */
+	String REQUIRES_WORKSPACE_ADMIN = "@workspaceSecurityGuard.isAdmin(#cmd.workspaceKey(), principal)";
 
-	String REQUIRES_WORKSPACE_ADMIN = "@workspaceSecurityGuard.isAdmin(#cmd.workspaceKey(), principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#isOwner(String, MemberUserDetails)
+	 */
+	String REQUIRES_WORKSPACE_OWNER = "@workspaceSecurityGuard.isOwner(#cmd.workspaceKey(), principal)";
 
-	String REQUIRES_WORKSPACE_OWNER = "@workspaceSecurityGuard.isOwner(#cmd.workspaceKey(), principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#isSelfModification(String, Long, MemberUserDetails)
+	 */
+	String REQUIRES_SELF_MODIFICATION = "@workspaceSecurityGuard.isSelfModification(#cmd.workspaceKey, #cmd.memberId(), principal)";
 
-	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.targetHasLowerRole(#cmd.workspaceKey(), #cmd.targetMemberId(), principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#isHigherRoleThanTarget(String, Long, MemberUserDetails)
+	 */
+	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.isHigherRoleThanTarget(#cmd.workspaceKey(), #cmd.targetMemberId(), principal)";
 
-	String REQUIRES_GRANTABLE_WORKSPACE_ROLE = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, principal.memberId, #cmd.workspaceRole)";
+	/**
+	 * @see WorkspaceSecurityGuard#canGrantRole(String, WorkspaceRole, MemberUserDetails)
+	 */
+	String REQUIRES_WORKSPACE_ROLE_GRANT_PERMISSION = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.grantRole, principal)";
 
-	String REQUIRES_LINK_CREATOR_OR_WORKSPACE_ADMIN = "@workspaceInviteLinkSecurityGuard.canExpire(#cmd.workspaceKey, #cmd.token, principal.memberId)";
+	/**
+	 * @see WorkspaceSecurityGuard#canEditInviteLink(String, String, MemberUserDetails)
+	 */
+	String REQUIRES_LINK_EDIT_PERMISSION = "@workspaceSecurityGuard.canEditLink(#cmd.workspaceKey, #cmd.token, principal)";
 }

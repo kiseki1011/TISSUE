@@ -215,4 +215,75 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		@Param("issueKey") String issueKey,
 		@Param("memberId") Long memberId
 	);
+
+	/**
+	 * Checks modification permission in a single query.
+	 * <p>
+	 * Optimization for:
+	 * Workspace Admin OR Project Admin OR Issue Author OR Issue Assignee
+	 * </p>
+	 */
+	@Query("""
+		SELECT COUNT(i) > 0
+		FROM Issue i
+		WHERE i.workspaceKey = :workspaceKey
+		  AND i.key = :issueKey
+		  AND (
+		      EXISTS (
+		          SELECT wm FROM WorkspaceMember wm
+		          WHERE wm.member.id = :memberId
+		            AND wm.workspaceKey = :workspaceKey
+		            AND wm.role IN ('OWNER', 'ADMIN')
+		      )
+		      OR
+		      EXISTS (
+		          SELECT pm FROM ProjectMember pm
+		          WHERE pm.member.id = :memberId
+		            AND pm.project = i.project
+		            AND pm.role = 'ADMIN'
+		      )
+		      OR i.createdBy = :memberId
+		      OR i.participants.assignee.memberId = :memberId
+		  )
+		""")
+	boolean canModifyIssue(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey,
+		@Param("memberId") Long memberId
+	);
+
+	/**
+	 * Checks delete permission in a single query.
+	 * <p>
+	 * Optimization for:
+	 * Workspace Admin OR Project Admin OR Issue Author
+	 * </p>
+	 */
+	@Query("""
+		SELECT COUNT(i) > 0
+		FROM Issue i
+		WHERE i.workspaceKey = :workspaceKey
+		  AND i.key = :issueKey
+		  AND (
+		      EXISTS (
+		          SELECT wm FROM WorkspaceMember wm
+		          WHERE wm.member.id = :memberId
+		            AND wm.workspaceKey = :workspaceKey
+		            AND wm.role IN ('OWNER', 'ADMIN')
+		      )
+		      OR
+		      EXISTS (
+		          SELECT pm FROM ProjectMember pm
+		          WHERE pm.member.id = :memberId
+		            AND pm.project = i.project
+		            AND pm.role = 'ADMIN'
+		      )
+		      OR i.createdBy = :memberId
+		  )
+		""")
+	boolean canDeleteIssue(
+		@Param("workspaceKey") String workspaceKey,
+		@Param("issueKey") String issueKey,
+		@Param("memberId") Long memberId
+	);
 }

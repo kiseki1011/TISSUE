@@ -1,9 +1,10 @@
 package com.tissue.sprint.application.port.in;
 
+import static com.tissue.security.authorization.project.ProjectSecurityExpressions.*;
+import static com.tissue.security.authorization.project.sprint.SprintSecurityExpressions.*;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.security.authorization.project.ProjectSecurityExpressions;
-import com.tissue.security.authorization.project.sprint.SprintSecurityExpressions;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
 import com.tissue.sprint.application.dto.request.CreateSprintCommand;
@@ -15,24 +16,25 @@ import com.tissue.sprint.application.dto.response.SprintCommandResult;
 
 public interface SprintCommandUseCase {
 
-	@PreAuthorize(ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult createSprint(CreateSprintCommand cmd);
 
-	@PreAuthorize(ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER)
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult addIssues(AddSprintIssuesCommand cmd);
 
-	@PreAuthorize(SprintSecurityExpressions.REQUIRES_SPRINT_MANAGER)
+	@PreAuthorize(REQUIRES_SPRINT_EDIT_PERMISSION)
 	SprintCommandResult updateSprint(UpdateSprintCommand cmd);
 
-	@PreAuthorize(SprintSecurityExpressions.REQUIRES_SPRINT_MANAGER)
+	@PreAuthorize(REQUIRES_SPRINT_EDIT_PERMISSION)
 	SprintCommandResult start(StartSprintCommand cmd);
 
-	@PreAuthorize(SprintSecurityExpressions.REQUIRES_SPRINT_MANAGER)
+	@PreAuthorize(REQUIRES_SPRINT_EDIT_PERMISSION)
 	SprintCommandResult complete(CompleteSprintCommand cmd);
 
-	@PreAuthorize(SprintSecurityExpressions.REQUIRES_SPRINT_MANAGER)
+	@PreAuthorize(REQUIRES_SPRINT_EDIT_PERMISSION)
 	SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd);
 
-	@PreAuthorize(ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER)
+	// TODO: should removing issues from a sprint be open to anyone that has ProjectRole.MEMBER?
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd);
 }

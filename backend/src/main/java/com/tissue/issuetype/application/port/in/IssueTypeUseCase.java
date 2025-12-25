@@ -15,12 +15,12 @@ public interface IssueTypeUseCase {
 	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	IssueTypeResponse create(CreateIssueTypeCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void rename(RenameIssueTypeCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void update(PatchIssueTypeCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_TYPE_MANAGE)
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void delete(DeleteIssueTypeCommand cmd);
 }

@@ -2,14 +2,12 @@ package com.tissue.security.authorization.workspace;
 
 import static com.tissue.workspace.domain.enums.WorkspaceRole.*;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Component;
 
+import com.tissue.security.authentication.MemberUserDetails;
+import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
-import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,57 +15,64 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WorkspaceSecurityGuard {
 
+	private final WorkspaceLinkQueryRepository linkRepository;
 	private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-	public boolean isSelfModification(Long targetMemberId, Long memberId) {
-		return targetMemberId.equals(memberId);
+	public boolean isMember(String workspaceKey, MemberUserDetails userDetails) {
+		return userDetails.hasWorkspaceRole(workspaceKey, MEMBER);
 	}
 
-	public boolean isMember(String workspaceKey, Long memberId) {
-		return findWorkspaceMember(memberId, workspaceKey)
-			.map(actor -> actor.roleIsEqualOrHigherThan(MEMBER))
-			.orElse(false);
+	public boolean isAdmin(String workspaceKey, MemberUserDetails userDetails) {
+		return userDetails.hasWorkspaceRole(workspaceKey, ADMIN);
 	}
 
-	public boolean isAdmin(String workspaceKey, Long memberId) {
-		return findWorkspaceMember(memberId, workspaceKey)
-			.map(actor -> actor.roleIsEqualOrHigherThan(ADMIN))
-			.orElse(false);
+	public boolean isOwner(String workspaceKey, MemberUserDetails userDetails) {
+		return userDetails.hasWorkspaceRole(workspaceKey, OWNER);
 	}
 
-	public boolean isOwner(String workspaceKey, Long memberId) {
-		return findWorkspaceMember(memberId, workspaceKey)
-			.map(actor -> actor.roleIsEqualOrHigherThan(OWNER))
-			.orElse(false);
+	public boolean isSelfModification(String workspaceKey, Long memberId, MemberUserDetails userDetails) {
+		return isAdmin(workspaceKey, userDetails)
+			|| memberId.equals(userDetails.getMemberId());
 	}
 
-	public boolean targetHasLowerRole(String workspaceKey, Long targetMemberId, Long memberId) {
-		if (targetMemberId.equals(memberId)) {
+	public boolean isHigherRoleThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+		if (targetMemberId.equals(userDetails.getMemberId())) {
 			return false;
 		}
-
-		WorkspaceMember actor = findWorkspaceMember(memberId, workspaceKey)
-			.orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
-
-		WorkspaceMember target = findWorkspaceMember(targetMemberId, workspaceKey)
-			.orElseThrow(() -> WorkspaceExceptions.memberNotFound(targetMemberId, workspaceKey));
-
-		return target.roleIsLowerThan(actor.getRole());
+		if (isLowerThanAdmin(workspaceKey, userDetails)) {
+			return false;
+		}
+		return isHigherThanTarget(workspaceKey, targetMemberId, userDetails);
 	}
 
-	public boolean canGrantRole(String workspaceKey, Long memberId, WorkspaceRole grantRole) {
+	public boolean canGrantRole(String workspaceKey, WorkspaceRole grantRole, MemberUserDetails userDetails) {
 		if (grantRole == WorkspaceRole.OWNER) {
 			return false;
 		}
-		return findWorkspaceMember(memberId, workspaceKey)
-			.map(actor -> actor.roleIsEqualOrHigherThan(grantRole))
+		if (isLowerThanAdmin(workspaceKey, userDetails)) {
+			return false;
+		}
+		return userDetails.hasWorkspaceRole(workspaceKey, grantRole);
+	}
+
+	public boolean canEditInviteLink(String workspaceKey, String token, MemberUserDetails userDetails) {
+		return userDetails.hasWorkspaceRole(workspaceKey, WorkspaceRole.ADMIN)
+			|| isLinkCreator(token, userDetails);
+	}
+
+	private boolean isLinkCreator(String token, MemberUserDetails userDetails) {
+		return linkRepository.findByToken(token)
+			.map(link -> link.getCreatedBy().equals(userDetails.getMemberId()))
 			.orElse(false);
 	}
 
-	private Optional<WorkspaceMember> findWorkspaceMember(Long memberId, String workspaceKey) {
-		return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(
-			memberId,
-			workspaceKey
-		);
+	private boolean isHigherThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+		return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
+			.map(target -> userDetails.hasWorkspaceRole(workspaceKey, target.getRole()))
+			.orElse(false);
+	}
+
+	private boolean isLowerThanAdmin(String workspaceKey, MemberUserDetails userDetails) {
+		return !userDetails.hasWorkspaceRole(workspaceKey, ADMIN);
 	}
 }

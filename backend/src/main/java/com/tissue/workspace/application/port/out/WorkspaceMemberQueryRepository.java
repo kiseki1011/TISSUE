@@ -78,4 +78,6 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 	long countByMemberAndRole(Member member, WorkspaceRole role);
 
 	long countByMember(Member member);
+
+	List<WorkspaceMember> findAllByMemberId(Long memberId);
 }

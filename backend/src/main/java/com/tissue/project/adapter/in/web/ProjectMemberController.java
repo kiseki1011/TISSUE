@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tissue.project.adapter.in.web.dto.request.AddProjectMembersRequest;
 import com.tissue.project.adapter.in.web.dto.request.ChangeProjectRoleRequest;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
-import com.tissue.project.application.dto.request.JoinProjectCommand;
+import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
@@ -45,13 +45,13 @@ public class ProjectMemberController {
 	}
 
 	@PatchMapping
-	public ResponseEntity<ProjectMemberCommandResult> joinProject(
+	public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
 		@PathVariable String workspaceKey,
 		@PathVariable String projectKey,
 		@CurrentMember MemberUserDetails currentMember
 	) {
-		var command = new JoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
-		ProjectMemberCommandResult response = commandUseCase.join(command);
+		var command = new DirectJoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
+		ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
 
 		return ResponseEntity.ok(response);
 	}

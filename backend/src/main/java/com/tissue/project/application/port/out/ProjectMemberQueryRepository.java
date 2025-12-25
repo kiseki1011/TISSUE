@@ -78,4 +78,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 		Project project,
 		Long memberId
 	);
+
+	List<ProjectMember> findAllByMemberId(Long memberId);
 }

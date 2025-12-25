@@ -2,10 +2,9 @@ package com.tissue.security.authorization.project.workflow;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.security.authorization.project.ProjectSecurityGuard;
+import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
-import com.tissue.workflow.domain.Workflow;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,20 +13,19 @@ import lombok.RequiredArgsConstructor;
 public class WorkflowSecurityGuard {
 
 	private final WorkflowQueryRepository workflowQueryRepository;
-	private final ProjectSecurityGuard projectSecurityGuard;
+	// private final ProjectSecurityGuard projectSecurityGuard;
 
-	public boolean isWorkflowManager(Long workflowId, String projectKey, Long memberId) {
-		Workflow workflow = workflowQueryRepository.findById(workflowId)
-			.orElseThrow(() -> WorkflowExceptions.notFound(workflowId));
+	public boolean canEditWorkflow(String workspaceKey, String projectKey, Long workflowId,
+		MemberUserDetails userDetails) {
+		// TODO: should i use projectSecurityGuard.isAdmin?
+		return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN)
+			|| isWorkflowCreator(workflowId, userDetails);
+	}
 
-		if (workflow.getCreatedBy().equals(memberId)) {
-			return true;
-		}
-
-		return projectSecurityGuard.isAdmin(
-			workflow.getWorkspaceKey(),
-			workflow.getProjectKey(),
-			memberId
-		);
+	// TODO: Boolean vs boolean?
+	private boolean isWorkflowCreator(Long workflowId, MemberUserDetails userDetails) {
+		return workflowQueryRepository.findById(workflowId)
+			.map(workflow -> workflow.getCreatedBy().equals(userDetails.getMemberId()))
+			.orElse(false);
 	}
 }

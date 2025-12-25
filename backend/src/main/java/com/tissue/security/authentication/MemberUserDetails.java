@@ -2,6 +2,7 @@ package com.tissue.security.authentication;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,17 +10,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.MemberStatus;
+import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.security.authorization.SystemRole;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import lombok.Getter;
 
-/**
- * Member 엔티티를 스프링 시큐리티의 UserDetails로 변환하는 어댑터
- * <p>
- * 역할:
- * - 도메인 모델(Member)과 스프링 시큐리티 사이의 브릿지
- * - 스프링 시큐리티가 이해할 수 있는 형태로 사용자 정보 제공
- */
 @Getter
 public class MemberUserDetails implements UserDetails {
 
@@ -34,7 +30,16 @@ public class MemberUserDetails implements UserDetails {
 
 	private boolean elevated;
 
-	public MemberUserDetails(Member member) {
+	// TODO: should i make a separate class instead of using Map?
+	// TODO: does caching these roles cause bad performance? or is it tolerable?
+	private final Map<String, WorkspaceRole> workspaceRoles;
+	private final Map<String, Map<String, ProjectRole>> projectRoles;
+
+	public MemberUserDetails(
+		Member member,
+		Map<String, WorkspaceRole> workspaceRoles,
+		Map<String, Map<String, ProjectRole>> projectRoles
+	) {
 		this.memberId = member.getId();
 		this.email = member.getEmail();
 		this.username = member.getUsername();
@@ -43,10 +48,35 @@ public class MemberUserDetails implements UserDetails {
 		this.status = member.getStatus();
 
 		this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
+
+		this.workspaceRoles = workspaceRoles != null ? workspaceRoles : Collections.emptyMap();
+		this.projectRoles = projectRoles != null ? projectRoles : Collections.emptyMap();
+	}
+
+	public MemberUserDetails(Member member) {
+		this(member, Collections.emptyMap(), Collections.emptyMap());
 	}
 
 	public void setElevated(boolean elevated) {
 		this.elevated = elevated;
+	}
+
+	public boolean hasWorkspaceRole(String workspaceKey, WorkspaceRole role) {
+		WorkspaceRole myRole = workspaceRoles.get(workspaceKey);
+		return myRole != null && myRole.isEqualOrHigherThan(role);
+	}
+
+	public boolean hasProjectRole(String workspaceKey, String projectKey, ProjectRole role) {
+		if (hasWorkspaceRole(workspaceKey, WorkspaceRole.ADMIN)) {
+			return true;
+		}
+
+		Map<String, ProjectRole> projectRoleMap = projectRoles.get(workspaceKey);
+		if (projectRoleMap == null) {
+			return false;
+		}
+		ProjectRole myRole = projectRoleMap.get(projectKey);
+		return myRole != null && myRole.isEqualOrHigherThan(role);
 	}
 
 	@Override

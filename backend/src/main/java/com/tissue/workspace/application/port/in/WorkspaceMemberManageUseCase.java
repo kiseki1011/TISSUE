@@ -20,15 +20,15 @@ public interface WorkspaceMemberManageUseCase {
 	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
 	void updateRole(UpdateRoleCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	void addPosition(AddPositionCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	void removePosition(RemovePositionCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	void addTeam(AddTeamCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION + OR + REQUIRES_WORKSPACE_ADMIN)
+	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
 	void removeTeam(RemoveTeamCommand cmd);
 }
