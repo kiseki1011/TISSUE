@@ -9,35 +9,35 @@ public interface WorkspaceSecurityExpressions {
 	/**
 	 * @see WorkspaceSecurityGuard#isMember(String, MemberUserDetails)
 	 */
-	String REQUIRES_WORKSPACE_MEMBER = "@workspaceSecurityGuard.isMember(#cmd.workspaceKey(), principal)";
+	String REQUIRES_WORKSPACE_MEMBER = "@workspaceSecurityGuard.isMember(#workspaceKey, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#isAdmin(String, MemberUserDetails)
 	 */
-	String REQUIRES_WORKSPACE_ADMIN = "@workspaceSecurityGuard.isAdmin(#cmd.workspaceKey(), principal)";
+	String REQUIRES_WORKSPACE_ADMIN = "@workspaceSecurityGuard.isAdmin(#workspaceKey, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#isOwner(String, MemberUserDetails)
 	 */
-	String REQUIRES_WORKSPACE_OWNER = "@workspaceSecurityGuard.isOwner(#cmd.workspaceKey(), principal)";
+	String REQUIRES_WORKSPACE_OWNER = "@workspaceSecurityGuard.isOwner(#workspaceKey, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#isSelfModification(String, Long, MemberUserDetails)
 	 */
-	String REQUIRES_SELF_MODIFICATION = "@workspaceSecurityGuard.isSelfModification(#cmd.workspaceKey, #cmd.memberId(), principal)";
+	String REQUIRES_SELF_MODIFICATION = "@workspaceSecurityGuard.isSelfModification(#workspaceKey, #memberId, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#hasHigherRoleThanTarget(String, Long, MemberUserDetails)
 	 */
-	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.hasHigherRoleThanTarget(#cmd.workspaceKey(), #cmd.targetMemberId(), principal)";
+	String REQUIRES_HIGHER_WORKSPACE_ROLE = "@workspaceSecurityGuard.hasHigherRoleThanTarget(#workspaceKey, #targetMemberId, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#canGrantRole(String, WorkspaceRole, MemberUserDetails)
 	 */
-	String REQUIRES_WORKSPACE_ROLE_GRANT_PERMISSION = "@workspaceSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.grantRole, principal)";
+	String REQUIRES_WORKSPACE_ROLE_GRANT_PERMISSION = "@workspaceSecurityGuard.canGrantRole(#workspaceKey, #grantRole, principal)";
 
 	/**
 	 * @see WorkspaceSecurityGuard#canEditInviteLink(String, String, MemberUserDetails)
 	 */
-	String REQUIRES_LINK_EDIT_PERMISSION = "@workspaceSecurityGuard.canEditLink(#cmd.workspaceKey, #cmd.token, principal)";
+	String REQUIRES_LINK_EDIT_PERMISSION = "@workspaceSecurityGuard.canEditLink(#workspaceKey, #token, principal)";
 }

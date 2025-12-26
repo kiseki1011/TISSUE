@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProjectSecurityGuard {
 
-	// private final ProjectMemberQueryRepository projectMemberRepository;
 	private final ProjectQueryRepository projectQueryRepository;
 	private final WorkspaceSecurityGuard workspaceSecurityGuard;
 
@@ -34,9 +33,7 @@ public class ProjectSecurityGuard {
 		if (workspaceSecurityGuard.isAdmin(workspaceKey, userDetails)) {
 			return true;
 		}
-		// TODO: should i extract it to a method so it wont use "!"?
-		//  !workspaceSecurityGuard.isMember(workspaceKey, userDetails) -> isNotWorkspaceMember
-		if (!workspaceSecurityGuard.isMember(workspaceKey, userDetails)) {
+		if (isNotWorkspaceMember(workspaceKey, userDetails)) {
 			return false;
 		}
 		return isProjectVisibilityPublic(workspaceKey, projectKey);
@@ -53,27 +50,14 @@ public class ProjectSecurityGuard {
 		return userDetails.hasProjectRole(workspaceKey, projectKey, grantRole);
 	}
 
+	private boolean isNotWorkspaceMember(String workspaceKey, MemberUserDetails userDetails) {
+		return !workspaceSecurityGuard.isMember(workspaceKey, userDetails);
+	}
+
 	private Boolean isProjectVisibilityPublic(String workspaceKey, String projectKey) {
 		return projectQueryRepository.findVisibilityByKeys(workspaceKey, projectKey)
 			.map(visibility -> visibility == ProjectVisibility.PUBLIC)
 			.orElse(false);
 	}
-
-	// public boolean canAdministerTargets(
-	// 	String workspaceKey,
-	// 	Set<String> targetProjectKeys,
-	// 	MemberUserDetails userDetails
-	// ) {
-	// 	if (targetProjectKeys == null || targetProjectKeys.isEmpty()) {
-	// 		return false;
-	// 	}
-	//
-	// 	for (String projectKey : targetProjectKeys) {
-	// 		if (!userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN)) {
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
 
 }

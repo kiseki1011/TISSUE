@@ -9,5 +9,5 @@ public interface SprintSecurityExpressions {
 	/**
 	 * @see SprintSecurityGuard#canEditSprint(String, String, Long, MemberUserDetails)
 	 */
-	String REQUIRES_SPRINT_EDIT_PERMISSION = "@sprintSecurityGuard.canEditSprint(#cmd.workspaceKey, #cmd.projectKey, #cmd.sprintId, principal)";
+	String REQUIRES_SPRINT_EDIT_PERMISSION = "@sprintSecurityGuard.canEditSprint(#workspaceKey, #projectKey, #sprintId, principal)";
 }

@@ -15,25 +15,25 @@ public interface ProjectSecurityExpressions {
 	/**
 	 * @see ProjectSecurityGuard#isMember(String, String, MemberUserDetails)
 	 */
-	String REQUIRES_PROJECT_MEMBER = "@projectSecurityGuard.isMember(#cmd.workspaceKey, #cmd.projectKey, principal)";
+	String REQUIRES_PROJECT_MEMBER = "@projectSecurityGuard.isMember(#workspaceKey, #projectKey, principal)";
 
 	/**
 	 * @see ProjectSecurityGuard#isAdmin(String, String, MemberUserDetails)
 	 */
-	String REQUIRES_PROJECT_ADMIN = "@projectSecurityGuard.isAdmin(#cmd.workspaceKey, #cmd.projectKey, principal)";
+	String REQUIRES_PROJECT_ADMIN = "@projectSecurityGuard.isAdmin(#workspaceKey, #projectKey, principal)";
 
 	/**
 	 * @see ProjectSecurityGuard#canJoinViaDirectAccess(String, String, MemberUserDetails)
 	 */
-	String REQUIRES_PROJECT_JOIN_PERMISSION = "@projectSecurityGuard.canJoinViaDirectAccess(#cmd.workspaceKey, #cmd.projectKey, principal)";
+	String REQUIRES_PROJECT_JOIN_PERMISSION = "@projectSecurityGuard.canJoinViaDirectAccess(#workspaceKey, #projectKey, principal)";
 
 	/**
 	 * @see ProjectSecurityGuard#canGrantRole(String, String, ProjectRole, MemberUserDetails)
 	 */
-	String REQUIRES_PROJECT_ROLE_GRANT_PERMISSION = "@projectSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.projectKey, #cmd.grantRole, principal)";
+	String REQUIRES_PROJECT_ROLE_GRANT_PERMISSION = "@projectSecurityGuard.canGrantRole(#workspaceKey, #projectKey, #grantRole, principal)";
 
 	/**
 	 * @see IssueConfigSecurityGuard#canEditIssueType(String, String, Long, MemberUserDetails)
 	 */
-	String REQUIRES_ISSUE_TYPE_EDIT_PERMISSION = "@issueConfigSecurityGuard.canEditIssueType(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueTypeId, principal)";
+	String REQUIRES_ISSUE_TYPE_EDIT_PERMISSION = "@issueConfigSecurityGuard.canEditIssueType(#workspaceKey, #projectKey, #issueTypeId, principal)";
 }
