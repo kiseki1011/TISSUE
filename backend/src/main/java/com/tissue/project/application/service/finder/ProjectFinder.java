@@ -21,6 +21,7 @@ public class ProjectFinder {
 	//  - its only for read-only API's
 	public Project getBy(String projectKey, String workspaceKey) {
 		// TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
+		// TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
 		return queryRepository.findByKeyAndWorkspaceKey(projectKey, workspaceKey)
 			.orElseThrow(() -> ProjectExceptions.notFound(workspaceKey, projectKey));
 	}

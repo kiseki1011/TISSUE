@@ -1,6 +1,7 @@
 package com.tissue.comment.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.lang.Nullable;
@@ -8,7 +9,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.comment.domain.exception.CommentExceptions;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.Issue;
-import com.tissue.workspace.domain.WorkspaceMember;
+import com.tissue.project.domain.ProjectMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,22 +25,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// TODO: should i use soft-delete?
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+// @SQLRestriction("softDeleted = false")
 public class Comment extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "TEXT")
 	private String content;
 
+	// TODO: do i really need this field? BaseEntity has "createdBy" which saves the memberId.
+	//  ProjectMember can be found using "memberId + project(entity)" or "memberId + projectKey + workspaceKey"
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id", nullable = false)
-	private WorkspaceMember author;
+	private ProjectMember author;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
@@ -55,24 +58,20 @@ public class Comment extends BaseEntity {
 	@OneToMany(mappedBy = "parentComment")
 	private final List<Comment> childComments = new ArrayList<>();
 
-	// @Enumerated(EnumType.STRING)
-	// @Column(nullable = false)
-	// private CommentStatus status = CommentStatus.ACTIVE;
-
 	public static Comment create(
+		@NonNull Issue issue,
+		@NonNull ProjectMember author,
 		@NonNull String content,
-		@NonNull WorkspaceMember author,
 		@Nullable Comment parentComment
 	) {
 		Comment comment = new Comment();
-		comment.content = content;
+		comment.issue = issue;
 		comment.author = author;
-		comment.parentComment = parentComment;
+		comment.content = content;
 		comment.isEdited = false;
 
 		if (parentComment != null) {
-			comment.validateParentComment();
-			parentComment.addChildComment(comment);
+			comment.setParentComment(parentComment);
 		}
 
 		return comment;
@@ -83,17 +82,28 @@ public class Comment extends BaseEntity {
 		this.isEdited = true;
 	}
 
-	public void addChildComment(@NonNull Comment child) {
-		child.parentComment = this;
-		this.childComments.add(child);
+	public boolean isAuthor(Long memberId) {
+		return getCreatedBy().equals(memberId);
 	}
 
-	protected void validateParentComment() {
-		if (parentComment == null) {
-			return;
+	public List<Comment> getChildComments() {
+		return Collections.unmodifiableList(childComments);
+	}
+
+	private void setParentComment(Comment parentComment) {
+		validateParentComment(parentComment);
+		this.parentComment = parentComment;
+		parentComment.childComments.add(this);
+	}
+
+	private void validateParentComment(Comment parent) {
+		if (parent.getParentComment() != null) {
+			throw CommentExceptions.nestedLimitExceeded(parent.getId());
 		}
-		if (parentComment.getParentComment() != null) {
-			throw CommentExceptions.nestedLimitExceeded(parentComment.getId());
+
+		if (!parent.getIssue().equals(this.issue)) {
+			// TODO: CommentExceptions.issueMismatch?
+			throw new IllegalArgumentException("Parent comment must belong to the same issue");
 		}
 	}
 }
