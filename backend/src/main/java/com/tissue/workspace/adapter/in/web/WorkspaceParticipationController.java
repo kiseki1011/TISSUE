@@ -12,8 +12,9 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 
 import jakarta.validation.Valid;
@@ -54,7 +55,8 @@ public class WorkspaceParticipationController {
 		@PathVariable String workspaceKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceParticipationUseCase.leave(workspaceKey, userDetails.getMemberId());
+		var command = new LeaveWorkspaceCommand(workspaceKey, userDetails.getMemberId());
+		workspaceParticipationUseCase.leave(command);
 		return ResponseEntity.noContent().build();
 	}
 

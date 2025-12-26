@@ -51,6 +51,12 @@ public class WorkspaceExceptions {
 			.addContext(INVITATION_ID, invitationId);
 	}
 
+	public static ResourceNotFoundException invitationNotFound(Long invitationId, Long memberId) {
+		return new ResourceNotFoundException(INVITATION_NOT_FOUND)
+			.addContext(INVITATION_ID, invitationId)
+			.addContext(MEMBER_ID, memberId);
+	}
+
 	public static BadRequestException invitationAlreadyProcessed(Invitation invitation) {
 		return new BadRequestException(INVITATION_ALREADY_PROCESSED)
 			.addContext(INVITATION_ID, invitation.getId())

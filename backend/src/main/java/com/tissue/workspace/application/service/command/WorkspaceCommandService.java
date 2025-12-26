@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.workspace.application.dto.request.DeleteWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
-import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
+import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
+import com.tissue.workspace.application.dto.in.UpdateWorkspaceInfoCommand;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;

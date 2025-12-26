@@ -2,11 +2,14 @@ package com.tissue.security.authorization.project;
 
 import org.springframework.stereotype.Component;
 
+import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authorization.workspace.WorkspaceSecurityGuard;
+import com.tissue.sprint.application.port.out.SprintQueryRepository;
+import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +19,9 @@ public class ProjectSecurityGuard {
 
 	private final ProjectQueryRepository projectQueryRepository;
 	private final WorkspaceSecurityGuard workspaceSecurityGuard;
+	private final SprintQueryRepository sprintRepository;
+	private final IssueTypeQueryRepository issueTypeRepository;
+	private final WorkflowQueryRepository workflowQueryRepository;
 
 	public boolean isViewer(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
 		return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.VIEWER);
@@ -50,6 +56,42 @@ public class ProjectSecurityGuard {
 		return userDetails.hasProjectRole(workspaceKey, projectKey, grantRole);
 	}
 
+	public boolean canEditSprint(String workspaceKey, String projectKey, Long sprintId,
+		MemberUserDetails userDetails) {
+		return isAdmin(workspaceKey, projectKey, userDetails)
+			|| isSprintCreator(projectKey, sprintId, userDetails);
+	}
+
+	public boolean canEditIssueType(String workspaceKey, String projectKey, Long issueTypeId,
+		MemberUserDetails userDetails) {
+		return isAdmin(workspaceKey, projectKey, userDetails)
+			|| isIssueTypeCreator(projectKey, issueTypeId, userDetails);
+	}
+
+	public boolean canEditWorkflow(String workspaceKey, String projectKey, Long workflowId,
+		MemberUserDetails userDetails) {
+		return isAdmin(workspaceKey, projectKey, userDetails)
+			|| isWorkflowCreator(workflowId, userDetails);
+	}
+
+	private boolean isWorkflowCreator(Long workflowId, MemberUserDetails userDetails) {
+		return workflowQueryRepository.findById(workflowId)
+			.map(workflow -> workflow.getCreatedBy().equals(userDetails.getMemberId()))
+			.orElse(false);
+	}
+
+	private Boolean isIssueTypeCreator(String projectKey, Long issueTypeId, MemberUserDetails userDetails) {
+		return issueTypeRepository.findByIdAndProjectKey(issueTypeId, projectKey)
+			.map(issueType -> issueType.getCreatedBy().equals(userDetails.getMemberId()))
+			.orElse(false);
+	}
+
+	private Boolean isSprintCreator(String projectKey, Long sprintId, MemberUserDetails userDetails) {
+		return sprintRepository.findByIdAndProject_Key(sprintId, projectKey)
+			.map(sprint -> sprint.getCreatedBy().equals(userDetails.getMemberId()))
+			.orElse(false);
+	}
+
 	private boolean isNotWorkspaceMember(String workspaceKey, MemberUserDetails userDetails) {
 		return !workspaceSecurityGuard.isMember(workspaceKey, userDetails);
 	}
@@ -59,5 +101,4 @@ public class ProjectSecurityGuard {
 			.map(visibility -> visibility == ProjectVisibility.PUBLIC)
 			.orElse(false);
 	}
-
 }

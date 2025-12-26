@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
-import com.tissue.workspace.application.dto.response.query.InvitationDetail;
+import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 
 import lombok.RequiredArgsConstructor;

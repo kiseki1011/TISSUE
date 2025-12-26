@@ -12,12 +12,10 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateRoleRequest;
-import com.tissue.workspace.application.dto.request.AddPositionCommand;
-import com.tissue.workspace.application.dto.request.AddTeamCommand;
-import com.tissue.workspace.application.dto.request.RemovePositionCommand;
-import com.tissue.workspace.application.dto.request.RemoveTeamCommand;
-import com.tissue.workspace.application.dto.request.UpdateDisplayNameCommand;
-import com.tissue.workspace.application.dto.request.UpdateRoleCommand;
+import com.tissue.workspace.application.dto.in.ManagePositionCommand;
+import com.tissue.workspace.application.dto.in.ManageTeamCommand;
+import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
+import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 
@@ -51,7 +49,12 @@ public class WorkspaceMemberController {
 		@RequestBody @Valid UpdateRoleRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		var command = new UpdateRoleCommand(workspaceKey, memberId, userDetails.getMemberId(), request.role());
+		var command = UpdateRoleCommand.builder()
+			.workspaceKey(workspaceKey)
+			.memberId(memberId)
+			.role(request.role())
+			.actorMemberId(userDetails.getMemberId())
+			.build();
 		workspaceMemberManageUseCase.updateRole(command);
 
 		return ResponseEntity.noContent().build();
@@ -64,7 +67,12 @@ public class WorkspaceMemberController {
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		var command = new AddPositionCommand(workspaceKey, memberId, userDetails.getMemberId(), positionId);
+		var command = ManagePositionCommand.builder()
+			.workspaceKey(workspaceKey)
+			.positionId(positionId)
+			.memberId(memberId)
+			.actorMemberId(userDetails.getMemberId())
+			.build();
 		workspaceMemberManageUseCase.addPosition(command);
 
 		return ResponseEntity.noContent().build();
@@ -77,7 +85,12 @@ public class WorkspaceMemberController {
 		@PathVariable Long positionId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		var command = new RemovePositionCommand(workspaceKey, memberId, userDetails.getMemberId(), positionId);
+		var command = ManagePositionCommand.builder()
+			.workspaceKey(workspaceKey)
+			.positionId(positionId)
+			.memberId(memberId)
+			.actorMemberId(userDetails.getMemberId())
+			.build();
 		workspaceMemberManageUseCase.removePosition(command);
 
 		return ResponseEntity.noContent().build();
@@ -90,7 +103,12 @@ public class WorkspaceMemberController {
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		var command = new AddTeamCommand(workspaceKey, memberId, userDetails.getMemberId(), teamId);
+		var command = ManageTeamCommand.builder()
+			.workspaceKey(workspaceKey)
+			.teamId(teamId)
+			.memberId(memberId)
+			.actorMemberId(userDetails.getMemberId())
+			.build();
 		workspaceMemberManageUseCase.addTeam(command);
 
 		return ResponseEntity.noContent().build();
@@ -103,7 +121,12 @@ public class WorkspaceMemberController {
 		@PathVariable Long teamId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		var command = new RemoveTeamCommand(workspaceKey, memberId, userDetails.getMemberId(), teamId);
+		var command = ManageTeamCommand.builder()
+			.workspaceKey(workspaceKey)
+			.teamId(teamId)
+			.memberId(memberId)
+			.actorMemberId(userDetails.getMemberId())
+			.build();
 		workspaceMemberManageUseCase.removeTeam(command);
 
 		return ResponseEntity.noContent().build();

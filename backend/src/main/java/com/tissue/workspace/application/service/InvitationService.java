@@ -9,7 +9,7 @@ import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.project.application.service.ProjectMemberCommandService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.workspace.application.dto.response.query.InvitationDetail;
+import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import com.tissue.workspace.application.port.out.InvitationQueryRepository;
 import com.tissue.workspace.application.service.command.WorkspaceParticipationService;
@@ -33,10 +33,11 @@ public class InvitationService implements InvitationUseCase {
 	private final ProjectMemberCommandService projectMemberCommandService;
 	private final InvitationQueryRepository invitationQueryRepository;
 
-	@Override
 	@Transactional
+	@Override
 	public void accept(Long memberId, Long invitationId) {
-		Invitation invitation = invitationFinder.findBy(invitationId);
+		Member member = memberFinder.getActiveBy(memberId);
+		Invitation invitation = invitationFinder.getBy(invitationId, member);
 
 		if (invitation.isProcessed()) {
 			throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
@@ -59,10 +60,11 @@ public class InvitationService implements InvitationUseCase {
 		// TODO: InvitationAcceptedEvent
 	}
 
-	@Override
 	@Transactional
+	@Override
 	public void reject(Long memberId, Long invitationId) {
-		Invitation invitation = invitationFinder.findBy(invitationId);
+		Member member = memberFinder.getActiveBy(memberId);
+		Invitation invitation = invitationFinder.getBy(invitationId, member);
 
 		if (invitation.isProcessed()) {
 			throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
@@ -73,8 +75,8 @@ public class InvitationService implements InvitationUseCase {
 		// TODO: InvitationRejectedEvent
 	}
 
-	@Override
 	@Transactional(readOnly = true)
+	@Override
 	public List<InvitationDetail> getMyInvitations(Long memberId) {
 		// TODO: N+1, consider optimization
 		return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING)

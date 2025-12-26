@@ -59,6 +59,7 @@ public class WorkspaceMember extends BaseEntity {
 	@Column(nullable = false)
 	private WorkspaceRole role;
 
+	// TODO: consider using nickname or profileName
 	@Column(nullable = false)
 	private String displayName;
 

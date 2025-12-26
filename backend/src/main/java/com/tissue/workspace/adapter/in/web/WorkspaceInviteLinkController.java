@@ -16,11 +16,11 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.response.InviteLinkResponse;
-import com.tissue.workspace.application.dto.response.WorkspaceMemberCommandResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
+import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.out.command.InviteLinkResponse;
+import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 
 import jakarta.validation.Valid;
@@ -82,13 +82,13 @@ public class WorkspaceInviteLinkController {
 	}
 
 	@PostMapping("/{token}/join")
-	public ResponseEntity<WorkspaceMemberCommandResponse> joinViaLink(
+	public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
 		@PathVariable String workspaceKey,
 		@PathVariable String token,
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		var command = new JoinViaLinkCommand(workspaceKey, token, userDetails.getMemberId());
-		WorkspaceMemberCommandResponse response = inviteLinkUseCase.joinViaLink(command);
+		WorkspaceMemberResponse response = inviteLinkUseCase.joinViaLink(command);
 
 		return ResponseEntity.ok(response);
 	}

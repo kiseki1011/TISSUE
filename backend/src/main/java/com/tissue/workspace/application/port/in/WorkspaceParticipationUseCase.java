@@ -5,10 +5,11 @@ import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpre
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 
 public interface WorkspaceParticipationUseCase {
 
@@ -18,8 +19,8 @@ public interface WorkspaceParticipationUseCase {
 	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
 	InviteMembersResponse inviteToProject(InviteToProjectCommand cmd);
 
-	@PreAuthorize(REQUIRES_SELF_MODIFICATION)
-	void leave(String workspaceKey, Long memberId);
+	@PreAuthorize(REQUIRES_SELF)
+	void leave(LeaveWorkspaceCommand cmd);
 
 	@PreAuthorize(REQUIRES_HIGHER_WORKSPACE_ROLE)
 	void kick(KickWorkspaceMemberCommand cmd);

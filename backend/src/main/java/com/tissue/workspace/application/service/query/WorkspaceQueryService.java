@@ -3,7 +3,7 @@ package com.tissue.workspace.application.service.query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceQueryRepository;
 import com.tissue.workspace.domain.Workspace;

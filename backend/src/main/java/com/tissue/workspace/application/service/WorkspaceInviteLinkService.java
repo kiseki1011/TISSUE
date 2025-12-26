@@ -12,12 +12,12 @@ import com.tissue.project.application.service.ProjectMemberCommandService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.request.CreateProjectInviteLinkCommand;
-import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.response.WorkspaceMemberCommandResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
+import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
@@ -76,7 +76,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
 	@Override
 	@Transactional
-	public WorkspaceMemberCommandResponse joinViaLink(JoinViaLinkCommand cmd) {
+	public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
 		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
 			.orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
 
@@ -96,7 +96,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 			joinProjects(projectConfigs, workspaceMember);
 		}
 
-		return WorkspaceMemberCommandResponse.from(workspaceMember);
+		return WorkspaceMemberResponse.from(workspaceMember);
 
 	}
 

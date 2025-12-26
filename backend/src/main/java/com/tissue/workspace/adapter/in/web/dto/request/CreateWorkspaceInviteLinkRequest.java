@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.constraints.Future;

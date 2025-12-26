@@ -4,9 +4,9 @@ import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpre
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.workspace.application.dto.request.DeleteWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
-import com.tissue.workspace.application.dto.request.UpdateWorkspaceInfoCommand;
+import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
+import com.tissue.workspace.application.dto.in.UpdateWorkspaceInfoCommand;
 
 public interface WorkspaceCommandUseCase {
 

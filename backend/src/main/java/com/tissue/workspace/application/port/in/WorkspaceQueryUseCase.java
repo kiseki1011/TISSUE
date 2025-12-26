@@ -4,7 +4,7 @@ import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpre
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
 
 public interface WorkspaceQueryUseCase {
 

@@ -1,9 +1,9 @@
 package com.tissue.workspace.application.port.in;
 
-import com.tissue.workspace.application.dto.request.CreateWorkspaceCommand;
-import com.tissue.workspace.application.dto.response.WorkspaceCommandResponse;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
 
 public interface WorkspaceCreateUseCase {
 
-	WorkspaceCommandResponse create(CreateWorkspaceCommand cmd);
+	WorkspaceCreateResponse create(CreateWorkspaceCommand cmd);
 }

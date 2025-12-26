@@ -5,12 +5,12 @@ import static com.tissue.security.authorization.workspace.WorkspaceSecurityExpre
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.tissue.workspace.application.dto.request.CreateProjectInviteLinkCommand;
-import com.tissue.workspace.application.dto.request.CreateWorkspaceInviteLinkCommand;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.response.WorkspaceMemberCommandResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
+import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 
 public interface WorkspaceInviteLinkUseCase {
 
@@ -23,8 +23,12 @@ public interface WorkspaceInviteLinkUseCase {
 	@PreAuthorize(REQUIRES_LINK_EDIT_PERMISSION)
 	void expireLink(ExpireLinkCommand cmd);
 
-	WorkspaceMemberCommandResponse joinViaLink(JoinViaLinkCommand cmd);
+	WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd);
 
-	// TODO: what permission should i set? none?
+	// TODO: getLinkInfo -> getLinkDetail
+	@PreAuthorize(REQUIRES_WORKSPACE_MEMBER)
 	WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token);
+
+	// TODO: getWorkspaceLinks
+	//  all active links for the workspace
 }

@@ -19,10 +19,11 @@ import com.tissue.member.domain.policy.MemberPolicy;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -83,9 +84,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	}
 
 	@Override
-	public void leave(String workspaceKey, Long memberId) {
-		Workspace workspace = workspaceFinder.getModifiableBy(workspaceKey);
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspace);
+	public void leave(LeaveWorkspaceCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), workspace);
 
 		workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
 		workspaceMember.softDelete();

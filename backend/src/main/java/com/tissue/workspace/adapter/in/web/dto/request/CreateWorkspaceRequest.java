@@ -1,6 +1,6 @@
 package com.tissue.workspace.adapter.in.web.dto.request;
 
-import com.tissue.workspace.application.dto.request.CreateWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceCommand;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
