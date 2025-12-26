@@ -1,14 +1,16 @@
 package com.tissue.comment.application.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.comment.application.dto.out.CommentDetailResponse;
+import com.tissue.comment.application.dto.out.MyCommentResponse;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
@@ -40,5 +42,11 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 				return CommentDetailResponse.from(root, replyDtos);
 			})
 			.toList();
+	}
+
+	@Override
+	public Page<MyCommentResponse> getMyComments(Long memberId, Pageable pageable) {
+		return commentQueryRepository.findByAuthor(memberId, pageable)
+			.map(MyCommentResponse::from);
 	}
 }

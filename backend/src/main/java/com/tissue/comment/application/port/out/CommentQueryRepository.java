@@ -2,6 +2,8 @@ package com.tissue.comment.application.port.out;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +19,6 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
 		    JOIN FETCH wm.member m
 		    WHERE c.issue.projectKey = :projectKey
 		      AND c.issue.key = :issueKey
-		      AND c.deleted = false
 		    ORDER BY c.createdAt ASC
 		""")
 	List<Comment> findByIssue(
@@ -25,15 +26,21 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
 		@Param("issueKey") String issueKey
 	);
 
-	@Query("""
+	@Query(value = """
 		    SELECT c
 		    FROM Comment c
 		    JOIN FETCH c.author wm
 		    JOIN FETCH wm.member m
 		    JOIN FETCH c.issue i
 		    WHERE c.createdBy = :memberId
-		      AND c.deleted = false
+		      AND c.softDeleted = false
 		    ORDER BY c.createdAt DESC
+		""",
+		countQuery = """
+		    SELECT COUNT(c)
+		    FROM Comment c
+		    WHERE c.createdBy = :memberId
+		      AND c.softDeleted = false
 		""")
-	List<Comment> findByAuthor(@Param("memberId") Long memberId);
+	Page<Comment> findByAuthor(@Param("memberId") Long memberId, Pageable pageable);
 }

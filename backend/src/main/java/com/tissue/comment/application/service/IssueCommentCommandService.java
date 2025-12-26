@@ -57,6 +57,10 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 		Comment comment = commentRepository.findById(cmd.commentId())
 			.orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
 
+		if (comment.isSoftDeleted()) {
+			throw CommentExceptions.notFound(cmd.commentId());
+		}
+
 		if (!comment.getCreatedBy().equals(cmd.actorMemberId())) {
 			throw CommentExceptions.notAuthor(cmd.commentId(), cmd.actorMemberId());
 		}
@@ -72,6 +76,10 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 	public void delete(DeleteCommentCommand cmd) {
 		Comment comment = commentRepository.findById(cmd.commentId())
 			.orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+
+		if (comment.isSoftDeleted()) {
+			throw CommentExceptions.notFound(cmd.commentId());
+		}
 
 		if (!comment.getCreatedBy().equals(cmd.actorMemberId())) {
 			throw CommentExceptions.notAuthor(cmd.commentId(), cmd.actorMemberId());

@@ -57,20 +57,6 @@ public class CommentController {
 			.body(response);
 	}
 
-	@GetMapping
-	public ResponseEntity<List<CommentDetailResponse>> getComments(
-		@PathVariable String workspaceKey,
-		@PathVariable String projectKey,
-		@PathVariable String issueKey
-	) {
-		List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
-			workspaceKey,
-			projectKey,
-			issueKey
-		);
-		return ResponseEntity.ok(response);
-	}
-
 	@PatchMapping("/{commentId}")
 	public ResponseEntity<Void> update(
 		@PathVariable Long commentId,
@@ -92,5 +78,19 @@ public class CommentController {
 		commentCommandUseCase.delete(command);
 
 		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping
+	public ResponseEntity<List<CommentDetailResponse>> getComments(
+		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
+		@PathVariable String issueKey
+	) {
+		List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
+			workspaceKey,
+			projectKey,
+			issueKey
+		);
+		return ResponseEntity.ok(response);
 	}
 }

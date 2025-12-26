@@ -10,18 +10,23 @@ public record CommentDetailResponse(
 	Long commentId,
 	String content,
 	boolean isEdited,
+	boolean isDeleted,
 	Instant createdAt,
 	Instant lastUpdatedAt,
 	CommentAuthorInfo author,
 	List<CommentDetailResponse> replies
 ) {
 	public static CommentDetailResponse from(Comment comment, List<CommentDetailResponse> replies) {
+		boolean deleted = comment.isSoftDeleted();
+
 		return new CommentDetailResponse(
 			comment.getId(),
-			comment.getContent(),
+			deleted ? null : comment.getContent(),
 			comment.isEdited(),
+			deleted,
 			comment.getCreatedAt(),
 			comment.getLastModifiedAt(),
+			// TODO: should i redact author if deleted?
 			CommentAuthorInfo.from(comment.getAuthor()),
 			replies != null ? replies : new ArrayList<>()
 		);
