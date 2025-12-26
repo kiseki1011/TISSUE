@@ -11,8 +11,7 @@ public enum CommentErrorCode implements ErrorCode {
 
 	COMMENT_NOT_FOUND("Comment not found"),
 	NOT_COMMENT_AUTHOR("Must be the author to edit the comment"),
-	NESTED_COMMENT_LIMIT_EXCEEDED("Comments can only be nested one level deep"),
-	COMMENT_RELATION_MISMATCH("Comment does not belong to the expected issue or parent");
+	NESTED_COMMENT_LIMIT_EXCEEDED("Comments can only be nested one level deep");
 
 	private final String defaultMessage;
 }

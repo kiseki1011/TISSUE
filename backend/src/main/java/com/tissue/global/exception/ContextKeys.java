@@ -95,6 +95,12 @@ public interface ContextKeys {
 	String SPRINT_ID = "sprintId";
 
 	/**
+	 * Comment
+	 */
+	String COMMENT_ID = "commentId";
+	String PARENT_COMMENT_ID = "parentCommentId";
+
+	/**
 	 * Member
 	 */
 	String MEMBER_ID = "memberId";
