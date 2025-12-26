@@ -1,14 +1,12 @@
 package com.tissue.comment.application.port.in;
 
+import java.util.List;
+
+import com.tissue.comment.application.dto.out.CommentDetailResponse;
+
 public interface CommentQueryUseCase {
 
-	// TODO: getIssueComments
-	//  - should i make this a pagination api? or just get all comments of the issue?
-	//  - must have author, createdAt, updatedAt, content
-	//  - im going to show a placeholder "(comment was deleted)" in the UI if the comment was deleted(soft-delete)
+	List<CommentDetailResponse> getIssueComments(String workspaceKey, String projectKey, String issueKey);
 
-	// TODO: getMyComments
-	//  - pagination api
-	//  - all the comments i wrote
-	//  - must have createdAt, updatedAt, content, issueKey, workspaceKey
+	// TODO: getMyComments (Pagination)
 }

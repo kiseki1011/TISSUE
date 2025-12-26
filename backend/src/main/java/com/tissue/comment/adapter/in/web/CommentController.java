@@ -1,8 +1,11 @@
 package com.tissue.comment.adapter.in.web;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +19,9 @@ import com.tissue.comment.application.dto.in.AddCommentCommand;
 import com.tissue.comment.application.dto.in.DeleteCommentCommand;
 import com.tissue.comment.application.dto.in.UpdateCommentCommand;
 import com.tissue.comment.application.dto.out.CommentAddResponse;
+import com.tissue.comment.application.dto.out.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
+import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 
@@ -29,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class CommentController {
 
 	private final CommentCommandUseCase commentCommandUseCase;
+	private final CommentQueryUseCase commentQueryUseCase;
 
 	@PostMapping
 	public ResponseEntity<CommentAddResponse> add(
@@ -49,6 +55,20 @@ public class CommentController {
 
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<List<CommentDetailResponse>> getComments(
+		@PathVariable String workspaceKey,
+		@PathVariable String projectKey,
+		@PathVariable String issueKey
+	) {
+		List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(
+			workspaceKey,
+			projectKey,
+			issueKey
+		);
+		return ResponseEntity.ok(response);
 	}
 
 	@PatchMapping("/{commentId}")

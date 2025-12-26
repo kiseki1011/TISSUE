@@ -42,7 +42,8 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 				.orElseThrow(() -> CommentExceptions.notFound(cmd.parentCommentId()));
 		}
 
-		Comment comment = Comment.create(issue, actor, cmd.content(), parent);
+		// Use WorkspaceMember as the author
+		Comment comment = Comment.create(issue, actor.getWorkspaceMember(), cmd.content(), parent);
 		commentRepository.save(comment);
 
 		// TODO: Publish CommentAddedEvent

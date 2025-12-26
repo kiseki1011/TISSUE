@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 import com.tissue.comment.domain.exception.CommentExceptions;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.Issue;
-import com.tissue.project.domain.ProjectMember;
+import com.tissue.workspace.domain.WorkspaceMember;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,7 +29,7 @@ import lombok.NonNull;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-// @SQLRestriction("softDeleted = false")
+@SQLRestriction("softDeleted = false")
 public class Comment extends BaseEntity {
 
 	@Id
@@ -38,11 +39,9 @@ public class Comment extends BaseEntity {
 	@Column(nullable = false, columnDefinition = "TEXT")
 	private String content;
 
-	// TODO: do i really need this field? BaseEntity has "createdBy" which saves the memberId.
-	//  ProjectMember can be found using "memberId + project(entity)" or "memberId + projectKey + workspaceKey"
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id", nullable = false)
-	private ProjectMember author;
+	private WorkspaceMember author;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "issue_id", nullable = false)
@@ -60,7 +59,7 @@ public class Comment extends BaseEntity {
 
 	public static Comment create(
 		@NonNull Issue issue,
-		@NonNull ProjectMember author,
+		@NonNull WorkspaceMember author,
 		@NonNull String content,
 		@Nullable Comment parentComment
 	) {
@@ -102,7 +101,6 @@ public class Comment extends BaseEntity {
 		}
 
 		if (!parent.getIssue().equals(this.issue)) {
-			// TODO: CommentExceptions.issueMismatch?
 			throw new IllegalArgumentException("Parent comment must belong to the same issue");
 		}
 	}
