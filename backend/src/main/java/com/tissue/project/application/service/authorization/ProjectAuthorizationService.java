@@ -1,4 +1,4 @@
-package com.tissue.security.authorization.project;
+package com.tissue.project.application.service.authorization;
 
 import org.springframework.stereotype.Component;
 
@@ -7,7 +7,7 @@ import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
 import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authorization.workspace.WorkspaceSecurityGuard;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 
@@ -15,10 +15,10 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class ProjectSecurityGuard {
+public class ProjectAuthorizationService {
 
 	private final ProjectQueryRepository projectQueryRepository;
-	private final WorkspaceSecurityGuard workspaceSecurityGuard;
+	private final WorkspaceAuthorizationService workspaceAuthorizationService;
 	private final SprintQueryRepository sprintRepository;
 	private final IssueTypeQueryRepository issueTypeRepository;
 	private final WorkflowQueryRepository workflowQueryRepository;
@@ -36,7 +36,7 @@ public class ProjectSecurityGuard {
 	}
 
 	public boolean canJoinViaDirectAccess(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
-		if (workspaceSecurityGuard.isAdmin(workspaceKey, userDetails)) {
+		if (workspaceAuthorizationService.isAdmin(workspaceKey, userDetails)) {
 			return true;
 		}
 		if (isNotWorkspaceMember(workspaceKey, userDetails)) {
@@ -47,9 +47,6 @@ public class ProjectSecurityGuard {
 
 	public boolean canGrantRole(String workspaceKey, String projectKey, ProjectRole grantRole,
 		MemberUserDetails userDetails) {
-		if (workspaceSecurityGuard.isAdmin(workspaceKey, userDetails)) {
-			return true;
-		}
 		if (!isViewer(workspaceKey, projectKey, userDetails)) {
 			return false;
 		}
@@ -93,7 +90,7 @@ public class ProjectSecurityGuard {
 	}
 
 	private boolean isNotWorkspaceMember(String workspaceKey, MemberUserDetails userDetails) {
-		return !workspaceSecurityGuard.isMember(workspaceKey, userDetails);
+		return !workspaceAuthorizationService.isMember(workspaceKey, userDetails);
 	}
 
 	private Boolean isProjectVisibilityPublic(String workspaceKey, String projectKey) {

@@ -1,4 +1,4 @@
-package com.tissue.security.authorization.workspace;
+package com.tissue.workspace.application.service.authorization;
 
 import static com.tissue.workspace.domain.enums.WorkspaceRole.*;
 
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class WorkspaceSecurityGuard {
+public class WorkspaceAuthorizationService {
 
 	private final WorkspaceLinkQueryRepository linkRepository;
 	private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;

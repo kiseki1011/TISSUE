@@ -1,21 +1,21 @@
-package com.tissue.security.authorization.project.issue;
+package com.tissue.issue.application.service.authorization;
 
 import org.springframework.stereotype.Component;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authorization.project.ProjectSecurityGuard;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class IssueSecurityGuard {
+public class IssueAuthorizationService {
 
 	private final IssueQueryRepository issueQueryRepository;
-	private final ProjectSecurityGuard projectSecurityGuard;
+	private final ProjectAuthorizationService projectAuthorizationService;
 
 	/**
 	 * Checks whether the member has permission to modify the specified issue.
@@ -29,7 +29,7 @@ public class IssueSecurityGuard {
 	 * </ul>
 	 */
 	public boolean canEdit(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-		if (projectSecurityGuard.isAdmin(workspaceKey, projectKey, userDetails)) {
+		if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
 			return true;
 		}
 		return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, userDetails.getMemberId());
@@ -47,7 +47,7 @@ public class IssueSecurityGuard {
 	 * </ul>
 	 */
 	public boolean canDelete(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-		if (projectSecurityGuard.isAdmin(workspaceKey, projectKey, userDetails)) {
+		if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
 			return true;
 		}
 		return issueQueryRepository.isAuthor(workspaceKey, issueKey, userDetails.getMemberId());
