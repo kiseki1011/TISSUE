@@ -28,64 +28,63 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
-	private final ExceptionHandlerFilter exceptionHandlerFilter;
-	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-	private final ApiAccessDeniedHandler apiAccessDeniedHandler;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final ExceptionHandlerFilter exceptionHandlerFilter;
+  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+  private final ApiAccessDeniedHandler apiAccessDeniedHandler;
 
-	// TODO: URL pattern을 properties 또는 yaml로 분리
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.csrf(AbstractHttpConfigurer::disable)
-			.httpBasic(AbstractHttpConfigurer::disable)
-			.formLogin(AbstractHttpConfigurer::disable)
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+      .csrf(AbstractHttpConfigurer::disable)
+      .httpBasic(AbstractHttpConfigurer::disable)
+      .formLogin(AbstractHttpConfigurer::disable)
+      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-			// allow endpoints
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(
-					"/api/v1/auth/login",
-					"/api/v1/members/check-*",
-					"/swagger-ui/**",
-					"/actuator/**"
-				).permitAll()
-				.requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
-				.anyRequest().authenticated()
-			)
+      // allow endpoints
+      .authorizeHttpRequests(auth -> auth
+        .requestMatchers(
+          "/api/v1/auth/login",
+          "/api/v1/members/check*",
+          "/swagger-ui/**",
+          "/actuator/**"
+        ).permitAll()
+        .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
+        .anyRequest().authenticated()
+      )
 
-			.exceptionHandling(ex -> ex
-				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-				.accessDeniedHandler(apiAccessDeniedHandler)
-			)
+      .exceptionHandling(ex -> ex
+        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+        .accessDeniedHandler(apiAccessDeniedHandler)
+      )
 
-			// place filters in order
-			.addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+      // place filters in order
+      .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
-	}
+    return http.build();
+  }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-	@Bean
-	public DaoAuthenticationProvider authenticationProvider(MemberUserDetailsService userDetailsService) {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-		return provider;
-	}
+  @Bean
+  public DaoAuthenticationProvider authenticationProvider(MemberUserDetailsService userDetailsService) {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
+  }
 
-	@Bean
-	public AuthenticationManager authenticationManager(
-		HttpSecurity http,
-		DaoAuthenticationProvider provider
-	) throws Exception {
-		return http.getSharedObject(AuthenticationManagerBuilder.class)
-			.authenticationProvider(provider)
-			.build();
-	}
+  @Bean
+  public AuthenticationManager authenticationManager(
+    HttpSecurity http,
+    DaoAuthenticationProvider provider
+  ) throws Exception {
+    return http.getSharedObject(AuthenticationManagerBuilder.class)
+      .authenticationProvider(provider)
+      .build();
+  }
 }
