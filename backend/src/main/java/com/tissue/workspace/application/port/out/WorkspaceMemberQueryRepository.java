@@ -79,5 +79,5 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
 	long countByMember(Member member);
 
-	List<WorkspaceMember> findAllByMemberId(Long memberId);
+	List<WorkspaceMember> findAllByMember(Member member);
 }

@@ -44,7 +44,7 @@ public class MemberUserDetailsService implements UserDetailsService {
 		Member member = memberRepository.findByEmailAndStatus(email, MemberStatus.ACTIVE)
 			.orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 
-		var workspaceRoles = workspaceMemberRepository.findAllByMemberId(member.getId()).stream()
+		var workspaceRoles = workspaceMemberRepository.findAllByMember(member).stream()
 			.collect(Collectors.toMap(
 				WorkspaceMember::getWorkspaceKey,
 				WorkspaceMember::getRole
