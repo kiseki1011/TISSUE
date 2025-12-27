@@ -1,14 +1,13 @@
-# TODO: application.yml 정리 필요
 # Default
 spring:
   profiles:
     active: local
 
   messages:
-    basename: messages # messages.properties, messages_ko.properties 등의 기본 경로 설정
-    encoding: UTF-8    # 인코딩 설정
-    fallback-to-system-locale: false  # 시스템 로케일로 폴백하지 않도록 설정
-    cache-duration: 0  # 캐시 저장 안함
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    cache-duration: 0
 
   jpa:
     hibernate:
@@ -19,50 +18,60 @@ spring:
       highlight_sql: true
       default_batch_fetch_size: 100
 
-base-url: http://localhost:8080
+tissue:
+  base-url: http://localhost:8080
 
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-validity: 3600        # 1 hour
-  refresh-token-validity: 604800     # 1 week
-  elevated-token-validity: 300       # 5 minutes
+  # place jwt under security
+  jwt:
+    secret: ${JWT_SECRET:very_secret_key_that_is_at_least_32_chars_long_123}
+    access-token-validity: 3600        # 1 hour
+    refresh-token-validity: 604800     # 1 week
+    elevated-token-validity: 600       # 10 minutes
 
-email:
-  verification:
-    strategy: redis  # or rdb
-    success-url: ${base-url}/members/email-verification/success
-    failure-url: ${base-url}/members/email-verification/fail
-    verification-url: ${base-url}/api/v1/members/email-verification/verify
+  email:
+    sender: ${tissue.email.sender:noreply@tissue.com}
+    provider: dummy
+    verification:
+      strategy: redis  # or rdb
+      ttl: 1800s       # 30 minutes
+      success-url: ${tissue.base-url}/members/verification/success
+      failure-url: ${tissue.base-url}/members/verification/fail
+      verification-url: ${tissue.base-url}/api/v1/members/verification/verify
 
-# move issue under tissue
-api:
+  member:
+    policy:
+      max-owned-workspaces: 10
+      max-joined-workspaces: 10
+
+  workspace:
+    policy:
+      max-members: 1000
+
+  project:
+    policy:
+      max-members: 1000
+      # max-issues: 1000000
+      # max-sprints: 100000
+      # max-issue-fields: 1000
+      # max-issue-types: 1000
+      # max-workflows: 1000
+
   issue:
+    policy:
+      max-reviewers: 10
+      type:
+      # max-fields-per-issue-type: 20
+      field:
+        max-enum-options: 100
+        decimal:
+          scale: 6
+          rounding: HALF_UP
+          digits:
+            integer: 14
+            fraction: 6
     circular-dependency-cache:
       size: 1000
       duration: 1
-
-tissue:
-  member:
-  # max-workspace-count: 20
-  workspace:
-    max-member-count: 500
-    # max-teams-per-member: 3
-    # max-positions-per-member: 3
-    # max-issue-count: 10000000
-    # max-sprint-count: 1000000
-    # max-issue-field-count: 10000
-    # max-issue-type-count: 10000
-  issue:
-    type:
-    # max-field-per-issue-type: 50
-    field:
-      max-enum-options: 100 # Max number of options a custom ENUM type field can have
-      decimal:
-        scale: 6           # normalize 시 소수 자릿수
-        rounding: HALF_UP  # HALF_UP / HALF_EVEN ...
-        digits:
-          integer: 14      # 최대 정수부 자리수
-          fraction: 6      # 최대 소수부 자리수
 
 logging:
   level:
@@ -77,9 +86,6 @@ spring:
     activate:
       on-profile: local
 
-  # TODO: embedded redis, test-container, 등의 사용을 고려하자
-  # 현재 ssh 터널링을 통해 다른 컴퓨터에 실행되고 있는 DB 컨테이너에 연결해서 사용중(성능 이슈로 인해)
-  # h2 in-memory
   datasource:
     url: jdbc:h2:mem:tissue_local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
@@ -90,75 +96,16 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: ${LOCAL_REDIS_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties.hibernate:
-      format_sql: true
-      show-sql: true
-      highlight_sql: true
-      default_batch_fetch_size: 100
+      password: ${LOCAL_REDIS_PASSWORD:}
 
   mail:
-    # gmail smtp, will change later
     host: smtp.gmail.com
     port: 587
-    username: ${GMAIL_USERNAME}
-    password: ${GMAIL_PASSWORD}
+    username: ${GMAIL_USERNAME:missing_username}
+    password: ${GMAIL_PASSWORD:missing_password}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-
-logging:
-  level:
-    org.hibernate:
-      SQL: DEBUG
-      orm.jdbc.bind: TRACE
----
-# SSR test
-spring:
-  config:
-    activate:
-      on-profile: ssr
-
-  mail:
-    # gmail smtp, will change later
-    host: smtp.gmail.com
-    port: 587
-    username: ${GMAIL_USERNAME}
-    password: ${GMAIL_PASSWORD}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/tissue_local
-    username: developer
-    password: ${LOCAL_MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password: ${LOCAL_REDIS_PASSWORD}
-
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties.hibernate:
-      format_sql: true
-      show-sql: true
-      highlight_sql: true
-      default_batch_fetch_size: 100
-
-logging:
-  level:
-    org.hibernate:
-      SQL: DEBUG
-      orm.jdbc.bind: TRACE
 
 ---
 # Development
@@ -167,8 +114,6 @@ spring:
     activate:
       on-profile: dev
 
-  # TODO: 실제 DB 사용(데이터 보존 필요)
-  # use development DB
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
@@ -178,11 +123,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    properties.hibernate:
-      format_sql: true
-      show-sql: true
-      highlight_sql: true
-      default_batch_fetch_size: 100
 
 ---
 # Production
@@ -191,8 +131,6 @@ spring:
     activate:
       on-profile: prod
 
-  # change to use reliable datasource for deployment (ex. RDS, ElastiCache...)
-  # or use private cloud
   datasource:
     url: jdbc:mysql://localhost:3306/tissue_local
     username: developer
@@ -207,16 +145,11 @@ spring:
         format_sql: false
 
   messages:
-    cache-duration: -1 # 캐시 영구 저장
+    cache-duration: -1
 
-logging.level:
-  org.hibernate.SQL: off
-  org.hibernate.type.descriptor.sql.BasicBinder: off
-  org.hibernate.orm.jdbc.bind: off
-  org.hibernate.stat: off
-
-api:
-  issue:
-    circular-dependency-cache:
-      size: 1000
-      duration: 1
+logging:
+  level:
+    org.hibernate.SQL: off
+    org.hibernate.type.descriptor.sql.BasicBinder: off
+    org.hibernate.orm.jdbc.bind: off
+    org.hibernate.stat: off

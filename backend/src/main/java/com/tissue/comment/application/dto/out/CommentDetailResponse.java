@@ -1,0 +1,34 @@
+package com.tissue.comment.application.dto.out;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.tissue.comment.domain.Comment;
+
+public record CommentDetailResponse(
+	Long commentId,
+	String content,
+	boolean isEdited,
+	boolean isDeleted,
+	Instant createdAt,
+	Instant lastUpdatedAt,
+	CommentAuthorInfo author,
+	List<CommentDetailResponse> replies
+) {
+	public static CommentDetailResponse from(Comment comment, List<CommentDetailResponse> replies) {
+		boolean deleted = comment.isSoftDeleted();
+
+		return new CommentDetailResponse(
+			comment.getId(),
+			deleted ? null : comment.getContent(),
+			comment.isEdited(),
+			deleted,
+			comment.getCreatedAt(),
+			comment.getLastModifiedAt(),
+			// TODO: should i redact author if deleted?
+			CommentAuthorInfo.from(comment.getAuthor()),
+			replies != null ? replies : new ArrayList<>()
+		);
+	}
+}
