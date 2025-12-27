@@ -3,7 +3,7 @@ package com.tissue.workflow.application.dto.request;
 import java.util.List;
 
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 
@@ -13,7 +13,7 @@ import lombok.Builder;
 public record CreateWorkflowCommand(
 	String workspaceKey,
 	String projectKey,
-	Label label,
+	Name name,
 	String description,
 	ColorType color,
 	List<StateDefinition> stateDefinitions,

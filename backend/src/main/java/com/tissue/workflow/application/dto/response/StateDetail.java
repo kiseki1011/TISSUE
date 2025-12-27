@@ -14,7 +14,7 @@ public record StateDetail(
 ) {
 	public static StateDetail of(WorkflowState s, long count) {
 		return new StateDetail(
-			s.getId(), s.getDisplayLabel(), s.getDescription(),
+			s.getId(), s.getDisplayName(), s.getDescription(),
 			s.getColor(), s.getCategory(), count
 		);
 	}

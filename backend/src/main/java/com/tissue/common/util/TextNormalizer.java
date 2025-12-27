@@ -3,12 +3,12 @@ package com.tissue.common.util;
 import java.text.Normalizer;
 import java.util.Locale;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TextNormalizer {
+	private TextNormalizer() {
+		throw new UnsupportedOperationException("Utility class cannot be instantiated");
+	}
 
 	public static String normalizeText(@NonNull String value) {
 		return nfc(value.strip());

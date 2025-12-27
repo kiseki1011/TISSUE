@@ -1,10 +1,9 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.common.util.DomainPreconditions.*;
-
 import org.springframework.lang.Nullable;
 
 import com.tissue.issue.domain.enums.ProgressType;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -16,6 +15,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueProgress {
+
+	private final static int MIN_PERCENTAGE = 0;
+	private final static int MAX_PERCENTAGE = 100;
 
 	@Column(name = "count_based_progress")
 	private Integer countBasedProgress;
@@ -37,5 +39,16 @@ public class IssueProgress {
 			case COUNT_BASED -> countBasedProgress;
 			case POINT_BASED -> pointBasedProgress;
 		};
+	}
+
+	private Integer ensureValidPercentageRange(Integer value) {
+		if (value == null) {
+			return null;
+		}
+		if (value < MIN_PERCENTAGE || value > MAX_PERCENTAGE) {
+			throw IssueExceptions.invalidPercentage(value);
+		}
+
+		return value;
 	}
 }

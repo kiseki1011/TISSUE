@@ -6,9 +6,8 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.exception.ProjectArchivedException;
-import com.tissue.project.domain.exception.ProjectNotFoundException;
-import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
+import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,22 +17,26 @@ public class ProjectFinder {
 
 	private final ProjectQueryRepository queryRepository;
 
-	// TODO: 읽기 전용 이라는 주석 추가
-	public Project findBy(String projectKey, String workspaceKey) {
-		// TODO: findByKeyAndWorkspace_Key가 Workspace 까지 JOIN FETCH로 가져오는 것을 고려(성능 최적화)
-		return queryRepository.findByKeyAndWorkspace_Key(projectKey, workspaceKey)
-			.orElseThrow(() -> new ProjectNotFoundException(projectKey, workspaceKey));
+	// TODO: add javadoc for the following information
+	//  - its only for read-only API's
+	public Project getBy(String projectKey, String workspaceKey) {
+		// TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
+		// TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
+		return queryRepository.findByKeyAndWorkspaceKey(projectKey, workspaceKey)
+			.orElseThrow(() -> ProjectExceptions.notFound(workspaceKey, projectKey));
 	}
 
-	// TODO: 커맨드 전용 이라는 주석 추가
-	public Project findForCommand(String projectKey, String workspaceKey) {
-		Project project = findBy(projectKey, workspaceKey);
+	// TODO: add javadoc for the following information
+	//  - its only for command API's
+	//  - will throw an exception if workspace or project was archived
+	public Project getModifiableBy(String projectKey, String workspaceKey) {
+		Project project = getBy(projectKey, workspaceKey);
 
-		if (project.isArchived()) {
-			throw new ProjectArchivedException(project.getKey(), project.getWorkspaceKey());
-		}
 		if (project.getWorkspace().isArchived()) {
-			throw new WorkspaceArchivedException(project.getWorkspaceKey());
+			throw WorkspaceExceptions.archived(project.getWorkspace());
+		}
+		if (project.isArchived()) {
+			throw ProjectExceptions.isArchived(project);
 		}
 
 		return project;

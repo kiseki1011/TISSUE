@@ -1,5 +1,7 @@
 package com.tissue.workflow.application.service.validator;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -15,12 +17,7 @@ import org.springframework.stereotype.Component;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.DeadEndStateException;
-import com.tissue.workflow.domain.exception.InvalidTodoStateCountException;
-import com.tissue.workflow.domain.exception.InvalidTransitionTargetException;
-import com.tissue.workflow.domain.exception.MissingDoneStateException;
-import com.tissue.workflow.domain.exception.OrphanStateException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,34 +26,34 @@ import lombok.RequiredArgsConstructor;
 public class WorkflowGraphValidator {
 
 	public void ensureValidWorkflowGraph(Workflow wf) {
-		ensureSingleToDo(wf);
-		ensureAtLeastOneDone(wf);
-		ensureNoIncomingToToDo(wf);
+		ensureSingleInitial(wf);
+		ensureAtLeastOneCompleted(wf);
+		ensureNoIncomingToInitial(wf);
 		ensureNoOrphans(wf);
-		ensureValidInProgressFlow(wf);
+		ensureValidActiveFlow(wf);
 	}
 
-	private void ensureSingleToDo(Workflow wf) {
-		List<WorkflowState> todoStates = wf.getStatesByCategory(StateCategory.TODO);
+	private void ensureSingleInitial(Workflow wf) {
+		List<WorkflowState> initialStates = wf.getStatesByCategory(INITIAL);
 
-		if (todoStates.size() != 1) {
-			throw new InvalidTodoStateCountException(todoStates.size());
+		if (initialStates.size() != 1) {
+			throw WorkflowExceptions.invalidInitialStateCount(initialStates.size());
 		}
 
-		WorkflowState todoState = todoStates.get(0);
-		if (!todoState.equals(wf.getInitialState())) {
-			throw new IllegalStateException("Initial state pointer mismatch.");
-		}
-	}
-
-	private void ensureAtLeastOneDone(Workflow wf) {
-		boolean doneNotExist = wf.getStatesByCategory(StateCategory.DONE).isEmpty();
-		if (doneNotExist) {
-			throw new MissingDoneStateException();
+		WorkflowState initialState = initialStates.get(0);
+		if (!initialState.equals(wf.getInitialState())) {
+			throw new IllegalStateException("Initial state pointer mismatch");
 		}
 	}
 
-	private void ensureNoIncomingToToDo(Workflow wf) {
+	private void ensureAtLeastOneCompleted(Workflow wf) {
+		boolean completedNotExist = wf.getStatesByCategory(COMPLETED).isEmpty();
+		if (completedNotExist) {
+			throw WorkflowExceptions.missingCompletedState();
+		}
+	}
+
+	private void ensureNoIncomingToInitial(Workflow wf) {
 		WorkflowState initialState = wf.getInitialState();
 
 		List<WorkflowTransition> invalidTransitions = wf.getTransitions().stream()
@@ -65,10 +62,10 @@ public class WorkflowGraphValidator {
 
 		if (!invalidTransitions.isEmpty()) {
 			List<String> sourceNames = invalidTransitions.stream()
-				.map(t -> t.getSourceState().getDisplayLabel())
+				.map(t -> t.getSourceState().getDisplayName())
 				.toList();
 
-			throw new InvalidTransitionTargetException(sourceNames, initialState.getDisplayLabel());
+			throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayName());
 		}
 	}
 
@@ -87,7 +84,7 @@ public class WorkflowGraphValidator {
 			reachableFrom.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
 		}
 
-		// BFS로 initial에서 시작해 도달 가능한 상태를 모두 방문
+		// BFS
 		Set<WorkflowState> reachableStates = new HashSet<>();
 		Deque<WorkflowState> toVisit = new ArrayDeque<>();
 		toVisit.add(initial);
@@ -106,37 +103,36 @@ public class WorkflowGraphValidator {
 
 		List<String> orphanStates = wf.getActiveStates().stream()
 			.filter(s -> !reachableStates.contains(s))
-			.map(WorkflowState::getDisplayLabel)
+			.map(WorkflowState::getDisplayName)
 			.toList();
 
 		if (!orphanStates.isEmpty()) {
-			throw new OrphanStateException(orphanStates, initial.getDisplayLabel());
+			throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayName());
 		}
 	}
 
-	private void ensureValidInProgressFlow(Workflow wf) {
+	private void ensureValidActiveFlow(Workflow wf) {
 		List<WorkflowTransition> activeTransitions = wf.getTransitions();
 
 		Set<WorkflowState> statesWithOutgoing = activeTransitions.stream()
 			.map(WorkflowTransition::getSourceState) // 객체 자체를 수집
 			.collect(Collectors.toSet());
 
-		List<String> deadEnds = wf.getStatesByCategory(StateCategory.IN_PROGRESS).stream()
+		List<String> deadEnds = wf.getStatesByCategory(ACTIVE).stream()
 			.filter(state -> !statesWithOutgoing.contains(state))
-			.map(WorkflowState::getDisplayLabel)
+			.map(WorkflowState::getDisplayName)
 			.toList();
 
 		if (!deadEnds.isEmpty()) {
-			throw new DeadEndStateException(deadEnds);
+			throw WorkflowExceptions.deadEndState(deadEnds);
 		}
 	}
 
-	// TODO: 어차피 ensureSingleToDo에서 보장이 되고, initial 여부도 확인 될텐데 굳이 필요한가?
-	//  중복 검증이지 않을까?
+	// TODO: is this really needed? doesnt ensureSingleInitial already validates this?
 	private WorkflowState ensureInitialExists(Workflow wf) {
 		WorkflowState state = wf.getInitialState();
 		if (state == null || state.isArchived()) {
-			throw new IllegalStateException("Initial must exist and be active.");
+			throw new IllegalStateException("Initial must exist and be active");
 		}
 		return state;
 	}

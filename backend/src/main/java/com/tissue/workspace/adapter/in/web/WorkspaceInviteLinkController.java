@@ -16,11 +16,11 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
-import com.tissue.workspace.application.dto.request.ExpireLinkCommand;
-import com.tissue.workspace.application.dto.request.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.response.InviteLinkResponse;
-import com.tissue.workspace.application.dto.response.WorkspaceMemberCommandResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceInviteLinkDetail;
+import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
+import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.out.command.InviteLinkResponse;
+import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
+import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/invite-links")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/inviteLinks")
 public class WorkspaceInviteLinkController {
 
 	private final WorkspaceInviteLinkUseCase inviteLinkUseCase;
@@ -38,10 +38,12 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid CreateWorkspaceInviteLinkRequest request
 	) {
-		String token = inviteLinkUseCase.createWorkspaceLink(request.toCommand(workspaceKey));
+		var command = request.toCommand(workspaceKey);
+		String token = inviteLinkUseCase.createWorkspaceLink(command);
 
+		// TODO: do i have to write the full uri path? cant i just do "/{token}"?
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/invite-links/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
@@ -55,10 +57,12 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid CreateProjectInviteLinkRequest request
 	) {
-		String token = inviteLinkUseCase.createProjectLink(request.toCommand(workspaceKey, projectKey));
+		var command = request.toCommand(workspaceKey, projectKey);
+		String token = inviteLinkUseCase.createProjectLink(command);
 
+		// TODO: do i have to write the full uri path? cant i just do "/{token}"?
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-			.path("/api/v1/workspaces/{workspaceKey}/invite-links/{token}/join")
+			.path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
 			.buildAndExpand(workspaceKey, token)
 			.toUri();
 
@@ -71,18 +75,20 @@ public class WorkspaceInviteLinkController {
 		@PathVariable String workspaceKey,
 		@PathVariable String token
 	) {
-		inviteLinkUseCase.expireLink(new ExpireLinkCommand(workspaceKey, token));
+		var command = new ExpireLinkCommand(workspaceKey, token);
+		inviteLinkUseCase.expireLink(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping("/{token}/join")
-	public ResponseEntity<WorkspaceMemberCommandResponse> joinViaLink(
+	public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
 		@PathVariable String workspaceKey,
 		@PathVariable String token,
 		@CurrentMember MemberUserDetails userDetails
 	) {
 		var command = new JoinViaLinkCommand(workspaceKey, token, userDetails.getMemberId());
-		WorkspaceMemberCommandResponse response = inviteLinkUseCase.joinViaLink(command);
+		WorkspaceMemberResponse response = inviteLinkUseCase.joinViaLink(command);
 
 		return ResponseEntity.ok(response);
 	}

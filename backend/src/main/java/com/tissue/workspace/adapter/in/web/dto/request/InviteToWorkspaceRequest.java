@@ -3,7 +3,7 @@ package com.tissue.workspace.adapter.in.web.dto.request;
 import java.util.Set;
 
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 
 import jakarta.validation.constraints.Email;

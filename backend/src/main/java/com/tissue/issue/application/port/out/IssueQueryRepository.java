@@ -110,7 +110,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT com.tissue.issue.application.dto.IssueCountStats(
 		        COUNT(i),
-		        SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE THEN 1 ELSE 0 END)
+		        SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED THEN 1 ELSE 0 END)
 		    )
 		    FROM Issue i
 		    WHERE i.parentIssue.id = :parentId
@@ -121,7 +121,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 	@Query("""
 		    SELECT new com.tissue.issue.application.dto.IssuePointStats(
 		        COALESCE(SUM(i.storyPoint), 0),
-		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.DONE
+		        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED
 		        THEN i.storyPoint ELSE 0 END), 0)
 		    )
 		    FROM Issue i
@@ -158,17 +158,6 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		""")
 	List<String> findIssueKeysBySprint(@Param("sprint") Sprint sprint);
 
-	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.sprint = :sprint
-		      AND i.currentState.category != :doneCategory
-		""")
-	boolean existsBySprintAndCategoryNot(
-		@Param("sprint") Sprint sprint,
-		@Param("doneCategory") StateCategory doneCategory
-	);
-
 	@Query("SELECT DISTINCT i.currentState.id " +
 		"FROM Issue i " +
 		"WHERE i.currentState.id IN :stateIds " +
@@ -187,30 +176,36 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
 		""")
 	List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
 
+	/**
+	 * Checks if the member is the author or assignee of the issue
+	 */
 	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.workspaceKey = :workspaceKey
-		    AND i.key = :issueKey
-		      AND (
-		          i.createdBy = :memberId
-		          OR i.participants.assignee.memberId = :memberId
-		      )
+		SELECT COUNT(i) > 0
+		FROM Issue i
+		WHERE i.workspaceKey = :workspaceKey
+		  AND i.key = :issueKey
+		  AND (
+		      i.createdBy = :memberId
+		      OR i.participants.assignee.memberId = :memberId
+		  )
 		""")
-	boolean existsByKeysAndAuthorOrAssignee(
+	boolean isAuthorOrAssignee(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey,
 		@Param("memberId") Long memberId
 	);
 
+	/**
+	 * Checks if the member is the author of the issue
+	 */
 	@Query("""
-		    SELECT COUNT(i) > 0
-		    FROM Issue i
-		    WHERE i.workspaceKey = :workspaceKey
-		      AND i.key = :issueKey
-		      AND i.createdBy = :memberId
+		SELECT COUNT(i) > 0
+		FROM Issue i
+		WHERE i.workspaceKey = :workspaceKey
+		  AND i.key = :issueKey
+		  AND i.createdBy = :memberId
 		""")
-	boolean existsByKeysAndAuthor(
+	boolean isAuthor(
 		@Param("workspaceKey") String workspaceKey,
 		@Param("issueKey") String issueKey,
 		@Param("memberId") Long memberId

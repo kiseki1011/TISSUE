@@ -1,5 +1,7 @@
 package com.tissue.issue.domain;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,18 +14,13 @@ import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.InvalidParentHierarchyException;
-import com.tissue.issue.domain.exception.IssueSelfReferenceException;
-import com.tissue.issue.domain.exception.ParentRequiredException;
-import com.tissue.issue.domain.exception.ParentWorkspaceMismatchException;
-import com.tissue.issue.domain.exception.StoryPointNotAllowedForHierarchyException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.WorkflowState;
-import com.tissue.workflow.domain.enums.StateCategory;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -102,10 +99,7 @@ public class Issue extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private IssueType issueType;
 
-	// TODO: issueType로 부터 얻은 issueHierarchy를 편의 필드로 둘까?
-	//  - 아니면 항상 issue를 조회할때 issueType도 join fetch로 가져오도록 할까?
-	//  - 그런데 이렇게 설계할거면 이슈에 대한 issueType는 절대로 변하지 않을거라는 정책을 사용해야 함
-	//   다른 플랫폼에서도 이렇게 하나?
+	// TODO: when adding a issueType update feature, must need to clear storyPoint if the hierarchy doesnt support it
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private WorkflowState currentState;
@@ -113,7 +107,7 @@ public class Issue extends BaseEntity {
 	@OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<IssueFieldValue> fieldValues = new ArrayList<>();
 
-	// TODO: 추후 태그(tag) 추가. 분류와 검색용도로 활용. 일단은 보류.
+	// TODO: need to add Tag entity(used for search and categorization)
 
 	public static Issue create(
 		@NonNull Project project,
@@ -141,7 +135,10 @@ public class Issue extends BaseEntity {
 		issue.schedule = schedule;
 		issue.participants = participants;
 		issue.priority = priority == null ? IssuePriority.NORMAL : priority;
-		issue.storyPoint = ensureCanModifyStoryPoint(issue.getHierarchy(), storyPoint);
+
+		if (storyPoint != null) {
+			issue.updateStoryPoint(storyPoint);
+		}
 
 		issue.progress = IssueProgress.init();
 		issue.relations = IssueRelations.init();
@@ -212,7 +209,7 @@ public class Issue extends BaseEntity {
 	}
 
 	public void updateStoryPoint(@Nullable Integer storyPoint) {
-		ensureCanModifyStoryPoint(getHierarchy(), storyPoint);
+		ensureCanModifyStoryPoint();
 		this.storyPoint = storyPoint;
 	}
 
@@ -235,17 +232,18 @@ public class Issue extends BaseEntity {
 		return relations.removeRelation(otherIssue);
 	}
 
+	// TODO: should i separate this to a separate domain service?
 	public void transitionTo(@NonNull WorkflowState newState) {
 		WorkflowState previousState = this.currentState;
 		this.currentState = newState;
 
-		if (previousState.getCategory().isTodo()) {
+		if (previousState.getCategory().isInitial()) {
 			this.schedule.markStarted();
 		}
-		if (newState.getCategory().isDone()) {
+		if (newState.getCategory().isCompleted()) {
 			this.schedule.markResolved();
 		}
-		if (previousState.getCategory().isDone() && !newState.getCategory().isDone()) {
+		if (previousState.isCategorizedAs(COMPLETED) && !newState.isCategorizedAs(COMPLETED)) {
 			this.schedule.clearResolved();
 		}
 	}
@@ -281,16 +279,12 @@ public class Issue extends BaseEntity {
 
 	public void removeParentIssue() {
 		ensureCanRemoveParent();
-		clearParent();
+		parentIssue = null;
 	}
 
 	public void delete() {
 		ensureIsInitial();
 		softDelete();
-	}
-
-	public String getWorkspaceKey() {
-		return project.getKey();
 	}
 
 	public IssueHierarchy getHierarchy() {
@@ -302,22 +296,24 @@ public class Issue extends BaseEntity {
 	}
 
 	private void ensureIsInitial() {
-		if (!currentState.isCategorizedAs(StateCategory.TODO)) {
-			// TODO: 커스텀 예외 추가
-			throw new RuntimeException("Cannot delete issue that is not initial state.");
+		if (!currentState.isCategorizedAs(INITIAL)) {
+			throw IssueExceptions.onlyInitialStateDeletionAllowed(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getCurrentState().getDisplayName(),
+				this.getCurrentState().getCategory()
+			);
 		}
 	}
 
-	private static Integer ensureCanModifyStoryPoint(IssueHierarchy hierarchy, Integer storyPoint) {
-		if (hierarchy.cannotModifyStoryPoint()) {
-			// TODO: 예외 이름 개선
-			throw new StoryPointNotAllowedForHierarchyException(hierarchy);
+	private void ensureCanModifyStoryPoint() {
+		if (this.getHierarchy().cannotModifyStoryPoint()) {
+			throw IssueExceptions.storyPointNotAllowed(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getHierarchy()
+			);
 		}
-		return storyPoint;
-	}
-
-	private void clearParent() {
-		parentIssue = null;
 	}
 
 	private void ensureCanSetParent(@NonNull Issue parentIssue) {
@@ -334,25 +330,33 @@ public class Issue extends BaseEntity {
 		IssueHierarchy childHierarchy = this.getHierarchy();
 
 		if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
-			throw new InvalidParentHierarchyException(parentIssue.getKey(), parentHierarchy, this.key, childHierarchy);
+			throw IssueExceptions.invalidParentHierarchy(
+				this.getWorkspaceKey(),
+				parentIssue.getKey(),
+				parentHierarchy,
+				this.getKey(),
+				childHierarchy
+			);
 		}
 	}
 
 	private void ensureNotSelfReference(Issue parentIssue) {
 		if (this.equals(parentIssue)) {
-			throw new IssueSelfReferenceException(this.key);
+			throw IssueExceptions.issueSelfReference(
+				this.getWorkspaceKey(),
+				this.getKey()
+			);
 		}
 	}
 
 	private void ensureSameWorkspace(Issue parentIssue) {
 		boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
 		if (isDifferentWorkspace) {
-			// TODO: 그냥 WorkspaceMismatchException을 만들고 여기서 메세지를 전달할까?
-			throw new ParentWorkspaceMismatchException(
+			throw IssueExceptions.parentWorkspaceMismatch(
 				parentIssue.getWorkspaceKey(),
-				parentIssue.key,
+				parentIssue.getKey(),
 				this.getWorkspaceKey(),
-				this.key
+				this.getKey()
 			);
 		}
 	}
@@ -360,14 +364,22 @@ public class Issue extends BaseEntity {
 	private void ensureSameProject(Issue parentIssue) {
 		boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
 		if (isDifferentProject) {
-			// TODO: ProjectMismatchException?
-			throw new RuntimeException("Children of issues below EPIC level must be in the same project.");
+			throw IssueExceptions.parentProjectMismatch(
+				parentIssue.getHierarchy(),
+				parentIssue.getKey(),
+				this.getHierarchy(),
+				this.getKey()
+			);
 		}
 	}
 
 	private void ensureCanRemoveParent() {
 		if (getHierarchy().mustHaveParent()) {
-			throw new ParentRequiredException(this.key, getHierarchy().toString());
+			throw IssueExceptions.parentRequired(
+				this.getWorkspaceKey(),
+				this.getKey(),
+				this.getHierarchy()
+			);
 		}
 	}
 

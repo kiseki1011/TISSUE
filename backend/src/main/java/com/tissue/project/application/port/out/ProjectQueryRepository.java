@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.enums.ProjectVisibility;
-import com.tissue.workspace.domain.Workspace;
 
 import jakarta.persistence.LockModeType;
 
@@ -17,9 +16,7 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
 	Optional<Project> findById(Long projectId);
 
-	Optional<Project> findByKeyAndWorkspace_Key(String projectKey, String workspaceKey);
-
-	Optional<Project> findByKeyAndWorkspace(String projectKey, Workspace workspace);
+	Optional<Project> findByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT p FROM Project p WHERE p.key = :key AND p.workspaceKey = :workspaceKey")

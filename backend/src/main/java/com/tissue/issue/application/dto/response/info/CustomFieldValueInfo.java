@@ -2,30 +2,30 @@ package com.tissue.issue.application.dto.response.info;
 
 import com.tissue.issue.domain.IssueFieldValue;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 public record CustomFieldValueInfo(
 	Long fieldId,
 	String fieldLabel,
-	FieldType fieldType,
+	IssueFieldType issueFieldType,
 	boolean required,
 	Object value
 ) {
 	public static CustomFieldValueInfo from(IssueFieldValue fieldValue) {
 		IssueField field = fieldValue.getField();
 
-		Object value = extractValue(fieldValue, field.getFieldType());
+		Object value = extractValue(fieldValue, field.getIssueFieldType());
 
 		return new CustomFieldValueInfo(
 			field.getId(),
-			field.getDisplayLabel(),
-			field.getFieldType(),
+			field.getDisplayName(),
+			field.getIssueFieldType(),
 			field.isRequired(),
 			value
 		);
 	}
 
-	private static Object extractValue(IssueFieldValue fv, FieldType type) {
+	private static Object extractValue(IssueFieldValue fv, IssueFieldType type) {
 		if (!fv.isValuePresent()) {
 			return null;
 		}

@@ -1,39 +1,64 @@
 package com.tissue.security.authentication;
 
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberQueryRepository;
+import com.tissue.member.domain.Member;
+import com.tissue.member.domain.MemberStatus;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.project.domain.ProjectMember;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.workspace.domain.WorkspaceMember;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * 스프링 시큐리티가 사용자 정보를 조회할 때 사용하는 서비스
- *
- * 역할:
- * - JWT에서 추출한 사용자 ID로 실제 사용자 정보를 DB에서 조회
- * - Member 엔티티를 MemberUserDetails로 변환
- *
- * 왜 필요한가:
- * - JWT 토큰만으로는 사용자의 현재 상태(활성화/비활성화)를 알 수 없음
- * - 실시간으로 사용자 권한이나 상태가 변경될 수 있음
- * - 스프링 시큐리티와 기존 도메인 로직을 연결하는 브릿지 역할
+ * Spring security uses this service to search UserDetails
+ * <p>
+ * Gets Member from the DB using the email extracted from the JWT.
+ * Then converts the Member to MemberUserDetails.
+ * </p>
+ * <p> Why is this needed? </p>
+ * <li> Spring security cannot know the user's current information only with the JWT </li>
+ * <li> A user's role or status can be changed anytime </li>
+ * </p>
  */
 @Service
 @RequiredArgsConstructor
 public class MemberUserDetailsService implements UserDetailsService {
 
-	private final MemberRepository memberRepository;
+	private final MemberQueryRepository memberRepository;
+	private final WorkspaceMemberQueryRepository workspaceMemberRepository;
+	private final ProjectMemberQueryRepository projectMemberRepository;
 
 	/**
 	 * Find by username(in this case email) extracted from the JWT token
 	 */
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		return memberRepository.findByEmail(email)
-			.map(MemberUserDetails::new)
+		Member member = memberRepository.findByEmailAndStatus(email, MemberStatus.ACTIVE)
 			.orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
+
+		var workspaceRoles = workspaceMemberRepository.findAllByMember(member).stream()
+			.collect(Collectors.toMap(
+				WorkspaceMember::getWorkspaceKey,
+				WorkspaceMember::getRole
+			));
+
+		var projectRoles = projectMemberRepository.findAllByMemberId(member.getId()).stream()
+			.collect(Collectors.groupingBy(
+				ProjectMember::getWorkspaceKey,
+				Collectors.toMap(
+					ProjectMember::getProjectKey,
+					ProjectMember::getRole
+				)
+			));
+
+		return new MemberUserDetails(member, workspaceRoles, projectRoles);
 	}
 }

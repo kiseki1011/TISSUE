@@ -1,6 +1,6 @@
 package com.tissue.issuetype.application.dto.request;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import lombok.Builder;
 
@@ -8,7 +8,7 @@ import lombok.Builder;
 public record RenameIssueTypeCommand(
 	String workspaceKey,
 	String projectKey,
-	Long id,
-	Label label
+	Long issueTypeId,
+	Name name
 ) {
 }

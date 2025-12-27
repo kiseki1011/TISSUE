@@ -5,7 +5,7 @@ import java.time.Instant;
 import org.springframework.lang.Nullable;
 
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.workspace.application.dto.request.CreateProjectInviteLinkCommand;
+import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;

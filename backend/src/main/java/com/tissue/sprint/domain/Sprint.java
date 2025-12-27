@@ -9,6 +9,7 @@ import org.springframework.lang.Nullable;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.enums.SprintStatus;
+import com.tissue.sprint.domain.exception.SprintExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -102,26 +103,20 @@ public class Sprint extends BaseEntity {
 		this.dueAt = dueAt;
 	}
 
-	// TODO: 호출 전에 Project에 활성(ACTIVE) Sprint가 없다는 것을 보장해야 함
-	//  - 애플리케이션 계층에서 레포지토리 메서드를 통해 ACTIVE인 스프린트의 존재 여부 확인
-	public void start(@NonNull Instant startedAt, @NonNull Instant dueAt) {
+	public void start(@NonNull Instant dueAt) {
 		if (this.status != PLANNING) {
-			// TODO: InvalidSprintStatusException
-			throw new IllegalStateException("Only PLANNING sprints can be started.");
+			throw SprintExceptions.invalidStatusTransition(this.status, PLANNING, ACTIVE);
 		}
 
-		ensureValidPeriod(startedAt, dueAt);
-
-		this.startedAt = startedAt;
+		this.startedAt = Instant.now();
+		ensureValidPeriod(this.startedAt, dueAt);
 		this.dueAt = dueAt;
-
 		this.status = ACTIVE;
 	}
 
 	public void complete() {
 		if (this.status != ACTIVE) {
-			// TODO: InvalidSprintStatusException
-			throw new IllegalStateException("Only ACTIVE sprints can be completed.");
+			throw SprintExceptions.invalidStatusTransition(this.status, ACTIVE, COMPLETED);
 		}
 		this.status = COMPLETED;
 		this.completedAt = Instant.now();
@@ -129,8 +124,7 @@ public class Sprint extends BaseEntity {
 
 	private void ensureValidPeriod(Instant start, Instant end) {
 		if (end.isBefore(start)) {
-			// TODO: InvalidSprintDateException
-			throw new IllegalStateException("Due date cannot be before start date.");
+			throw SprintExceptions.invalidPeriod(start, end);
 		}
 	}
 }

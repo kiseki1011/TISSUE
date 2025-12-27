@@ -17,10 +17,10 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
-import com.tissue.workspace.application.dto.request.DeleteWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.TransferOwnershipCommand;
-import com.tissue.workspace.application.dto.response.WorkspaceCommandResponse;
-import com.tissue.workspace.application.dto.response.query.WorkspaceDetail;
+import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
+import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
+import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceQueryUseCase;
@@ -38,12 +38,12 @@ public class WorkspaceController {
 	private final WorkspaceQueryUseCase workspaceQueryUseCase;
 
 	@PostMapping
-	public ResponseEntity<WorkspaceCommandResponse> createWorkspace(
+	public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
 		@RequestBody @Valid CreateWorkspaceRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		WorkspaceCommandResponse response = workspaceCreateUseCase.create(
-			request.toCommand(userDetails.getMemberId()));
+		var command = request.toCommand(userDetails.getMemberId());
+		WorkspaceCreateResponse response = workspaceCreateUseCase.create(command);
 
 		URI location = ServletUriComponentsBuilder
 			.fromCurrentRequest()
@@ -60,7 +60,9 @@ public class WorkspaceController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid UpdateWorkspaceInfoRequest request
 	) {
-		workspaceCommandUseCase.updateInfo(request.toCommand(workspaceKey));
+		var command = request.toCommand(workspaceKey);
+		workspaceCommandUseCase.updateInfo(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -68,7 +70,9 @@ public class WorkspaceController {
 	public ResponseEntity<Void> delete(
 		@PathVariable String workspaceKey
 	) {
-		workspaceCommandUseCase.delete(new DeleteWorkspaceCommand(workspaceKey));
+		var command = new DeleteWorkspaceCommand(workspaceKey);
+		workspaceCommandUseCase.delete(command);
+
 		return ResponseEntity.noContent().build();
 	}
 
@@ -78,13 +82,9 @@ public class WorkspaceController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceCommandUseCase.transferOwnership(
-			new TransferOwnershipCommand(
-				workspaceKey,
-				userDetails.getMemberId(),
-				memberId
-			)
-		);
+		var command = new TransferOwnershipCommand(workspaceKey, memberId, userDetails.getMemberId());
+		workspaceCommandUseCase.transferOwnership(command);
+
 		return ResponseEntity.noContent().build();
 	}
 

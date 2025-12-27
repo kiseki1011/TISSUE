@@ -24,7 +24,7 @@ import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.InvalidTodoStateCountException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 	}
 
 	private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
 		if (!Objects.equals(workflow.getVersion(), cmd.version())) {
@@ -83,7 +83,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 				continue;
 			}
 			WorkflowState created = workflow.addState(
-				s.label(),
+				s.name(),
 				s.description(),
 				s.color(),
 				s.category()
@@ -111,7 +111,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 				continue;
 			}
 
-			workflow.addTransition(cmd.label(), cmd.description(), src, trg);
+			workflow.addTransition(cmd.name(), cmd.description(), src, trg);
 		}
 	}
 
@@ -136,11 +136,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 		StateResolver stateResolver
 	) {
 		var todoCmds = stateDefinitions.stream()
-			.filter(cmd -> cmd.category() == StateCategory.TODO)
+			.filter(cmd -> cmd.category() == StateCategory.INITIAL)
 			.toList();
 
 		if (todoCmds.size() != 1) {
-			throw new InvalidTodoStateCountException(todoCmds.size());
+			throw WorkflowExceptions.invalidInitialStateCount(todoCmds.size());
 		}
 
 		WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).stateRef());
@@ -226,7 +226,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 		private WorkflowState resolveExisting(Long id) {
 			return Optional.ofNullable(existingStates.get(id))
 				.orElseThrow(
-					() -> new IllegalArgumentException("Invalid workflow state id '%d'.".formatted(id))
+					() -> new IllegalArgumentException("Invalid workflow state id '%d'".formatted(id))
 				);
 		}
 

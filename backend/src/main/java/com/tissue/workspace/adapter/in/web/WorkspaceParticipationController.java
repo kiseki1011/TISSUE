@@ -12,8 +12,9 @@ import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 
 import jakarta.validation.Valid;
@@ -31,8 +32,9 @@ public class WorkspaceParticipationController {
 		@PathVariable String workspaceKey,
 		@RequestBody @Valid InviteToWorkspaceRequest request
 	) {
-		InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(
-			request.toCommand(workspaceKey));
+		var command = request.toCommand(workspaceKey);
+		InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -42,8 +44,9 @@ public class WorkspaceParticipationController {
 		@PathVariable String projectKey,
 		@RequestBody @Valid InviteToProjectRequest request
 	) {
-		InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(
-			request.toCommand(workspaceKey, projectKey));
+		var command = request.toCommand(workspaceKey, projectKey);
+		InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
+
 		return ResponseEntity.ok(response);
 	}
 
@@ -52,7 +55,8 @@ public class WorkspaceParticipationController {
 		@PathVariable String workspaceKey,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceParticipationUseCase.leave(workspaceKey, userDetails.getMemberId());
+		var command = new LeaveWorkspaceCommand(workspaceKey, userDetails.getMemberId());
+		workspaceParticipationUseCase.leave(command);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -62,8 +66,9 @@ public class WorkspaceParticipationController {
 		@PathVariable Long memberId,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		workspaceParticipationUseCase.kick(
-			new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId()));
+		var command = new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId());
+		workspaceParticipationUseCase.kick(command);
+
 		return ResponseEntity.noContent().build();
 	}
 }

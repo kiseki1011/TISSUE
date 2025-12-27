@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
-import com.tissue.issue.domain.exception.InvalidStateTransitionException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.workflow.domain.WorkflowTransition;
 
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,20 @@ public class IssueValidator {
 		ensureNoChildren(issue);
 	}
 
-	public void ensureValidTransition(Issue issue, Long transitionId, String workspaceKey,
-		WorkflowTransition transition) {
-		boolean transitionSourceStateNotMatch = !issue.getCurrentState().equals(transition.getSourceState());
-		if (transitionSourceStateNotMatch) {
-			throw new InvalidStateTransitionException(
-				issue.getKey(), "projectKey", workspaceKey, transitionId,
-				issue.getCurrentState().getDisplayLabel(), transition.getSourceState().getDisplayLabel()
+	public void ensureValidTransition(
+		Issue issue,
+		Long transitionId,
+		String workspaceKey,
+		WorkflowTransition transition
+	) {
+		boolean sourceStateMisMatch = !issue.getCurrentState().equals(transition.getSourceState());
+		if (sourceStateMisMatch) {
+			throw IssueExceptions.transitionSourceStateMismatch(
+				workspaceKey,
+				issue.getKey(),
+				transitionId,
+				issue.getCurrentState().getDisplayName(),
+				transition.getSourceState().getDisplayName()
 			);
 		}
 	}
@@ -33,11 +40,7 @@ public class IssueValidator {
 	private void ensureNoChildren(Issue issue) {
 		boolean hasChildren = issueQueryRepo.hasChildren(issue.getWorkspaceKey(), issue.getKey());
 		if (hasChildren) {
-			// TODO: IssueChildrenExistsException? 더 좋은 이름이 있을까?
-			throw new RuntimeException(
-				"Cannot delete issue that has children. issueKey: %s"
-					.formatted(issue.getKey())
-			);
+			throw IssueExceptions.cannotDeleteIssueWithChildren(issue.getKey());
 		}
 	}
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.tissue.issue.domain.Issue;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardContext;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
@@ -31,22 +32,21 @@ public class NotBlockedGuard implements TransitionGuard {
 		}
 
 		List<String> unresolvedKeys = blockingIssues.stream()
-			.filter(blocking -> !blocking.getCurrentState().isCategorizedAs(DONE))
+			.filter(blocking -> !blocking.getCurrentState().isCategorizedAs(COMPLETED))
 			.map(Issue::getKey)
 			.toList();
 
 		if (!unresolvedKeys.isEmpty()) {
-			// TODO: 예외 개선
-			//  - WorkflowErrorCode.TRANSITION_GUARD_FAILED
-			//  - "This issue is blocked by: %s. Resolve blocking issues first."
-			throw new RuntimeException("Transition blocked by unresolved issues");
-			// .addContext("guardType", getType())
-			// .addContext("reason", "BLOCKED_BY_ISSUES")
-			// .addContext("blockingKeys", unresolvedKeys);
+			throw WorkflowExceptions.transitionGuardFailed(
+				getType(),
+				"This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
+				issue.getKey(),
+				context.getWorkspaceKey()
+			);
 		}
 	}
 
 	@Override
-	public void validateParams(Map<String, Object> params) {
+	public void validateParams(Map<String, Object> params, GuardType guardType) {
 	}
 }

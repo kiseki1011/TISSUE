@@ -8,10 +8,9 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.common.exception.domain.SelfOperationNotAllowedException;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
-import com.tissue.project.application.dto.request.JoinProjectCommand;
+import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
@@ -19,10 +18,11 @@ import com.tissue.project.application.port.in.ProjectMemberCommandUseCase;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
-import com.tissue.project.application.service.validator.ProjectMemberValidator;
+import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.project.domain.exception.ProjectExceptions;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 
@@ -35,13 +35,13 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	private final ProjectFinder projectFinder;
 	private final ProjectMemberFinder projectMemberFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final ProjectMemberValidator projectMemberValidator;
+	private final ProjectValidator projectValidator;
 	private final ProjectMemberCommandRepository projectMemberRepository;
 
 	@Override
+	@Transactional
 	public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
-
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
 		Set<Long> targetMemberIds = cmd.extractMemberIds();
 		Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
@@ -72,15 +72,12 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	}
 
 	@Override
-	public ProjectMemberCommandResult join(JoinProjectCommand cmd) {
+	@Transactional
+	public ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd) {
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(
-			cmd.actorMemberId(),
-			cmd.workspaceKey()
-		);
-
-		projectMemberValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
+		projectValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
 
 		ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
 		projectMemberRepository.save(projectMember);
@@ -91,26 +88,26 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	}
 
 	@Override
+	@Transactional
 	public ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long memberId) {
-
-		Project project = projectFinder.findForCommand(projectKey, workspaceKey);
+		Project project = projectFinder.getModifiableBy(projectKey, workspaceKey);
 		ProjectMember actor = projectMemberFinder.findBy(project, memberId);
 
 		actor.remove();
 
-		// TODO: ProjectMemberLeavedEvent
+		// TODO: ProjectMemberLeftEvent
 
 		return ProjectMemberCommandResult.of(actor);
 	}
 
 	@Override
+	@Transactional
 	public ProjectMemberCommandResult kickMember(KickProjectMemberCommand cmd) {
-
 		if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
-			throw new SelfOperationNotAllowedException("Self kick not allowed. Use project leave instead.");
+			throw ProjectExceptions.selfKick();
 		}
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
 
 		target.remove();
@@ -122,13 +119,13 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 	}
 
 	@Override
+	@Transactional
 	public ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd) {
-
 		if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
-			throw new SelfOperationNotAllowedException("Self project role modification not allowed.");
+			throw ProjectExceptions.selfRole();
 		}
 
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
 
 		target.changeRole(cmd.newRole());
@@ -138,8 +135,9 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 		return ProjectMemberCommandResult.of(target);
 	}
 
-	// TODO: UseCase에 포함되지 않고 다른 애플리케이션 서비스에서 호출한다고 주석으로 명시
-	//  아예 새로운 클래스(ProjectParticipationService)로 분리할까?
+	// TODO: add javadoc about the next information
+	//  - is not a UseCase
+	//  - is called from another service(internal usage)
 	@Transactional
 	public void addMember(Project project, Long memberId, ProjectRole role) {
 		if (projectMemberFinder.existsBy(project, memberId)) {

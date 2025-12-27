@@ -3,7 +3,7 @@ package com.tissue.workflow.application.dto.request;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import lombok.Builder;
 
@@ -13,7 +13,7 @@ public record UpdateStateCommand(
 	String projectKey,
 	Long workflowId,
 	Long stateId,
-	JsonNullable<Label> label,
+	JsonNullable<Name> name,
 	JsonNullable<String> description,
 	JsonNullable<ColorType> color
 ) {

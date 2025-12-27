@@ -46,7 +46,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 	@Override
 	@Transactional
 	public void performTransition(PerformTransitionCommand cmd) {
-		Project project = projectFinder.findForCommand(extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
 		Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 		ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
@@ -62,9 +62,9 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 		issue.transitionTo(transition.getTargetState());
 
 		log.info("[TRANSITION SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
-			transition.getDisplayLabel(),
-			issue.getCurrentState().getDisplayLabel(),
-			transition.getTargetState().getDisplayLabel(),
+			transition.getDisplayName(),
+			issue.getCurrentState().getDisplayName(),
+			transition.getTargetState().getDisplayName(),
 			issue.getKey(),
 			cmd.actorMemberId()
 		);
@@ -86,7 +86,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 			return;
 		}
 
-		log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayLabel());
+		log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayName());
 
 		for (TransitionGuardConfig config : configs) {
 			TransitionGuard guard = guardRegistry.getGuard(config.getGuardType());

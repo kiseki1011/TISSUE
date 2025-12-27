@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
@@ -45,7 +45,7 @@ public class WorkflowTransition extends BaseEntity {
 	private Workflow workflow;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
@@ -61,13 +61,13 @@ public class WorkflowTransition extends BaseEntity {
 	private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
 
 	public static WorkflowTransition of(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull WorkflowState sourceState,
 		@NonNull WorkflowState targetState
 	) {
 		WorkflowTransition wt = new WorkflowTransition();
-		wt.label = label;
+		wt.name = name;
 		wt.description = description;
 		wt.sourceState = sourceState;
 		wt.targetState = targetState;
@@ -75,8 +75,8 @@ public class WorkflowTransition extends BaseEntity {
 		return wt;
 	}
 
-	void updateLabel(@NonNull Label label) {
-		this.label = label;
+	void updateName(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {
@@ -114,7 +114,7 @@ public class WorkflowTransition extends BaseEntity {
 		guardConfigs.clear();
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 }

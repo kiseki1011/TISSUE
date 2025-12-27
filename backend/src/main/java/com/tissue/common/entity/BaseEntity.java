@@ -35,6 +35,18 @@ public abstract class BaseEntity extends BaseDateEntity {
 
 	public abstract Long getId();
 
+	// TODO: add javadoc that explains why archive() is called within
+	//  - archive means that modification is prohibited and the resource is read-only
+	//  - soft-delete is a flag that means the resource is deleted, but it also needs a way to stop
+	//  other people from using it (this logic will be implemented through checking the archive field at a finder class)
+	public void softDelete() {
+		if (!softDeleted) {
+			this.softDeleted = true;
+			this.softDeletedAt = Instant.now();
+			archive();
+		}
+	}
+
 	public void archive() {
 		if (!archived) {
 			this.archived = true;
@@ -42,23 +54,16 @@ public abstract class BaseEntity extends BaseDateEntity {
 		}
 	}
 
-	public void softDelete() {
-		if (!softDeleted) {
-			this.softDeleted = true;
-			this.softDeletedAt = Instant.now();
-		}
-	}
-
-	// TODO: 공통 restore는 없애고 필요한 엔티티에서 따로 구현할까?
-	public void restore() {
+	public void restoreSoftDeleted() {
 		if (!softDeleted) {
 			return;
 		}
 		this.softDeleted = false;
 		this.softDeletedAt = null;
+		restoreArchived();
 	}
 
-	public void unarchive() {
+	public void restoreArchived() {
 		if (!archived) {
 			return;
 		}
@@ -66,6 +71,7 @@ public abstract class BaseEntity extends BaseDateEntity {
 		this.archivedAt = null;
 	}
 
+	// TODO: add javadoc that explains this is a hibernate-safe implementation of equals and hashCode
 	private static Class<?> effectiveClass(Object o) {
 		if (o instanceof org.hibernate.proxy.HibernateProxy p) {
 			return p.getHibernateLazyInitializer().getPersistentClass();

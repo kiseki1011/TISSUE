@@ -8,9 +8,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issue.domain.policy.FieldValuePolicy;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,8 @@ public class DecimalFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.DECIMAL;
+	public IssueFieldType type() {
+		return IssueFieldType.DECIMAL;
 	}
 
 	@Override
@@ -36,7 +37,12 @@ public class DecimalFieldHandler implements FieldTypeHandler {
 			policy.ensureDigits(bd, field.getId());
 			return policy.normalizeDecimal(bd);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new IllegalArgumentException("must be a decimal number");
+			throw IssueExceptions.customFieldTypeMismatch(
+				field.getId(),
+				field.getDisplayName(),
+				field.getIssueFieldType(),
+				raw
+			);
 		}
 	}
 }

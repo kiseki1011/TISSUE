@@ -3,28 +3,38 @@ package com.tissue.member.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.member.application.dto.response.GetMemberProfile;
+import com.tissue.member.application.port.in.MemberQueryUseCase;
+import com.tissue.member.application.service.finder.MemberFinder;
+import com.tissue.member.application.service.validator.MemberValidator;
 import com.tissue.member.domain.Member;
-import com.tissue.member.domain.exception.MemberNotFoundException;
-import com.tissue.member.application.port.out.MemberQueryRepository;
-import com.tissue.member.application.dto.response.GetProfileResponse;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MemberQueryService {
+public class MemberQueryService implements MemberQueryUseCase {
 
-	private final MemberQueryRepository memberQueryRepository;
+	private final MemberFinder memberFinder;
+	private final MemberValidator memberValidator;
 
-	/**
-	 * Todo
-	 *  - DTO(ProfileResponse)로 응답을 받도록 MemberQueryRepository에 메서드 정의, 수정
-	 */
+	@Override
 	@Transactional(readOnly = true)
-	public GetProfileResponse getProfile(Long memberId) {
-		Member member = memberQueryRepository.findById(memberId)
-			.orElseThrow(() -> new MemberNotFoundException(memberId));
+	public GetMemberProfile getMyProfile(Long memberId) {
+		Member member = memberFinder.getActiveBy(memberId);
+		return GetMemberProfile.from(member);
+	}
 
-		return GetProfileResponse.from(member);
+	@Override
+	@Transactional(readOnly = true)
+	public void checkEmailAvailability(String email) {
+		// Refactored: Delegated from Controller to Service to keep Controller clean.
+		memberValidator.ensureUniqueEmail(email);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public void checkUsernameAvailability(String username) {
+		memberValidator.ensureUniqueUsername(username);
 	}
 }

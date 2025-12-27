@@ -3,8 +3,8 @@ package com.tissue.issuetype.domain;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.common.vo.Label;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.common.vo.Name;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -36,14 +36,14 @@ public class IssueField extends BaseEntity {
 	private Long version;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private FieldType fieldType;
+	private IssueFieldType issueFieldType;
 
 	@Column(nullable = false)
 	private boolean required;
@@ -55,18 +55,18 @@ public class IssueField extends BaseEntity {
 	// private String icon;
 
 	public static IssueField create(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
-		@NonNull FieldType fieldType,
-		@NonNull Boolean required,
+		@NonNull IssueFieldType issueFieldType,
+		boolean required,
 		@NonNull IssueType issueType
 	) {
 		IssueField issueField = new IssueField();
 
-		issueField.label = label;
+		issueField.name = name;
 		issueField.description = description;
-		issueField.fieldType = fieldType;
-		issueField.required = Boolean.TRUE.equals(required);
+		issueField.issueFieldType = issueFieldType;
+		issueField.required = required;
 		issueField.issueType = issueType;
 
 		return issueField;
@@ -76,19 +76,19 @@ public class IssueField extends BaseEntity {
 		return issueType.getWorkspaceKey();
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
-	public void rename(@NonNull Label label) {
-		this.label = label;
+	public void rename(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {
 		this.description = description;
 	}
 
-	public void setRequired(@NonNull Boolean required) {
-		this.required = Boolean.TRUE.equals(required);
+	public void setRequired(boolean required) {
+		this.required = required;
 	}
 }

@@ -1,28 +1,27 @@
 package com.tissue.workspace.application.port.in;
 
-import static com.tissue.security.authorization.ProjectSecurityExpressions.*;
-import static com.tissue.security.authorization.SecurityKeyWords.*;
-import static com.tissue.security.authorization.WorkspaceSecurityExpressions.*;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+import static com.tissue.workspace.application.service.authorization.WorkspaceAuthExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 
-@Transactional
 public interface WorkspaceParticipationUseCase {
 
-	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_GRANTABLE_WORKSPACE_ROLE)
+	@PreAuthorize(REQUIRES_WORKSPACE_ROLE_GRANT_PERMISSION)
 	InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd);
 
 	@PreAuthorize(REQUIRES_PROJECT_ADMIN)
 	InviteMembersResponse inviteToProject(InviteToProjectCommand cmd);
 
-	void leave(String workspaceKey, Long memberId);
+	@PreAuthorize(REQUIRES_SELF)
+	void leave(LeaveWorkspaceCommand cmd);
 
-	@PreAuthorize(REQUIRES_WORKSPACE_ADMIN + AND + REQUIRES_HIGHER_WORKSPACE_ROLE)
+	@PreAuthorize(REQUIRES_HIGHER_WORKSPACE_ROLE)
 	void kick(KickWorkspaceMemberCommand cmd);
 }

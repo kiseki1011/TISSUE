@@ -2,10 +2,16 @@ package com.tissue.issuetype.application.service.validator;
 
 import org.springframework.stereotype.Component;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
+import com.tissue.issue.application.port.out.IssueFieldValueQueryRepository;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
+import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
+import com.tissue.issuetype.domain.EnumFieldOption;
+import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
 import com.tissue.project.domain.Project;
 
 import lombok.RequiredArgsConstructor;
@@ -14,33 +20,60 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IssueTypeValidator {
 
-	private final IssueQueryRepository issueQueryRepo;
 	private final IssueTypeQueryRepository issueTypeQueryRepo;
+	private final IssueFieldQueryRepository issueFieldRepo;
+	private final EnumFieldOptionQueryRepository optionRepo;
 
-	public void ensureUniqueLabel(Project project, Label label) {
-		boolean duplicated = issueTypeQueryRepo.existsByLabel_NormalizedAndProject(label.getNormalized(), project);
+	private final IssueQueryRepository issueQueryRepo;
+	private final IssueFieldValueQueryRepository fieldValueRepo;
+
+	public void ensureUniqueLabel(Project project, Name name) {
+		boolean duplicated = issueTypeQueryRepo.existsByName_NormalizedAndProject(name.getNormalized(), project);
 		if (duplicated) {
-			// TODO: DuplicateIssueTypeException
-			throw new RuntimeException("Issue type label already exists in this workspace.");
+			throw IssueTypeExceptions.duplicateTypeName(name, project);
 		}
 	}
 
 	public void ensureDeletable(IssueType type) {
-		ensureNotSystemType(type);
-		ensureNotInUse(type);
+		ensureTypeNotInUse(type);
 	}
 
-	private void ensureNotSystemType(IssueType type) {
-		if (type.isSystemType()) {
-			// TODO: SystemTypeNotDeletableException -> extends BadRequestException
-			throw new RuntimeException("Cannot delete system(default) issue types.");
+	public void ensureUniqueFieldLabel(IssueType issueType, Name name) {
+		boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
+		if (duplicated) {
+			throw IssueTypeExceptions.duplicateFieldName(name, issueType);
 		}
 	}
 
-	private void ensureNotInUse(IssueType type) {
-		if (issueQueryRepo.existsByIssueType(type)) {
-			// TODO: IssueTypeInUseException
-			throw new RuntimeException("Cannot delete: issues exist for this issue type.");
+	public void ensureFieldDeletable(IssueField issueField) {
+		ensureFieldNotInUse(issueField);
+	}
+
+	public void ensureUniqueOptionLabel(IssueField field, Name name) {
+		if (optionRepo.existsByIssueFieldAndName_Normalized(field, name.getNormalized())) {
+			throw IssueTypeExceptions.duplicateOptionName(name, field);
+		}
+	}
+
+	public void ensureOptionDeletable(EnumFieldOption option) {
+		ensureOptionNotInUse(option);
+	}
+
+	private void ensureTypeNotInUse(IssueType issueType) {
+		if (issueQueryRepo.existsByIssueType(issueType)) {
+			throw IssueTypeExceptions.typeInUse(issueType);
+		}
+	}
+
+	private void ensureFieldNotInUse(IssueField issueField) {
+		if (fieldValueRepo.existsByField(issueField)) {
+			throw IssueTypeExceptions.fieldInUse(issueField);
+		}
+	}
+
+	private void ensureOptionNotInUse(EnumFieldOption option) {
+		if (optionRepo.isInUse(option)) {
+			throw IssueTypeExceptions.optionInUse(option);
 		}
 	}
 }

@@ -1,13 +1,10 @@
 package com.tissue.sprint.application.port.in;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.tissue.sprint.application.dto.request.GetSprintDetailQuery;
 import com.tissue.sprint.application.dto.request.GetSprintIssueKeysQuery;
 import com.tissue.sprint.application.dto.response.SprintDetail;
 import com.tissue.sprint.application.dto.response.SprintIssueKeys;
 
-@Transactional(readOnly = true)
 public interface SprintQueryUseCase {
 
 	// TODO: getCurrentActiveSprint

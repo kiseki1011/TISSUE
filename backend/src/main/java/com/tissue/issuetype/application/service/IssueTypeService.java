@@ -3,9 +3,10 @@ package com.tissue.issuetype.application.service;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
@@ -24,6 +25,7 @@ import com.tissue.workflow.domain.Workflow;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueTypeService implements IssueTypeUseCase {
 
@@ -33,15 +35,16 @@ public class IssueTypeService implements IssueTypeUseCase {
 	private final IssueTypeCommandRepository issueTypeCommandRepository;
 	private final IssueTypeValidator issueTypeValidator;
 
+	@Override
 	public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
+		issueTypeValidator.ensureUniqueLabel(project, cmd.name());
 
 		IssueType issueType = IssueType.create(
 			project,
-			cmd.label(),
+			cmd.name(),
 			cmd.description(),
 			cmd.color(),
 			cmd.issueHierarchy(),
@@ -53,38 +56,41 @@ public class IssueTypeService implements IssueTypeUseCase {
 		return IssueTypeResponse.from(savedType);
 	}
 
+	@Override
 	public void rename(RenameIssueTypeCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		if (labelUnchanged(issueType, cmd.label())) {
+		if (labelUnchanged(issueType, cmd.name())) {
 			return;
 		}
 
-		issueTypeValidator.ensureUniqueLabel(project, cmd.label());
-		issueType.rename(cmd.label());
+		issueTypeValidator.ensureUniqueLabel(project, cmd.name());
+		issueType.rename(cmd.name());
 	}
 
+	@Override
 	public void update(PatchIssueTypeCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
 		Patchers.apply(cmd.description(), issueType::updateDescription);
 		Patchers.apply(cmd.color(), issueType::updateColor);
 	}
 
-	// TODO: soft-delete 사용
+	@Override
 	public void delete(DeleteIssueTypeCommand cmd) {
-		Project project = projectFinder.findForCommand(cmd.projectKey(), cmd.workspaceKey());
-		IssueType issueType = issueTypeFinder.findBy(cmd.id(), project);
+		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+		IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-		// TODO: 해당 IssueType를 사용한 이슈가 WorkflowState의 StateCategory가 DONE이 아닌게 존재한다면 삭제 불가
+		// TODO: consider IssueType migration feature(make it in IssueConfigUseCase)
+		//  current policy: cant delete if there is a issue that uses this IssueType
 		issueTypeValidator.ensureDeletable(issueType);
 
 		issueType.softDelete();
 	}
 
-	private boolean labelUnchanged(IssueType it, Label newLabel) {
-		return Objects.equals(it.getLabel(), newLabel);
+	private boolean labelUnchanged(IssueType it, Name newName) {
+		return Objects.equals(it.getName(), newName);
 	}
 }

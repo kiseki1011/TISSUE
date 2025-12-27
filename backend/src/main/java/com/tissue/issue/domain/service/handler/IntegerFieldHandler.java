@@ -6,8 +6,9 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,8 @@ public class IntegerFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.INTEGER;
+	public IssueFieldType type() {
+		return IssueFieldType.INTEGER;
 	}
 
 	@Override
@@ -29,7 +30,12 @@ public class IntegerFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, Integer.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new IllegalArgumentException("must be an integer");
+			throw IssueExceptions.customFieldTypeMismatch(
+				field.getId(),
+				field.getDisplayName(),
+				field.getIssueFieldType(),
+				raw
+			);
 		}
 	}
 }

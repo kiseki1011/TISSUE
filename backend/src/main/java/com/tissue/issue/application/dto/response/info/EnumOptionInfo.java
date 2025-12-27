@@ -4,12 +4,12 @@ import com.tissue.issuetype.domain.EnumFieldOption;
 
 public record EnumOptionInfo(
 	Long id,
-	String displayLabel
+	String displayName
 ) {
 	public static EnumOptionInfo of(EnumFieldOption option) {
 		if (option == null) {
 			return null;
 		}
-		return new EnumOptionInfo(option.getId(), option.getDisplayLabel());
+		return new EnumOptionInfo(option.getId(), option.getDisplayName());
 	}
 }

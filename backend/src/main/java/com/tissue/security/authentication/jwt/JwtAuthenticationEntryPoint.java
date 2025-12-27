@@ -3,12 +3,12 @@ package com.tissue.security.authentication.jwt;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.common.dto.ApiResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,16 +32,17 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		HttpServletResponse response,
 		AuthenticationException authException
 	) throws IOException {
+		log.warn("Authentication exception occurred during a security filter process");
 
-		log.warn("Authentication exception occurred during a security filter process.");
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+			HttpStatus.UNAUTHORIZED,
+			"Authentication is required to access this resource."
+		);
+		problemDetail.setTitle("Unauthorized");
+		problemDetail.setInstance(java.net.URI.create(request.getRequestURI()));
 
-		HttpStatus status = HttpStatus.UNAUTHORIZED;
-		String message = "Authentication is required to access.";
-
-		ApiResponse<Void> apiResponse = ApiResponse.failWithNoContent(status, message);
-
-		response.setStatus(status.value());
+		response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		response.setContentType("application/json;charset=UTF-8");
-		objectMapper.writeValue(response.getWriter(), apiResponse);
+		objectMapper.writeValue(response.getWriter(), problemDetail);
 	}
 }

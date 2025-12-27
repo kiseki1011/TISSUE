@@ -11,7 +11,7 @@ public record TransitionDetail(
 		return new TransitionDetail(
 			transition.getWorkflow().getId(),
 			transition.getId(),
-			transition.getDisplayLabel()
+			transition.getDisplayName()
 		);
 	}
 }

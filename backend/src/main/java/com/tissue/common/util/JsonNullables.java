@@ -4,11 +4,10 @@ import java.util.function.Function;
 
 import org.openapitools.jackson.nullable.JsonNullable;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JsonNullables {
+	private JsonNullables() {
+		throw new UnsupportedOperationException("Utility class cannot be instantiated");
+	}
 
 	public static <T, R> JsonNullable<R> map(
 		JsonNullable<T> source,

@@ -7,12 +7,13 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.tissue.issue.domain.IssueReviewer;
+import com.tissue.issue.domain.enums.ReviewStatus;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardContext;
 import com.tissue.workflow.domain.guard.GuardParamMetaData;
+import com.tissue.workflow.domain.guard.GuardParamType;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
-import com.tissue.issue.domain.enums.ReviewStatus;
-import com.tissue.workflow.domain.guard.GuardParamType;
 
 @Component
 public class ApprovalGuard implements TransitionGuard {
@@ -40,19 +41,10 @@ public class ApprovalGuard implements TransitionGuard {
 			boolean hasReject = reviewers.stream()
 				.anyMatch(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED);
 
-			// long rejectCount = reviewers.stream()
-			// 	.filter(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED)
-			// 	.count();
-
 			if (hasReject) {
-				// TODO: 예외 개선
-				//  - WorkflowErrorCode.TRANSITION_GUARD_FAILED
-				//  - "Transition blocked. %d reviewer(s) requested changes."
-				//  - TRANSITION_BLOCKED_BY_CHANGE_REQUEST
-				throw new RuntimeException("Transition blocked by change requests");
-				// .addContext("guardType", getType())
-				// .addContext("reason", "BLOCKED_BY_CHANGE_REQUEST")
-				// .addContext("rejectCount", rejectCount);
+				String reason = "Transition blocked by change requests";
+				throw WorkflowExceptions.transitionGuardFailed(getType(), reason, context.getIssue().getKey(),
+					context.getWorkspaceKey());
 			}
 		}
 
@@ -61,38 +53,27 @@ public class ApprovalGuard implements TransitionGuard {
 			.count();
 
 		if (approvedCount < minApprovals) {
-			// TODO: 예외 개선
-			//  - WorkflowErrorCode.TRANSITION_GUARD_FAILED
-			//  - "Insufficient approvals. Current: %d, Required: %d."
-			//  - TRANSITION_INSUFFICIENT_APPROVALS
-			throw new RuntimeException("Insufficient approvals");
-			// .addContext("guardType", getType())
-			// .addContext("reason", "INSUFFICIENT_APPROVALS")
-			// .addContext("current", approvedCount)
-			// .addContext("required", minApprovals);
+			String reason = "Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals);
+			throw WorkflowExceptions.transitionGuardFailed(getType(), reason, context.getIssue().getKey(),
+				context.getWorkspaceKey());
 		}
 	}
 
 	@Override
-	public void validateParams(Map<String, Object> params) {
-		// TODO: minApprovals defaultValue 외부 설정값으로 설정
+	public void validateParams(Map<String, Object> params, GuardType guardType) {
+		// TODO: use application.yml for minApprovals defaultValue
 		int min = getInt(params, KEY_MIN_APPROVALS, 1);
 		if (min < 1) {
-			// TODO: 예외 개선
-			//  - WorkflowErrorCode.GUARD_PARAM_VALIDATION_FAILED
-			//  - 그런데 GUARD_PARAM_VALIDATION_FAILED로 퉁치는게 아니라 더 상세한 코드를 사용해야 하는거 아닌가?
-			throw new RuntimeException("%s must be at least 1".formatted(KEY_MIN_APPROVALS));
+			String reason = "%s must be at least 1".formatted(KEY_MIN_APPROVALS);
+			throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
 		}
 
 		boolean autoReject = getBool(params, KEY_AUTO_REJECT, false);
 		String rejectTransName = (String)params.get(KEY_REJECT_TRANSITION);
 
 		if (autoReject && (rejectTransName == null || rejectTransName.isBlank())) {
-			// TODO: 예외 개선
-			//  - WorkflowErrorCode.GUARD_PARAM_VALIDATION_FAILED
-			//  - 그런데 GUARD_PARAM_VALIDATION_FAILED로 퉁치는게 아니라 더 상세한 코드를 사용해야 하는거 아닌가?
-			throw new RuntimeException(
-				"%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION));
+			String reason = "%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION);
+			throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
 		}
 	}
 

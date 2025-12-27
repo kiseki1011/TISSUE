@@ -9,12 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+import com.tissue.member.domain.Member;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.enums.InvitationStatus;
 
 public interface InvitationQueryRepository extends Repository<Invitation, Long> {
 
 	Optional<Invitation> findById(Long id);
+
+	Optional<Invitation> findByIdAndMember(Long id, Member member);
 
 	@Query("""
 		    SELECT i

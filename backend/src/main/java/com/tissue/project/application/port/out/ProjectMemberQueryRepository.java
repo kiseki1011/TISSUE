@@ -15,6 +15,8 @@ import com.tissue.project.domain.enums.ProjectRole;
 
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
 
+	// TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
+
 	/**
 	 * Retrieves a project member regardless of their delete status (active or soft-deleted).
 	 * <p>
@@ -76,4 +78,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 		Project project,
 		Long memberId
 	);
+
+	List<ProjectMember> findAllByMemberId(Long memberId);
 }

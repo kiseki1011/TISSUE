@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.workflow.domain.enums.StateCategory;
 
 import jakarta.persistence.Column;
@@ -43,7 +43,7 @@ public class WorkflowState extends BaseEntity {
 	private Workflow workflow;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
@@ -57,13 +57,13 @@ public class WorkflowState extends BaseEntity {
 	private StateCategory category;
 
 	static WorkflowState of(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull ColorType color,
 		@NonNull StateCategory category
 	) {
 		WorkflowState ws = new WorkflowState();
-		ws.label = label;
+		ws.name = name;
 		ws.description = description;
 		ws.color = color;
 		ws.category = category;
@@ -75,8 +75,8 @@ public class WorkflowState extends BaseEntity {
 		this.workflow = workflow;
 	}
 
-	void updateLabel(@NonNull Label label) {
-		this.label = label;
+	void updateName(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {
@@ -91,8 +91,8 @@ public class WorkflowState extends BaseEntity {
 		this.category = category;
 	}
 
-	public String getDisplayLabel() {
-		return label.getDisplay();
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
 	public boolean isCategorizedAs(StateCategory category) {

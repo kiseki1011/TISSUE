@@ -1,13 +1,13 @@
 package com.tissue.issuetype.adapter.in.dto.request;
 
 import com.tissue.common.validator.annotation.size.LabelSize;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 
 import jakarta.validation.constraints.NotBlank;
 
 public record AddOptionRequest(
-	@NotBlank @LabelSize String label
+	@NotBlank @LabelSize String optionName
 ) {
 	public AddOptionCommand toCommand(
 		String workspaceKey,
@@ -20,7 +20,7 @@ public record AddOptionRequest(
 			.projectKey(projectKey)
 			.issueTypeId(issueTypeId)
 			.issueFieldId(issueFieldId)
-			.label(Label.of(label))
+			.name(Name.of(optionName))
 			.build();
 	}
 }

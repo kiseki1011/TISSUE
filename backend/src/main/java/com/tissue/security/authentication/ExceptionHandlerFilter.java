@@ -3,13 +3,13 @@ package com.tissue.security.authentication;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tissue.common.dto.ApiResponse;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: refactor to use ProblemDetail
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -44,18 +45,18 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 		HttpServletResponse response,
 		Exception ex
 	) throws IOException {
-
-		log.error("Unexpected exception occured during the security filter chain process.", ex);
+		log.error("Unexpected exception occured during the security filter chain process", ex);
 
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		String message = "An unexpected error occurred.";
+		String message = "An unexpected error occurred";
 
 		if (ex instanceof IllegalArgumentException) {
 			status = HttpStatus.BAD_REQUEST;
 			message = ex.getMessage();
 		}
 
-		ApiResponse<Void> apiResponse = ApiResponse.failWithNoContent(status, message);
+		ResponseEntity<String> apiResponse = ResponseEntity.status(status)
+			.body(message);
 
 		response.setStatus(status.value());
 		response.setContentType("application/json;charset=UTF-8");

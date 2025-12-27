@@ -1,6 +1,6 @@
 package com.tissue.issue.application.port.in;
 
-import static com.tissue.security.authorization.ProjectSecurityExpressions.*;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
 
 import java.util.List;
 

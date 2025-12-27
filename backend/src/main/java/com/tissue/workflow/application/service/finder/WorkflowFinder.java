@@ -9,9 +9,7 @@ import com.tissue.workflow.application.port.out.WorkflowTransitionRepository;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.StateNotFoundException;
-import com.tissue.workflow.domain.exception.TransitionNotFoundException;
-import com.tissue.workflow.domain.exception.WorkflowNotFoundException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,23 +21,18 @@ public class WorkflowFinder {
 	private final WorkflowStateRepository statusRepo;
 	private final WorkflowTransitionRepository transitionRepo;
 
-	public Workflow findBy(Long id) {
-		return workflowQueryRepo.findById(id)
-			.orElseThrow(() -> new WorkflowNotFoundException(id));
-	}
-
 	public Workflow findBy(Long id, Project project) {
 		return workflowQueryRepo.findByIdAndProject(id, project)
-			.orElseThrow(() -> new WorkflowNotFoundException(id, project.getKey(), project.getWorkspaceKey()));
+			.orElseThrow(() -> WorkflowExceptions.notFound(id, project.getKey()));
 	}
 
 	public WorkflowState findStateBy(Long id, Workflow workflow) {
 		return statusRepo.findByIdAndWorkflow(id, workflow)
-			.orElseThrow(() -> new StateNotFoundException(id, workflow.getId()));
+			.orElseThrow(() -> WorkflowExceptions.stateNotFound(id, workflow.getId()));
 	}
 
 	public WorkflowTransition findTransitionBy(Long id, Workflow workflow) {
 		return transitionRepo.findByIdAndWorkflow(id, workflow)
-			.orElseThrow(() -> new TransitionNotFoundException(id, workflow.getId()));
+			.orElseThrow(() -> WorkflowExceptions.transitionNotFound(id, workflow.getId()));
 	}
 }

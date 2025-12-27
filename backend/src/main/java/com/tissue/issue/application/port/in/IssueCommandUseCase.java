@@ -1,7 +1,7 @@
 package com.tissue.issue.application.port.in;
 
-import static com.tissue.security.authorization.IssueSecurityExpressions.*;
-import static com.tissue.security.authorization.ProjectSecurityExpressions.*;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+import static com.tissue.issue.application.service.authorization.IssueAuthExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -19,22 +19,22 @@ public interface IssueCommandUseCase {
 	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	IssueCreateResponse create(CreateIssueCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_EDITOR)
+	@PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
 	void updateCommonFields(UpdateCommonFieldsCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_EDITOR)
+	@PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
 	void updateCustomFields(UpdateCustomFieldsCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_EDITOR)
+	@PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
 	void updateStoryPoint(UpdateStoryPointCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_EDITOR)
+	@PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
 	void assignParent(AssignParentCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_EDITOR)
+	@PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
 	void removeParent(RemoveParentCommand cmd);
 
-	@PreAuthorize(REQUIRES_ISSUE_DELETER)
+	@PreAuthorize(REQUIRES_ISSUE_DELETE_PERMISSION)
 	void softDelete(DeleteIssueCommand cmd);
 
 	// TODO: restore()

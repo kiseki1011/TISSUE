@@ -3,6 +3,8 @@ package com.tissue.issue.domain.policy;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import com.tissue.issue.domain.exception.IssueExceptions;
+
 public record FieldValuePolicy(
 	int decimalScale,
 	RoundingMode roundingMode,
@@ -16,16 +18,12 @@ public record FieldValuePolicy(
 		BigDecimal abs = value.abs();
 		int scale = abs.scale();
 		if (scale > maxFractionDigits) {
-			throw new RuntimeException(
-				"Field(id: '%d') allows up to %d fraction digits."
-					.formatted(fieldId, maxFractionDigits));
+			throw IssueExceptions.decimalScaleExceeded(fieldId, maxFractionDigits);
 		}
 		int precision = abs.precision();
 		int integerDigits = Math.max(0, precision - scale);
 		if (integerDigits > maxIntegerDigits) {
-			throw new RuntimeException(
-				"Field(id: '%d') allows up to %d integer digits."
-					.formatted(fieldId, maxIntegerDigits));
+			throw IssueExceptions.integerDigitsExceeded(fieldId, maxIntegerDigits);
 		}
 	}
 

@@ -7,7 +7,7 @@ public record IssueIdentificationInfo(
 	String issueTypeLabel
 ) {
 	public static IssueIdentificationInfo from(Issue issue) {
-		return new IssueIdentificationInfo(issue.getKey(), issue.getIssueType().getDisplayLabel());
+		return new IssueIdentificationInfo(issue.getKey(), issue.getIssueType().getDisplayName());
 	}
 
 	public static IssueIdentificationInfo asNull() {

@@ -10,7 +10,7 @@ import com.tissue.workflow.domain.Workflow;
 
 public record WorkflowDetail(
 	Long id,
-	String label,
+	String name,
 	String description,
 	ColorType color,
 	boolean isSystemProvided,
@@ -31,7 +31,7 @@ public record WorkflowDetail(
 
 		return new WorkflowDetail(
 			wf.getId(),
-			wf.getLabel().toString(),
+			wf.getName().toString(),
 			wf.getDescription(),
 			wf.getColor(),
 			wf.isSystemProvided(),

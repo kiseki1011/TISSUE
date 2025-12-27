@@ -4,11 +4,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
-import com.tissue.security.authorization.ProjectSecurityExpressions;
+import com.tissue.project.application.service.authorization.ProjectAuthExpressions;
 
 @Transactional
 public interface WorkflowGraphReplaceUseCase {
 
-	@PreAuthorize(ProjectSecurityExpressions.REQUIRES_PROJECT_MEMBER)
+	@PreAuthorize(ProjectAuthExpressions.REQUIRES_PROJECT_MEMBER)
 	void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd);
 }

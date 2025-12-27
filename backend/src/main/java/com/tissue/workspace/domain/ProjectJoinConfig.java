@@ -3,7 +3,6 @@ package com.tissue.workspace.domain;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.enums.ProjectRole;
 
-// TODO: workspace에서 project 패키지로 이동시킬까?
 public record ProjectJoinConfig(
 	Long projectId,
 	String projectKey,

@@ -14,7 +14,7 @@ public record StateInfo(
 	public static StateInfo from(WorkflowState state) {
 		return new StateInfo(
 			state.getId(),
-			state.getDisplayLabel(),
+			state.getDisplayName(),
 			state.getCategory(),
 			state.getColor()
 		);

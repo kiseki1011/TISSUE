@@ -1,8 +1,8 @@
 package com.tissue.security.authentication.exception;
 
-import com.tissue.common.exception.base.InternalServerException;
+import org.springframework.security.core.AuthenticationException;
 
-public class JwtCreationException extends InternalServerException {
+public class JwtCreationException extends AuthenticationException {
 
 	public JwtCreationException(String message) {
 		super(message);

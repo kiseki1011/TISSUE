@@ -1,14 +1,14 @@
 package com.tissue.security.authentication.presentation.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tissue.common.dto.ApiResponse;
 import com.tissue.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.application.service.AuthenticationService;
+import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.security.authentication.presentation.dto.request.RefreshTokenRequest;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
@@ -24,41 +24,41 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-	private final AuthenticationService authenticationService;
+	private final AuthenticationUseCase authenticationUseCase;
 
 	@PostMapping("/login")
-	public ApiResponse<LoginResponse> login(
+	public ResponseEntity<LoginResponse> login(
 		@Valid @RequestBody LoginRequest request
 	) {
-		LoginResponse response = authenticationService.login(request);
-		return ApiResponse.ok("Login successful.", response);
+		LoginResponse response = authenticationUseCase.login(request.loginEmail(), request.password());
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/token")
-	public ApiResponse<RefreshTokenResponse> refreshToken(
+	public ResponseEntity<RefreshTokenResponse> refreshToken(
 		@RequestBody RefreshTokenRequest request
 	) {
-		RefreshTokenResponse response = authenticationService.refreshToken(request);
-		return ApiResponse.ok("Token refreshed", response);
+		RefreshTokenResponse response = authenticationUseCase.refreshToken(request.refreshToken());
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/token/elevate")
-	public ApiResponse<ElevatedTokenResponse> elevatePermission(
+	public ResponseEntity<ElevatedTokenResponse> elevatePermission(
 		@RequestBody @Valid PermissionRequest request,
 		@CurrentMember MemberUserDetails userDetails
 	) {
-		ElevatedTokenResponse response = authenticationService.elevatePermission(
-			request,
+		ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
 			userDetails.getEmail(),
+			request.password(),
 			userDetails.getMemberId()
 		);
 
-		return ApiResponse.ok("Permission granted.", response);
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/logout")
-	public ApiResponse<Void> logout() {
+	public ResponseEntity<Void> logout() {
 		// Todo: implement token blacklisting if needed!
-		return ApiResponse.okWithNoContent("Logout successful.");
+		return ResponseEntity.noContent().build();
 	}
 }

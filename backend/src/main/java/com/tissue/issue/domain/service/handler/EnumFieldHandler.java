@@ -5,9 +5,10 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ public class EnumFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.ENUM;
+	public IssueFieldType type() {
+		return IssueFieldType.ENUM;
 	}
 
 	@Override
@@ -31,10 +32,14 @@ public class EnumFieldHandler implements FieldTypeHandler {
 		try {
 			Long optionId = cs.convert(raw, Long.class);
 			return optionRepo.findByIdAndIssueField(optionId, field)
-				.orElseThrow(() -> new RuntimeException(
-					"Unknown enum option(id:%d) for field:%d".formatted(optionId, field.getId())));
+				.orElseThrow(() -> IssueExceptions.unknownEnumOption(field.getId(), optionId));
 		} catch (ConversionFailedException e) {
-			throw new RuntimeException("Field(id:%d) must be an enum option id".formatted(field.getId()));
+			throw IssueExceptions.customFieldTypeMismatch(
+				field.getId(),
+				field.getDisplayName(),
+				field.getIssueFieldType(),
+				raw
+			);
 		}
 	}
 }

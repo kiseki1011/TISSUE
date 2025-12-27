@@ -5,7 +5,7 @@ import com.tissue.workflow.domain.Workflow;
 
 public record WorkflowSummary(
 	Long id,
-	String label,
+	String name,
 	String description,
 	ColorType color,
 	boolean isSystemProvided,
@@ -14,7 +14,7 @@ public record WorkflowSummary(
 	public static WorkflowSummary from(Workflow wf) {
 		return new WorkflowSummary(
 			wf.getId(),
-			wf.getLabel().toString(),
+			wf.getName().toString(),
 			wf.getDescription(),
 			wf.getColor(),
 			wf.isSystemProvided(),

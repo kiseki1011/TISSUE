@@ -1,6 +1,8 @@
 package com.tissue.issuetype.application.port.in;
 
-import org.springframework.transaction.annotation.Transactional;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 import com.tissue.issuetype.application.dto.request.CreateIssueFieldCommand;
@@ -11,34 +13,31 @@ import com.tissue.issuetype.application.dto.request.RenameIssueFieldCommand;
 import com.tissue.issuetype.application.dto.request.RenameOptionCommand;
 import com.tissue.issuetype.application.dto.request.ReorderOptionsCommand;
 import com.tissue.issuetype.application.dto.response.IssueFieldResponse;
+import com.tissue.issuetype.application.dto.response.ReorderedOptionsResponse;
 
-@Transactional
 public interface IssueFieldUseCase {
 
-	// REQUIRES_ISSUE_TYPE_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	IssueFieldResponse create(CreateIssueFieldCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void rename(RenameIssueFieldCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void update(PatchIssueFieldCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void delete(DeleteIssueFieldCommand cmd);
 
-	// void archive(ArchiveIssueFieldCommand cmd);
-
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	IssueFieldResponse addOption(AddOptionCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void renameOption(RenameOptionCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
-	// TODO: ReorderOptionsResponse
-	void reorderOptions(ReorderOptionsCommand cmd);
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
+	ReorderedOptionsResponse reorderOptions(ReorderOptionsCommand cmd);
 
-	// REQUIRES_ISSUE_FIELD_CREATOR + OR + REQUIRES_PROJECT_ADMIN
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void deleteOption(DeleteOptionCommand cmd);
 }

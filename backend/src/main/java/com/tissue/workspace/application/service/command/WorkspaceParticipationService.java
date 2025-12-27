@@ -1,5 +1,7 @@
 package com.tissue.workspace.application.service.command;
 
+import static com.tissue.member.domain.MemberStatus.*;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -11,16 +13,17 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.member.application.port.out.MemberRepository;
+import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
-import com.tissue.workspace.application.dto.request.InviteToProjectCommand;
-import com.tissue.workspace.application.dto.request.InviteToWorkspaceCommand;
-import com.tissue.workspace.application.dto.request.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.response.InviteMembersResponse;
+import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
+import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
+import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
+import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -36,6 +39,7 @@ import com.tissue.workspace.domain.policy.WorkspacePolicy;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkspaceParticipationService implements WorkspaceParticipationUseCase {
 
@@ -43,7 +47,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	private final ProjectFinder projectFinder;
 	private final WorkspaceMemberFinder workspaceMemberFinder;
 	private final InvitationFinder invitationFinder;
-	private final MemberRepository memberRepository;
+	private final MemberQueryRepository memberQueryRepository;
 	private final InvitationCommandRepository invitationRepository;
 	private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
 	private final WorkspacePolicy workspacePolicy;
@@ -53,7 +57,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
 		return processInvitation(
 			workspace,
@@ -65,7 +69,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
 		List<ProjectJoinConfigDto> singleProjectConfig = List.of(
 			new ProjectJoinConfigDto(cmd.projectKey(), cmd.role())
@@ -80,9 +84,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 	}
 
 	@Override
-	public void leave(String workspaceKey, Long memberId) {
-		Workspace workspace = workspaceFinder.findByKey(workspaceKey);
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(memberId, workspace);
+	public void leave(LeaveWorkspaceCommand cmd) {
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), workspace);
 
 		workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
 		workspaceMember.softDelete();
@@ -92,7 +96,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 	@Override
 	public void kick(KickWorkspaceMemberCommand cmd) {
-		Workspace workspace = workspaceFinder.findByKey(cmd.workspaceKey());
+		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 		WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
 		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
 
@@ -101,11 +105,11 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		// TODO: WorkspaceMemberKickedEvent
 	}
 
-	// TODO: 주석에 UseCase에 포함되지 않고 다른 서비스에서 호출하는 용도로 구현되어 있다는 것을 설명
-	//   - UseCase 인터페이스에는 없지만 다른 서비스가 쓰도록 열어둔 메서드 (내부용)
-	//   - Controller는 이 메서드를 모름 (UseCase 인터페이스로 주입받으므로)
-	//   - 다른 애플리케이션 서비스(UseCase 구현체)는 이 구현체 클래스를 주입받아 호출 가능
-	@Transactional
+	// TODO: add a javadoc for the next information
+	//  - this method is not a implementation of a UseCase
+	//  - this method is called from other services (a method for internal use)
+	//  - controller does not know this method unless it directly depends on this service
+	// TODO: currently considering if i should separate this to a application service of its own
 	public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
 		Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
 		if (activeMember.isPresent()) {
@@ -117,7 +121,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 		return workspaceMemberFinder.findAnyOptionalBy(member.getId(), workspace.getKey())
 			.map(returningMember -> {
-				returningMember.restore();
+				returningMember.restoreSoftDeleted();
 				return returningMember;
 			})
 			.orElseGet(() -> {
@@ -142,7 +146,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 			if (projectConfigs != null) {
 				for (var config : projectConfigs) {
-					Project project = projectFinder.findForCommand(config.projectKey(), workspace.getKey());
+					Project project = projectFinder.getModifiableBy(config.projectKey(), workspace.getKey());
 					invitation.addProjectConfig(project, config.role());
 				}
 			}
@@ -151,15 +155,11 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
 		// TODO: InvitationSentEvent - targetMembers에게만 발송
 
-		return InviteMembersResponse.from(
-			workspace.getKey(),
-			targetMembers,
-			skippedMembers
-		);
+		return InviteMembersResponse.from(workspace.getKey(), targetMembers, skippedMembers);
 	}
 
 	private InvitationFilterResult filterInvitableMembers(String workspaceKey, Set<String> emails) {
-		List<Member> candidates = memberRepository.findAllByEmailIn(emails);
+		List<Member> candidates = memberQueryRepository.findAllByEmailInAndStatus(emails, ACTIVE);
 		if (candidates.isEmpty()) {
 			return new InvitationFilterResult(Collections.emptyList(), Collections.emptyList());
 		}
@@ -179,7 +179,6 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 		return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
 	}
 
-	// TODO: 이름 개선 고려
 	private void checkWorkspaceCapacity(Workspace workspace) {
 		int currentCount = workspaceMemberFinder.countTotalMembersBy(workspace.getKey());
 		workspacePolicy.ensureCanAddMember(workspace.getKey(), currentCount);

@@ -11,11 +11,11 @@ public record UpdateIssueTypeRequest(
 	JsonNullable<@Size(max = 255) String> description,
 	JsonNullable<ColorType> color
 ) {
-	public PatchIssueTypeCommand toCommand(String workspaceKey, String projectKey, Long id) {
+	public PatchIssueTypeCommand toCommand(String workspaceKey, String projectKey, Long issueTypeId) {
 		return PatchIssueTypeCommand.builder()
 			.workspaceKey(workspaceKey)
 			.projectKey(projectKey)
-			.id(id)
+			.issueTypeId(issueTypeId)
 			.description(description)
 			.color(color)
 			.build();

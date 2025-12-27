@@ -8,8 +8,9 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.stereotype.Component;
 
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
-import com.tissue.issuetype.domain.enums.FieldType;
+import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ public class DateFieldHandler implements FieldTypeHandler {
 	private final ConversionService cs;
 
 	@Override
-	public FieldType type() {
-		return FieldType.DATE;
+	public IssueFieldType type() {
+		return IssueFieldType.DATE;
 	}
 
 	@Override
@@ -31,7 +32,12 @@ public class DateFieldHandler implements FieldTypeHandler {
 		try {
 			return cs.convert(raw, LocalDate.class);
 		} catch (ConversionFailedException | ConverterNotFoundException ex) {
-			throw new IllegalArgumentException("must be yyyy-MM-dd");
+			throw IssueExceptions.customFieldTypeMismatch(
+				field.getId(),
+				field.getDisplayName(),
+				field.getIssueFieldType(),
+				raw
+			);
 		}
 	}
 }

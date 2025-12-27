@@ -1,7 +1,7 @@
 package com.tissue.member.domain;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -12,53 +12,51 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "email_verification_token", uniqueConstraints = {
-	@UniqueConstraint(name = "UK_EMAIL_VERIFICATION_EMAIL", columnNames = "email")
+	@UniqueConstraint(name = "uk_email_verification_token", columnNames = "email")
 })
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerificationToken {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String email;
 
 	@Column(nullable = false)
 	private String tokenValue;
 
 	@Column(nullable = false)
-	private boolean verified = false;
+	private boolean verified;
 
 	@Column(nullable = false)
-	private LocalDateTime expiresAt;
+	private Instant expiresAt;
 
-	@Builder
-	public EmailVerificationToken(String email, String tokenValue, boolean verified, LocalDateTime expiresAt) {
-		this.email = email;
-		this.tokenValue = tokenValue;
-		this.verified = verified;
-		this.expiresAt = expiresAt;
-	}
+	// TODO: is there a way to enforce to set all fields? instead of using a AllArgsConstructor?
+	public static EmailVerificationToken create(
+		@NonNull String email,
+		@NonNull String tokenValue,
+		@NonNull Duration ttl
+	) {
+		EmailVerificationToken token = new EmailVerificationToken();
+		token.email = email;
+		token.tokenValue = tokenValue;
+		token.verified = false;
+		token.expiresAt = Instant.now().plus(ttl);
 
-	public static EmailVerificationToken create(String email, String tokenValue, Duration ttl) {
-		return EmailVerificationToken.builder()
-			.email(email)
-			.tokenValue(tokenValue)
-			.verified(false)
-			.expiresAt(LocalDateTime.now().plus(ttl))
-			.build();
+		return token;
 	}
 
 	public boolean isExpired() {
-		return LocalDateTime.now().isAfter(expiresAt);
+		return Instant.now().isAfter(expiresAt);
 	}
 
 	public boolean tokenValueNotMatch(String tokenValue) {

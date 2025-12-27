@@ -1,44 +1,36 @@
 package com.tissue.member.adapter.in.web.dto.request;
 
-import java.time.LocalDate;
-
 import com.tissue.common.validator.annotation.pattern.NamePattern;
 import com.tissue.common.validator.annotation.pattern.PasswordPattern;
 import com.tissue.common.validator.annotation.pattern.UsernamePattern;
-import com.tissue.common.validator.annotation.size.EmailSize;
-import com.tissue.common.validator.annotation.size.NameSize;
-import com.tissue.common.validator.annotation.size.UsernameSize;
-import com.tissue.common.validator.annotation.size.password.PasswordSize;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 @Builder
 public record SignupMemberRequest(
-	@EmailSize
-	@Email(message = "{valid.pattern.email}}")
-	@NotBlank(message = "{valid.notblank}")
+	@NotBlank
+	@Email
+	@Size(min = 4, max = 255)
 	String email,
 
-	@UsernameSize
+	@NotBlank
 	@UsernamePattern
-	@NotBlank(message = "{valid.notblank}")
+	@Size(min = 4, max = 32)
 	String username,
 
-	@PasswordSize
+	@NotBlank
 	@PasswordPattern
-	@NotBlank(message = "{valid.notblank}")
+	@Size(min = 8, max = 100)
 	String password,
 
-	@NameSize
+	@NotBlank
 	@NamePattern
-	String name,
-
-	@Past(message = "{valid.birthdate}")
-	LocalDate birthDate
+	@Size(min = 2, max = 50)
+	String name
 ) {
 	public SignupMemberCommand toCommand() {
 		return SignupMemberCommand.builder()
@@ -46,7 +38,6 @@ public record SignupMemberRequest(
 			.password(password)
 			.username(username.trim())
 			.name(name.trim())
-			.birthDate(birthDate)
 			.build();
 	}
 }

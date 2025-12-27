@@ -1,5 +1,8 @@
 package com.tissue.workflow.application.listener;
 
+import static com.tissue.workflow.domain.guard.GuardType.*;
+import static com.tissue.workflow.domain.guard.types.ApprovalGuard.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,15 +13,16 @@ import org.springframework.stereotype.Component;
 
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
+import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.guard.GuardType;
-import com.tissue.workflow.domain.guard.types.ApprovalGuard;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +34,7 @@ public class WorkflowAutomationEventListener {
 
 	private final IssueFinder issueFinder;
 	private final IssueTransitionUseCase transitionUseCase;
+	private final IssueQueryRepository issueQueryRepository;
 
 	@EventListener
 	public void handleReviewRejected(IssueReviewSubmittedEvent event) {
@@ -40,28 +45,28 @@ public class WorkflowAutomationEventListener {
 	}
 
 	private void processAutoRejection(IssueReviewSubmittedEvent event) {
-		Issue issue = issueFinder.findBy(event.issueId());
+		Issue issue = issueQueryRepository.findById(event.issueId())
+			.orElseThrow(() -> IssueExceptions.notFound(event.issueId()));
+
 		List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 
-		// 설정된 자동 반려 타겟 이름 찾기
 		String targetTransitionName = findAutoRejectTargetName(outgoingTransitions)
 			.orElse(null);
 
-		// 설정이 아예 없으면 -> 정상 종료 (자동 반려는 선택 기능이므로)
+		// 설정이 아예 없으면 -> 정상 종료
 		if (targetTransitionName == null) {
 			return;
 		}
 
-		// 이름으로 실제 트랜지션 객체 찾기
 		WorkflowTransition targetTransition = findTransitionByName(outgoingTransitions, targetTransitionName)
-			// TODO: 예외 개선
-			.orElseThrow(() -> new RuntimeException(
-				"Auto-reject target transition '%s' not found in current state. Please check workflow configuration."
-					.formatted(targetTransitionName)
+			.orElseThrow(() -> WorkflowExceptions.autoTransitionTargetNotFound(
+				issue.getKey(),
+				issue.getCurrentState().getDisplayName(),
+				targetTransitionName
 			));
 
-		// 실행 - 에러 나면 리뷰 저장도 같이 롤백
-		log.info("Auto-executing reject transition '{}' for issue {}", targetTransitionName, issue.getKey());
+		log.info("Auto-executing reject transition '{}' for issue {} in workspace {}", targetTransitionName,
+			issue.getKey(), issue.getWorkspaceKey());
 
 		transitionUseCase.performTransition(new PerformTransitionCommand(
 			issue.getWorkspaceKey(),
@@ -82,22 +87,22 @@ public class WorkflowAutomationEventListener {
 	private Optional<String> findAutoRejectTargetName(List<WorkflowTransition> transitions) {
 		return transitions.stream()
 			.flatMap(t -> t.getGuardConfigs().stream())
-			.filter(config -> config.getGuardType() == GuardType.REQUIRED_APPROVAL)
+			.filter(config -> config.getGuardType() == REQUIRED_APPROVAL)
 			.map(TransitionGuardConfig::getGuardParams)
 			.filter(this::isAutoRejectEnabled)
-			.map(params -> (String)params.get(ApprovalGuard.KEY_REJECT_TRANSITION))
+			.map(params -> (String)params.get(KEY_REJECT_TRANSITION))
 			.filter(Objects::nonNull)
 			.findFirst();
 	}
 
 	private Optional<WorkflowTransition> findTransitionByName(List<WorkflowTransition> transitions, String name) {
 		return transitions.stream()
-			.filter(t -> t.getLabel().getDisplay().equals(name))
+			.filter(t -> t.getName().getDisplay().equals(name))
 			.findFirst();
 	}
 
 	private boolean isAutoRejectEnabled(Map<String, Object> params) {
-		Object val = params.get(ApprovalGuard.KEY_AUTO_REJECT);
+		Object val = params.get(KEY_AUTO_REJECT);
 		return (val instanceof Boolean b) ? b : false;
 	}
 }

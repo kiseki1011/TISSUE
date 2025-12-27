@@ -4,7 +4,7 @@ import java.time.Instant;
 
 import org.springframework.lang.Nullable;
 
-import com.tissue.issue.domain.exception.InvalidDueDateException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -60,7 +60,7 @@ public class IssueSchedule {
 
 		Instant now = Instant.now();
 		if (instant.isBefore(now)) {
-			throw new InvalidDueDateException(instant, now);
+			throw IssueExceptions.dueDateMustBeFuture(instant);
 		}
 
 		return instant;

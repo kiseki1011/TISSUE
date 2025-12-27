@@ -10,7 +10,7 @@ public interface TransitionGuard {
 
 	GuardType getType();
 
-	void validateParams(Map<String, Object> params);
+	void validateParams(Map<String, Object> params, GuardType type);
 
 	default List<GuardParamMetaData> getParamMetaData() {
 		return Collections.emptyList();

@@ -37,12 +37,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JwtTokenService {
 
-	// TODO: move constants to a seperate abstract class
+	// TODO: should i move constants to a separate interface
 	public static final String CLAIM_TOKEN_TYPE = "tokenType";
 	public static final String CLAIM_MEMBER_ID = "memberId";
 	public static final String CLAIM_ELEVATED = "elevated";
 	public static final String CLAIM_JTI = "jti";
-	public static final String ISSUER = "tissue-api";
+	public static final String ISSUER = "tissue";
 	public static final int SECRET_KEY_LENGTH = 32;
 
 	private final SecretKey secretKey;
@@ -54,7 +54,7 @@ public class JwtTokenService {
 	/**
 	 * Initialize secret key and validity in constructor
 	 */
-	// TODO: use properties class
+	// TODO: should i use a properties class
 	public JwtTokenService(
 		@Value("${jwt.secret}") String secret,
 		@Value("${jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
@@ -64,11 +64,10 @@ public class JwtTokenService {
 	) {
 		this.userDetailsService = userDetailsService;
 
-		// validate secret key length
 		if (secret.length() < SECRET_KEY_LENGTH) {
 			throw new JwtSecretException(
-				"JWT secret must be at least 256 bits (32 characters) long for security. Current length: "
-					+ secret.length()
+				("JWT secret must be at least 256 bits (32 characters) long for security. "
+					+ "Current length: %d").formatted(secret.length())
 			);
 		}
 
@@ -80,30 +79,28 @@ public class JwtTokenService {
 		log.info("JwtTokenProvider initialized (HS256)");
 	}
 
-	// TODO: loginIdentifier -> email
-
 	/**
 	 * Create Access Token
 	 * - subject: email
 	 * - memberId: Primary Key for Member
 	 * - tokenType: "access"
 	 */
-	public String createAccessToken(Long memberId, String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId);
+	public String createAccessToken(Long memberId, String email) {
+		return createToken(email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId);
 	}
 
 	/**
 	 * Create Refresh Token
 	 */
-	public String createRefreshToken(Long memberId, String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId);
+	public String createRefreshToken(Long memberId, String email) {
+		return createToken(email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId);
 	}
 
 	/**
 	 * Create Elevated (Access) Token
 	 */
-	public String createElevatedToken(Long memberId, String loginIdentifier) {
-		return createToken(loginIdentifier, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
+	public String createElevatedToken(Long memberId, String email) {
+		return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
 	}
 
 	private String createToken(
@@ -116,7 +113,7 @@ public class JwtTokenService {
 		try {
 			Instant now = Instant.now();
 			JwtBuilder builder = Jwts.builder()
-				.subject(subject) // JWT subject - Member identifier (loginId or email)
+				.subject(subject) // JWT subject - Member identifier (email)
 				.issuedAt(Date.from(now)) // issued date
 				.expiration(Date.from(now.plusSeconds(validitySeconds))) // expiration date
 				.issuer(ISSUER) // issuer information
@@ -133,32 +130,27 @@ public class JwtTokenService {
 
 		} catch (JwtException | IllegalArgumentException e) {
 			log.error("Failed to create {} token. subject: {}", tokenType, maskIdentifier(subject));
-			throw new JwtCreationException("Failed to create " + tokenType + " token.", e);
+			throw new JwtCreationException("Failed to create %s token".formatted(tokenType.getValue()), e);
 		}
 	}
 
 	/**
 	 * Create Authentication from the JWT token
-	 *
+	 * <p>
 	 * 1. Validate token (format, sign, expiration time)
 	 * 2. Extract subject(member identifier) from token
 	 * 3. Get MemberUserDetails using userDetailsService.loadUserByUsername
 	 * 4. Create and return Authentication object
 	 */
 	public Authentication getAuthentication(String token) {
-
-		// TODO: loginIdentifier -> email
-		String loginIdentifier = null;
+		String email = null;
 
 		try {
-			// Validate token
 			validateAccessToken(token);
-
-			// Extract subject(member identifier)
-			loginIdentifier = getSubjectFromToken(token);
+			email = getSubjectFromToken(token);
 
 			// Get MemberUserDetails(check real time status of the member)
-			MemberUserDetails userDetails = (MemberUserDetails)userDetailsService.loadUserByUsername(loginIdentifier);
+			MemberUserDetails userDetails = (MemberUserDetails)userDetailsService.loadUserByUsername(email);
 
 			boolean elevated = getElevatedFromToken(token);
 			userDetails.setElevated(elevated);
@@ -170,15 +162,14 @@ public class JwtTokenService {
 			return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
 		} catch (UsernameNotFoundException e) {
-			log.warn("Member not found for identifier: {}", maskIdentifier(loginIdentifier));
-			throw new JwtAuthenticationException("Member not found.", e);
+			// TODO: do i really need to mask the email?
+			log.warn("Member not found for email: {}", maskIdentifier(email));
+			throw new JwtAuthenticationException("Member not found for email: %s".formatted(email), e);
 		} catch (JwtException e) {
 			log.warn("JWT validation failed. token: {}", maskToken(token));
-			throw new JwtAuthenticationException("JWT validation failed.", e);
+			throw new JwtAuthenticationException("JWT validation failed", e);
 		}
 	}
-
-	// TODO: Using parseAndValidateClaims(token) is redundant. Might be better to pass claims as the parameter.
 
 	/**
 	 * Extract subject(identifier) from token
@@ -199,15 +190,14 @@ public class JwtTokenService {
 	 * Extract memberId from token
 	 */
 	public Long getMemberIdFromToken(String token) {
-
 		Object memberIdClaim = parseAndValidateClaims(token).get(CLAIM_MEMBER_ID);
 
 		if (memberIdClaim instanceof Number number) {
 			return number.longValue();
 		}
 
-		log.warn("Invalid or missing memberId claim. memberIdClaim type: {}", memberIdClaim.getClass());
-		throw new JwtAuthenticationException("Invalid or missing memberId claim.");
+		log.warn("Invalid or missing member ID claim. member ID claim type: {}", memberIdClaim.getClass());
+		throw new JwtAuthenticationException("Invalid or missing member ID claim");
 	}
 
 	/**
@@ -239,7 +229,8 @@ public class JwtTokenService {
 		TokenType tokenType = TokenType.from(claims.get(CLAIM_TOKEN_TYPE, String.class));
 		if (!Objects.equals(expectedType, tokenType)) {
 			throw new JwtAuthenticationException(
-				"Token validation failed. Expected type: " + expectedType + ", actual: " + tokenType);
+				"Token validation failed. Expected type: %s | Actual: %s"
+					.formatted(expectedType.getValue(), tokenType.getValue()));
 		}
 	}
 
@@ -256,7 +247,6 @@ public class JwtTokenService {
 	 * Calculate the expiration time of a token (seconds)
 	 * Can be used by client when refreshing token.
 	 */
-	// TODO: Delete if not used.
 	public long getTokenRemainingSeconds(String token) {
 		try {
 			Claims claims = parseAndValidateClaims(token);
@@ -266,7 +256,7 @@ public class JwtTokenService {
 			return Math.max(0, remainingMillis / 1000);
 
 		} catch (JwtException e) {
-			log.debug("Failed to calculate remaining time for token.", e);
+			log.debug("Failed to calculate remaining time for token", e);
 			return 0;
 		}
 	}
@@ -284,16 +274,16 @@ public class JwtTokenService {
 
 		} catch (ExpiredJwtException e) {
 			log.warn("Token is expired. token: {}", maskToken(token));
-			throw new JwtAuthenticationException("Token is expired.", e);
+			throw new JwtAuthenticationException("Token is expired", e);
 		} catch (UnsupportedJwtException e) {
 			log.warn("Unsupported JWT token. token: {}", maskToken(token));
-			throw new JwtAuthenticationException("Unsupported JWT token.", e);
+			throw new JwtAuthenticationException("Unsupported JWT token", e);
 		} catch (MalformedJwtException e) {
 			log.warn("Malformed JWT token. token: {}", maskToken(token));
-			throw new JwtAuthenticationException("Malformed JWT token.", e);
+			throw new JwtAuthenticationException("Malformed JWT token", e);
 		} catch (SecurityException | IllegalArgumentException e) {
 			log.warn("Invalid JWT token. token: {}", maskToken(token));
-			throw new JwtAuthenticationException("Invalid JWT token.", e);
+			throw new JwtAuthenticationException("Invalid JWT token", e);
 		}
 	}
 }

@@ -17,18 +17,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.tissue.common.exception.TissueException;
-import com.tissue.common.exception.base.AuthenticationException;
-import com.tissue.common.exception.base.ForbiddenException;
-import com.tissue.common.exception.base.InternalServerException;
-import com.tissue.common.exception.base.ResourceNotFoundException;
+import com.tissue.global.exception.TissueException;
+import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.global.exception.base.InternalServerException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 
 import jakarta.persistence.OptimisticLockException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: MDC 필터를 적용해서 더러운 로깅 정리
 @RestControllerAdvice
 @Slf4j
 @RequiredArgsConstructor
@@ -40,107 +39,58 @@ public class GlobalExceptionHandler {
 	);
 
 	@ExceptionHandler(Exception.class)
-	public ProblemDetail handleUnexpectedException(
-		Exception ex,
-		HttpServletRequest request
-	) {
-		log.error(
-			"Unexpected error | method={} | path={} | error={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			ex.getMessage(),
-			ex
-		);
+	public ProblemDetail handleUnexpectedException(Exception ex) {
+		log.error("[UNEXPECTED_ERROR] {}", ex.getMessage(), ex);
 
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.INTERNAL_SERVER_ERROR,
 			"An unexpected error occurred"
 		);
 
-		// problem.setType(URI.create("/errors/internal_server_error"));
-		problem.setTitle("INTERNAL_SERVER_ERROR");
+		// problem.setType(URI.create("/errors/internal-server-error"));
+		problem.setTitle("UNEXPECTED_ERROR");
 		problem.setProperty("occurredAt", Instant.now());
 
 		return problem;
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ProblemDetail handleNotFoundException(
-		ResourceNotFoundException ex,
-		HttpServletRequest request
-	) {
-		log.debug(
-			"[{}] {} | method={} | path={}",
-			ex.getErrorCode(),
-			ex.getLoggingMessage(),
-			request.getMethod(),
-			request.getRequestURI()
-		);
+	public ProblemDetail handleNotFoundException(ResourceNotFoundException ex) {
+		log.debug("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
 		return createProblemDetail(ex);
 	}
 
 	@ExceptionHandler(InternalServerException.class)
-	public ProblemDetail handleInternalServerException(
-		InternalServerException ex,
-		HttpServletRequest request
-	) {
-		log.error(
-			"[{}] {} | method={} | path={}",
-			ex.getErrorCode(),
-			ex.getLoggingMessage(),
-			request.getMethod(),
-			request.getRequestURI(),
-			ex
-		);
-		// TODO: 알림 발송 (Slack, Email 등)
+	public ProblemDetail handleInternalServerException(InternalServerException ex) {
+		log.error("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
+
+		// TODO: 필요 시 알림 발송 (Slack, Email 등)
 		// alertService.sendAlert(ex);
 
 		return createProblemDetail(ex);
 	}
 
 	@ExceptionHandler(TissueException.class)
-	public ProblemDetail handleTissueException(
-		TissueException ex,
-		HttpServletRequest request
-	) {
-		// TODO: 이 경우에는 ex를 로깅할 필요 없나?
-		log.info(
-			"[{}] {} | method={} | path={}",
-			ex.getErrorCode(),
-			ex.getLoggingMessage(),
-			request.getMethod(),
-			request.getRequestURI()
-		);
+	public ProblemDetail handleTissueException(TissueException ex) {
+		log.info("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
 		return createProblemDetail(ex);
 	}
 
-	@ExceptionHandler({AuthenticationException.class, ForbiddenException.class})
-	public ProblemDetail handleSecurityException(
-		TissueException ex,
-		HttpServletRequest request
-	) {
-		log.warn(
-			"[SECURITY] [{}] {} | method={} | path={} | ip={}",
-			ex.getErrorCode(),
-			ex.getLoggingMessage(),
-			request.getMethod(),
-			request.getRequestURI(),
-			request.getRemoteAddr()
-		);
+	// TODO: 별도 예외 처리기로 분리 고려
+	@ExceptionHandler(ForbiddenException.class)
+	public ProblemDetail handleSecurityException(ForbiddenException ex) {
+		log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
-		// TODO: 보안 감사 로그
+		// TODO: 필요 시 보안 감사 로그
 		// securityAuditLogger.log(ex, request);
 
 		return createProblemDetail(ex);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ProblemDetail handleMethodArgumentNotValid(
-		MethodArgumentNotValidException ex,
-		HttpServletRequest request
-	) {
+	public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
 		Map<String, String> errors = new HashMap<>();
 		ex.getBindingResult().getAllErrors().forEach(error -> {
 			String fieldName = ((FieldError)error).getField();
@@ -148,19 +98,14 @@ public class GlobalExceptionHandler {
 			errors.put(fieldName, errorMessage);
 		});
 
-		log.info(
-			"Validation failed | method={} | path={} | errors={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			errors
-		);
+		log.info("[VALIDATION_FAILED] errors={}", errors);
 
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.BAD_REQUEST,
 			"Validation failed for one or more fields"
 		);
 
-		// problem.setType(URI.create("/errors/validation_failed"));
+		// problem.setType(URI.create("/errors/validation-failed"));
 		problem.setTitle("VALIDATION_FAILED");
 		problem.setProperty("occurredAt", Instant.now());
 		problem.setProperty("errors", errors);
@@ -169,10 +114,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
-	public ProblemDetail handleConstraintViolation(
-		ConstraintViolationException ex,
-		HttpServletRequest request
-	) {
+	public ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
 		Map<String, String> errors = new HashMap<>();
 
 		ex.getConstraintViolations().forEach(violation -> {
@@ -183,12 +125,7 @@ public class GlobalExceptionHandler {
 			errors.put(fieldName, message);
 		});
 
-		log.info(
-			"Request parameter validation failed | method={} | path={} | errors={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			errors
-		);
+		log.info("[VALIDATION_FAILED] Request parameter validation failed | errors={}", errors);
 
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.BAD_REQUEST,
@@ -203,23 +140,15 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ProblemDetail handleHttpMessageNotReadable(
-		HttpMessageNotReadableException ex,
-		HttpServletRequest request
-	) {
-		log.warn(
-			"Malformed request body | method={} | path={} | error={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			ex.getMessage()
-		);
+	public ProblemDetail handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+		log.warn("[MALFORMED_JSON] {}", ex.getMessage());
 
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.BAD_REQUEST,
 			"Malformed JSON request"
 		);
 
-		// problem.setType(URI.create("/errors/malformed_json"));
+		// problem.setType(URI.create("/errors/malformed-json"));
 		problem.setTitle("MALFORMED_JSON");
 		problem.setProperty("occurredAt", Instant.now());
 
@@ -227,14 +156,9 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
-	public ProblemDetail handleMissingServletRequestParameter(
-		MissingServletRequestParameterException ex,
-		HttpServletRequest request
-	) {
-		log.info(
-			"Missing request parameter | method={} | path={} | parameter={} | type={}",
-			request.getMethod(),
-			request.getRequestURI(),
+	public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
+
+		log.info("[MISSING_REQUEST_PARAMETER] Required paremeter '{}' is missing | type={}",
 			ex.getParameterName(),
 			ex.getParameterType()
 		);
@@ -244,7 +168,7 @@ public class GlobalExceptionHandler {
 			"Required parameter '" + ex.getParameterName() + "' is missing"
 		);
 
-		// problem.setType(URI.create("/errors/missing_request_parameter"));
+		// problem.setType(URI.create("/errors/missing-request-parameter"));
 		problem.setTitle("MISSING_REQUEST_PARAMETER");
 		problem.setProperty("occurredAt", Instant.now());
 		problem.setProperty("parameterName", ex.getParameterName());
@@ -254,18 +178,12 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	public ProblemDetail handleMethodArgumentTypeMismatch(
-		MethodArgumentTypeMismatchException ex,
-		HttpServletRequest request
-	) {
+	public ProblemDetail handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
 		String requiredType = ex.getRequiredType() != null
 			? ex.getRequiredType().getSimpleName()
 			: "unknown";
 
-		log.info(
-			"Argument type mismatch | method={} | path={} | parameter={} | value={} | requiredType={}",
-			request.getMethod(),
-			request.getRequestURI(),
+		log.info("[ARGUMENT_TYPE_MISMATCH] Parameter '{}' has invalid type | value={} | requiredType={}",
 			ex.getName(),
 			ex.getValue(),
 			requiredType
@@ -276,7 +194,7 @@ public class GlobalExceptionHandler {
 			"Parameter '" + ex.getName() + "' has invalid type"
 		);
 
-		// problem.setType(URI.create("/errors/argument_type_mismatch"));
+		// problem.setType(URI.create("/errors/argument-type-mismatch"));
 		problem.setTitle("ARGUMENT_TYPE_MISMATCH");
 		problem.setProperty("occurredAt", Instant.now());
 		problem.setProperty("parameterName", ex.getName());
@@ -287,23 +205,15 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
-	public ProblemDetail handleOptimisticLockingFailure(
-		Exception ex,
-		HttpServletRequest request
-	) {
-		log.warn(
-			"Optimistic lock failed | method={} | path={} | error={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			ex.getMessage()
-		);
+	public ProblemDetail handleOptimisticLockingFailure(Exception ex) {
+		log.warn("[OPTIMISTIC_LOCK_FAILED] The resource was already modified | error={}", ex.getMessage());
 
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.CONFLICT,
 			"The resource was modified by another user. Please refresh and try again."
 		);
 
-		// problem.setType(URI.create("/errors/optimistic_lock_failed"));
+		// problem.setType(URI.create("/errors/optimistic-lock-failed"));
 		problem.setTitle("OPTIMISTIC_LOCK_FAILED");
 		problem.setProperty("occurredAt", Instant.now());
 
@@ -311,31 +221,23 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
-	public ProblemDetail handleDataIntegrityViolation(
-		DataIntegrityViolationException ex,
-		HttpServletRequest request
-	) {
-		log.warn(
-			"Data integrity violation | method={} | path={} | error={}",
-			request.getMethod(),
-			request.getRequestURI(),
-			ex.getMessage()
-		);
-
-		// 구체적인 에러 파싱
+	public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
 		String detail = "A database constraint was violated";
+
 		if (ex.getMessage().contains("duplicate key")) {
 			detail = "Duplicate entry detected";
 		} else if (ex.getMessage().contains("foreign key")) {
 			detail = "Referenced resource does not exist";
 		}
 
+		log.warn("[DATA_INTEGRITY_VIOLATION] {} | error={}", detail, ex.getMessage());
+
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
 			HttpStatus.CONFLICT,
 			detail
 		);
 
-		// problem.setType(URI.create("/errors/data_integrity_violation"));
+		// problem.setType(URI.create("/errors/data-integrity-violation"));
 		problem.setTitle("DATA_INTEGRITY_VIOLATION");
 		problem.setProperty("occurredAt", Instant.now());
 
@@ -349,8 +251,8 @@ public class GlobalExceptionHandler {
 		);
 
 		// TODO: API 문서화 이후 추가
-		// problem.setType(URI.create("/errors/" + ex.getErrorCode().toLowerCase()));
-		problem.setTitle(ex.getErrorCode());
+		// problem.setType(URI.create("/errors/" + toKebabCase(ex.getErrorCode().name())));
+		problem.setTitle(ex.getErrorCode().name());
 		problem.setProperty("occurredAt", Instant.now());
 
 		ex.getContext().forEach((key, value) -> {
@@ -360,6 +262,10 @@ public class GlobalExceptionHandler {
 		});
 
 		return problem;
+	}
+
+	private String toKebabCase(String text) {
+		return text.toLowerCase().replace('_', '-');
 	}
 
 	private boolean isSafeToExpose(String key) {

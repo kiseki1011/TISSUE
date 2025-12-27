@@ -1,6 +1,8 @@
 package com.tissue.issuetype.application.port.in;
 
-import org.springframework.transaction.annotation.Transactional;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
@@ -8,22 +10,17 @@ import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
 import com.tissue.issuetype.application.dto.request.RenameIssueTypeCommand;
 import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
 
-@Transactional
 public interface IssueTypeUseCase {
 
-	// REQUIRES_PROJECT_MEMBER
+	@PreAuthorize(REQUIRES_PROJECT_MEMBER)
 	IssueTypeResponse create(CreateIssueTypeCommand cmd);
 
-	// REQUIRES_PROJECT_ADMIN + OR + REQUIRES_ISSUE_TYPE_CREATOR
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void rename(RenameIssueTypeCommand cmd);
 
-	// REQUIRES_PROJECT_ADMIN + OR + REQUIRES_ISSUE_TYPE_CREATOR
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void update(PatchIssueTypeCommand cmd);
 
-	// REQUIRES_PROJECT_ADMIN
-	// TODO: 이걸 archive로 변경 고려
+	@PreAuthorize(REQUIRES_ISSUE_TYPE_EDIT_PERMISSION)
 	void delete(DeleteIssueTypeCommand cmd);
-
-	// REQUIRES_PROJECT_ADMIN
-	// void archive(ArchiveIssueTypeCommand cmd);
 }

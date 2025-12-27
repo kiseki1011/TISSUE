@@ -1,6 +1,5 @@
 package com.tissue.member.application.service;
 
-import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -15,18 +14,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
 
-	private final EmailVerificationRepository repository;
 	private final EmailClient emailClient;
 	private final EmailVerificationProperties properties;
+	private final EmailVerificationRepository repository;
 
-	// TODO: @ConfigurationProperties(prefix = "email.verification")를 사용해서 TTL 값 관리
-	private static final Duration TTL = Duration.ofMinutes(30);
-
-	// TODO: 도메인을 포함한 스트링값들 하드 코딩하지 않기
-	// TODO: 이메일 포맷에 thymeleaf 사용
 	public void sendVerificationEmail(String email) {
 		String tokenValue = UUID.randomUUID().toString();
-		repository.saveToken(email, tokenValue, TTL);
+		repository.saveToken(email, tokenValue, properties.getTtl());
 
 		String link = properties.getVerificationUrl() + "?email=%s&token=%s"
 			.formatted(email, tokenValue);
@@ -49,14 +43,6 @@ public class MemberEmailVerificationService {
 
 	public boolean verifyEmail(String email, String tokenValue) {
 		return repository.verify(email, tokenValue);
-	}
-
-	public void validateEmailVerified(String email) {
-		boolean emailNotVerified = !repository.isVerified(email);
-		if (emailNotVerified) {
-			// TODO: EmailNotVerifiedException
-			throw new RuntimeException("Email is not verified. Please complete verification before signing up.");
-		}
 	}
 
 	public boolean isEmailVerified(String email) {

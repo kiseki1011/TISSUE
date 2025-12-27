@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.workflow.application.dto.EntityRef;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
@@ -18,7 +18,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record CreateWorkflowRequest(
-	@NotBlank @Size(max = 32) String label,
+	@NotBlank @Size(max = 32) String name,
 	@Nullable @Size(max = 255) String description,
 	@NotNull ColorType color,
 	@NotEmpty List<CreateStatusRequest> createStatusRequests,
@@ -26,7 +26,7 @@ public record CreateWorkflowRequest(
 ) {
 	public record CreateStatusRequest(
 		@NotBlank String tempKey,
-		@NotBlank @Size(max = 32) String label,
+		@NotBlank @Size(max = 32) String name,
 		@Nullable @Size(max = 255) String description,
 		@NotNull ColorType color,
 		@NotNull StateCategory category
@@ -34,7 +34,7 @@ public record CreateWorkflowRequest(
 	}
 
 	public record CreateTransitionRequest(
-		@NotBlank @Size(max = 32) String label,
+		@NotBlank @Size(max = 32) String name,
 		@Nullable @Size(max = 255) String description,
 		@NotBlank String sourceTempKey,
 		@NotBlank String targetTempKey
@@ -45,7 +45,7 @@ public record CreateWorkflowRequest(
 		List<StateDefinition> stateDefinitions = createStatusRequests.stream()
 			.map(s -> new StateDefinition(
 				new EntityRef(null, s.tempKey()),
-				Label.of(s.label()),
+				Name.of(s.name()),
 				s.description(),
 				s.color(),
 				s.category
@@ -55,7 +55,7 @@ public record CreateWorkflowRequest(
 		List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
 			.map(t -> new TransitionDefinition(
 				null,
-				Label.of(t.label()),
+				Name.of(t.name()),
 				t.description(),
 				new EntityRef(null, t.sourceTempKey()),
 				new EntityRef(null, t.targetTempKey())
@@ -65,7 +65,7 @@ public record CreateWorkflowRequest(
 		return CreateWorkflowCommand.builder()
 			.workspaceKey(workspaceKey)
 			.projectKey(projectKey)
-			.label(Label.of(label))
+			.name(Name.of(name))
 			.description(description)
 			.color(color)
 			.stateDefinitions(stateDefinitions)

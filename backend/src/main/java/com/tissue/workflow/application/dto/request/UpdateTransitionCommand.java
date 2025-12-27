@@ -2,7 +2,7 @@ package com.tissue.workflow.application.dto.request;
 
 import org.openapitools.jackson.nullable.JsonNullable;
 
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 
 import lombok.Builder;
 
@@ -12,7 +12,7 @@ public record UpdateTransitionCommand(
 	String projectKey,
 	Long workflowId,
 	Long transitionId,
-	JsonNullable<Label> label,
+	JsonNullable<Name> name,
 	JsonNullable<String> description
 ) {
 }

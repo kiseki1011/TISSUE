@@ -16,5 +16,5 @@ public interface IssueFieldQueryRepository extends Repository<IssueField, Long> 
 
 	List<IssueField> findByIssueType(IssueType issueType);
 
-	boolean existsByIssueTypeAndLabel_Normalized(IssueType issueType, String label);
+	boolean existsByIssueTypeAndName_Normalized(IssueType issueType, String label);
 }

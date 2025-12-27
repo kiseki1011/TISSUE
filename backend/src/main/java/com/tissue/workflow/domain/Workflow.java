@@ -1,5 +1,7 @@
 package com.tissue.workflow.domain;
 
+import static com.tissue.workflow.domain.enums.StateCategory.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,11 +11,10 @@ import org.springframework.lang.Nullable;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
-import com.tissue.common.vo.Label;
+import com.tissue.common.vo.Name;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.DuplicateStateException;
-import com.tissue.workflow.domain.exception.DuplicateTransitionException;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 
 import jakarta.persistence.CascadeType;
@@ -59,7 +60,7 @@ public class Workflow extends BaseEntity {
 	private String workspaceKey;
 
 	@Embedded
-	private Label label;
+	private Name name;
 
 	@Column(nullable = false, length = 255)
 	private String description;
@@ -83,7 +84,7 @@ public class Workflow extends BaseEntity {
 
 	public static Workflow create(
 		@NonNull Project project,
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull ColorType color
 	) {
@@ -91,7 +92,7 @@ public class Workflow extends BaseEntity {
 		wf.project = project;
 		wf.projectKey = project.getKey();
 		wf.workspaceKey = project.getWorkspaceKey();
-		wf.label = label;
+		wf.name = name;
 		wf.description = description;
 		wf.color = color;
 		wf.systemProvided = false;
@@ -100,18 +101,18 @@ public class Workflow extends BaseEntity {
 	}
 
 	public WorkflowState addState(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull ColorType color,
 		@NonNull StateCategory stateCategory
 	) {
-		ensureUniqueStateLabel(label);
+		ensureUniqueStateName(name);
 
-		WorkflowState state = WorkflowState.of(label, description, color, stateCategory);
+		WorkflowState state = WorkflowState.of(name, description, color, stateCategory);
 		state.attachToWorkflow(this);
 		states.add(state);
 
-		if (stateCategory.isTodo()) {
+		if (stateCategory.isInitial()) {
 			this.initialState = state;
 		}
 
@@ -119,19 +120,23 @@ public class Workflow extends BaseEntity {
 	}
 
 	public WorkflowTransition addTransition(
-		@NonNull Label label,
+		@NonNull Name name,
 		@Nullable String description,
 		@NonNull WorkflowState source,
 		@NonNull WorkflowState target
 	) {
-		ensureUniqueTransitionLabelForSource(label, source);
+		ensureUniqueTransitionNameForSource(name, source);
 		ensureNoDuplicateEdge(source, target);
 
-		WorkflowTransition transition = WorkflowTransition.of(label, description, source, target);
+		WorkflowTransition transition = WorkflowTransition.of(name, description, source, target);
 		transition.attachToWorkflow(this);
 		transitions.add(transition);
 
 		return transition;
+	}
+
+	public String getDisplayName() {
+		return name.getDisplay();
 	}
 
 	public List<WorkflowState> getActiveStates() {
@@ -146,19 +151,12 @@ public class Workflow extends BaseEntity {
 			.toList();
 	}
 
-	private void ensureNoExistingInitialState() {
-		boolean hasTodo = initialState != null;
-		if (hasTodo) {
-			throw new RuntimeException("Workflow can have only one TODO state.");
-		}
-	}
-
 	public void setInitialState(@NonNull WorkflowState state) {
 		if (!states.contains(state)) {
-			throw new IllegalArgumentException("State must belong to this workflow.");
+			throw WorkflowExceptions.initialStateBelongMismatch();
 		}
-		if (state.getCategory().isNotTodo()) {
-			throw new IllegalArgumentException("Initial state must be of category TODO.");
+		if (!state.isCategorizedAs(INITIAL)) {
+			throw WorkflowExceptions.initialStateCategoryMismatch();
 		}
 		this.initialState = state;
 	}
@@ -167,8 +165,8 @@ public class Workflow extends BaseEntity {
 		this.systemProvided = true;
 	}
 
-	public void rename(@NonNull Label label) {
-		this.label = label;
+	public void rename(@NonNull Name name) {
+		this.name = name;
 	}
 
 	public void updateDescription(@Nullable String description) {
@@ -180,9 +178,12 @@ public class Workflow extends BaseEntity {
 	}
 
 	public void deleteState(@NonNull WorkflowState state) {
-		if (state.getCategory().isTodo()) {
-			// TODO: 예외 추가하기
-			throw new RuntimeException("Cannot delete the TODO state. It is the initial state.");
+		if (state.getCategory().isInitial()) {
+			throw WorkflowExceptions.cannotDeleteInitialState(
+				this.getId(),
+				this.getDisplayName(),
+				state.getDisplayName()
+			);
 		}
 		state.softDelete();
 		states.remove(state);
@@ -192,30 +193,30 @@ public class Workflow extends BaseEntity {
 		transitions.remove(transition);
 	}
 
-	public void renameState(@NonNull WorkflowState state, @NonNull Label newLabel) {
-		if (state.getLabel().equals(newLabel)) {
+	public void renameState(@NonNull WorkflowState state, @NonNull Name newName) {
+		if (state.getName().equals(newName)) {
 			return;
 		}
-		ensureUniqueStateLabel(newLabel);
-		state.updateLabel(newLabel);
+		ensureUniqueStateName(newName);
+		state.updateName(newName);
 	}
 
-	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Label newLabel) {
-		if (transition.getLabel().equals(newLabel)) {
+	public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Name newName) {
+		if (transition.getName().equals(newName)) {
 			return;
 		}
-		ensureUniqueTransitionLabelForSource(newLabel, transition.getSourceState());
-		transition.updateLabel(newLabel);
+		ensureUniqueTransitionNameForSource(newName, transition.getSourceState());
+		transition.updateName(newName);
 	}
 
 	public void changeStateCategory(WorkflowState state, StateCategory newCategory) {
-		if (state.getCategory() == newCategory) {
+		if (state.isCategorizedAs(newCategory)) {
 			return;
 		}
-		if (newCategory.isTodo()) {
+		if (newCategory.isInitial()) {
 			this.initialState = state;
 		}
-		if (state.getCategory().isTodo()) {
+		if (state.getCategory().isInitial()) {
 			this.initialState = null;
 		}
 
@@ -248,33 +249,33 @@ public class Workflow extends BaseEntity {
 			.filter(t -> !t.isArchived())
 			.anyMatch(x -> x.getSourceState().equals(source) && x.getTargetState().equals(target));
 		if (dup) {
-			throw new RuntimeException("Duplicate transition (source,target) is not allowed.");
+			throw WorkflowExceptions.duplicateTransitionEdge(source.getDisplayName(), target.getDisplayName());
 		}
 	}
 
-	private void ensureUniqueStateLabel(Label newLabel) {
+	private void ensureUniqueStateName(Name newName) {
 		boolean dup = states.stream()
 			.filter(t -> !t.isArchived())
-			.anyMatch(s -> s.getLabel().equals(newLabel));
+			.anyMatch(s -> s.getName().equals(newName));
 		if (dup) {
-			throw new DuplicateStateException(
-				newLabel.getDisplay(),
-				label.getDisplay(),
+			throw WorkflowExceptions.duplicateStateName(
+				newName.getDisplay(),
+				name.getDisplay(),
 				id
 			);
 		}
 	}
 
-	private void ensureUniqueTransitionLabelForSource(Label newLabel, WorkflowState source) {
+	private void ensureUniqueTransitionNameForSource(Name newName, WorkflowState source) {
 		boolean dup = transitions.stream()
 			.filter(t -> !t.isArchived())
 			.filter(t -> t.getSourceState().equals(source))
-			.anyMatch(t -> t.getLabel().equals(newLabel));
+			.anyMatch(t -> t.getName().equals(newName));
 		if (dup) {
-			throw new DuplicateTransitionException(
-				newLabel.getDisplay(),
-				source.getDisplayLabel(),
-				label.getDisplay(),
+			throw WorkflowExceptions.duplicateTransitionName(
+				newName.getDisplay(),
+				source.getDisplayName(),
+				name.getDisplay(),
 				id
 			);
 		}

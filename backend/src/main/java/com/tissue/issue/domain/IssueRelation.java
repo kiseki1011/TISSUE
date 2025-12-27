@@ -2,9 +2,7 @@ package com.tissue.issue.domain;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueSelfReferenceException;
-import com.tissue.issue.domain.exception.IssueTypeMismatchForRelationException;
-import com.tissue.issue.domain.exception.RelationWorkspaceMismatchException;
+import com.tissue.issue.domain.exception.IssueExceptions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -73,13 +71,16 @@ public class IssueRelation extends BaseEntity {
 
 	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
 		if (sourceIssue.equals(targetIssue)) {
-			throw new IssueSelfReferenceException(sourceIssue.getKey());
+			throw IssueExceptions.issueSelfReference(
+				sourceIssue.getWorkspaceKey(),
+				sourceIssue.getKey()
+			);
 		}
 	}
 
 	private static void ensureSameWorkspace(Issue source, Issue target) {
 		if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-			throw new RelationWorkspaceMismatchException(
+			throw IssueExceptions.relationWorkspaceMismatch(
 				source.getWorkspaceKey(),
 				source.getKey(),
 				target.getWorkspaceKey(),
@@ -95,15 +96,15 @@ public class IssueRelation extends BaseEntity {
 	) {
 		switch (type) {
 			case DUPLICATES -> {
-				boolean issueTypeNotMatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
-				if (issueTypeNotMatch) {
-					throw new IssueTypeMismatchForRelationException(
-						type,
-						sourceIssue.getIssueType(),
-						targetIssue.getIssueType(),
+				boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
+				if (issueTypeMismatch) {
+					throw IssueExceptions.relationIssueTypeMismatch(
 						sourceIssue.getWorkspaceKey(),
+						type,
 						sourceIssue.getKey(),
-						targetIssue.getKey()
+						sourceIssue.getIssueType().getDisplayName(),
+						targetIssue.getKey(),
+						targetIssue.getIssueType().getDisplayName()
 					);
 				}
 			}

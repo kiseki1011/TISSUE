@@ -1,8 +1,5 @@
 package com.tissue.project.application.port.in;
 
-import org.springframework.transaction.annotation.Transactional;
-
-@Transactional(readOnly = true)
 public interface ProjectQueryUseCase {
 
 	// TODO: Project pagination api

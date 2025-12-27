@@ -1,17 +1,15 @@
 package com.tissue.project.application.port.in;
 
-import static com.tissue.security.authorization.ProjectSecurityExpressions.*;
-import static com.tissue.security.authorization.WorkspaceSecurityExpressions.*;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+import static com.tissue.workspace.application.service.authorization.WorkspaceAuthExpressions.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.tissue.project.application.dto.request.CreateProjectCommand;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 
-@Transactional
 public interface ProjectCommandUseCase {
 
 	@PreAuthorize(REQUIRES_WORKSPACE_MEMBER)

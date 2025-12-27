@@ -5,13 +5,14 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.tissue.common.exception.base.BadRequestException;
+import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
-import com.tissue.workspace.application.dto.request.CreateWorkspaceCommand;
-import com.tissue.workspace.application.dto.response.WorkspaceCommandResponse;
+import com.tissue.workspace.application.dto.in.CreateWorkspaceCommand;
+import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
 import com.tissue.workspace.application.port.in.WorkspaceCreateUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -19,6 +20,7 @@ import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 import com.tissue.workspace.domain.service.WorkspaceKeyGenerator;
 
 import lombok.RequiredArgsConstructor;
@@ -44,9 +46,9 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 		maxAttempts = MAX_RETRIES,
 		backoff = @Backoff(delay = 300)
 	)
-	public WorkspaceCommandResponse create(CreateWorkspaceCommand cmd) {
-
-		Member member = memberFinder.findMemberById(cmd.memberId());
+	@Transactional
+	public WorkspaceCreateResponse create(CreateWorkspaceCommand cmd) {
+		Member member = memberFinder.getActiveBy(cmd.memberId());
 
 		String workspaceKey = WorkspaceKeyGenerator.generateWorkspaceKey();
 
@@ -61,16 +63,12 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
 		WorkspaceMember owner = WorkspaceMember.create(member, workspace, WorkspaceRole.OWNER);
 		workspaceMemberCommandRepository.save(owner);
 
-		return WorkspaceCommandResponse.from(savedWorkspace);
+		return WorkspaceCreateResponse.from(savedWorkspace);
 	}
 
 	@Recover
-	public WorkspaceCommandResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
+	public WorkspaceCreateResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
 		log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
-		// TODO: WorkspaceKeyCollisionException extends InternalServerException
-		throw new RuntimeException(
-			"Failed to solve workspace code collision after %d attempts.".formatted(MAX_RETRIES),
-			exception
-		);
+		throw WorkspaceExceptions.keyGenerationFailed(exception);
 	}
 }

@@ -16,7 +16,7 @@ public interface EnumFieldOptionQueryRepository extends Repository<EnumFieldOpti
 
 	List<EnumFieldOption> findByIssueFieldOrderByPositionAsc(IssueField field);
 
-	boolean existsByIssueFieldAndLabel_Normalized(IssueField field, String label);
+	boolean existsByIssueFieldAndName_Normalized(IssueField field, String label);
 
 	int countByIssueField(IssueField field);
 

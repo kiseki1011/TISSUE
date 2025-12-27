@@ -12,7 +12,7 @@ public class MemberPolicyConfig {
 	@Bean
 	public MemberPolicy memberPolicy(
 		@Value("${tissue.member.policy.max-owned-workspaces:10}") int maxOwned,
-		@Value("${tissue.member.policy.max-joined-workspaces:50}") int maxJoined
+		@Value("${tissue.member.policy.max-joined-workspaces:10}") int maxJoined
 	) {
 		return new MemberPolicy(maxOwned, maxJoined);
 	}

@@ -13,7 +13,7 @@ public record IssueTypeInfo(
 	public static IssueTypeInfo from(IssueType issueType) {
 		return new IssueTypeInfo(
 			issueType.getId(),
-			issueType.getDisplayLabel(),
+			issueType.getDisplayName(),
 			issueType.getColor(),
 			issueType.canUseStoryPoint()
 		);
