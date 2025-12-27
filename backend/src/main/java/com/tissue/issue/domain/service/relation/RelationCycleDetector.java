@@ -4,5 +4,5 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.IssueRelationType;
 
 public interface RelationCycleDetector {
-	public void ensureNoCycle(Issue source, Issue target, IssueRelationType relationType);
+    public void ensureNoCycle(Issue source, Issue target, IssueRelationType relationType);
 }

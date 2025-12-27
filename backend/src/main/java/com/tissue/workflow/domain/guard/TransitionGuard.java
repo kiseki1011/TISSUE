@@ -6,13 +6,13 @@ import java.util.Map;
 
 public interface TransitionGuard {
 
-	void evaluate(GuardContext context);
+    void evaluate(GuardContext context);
 
-	GuardType getType();
+    GuardType getType();
 
-	void validateParams(Map<String, Object> params, GuardType type);
+    void validateParams(Map<String, Object> params, GuardType type);
 
-	default List<GuardParamMetaData> getParamMetaData() {
-		return Collections.emptyList();
-	}
+    default List<GuardParamMetaData> getParamMetaData() {
+        return Collections.emptyList();
+    }
 }

@@ -10,25 +10,25 @@ import com.tissue.position.domain.Position;
 
 public class PositionExceptions {
 
-	private PositionExceptions() {
-	}
+    private PositionExceptions() {}
 
-	public static ResourceNotFoundException notFound(Long positionId, String workspaceKey) {
-		return new ResourceNotFoundException(POSITION_NOT_FOUND)
-			.addContext(WORKSPACE_KEY, workspaceKey)
-			.addContext(POSITION_ID, positionId);
-	}
+    public static ResourceNotFoundException notFound(Long positionId, String workspaceKey) {
+        return new ResourceNotFoundException(POSITION_NOT_FOUND)
+                .addContext(WORKSPACE_KEY, workspaceKey)
+                .addContext(POSITION_ID, positionId);
+    }
 
-	public static ResourceConflictException duplicateName(String positionName, String workspaceKey) {
-		return new ResourceConflictException(DUPLICATE_POSITION_NAME)
-			.addContext(WORKSPACE_KEY, workspaceKey)
-			.addContext(POSITION_NAME, positionName);
-	}
+    public static ResourceConflictException duplicateName(
+            String positionName, String workspaceKey) {
+        return new ResourceConflictException(DUPLICATE_POSITION_NAME)
+                .addContext(WORKSPACE_KEY, workspaceKey)
+                .addContext(POSITION_NAME, positionName);
+    }
 
-	public static BadRequestException inUse(Position position) {
-		return new BadRequestException(POSITION_IN_USE)
-			.addContext(WORKSPACE_KEY, position.getWorkspaceKey())
-			.addContext(POSITION_ID, position.getId())
-			.addContext(POSITION_NAME, position.getDisplayName());
-	}
+    public static BadRequestException inUse(Position position) {
+        return new BadRequestException(POSITION_IN_USE)
+                .addContext(WORKSPACE_KEY, position.getWorkspaceKey())
+                .addContext(POSITION_ID, position.getId())
+                .addContext(POSITION_NAME, position.getDisplayName());
+    }
 }

@@ -1,13 +1,5 @@
 package com.tissue.workflow.application.service;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-
 import com.tissue.common.util.Patchers;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
@@ -30,135 +22,140 @@ import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
 import com.tissue.workflow.domain.service.TransitionGuardRegistry;
-
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WorkflowCommandService implements WorkflowCommandUseCase {
 
-	private final ProjectFinder projectFinder;
-	private final WorkflowFinder workflowFinder;
-	private final WorkflowRepository workflowRepository;
-	private final WorkflowValidator workflowValidator;
-	private final WorkflowGraphValidator graphValidator;
-	private final TransitionGuardRegistry guardRegistry;
+    private final ProjectFinder projectFinder;
+    private final WorkflowFinder workflowFinder;
+    private final WorkflowRepository workflowRepository;
+    private final WorkflowValidator workflowValidator;
+    private final WorkflowGraphValidator graphValidator;
+    private final TransitionGuardRegistry guardRegistry;
 
-	@Override
-	public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+    @Override
+    public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
 
-		workflowValidator.ensureLabelUnique(project, cmd.name());
+        workflowValidator.ensureLabelUnique(project, cmd.name());
 
-		try {
-			Workflow workflow = workflowRepository.save(
-				Workflow.create(project, cmd.name(), cmd.description(), cmd.color())
-			);
+        try {
+            Workflow workflow =
+                    workflowRepository.save(
+                            Workflow.create(project, cmd.name(), cmd.description(), cmd.color()));
 
-			Map<String, WorkflowState> stateByTempKey = new HashMap<>();
-			for (var s : cmd.stateDefinitions()) {
-				WorkflowState state = workflow.addState(
-					s.name(),
-					s.description(),
-					s.color(),
-					s.category()
-				);
-				stateByTempKey.put(s.stateRef().tempKey(), state);
-			}
+            Map<String, WorkflowState> stateByTempKey = new HashMap<>();
+            for (var s : cmd.stateDefinitions()) {
+                WorkflowState state =
+                        workflow.addState(s.name(), s.description(), s.color(), s.category());
+                stateByTempKey.put(s.stateRef().tempKey(), state);
+            }
 
-			for (var t : cmd.transitionDefinitions()) {
-				WorkflowState source = stateByTempKey.get(t.sourceStateRef().tempKey());
-				WorkflowState target = stateByTempKey.get(t.targetStateRef().tempKey());
+            for (var t : cmd.transitionDefinitions()) {
+                WorkflowState source = stateByTempKey.get(t.sourceStateRef().tempKey());
+                WorkflowState target = stateByTempKey.get(t.targetStateRef().tempKey());
 
-				workflow.addTransition(t.name(), t.description(), source, target);
-			}
+                workflow.addTransition(t.name(), t.description(), source, target);
+            }
 
-			graphValidator.ensureValidWorkflowGraph(workflow);
+            graphValidator.ensureValidWorkflowGraph(workflow);
 
-			return WorkflowCreateResponse.from(workflow);
-		} catch (DataIntegrityViolationException e) {
-			throw WorkflowExceptions.duplicateWorkflowName(
-				cmd.name().getDisplay(),
-				project.getKey(),
-				project.getWorkspaceKey()
-			);
-		}
-	}
+            return WorkflowCreateResponse.from(workflow);
+        } catch (DataIntegrityViolationException e) {
+            throw WorkflowExceptions.duplicateWorkflowName(
+                    cmd.name().getDisplay(), project.getKey(), project.getWorkspaceKey());
+        }
+    }
 
-	@Override
-	public void update(UpdateWorkflowCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+    @Override
+    public void update(UpdateWorkflowCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		Patchers.apply(cmd.name(), newLabel -> {
-			if (!workflow.getName().equals(newLabel)) {
-				workflowValidator.ensureLabelUnique(project, newLabel);
-				workflow.rename(newLabel);
-			}
-		});
-		Patchers.apply(cmd.description(), workflow::updateDescription);
-		Patchers.apply(cmd.color(), workflow::updateColor);
-	}
+        Patchers.apply(
+                cmd.name(),
+                newLabel -> {
+                    if (!workflow.getName().equals(newLabel)) {
+                        workflowValidator.ensureLabelUnique(project, newLabel);
+                        workflow.rename(newLabel);
+                    }
+                });
+        Patchers.apply(cmd.description(), workflow::updateDescription);
+        Patchers.apply(cmd.color(), workflow::updateColor);
+    }
 
-	@Override
-	public void delete(DeleteWorkflowCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+    @Override
+    public void delete(DeleteWorkflowCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		// TODO: archive(soft-delete) 정책 정하기
-		//  - 정책1: 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
-		//  - 정책2: 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
-		//    UI에서 해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 되었다는 표시)
-		// workflowValidator.ensureDeletable();
+        // TODO: archive(soft-delete) 정책 정하기
+        //  - 정책1: 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
+        //  - 정책2: 해당 워크플로우를 사용하는 이슈가 있더라도, 전부 category가 DONE이라면 허용
+        //    UI에서 해당 DONE 상태의 이슈들의 state는 회색으로 변경(disable 되었다는 표시)
+        // workflowValidator.ensureDeletable();
 
-		workflow.softDelete();
-	}
+        workflow.softDelete();
+    }
 
-	@Override
-	public void updateState(UpdateStateCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-		WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
+    @Override
+    public void updateState(UpdateStateCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
 
-		Patchers.apply(cmd.name(), l -> workflow.renameState(state, l));
-		Patchers.apply(cmd.description(), state::updateDescription);
-		Patchers.apply(cmd.color(), state::updateColor);
-	}
+        Patchers.apply(cmd.name(), l -> workflow.renameState(state, l));
+        Patchers.apply(cmd.description(), state::updateDescription);
+        Patchers.apply(cmd.color(), state::updateColor);
+    }
 
-	@Override
-	public void updateTransition(UpdateTransitionCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-		WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
+    @Override
+    public void updateTransition(UpdateTransitionCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        WorkflowTransition transition =
+                workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
-		Patchers.apply(cmd.name(), l -> workflow.renameTransition(transition, l));
-		Patchers.apply(cmd.description(), transition::updateDescription);
-	}
+        Patchers.apply(cmd.name(), l -> workflow.renameTransition(transition, l));
+        Patchers.apply(cmd.description(), transition::updateDescription);
+    }
 
-	@Override
-	public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-		Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-		Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+    @Override
+    public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-		WorkflowTransition transition = workflow.getTransitions().stream()
-			.filter(t -> t.getId().equals(cmd.transitionId()))
-			.findFirst()
-			.orElseThrow(() -> WorkflowExceptions.transitionNotFound(cmd.transitionId(), workflow.getId()));
+        WorkflowTransition transition =
+                workflow.getTransitions().stream()
+                        .filter(t -> t.getId().equals(cmd.transitionId()))
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        WorkflowExceptions.transitionNotFound(
+                                                cmd.transitionId(), workflow.getId()));
 
-		workflow.clearGuardsForTransition(transition);
+        workflow.clearGuardsForTransition(transition);
 
-		Set<GuardType> usedTypes = new HashSet<>();
+        Set<GuardType> usedTypes = new HashSet<>();
 
-		for (var g : cmd.guards()) {
-			guardRegistry.ensureGuardExists(g.guardType());
-			workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
+        for (var g : cmd.guards()) {
+            guardRegistry.ensureGuardExists(g.guardType());
+            workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
 
-			TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
-			guardImplementation.validateParams(g.params(), g.guardType());
+            TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
+            guardImplementation.validateParams(g.params(), g.guardType());
 
-			workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
-		}
-	}
+            workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
+        }
+    }
 }

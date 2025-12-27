@@ -4,9 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record UnsubscribeIssueCommand(
-	String workspaceKey,
-	String projectKey,
-	String issueKey,
-	Long actorMemberId
-) {
-}
+        String workspaceKey, String projectKey, String issueKey, Long actorMemberId) {}

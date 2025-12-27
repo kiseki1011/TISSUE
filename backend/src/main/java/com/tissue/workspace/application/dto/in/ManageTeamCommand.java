@@ -4,9 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record ManageTeamCommand(
-	String workspaceKey,
-	Long memberId,
-	Long teamId,
-	Long actorMemberId
-) {
-}
+        String workspaceKey, Long memberId, Long teamId, Long actorMemberId) {}

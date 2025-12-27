@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.tissue")
 @SpringBootApplication
 public class TaskmanagerApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TaskmanagerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TaskmanagerApplication.class, args);
+    }
 }

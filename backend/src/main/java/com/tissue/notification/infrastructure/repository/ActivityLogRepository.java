@@ -1,8 +1,6 @@
 package com.tissue.notification.infrastructure.repository;
 
+import com.tissue.notification.domain.model.ActivityLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tissue.notification.domain.model.ActivityLog;
-
-public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
-}
+public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {}

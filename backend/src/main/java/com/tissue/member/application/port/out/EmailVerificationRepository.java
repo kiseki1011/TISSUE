@@ -4,11 +4,11 @@ import java.time.Duration;
 
 public interface EmailVerificationRepository {
 
-	void saveToken(String email, String token, Duration ttl);
+    void saveToken(String email, String token, Duration ttl);
 
-	boolean verify(String email, String token);
+    boolean verify(String email, String token);
 
-	boolean isVerified(String email);
+    boolean isVerified(String email);
 
-	void deleteToken(String email);
+    void deleteToken(String email);
 }

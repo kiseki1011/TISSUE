@@ -1,12 +1,11 @@
 package com.tissue.position.application.port.out;
 
-import org.springframework.data.repository.Repository;
-
 import com.tissue.position.domain.Position;
+import org.springframework.data.repository.Repository;
 
 public interface PositionCommandRepository extends Repository<Position, Long> {
 
-	Position save(Position position);
+    Position save(Position position);
 
-	void delete(Position position);
+    void delete(Position position);
 }

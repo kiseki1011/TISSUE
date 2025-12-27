@@ -2,7 +2,6 @@ package com.tissue.workspace.domain;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.team.domain.Team;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,40 +17,36 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "uk_workspace_member_team",
-			columnNames = {"workspace_member_id", "team_id"})
-	}
-)
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_workspace_member_team",
+                    columnNames = {"workspace_member_id", "team_id"})
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberTeam extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "workspace_member_id", nullable = false)
-	private WorkspaceMember workspaceMember;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id", nullable = false)
+    private WorkspaceMember workspaceMember;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "team_id", nullable = false)
-	private Team team;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
 
-	public WorkspaceMemberTeam(WorkspaceMember workspaceMember, Team team) {
-		this.workspaceMember = workspaceMember;
-		this.team = team;
-	}
+    public WorkspaceMemberTeam(WorkspaceMember workspaceMember, Team team) {
+        this.workspaceMember = workspaceMember;
+        this.team = team;
+    }
 
-	public static WorkspaceMemberTeam create(
-		WorkspaceMember workspaceMember,
-		Team team
-	) {
-		WorkspaceMemberTeam wmt = new WorkspaceMemberTeam(workspaceMember, team);
-		workspaceMember.getWorkspaceMemberTeams().add(wmt);
-		team.getWorkspaceMemberTeams().add(wmt);
-		return wmt;
-	}
+    public static WorkspaceMemberTeam create(WorkspaceMember workspaceMember, Team team) {
+        WorkspaceMemberTeam wmt = new WorkspaceMemberTeam(workspaceMember, team);
+        workspaceMember.getWorkspaceMemberTeams().add(wmt);
+        team.getWorkspaceMemberTeams().add(wmt);
+        return wmt;
+    }
 }

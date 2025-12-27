@@ -4,5 +4,5 @@ import com.tissue.issue.application.dto.request.SubmitReviewCommand;
 
 public interface IssueReviewUseCase {
 
-	void submitReview(SubmitReviewCommand cmd);
+    void submitReview(SubmitReviewCommand cmd);
 }

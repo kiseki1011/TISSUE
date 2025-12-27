@@ -5,9 +5,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-	"jwt.secret=ThisIsADefaultTestSecretThatIs32Chars"
-})
+@TestPropertySource(properties = {"jwt.secret=ThisIsADefaultTestSecretThatIs32Chars"})
 @AutoConfigureMockMvc
-public abstract class ServiceIntegrationTestHelper {
-}
+public abstract class ServiceIntegrationTestHelper {}

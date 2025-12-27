@@ -1,27 +1,28 @@
 package com.tissue.common.util;
 
-public final class ETagUtil {
-	private ETagUtil() {
-		throw new UnsupportedOperationException("Utility class cannot be instantiated");
-	}
+public final class EtagUtil {
 
-	// removes quotation marks ("")
-	// example: "5" → 5
-	public static Long parseIfMatch(String raw) {
-		if (raw == null || raw.isBlank()) {
-			return null;
-		}
+    private EtagUtil() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
 
-		String val = raw.trim();
-		if (val.startsWith("\"") && val.endsWith("\"")) {
-			val = val.substring(1, val.length() - 1);
-		}
+    // removes quotation marks ("")
+    // example: "5" → 5
+    public static Long parseIfMatch(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
 
-		return Long.parseLong(val);
-	}
+        String val = raw.trim();
+        if (val.startsWith("\"") && val.endsWith("\"")) {
+            val = val.substring(1, val.length() - 1);
+        }
 
-	// ETag must be wrapped with quotation marks
-	public static String quote(long version) {
-		return "\"" + version + "\"";
-	}
+        return Long.parseLong(val);
+    }
+
+    // ETag must be wrapped with quotation marks
+    public static String quote(long version) {
+        return "\"" + version + "\"";
+    }
 }

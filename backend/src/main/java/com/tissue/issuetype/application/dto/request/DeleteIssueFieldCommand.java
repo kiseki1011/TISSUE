@@ -4,9 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record DeleteIssueFieldCommand(
-	String workspaceKey,
-	String projectKey,
-	Long issueTypeId,
-	Long issueFieldId
-) {
-}
+        String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId) {}

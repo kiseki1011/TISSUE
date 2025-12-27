@@ -1,11 +1,9 @@
 package com.tissue.common.vo;
 
-import java.util.Objects;
-
 import com.tissue.common.util.TextNormalizer;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,36 +16,36 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Name {
 
-	// TODO: change field name to value
-	@Column(nullable = false, length = 64)
-	private String display;
+    // TODO: change field name to value
+    @Column(nullable = false, length = 64)
+    private String display;
 
-	@Column(nullable = false, length = 64)
-	private String normalized;
+    @Column(nullable = false, length = 64)
+    private String normalized;
 
-	private Name(String display, String normalized) {
-		this.display = display;
-		this.normalized = normalized;
-	}
+    private Name(String display, String normalized) {
+        this.display = display;
+        this.normalized = normalized;
+    }
 
-	public static Name of(@NonNull String raw) {
-		String checked = Objects.requireNonNull(raw);
+    public static Name of(@NonNull String raw) {
+        String checked = Objects.requireNonNull(raw);
 
-		// TODO: add length check if(>64)
+        // TODO: add length check if(>64)
 
-		String display = TextNormalizer.normalizeText(checked);
-		String norm = TextNormalizer.normalizeForUniq(checked);
+        String display = TextNormalizer.normalizeText(checked);
+        String norm = TextNormalizer.normalizeForUniq(checked);
 
-		return new Name(display, norm);
-	}
+        return new Name(display, norm);
+    }
 
-	public boolean isSameAs(@NonNull String name) {
-		String otherNormalized = TextNormalizer.normalizeForUniq(name);
-		return this.normalized.equals(otherNormalized);
-	}
+    public boolean isSameAs(@NonNull String name) {
+        String otherNormalized = TextNormalizer.normalizeForUniq(name);
+        return this.normalized.equals(otherNormalized);
+    }
 
-	@Override
-	public String toString() {
-		return display;
-	}
+    @Override
+    public String toString() {
+        return display;
+    }
 }

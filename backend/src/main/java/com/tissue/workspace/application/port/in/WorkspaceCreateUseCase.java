@@ -5,5 +5,5 @@ import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
 
 public interface WorkspaceCreateUseCase {
 
-	WorkspaceCreateResponse create(CreateWorkspaceCommand cmd);
+    WorkspaceCreateResponse create(CreateWorkspaceCommand cmd);
 }

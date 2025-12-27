@@ -9,14 +9,14 @@ import com.tissue.position.application.dto.response.PositionDetail;
 // TODO: add @PreAuthorize
 public interface PositionUseCase {
 
-	PositionCreateResponse create(CreatePositionCommand cmd);
+    PositionCreateResponse create(CreatePositionCommand cmd);
 
-	void update(UpdatePositionCommand cmd);
+    void update(UpdatePositionCommand cmd);
 
-	void delete(String workspaceKey, Long positionId);
+    void delete(String workspaceKey, Long positionId);
 
-	PositionDetail getPosition(String workspaceKey, Long positionId);
+    PositionDetail getPosition(String workspaceKey, Long positionId);
 
-	// TODO: should i make this into a pagination api?
-	GetPositions getPositions(String workspaceKey);
+    // TODO: should i make this into a pagination api?
+    GetPositions getPositions(String workspaceKey);
 }

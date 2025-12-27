@@ -1,26 +1,17 @@
 package com.tissue.notification.config;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Configuration;
-
 import com.tissue.notification.domain.service.message.NotificationContentArgumentsFormatter;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 // @ComponentScan(basePackageClasses = NotificationSender.class)
 @RequiredArgsConstructor
 public class NotificationConfig {
 
-	private final MessageSource messageSource;
-	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final NotificationContentArgumentsFormatter argumentFormatter;
-
-	// @Bean
-	// public NotificationMessageFactory notificationMessageFactory() {
-	// 	return new SimpleNotificationMessageFactory(messageSource, workspaceMemberFinder, argumentFormatter);
-	// }
-
-	// TODO(고민중): 사용할 EmailClient 구현체 선택? notification 도메인은 별도의 모듈로 분리 예정?
+    private final MessageSource messageSource;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final NotificationContentArgumentsFormatter argumentFormatter;
 }

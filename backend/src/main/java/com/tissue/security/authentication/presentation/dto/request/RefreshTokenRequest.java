@@ -1,6 +1,3 @@
 package com.tissue.security.authentication.presentation.dto.request;
 
-public record RefreshTokenRequest(
-	String refreshToken
-) {
-}
+public record RefreshTokenRequest(String refreshToken) {}

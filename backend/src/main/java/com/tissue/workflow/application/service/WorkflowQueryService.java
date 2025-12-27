@@ -1,9 +1,5 @@
 package com.tissue.workflow.application.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.tissue.issue.application.dto.IssueCountProjection;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.service.finder.ProjectFinder;
@@ -15,45 +11,47 @@ import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class WorkflowQueryService implements WorkflowQueryUseCase {
 
-	private final ProjectFinder projectFinder;
-	private final WorkflowFinder workflowFinder;
-	private final WorkflowQueryRepository workflowQueryRepository;
-	private final IssueQueryRepository issueQueryRepository;
+    private final ProjectFinder projectFinder;
+    private final WorkflowFinder workflowFinder;
+    private final WorkflowQueryRepository workflowQueryRepository;
+    private final IssueQueryRepository issueQueryRepository;
 
-	@Override
-	public List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived) {
-		Project project = projectFinder.getBy(projectKey, workspaceKey);
+    @Override
+    public List<WorkflowSummary> getWorkflows(
+            String workspaceKey, String projectKey, boolean includeArchived) {
+        Project project = projectFinder.getBy(projectKey, workspaceKey);
 
-		List<Workflow> workflows;
-		if (includeArchived) {
-			workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
-		} else {
-			workflows = workflowQueryRepository.findAllByProjectAndArchivedFalseOrderByLabel(project);
-		}
+        List<Workflow> workflows;
+        if (includeArchived) {
+            workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
+        } else {
+            workflows =
+                    workflowQueryRepository.findAllByProjectAndArchivedFalseOrderByLabel(project);
+        }
 
-		return workflows.stream()
-			.map(WorkflowSummary::from)
-			.toList();
-	}
+        return workflows.stream().map(WorkflowSummary::from).toList();
+    }
 
-	@Override
-	public WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId) {
-		Project project = projectFinder.getBy(projectKey, workspaceKey);
-		Workflow workflow = workflowFinder.findBy(workflowId, project);
+    @Override
+    public WorkflowDetail getWorkflowDetail(
+            String workspaceKey, String projectKey, Long workflowId) {
+        Project project = projectFinder.getBy(projectKey, workspaceKey);
+        Workflow workflow = workflowFinder.findBy(workflowId, project);
 
-		List<Long> stateIds = workflow.getActiveStates().stream()
-			.map(WorkflowState::getId)
-			.toList();
+        List<Long> stateIds =
+                workflow.getActiveStates().stream().map(WorkflowState::getId).toList();
 
-		List<IssueCountProjection> projections = issueQueryRepository.findActiveIssueCounts(stateIds);
+        List<IssueCountProjection> projections =
+                issueQueryRepository.findActiveIssueCounts(stateIds);
 
-		return WorkflowDetail.of(workflow, projections);
-	}
+        return WorkflowDetail.of(workflow, projections);
+    }
 }
