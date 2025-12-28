@@ -4,9 +4,7 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * The random nickname generator will be removed in the future.
- */
+/** The random nickname generator will be removed in the future. */
 @Deprecated(forRemoval = true)
 @Component
 @RequiredArgsConstructor
