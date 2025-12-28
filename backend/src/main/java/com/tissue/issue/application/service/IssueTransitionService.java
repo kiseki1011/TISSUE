@@ -1,7 +1,5 @@
 package com.tissue.issue.application.service;
 
-import static com.tissue.issue.domain.util.IssueKeyUtil.extractProjectKey;
-
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.service.finder.IssueFinder;
@@ -43,9 +41,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     @Override
     @Transactional
     public void performTransition(PerformTransitionCommand cmd) {
-        Project project =
-                projectFinder.getModifiableBy(
-                        extractProjectKey(cmd.projectKey()), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 

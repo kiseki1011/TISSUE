@@ -18,34 +18,36 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface IssueQueryUseCase {
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueBasicInfo getBasic(String workspaceKey, String issueKey);
+    IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueCommonDetail getCommon(String workspaceKey, String issueKey);
+    IssueCommonDetail getCommon(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueCustomDetail getCustom(String workspaceKey, String issueKey);
+    IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueIdentificationInfo getParent(String workspaceKey, String issueKey);
+    IssueIdentificationInfo getParent(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    List<IssueIdentificationInfo> getChildren(String workspaceKey, String issueKey);
+    List<IssueIdentificationInfo> getChildren(
+            String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueRelationsDetail getRelations(String workspaceKey, String issueKey);
+    IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    ParticipantInfo getAuthor(String workspaceKey, String issueKey);
+    ParticipantInfo getAuthor(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueReviewersDetail getReviewers(String workspaceKey, String issueKey);
+    IssueReviewersDetail getReviewers(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueSubscribersDetail getSubscribers(String workspaceKey, String issueKey);
+    IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey);
+    List<TransitionDetail> getAvailableTransitions(
+            String workspaceKey, String projectKey, String issueKey);
 
     // TODO: getParticipants
     //   - assignee, reviewers, reporter, author(creator) 모두

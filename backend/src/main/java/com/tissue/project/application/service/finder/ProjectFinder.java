@@ -16,6 +16,7 @@ public class ProjectFinder {
 
     // TODO: add javadoc for the following information
     //  - its only for read-only API's
+    // TODO: should i change the name to getReadableBy or just use getBy?
     public Project getBy(String projectKey, String workspaceKey) {
         // TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
         // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
