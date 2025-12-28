@@ -1,8 +1,8 @@
+---
 name: General
 about: General discussion or other topics
 title: '[GENERAL] '
 labels: general
-
 ---
 
 ## Topic
