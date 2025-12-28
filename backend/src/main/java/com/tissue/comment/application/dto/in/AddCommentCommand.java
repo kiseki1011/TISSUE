@@ -4,11 +4,9 @@ import lombok.Builder;
 
 @Builder
 public record AddCommentCommand(
-	String workspaceKey,
-	String projectKey,
-	String issueKey,
-	String content,
-	Long parentCommentId,
-	Long actorMemberId
-) {
-}
+        String workspaceKey,
+        String projectKey,
+        String issueKey,
+        String content,
+        Long parentCommentId,
+        Long actorMemberId) {}

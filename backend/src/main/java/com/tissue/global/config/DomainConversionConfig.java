@@ -2,7 +2,6 @@ package com.tissue.global.config;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.annotation.Bean;
@@ -13,13 +12,13 @@ import org.springframework.core.convert.ConversionService;
 @Configuration
 public class DomainConversionConfig {
 
-	@Bean
-	@Qualifier("domainConversionService")
-	public ConversionService domainConversionService() {
-		ApplicationConversionService cs = new ApplicationConversionService();
+    @Bean
+    @Qualifier("domainConversionService")
+    public ConversionService domainConversionService() {
+        ApplicationConversionService cs = new ApplicationConversionService();
 
-		cs.addConverter(String.class, Instant.class, s -> OffsetDateTime.parse(s).toInstant());
+        cs.addConverter(String.class, Instant.class, s -> OffsetDateTime.parse(s).toInstant());
 
-		return cs;
-	}
+        return cs;
+    }
 }

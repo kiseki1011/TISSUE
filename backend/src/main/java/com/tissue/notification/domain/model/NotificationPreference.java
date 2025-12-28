@@ -2,7 +2,6 @@ package com.tissue.notification.domain.model;
 
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,51 +20,49 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "UK_NOTIFICATION_PREF",
-			columnNames = {"receiver_member_id", "workspace_key", "type", "channel"})
-	}
-)
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "UK_NOTIFICATION_PREF",
+                    columnNames = {"receiver_member_id", "workspace_key", "type", "channel"})
+        })
 public class NotificationPreference {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private Long receiverMemberId;
+    @Column(nullable = false)
+    private Long receiverMemberId;
 
-	@Column(nullable = false)
-	private String workspaceKey;
+    @Column(nullable = false)
+    private String workspaceKey;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private NotificationType type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationType type;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private NotificationChannel channel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationChannel channel;
 
-	@Column(nullable = false)
-	private boolean enabled = true;
+    @Column(nullable = false)
+    private boolean enabled = true;
 
-	@Builder
-	public NotificationPreference(
-		Long receiverMemberId,
-		String workspaceKey,
-		NotificationType type,
-		NotificationChannel channel,
-		boolean enabled
-	) {
-		this.receiverMemberId = receiverMemberId;
-		this.workspaceKey = workspaceKey;
-		this.type = type;
-		this.channel = channel;
-		this.enabled = enabled;
-	}
+    @Builder
+    public NotificationPreference(
+            Long receiverMemberId,
+            String workspaceKey,
+            NotificationType type,
+            NotificationChannel channel,
+            boolean enabled) {
+        this.receiverMemberId = receiverMemberId;
+        this.workspaceKey = workspaceKey;
+        this.type = type;
+        this.channel = channel;
+        this.enabled = enabled;
+    }
 
-	public void updateEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+    public void updateEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

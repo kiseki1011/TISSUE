@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public interface DomainEvent {
 
-	UUID eventId();
+    UUID eventId();
 
-	Instant occurredAt();
+    Instant occurredAt();
 }

@@ -5,13 +5,9 @@ import jakarta.persistence.Embeddable;
 
 @Embeddable
 public record NotificationMessage(
-	@Column(nullable = false)
-	String title,
+        @Column(nullable = false) String title, @Column(length = 1000) String content) {
 
-	@Column(length = 1000)
-	String content
-) {
-	public NotificationMessage() {
-		this("", "");
-	}
+    public NotificationMessage() {
+        this("", "");
+    }
 }

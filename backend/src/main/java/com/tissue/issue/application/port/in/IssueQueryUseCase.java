@@ -2,10 +2,6 @@ package com.tissue.issue.application.port.in;
 
 import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
 
-import java.util.List;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-
 import com.tissue.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.issue.application.dto.response.IssueRelationsDetail;
@@ -15,44 +11,46 @@ import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
+import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface IssueQueryUseCase {
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueBasicInfo getBasic(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueBasicInfo getBasic(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueCommonDetail getCommon(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueCommonDetail getCommon(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueCustomDetail getCustom(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueCustomDetail getCustom(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueIdentificationInfo getParent(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueIdentificationInfo getParent(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	List<IssueIdentificationInfo> getChildren(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    List<IssueIdentificationInfo> getChildren(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueRelationsDetail getRelations(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueRelationsDetail getRelations(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	ParticipantInfo getAuthor(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    ParticipantInfo getAuthor(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueReviewersDetail getReviewers(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueReviewersDetail getReviewers(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	IssueSubscribersDetail getSubscribers(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    IssueSubscribersDetail getSubscribers(String workspaceKey, String issueKey);
 
-	@PreAuthorize(REQUIRES_PROJECT_VIEWER)
-	List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey);
+    @PreAuthorize(REQUIRES_PROJECT_VIEWER)
+    List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey);
 
-	// TODO: getParticipants
-	//   - assignee, reviewers, reporter, author(creator) 모두
-	// TODO: getIssues() - pagination API
-	// TODO: getIssuesByState - getIssues()에 통합 가능할까?
-	// TODO: getIssuesByStateCategory - getIssues()에 통합 가능할까?
-	// TODO: getComments(추후에 Comment 도메인 리팩토링 후 진행)
-	// TODO: getHistory(추후에 ActivityLog 도메인 리팩토링 후 진행)
+    // TODO: getParticipants
+    //   - assignee, reviewers, reporter, author(creator) 모두
+    // TODO: getIssues() - pagination API
+    // TODO: getIssuesByState - getIssues()에 통합 가능할까?
+    // TODO: getIssuesByStateCategory - getIssues()에 통합 가능할까?
+    // TODO: getComments(추후에 Comment 도메인 리팩토링 후 진행)
+    // TODO: getHistory(추후에 ActivityLog 도메인 리팩토링 후 진행)
 }

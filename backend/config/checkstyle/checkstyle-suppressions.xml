@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+  "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+  "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+  <!-- Suppress Javadoc requirements and grammar for all files -->
+  <suppress checks="JavadocPackage" files=".*"/>
+  <suppress checks="JavadocVariable" files=".*"/>
+  <suppress checks="JavadocMethod" files=".*"/>
+  <suppress checks="JavadocType" files=".*"/>
+  <suppress checks="MissingJavadocMethod" files=".*"/>
+  <suppress checks="MissingJavadocType" files=".*"/>
+  <suppress checks="MissingJavadocVariable" files=".*"/>
+  <suppress checks="SummaryJavadoc" files=".*"/>
+
+  <!-- Allow underscores in Repository method names (Spring Data JPA property paths) -->
+  <suppress checks="MethodName" files=".*Repository\.java"/>
+
+  <!-- Allow * imports globally (I like static imports!) -->
+  <suppress checks="AvoidStarImport" files=".*"/>
+  <!--  <suppress checks="AvoidStarImport" files=".*Test\.java"/>-->
+
+  <!-- Disable Indentation checks globally (Spotless uses AOSP 4-spaces, checkstyle expects 2) -->
+  <suppress checks="Indentation" files=".*"/>
+  <suppress checks="TextBlockGoogleStyleFormatting" files=".*"/>
+
+  <!-- Suppress strict variable distance check -->
+  <suppress checks="VariableDeclarationUsageDistance" files=".*"/>
+</suppressions>

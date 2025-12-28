@@ -1,8 +1,5 @@
 package com.tissue.workspace.application.service.command;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.domain.Position;
 import com.tissue.team.application.service.finder.TeamFinder;
@@ -16,83 +13,91 @@ import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCase {
 
-	private final WorkspaceFinder workspaceFinder;
-	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final PositionFinder positionFinder;
-	private final TeamFinder teamFinder;
-	// private final ApplicationEventPublisher eventPublisher;
+    private final WorkspaceFinder workspaceFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final PositionFinder positionFinder;
+    private final TeamFinder teamFinder;
 
-	@Override
-	public void updateDisplayName(UpdateDisplayNameCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		// TODO: pass workspace instead of workspaceKey
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
-		workspaceMember.updateDisplayName(cmd.displayName());
-	}
+    // private final ApplicationEventPublisher eventPublisher;
 
-	@Override
-	public void updateRole(UpdateRoleCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		// TODO: pass workspace instead of workspaceKey
-		WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
-		WorkspaceMember target = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+    @Override
+    public void updateDisplayName(UpdateDisplayNameCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        // TODO: pass workspace instead of workspaceKey
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+        workspaceMember.updateDisplayName(cmd.displayName());
+    }
 
-		target.changeRoleTo(cmd.role());
+    @Override
+    public void updateRole(UpdateRoleCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        // TODO: pass workspace instead of workspaceKey
+        WorkspaceMember actor =
+                workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
+        WorkspaceMember target = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 
-		// TODO: WorkspaceMemberRoleChangedEvent
-	}
+        target.changeRoleTo(cmd.role());
 
-	@Override
-	public void addPosition(ManagePositionCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Position position = positionFinder.getBy(cmd.positionId(), workspace);
-		// TODO: pass workspace instead of workspaceKey
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+        // TODO: WorkspaceMemberRoleChangedEvent
+    }
 
-		workspaceMember.addPosition(position);
+    @Override
+    public void addPosition(ManagePositionCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Position position = positionFinder.getBy(cmd.positionId(), workspace);
+        // TODO: pass workspace instead of workspaceKey
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 
-		// TODO: WorkspaceMemberPositionChangedEvent
-	}
+        workspaceMember.addPosition(position);
 
-	@Override
-	public void removePosition(ManagePositionCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Position position = positionFinder.getBy(cmd.positionId(), workspace);
-		// TODO: pass workspace instead of workspaceKey
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+        // TODO: WorkspaceMemberPositionChangedEvent
+    }
 
-		workspaceMember.removePosition(position);
+    @Override
+    public void removePosition(ManagePositionCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Position position = positionFinder.getBy(cmd.positionId(), workspace);
+        // TODO: pass workspace instead of workspaceKey
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 
-		// TODO: WorkspaceMemberPositionChangedEvent
-	}
+        workspaceMember.removePosition(position);
 
-	@Override
-	public void addTeam(ManageTeamCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+        // TODO: WorkspaceMemberPositionChangedEvent
+    }
 
-		workspaceMember.addTeam(team);
+    @Override
+    public void addTeam(ManageTeamCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 
-		// TODO: WorkspaceMemberTeamChangedEvent
-	}
+        workspaceMember.addTeam(team);
 
-	@Override
-	public void removeTeam(ManageTeamCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-		Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-		WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
+        // TODO: WorkspaceMemberTeamChangedEvent
+    }
 
-		workspaceMember.removeTeam(team);
+    @Override
+    public void removeTeam(ManageTeamCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.findBy(cmd.memberId(), cmd.workspaceKey());
 
-		// TODO: WorkspaceMemberTeamChangedEvent
-	}
+        workspaceMember.removeTeam(team);
+
+        // TODO: WorkspaceMemberTeamChangedEvent
+    }
 }

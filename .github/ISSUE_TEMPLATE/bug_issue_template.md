@@ -1,44 +1,44 @@
----
 name: Bug report
-about: Report a bug
-title: '[bug]'
+about: Create a report to help us improve
+title: '[BUG] '
 labels: bug
-assignees: seungki1011
 
 ---
 
-## 🐛 설명
--
+## Description
 
----
+<!--
+Description of what the bug is.
+Ex: "The issue list table rows are misaligned when the terminal window is resized below 80 characters."
+-->
 
-## 🔁 재현
+## To Reproduce
 
-버그를 재현하기 위한 시뮬레이션을 설명해주세요.
+<!--
+Steps to reproduce the behavior:
+Ex:
+1. Launch the TUI client.
+2. Navigate to the 'Backlog' view.
+3. Shrink the terminal window width significantly.
+4. Observe that the 'Status' column overlaps the 'Issue Title' text.
+-->
 
-1. step1
-2. step2
+## Expected behavior
 
----
+<!--
+What you expected to happen.
+Ex: "'Status' column should hide automatically on small screens."
+-->
 
-## 📈 기대한 결과
+## Screenshots/Logs (Optional but strongly recommended)
 
-버그가 발생하지 않았다면 기대한 결과를 설명해주세요.
+<!-- If applicable, add screenshots or error logs to help explain your problem. -->
 
--
+## Environment
 
----
-
-## 🚩 관련 이슈, PR
--
-
----
-
-## 🌆 스크린샷
-
----
-
-## ⚙️ 환경
-
-- OS:
-- Used Version:
+- OS: [e.g. macOS 14.5, Ubuntu 22.04, Windows 11]
+- Terminal: [e.g. iTerm2, Alacritty, Windows Terminal]
+- Shell: [e.g. zsh, bash, fish]
+- Java Version: [e.g. 21.0.3]
+- App Version: [e.g. v0.1.0-alpha]
+- API Endpoint (Optional): [e.g. "GET /api/v1/issues"]

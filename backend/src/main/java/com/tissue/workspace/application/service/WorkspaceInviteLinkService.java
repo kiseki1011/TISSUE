@@ -1,12 +1,5 @@
 package com.tissue.workspace.application.service;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.project.application.service.ProjectMemberCommandService;
 import com.tissue.project.application.service.finder.ProjectFinder;
@@ -30,124 +23,144 @@ import com.tissue.workspace.domain.WorkspaceInviteLink;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.WorkspaceExceptions;
-
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
-	private final WorkspaceFinder workspaceFinder;
-	private final ProjectFinder projectFinder;
-	private final MemberFinder memberFinder;
-	private final WorkspaceMemberFinder workspaceMemberFinder;
-	private final WorkspaceLinkCommandRepository linkRepository;
-	private final WorkspaceLinkQueryRepository linkQueryRepository;
-	private final WorkspaceParticipationService workspaceParticipationService;
-	private final ProjectMemberCommandService projectMemberCommandService;
+    private final WorkspaceFinder workspaceFinder;
+    private final ProjectFinder projectFinder;
+    private final MemberFinder memberFinder;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final WorkspaceLinkCommandRepository linkRepository;
+    private final WorkspaceLinkQueryRepository linkQueryRepository;
+    private final WorkspaceParticipationService workspaceParticipationService;
+    private final ProjectMemberCommandService projectMemberCommandService;
 
-	@Override
-	@Transactional
-	public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+    @Override
+    @Transactional
+    public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
-		return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjects(), cmd.expiredAt());
-	}
+        return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjects(), cmd.expiredAt());
+    }
 
-	@Override
-	@Transactional
-	public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
-		Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+    @Override
+    @Transactional
+    public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
+        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
-		var projectJoinConfig = new ProjectJoinConfigDto(cmd.projectKey(), cmd.role());
-		List<ProjectJoinConfigDto> singleProjectConfig = List.of(projectJoinConfig);
+        var projectJoinConfig = new ProjectJoinConfigDto(cmd.projectKey(), cmd.role());
+        List<ProjectJoinConfigDto> singleProjectConfig = List.of(projectJoinConfig);
 
-		return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectConfig, cmd.expiredAt());
-	}
+        return saveLink(workspace, WorkspaceRole.MEMBER, singleProjectConfig, cmd.expiredAt());
+    }
 
-	@Override
-	@Transactional
-	public void expireLink(ExpireLinkCommand cmd) {
-		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
-			.orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
+    @Override
+    @Transactional
+    public void expireLink(ExpireLinkCommand cmd) {
+        WorkspaceInviteLink link =
+                linkQueryRepository
+                        .findByToken(cmd.token())
+                        .orElseThrow(
+                                () ->
+                                        WorkspaceExceptions.linkNotFound(
+                                                cmd.workspaceKey(), cmd.token()));
 
-		link.expire();
-	}
+        link.expire();
+    }
 
-	@Override
-	@Transactional
-	public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
-		WorkspaceInviteLink link = linkQueryRepository.findByToken(cmd.token())
-			.orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
+    @Override
+    @Transactional
+    public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
+        WorkspaceInviteLink link =
+                linkQueryRepository
+                        .findByToken(cmd.token())
+                        .orElseThrow(
+                                () ->
+                                        WorkspaceExceptions.linkNotFound(
+                                                cmd.workspaceKey(), cmd.token()));
 
-		if (!link.isValid()) {
-			throw WorkspaceExceptions.invalidLink(link);
-		}
+        if (!link.isValid()) {
+            throw WorkspaceExceptions.invalidLink(link);
+        }
 
-		WorkspaceMember workspaceMember = workspaceParticipationService.join(
-			link.getWorkspace(),
-			memberFinder.getActiveBy(cmd.memberId()),
-			link.getWorkspaceRole()
-		);
+        WorkspaceMember workspaceMember =
+                workspaceParticipationService.join(
+                        link.getWorkspace(),
+                        memberFinder.getActiveBy(cmd.memberId()),
+                        link.getWorkspaceRole());
 
-		List<ProjectJoinConfig> projectConfigs = link.getProjectConfigs();
+        List<ProjectJoinConfig> projectConfigs = link.getProjectConfigs();
 
-		if (link.projectConfigsNotEmpty()) {
-			joinProjects(projectConfigs, workspaceMember);
-		}
+        if (link.projectConfigsNotEmpty()) {
+            joinProjects(projectConfigs, workspaceMember);
+        }
 
-		return WorkspaceMemberResponse.from(workspaceMember);
+        return WorkspaceMemberResponse.from(workspaceMember);
+    }
 
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
+        WorkspaceInviteLink link =
+                linkQueryRepository
+                        .findByToken(token)
+                        .orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));
 
-	@Override
-	@Transactional(readOnly = true)
-	public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
-		WorkspaceInviteLink link = linkQueryRepository.findByToken(token)
-			.orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));
+        if (!link.isValid()) {
+            throw WorkspaceExceptions.invalidLink(link);
+        }
 
-		if (!link.isValid()) {
-			throw WorkspaceExceptions.invalidLink(link);
-		}
+        WorkspaceMember linkCreator =
+                workspaceMemberFinder.findBy(link.getCreatedBy(), workspaceKey);
 
-		WorkspaceMember linkCreator = workspaceMemberFinder.findBy(link.getCreatedBy(), workspaceKey);
+        return WorkspaceInviteLinkDetail.of(link, linkCreator);
+    }
 
-		return WorkspaceInviteLinkDetail.of(link, linkCreator);
-	}
+    private String saveLink(
+            Workspace workspace,
+            WorkspaceRole roleToGrant,
+            List<ProjectJoinConfigDto> targetProjects,
+            Instant expiredAt) {
+        String token = UUID.randomUUID().toString();
 
-	private String saveLink(Workspace workspace, WorkspaceRole roleToGrant, List<ProjectJoinConfigDto> targetProjects,
-		Instant expiredAt) {
-		String token = UUID.randomUUID().toString();
+        WorkspaceInviteLink link =
+                WorkspaceInviteLink.create(workspace, token, roleToGrant, expiredAt);
 
-		WorkspaceInviteLink link = WorkspaceInviteLink.create(
-			workspace,
-			token,
-			roleToGrant,
-			expiredAt
-		);
+        addProjectsToLink(workspace.getKey(), targetProjects, link);
 
-		addProjectsToLink(workspace.getKey(), targetProjects, link);
+        linkRepository.save(link);
+        return token;
+    }
 
-		linkRepository.save(link);
-		return token;
-	}
+    private void addProjectsToLink(
+            String workspaceKey,
+            List<ProjectJoinConfigDto> targetProjects,
+            WorkspaceInviteLink link) {
+        if (targetProjects != null) {
+            for (var dto : targetProjects) {
+                Project project = projectFinder.getModifiableBy(dto.projectKey(), workspaceKey);
+                link.addProjectConfig(project, dto.role());
+            }
+        }
+    }
 
-	private void addProjectsToLink(String workspaceKey, List<ProjectJoinConfigDto> targetProjects,
-		WorkspaceInviteLink link) {
-		if (targetProjects != null) {
-			for (var dto : targetProjects) {
-				Project project = projectFinder.getModifiableBy(dto.projectKey(), workspaceKey);
-				link.addProjectConfig(project, dto.role());
-			}
-		}
-	}
-
-	private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
-		for (ProjectJoinConfig config : configs) {
-			projectFinder.findOptionalBy(config.projectId())
-				.ifPresent(project -> {
-					projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
-				});
-		}
-	}
+    private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
+        for (ProjectJoinConfig config : configs) {
+            projectFinder
+                    .findOptionalBy(config.projectId())
+                    .ifPresent(
+                            project -> {
+                                projectMemberCommandService.addMember(
+                                        project, workspaceMember.getMemberId(), config.role());
+                            });
+        }
+    }
 }

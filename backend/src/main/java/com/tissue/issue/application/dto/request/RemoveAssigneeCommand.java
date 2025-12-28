@@ -1,9 +1,4 @@
 package com.tissue.issue.application.dto.request;
 
 public record RemoveAssigneeCommand(
-	String workspaceKey,
-	String projectKey,
-	String issueKey,
-	Long actorMemberId
-) {
-}
+        String workspaceKey, String projectKey, String issueKey, Long actorMemberId) {}

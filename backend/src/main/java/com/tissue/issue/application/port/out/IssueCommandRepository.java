@@ -1,10 +1,9 @@
 package com.tissue.issue.application.port.out;
 
-import org.springframework.data.repository.Repository;
-
 import com.tissue.issue.domain.Issue;
+import org.springframework.data.repository.Repository;
 
 public interface IssueCommandRepository extends Repository<Issue, Long> {
 
-	Issue save(Issue issue);
+    Issue save(Issue issue);
 }

@@ -6,9 +6,9 @@ import com.tissue.security.authentication.presentation.dto.response.RefreshToken
 
 public interface AuthenticationUseCase {
 
-	LoginResponse login(String loginEmail, String password);
+    LoginResponse login(String loginEmail, String password);
 
-	RefreshTokenResponse refreshToken(String refreshToken);
+    RefreshTokenResponse refreshToken(String refreshToken);
 
-	ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId);
+    ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId);
 }

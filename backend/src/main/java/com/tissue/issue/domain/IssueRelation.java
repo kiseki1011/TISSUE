@@ -3,7 +3,6 @@ package com.tissue.issue.domain;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueRelationType;
 import com.tissue.issue.domain.exception.IssueExceptions;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,104 +22,90 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
-@Table(name = "issue_relation",
-	uniqueConstraints = @UniqueConstraint(
-		columnNames = {"source_issue_id", "target_issue_id"}
-	)
-)
+@Table(
+        name = "issue_relation",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"source_issue_id", "target_issue_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelation extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "source_issue_id", nullable = false)
-	private Issue sourceIssue;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_issue_id", nullable = false)
+    private Issue sourceIssue;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "target_issue_id", nullable = false)
-	private Issue targetIssue;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_issue_id", nullable = false)
+    private Issue targetIssue;
 
-	@ToString.Include
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private IssueRelationType relationType;
+    @ToString.Include
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IssueRelationType relationType;
 
-	static IssueRelation create(
-		@NonNull Issue sourceIssue,
-		@NonNull Issue targetIssue,
-		@NonNull IssueRelationType type
-	) {
-		ensureSameWorkspace(sourceIssue, targetIssue);
-		ensureNotSelfReference(sourceIssue, targetIssue);
-		validateRelationType(type, sourceIssue, targetIssue);
+    static IssueRelation create(
+            @NonNull Issue sourceIssue,
+            @NonNull Issue targetIssue,
+            @NonNull IssueRelationType type) {
+        ensureSameWorkspace(sourceIssue, targetIssue);
+        ensureNotSelfReference(sourceIssue, targetIssue);
+        validateRelationType(type, sourceIssue, targetIssue);
 
-		IssueRelation issueRelation = new IssueRelation();
-		issueRelation.sourceIssue = sourceIssue;
-		issueRelation.targetIssue = targetIssue;
-		issueRelation.relationType = type;
+        IssueRelation issueRelation = new IssueRelation();
+        issueRelation.sourceIssue = sourceIssue;
+        issueRelation.targetIssue = targetIssue;
+        issueRelation.relationType = type;
 
-		sourceIssue.getRelations().getOutgoingRelations().add(issueRelation);
-		targetIssue.getRelations().getIncomingRelations().add(issueRelation);
+        sourceIssue.getRelations().getOutgoingRelations().add(issueRelation);
+        targetIssue.getRelations().getIncomingRelations().add(issueRelation);
 
-		return issueRelation;
-	}
+        return issueRelation;
+    }
 
-	private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
-		if (sourceIssue.equals(targetIssue)) {
-			throw IssueExceptions.issueSelfReference(
-				sourceIssue.getWorkspaceKey(),
-				sourceIssue.getKey()
-			);
-		}
-	}
+    private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
+        if (sourceIssue.equals(targetIssue)) {
+            throw IssueExceptions.issueSelfReference(
+                    sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
+        }
+    }
 
-	private static void ensureSameWorkspace(Issue source, Issue target) {
-		if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-			throw IssueExceptions.relationWorkspaceMismatch(
-				source.getWorkspaceKey(),
-				source.getKey(),
-				target.getWorkspaceKey(),
-				target.getKey()
-			);
-		}
-	}
+    private static void ensureSameWorkspace(Issue source, Issue target) {
+        if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
+            throw IssueExceptions.relationWorkspaceMismatch(
+                    source.getWorkspaceKey(),
+                    source.getKey(),
+                    target.getWorkspaceKey(),
+                    target.getKey());
+        }
+    }
 
-	private static void validateRelationType(
-		IssueRelationType type,
-		Issue sourceIssue,
-		Issue targetIssue
-	) {
-		switch (type) {
-			case DUPLICATES -> {
-				boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
-				if (issueTypeMismatch) {
-					throw IssueExceptions.relationIssueTypeMismatch(
-						sourceIssue.getWorkspaceKey(),
-						type,
-						sourceIssue.getKey(),
-						sourceIssue.getIssueType().getDisplayName(),
-						targetIssue.getKey(),
-						targetIssue.getIssueType().getDisplayName()
-					);
-				}
-			}
-			case BLOCKS, RELEVANT -> {
-			}
-		}
-	}
+    private static void validateRelationType(
+            @NonNull IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
+        if (type == IssueRelationType.DUPLICATES) {
+            boolean issueTypeMismatch =
+                    !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
+            if (issueTypeMismatch) {
+                throw IssueExceptions.relationIssueTypeMismatch(
+                        sourceIssue.getWorkspaceKey(),
+                        type,
+                        sourceIssue.getKey(),
+                        sourceIssue.getIssueType().getDisplayName(),
+                        targetIssue.getKey(),
+                        targetIssue.getIssueType().getDisplayName());
+            }
+        }
+    }
 
-	@Override
-	public String toString() {
-		return String.format(
-			"IssueRelation(id=%d, source=%s, target=%s, type=%s)",
-			id,
-			sourceIssue != null ? sourceIssue.getKey() : "?",
-			targetIssue != null ? targetIssue.getKey() : "?",
-			relationType
-		);
-	}
+    @Override
+    public String toString() {
+        return String.format(
+                "IssueRelation(id=%d, source=%s, target=%s, type=%s)",
+                id,
+                sourceIssue != null ? sourceIssue.getKey() : "?",
+                targetIssue != null ? targetIssue.getKey() : "?",
+                relationType);
+    }
 }

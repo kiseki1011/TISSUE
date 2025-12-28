@@ -4,5 +4,5 @@ import com.tissue.common.event.DomainEvent;
 import com.tissue.notification.domain.model.vo.NotificationMessage;
 
 public interface NotificationMessageFactory {
-	<T extends DomainEvent> NotificationMessage createMessage(T event);
+    <T extends DomainEvent> NotificationMessage createMessage(T event);
 }

@@ -4,7 +4,7 @@ import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.model.Notification;
 
 public interface NotificationSender {
-	NotificationChannel getChannel();
+    NotificationChannel getChannel();
 
-	void send(Notification notification);
+    void send(Notification notification);
 }

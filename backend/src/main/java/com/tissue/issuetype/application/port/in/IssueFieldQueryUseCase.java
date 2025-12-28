@@ -1,4 +1,3 @@
 package com.tissue.issuetype.application.port.in;
 
-public interface IssueFieldQueryUseCase {
-}
+public interface IssueFieldQueryUseCase {}

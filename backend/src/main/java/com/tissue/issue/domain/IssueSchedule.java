@@ -1,68 +1,65 @@
 package com.tissue.issue.domain;
 
-import java.time.Instant;
-
-import org.springframework.lang.Nullable;
-
 import com.tissue.issue.domain.exception.IssueExceptions;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 @Embeddable
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueSchedule {
 
-	@Column(name = "started_at")
-	private Instant startedAt;
+    @Column(name = "started_at")
+    private Instant startedAt;
 
-	@Column(name = "resolved_at")
-	private Instant resolvedAt;
+    @Column(name = "resolved_at")
+    private Instant resolvedAt;
 
-	@Column(name = "due_at")
-	private Instant dueAt;
+    @Column(name = "due_at")
+    private Instant dueAt;
 
-	public static IssueSchedule of(@Nullable Instant dueAt) {
-		IssueSchedule schedule = new IssueSchedule();
-		schedule.dueAt = ensureValidDueAt(dueAt);
+    public static IssueSchedule of(@Nullable Instant dueAt) {
+        IssueSchedule schedule = new IssueSchedule();
+        schedule.dueAt = ensureValidDueAt(dueAt);
 
-		return schedule;
-	}
+        return schedule;
+    }
 
-	void markStarted() {
-		if (this.startedAt == null) {
-			this.startedAt = Instant.now();
-		}
-	}
+    void markStarted() {
+        if (this.startedAt == null) {
+            this.startedAt = Instant.now();
+        }
+    }
 
-	void markResolved() {
-		if (this.resolvedAt == null) {
-			this.resolvedAt = Instant.now();
-		}
-	}
+    void markResolved() {
+        if (this.resolvedAt == null) {
+            this.resolvedAt = Instant.now();
+        }
+    }
 
-	void clearResolved() {
-		this.resolvedAt = null;
-	}
+    void clearResolved() {
+        this.resolvedAt = null;
+    }
 
-	void updateDueDate(@Nullable Instant dueAt) {
-		this.dueAt = ensureValidDueAt(dueAt);
-	}
+    void updateDueDate(@Nullable Instant dueAt) {
+        this.dueAt = ensureValidDueAt(dueAt);
+    }
 
-	private static Instant ensureValidDueAt(Instant instant) {
-		if (instant == null) {
-			return null;
-		}
+    private static Instant ensureValidDueAt(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
 
-		Instant now = Instant.now();
-		if (instant.isBefore(now)) {
-			throw IssueExceptions.dueDateMustBeFuture(instant);
-		}
+        Instant now = Instant.now();
+        if (instant.isBefore(now)) {
+            throw IssueExceptions.dueDateMustBeFuture(instant);
+        }
 
-		return instant;
-	}
+        return instant;
+    }
 }

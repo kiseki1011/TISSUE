@@ -1,10 +1,8 @@
 package com.tissue.issue.adapter.out.persistence;
 
-import org.springframework.stereotype.Repository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class IssuePaginationJpaAdapter {
-}
+public class IssuePaginationJpaAdapter {}

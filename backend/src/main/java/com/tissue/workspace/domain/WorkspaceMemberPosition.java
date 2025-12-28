@@ -2,7 +2,6 @@ package com.tissue.workspace.domain;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.position.domain.Position;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,40 +17,37 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-	uniqueConstraints = {
-		@UniqueConstraint(
-			name = "uk_workspace_member_position",
-			columnNames = {"workspace_member_id", "position_id"})
-	}
-)
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_workspace_member_position",
+                    columnNames = {"workspace_member_id", "position_id"})
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMemberPosition extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "workspace_member_id", nullable = false)
-	private WorkspaceMember workspaceMember;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_member_id", nullable = false)
+    private WorkspaceMember workspaceMember;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "position_id", nullable = false)
-	private Position position;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_id", nullable = false)
+    private Position position;
 
-	public WorkspaceMemberPosition(WorkspaceMember workspaceMember, Position position) {
-		this.workspaceMember = workspaceMember;
-		this.position = position;
-	}
+    public WorkspaceMemberPosition(WorkspaceMember workspaceMember, Position position) {
+        this.workspaceMember = workspaceMember;
+        this.position = position;
+    }
 
-	public static WorkspaceMemberPosition create(
-		WorkspaceMember workspaceMember,
-		Position position
-	) {
-		WorkspaceMemberPosition wmp = new WorkspaceMemberPosition(workspaceMember, position);
-		workspaceMember.getWorkspaceMemberPositions().add(wmp);
-		position.getWorkspaceMemberPositions().add(wmp);
-		return wmp;
-	}
+    public static WorkspaceMemberPosition create(
+            WorkspaceMember workspaceMember, Position position) {
+        WorkspaceMemberPosition wmp = new WorkspaceMemberPosition(workspaceMember, position);
+        workspaceMember.getWorkspaceMemberPositions().add(wmp);
+        position.getWorkspaceMemberPositions().add(wmp);
+        return wmp;
+    }
 }

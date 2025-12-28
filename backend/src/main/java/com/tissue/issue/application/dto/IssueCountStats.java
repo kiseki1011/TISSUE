@@ -1,7 +1,3 @@
 package com.tissue.issue.application.dto;
 
-public record IssueCountStats(
-	long totalCount,
-	long doneCount
-) {
-}
+public record IssueCountStats(long totalCount, long doneCount) {}

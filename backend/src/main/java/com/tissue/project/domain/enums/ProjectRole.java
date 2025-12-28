@@ -6,14 +6,13 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ProjectRole {
+    ADMIN(1),
+    MEMBER(2),
+    VIEWER(3);
 
-	ADMIN(1),
-	MEMBER(2),
-	VIEWER(3);
+    private final int level;
 
-	private final int level;
-
-	public boolean isEqualOrHigherThan(ProjectRole other) {
-		return this.level <= other.getLevel();
-	}
+    public boolean isEqualOrHigherThan(ProjectRole other) {
+        return this.level <= other.getLevel();
+    }
 }

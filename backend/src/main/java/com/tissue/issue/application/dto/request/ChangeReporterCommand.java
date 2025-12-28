@@ -4,10 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record ChangeReporterCommand(
-	String workspaceKey,
-	String projectKey,
-	String issueKey,
-	Long targetMemberId,
-	Long actorMemberId
-) {
-}
+        String workspaceKey,
+        String projectKey,
+        String issueKey,
+        Long targetMemberId,
+        Long actorMemberId) {}

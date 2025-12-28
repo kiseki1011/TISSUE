@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum IssueRelationType {
-	RELEVANT(false),
-	BLOCKS(true),
-	CAUSES(true),
-	DUPLICATES(true);
+    RELEVANT(false),
+    BLOCKS(true),
+    CAUSES(true),
+    DUPLICATES(true);
 
-	private final boolean requiresAcyclicCheck;
+    private final boolean requiresAcyclicCheck;
 
-	public boolean requiresAcyclicCheck() {
-		return this.requiresAcyclicCheck;
-	}
+    public boolean requiresAcyclicCheck() {
+        return this.requiresAcyclicCheck;
+    }
 }

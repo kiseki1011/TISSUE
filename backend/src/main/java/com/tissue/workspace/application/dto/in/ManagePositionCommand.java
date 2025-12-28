@@ -4,9 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record ManagePositionCommand(
-	String workspaceKey,
-	Long memberId,
-	Long positionId,
-	Long actorMemberId
-) {
-}
+        String workspaceKey, Long memberId, Long positionId, Long actorMemberId) {}
