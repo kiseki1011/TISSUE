@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-// TODO: MDC 필터를 적용해서 더러운 로깅 정리
 @RestControllerAdvice
 @Slf4j
 @RequiredArgsConstructor
@@ -61,7 +60,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleInternalServerException(InternalServerException ex) {
         log.error("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage(), ex);
 
-        // TODO: 필요 시 알림 발송 (Slack, Email 등)
+        // TODO: consider sending alerts if needed (Slack, Email, Etc...)
         // alertService.sendAlert(ex);
 
         return createProblemDetail(ex);
@@ -74,12 +73,12 @@ public class GlobalExceptionHandler {
         return createProblemDetail(ex);
     }
 
-    // TODO: 별도 예외 처리기로 분리 고려
+    // TODO: consider moving to a separate SecurityExceptionHandler
     @ExceptionHandler(ForbiddenException.class)
     public ProblemDetail handleSecurityException(ForbiddenException ex) {
         log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
 
-        // TODO: 필요 시 보안 감사 로그
+        // TODO: consider logging security audits if needed
         // securityAuditLogger.log(ex, request);
 
         return createProblemDetail(ex);
@@ -245,7 +244,7 @@ public class GlobalExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
 
-        // TODO: API 문서화 이후 추가
+        // TODO: add after API documentation is finished
         // problem.setType(URI.create("/errors/" + toKebabCase(ex.getErrorCode().name())));
         problem.setTitle(ex.getErrorCode().name());
         problem.setProperty("occurredAt", Instant.now());
