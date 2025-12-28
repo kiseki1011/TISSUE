@@ -99,6 +99,10 @@ dependencies {
   testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+tasks.named('compileJava') {
+  dependsOn 'spotlessApply'
+}
+
 test {
   useJUnitPlatform()
   exclude '**/deprecated/**'
