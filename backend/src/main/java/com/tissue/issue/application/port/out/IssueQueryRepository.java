@@ -15,15 +15,27 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
+// TODO: consider making a abstracted interface and move this to
+// adapter.out.persistence.IssueQueryJpaAdpater
+//  reason: i think i might change the implementation of query methods a lot to test performance
 public interface IssueQueryRepository extends Repository<Issue, Long> {
 
     Optional<Issue> findById(Long id);
 
-    Optional<Issue> findByKeyAndWorkspaceKey(String issueKey, String workspaceKey);
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
+    Optional<Issue> findByKeyAndWorkspaceKey(
+            @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
 
-    Optional<Issue> findByKeyAndProject(String issueKey, Project project);
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.project = :project")
+    Optional<Issue> findByKeyAndProject(
+            @Param("issueKey") String issueKey, @Param("project") Project project);
 
-    List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys, String workspaceKey);
+    @Query(
+            "SELECT i FROM Issue i WHERE i.key.value IN :issueKeys AND i.workspaceKey ="
+                    + " :workspaceKey")
+    List<Issue> findByKeyInAndWorkspaceKey(
+            @Param("issueKeys") Collection<String> issueKeys,
+            @Param("workspaceKey") String workspaceKey);
 
     @Query(
             """
@@ -33,7 +45,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 JOIN FETCH i.issueType it
                 JOIN FETCH it.workflow
                 JOIN FETCH i.currentState
-                WHERE p.workspaceKey = :workspaceKey AND i.key = :issueKey
+                WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
     Optional<Issue> findWithBasicInfo(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -49,7 +61,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 LEFT JOIN FETCH a.workspaceMember awm
                 JOIN FETCH i.participants.reporter r
                 JOIN FETCH r.workspaceMember rwm
-                WHERE p.workspaceKey = :workspaceKey AND i.key = :issueKey
+                WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
     Optional<Issue> findWithDetail(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -61,7 +73,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 JOIN FETCH i.project p
                 LEFT JOIN FETCH i.parentIssue pi
                 LEFT JOIN FETCH pi.issueType pit
-                WHERE p.workspaceKey = :workspaceKey AND i.key = :issueKey
+                WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
     Optional<Issue> findWithParent(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -73,7 +85,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 JOIN FETCH child.issueType it
                 JOIN child.parentIssue pi
                 JOIN pi.project p
-                WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
+                WHERE p.workspaceKey = :workspaceKey AND pi.key.value = :issueKey
                 ORDER BY child.createdAt ASC
             """)
     List<Issue> findChildren(
@@ -85,7 +97,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 FROM Issue child
                 JOIN child.parentIssue pi
                 JOIN pi.project p
-                WHERE p.workspaceKey = :workspaceKey AND pi.key = :issueKey
+                WHERE p.workspaceKey = :workspaceKey AND pi.key.value = :issueKey
             """)
     boolean hasChildren(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -101,30 +113,34 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             """)
     Integer sumChildrenStoryPoints(@Param("parentId") Long parentId);
 
+    // spotless:off
     @Query(
             """
-    SELECT com.tissue.issue.application.dto.IssueCountStats(
-    COUNT(i),
-    SUM(CASE WHEN i.currentState.category =
-    com.tissue.workflow.domain.enums.StateCategory.COMPLETED
-    THEN 1 ELSE 0 END)
-)
-FROM Issue i
-WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
-""")
+                SELECT com.tissue.issue.application.dto.IssueCountStats(
+                    COUNT(i),
+                    SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED
+                    THEN 1 ELSE 0 END)
+                )
+                FROM Issue i
+                WHERE i.parentIssue.id = :parentId
+                AND i.softDeleted = false
+            """)
     IssueCountStats getChildIssueStats(@Param("parentId") Long parentId);
+    // spotless:on
 
+    // spotless:off
     @Query(
             """
-    SELECT new com.tissue.issue.application.dto.IssuePointStats(
-        COALESCE(SUM(i.storyPoint), 0),
-        COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED
-        THEN i.storyPoint ELSE 0 END), 0)
-    )
-    FROM Issue i
-    WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
-""")
+                SELECT new com.tissue.issue.application.dto.IssuePointStats(
+                    COALESCE(SUM(i.storyPoint), 0),
+                    COALESCE(SUM(CASE WHEN i.currentState.category = com.tissue.workflow.domain.enums.StateCategory.COMPLETED
+                    THEN i.storyPoint ELSE 0 END), 0)
+                )
+                FROM Issue i
+                WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
+            """)
     IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
+    // spotless:on
 
     @Query(
             """
@@ -137,7 +153,7 @@ WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
 
     @Query(
             """
-                SELECT i.key
+                SELECT i.key.value
                 FROM Issue i
                 WHERE i.sprint = :sprint
                   AND i.currentState.category != :doneCategory
@@ -147,7 +163,7 @@ WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
 
     @Query(
             """
-                SELECT i.key
+                SELECT i.key.value
                 FROM Issue i
                 WHERE i.sprint = :sprint
             """)
@@ -176,14 +192,14 @@ WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
     /** Checks if the member is the author or assignee of the issue */
     @Query(
             """
-            SELECT COUNT(i) > 0
-            FROM Issue i
-            WHERE i.workspaceKey = :workspaceKey
-              AND i.key = :issueKey
-              AND (
-                  i.createdBy = :memberId
-                  OR i.participants.assignee.memberId = :memberId
-              )
+                SELECT COUNT(i) > 0
+                FROM Issue i
+                WHERE i.workspaceKey = :workspaceKey
+                  AND i.key.value = :issueKey
+                  AND (
+                      i.createdBy = :memberId
+                      OR i.participants.assignee.memberId = :memberId
+                  )
             """)
     boolean isAuthorOrAssignee(
             @Param("workspaceKey") String workspaceKey,
@@ -193,11 +209,11 @@ WHERE i.parentIssue.id = :parentId AND i.softDeleted = false
     /** Checks if the member is the author of the issue */
     @Query(
             """
-            SELECT COUNT(i) > 0
-            FROM Issue i
-            WHERE i.workspaceKey = :workspaceKey
-              AND i.key = :issueKey
-              AND i.createdBy = :memberId
+                SELECT COUNT(i) > 0
+                FROM Issue i
+                WHERE i.workspaceKey = :workspaceKey
+                  AND i.key.value = :issueKey
+                  AND i.createdBy = :memberId
             """)
     boolean isAuthor(
             @Param("workspaceKey") String workspaceKey,

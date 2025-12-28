@@ -16,12 +16,14 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
                 FROM Comment c
                 JOIN FETCH c.author wm
                 JOIN FETCH wm.member m
-                WHERE c.issue.projectKey = :projectKey
-                  AND c.issue.key = :issueKey
+                JOIN c.issue i
+                JOIN i.project p
+                WHERE p.workspaceKey = :workspaceKey
+                  AND i.key.value = :issueKey
                 ORDER BY c.createdAt ASC
             """)
     List<Comment> findByIssue(
-            @Param("projectKey") String projectKey, @Param("issueKey") String issueKey);
+            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     @Query(
             value =

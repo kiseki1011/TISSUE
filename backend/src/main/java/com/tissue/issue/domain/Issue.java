@@ -1,18 +1,21 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.workflow.domain.enums.StateCategory.*;
+import static com.tissue.workflow.domain.enums.StateCategory.COMPLETED;
+import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
 import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.vo.IssueKey;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.WorkflowState;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -30,32 +33,27 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.lang.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("softDeleted = false")
 public class Issue extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "issue_key", nullable = false)
-    private String key;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "issue_key", nullable = false))
+    private IssueKey key;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
     private Project project;
-
-    @Column(name = "project_key", nullable = false, updatable = false)
-    private String projectKey;
 
     @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
@@ -91,9 +89,6 @@ public class Issue extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private IssueType issueType;
 
-    // TODO: when adding a issueType update feature, must need to clear storyPoint if the hierarchy
-    // doesnt support it
-
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowState currentState;
 
@@ -101,6 +96,8 @@ public class Issue extends BaseEntity {
     private List<IssueFieldValue> fieldValues = new ArrayList<>();
 
     // TODO: need to add Tag entity(used for search and categorization)
+
+    protected Issue() {}
 
     public static Issue create(
             @NonNull Project project,
@@ -115,12 +112,9 @@ public class Issue extends BaseEntity {
             @Nullable Issue parentIssue) {
         Issue issue = new Issue();
         issue.project = project;
-        issue.projectKey = project.getKey();
         issue.workspaceKey = project.getWorkspaceKey();
-
         issue.sprint = sprint;
-
-        issue.key = project.generateNextIssueKey();
+        issue.key = IssueKey.of(project.getKey(), project.generateNextIssueNumber());
         issue.issueType = issueType;
         issue.title = title;
         issue.content = content;
@@ -140,6 +134,14 @@ public class Issue extends BaseEntity {
         }
 
         return issue;
+    }
+
+    public String getProjectKey() {
+        return key.getProjectKey();
+    }
+
+    public String getKey() {
+        return key.getValue();
     }
 
     public String getContent() {
@@ -292,7 +294,7 @@ public class Issue extends BaseEntity {
         if (!currentState.isCategorizedAs(INITIAL)) {
             throw IssueExceptions.onlyInitialStateDeletionAllowed(
                     this.getWorkspaceKey(),
-                    this.getKey(),
+                    this.getKey().toString(),
                     this.getCurrentState().getDisplayName(),
                     this.getCurrentState().getCategory());
         }
@@ -301,7 +303,7 @@ public class Issue extends BaseEntity {
     private void ensureCanModifyStoryPoint() {
         if (this.getHierarchy().cannotModifyStoryPoint()) {
             throw IssueExceptions.storyPointNotAllowed(
-                    this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
         }
     }
 
@@ -321,16 +323,17 @@ public class Issue extends BaseEntity {
         if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
             throw IssueExceptions.invalidParentHierarchy(
                     this.getWorkspaceKey(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     parentHierarchy,
-                    this.getKey(),
+                    this.getKey().toString(),
                     childHierarchy);
         }
     }
 
     private void ensureNotSelfReference(Issue parentIssue) {
         if (this.equals(parentIssue)) {
-            throw IssueExceptions.issueSelfReference(this.getWorkspaceKey(), this.getKey());
+            throw IssueExceptions.issueSelfReference(
+                    this.getWorkspaceKey(), this.getKey().toString());
         }
     }
 
@@ -340,9 +343,9 @@ public class Issue extends BaseEntity {
         if (isDifferentWorkspace) {
             throw IssueExceptions.parentWorkspaceMismatch(
                     parentIssue.getWorkspaceKey(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     this.getWorkspaceKey(),
-                    this.getKey());
+                    this.getKey().toString());
         }
     }
 
@@ -351,22 +354,22 @@ public class Issue extends BaseEntity {
         if (isDifferentProject) {
             throw IssueExceptions.parentProjectMismatch(
                     parentIssue.getHierarchy(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     this.getHierarchy(),
-                    this.getKey());
+                    this.getKey().toString());
         }
     }
 
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
             throw IssueExceptions.parentRequired(
-                    this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
         }
     }
 
     @Override
     public String toString() {
         return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
-                .formatted(id, key, projectKey, workspaceKey, title);
+                .formatted(id, key, getProjectKey(), workspaceKey, title);
     }
 }

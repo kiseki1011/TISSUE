@@ -18,8 +18,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 JOIN FETCH r.targetIssue ti
                 JOIN FETCH ti.issueType tit
                 JOIN FETCH ti.currentState tcs
-                WHERE (si.workspaceKey = :workspaceKey AND si.key = :issueKey)
-                   OR (ti.workspaceKey = :workspaceKey AND ti.key = :issueKey)
+                WHERE (si.workspaceKey = :workspaceKey AND si.key.value = :issueKey)
+                   OR (ti.workspaceKey = :workspaceKey AND ti.key.value = :issueKey)
             """)
     List<IssueRelation> findAllRelations(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -33,7 +33,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 JOIN FETCH si.project p
                 JOIN FETCH p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND si.key = :issueKey
+                  AND si.key.value = :issueKey
             """)
     List<IssueRelation> findBySourceIssue(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -47,7 +47,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 JOIN FETCH ti.project p
                 JOIN FETCH p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND ti.key = :issueKey
+                  AND ti.key.value = :issueKey
             """)
     List<IssueRelation> findByTargetIssue(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
@@ -61,8 +61,8 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
                 JOIN si.project p
                 JOIN p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND si.key = :sourceIssueKey
-                  AND ti.key = :targetIssueKey
+                  AND si.key.value = :sourceIssueKey
+                  AND ti.key.value = :targetIssueKey
             """)
     boolean existsRelation(
             @Param("workspaceKey") String workspaceKey,

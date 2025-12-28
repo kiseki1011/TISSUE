@@ -69,7 +69,7 @@ public class Project extends BaseEntity {
     private ProjectRole defaultJoinRole;
 
     @Column(nullable = false)
-    private Integer issueNumber = 0;
+    private Long issueNumber;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueType> issueTypes = new ArrayList<>();
@@ -85,6 +85,7 @@ public class Project extends BaseEntity {
         Project project = new Project();
         project.workspace = workspace;
         project.workspaceKey = workspace.getKey();
+        project.issueNumber = 0L;
         project.setKey(key);
         project.title = title;
         project.description = description;
@@ -95,9 +96,9 @@ public class Project extends BaseEntity {
     }
 
     private void setKey(@NonNull String key) {
-        // TODO: validate key length(3~10), pattern(letters + number, number must come behind if
-        // used)
-        // TODO: dd bean validation for CreateProjectRequest
+        // TODO: validate key length(3~10),
+        //  pattern(letters + number, number must come behind if used)
+        // TODO: bean validation for CreateProjectRequest
 
         String upperKey = key.toUpperCase();
         if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
@@ -125,8 +126,7 @@ public class Project extends BaseEntity {
         this.defaultJoinRole = defaultJoinRole;
     }
 
-    public String generateNextIssueKey() {
-        this.issueNumber++;
-        return "%s-%s".formatted(this.key, this.issueNumber);
+    public Long generateNextIssueNumber() {
+        return this.issueNumber++;
     }
 }

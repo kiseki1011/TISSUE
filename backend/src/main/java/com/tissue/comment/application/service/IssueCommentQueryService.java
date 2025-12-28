@@ -24,7 +24,7 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     @Override
     public List<CommentDetailResponse> getIssueComments(
             String workspaceKey, String projectKey, String issueKey) {
-        List<Comment> allComments = commentQueryRepository.findByIssue(projectKey, issueKey);
+        List<Comment> allComments = commentQueryRepository.findByIssue(workspaceKey, issueKey);
 
         Map<Long, List<Comment>> repliesByParentId =
                 allComments.stream()
