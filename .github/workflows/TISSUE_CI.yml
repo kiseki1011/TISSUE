@@ -40,6 +40,13 @@ jobs:
       - name: Build and Test
         run: ./gradlew build --no-daemon --stacktrace
 
+      - name: Upload Checkstyle Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: backend/build/reports/checkstyle/
+
       - name: Slack message with build result
         if: always()
         uses: 8398a7/action-slack@v3
