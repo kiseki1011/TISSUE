@@ -1,6 +1,6 @@
 package com.tissue.issue.application.service;
 
-import static com.tissue.common.util.IssueKeyUtil.*;
+import static com.tissue.issue.domain.util.IssueKeyUtil.extractProjectKey;
 
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;

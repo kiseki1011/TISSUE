@@ -1,7 +1,5 @@
-package com.tissue.common.util;
+package com.tissue.issue.domain.util;
 
-// TODO: should i consider moving to issue package? i use this util in some codes in the project,
-// workspace, issue package
 public final class IssueKeyUtil {
 
     private static final String KEY_SEPARATOR = "-";
