@@ -1,6 +1,6 @@
 package com.tissue.issue.application.port.in;
 
-import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.*;
+import static com.tissue.project.application.service.authorization.ProjectAuthExpressions.REQUIRES_PROJECT_VIEWER;
 
 import com.tissue.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.issue.application.dto.response.IssueCustomDetail;
@@ -14,6 +14,7 @@ import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+// TODO: use projectKey instead of extracting it from the issueKey
 public interface IssueQueryUseCase {
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
