@@ -24,8 +24,7 @@ Please choose the tests that you ran to verify your changes.
 - [ ] Integration Test
 - [ ] E2E Test
 - [ ] Manual Test
-
-- Details if needed (Optional):
+- Additional context if needed (Optional):
 
 ## Checklist:
 
@@ -39,6 +38,5 @@ Please choose the tests that you ran to verify your changes.
 
 ## Related Issues or Links
 
-<!-- Please link to the issue here: -->
-
-- # (issue number)
+<!-- Please link to the issue here:
+- # (issue number) -->
