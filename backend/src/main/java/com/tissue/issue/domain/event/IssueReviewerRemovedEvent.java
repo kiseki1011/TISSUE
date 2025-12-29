@@ -17,8 +17,7 @@ public record IssueReviewerRemovedEvent(
         Long actorMemberId,
         String actorDisplayName) {
 
-    public static IssueReviewerRemovedEvent create(
-            Issue issue, ProjectMember removedReviewer, ProjectMember actor) {
+    public static IssueReviewerRemovedEvent create(Issue issue, ProjectMember removedReviewer, ProjectMember actor) {
         return new IssueReviewerRemovedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

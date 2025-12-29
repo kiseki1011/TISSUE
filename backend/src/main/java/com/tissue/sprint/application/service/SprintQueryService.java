@@ -24,26 +24,18 @@ public class SprintQueryService implements SprintQueryUseCase {
 
     @Override
     public SprintDetail getSprintDetail(GetSprintDetailQuery query) {
-        Sprint sprint =
-                sprintQueryRepository
-                        .findByIdAndProject_Key(query.sprintId(), query.projectKey())
-                        .orElseThrow(
-                                () ->
-                                        SprintExceptions.notFound(
-                                                query.sprintId(), query.projectKey()));
+        Sprint sprint = sprintQueryRepository
+                .findByIdAndProject_Key(query.sprintId(), query.projectKey())
+                .orElseThrow(() -> SprintExceptions.notFound(query.sprintId(), query.projectKey()));
 
         return SprintDetail.from(sprint);
     }
 
     @Override
     public SprintIssueKeys getSprintIssueKeys(GetSprintIssueKeysQuery query) {
-        Sprint sprint =
-                sprintQueryRepository
-                        .findByIdAndProject_Key(query.sprintId(), query.projectKey())
-                        .orElseThrow(
-                                () ->
-                                        SprintExceptions.notFound(
-                                                query.sprintId(), query.projectKey()));
+        Sprint sprint = sprintQueryRepository
+                .findByIdAndProject_Key(query.sprintId(), query.projectKey())
+                .orElseThrow(() -> SprintExceptions.notFound(query.sprintId(), query.projectKey()));
 
         List<String> issueKeys = issueQueryRepository.findIssueKeysBySprint(sprint);
 

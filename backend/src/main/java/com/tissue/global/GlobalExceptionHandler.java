@@ -29,18 +29,15 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private static final Pattern SENSITIVE_PATTERN =
-            Pattern.compile(
-                    ".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*",
-                    Pattern.CASE_INSENSITIVE);
+    private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
+            ".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*", Pattern.CASE_INSENSITIVE);
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpectedException(Exception ex) {
         log.error("[UNEXPECTED_ERROR] {}", ex.getMessage(), ex);
 
         ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
 
         // problem.setType(URI.create("/errors/internal-server-error"));
         problem.setTitle("UNEXPECTED_ERROR");
@@ -87,20 +84,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult()
-                .getAllErrors()
-                .forEach(
-                        error -> {
-                            String fieldName = ((FieldError) error).getField();
-                            String errorMessage = error.getDefaultMessage();
-                            errors.put(fieldName, errorMessage);
-                        });
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
 
         log.info("[VALIDATION_FAILED] errors={}", errors);
 
         ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.BAD_REQUEST, "Validation failed for one or more fields");
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed for one or more fields");
 
         // problem.setType(URI.create("/errors/validation-failed"));
         problem.setTitle("VALIDATION_FAILED");
@@ -114,21 +107,18 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
 
-        ex.getConstraintViolations()
-                .forEach(
-                        violation -> {
-                            String path = violation.getPropertyPath().toString();
-                            String fieldName = path.substring(path.lastIndexOf('.') + 1);
-                            String message = violation.getMessage();
+        ex.getConstraintViolations().forEach(violation -> {
+            String path = violation.getPropertyPath().toString();
+            String fieldName = path.substring(path.lastIndexOf('.') + 1);
+            String message = violation.getMessage();
 
-                            errors.put(fieldName, message);
-                        });
+            errors.put(fieldName, message);
+        });
 
         log.info("[VALIDATION_FAILED] Request parameter validation failed | errors={}", errors);
 
         ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.BAD_REQUEST, "Request parameter validation failed");
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Request parameter validation failed");
 
         problem.setTitle("PARAMETER_VALIDATION_FAILED");
         problem.setProperty("occurredAt", Instant.now());
@@ -141,8 +131,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         log.warn("[MALFORMED_JSON] {}", ex.getMessage());
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request");
 
         // problem.setType(URI.create("/errors/malformed-json"));
         problem.setTitle("MALFORMED_JSON");
@@ -152,18 +141,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ProblemDetail handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex) {
+    public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException ex) {
 
         log.info(
                 "[MISSING_REQUEST_PARAMETER] Required paremeter '{}' is missing | type={}",
                 ex.getParameterName(),
                 ex.getParameterType());
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.BAD_REQUEST,
-                        "Required parameter '" + ex.getParameterName() + "' is missing");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Required parameter '" + ex.getParameterName() + "' is missing");
 
         // problem.setType(URI.create("/errors/missing-request-parameter"));
         problem.setTitle("MISSING_REQUEST_PARAMETER");
@@ -180,16 +166,13 @@ public class GlobalExceptionHandler {
                 ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
 
         log.info(
-                "[ARGUMENT_TYPE_MISMATCH] Parameter '{}' has invalid type | value={} |"
-                        + " requiredType={}",
+                "[ARGUMENT_TYPE_MISMATCH] Parameter '{}' has invalid type | value={} |" + " requiredType={}",
                 ex.getName(),
                 ex.getValue(),
                 requiredType);
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.BAD_REQUEST,
-                        "Parameter '" + ex.getName() + "' has invalid type");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Parameter '" + ex.getName() + "' has invalid type");
 
         // problem.setType(URI.create("/errors/argument-type-mismatch"));
         problem.setTitle("ARGUMENT_TYPE_MISMATCH");
@@ -203,14 +186,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
     public ProblemDetail handleOptimisticLockingFailure(Exception ex) {
-        log.warn(
-                "[OPTIMISTIC_LOCK_FAILED] The resource was already modified | error={}",
-                ex.getMessage());
+        log.warn("[OPTIMISTIC_LOCK_FAILED] The resource was already modified | error={}", ex.getMessage());
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.CONFLICT,
-                        "The resource was modified by another user. Please refresh and try again.");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "The resource was modified by another user. Please refresh and try again.");
 
         // problem.setType(URI.create("/errors/optimistic-lock-failed"));
         problem.setTitle("OPTIMISTIC_LOCK_FAILED");
@@ -241,21 +220,18 @@ public class GlobalExceptionHandler {
     }
 
     private ProblemDetail createProblemDetail(TissueException ex) {
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
 
         // TODO: add after API documentation is finished
         // problem.setType(URI.create("/errors/" + toKebabCase(ex.getErrorCode().name())));
         problem.setTitle(ex.getErrorCode().name());
         problem.setProperty("occurredAt", Instant.now());
 
-        ex.getContext()
-                .forEach(
-                        (key, value) -> {
-                            if (isSafeToExpose(key)) {
-                                problem.setProperty(key, value);
-                            }
-                        });
+        ex.getContext().forEach((key, value) -> {
+            if (isSafeToExpose(key)) {
+                problem.setProperty(key, value);
+            }
+        });
 
         return problem;
     }

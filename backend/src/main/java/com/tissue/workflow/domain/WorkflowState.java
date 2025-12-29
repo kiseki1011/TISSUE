@@ -33,13 +33,15 @@ public class WorkflowState extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
     @Column(nullable = false, length = 255)
     private String description;

@@ -48,9 +48,11 @@ public class Notification extends BaseDateEntity {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Embedded private EntityReference entityReference;
+    @Embedded
+    private EntityReference entityReference;
 
-    @Embedded private NotificationMessage message;
+    @Embedded
+    private NotificationMessage message;
 
     @Column(nullable = false)
     private Long actorMemberId;

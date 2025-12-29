@@ -9,7 +9,6 @@ public record StateInfo(Long id, String displayName, StateCategory category, Col
         ) {
 
     public static StateInfo from(WorkflowState state) {
-        return new StateInfo(
-                state.getId(), state.getDisplayName(), state.getCategory(), state.getColor());
+        return new StateInfo(state.getId(), state.getDisplayName(), state.getCategory(), state.getColor());
     }
 }

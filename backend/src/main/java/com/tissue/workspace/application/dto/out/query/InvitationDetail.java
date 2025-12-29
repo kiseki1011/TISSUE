@@ -27,13 +27,9 @@ public record InvitationDetail(
                 .invitationId(invitation.getId())
                 .workspaceKey(invitation.getWorkspaceKey())
                 .workspaceName(invitation.getWorkspace().getName())
-                .projectConfigs(
-                        invitation.getProjectConfigs().stream()
-                                .map(
-                                        config ->
-                                                new ProjectJoinConfigDto(
-                                                        config.projectKey(), config.role()))
-                                .toList())
+                .projectConfigs(invitation.getProjectConfigs().stream()
+                        .map(config -> new ProjectJoinConfigDto(config.projectKey(), config.role()))
+                        .toList())
                 .inviterName(name)
                 .inviterEmail(email)
                 .status(invitation.getStatus())

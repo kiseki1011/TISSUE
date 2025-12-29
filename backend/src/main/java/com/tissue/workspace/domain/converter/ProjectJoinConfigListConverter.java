@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Converter
-public class ProjectJoinConfigListConverter
-        implements AttributeConverter<List<ProjectJoinConfig>, String> {
+public class ProjectJoinConfigListConverter implements AttributeConverter<List<ProjectJoinConfig>, String> {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

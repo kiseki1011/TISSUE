@@ -38,8 +38,7 @@ public class IssueReviewService implements IssueReviewUseCase {
             reviewer.reject();
         }
 
-        eventPublisher.publishEvent(
-                IssueReviewSubmittedEvent.create(issue, reviewer.getStatus(), actor));
+        eventPublisher.publishEvent(IssueReviewSubmittedEvent.create(issue, reviewer.getStatus(), actor));
     }
 
     private IssueReviewer findReviewerEntry(Issue issue, ProjectMember actor) {

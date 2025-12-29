@@ -40,8 +40,7 @@ public class ProjectExceptions {
     }
 
     public static BadRequestException invalidDefaultJoinRole(ProjectRole role) {
-        return new BadRequestException(INVALID_DEFAULT_JOIN_ROLE)
-                .addContext("defaultJoinRole", role);
+        return new BadRequestException(INVALID_DEFAULT_JOIN_ROLE).addContext("defaultJoinRole", role);
     }
 
     public static ResourceNotFoundException memberNotFound(Project project, Long memberId) {

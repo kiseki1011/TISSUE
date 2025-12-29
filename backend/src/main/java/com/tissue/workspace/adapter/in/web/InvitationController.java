@@ -21,24 +21,20 @@ public class InvitationController {
     private final InvitationUseCase invitationUseCase;
 
     @PostMapping("/{invitationId}/accept")
-    public ResponseEntity<Void> accept(
-            @PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
         invitationUseCase.accept(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{invitationId}/reject")
-    public ResponseEntity<Void> reject(
-            @PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
         invitationUseCase.reject(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(
-            @CurrentMember MemberUserDetails userDetails) {
-        List<InvitationDetail> response =
-                invitationUseCase.getMyInvitations(userDetails.getMemberId());
+    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberUserDetails userDetails) {
+        List<InvitationDetail> response = invitationUseCase.getMyInvitations(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 }

@@ -30,8 +30,7 @@ public interface IssueQueryUseCase {
     IssueIdentificationInfo getParent(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    List<IssueIdentificationInfo> getChildren(
-            String workspaceKey, String projectKey, String issueKey);
+    List<IssueIdentificationInfo> getChildren(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
     IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey);
@@ -46,8 +45,7 @@ public interface IssueQueryUseCase {
     IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    List<TransitionDetail> getAvailableTransitions(
-            String workspaceKey, String projectKey, String issueKey);
+    List<TransitionDetail> getAvailableTransitions(String workspaceKey, String projectKey, String issueKey);
 
     // TODO: getParticipants
     //   - assignee, reviewers, reporter, author(creator) 모두

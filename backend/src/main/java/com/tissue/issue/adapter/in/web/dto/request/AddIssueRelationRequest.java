@@ -10,10 +10,7 @@ public record AddIssueRelationRequest(
         @NotBlank String targetIssueKey,
         @NotNull IssueRelationType relationType) {
     public AddIssueRelationCommand toCommand(
-            String workspaceKey,
-            String sourceProjectKey,
-            String sourceIssueKey,
-            Long currentMemberId) {
+            String workspaceKey, String sourceProjectKey, String sourceIssueKey, Long currentMemberId) {
         return AddIssueRelationCommand.builder()
                 .workspaceKey(workspaceKey)
                 .sourceProjectKey(sourceProjectKey)

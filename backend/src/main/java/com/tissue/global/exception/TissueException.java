@@ -41,17 +41,15 @@ public abstract class TissueException extends RuntimeException {
     }
 
     public String getLoggingMessage() {
-        String logMessage =
-                (detailMessage != null && !detailMessage.isBlank()) ? detailMessage : getMessage();
+        String logMessage = (detailMessage != null && !detailMessage.isBlank()) ? detailMessage : getMessage();
 
         if (context.isEmpty()) {
             return logMessage;
         }
 
-        String contextStr =
-                context.entrySet().stream()
-                        .map(entry -> entry.getKey() + "=" + entry.getValue())
-                        .collect(Collectors.joining(", ", "{", "}"));
+        String contextStr = context.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(", ", "{", "}"));
 
         return logMessage + " | context=" + contextStr;
     }

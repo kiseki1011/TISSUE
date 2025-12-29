@@ -42,10 +42,9 @@ public enum ColorType {
 
     /** Use if assigning unused colors are important */
     public static ColorType getRandomUnusedColor(Set<ColorType> usedColors) {
-        List<ColorType> availableColors =
-                Arrays.stream(ColorType.values())
-                        .filter(color -> !usedColors.contains(color))
-                        .toList();
+        List<ColorType> availableColors = Arrays.stream(ColorType.values())
+                .filter(color -> !usedColors.contains(color))
+                .toList();
 
         if (availableColors.isEmpty()) {
             availableColors = Arrays.asList(ColorType.values());

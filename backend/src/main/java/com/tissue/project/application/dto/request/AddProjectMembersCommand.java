@@ -11,15 +11,11 @@ public record AddProjectMembersCommand(
     public record ProjectMemberConfig(Long memberId, ProjectRole projectRole) {}
 
     public Set<Long> extractMemberIds() {
-        return targetMembers.stream()
-                .map(ProjectMemberConfig::memberId)
-                .collect(Collectors.toSet());
+        return targetMembers.stream().map(ProjectMemberConfig::memberId).collect(Collectors.toSet());
     }
 
     public Map<Long, ProjectRole> extractRoleMap() {
         return targetMembers.stream()
-                .collect(
-                        Collectors.toMap(
-                                ProjectMemberConfig::memberId, ProjectMemberConfig::projectRole));
+                .collect(Collectors.toMap(ProjectMemberConfig::memberId, ProjectMemberConfig::projectRole));
     }
 }

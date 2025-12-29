@@ -26,8 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(
-        "/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/{issueKey}/comments")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues/{issueKey}/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
@@ -41,8 +40,7 @@ public class CommentController {
             @PathVariable String issueKey,
             @RequestBody @Valid AddCommentRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        AddCommentCommand command =
-                request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
+        AddCommentCommand command = request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
 
         CommentAddResponse response = commentCommandUseCase.add(command);
 
@@ -61,10 +59,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long commentId, @CurrentMember MemberUserDetails userDetails) {
-        DeleteCommentCommand command =
-                new DeleteCommentCommand(commentId, userDetails.getMemberId());
+    public ResponseEntity<Void> delete(@PathVariable Long commentId, @CurrentMember MemberUserDetails userDetails) {
+        DeleteCommentCommand command = new DeleteCommentCommand(commentId, userDetails.getMemberId());
         commentCommandUseCase.delete(command);
 
         return ResponseEntity.noContent().build();
@@ -72,11 +68,8 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<List<CommentDetailResponse>> getComments(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable String issueKey) {
-        List<CommentDetailResponse> response =
-                commentQueryUseCase.getIssueComments(workspaceKey, projectKey, issueKey);
+            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable String issueKey) {
+        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 }

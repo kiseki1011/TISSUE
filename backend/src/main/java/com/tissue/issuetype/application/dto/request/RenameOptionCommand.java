@@ -5,9 +5,4 @@ import lombok.Builder;
 
 @Builder
 public record RenameOptionCommand(
-        String workspaceKey,
-        String projectKey,
-        Long issueTypeId,
-        Long issueFieldId,
-        Long optionId,
-        Name name) {}
+        String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId, Long optionId, Name name) {}

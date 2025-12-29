@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface WorkflowQueryUseCase {
 
     @PreAuthorize(ProjectAuthExpressions.REQUIRES_PROJECT_VIEWER)
-    List<WorkflowSummary> getWorkflows(
-            String workspaceKey, String projectKey, boolean includeArchived);
+    List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived);
 
     @PreAuthorize(ProjectAuthExpressions.REQUIRES_PROJECT_VIEWER)
     WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId);

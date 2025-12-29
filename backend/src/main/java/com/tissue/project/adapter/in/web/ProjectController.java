@@ -31,11 +31,10 @@ public class ProjectController {
         var command = request.toCommand(workspaceKey);
         ProjectCommandResult response = projectCommandUseCase.create(command);
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{projectKey}")
-                        .buildAndExpand(response.projectKey())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{projectKey}")
+                .buildAndExpand(response.projectKey())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }

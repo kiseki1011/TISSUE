@@ -19,10 +19,7 @@ public record IssueReporterChangedEvent(
         Long actorMemberId,
         String actorDisplayName) {
     public static IssueReporterChangedEvent create(
-            Issue issue,
-            ProjectMember oldReporter,
-            ProjectMember newReporter,
-            ProjectMember actor) {
+            Issue issue, ProjectMember oldReporter, ProjectMember newReporter, ProjectMember actor) {
         return new IssueReporterChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

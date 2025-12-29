@@ -9,7 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 
 public record InviteToProjectRequest(
-        @NotEmpty Set<@Email @NotBlank String> emails, @NotNull ProjectRole role) {
+        @NotEmpty Set<@Email @NotBlank String> emails,
+        @NotNull ProjectRole role) {
     public InviteToProjectCommand toCommand(String workspaceKey, String projectKey) {
         return new InviteToProjectCommand(emails, workspaceKey, projectKey, role);
     }

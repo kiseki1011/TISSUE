@@ -118,13 +118,11 @@ public class IssueRelations {
     }
 
     private static void ensureNoRelationExists(Issue source, Issue target) {
-        boolean exists =
-                source.getRelations().getOutgoingRelations().stream()
-                        .anyMatch(relation -> relation.getTargetIssue().equals(target));
+        boolean exists = source.getRelations().getOutgoingRelations().stream()
+                .anyMatch(relation -> relation.getTargetIssue().equals(target));
 
         if (exists) {
-            throw IssueExceptions.relationAlreadyExists(
-                    source.getWorkspaceKey(), source.getKey(), target.getKey());
+            throw IssueExceptions.relationAlreadyExists(source.getWorkspaceKey(), source.getKey(), target.getKey());
         }
     }
 

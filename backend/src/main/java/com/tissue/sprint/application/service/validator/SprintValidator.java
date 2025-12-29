@@ -34,12 +34,8 @@ public class SprintValidator {
     }
 
     public void ensureNoActiveSprint(Project project) {
-        sprintFinder
-                .findActiveBy(project)
-                .ifPresent(
-                        activeSprint -> {
-                            throw SprintExceptions.activeSprintAlreadyExists(
-                                    project.getKey(), activeSprint);
-                        });
+        sprintFinder.findActiveBy(project).ifPresent(activeSprint -> {
+            throw SprintExceptions.activeSprintAlreadyExists(project.getKey(), activeSprint);
+        });
     }
 }

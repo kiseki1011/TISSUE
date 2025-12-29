@@ -36,13 +36,12 @@ public class TeamService implements TeamUseCase {
 
         teamValidator.ensureUniqueName(workspace, cmd.name());
 
-        Team team =
-                Team.builder()
-                        .workspace(workspace)
-                        .name(cmd.name())
-                        .description(cmd.description())
-                        .color(cmd.color())
-                        .build();
+        Team team = Team.builder()
+                .workspace(workspace)
+                .name(cmd.name())
+                .description(cmd.description())
+                .color(cmd.color())
+                .build();
 
         return TeamCreateResponse.from(teamCommandRepository.save(team));
     }
@@ -53,15 +52,13 @@ public class TeamService implements TeamUseCase {
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Team team = teamFinder.getBy(cmd.teamId(), workspace);
 
-        Patchers.apply(
-                cmd.name(),
-                newName -> {
-                    if ((team.getName().isSameAs(newName))) {
-                        return;
-                    }
-                    teamValidator.ensureUniqueName(workspace, newName);
-                    team.updateName(newName);
-                });
+        Patchers.apply(cmd.name(), newName -> {
+            if ((team.getName().isSameAs(newName))) {
+                return;
+            }
+            teamValidator.ensureUniqueName(workspace, newName);
+            team.updateName(newName);
+        });
         Patchers.apply(cmd.description(), team::updateDescription);
         Patchers.apply(cmd.color(), team::updateColor);
     }
@@ -87,8 +84,7 @@ public class TeamService implements TeamUseCase {
     @Override
     @Transactional(readOnly = true)
     public GetTeams getTeams(String workspaceKey) {
-        List<Team> teams =
-                teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
+        List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return GetTeams.from(teams);
     }
 }

@@ -41,10 +41,7 @@ public record IssueCommonDetail(
         Instant lastUpdatedAt) {
 
     public static IssueCommonDetail from(
-            Issue issue,
-            ProjectMember author,
-            ProjectMember updatedBy,
-            List<IssueReviewer> reviewers) {
+            Issue issue, ProjectMember author, ProjectMember updatedBy, List<IssueReviewer> reviewers) {
         return IssueCommonDetail.builder()
                 .issueId(issue.getId())
                 .issueKey(issue.getKey())
@@ -64,11 +61,10 @@ public record IssueCommonDetail(
                 .assignee(ParticipantInfo.from(issue.getParticipants().getAssignee()))
                 .reporter(ParticipantInfo.from(issue.getParticipants().getReporter()))
                 .lastUpdatedBy(ParticipantInfo.from(updatedBy))
-                .reviewers(
-                        reviewers.stream()
-                                .map(IssueReviewer::getReviewer)
-                                .map(ParticipantInfo::from)
-                                .toList())
+                .reviewers(reviewers.stream()
+                        .map(IssueReviewer::getReviewer)
+                        .map(ParticipantInfo::from)
+                        .toList())
                 .subscribersCount(issue.getSubscribersCount())
                 .createdAt(issue.getCreatedAt())
                 .lastUpdatedAt(issue.getLastModifiedAt())

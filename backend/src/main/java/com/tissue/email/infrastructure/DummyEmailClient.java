@@ -10,10 +10,6 @@ public class DummyEmailClient implements EmailClient {
     @Async
     @Override
     public void send(String to, String subject, String body) {
-        log.info(
-                "[DummyEmailClient] Email sent - receiver: {}, title: {}\nbody: {}",
-                to,
-                subject,
-                body);
+        log.info("[DummyEmailClient] Email sent - receiver: {}, title: {}\nbody: {}", to, subject, body);
     }
 }

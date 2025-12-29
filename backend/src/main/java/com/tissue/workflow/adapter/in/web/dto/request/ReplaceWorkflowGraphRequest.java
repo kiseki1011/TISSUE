@@ -17,34 +17,33 @@ public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
         @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
         @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests) {
-    public record ReplaceStatusRequest(Long id, String tempKey, @NotNull StateCategory category) {}
+    public record ReplaceStatusRequest(
+            Long id, String tempKey, @NotNull StateCategory category) {}
 
     public record ReplaceTransitionRequest(
-            Long id, String tempKey, @NotNull EntityRef source, @NotNull EntityRef target) {}
+            Long id,
+            String tempKey,
+            @NotNull EntityRef source,
+            @NotNull EntityRef target) {}
 
-    public ReplaceWorkflowGraphCommand toCommand(
-            String workspaceKey, String projectKey, Long workflowId) {
+    public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
         return new ReplaceWorkflowGraphCommand(
                 workspaceKey,
                 projectKey,
                 workflowId,
                 version,
                 replaceStatusRequests.stream()
-                        .map(
-                                s ->
-                                        StateDefinition.builder()
-                                                .stateRef(new EntityRef(s.id(), s.tempKey()))
-                                                .category(s.category)
-                                                .build())
+                        .map(s -> StateDefinition.builder()
+                                .stateRef(new EntityRef(s.id(), s.tempKey()))
+                                .category(s.category)
+                                .build())
                         .toList(),
                 replaceTransitionRequests.stream()
-                        .map(
-                                t ->
-                                        TransitionDefinition.builder()
-                                                .transitionRef(new EntityRef(t.id(), t.tempKey()))
-                                                .sourceStateRef(t.source)
-                                                .targetStateRef(t.target)
-                                                .build())
+                        .map(t -> TransitionDefinition.builder()
+                                .transitionRef(new EntityRef(t.id(), t.tempKey()))
+                                .sourceStateRef(t.source)
+                                .targetStateRef(t.target)
+                                .build())
                         .toList());
     }
 }

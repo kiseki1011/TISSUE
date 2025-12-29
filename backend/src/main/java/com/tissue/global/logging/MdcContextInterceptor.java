@@ -14,8 +14,7 @@ import org.springframework.web.servlet.HandlerMapping;
 public class MdcContextInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(
-            HttpServletRequest request, HttpServletResponse response, Object handler)
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // && !authentication.getPrincipal().equals("anonymousUser")
@@ -26,8 +25,7 @@ public class MdcContextInterceptor implements HandlerInterceptor {
 
         @SuppressWarnings("unchecked")
         Map<String, String> pathVariables =
-                (Map<String, String>)
-                        request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+                (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
         if (pathVariables != null) {
             if (pathVariables.containsKey("workspaceKey")) {

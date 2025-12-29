@@ -7,4 +7,7 @@ import org.springframework.lang.Nullable;
 
 @Builder
 public record CreateProjectInviteLinkCommand(
-        String workspaceKey, String projectKey, ProjectRole role, @Nullable Instant expiredAt) {}
+        String workspaceKey,
+        String projectKey,
+        ProjectRole role,
+        @Nullable Instant expiredAt) {}

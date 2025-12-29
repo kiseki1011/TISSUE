@@ -18,12 +18,8 @@ public record WorkflowDetail(
         List<StateDetail> states,
         List<TransitionDetail> transitions) {
     public static WorkflowDetail of(Workflow wf, List<IssueCountProjection> projections) {
-        Map<Long, Long> countMap =
-                projections.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        IssueCountProjection::stateId,
-                                        IssueCountProjection::count));
+        Map<Long, Long> countMap = projections.stream()
+                .collect(Collectors.toMap(IssueCountProjection::stateId, IssueCountProjection::count));
 
         return new WorkflowDetail(
                 wf.getId(),

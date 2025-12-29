@@ -42,14 +42,12 @@ public class WorkflowController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateWorkflowRequest request) {
-        WorkflowCreateResponse response =
-                workflowCommandUseCase.create(request.toCommand(workspaceKey, projectKey));
+        WorkflowCreateResponse response = workflowCommandUseCase.create(request.toCommand(workspaceKey, projectKey));
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{workflowId}")
-                        .buildAndExpand(response.workflowId())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{workflowId}")
+                .buildAndExpand(response.workflowId())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
@@ -60,8 +58,7 @@ public class WorkflowController {
             @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @RequestBody @Valid ReplaceWorkflowGraphRequest request) {
-        workflowGraphReplaceUseCase.replaceWorkflowGraph(
-                request.toCommand(workspaceKey, projectKey, workflowId));
+        workflowGraphReplaceUseCase.replaceWorkflowGraph(request.toCommand(workspaceKey, projectKey, workflowId));
         return ResponseEntity.noContent().build();
     }
 
@@ -77,11 +74,8 @@ public class WorkflowController {
 
     @DeleteMapping("/{workflowId}")
     public ResponseEntity<Void> archiveWorkflow(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long workflowId) {
-        workflowCommandUseCase.delete(
-                new DeleteWorkflowCommand(workspaceKey, projectKey, workflowId));
+            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long workflowId) {
+        workflowCommandUseCase.delete(new DeleteWorkflowCommand(workspaceKey, projectKey, workflowId));
         return ResponseEntity.noContent().build();
     }
 
@@ -92,8 +86,7 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @PathVariable Long stateId,
             @RequestBody @Valid UpdateStateRequest req) {
-        workflowCommandUseCase.updateState(
-                req.toCommand(workspaceKey, projectKey, workflowId, stateId));
+        workflowCommandUseCase.updateState(req.toCommand(workspaceKey, projectKey, workflowId, stateId));
         return ResponseEntity.noContent().build();
     }
 
@@ -104,8 +97,7 @@ public class WorkflowController {
             @PathVariable Long workflowId,
             @PathVariable Long transitionId,
             @RequestBody @Valid UpdateTransitionRequest req) {
-        workflowCommandUseCase.updateTransition(
-                req.toCommand(workspaceKey, projectKey, workflowId, transitionId));
+        workflowCommandUseCase.updateTransition(req.toCommand(workspaceKey, projectKey, workflowId, transitionId));
         return ResponseEntity.noContent().build();
     }
 
@@ -114,18 +106,14 @@ public class WorkflowController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestParam(required = false, defaultValue = "false") boolean includeArchived) {
-        List<WorkflowSummary> workflows =
-                workflowQueryUseCase.getWorkflows(workspaceKey, projectKey, includeArchived);
+        List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(workspaceKey, projectKey, includeArchived);
         return ResponseEntity.ok(workflows);
     }
 
     @GetMapping("/{workflowId}")
     public ResponseEntity<WorkflowDetail> getWorkflowDetail(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long workflowId) {
-        WorkflowDetail detail =
-                workflowQueryUseCase.getWorkflowDetail(workspaceKey, projectKey, workflowId);
+            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long workflowId) {
+        WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(workspaceKey, projectKey, workflowId);
         return ResponseEntity.ok(detail);
     }
 }

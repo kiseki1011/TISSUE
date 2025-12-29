@@ -13,11 +13,9 @@ public enum IssueErrorCode implements ErrorCode {
     PARENT_REQUIRED("Issues of this hierarchy require a parent and cannot stand alone"),
     PARENT_WORKSPACE_MISMATCH("Parent must belong to the same workspace as the child issue"),
     PARENT_PROJECT_MISMATCH(
-            "Cross project parent-child relations are only allowed when the parent is EPIC"
-                    + " hierarchy"),
+            "Cross project parent-child relations are only allowed when the parent is EPIC" + " hierarchy"),
     ISSUE_SELF_REFERENCE("An issue cannot reference itself"),
-    TRANSITION_SOURCE_STATE_NOT_MATCH(
-            "Issue's current state does not match the required source state for transition"),
+    TRANSITION_SOURCE_STATE_NOT_MATCH("Issue's current state does not match the required source state for transition"),
     ONLY_INITIAL_STATE_DELETION_ALLOWED("Cannot delete issue that is not in the initial state"),
     CANNOT_DELETE_ISSUE_WITH_CHILDREN("Cannot delete issue that has child issues"),
     DUE_DATE_MUST_BE_FUTURE("Due date must be in the future"),
@@ -28,8 +26,7 @@ public enum IssueErrorCode implements ErrorCode {
     REVIEWER_NOT_FOUND("Reviewer not found in issue participants"),
 
     RELATION_CIRCULAR_DEPENDENCY("Circular dependency detected in the issue relation graph"),
-    RELATION_ISSUE_TYPE_MISMATCH(
-            "Some relation types require both issues to be of the same issue type"),
+    RELATION_ISSUE_TYPE_MISMATCH("Some relation types require both issues to be of the same issue type"),
     RELATION_ALREADY_EXISTS("A relation already exists between these two issues"),
     RELATION_WORKSPACE_MISMATCH("Both issues in a relation must belong to the same workspace"),
 

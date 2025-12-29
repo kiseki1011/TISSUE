@@ -5,8 +5,4 @@ import lombok.Builder;
 
 @Builder
 public record TransitionDefinition(
-        EntityRef transitionRef,
-        Name name,
-        String description,
-        EntityRef sourceStateRef,
-        EntityRef targetStateRef) {}
+        EntityRef transitionRef, Name name, String description, EntityRef sourceStateRef, EntityRef targetStateRef) {}

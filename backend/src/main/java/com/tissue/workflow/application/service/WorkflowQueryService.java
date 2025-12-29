@@ -25,32 +25,28 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final IssueQueryRepository issueQueryRepository;
 
     @Override
-    public List<WorkflowSummary> getWorkflows(
-            String workspaceKey, String projectKey, boolean includeArchived) {
+    public List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived) {
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
         List<Workflow> workflows;
         if (includeArchived) {
             workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
         } else {
-            workflows =
-                    workflowQueryRepository.findAllByProjectAndArchivedFalseOrderByLabel(project);
+            workflows = workflowQueryRepository.findAllByProjectAndArchivedFalseOrderByLabel(project);
         }
 
         return workflows.stream().map(WorkflowSummary::from).toList();
     }
 
     @Override
-    public WorkflowDetail getWorkflowDetail(
-            String workspaceKey, String projectKey, Long workflowId) {
+    public WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId) {
         Project project = projectFinder.getBy(projectKey, workspaceKey);
         Workflow workflow = workflowFinder.findBy(workflowId, project);
 
         List<Long> stateIds =
                 workflow.getActiveStates().stream().map(WorkflowState::getId).toList();
 
-        List<IssueCountProjection> projections =
-                issueQueryRepository.findActiveIssueCounts(stateIds);
+        List<IssueCountProjection> projections = issueQueryRepository.findActiveIssueCounts(stateIds);
 
         return WorkflowDetail.of(workflow, projections);
     }

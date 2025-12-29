@@ -26,36 +26,28 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
      * <p>Uses a <b>native query</b> to bypass Hibernate {@link
      * org.hibernate.annotations.SQLRestriction @SqlRestriction}
      */
-    @Query(
-            value =
-                    """
+    @Query(value = """
                     SELECT * FROM workspace_member
                     WHERE workspace_key = :workspaceKey
                       AND member_id = :memberId
-                    """,
-            nativeQuery = true)
+                    """, nativeQuery = true)
     Optional<WorkspaceMember> findAnyByMemberIdAndWorkspaceKey(
             @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
 
     List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
-    @Query(
-            "SELECT wm FROM WorkspaceMember wm "
-                    + "WHERE wm.workspace.key = :workspaceKey AND wm.role IN :roles")
+    @Query("SELECT wm FROM WorkspaceMember wm " + "WHERE wm.workspace.key = :workspaceKey AND wm.role IN :roles")
     Set<WorkspaceMember> findAdminsByWorkspace_Key(
             @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
 
-    List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(
-            Collection<Long> memberIds, String workspaceKey);
+    List<WorkspaceMember> findAllByMember_IdInAndWorkspaceKey(Collection<Long> memberIds, String workspaceKey);
 
-    @Query(
-            "SELECT wm.member.id FROM WorkspaceMember wm "
-                    + "WHERE wm.workspaceKey = :workspaceKey "
-                    + "AND wm.member.id IN :candidateIds "
-                    + "AND wm.softDeleted = false")
+    @Query("SELECT wm.member.id FROM WorkspaceMember wm "
+            + "WHERE wm.workspaceKey = :workspaceKey "
+            + "AND wm.member.id IN :candidateIds "
+            + "AND wm.softDeleted = false")
     Set<Long> findJoinedMemberIds(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("candidateIds") Collection<Long> candidateIds);
+            @Param("workspaceKey") String workspaceKey, @Param("candidateIds") Collection<Long> candidateIds);
 
     boolean existsByMemberAndRole(Member member, WorkspaceRole role);
 

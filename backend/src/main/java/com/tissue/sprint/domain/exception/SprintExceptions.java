@@ -30,8 +30,7 @@ public class SprintExceptions {
                 .addContext(WORKSPACE_KEY, project.getWorkspaceKey());
     }
 
-    public static ResourceConflictException activeSprintAlreadyExists(
-            String projectKey, Sprint activeSprint) {
+    public static ResourceConflictException activeSprintAlreadyExists(String projectKey, Sprint activeSprint) {
         return new ResourceConflictException(ACTIVE_SPRINT_ALREADY_EXISTS)
                 .addContext(PROJECT_KEY, projectKey)
                 .addContext("activeSprintId", activeSprint.getId())
@@ -66,9 +65,7 @@ public class SprintExceptions {
     }
 
     public static BadRequestException invalidStatusTransition(
-            SprintStatus currentStatus,
-            SprintStatus requiredCurrentStatus,
-            SprintStatus targetStatus) {
+            SprintStatus currentStatus, SprintStatus requiredCurrentStatus, SprintStatus targetStatus) {
         return new BadRequestException(INVALID_SPRINT_STATUS_TRANSITION)
                 .addContext("currentStatus", currentStatus)
                 .addContext("requiredCurrentStatus", requiredCurrentStatus)

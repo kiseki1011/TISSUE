@@ -61,15 +61,20 @@ public class Issue extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Embedded private IssueContent content;
+    @Embedded
+    private IssueContent content;
 
-    @Embedded private IssueSchedule schedule;
+    @Embedded
+    private IssueSchedule schedule;
 
-    @Embedded private IssueProgress progress;
+    @Embedded
+    private IssueProgress progress;
 
-    @Embedded private IssueParticipants participants;
+    @Embedded
+    private IssueParticipants participants;
 
-    @Embedded private IssueRelations relations;
+    @Embedded
+    private IssueRelations relations;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority", nullable = false)
@@ -160,12 +165,11 @@ public class Issue extends BaseEntity {
         return this.fieldValues.stream()
                 .filter(fv -> fv.getField().equals(field))
                 .findFirst()
-                .orElseGet(
-                        () -> {
-                            IssueFieldValue newValue = IssueFieldValue.of(this, field);
-                            this.fieldValues.add(newValue);
-                            return newValue;
-                        });
+                .orElseGet(() -> {
+                    IssueFieldValue newValue = IssueFieldValue.of(this, field);
+                    this.fieldValues.add(newValue);
+                    return newValue;
+                });
     }
 
     public void setSprint(@NonNull Sprint sprint) {
@@ -338,8 +342,7 @@ public class Issue extends BaseEntity {
     }
 
     private void ensureSameWorkspace(Issue parentIssue) {
-        boolean isDifferentWorkspace =
-                !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
+        boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
         if (isDifferentWorkspace) {
             throw IssueExceptions.parentWorkspaceMismatch(
                     parentIssue.getWorkspaceKey(),

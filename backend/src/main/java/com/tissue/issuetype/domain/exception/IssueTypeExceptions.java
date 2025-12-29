@@ -55,23 +55,19 @@ public class IssueTypeExceptions {
     }
 
     public static BadRequestException systemTypeNotDeletable(IssueType issueType) {
-        return new BadRequestException(SYSTEM_ISSUE_TYPE_NOT_DELETABLE)
-                .addContext(ISSUE_TYPE_ID, issueType.getId());
+        return new BadRequestException(SYSTEM_ISSUE_TYPE_NOT_DELETABLE).addContext(ISSUE_TYPE_ID, issueType.getId());
     }
 
     public static BadRequestException typeInUse(IssueType issueType) {
-        return new BadRequestException(ISSUE_TYPE_IN_USE)
-                .addContext(ISSUE_TYPE_ID, issueType.getId());
+        return new BadRequestException(ISSUE_TYPE_IN_USE).addContext(ISSUE_TYPE_ID, issueType.getId());
     }
 
     public static BadRequestException fieldInUse(IssueField issueField) {
-        return new BadRequestException(ISSUE_FIELD_IN_USE)
-                .addContext(ISSUE_FIELD_ID, issueField.getId());
+        return new BadRequestException(ISSUE_FIELD_IN_USE).addContext(ISSUE_FIELD_ID, issueField.getId());
     }
 
     public static BadRequestException optionInUse(EnumFieldOption option) {
-        return new BadRequestException(FIELD_OPTION_IN_USE)
-                .addContext(FIELD_OPTION_ID, option.getId());
+        return new BadRequestException(FIELD_OPTION_IN_USE).addContext(FIELD_OPTION_ID, option.getId());
     }
 
     public static BadRequestException optionLimitExceeded(int max, int current) {
@@ -91,8 +87,7 @@ public class IssueTypeExceptions {
     }
 
     public static BadRequestException optionReorderUnknownId(Long unknownId) {
-        return new BadRequestException(OPTION_REORDER_UNKNOWN_ID)
-                .addContext("unknownOptionId", unknownId);
+        return new BadRequestException(OPTION_REORDER_UNKNOWN_ID).addContext("unknownOptionId", unknownId);
     }
 
     public static BadRequestException unsupportedFieldType(String fieldType, Object rawValue) {

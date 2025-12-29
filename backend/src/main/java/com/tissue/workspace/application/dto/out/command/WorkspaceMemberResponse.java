@@ -4,7 +4,6 @@ import com.tissue.workspace.domain.WorkspaceMember;
 
 public record WorkspaceMemberResponse(String workspaceKey, Long memberId) {
     public static WorkspaceMemberResponse from(WorkspaceMember workspaceMember) {
-        return new WorkspaceMemberResponse(
-                workspaceMember.getWorkspaceKey(), workspaceMember.getMemberId());
+        return new WorkspaceMemberResponse(workspaceMember.getWorkspaceKey(), workspaceMember.getMemberId());
     }
 }

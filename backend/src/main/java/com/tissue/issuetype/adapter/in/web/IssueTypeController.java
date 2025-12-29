@@ -31,8 +31,7 @@ public class IssueTypeController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueTypeRequest req) {
-        IssueTypeResponse response =
-                issueTypeService.create(req.toCommand(workspaceKey, projectKey));
+        IssueTypeResponse response = issueTypeService.create(req.toCommand(workspaceKey, projectKey));
         // TODO: created 사용
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -59,9 +58,7 @@ public class IssueTypeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @PathVariable Long id) {
+            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long id) {
         issueTypeService.delete(new DeleteIssueTypeCommand(workspaceKey, projectKey, id));
         return ResponseEntity.noContent().build();
     }

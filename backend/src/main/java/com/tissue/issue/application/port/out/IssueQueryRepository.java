@@ -27,18 +27,13 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
 
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.project = :project")
-    Optional<Issue> findByKeyAndProject(
-            @Param("issueKey") String issueKey, @Param("project") Project project);
+    Optional<Issue> findByKeyAndProject(@Param("issueKey") String issueKey, @Param("project") Project project);
 
-    @Query(
-            "SELECT i FROM Issue i WHERE i.key.value IN :issueKeys AND i.workspaceKey ="
-                    + " :workspaceKey")
+    @Query("SELECT i FROM Issue i WHERE i.key.value IN :issueKeys AND i.workspaceKey =" + " :workspaceKey")
     List<Issue> findByKeyInAndWorkspaceKey(
-            @Param("issueKeys") Collection<String> issueKeys,
-            @Param("workspaceKey") String workspaceKey);
+            @Param("issueKeys") Collection<String> issueKeys, @Param("workspaceKey") String workspaceKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i
                 FROM Issue i
                 JOIN FETCH i.project p
@@ -47,11 +42,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 JOIN FETCH i.currentState
                 WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
-    Optional<Issue> findWithBasicInfo(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Issue> findWithBasicInfo(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i
                 FROM Issue i
                 JOIN FETCH i.project p
@@ -63,11 +56,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 JOIN FETCH r.workspaceMember rwm
                 WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
-    Optional<Issue> findWithDetail(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i
                 FROM Issue i
                 JOIN FETCH i.project p
@@ -75,11 +66,9 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 LEFT JOIN FETCH pi.issueType pit
                 WHERE p.workspaceKey = :workspaceKey AND i.key.value = :issueKey
             """)
-    Optional<Issue> findWithParent(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    Optional<Issue> findWithParent(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT child
                 FROM Issue child
                 JOIN FETCH child.issueType it
@@ -88,24 +77,20 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
                 WHERE p.workspaceKey = :workspaceKey AND pi.key.value = :issueKey
                 ORDER BY child.createdAt ASC
             """)
-    List<Issue> findChildren(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<Issue> findChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT COUNT(child) > 0
                 FROM Issue child
                 JOIN child.parentIssue pi
                 JOIN pi.project p
                 WHERE p.workspaceKey = :workspaceKey AND pi.key.value = :issueKey
             """)
-    boolean hasChildren(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    boolean hasChildren(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
     boolean existsByIssueType(IssueType issueType);
 
-    @Query(
-            """
+    @Query("""
                 SELECT COALESCE(SUM(i.storyPoint), 0)
                 FROM Issue i
                 WHERE i.parentIssue.id = :parentId
@@ -142,8 +127,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     IssuePointStats getChildPointStats(@Param("parentId") Long parentId);
     // spotless:on
 
-    @Query(
-            """
+    @Query("""
                 SELECT i FROM Issue i
                 WHERE i.sprint = :sprint
                   AND i.currentState.category != :doneCategory
@@ -151,8 +135,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     List<Issue> findIncompleteIssuesBySprint(
             @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i.key.value
                 FROM Issue i
                 WHERE i.sprint = :sprint
@@ -161,23 +144,20 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     List<String> findIncompleteIssueKeysBySprint(
             @Param("sprint") Sprint sprint, @Param("doneCategory") StateCategory doneCategory);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i.key.value
                 FROM Issue i
                 WHERE i.sprint = :sprint
             """)
     List<String> findIssueKeysBySprint(@Param("sprint") Sprint sprint);
 
-    @Query(
-            "SELECT DISTINCT i.currentState.id "
-                    + "FROM Issue i "
-                    + "WHERE i.currentState.id IN :stateIds "
-                    + "AND i.softDeleted = false")
+    @Query("SELECT DISTINCT i.currentState.id "
+            + "FROM Issue i "
+            + "WHERE i.currentState.id IN :stateIds "
+            + "AND i.softDeleted = false")
     List<Long> findStateIdsUsedByActiveIssues(@Param("stateIds") Collection<Long> stateIds);
 
-    @Query(
-            """
+    @Query("""
                 SELECT new com.tissue.issue.application.dto.IssueCountProjection(
                     i.currentState.id,
                     COUNT(i)
@@ -190,8 +170,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
     List<IssueCountProjection> findActiveIssueCounts(@Param("stateIds") Collection<Long> stateIds);
 
     /** Checks if the member is the author or assignee of the issue */
-    @Query(
-            """
+    @Query("""
                 SELECT COUNT(i) > 0
                 FROM Issue i
                 WHERE i.workspaceKey = :workspaceKey
@@ -207,8 +186,7 @@ public interface IssueQueryRepository extends Repository<Issue, Long> {
             @Param("memberId") Long memberId);
 
     /** Checks if the member is the author of the issue */
-    @Query(
-            """
+    @Query("""
                 SELECT COUNT(i) > 0
                 FROM Issue i
                 WHERE i.workspaceKey = :workspaceKey

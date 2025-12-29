@@ -14,7 +14,6 @@ public record CreateWorkspaceInviteLinkRequest(
         @Nullable List<ProjectJoinConfigDto> targetProjects,
         @Nullable @Future Instant expiredAt) {
     public CreateWorkspaceInviteLinkCommand toCommand(String workspaceKey) {
-        return new CreateWorkspaceInviteLinkCommand(
-                workspaceKey, workspaceRole, targetProjects, expiredAt);
+        return new CreateWorkspaceInviteLinkCommand(workspaceKey, workspaceRole, targetProjects, expiredAt);
     }
 }

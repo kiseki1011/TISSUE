@@ -59,9 +59,7 @@ public class Invitation extends BaseEntity {
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
     public static Invitation create(
-            @NonNull Workspace workspace,
-            @NonNull Member member,
-            @Nullable WorkspaceRole workspaceRole) {
+            @NonNull Workspace workspace, @NonNull Member member, @Nullable WorkspaceRole workspaceRole) {
         Invitation invitation = new Invitation();
         invitation.member = member;
         invitation.workspace = workspace;

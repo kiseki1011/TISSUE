@@ -47,8 +47,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
         issue.changeReporter(newReporter);
 
-        eventPublisher.publishEvent(
-                IssueReporterChangedEvent.create(issue, oldReporter, newReporter, actor));
+        eventPublisher.publishEvent(IssueReporterChangedEvent.create(issue, oldReporter, newReporter, actor));
     }
 
     @Override

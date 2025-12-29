@@ -24,8 +24,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
             cyclePath.add(0, source.getKey());
             cyclePath.add(source.getKey());
 
-            throw IssueExceptions.relationCycleDetected(
-                    source.getKey(), target.getKey(), relationType, cyclePath);
+            throw IssueExceptions.relationCycleDetected(source.getKey(), target.getKey(), relationType, cyclePath);
         }
     }
 
@@ -38,8 +37,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
      * @param pathTrace 경로를 기록할 리스트 (성공 시에만 채워짐)
      * @return 목적지 도달 시 true
      */
-    private boolean findPath(
-            Issue current, Issue destination, Set<Issue> visited, List<String> pathTrace) {
+    private boolean findPath(Issue current, Issue destination, Set<Issue> visited, List<String> pathTrace) {
         // 이미 방문한 노드면 사이클 방지를 위해 중단
         if (!visited.add(current)) {
             return false;

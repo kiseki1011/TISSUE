@@ -5,8 +5,7 @@ import com.tissue.position.domain.Position;
 import lombok.Builder;
 
 @Builder
-public record PositionDetail(
-        String workspaceKey, Long positionId, String name, String description, ColorType color) {
+public record PositionDetail(String workspaceKey, Long positionId, String name, String description, ColorType color) {
     public static PositionDetail from(Position position) {
         return PositionDetail.builder()
                 .workspaceKey(position.getWorkspaceKey())

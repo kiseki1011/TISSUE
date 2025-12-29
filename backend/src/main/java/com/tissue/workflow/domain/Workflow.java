@@ -44,7 +44,8 @@ public class Workflow extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Project project;
@@ -55,7 +56,8 @@ public class Workflow extends BaseEntity {
     @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
     @Column(nullable = false, length = 255)
     private String description;
@@ -78,10 +80,7 @@ public class Workflow extends BaseEntity {
     private boolean systemProvided;
 
     public static Workflow create(
-            @NonNull Project project,
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull ColorType color) {
+            @NonNull Project project, @NonNull Name name, @Nullable String description, @NonNull ColorType color) {
         Workflow wf = new Workflow();
         wf.project = project;
         wf.projectKey = project.getKey();
@@ -136,7 +135,9 @@ public class Workflow extends BaseEntity {
     }
 
     public List<WorkflowState> getStatesByCategory(StateCategory category) {
-        return states.stream().filter(s -> !s.isArchived() && s.getCategory() == category).toList();
+        return states.stream()
+                .filter(s -> !s.isArchived() && s.getCategory() == category)
+                .toList();
     }
 
     public void setInitialState(@NonNull WorkflowState state) {
@@ -208,13 +209,11 @@ public class Workflow extends BaseEntity {
         state.categorizeAs(newCategory);
     }
 
-    public void rewireTransitionSource(
-            @NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
+    public void rewireTransitionSource(@NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
         transition.rewireSource(newSource);
     }
 
-    public void rewireTransitionTarget(
-            @NonNull WorkflowTransition transition, @NonNull WorkflowState newTarget) {
+    public void rewireTransitionTarget(@NonNull WorkflowTransition transition, @NonNull WorkflowState newTarget) {
         transition.rewireTarget(newTarget);
     }
 
@@ -231,36 +230,28 @@ public class Workflow extends BaseEntity {
     }
 
     private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
-        boolean dup =
-                transitions.stream()
-                        .filter(t -> !t.isArchived())
-                        .anyMatch(
-                                x ->
-                                        x.getSourceState().equals(source)
-                                                && x.getTargetState().equals(target));
+        boolean dup = transitions.stream()
+                .filter(t -> !t.isArchived())
+                .anyMatch(x ->
+                        x.getSourceState().equals(source) && x.getTargetState().equals(target));
         if (dup) {
-            throw WorkflowExceptions.duplicateTransitionEdge(
-                    source.getDisplayName(), target.getDisplayName());
+            throw WorkflowExceptions.duplicateTransitionEdge(source.getDisplayName(), target.getDisplayName());
         }
     }
 
     private void ensureUniqueStateName(Name newName) {
-        boolean dup =
-                states.stream()
-                        .filter(t -> !t.isArchived())
-                        .anyMatch(s -> s.getName().equals(newName));
+        boolean dup = states.stream().filter(t -> !t.isArchived()).anyMatch(s -> s.getName()
+                .equals(newName));
         if (dup) {
-            throw WorkflowExceptions.duplicateStateName(
-                    newName.getDisplay(), name.getDisplay(), id);
+            throw WorkflowExceptions.duplicateStateName(newName.getDisplay(), name.getDisplay(), id);
         }
     }
 
     private void ensureUniqueTransitionNameForSource(Name newName, WorkflowState source) {
-        boolean dup =
-                transitions.stream()
-                        .filter(t -> !t.isArchived())
-                        .filter(t -> t.getSourceState().equals(source))
-                        .anyMatch(t -> t.getName().equals(newName));
+        boolean dup = transitions.stream()
+                .filter(t -> !t.isArchived())
+                .filter(t -> t.getSourceState().equals(source))
+                .anyMatch(t -> t.getName().equals(newName));
         if (dup) {
             throw WorkflowExceptions.duplicateTransitionName(
                     newName.getDisplay(), source.getDisplayName(), name.getDisplay(), id);

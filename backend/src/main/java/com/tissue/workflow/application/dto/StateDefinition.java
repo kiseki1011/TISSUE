@@ -7,8 +7,4 @@ import lombok.Builder;
 
 @Builder
 public record StateDefinition(
-        EntityRef stateRef,
-        Name name,
-        String description,
-        ColorType color,
-        StateCategory category) {}
+        EntityRef stateRef, Name name, String description, ColorType color, StateCategory category) {}

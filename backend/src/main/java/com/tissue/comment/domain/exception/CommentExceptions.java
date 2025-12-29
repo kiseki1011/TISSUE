@@ -22,7 +22,6 @@ public class CommentExceptions {
     }
 
     public static BadRequestException nestedLimitExceeded(Long parentId) {
-        return new BadRequestException(NESTED_COMMENT_LIMIT_EXCEEDED)
-                .addContext(PARENT_COMMENT_ID, parentId);
+        return new BadRequestException(NESTED_COMMENT_LIMIT_EXCEEDED).addContext(PARENT_COMMENT_ID, parentId);
     }
 }

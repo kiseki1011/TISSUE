@@ -18,10 +18,9 @@ public class WorkspaceQueryService implements WorkspaceQueryUseCase {
 
     @Override
     public WorkspaceDetail getDetail(String workspaceKey) {
-        Workspace workspace =
-                workspaceQueryRepository
-                        .findByKey(workspaceKey)
-                        .orElseThrow(() -> WorkspaceExceptions.notFound(workspaceKey));
+        Workspace workspace = workspaceQueryRepository
+                .findByKey(workspaceKey)
+                .orElseThrow(() -> WorkspaceExceptions.notFound(workspaceKey));
 
         return WorkspaceDetail.from(workspace);
     }

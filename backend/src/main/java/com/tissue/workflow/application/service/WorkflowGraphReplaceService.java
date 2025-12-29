@@ -57,16 +57,14 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
         if (!Objects.equals(workflow.getVersion(), cmd.version())) {
-            throw new OptimisticLockException(
-                    ("Workflow version mismatch. Workflow version from client was '%d', while"
-                                    + " current version is '%d'.")
-                            .formatted(cmd.version(), workflow.getVersion()));
+            throw new OptimisticLockException(("Workflow version mismatch. Workflow version from client was '%d', while"
+                            + " current version is '%d'.")
+                    .formatted(cmd.version(), workflow.getVersion()));
         }
         return workflow;
     }
 
-    private StateResolver buildStateResolver(
-            Workflow workflow, List<StateDefinition> stateDefinitions) {
+    private StateResolver buildStateResolver(Workflow workflow, List<StateDefinition> stateDefinitions) {
         Map<Long, WorkflowState> existingStatuses = new HashMap<>();
         Map<String, WorkflowState> newStatuses = new HashMap<>();
 
@@ -78,8 +76,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             if (s.stateRef().isExisting()) {
                 continue;
             }
-            WorkflowState created =
-                    workflow.addState(s.name(), s.description(), s.color(), s.category());
+            WorkflowState created = workflow.addState(s.name(), s.description(), s.color(), s.category());
             newStatuses.put(s.stateRef().tempKey(), created);
         }
 
@@ -87,9 +84,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     }
 
     private void syncTransitions(
-            Workflow workflow,
-            List<TransitionDefinition> transitionDefinitions,
-            StateResolver stateResolver) {
+            Workflow workflow, List<TransitionDefinition> transitionDefinitions, StateResolver stateResolver) {
         deleteRemovedTransitions(workflow, transitionDefinitions);
         Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(workflow);
 
@@ -119,13 +114,10 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     }
 
     private void resolveAndSetInitial(
-            Workflow workflow,
-            List<StateDefinition> stateDefinitions,
-            StateResolver stateResolver) {
-        var todoCmds =
-                stateDefinitions.stream()
-                        .filter(cmd -> cmd.category() == StateCategory.INITIAL)
-                        .toList();
+            Workflow workflow, List<StateDefinition> stateDefinitions, StateResolver stateResolver) {
+        var todoCmds = stateDefinitions.stream()
+                .filter(cmd -> cmd.category() == StateCategory.INITIAL)
+                .toList();
 
         if (todoCmds.size() != 1) {
             throw WorkflowExceptions.invalidInitialStateCount(todoCmds.size());
@@ -146,13 +138,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         }
     }
 
-    private Set<WorkflowState> findStatesToDelete(
-            Workflow workflow, ReplaceWorkflowGraphCommand cmd) {
-        Set<Long> keepStateIds =
-                cmd.stateDefinitions().stream()
-                        .map(s -> s.stateRef().id())
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
+    private Set<WorkflowState> findStatesToDelete(Workflow workflow, ReplaceWorkflowGraphCommand cmd) {
+        Set<Long> keepStateIds = cmd.stateDefinitions().stream()
+                .map(s -> s.stateRef().id())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         return workflow.getActiveStates().stream()
                 .filter(s -> s.getId() != null && !keepStateIds.contains(s.getId()))
@@ -165,7 +155,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState src,
             WorkflowState trg,
             Map<Long, WorkflowTransition> existingTransitions) {
-        WorkflowTransition transition = existingTransitions.get(cmd.transitionRef().id());
+        WorkflowTransition transition =
+                existingTransitions.get(cmd.transitionRef().id());
         workflow.rewireTransitionSource(transition, src);
         workflow.rewireTransitionTarget(transition, trg);
     }
@@ -180,13 +171,11 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         return existingTransitions;
     }
 
-    private void deleteRemovedTransitions(
-            Workflow workflow, List<TransitionDefinition> transitionDefinitions) {
-        Set<Long> reqIds =
-                transitionDefinitions.stream()
-                        .map(t -> t.transitionRef().id())
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toSet());
+    private void deleteRemovedTransitions(Workflow workflow, List<TransitionDefinition> transitionDefinitions) {
+        Set<Long> reqIds = transitionDefinitions.stream()
+                .map(t -> t.transitionRef().id())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         for (WorkflowTransition t : List.copyOf(workflow.getTransitions())) {
             if (t.getId() != null && !reqIds.contains(t.getId())) {
@@ -195,27 +184,20 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         }
     }
 
-    private record StateResolver(
-            Map<Long, WorkflowState> existingStates, Map<String, WorkflowState> newStates) {
+    private record StateResolver(Map<Long, WorkflowState> existingStates, Map<String, WorkflowState> newStates) {
         WorkflowState resolve(EntityRef ref) {
             return ref.isExisting() ? resolveExisting(ref.id()) : resolveNew(ref.tempKey());
         }
 
         private WorkflowState resolveExisting(Long id) {
             return Optional.ofNullable(existingStates.get(id))
-                    .orElseThrow(
-                            () ->
-                                    new IllegalArgumentException(
-                                            "Invalid workflow state id '%d'".formatted(id)));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid workflow state id '%d'".formatted(id)));
         }
 
         private WorkflowState resolveNew(String tempKey) {
             return Optional.ofNullable(newStates.get(tempKey))
-                    .orElseThrow(
-                            () ->
-                                    new IllegalArgumentException(
-                                            "Invalid workflow state temporary key '%s'."
-                                                    .formatted(tempKey)));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Invalid workflow state temporary key '%s'.".formatted(tempKey)));
         }
     }
 }

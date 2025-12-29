@@ -18,8 +18,7 @@ public record CreateIssueFieldRequest(
         @NotNull IssueFieldType issueFieldType,
         @NotNull Boolean required,
         @Nullable @Size(max = 100) List<@NotBlank @LabelSize String> initialOptions) {
-    public CreateIssueFieldCommand toCommand(
-            String workspaceKey, String projectKey, Long issueTypeId) {
+    public CreateIssueFieldCommand toCommand(String workspaceKey, String projectKey, Long issueTypeId) {
         return CreateIssueFieldCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

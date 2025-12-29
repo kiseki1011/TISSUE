@@ -13,8 +13,7 @@ public record UpdateWorkflowRequest(
         JsonNullable<@NotBlank @Size(max = 32) String> name,
         JsonNullable<@Size(max = 255) String> description,
         JsonNullable<@NotNull ColorType> color) {
-    public UpdateWorkflowCommand toCommand(
-            String workspaceKey, String projectKey, Long workflowId) {
+    public UpdateWorkflowCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
         return UpdateWorkflowCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

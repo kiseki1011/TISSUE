@@ -37,8 +37,7 @@ public class IssueFieldTypeHandlerRegistry {
     private FieldTypeHandler requireHandler(IssueField field) {
         FieldTypeHandler handler = handlers.get(field.getIssueFieldType());
         if (handler == null) {
-            throw new IllegalStateException(
-                    "Handler not configured for field type: " + field.getIssueFieldType());
+            throw new IllegalStateException("Handler not configured for field type: " + field.getIssueFieldType());
         }
         return handler;
     }

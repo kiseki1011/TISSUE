@@ -49,9 +49,7 @@ public class Team extends BaseEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(
-                name = "value",
-                column = @Column(name = "team_name", nullable = false, length = 64)),
+        @AttributeOverride(name = "value", column = @Column(name = "team_name", nullable = false, length = 64)),
         @AttributeOverride(
                 name = "normalized",
                 column = @Column(name = "team_name_norm", nullable = false, length = 64))

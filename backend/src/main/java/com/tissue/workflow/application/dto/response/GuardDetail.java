@@ -6,7 +6,6 @@ import java.util.Map;
 
 public record GuardDetail(Long id, GuardType guardType, Map<String, Object> params, int order) {
     public static GuardDetail from(TransitionGuardConfig g) {
-        return new GuardDetail(
-                g.getId(), g.getGuardType(), g.getGuardParams(), g.getExecutionOrder());
+        return new GuardDetail(g.getId(), g.getGuardType(), g.getGuardParams(), g.getExecutionOrder());
     }
 }

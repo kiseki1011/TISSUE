@@ -18,8 +18,7 @@ public record IssueBasicInfo(
         ParticipantInfo assignee,
         IssuePriority priority,
         StateInfo currentState) {
-    public static IssueBasicInfo from(
-            Issue issue, ProjectMember author, ProjectMember lastUpdatedBy) {
+    public static IssueBasicInfo from(Issue issue, ProjectMember author, ProjectMember lastUpdatedBy) {
         return IssueBasicInfo.builder()
                 .issueKey(issue.getKey())
                 .issueType(IssueTypeInfo.from(issue.getIssueType()))

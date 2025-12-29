@@ -45,8 +45,7 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberUserDetails currentMember) {
-        var command =
-                new DirectJoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
+        var command = new DirectJoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
         ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
 
         return ResponseEntity.ok(response);
@@ -69,13 +68,12 @@ public class ProjectMemberController {
             @PathVariable String projectKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails currentMember) {
-        var command =
-                KickProjectMemberCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .targetMemberId(memberId)
-                        .actorMemberId(currentMember.getMemberId())
-                        .build();
+        var command = KickProjectMemberCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .targetMemberId(memberId)
+                .actorMemberId(currentMember.getMemberId())
+                .build();
 
         ProjectMemberCommandResult response = commandUseCase.kickMember(command);
 
@@ -89,14 +87,13 @@ public class ProjectMemberController {
             @PathVariable Long memberId,
             @RequestBody @Valid ChangeProjectRoleRequest request,
             @CurrentMember MemberUserDetails currentMember) {
-        var command =
-                ChangeProjectRoleCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .newRole(request.newProjectRole())
-                        .targetMemberId(memberId)
-                        .actorMemberId(currentMember.getMemberId())
-                        .build();
+        var command = ChangeProjectRoleCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .newRole(request.newProjectRole())
+                .targetMemberId(memberId)
+                .actorMemberId(currentMember.getMemberId())
+                .build();
 
         ProjectMemberCommandResult response = commandUseCase.changeProjectRole(command);
 

@@ -43,11 +43,9 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         Set<Long> targetMemberIds = cmd.extractMemberIds();
         Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
 
-        List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
+        List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
 
-        Set<Long> existingMemberIds =
-                projectMemberFinder.findExistingMemberIdsBy(project, targetMemberIds);
+        Set<Long> existingMemberIds = projectMemberFinder.findExistingMemberIdsBy(project, targetMemberIds);
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
@@ -71,13 +69,11 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
     @Transactional
     public ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember =
-                workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
         projectValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
 
-        ProjectMember projectMember =
-                ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
+        ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
         projectMemberRepository.save(projectMember);
 
         // TODO: ProjectMemberJoinedEvent

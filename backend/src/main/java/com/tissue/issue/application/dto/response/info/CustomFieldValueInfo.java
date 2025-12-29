@@ -5,22 +5,14 @@ import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 
 public record CustomFieldValueInfo(
-        Long fieldId,
-        String fieldLabel,
-        IssueFieldType issueFieldType,
-        boolean required,
-        Object value) {
+        Long fieldId, String fieldLabel, IssueFieldType issueFieldType, boolean required, Object value) {
     public static CustomFieldValueInfo from(IssueFieldValue fieldValue) {
         IssueField field = fieldValue.getField();
 
         Object value = extractValue(fieldValue, field.getIssueFieldType());
 
         return new CustomFieldValueInfo(
-                field.getId(),
-                field.getDisplayName(),
-                field.getIssueFieldType(),
-                field.isRequired(),
-                value);
+                field.getId(), field.getDisplayName(), field.getIssueFieldType(), field.isRequired(), value);
     }
 
     private static Object extractValue(IssueFieldValue fv, IssueFieldType type) {

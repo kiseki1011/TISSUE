@@ -51,13 +51,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
         try {
             Workflow workflow =
-                    workflowRepository.save(
-                            Workflow.create(project, cmd.name(), cmd.description(), cmd.color()));
+                    workflowRepository.save(Workflow.create(project, cmd.name(), cmd.description(), cmd.color()));
 
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
             for (var s : cmd.stateDefinitions()) {
-                WorkflowState state =
-                        workflow.addState(s.name(), s.description(), s.color(), s.category());
+                WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
                 stateByTempKey.put(s.stateRef().tempKey(), state);
             }
 
@@ -82,14 +80,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-        Patchers.apply(
-                cmd.name(),
-                newLabel -> {
-                    if (!workflow.getName().equals(newLabel)) {
-                        workflowValidator.ensureLabelUnique(project, newLabel);
-                        workflow.rename(newLabel);
-                    }
-                });
+        Patchers.apply(cmd.name(), newLabel -> {
+            if (!workflow.getName().equals(newLabel)) {
+                workflowValidator.ensureLabelUnique(project, newLabel);
+                workflow.rename(newLabel);
+            }
+        });
         Patchers.apply(cmd.description(), workflow::updateDescription);
         Patchers.apply(cmd.color(), workflow::updateColor);
     }
@@ -123,8 +119,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     public void updateTransition(UpdateTransitionCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-        WorkflowTransition transition =
-                workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
+        WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
         Patchers.apply(cmd.name(), l -> workflow.renameTransition(transition, l));
         Patchers.apply(cmd.description(), transition::updateDescription);
@@ -135,14 +130,10 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-        WorkflowTransition transition =
-                workflow.getTransitions().stream()
-                        .filter(t -> t.getId().equals(cmd.transitionId()))
-                        .findFirst()
-                        .orElseThrow(
-                                () ->
-                                        WorkflowExceptions.transitionNotFound(
-                                                cmd.transitionId(), workflow.getId()));
+        WorkflowTransition transition = workflow.getTransitions().stream()
+                .filter(t -> t.getId().equals(cmd.transitionId()))
+                .findFirst()
+                .orElseThrow(() -> WorkflowExceptions.transitionNotFound(cmd.transitionId(), workflow.getId()));
 
         workflow.clearGuardsForTransition(transition);
 

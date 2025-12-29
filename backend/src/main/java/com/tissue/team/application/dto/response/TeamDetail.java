@@ -5,8 +5,7 @@ import com.tissue.team.domain.Team;
 import lombok.Builder;
 
 @Builder
-public record TeamDetail(
-        String workspaceKey, Long teamId, String name, String description, ColorType color) {
+public record TeamDetail(String workspaceKey, Long teamId, String name, String description, ColorType color) {
     public static TeamDetail from(Team team) {
         return TeamDetail.builder()
                 .workspaceKey(team.getWorkspaceKey())

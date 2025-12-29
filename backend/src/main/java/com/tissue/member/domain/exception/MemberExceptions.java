@@ -15,8 +15,7 @@ public final class MemberExceptions {
     private MemberExceptions() {}
 
     public static ResourceNotFoundException activeNotFound(Long memberId) {
-        return new ResourceNotFoundException(ACTIVE_MEMBER_NOT_FOUND)
-                .addContext(MEMBER_ID, memberId);
+        return new ResourceNotFoundException(ACTIVE_MEMBER_NOT_FOUND).addContext(MEMBER_ID, memberId);
     }
 
     public static ResourceNotFoundException notFound(Long memberId) {
@@ -39,8 +38,7 @@ public final class MemberExceptions {
         return new ResourceConflictException(DUPLICATE_USERNAME, e).addContext(USERNAME, username);
     }
 
-    public static ResourceConflictException signUpConflict(
-            String email, String username, Throwable e) {
+    public static ResourceConflictException signUpConflict(String email, String username, Throwable e) {
         return new ResourceConflictException(MEMBER_SIGNUP_CONFLICT, e)
                 .addContext(EMAIL, email)
                 .addContext(USERNAME, username);
@@ -71,8 +69,7 @@ public final class MemberExceptions {
     }
 
     public static ResourceConflictException verificationTokenDuplicate(String email, Throwable e) {
-        return new ResourceConflictException(VERIFICATION_TOKEN_DUPLICATE, e)
-                .addContext(EMAIL, email);
+        return new ResourceConflictException(VERIFICATION_TOKEN_DUPLICATE, e).addContext(EMAIL, email);
     }
 
     public static ForbiddenException emailNotVerified(String email) {

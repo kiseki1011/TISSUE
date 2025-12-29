@@ -4,8 +4,4 @@ import lombok.Builder;
 
 @Builder
 public record PerformTransitionCommand(
-        String workspaceKey,
-        String projectKey,
-        String issueKey,
-        Long transitionId,
-        Long actorMemberId) {}
+        String workspaceKey, String projectKey, String issueKey, Long transitionId, Long actorMemberId) {}

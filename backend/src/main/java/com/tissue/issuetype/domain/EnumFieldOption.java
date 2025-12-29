@@ -26,19 +26,20 @@ public class EnumFieldOption extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "issue_field_id", nullable = false)
     private IssueField issueField;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
     @Column(nullable = false)
     private int position;
 
-    public static EnumFieldOption create(
-            @NonNull IssueField issueField, @NonNull Name name, Integer position) {
+    public static EnumFieldOption create(@NonNull IssueField issueField, @NonNull Name name, Integer position) {
         EnumFieldOption option = new EnumFieldOption();
 
         option.issueField = issueField;

@@ -46,13 +46,11 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
         Workflow workflow = issue.getIssueType().getWorkflow();
-        WorkflowTransition transition =
-                workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
+        WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
 
         WorkflowState oldState = issue.getCurrentState();
 
-        issueValidator.ensureValidTransition(
-                issue, cmd.transitionId(), cmd.workspaceKey(), transition);
+        issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
 
         executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, cmd.actorMemberId());
 
@@ -66,16 +64,11 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue.getKey(),
                 cmd.actorMemberId());
 
-        eventPublisher.publishEvent(
-                IssueTransitionedEvent.create(issue, transition, oldState, actor));
+        eventPublisher.publishEvent(IssueTransitionedEvent.create(issue, transition, oldState, actor));
     }
 
     private void executeGuards(
-            String workspaceKey,
-            String projectKey,
-            Issue issue,
-            WorkflowTransition transition,
-            Long actorMemberId) {
+            String workspaceKey, String projectKey, Issue issue, WorkflowTransition transition, Long actorMemberId) {
         // TODO: guardConfigs를 JOIN FETCH로 가져와서 N+1 방지
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
@@ -83,23 +76,19 @@ public class IssueTransitionService implements IssueTransitionUseCase {
             return;
         }
 
-        log.debug(
-                "Evaluating {} guards for transition: {}",
-                configs.size(),
-                transition.getDisplayName());
+        log.debug("Evaluating {} guards for transition: {}", configs.size(), transition.getDisplayName());
 
         for (TransitionGuardConfig config : configs) {
             TransitionGuard guard = guardRegistry.getGuard(config.getGuardType());
 
-            GuardContext context =
-                    GuardContext.builder()
-                            .issue(issue)
-                            .transition(transition)
-                            .workspaceKey(workspaceKey)
-                            .projectKey(projectKey)
-                            .actorMemberId(actorMemberId)
-                            .params(config.getGuardParams())
-                            .build();
+            GuardContext context = GuardContext.builder()
+                    .issue(issue)
+                    .transition(transition)
+                    .workspaceKey(workspaceKey)
+                    .projectKey(projectKey)
+                    .actorMemberId(actorMemberId)
+                    .params(config.getGuardParams())
+                    .build();
 
             guard.evaluate(context);
         }

@@ -65,13 +65,9 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     @Override
     @Transactional
     public void expireLink(ExpireLinkCommand cmd) {
-        WorkspaceInviteLink link =
-                linkQueryRepository
-                        .findByToken(cmd.token())
-                        .orElseThrow(
-                                () ->
-                                        WorkspaceExceptions.linkNotFound(
-                                                cmd.workspaceKey(), cmd.token()));
+        WorkspaceInviteLink link = linkQueryRepository
+                .findByToken(cmd.token())
+                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
 
         link.expire();
     }
@@ -79,23 +75,16 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     @Override
     @Transactional
     public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
-        WorkspaceInviteLink link =
-                linkQueryRepository
-                        .findByToken(cmd.token())
-                        .orElseThrow(
-                                () ->
-                                        WorkspaceExceptions.linkNotFound(
-                                                cmd.workspaceKey(), cmd.token()));
+        WorkspaceInviteLink link = linkQueryRepository
+                .findByToken(cmd.token())
+                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
 
         if (!link.isValid()) {
             throw WorkspaceExceptions.invalidLink(link);
         }
 
-        WorkspaceMember workspaceMember =
-                workspaceParticipationService.join(
-                        link.getWorkspace(),
-                        memberFinder.getActiveBy(cmd.memberId()),
-                        link.getWorkspaceRole());
+        WorkspaceMember workspaceMember = workspaceParticipationService.join(
+                link.getWorkspace(), memberFinder.getActiveBy(cmd.memberId()), link.getWorkspaceRole());
 
         List<ProjectJoinConfig> projectConfigs = link.getProjectConfigs();
 
@@ -109,17 +98,15 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
-        WorkspaceInviteLink link =
-                linkQueryRepository
-                        .findByToken(token)
-                        .orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));
+        WorkspaceInviteLink link = linkQueryRepository
+                .findByToken(token)
+                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));
 
         if (!link.isValid()) {
             throw WorkspaceExceptions.invalidLink(link);
         }
 
-        WorkspaceMember linkCreator =
-                workspaceMemberFinder.findBy(link.getCreatedBy(), workspaceKey);
+        WorkspaceMember linkCreator = workspaceMemberFinder.findBy(link.getCreatedBy(), workspaceKey);
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }
@@ -131,8 +118,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
             Instant expiredAt) {
         String token = UUID.randomUUID().toString();
 
-        WorkspaceInviteLink link =
-                WorkspaceInviteLink.create(workspace, token, roleToGrant, expiredAt);
+        WorkspaceInviteLink link = WorkspaceInviteLink.create(workspace, token, roleToGrant, expiredAt);
 
         addProjectsToLink(workspace.getKey(), targetProjects, link);
 
@@ -141,9 +127,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     }
 
     private void addProjectsToLink(
-            String workspaceKey,
-            List<ProjectJoinConfigDto> targetProjects,
-            WorkspaceInviteLink link) {
+            String workspaceKey, List<ProjectJoinConfigDto> targetProjects, WorkspaceInviteLink link) {
         if (targetProjects != null) {
             for (var dto : targetProjects) {
                 Project project = projectFinder.getModifiableBy(dto.projectKey(), workspaceKey);
@@ -154,13 +138,9 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
-            projectFinder
-                    .findOptionalBy(config.projectId())
-                    .ifPresent(
-                            project -> {
-                                projectMemberCommandService.addMember(
-                                        project, workspaceMember.getMemberId(), config.role());
-                            });
+            projectFinder.findOptionalBy(config.projectId()).ifPresent(project -> {
+                projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
+            });
         }
     }
 }

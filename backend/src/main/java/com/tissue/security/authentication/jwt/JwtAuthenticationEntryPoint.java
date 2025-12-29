@@ -25,16 +25,12 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException authException)
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
         log.warn("Authentication exception occurred during a security filter process");
 
-        ProblemDetail problemDetail =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.UNAUTHORIZED,
-                        "Authentication is required to access this resource.");
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, "Authentication is required to access this resource.");
         problemDetail.setTitle("Unauthorized");
         problemDetail.setInstance(java.net.URI.create(request.getRequestURI()));
 

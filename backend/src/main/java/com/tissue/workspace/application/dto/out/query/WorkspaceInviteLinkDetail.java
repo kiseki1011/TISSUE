@@ -15,18 +15,13 @@ public record WorkspaceInviteLinkDetail(
         String creatorEmail,
         boolean isValid) {
     // TODO: 성능 문제는 없을까? dto 프로젝션 사용을 고려할까?
-    public static WorkspaceInviteLinkDetail of(
-            WorkspaceInviteLink link, WorkspaceMember linkCreator) {
+    public static WorkspaceInviteLinkDetail of(WorkspaceInviteLink link, WorkspaceMember linkCreator) {
         return WorkspaceInviteLinkDetail.builder()
                 .workspaceKey(link.getWorkspaceKey())
                 .workspaceName(link.getWorkspace().getName())
-                .projectConfigs(
-                        link.getProjectConfigs().stream()
-                                .map(
-                                        config ->
-                                                new ProjectJoinConfigDto(
-                                                        config.projectKey(), config.role()))
-                                .toList())
+                .projectConfigs(link.getProjectConfigs().stream()
+                        .map(config -> new ProjectJoinConfigDto(config.projectKey(), config.role()))
+                        .toList())
                 .creatorDisplayName(linkCreator.getDisplayName())
                 .creatorEmail(linkCreator.getEmail())
                 .isValid(link.isValid())

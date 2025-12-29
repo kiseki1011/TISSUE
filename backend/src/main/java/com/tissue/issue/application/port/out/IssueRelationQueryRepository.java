@@ -8,8 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface IssueRelationQueryRepository extends Repository<IssueRelation, Long> {
 
-    @Query(
-            """
+    @Query("""
                 SELECT r
                 FROM IssueRelation r
                 JOIN FETCH r.sourceIssue si
@@ -24,8 +23,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
     List<IssueRelation> findAllRelations(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT r
                 FROM IssueRelation r
                 JOIN FETCH r.sourceIssue si
@@ -38,8 +36,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
     List<IssueRelation> findBySourceIssue(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT r
                 FROM IssueRelation r
                 JOIN FETCH r.sourceIssue si
@@ -52,8 +49,7 @@ public interface IssueRelationQueryRepository extends Repository<IssueRelation, 
     List<IssueRelation> findByTargetIssue(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            """
+    @Query("""
                 SELECT COUNT(r) > 0
                 FROM IssueRelation r
                 JOIN r.sourceIssue si

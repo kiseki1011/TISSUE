@@ -14,8 +14,7 @@ public interface IssueFieldValueQueryRepository extends Repository<IssueFieldVal
 
     boolean existsByField(IssueField field);
 
-    @Query(
-            """
+    @Query("""
                 SELECT fv
                 FROM IssueFieldValue fv
                 JOIN FETCH fv.field f

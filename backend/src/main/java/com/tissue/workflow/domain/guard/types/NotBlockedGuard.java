@@ -29,17 +29,15 @@ public class NotBlockedGuard implements TransitionGuard {
             return;
         }
 
-        List<String> unresolvedKeys =
-                blockingIssues.stream()
-                        .filter(blocking -> !blocking.getCurrentState().isCategorizedAs(COMPLETED))
-                        .map(Issue::getKey)
-                        .toList();
+        List<String> unresolvedKeys = blockingIssues.stream()
+                .filter(blocking -> !blocking.getCurrentState().isCategorizedAs(COMPLETED))
+                .map(Issue::getKey)
+                .toList();
 
         if (!unresolvedKeys.isEmpty()) {
             throw WorkflowExceptions.transitionGuardFailed(
                     getType(),
-                    "This issue is blocked by: %s. Resolve blocking issues first."
-                            .formatted(unresolvedKeys),
+                    "This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
                     issue.getKey(),
                     context.getWorkspaceKey());
         }

@@ -35,7 +35,8 @@ public class IssueType extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)
@@ -47,7 +48,8 @@ public class IssueType extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private String workspaceKey;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
     @Column(nullable = false, length = 255)
     private String description;

@@ -58,8 +58,7 @@ public class Sprint extends BaseEntity {
     @Column(nullable = false)
     private SprintStatus status;
 
-    public static Sprint create(
-            @NonNull Project project, @NonNull String title, @Nullable String goal) {
+    public static Sprint create(@NonNull Project project, @NonNull String title, @Nullable String goal) {
         Sprint sprint = new Sprint();
         sprint.project = project;
         sprint.projectKey = project.getKey();

@@ -53,19 +53,16 @@ public class WorkflowGraphValidator {
     private void ensureNoIncomingToInitial(Workflow wf) {
         WorkflowState initialState = wf.getInitialState();
 
-        List<WorkflowTransition> invalidTransitions =
-                wf.getTransitions().stream()
-                        .filter(t -> t.getTargetState().equals(initialState))
-                        .toList();
+        List<WorkflowTransition> invalidTransitions = wf.getTransitions().stream()
+                .filter(t -> t.getTargetState().equals(initialState))
+                .toList();
 
         if (!invalidTransitions.isEmpty()) {
-            List<String> sourceNames =
-                    invalidTransitions.stream()
-                            .map(t -> t.getSourceState().getDisplayName())
-                            .toList();
+            List<String> sourceNames = invalidTransitions.stream()
+                    .map(t -> t.getSourceState().getDisplayName())
+                    .toList();
 
-            throw WorkflowExceptions.invalidTransitionTarget(
-                    sourceNames, initialState.getDisplayName());
+            throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayName());
         }
     }
 
@@ -101,11 +98,10 @@ public class WorkflowGraphValidator {
             }
         }
 
-        List<String> orphanStates =
-                wf.getActiveStates().stream()
-                        .filter(s -> !reachableStates.contains(s))
-                        .map(WorkflowState::getDisplayName)
-                        .toList();
+        List<String> orphanStates = wf.getActiveStates().stream()
+                .filter(s -> !reachableStates.contains(s))
+                .map(WorkflowState::getDisplayName)
+                .toList();
 
         if (!orphanStates.isEmpty()) {
             throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayName());
@@ -115,16 +111,14 @@ public class WorkflowGraphValidator {
     private void ensureValidActiveFlow(Workflow wf) {
         List<WorkflowTransition> activeTransitions = wf.getTransitions();
 
-        Set<WorkflowState> statesWithOutgoing =
-                activeTransitions.stream()
-                        .map(WorkflowTransition::getSourceState) // 객체 자체를 수집
-                        .collect(Collectors.toSet());
+        Set<WorkflowState> statesWithOutgoing = activeTransitions.stream()
+                .map(WorkflowTransition::getSourceState) // 객체 자체를 수집
+                .collect(Collectors.toSet());
 
-        List<String> deadEnds =
-                wf.getStatesByCategory(ACTIVE).stream()
-                        .filter(state -> !statesWithOutgoing.contains(state))
-                        .map(WorkflowState::getDisplayName)
-                        .toList();
+        List<String> deadEnds = wf.getStatesByCategory(ACTIVE).stream()
+                .filter(state -> !statesWithOutgoing.contains(state))
+                .map(WorkflowState::getDisplayName)
+                .toList();
 
         if (!deadEnds.isEmpty()) {
             throw WorkflowExceptions.deadEndState(deadEnds);

@@ -10,8 +10,7 @@ public enum WorkflowErrorCode implements ErrorCode {
     WORKFLOW_NOT_FOUND("Workflow not found"),
     WORKFLOW_STATE_NOT_FOUND("Workflow state not found"),
     WORKFLOW_TRANSITION_NOT_FOUND("Workflow transition not found"),
-    AUTO_TRANSITION_TARGET_NOT_FOUND(
-            "Configured auto-transition target not found in current state"),
+    AUTO_TRANSITION_TARGET_NOT_FOUND("Configured auto-transition target not found in current state"),
     DEAD_END_STATE("The following 'ACTIVE' states have no outgoing transitions"),
     DUPLICATE_GUARD_TYPE("Duplicate guard type detected"),
     DUPLICATE_STATE_NAME("A state with this name already exists in the workflow"),
@@ -22,8 +21,7 @@ public enum WorkflowErrorCode implements ErrorCode {
     MISSING_COMPLETED_STATE("Workflow must have at least one 'COMPLETED' state"),
     ORPHAN_STATE("Unreachable states detected"),
     TRANSITION_GUARD_FAILED("Transition guard evaluation failed"),
-    WORKFLOW_STATE_IN_USE(
-            "Cannot delete workflow states that are currently assigned to active issues"),
+    WORKFLOW_STATE_IN_USE("Cannot delete workflow states that are currently assigned to active issues"),
     DUPLICATE_TRANSITION_EDGE("Duplicate transition between these two states already exists"),
     CANNOT_DELETE_INITIAL_STATE("Cannot delete the 'INITIAL' state"),
     INITIAL_STATE_BELONG_MISMATCH("State must belong to the workflow"),

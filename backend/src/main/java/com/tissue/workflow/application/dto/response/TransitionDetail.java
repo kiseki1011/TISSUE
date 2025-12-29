@@ -4,12 +4,7 @@ import com.tissue.workflow.domain.WorkflowTransition;
 import java.util.List;
 
 public record TransitionDetail(
-        Long id,
-        String label,
-        String description,
-        Long sourceStateId,
-        Long targetStateId,
-        List<GuardDetail> guards) {
+        Long id, String label, String description, Long sourceStateId, Long targetStateId, List<GuardDetail> guards) {
     public static TransitionDetail from(WorkflowTransition t) {
         return new TransitionDetail(
                 t.getId(),

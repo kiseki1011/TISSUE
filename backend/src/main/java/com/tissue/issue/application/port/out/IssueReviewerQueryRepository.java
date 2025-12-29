@@ -9,8 +9,7 @@ import org.springframework.data.repository.query.Param;
 public interface IssueReviewerQueryRepository extends Repository<IssueReviewer, Long> {
 
     // TODO: optimize
-    @Query(
-            """
+    @Query("""
                 SELECT r
                 FROM IssueReviewer r
                 JOIN FETCH r.reviewer pm
@@ -22,6 +21,5 @@ public interface IssueReviewerQueryRepository extends Repository<IssueReviewer, 
                 WHERE w.key = :workspaceKey
                   AND i.key.value = :issueKey
             """)
-    List<IssueReviewer> findByIssue(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<IssueReviewer> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

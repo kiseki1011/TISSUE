@@ -15,8 +15,7 @@ public class WorkflowExceptions {
     private WorkflowExceptions() {}
 
     public static ResourceNotFoundException notFound(Long workflowId) {
-        return new ResourceNotFoundException(WORKFLOW_NOT_FOUND)
-                .addContext(WORKFLOW_ID, workflowId);
+        return new ResourceNotFoundException(WORKFLOW_NOT_FOUND).addContext(WORKFLOW_ID, workflowId);
     }
 
     public static ResourceNotFoundException notFound(Long workflowId, String projectKey) {
@@ -46,22 +45,18 @@ public class WorkflowExceptions {
     }
 
     public static BadRequestException deadEndState(Collection<String> deadEndStateNames) {
-        String detailMessage =
-                ("The following 'ACTIVE' states have no outgoing transitions: %s. Please connect"
-                                + " them to a next state or change their category to 'COMPLETED'.")
-                        .formatted(deadEndStateNames);
+        String detailMessage = ("The following 'ACTIVE' states have no outgoing transitions: %s. Please connect"
+                        + " them to a next state or change their category to 'COMPLETED'.")
+                .formatted(deadEndStateNames);
 
-        return new BadRequestException(DEAD_END_STATE, detailMessage)
-                .addContext("deadEndStates", deadEndStateNames);
+        return new BadRequestException(DEAD_END_STATE, detailMessage).addContext("deadEndStates", deadEndStateNames);
     }
 
     public static ResourceConflictException duplicateGuardType(GuardType guardType) {
-        return new ResourceConflictException(DUPLICATE_GUARD_TYPE)
-                .addContext(GUARD_TYPE, guardType);
+        return new ResourceConflictException(DUPLICATE_GUARD_TYPE).addContext(GUARD_TYPE, guardType);
     }
 
-    public static ResourceConflictException duplicateStateName(
-            String stateName, String workflowName, Long workflowId) {
+    public static ResourceConflictException duplicateStateName(String stateName, String workflowName, Long workflowId) {
         return new ResourceConflictException(DUPLICATE_STATE_NAME)
                 .addContext(STATE, stateName)
                 .addContext(WORKFLOW, workflowName)
@@ -86,8 +81,7 @@ public class WorkflowExceptions {
     }
 
     public static BadRequestException invalidInitialStateCount(int foundCount) {
-        return new BadRequestException(INVALID_INITIAL_STATE_COUNT)
-                .addContext("foundCount", foundCount);
+        return new BadRequestException(INVALID_INITIAL_STATE_COUNT).addContext("foundCount", foundCount);
     }
 
     public static BadRequestException invalidTransitionTarget(
@@ -101,11 +95,9 @@ public class WorkflowExceptions {
         return new BadRequestException(MISSING_COMPLETED_STATE);
     }
 
-    public static BadRequestException orphanState(
-            Collection<String> orphanStateNames, String initialStateName) {
-        String detailMessage =
-                "Unreachable states detected: %s. All states must be reachable from '%s'."
-                        .formatted(orphanStateNames, initialStateName);
+    public static BadRequestException orphanState(Collection<String> orphanStateNames, String initialStateName) {
+        String detailMessage = "Unreachable states detected: %s. All states must be reachable from '%s'."
+                .formatted(orphanStateNames, initialStateName);
 
         return new BadRequestException(ORPHAN_STATE, detailMessage)
                 .addContext("orphanStates", orphanStateNames)
@@ -124,19 +116,16 @@ public class WorkflowExceptions {
     }
 
     public static BadRequestException workflowStateInUse(String stateNames) {
-        return new BadRequestException(WORKFLOW_STATE_IN_USE)
-                .addContext("activeStates", stateNames);
+        return new BadRequestException(WORKFLOW_STATE_IN_USE).addContext("activeStates", stateNames);
     }
 
-    public static BadRequestException duplicateTransitionEdge(
-            String sourceStateName, String targetStateName) {
+    public static BadRequestException duplicateTransitionEdge(String sourceStateName, String targetStateName) {
         return new BadRequestException(DUPLICATE_TRANSITION_EDGE)
                 .addContext("sourceState", sourceStateName)
                 .addContext("targetState", targetStateName);
     }
 
-    public static BadRequestException cannotDeleteInitialState(
-            Long workflowId, String workflowName, String stateName) {
+    public static BadRequestException cannotDeleteInitialState(Long workflowId, String workflowName, String stateName) {
         return new BadRequestException(CANNOT_DELETE_INITIAL_STATE)
                 .addContext(WORKFLOW_ID, workflowId)
                 .addContext(WORKFLOW, workflowName)

@@ -18,16 +18,13 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @SQLRestriction("softDeleted = false")
 @Table(
         name = "project_member",
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})
-        })
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProjectMember extends BaseEntity {
@@ -57,10 +54,7 @@ public class ProjectMember extends BaseEntity {
     @Column(nullable = false)
     private ProjectRole role;
 
-    public static ProjectMember create(
-            @NonNull Project project,
-            @NonNull WorkspaceMember workspaceMember,
-            @NonNull ProjectRole role) {
+    public static ProjectMember create(Project project, WorkspaceMember workspaceMember, ProjectRole role) {
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
         projectMember.projectKey = project.getKey();
@@ -74,7 +68,7 @@ public class ProjectMember extends BaseEntity {
         return projectMember;
     }
 
-    public void changeRole(@NonNull ProjectRole newRole) {
+    public void changeRole(ProjectRole newRole) {
         this.role = newRole;
     }
 

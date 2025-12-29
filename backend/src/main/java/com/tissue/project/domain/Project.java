@@ -27,9 +27,8 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @SQLRestriction("softDeleted = false")
@@ -57,7 +56,7 @@ public class Project extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Nullable
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -77,11 +76,7 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Workflow> workflows = new ArrayList<>();
 
-    public static Project create(
-            @NonNull Workspace workspace,
-            @NonNull String key,
-            @NonNull String title,
-            @Nullable String description) {
+    public static Project create(Workspace workspace, String key, String title, @Nullable String description) {
         Project project = new Project();
         project.workspace = workspace;
         project.workspaceKey = workspace.getKey();
@@ -95,7 +90,7 @@ public class Project extends BaseEntity {
         return project;
     }
 
-    private void setKey(@NonNull String key) {
+    private void setKey(String key) {
         // TODO: validate key length(3~10),
         //  pattern(letters + number, number must come behind if used)
         // TODO: bean validation for CreateProjectRequest
@@ -107,7 +102,7 @@ public class Project extends BaseEntity {
         this.key = upperKey;
     }
 
-    public void updateTitle(@NonNull String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
@@ -115,11 +110,11 @@ public class Project extends BaseEntity {
         this.description = description;
     }
 
-    public void updateVisibility(@NonNull ProjectVisibility visibility) {
+    public void updateVisibility(ProjectVisibility visibility) {
         this.visibility = visibility;
     }
 
-    public void updateDefaultJoinRole(@NonNull ProjectRole defaultJoinRole) {
+    public void updateDefaultJoinRole(ProjectRole defaultJoinRole) {
         if (defaultJoinRole.isEqualOrHigherThan(ProjectRole.ADMIN)) {
             throw ProjectExceptions.invalidDefaultJoinRole(defaultJoinRole);
         }

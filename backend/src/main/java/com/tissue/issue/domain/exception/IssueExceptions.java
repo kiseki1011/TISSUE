@@ -46,15 +46,11 @@ public class IssueExceptions {
                 .addContext(WORKSPACE_KEY, workspaceKey)
                 .addContext(ISSUE_KEY, issueKey)
                 .addContext(CURRENT_HIERARCHY, currentHierarchy)
-                .addContext(
-                        STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
+                .addContext(STORY_POINT_ALLOWED_HIERARCHIES, IssueHierarchy.getStoryPointModifiable());
     }
 
     public static BadRequestException relationCycleDetected(
-            String sourceIssueKey,
-            String targetIssueKey,
-            IssueRelationType relationType,
-            List<String> path) {
+            String sourceIssueKey, String targetIssueKey, IssueRelationType relationType, List<String> path) {
         return new BadRequestException(RELATION_CIRCULAR_DEPENDENCY)
                 .addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
                 .addContext(TARGET_ISSUE_KEY, targetIssueKey)
@@ -72,10 +68,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException parentWorkspaceMismatch(
-            String parentWorkspaceKey,
-            String parentIssueKey,
-            String childWorkspaceKey,
-            String childIssueKey) {
+            String parentWorkspaceKey, String parentIssueKey, String childWorkspaceKey, String childIssueKey) {
         return new BadRequestException(PARENT_WORKSPACE_MISMATCH)
                 .addContext(PARENT_WORKSPACE_KEY, parentWorkspaceKey)
                 .addContext(PARENT_ISSUE_KEY, parentIssueKey)
@@ -96,11 +89,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException transitionSourceStateMismatch(
-            String workspaceKey,
-            String issueKey,
-            Long transitionId,
-            String currentState,
-            String requiredState) {
+            String workspaceKey, String issueKey, Long transitionId, String currentState, String requiredState) {
         return new BadRequestException(TRANSITION_SOURCE_STATE_NOT_MATCH)
                 .addContext(WORKSPACE_KEY, workspaceKey)
                 .addContext(ISSUE_KEY, issueKey)
@@ -140,10 +129,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException relationWorkspaceMismatch(
-            String sourceWorkspaceKey,
-            String sourceIssueKey,
-            String targetWorkspaceKey,
-            String targetIssueKey) {
+            String sourceWorkspaceKey, String sourceIssueKey, String targetWorkspaceKey, String targetIssueKey) {
         return new BadRequestException(RELATION_WORKSPACE_MISMATCH)
                 .addContext(SOURCE_WORKSPACE_KEY, sourceWorkspaceKey)
                 .addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
@@ -152,10 +138,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException onlyInitialStateDeletionAllowed(
-            String workspaceKey,
-            String issueKey,
-            String currentState,
-            StateCategory stateCategory) {
+            String workspaceKey, String issueKey, String currentState, StateCategory stateCategory) {
         return new BadRequestException(ONLY_INITIAL_STATE_DELETION_ALLOWED)
                 .addContext(WORKSPACE_KEY, workspaceKey)
                 .addContext(ISSUE_KEY, issueKey)
@@ -164,8 +147,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException cannotDeleteIssueWithChildren(String issueKey) {
-        return new BadRequestException(CANNOT_DELETE_ISSUE_WITH_CHILDREN)
-                .addContext(ISSUE_KEY, issueKey);
+        return new BadRequestException(CANNOT_DELETE_ISSUE_WITH_CHILDREN).addContext(ISSUE_KEY, issueKey);
     }
 
     public static BadRequestException dueDateMustBeFuture(Instant inputDate) {
@@ -211,8 +193,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException maxReviewersExceeded(int maxReviewers) {
-        return new BadRequestException(MAX_REVIEWERS_EXCEEDED)
-                .addContext("maxReviewers", maxReviewers);
+        return new BadRequestException(MAX_REVIEWERS_EXCEEDED).addContext("maxReviewers", maxReviewers);
     }
 
     public static BadRequestException unknownEnumOption(Long fieldId, Long optionId) {
@@ -222,7 +203,6 @@ public class IssueExceptions {
     }
 
     public static BadRequestException invalidPercentage(Integer inputValue) {
-        return new BadRequestException(INVALID_PERCENTAGE_EXCEPTION)
-                .addContext(PROVIDED_VALUE, inputValue);
+        return new BadRequestException(INVALID_PERCENTAGE_EXCEPTION).addContext(PROVIDED_VALUE, inputValue);
     }
 }

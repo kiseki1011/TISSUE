@@ -64,11 +64,8 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
     }
 
     @Recover
-    public WorkspaceCreateResponse recover(
-            DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
-        log.error(
-                "Retry failed. Workspace code collision could not be resolved after {} attempts.",
-                MAX_RETRIES);
+    public WorkspaceCreateResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
+        log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
         throw WorkspaceExceptions.keyGenerationFailed(exception);
     }
 }

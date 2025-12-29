@@ -26,10 +26,7 @@ public record IssueTransitionedEvent(
         Long actorMemberId,
         String actorDisplayName) {
     public static IssueTransitionedEvent create(
-            Issue issue,
-            WorkflowTransition transition,
-            WorkflowState oldState,
-            ProjectMember actor) {
+            Issue issue, WorkflowTransition transition, WorkflowState oldState, ProjectMember actor) {
         Issue parentIssue = issue.getParentIssue();
 
         return new IssueTransitionedEvent(

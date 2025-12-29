@@ -43,8 +43,7 @@ public class IssueFieldSchemaValidator {
         }
     }
 
-    private void applyOnePatchEntry(
-            Issue issue, Map<Long, IssueField> fieldMap, Long fieldId, Object raw) {
+    private void applyOnePatchEntry(Issue issue, Map<Long, IssueField> fieldMap, Long fieldId, Object raw) {
         IssueField field = requireKnownField(fieldMap, fieldId);
         ensureValueExistsIfRequired(field, raw);
 

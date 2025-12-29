@@ -5,8 +5,4 @@ import lombok.Builder;
 
 @Builder
 public record MigrateSprintIssuesCommand(
-        String workspaceKey,
-        String projectKey,
-        Long originalSprintId,
-        Long newSprintId,
-        List<String> issueKeys) {}
+        String workspaceKey, String projectKey, Long originalSprintId, Long newSprintId, List<String> issueKeys) {}

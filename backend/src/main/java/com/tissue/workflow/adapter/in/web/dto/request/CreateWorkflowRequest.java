@@ -34,29 +34,19 @@ public record CreateWorkflowRequest(
             @NotBlank String targetTempKey) {}
 
     public CreateWorkflowCommand toCommand(String workspaceKey, String projectKey) {
-        List<StateDefinition> stateDefinitions =
-                createStatusRequests.stream()
-                        .map(
-                                s ->
-                                        new StateDefinition(
-                                                new EntityRef(null, s.tempKey()),
-                                                Name.of(s.name()),
-                                                s.description(),
-                                                s.color(),
-                                                s.category))
-                        .toList();
+        List<StateDefinition> stateDefinitions = createStatusRequests.stream()
+                .map(s -> new StateDefinition(
+                        new EntityRef(null, s.tempKey()), Name.of(s.name()), s.description(), s.color(), s.category))
+                .toList();
 
-        List<TransitionDefinition> transitionCommands =
-                createTransitionRequests.stream()
-                        .map(
-                                t ->
-                                        new TransitionDefinition(
-                                                null,
-                                                Name.of(t.name()),
-                                                t.description(),
-                                                new EntityRef(null, t.sourceTempKey()),
-                                                new EntityRef(null, t.targetTempKey())))
-                        .toList();
+        List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
+                .map(t -> new TransitionDefinition(
+                        null,
+                        Name.of(t.name()),
+                        t.description(),
+                        new EntityRef(null, t.sourceTempKey()),
+                        new EntityRef(null, t.targetTempKey())))
+                .toList();
 
         return CreateWorkflowCommand.builder()
                 .workspaceKey(workspaceKey)

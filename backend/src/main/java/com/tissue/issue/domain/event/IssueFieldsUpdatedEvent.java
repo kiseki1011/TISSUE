@@ -20,8 +20,7 @@ public record IssueFieldsUpdatedEvent(
         String actorDisplayName)
         implements DomainEvent {
 
-    public static IssueFieldsUpdatedEvent create(
-            Issue issue, Map<String, FieldChange> changes, ProjectMember actor) {
+    public static IssueFieldsUpdatedEvent create(Issue issue, Map<String, FieldChange> changes, ProjectMember actor) {
         return new IssueFieldsUpdatedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

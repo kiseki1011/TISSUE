@@ -17,13 +17,11 @@ public class WorkspaceExceptions {
     private WorkspaceExceptions() {}
 
     public static ResourceNotFoundException notFound(String workspaceKey) {
-        return new ResourceNotFoundException(WORKSPACE_NOT_FOUND)
-                .addContext(WORKSPACE_KEY, workspaceKey);
+        return new ResourceNotFoundException(WORKSPACE_NOT_FOUND).addContext(WORKSPACE_KEY, workspaceKey);
     }
 
     public static BadRequestException archived(Workspace workspace) {
-        return new BadRequestException(WORKSPACE_ARCHIVED)
-                .addContext(WORKSPACE_KEY, workspace.getKey());
+        return new BadRequestException(WORKSPACE_ARCHIVED).addContext(WORKSPACE_KEY, workspace.getKey());
     }
 
     public static ResourceNotFoundException memberNotFound(Long memberId, String workspaceKey) {
@@ -46,8 +44,7 @@ public class WorkspaceExceptions {
     }
 
     public static ResourceNotFoundException invitationNotFound(Long invitationId) {
-        return new ResourceNotFoundException(INVITATION_NOT_FOUND)
-                .addContext(INVITATION_ID, invitationId);
+        return new ResourceNotFoundException(INVITATION_NOT_FOUND).addContext(INVITATION_ID, invitationId);
     }
 
     public static ResourceNotFoundException invitationNotFound(Long invitationId, Long memberId) {

@@ -62,8 +62,7 @@ public class EntityReference {
                 .build();
     }
 
-    public static EntityReference forIssueComment(
-            String workspaceCode, String issueKey, Long commentId) {
+    public static EntityReference forIssueComment(String workspaceCode, String issueKey, Long commentId) {
         return EntityReference.builder()
                 .workspaceCode(workspaceCode)
                 .resourceType(ResourceType.ISSUE_COMMENT)
@@ -123,8 +122,7 @@ public class EntityReference {
             case ISSUE -> base + ISSUES + stringKey;
             case ISSUE_COMMENT -> base + ISSUES + stringKey + COMMENTS + primaryId;
             case REVIEW -> base + ISSUES + stringKey + REVIEWS + primaryId;
-            case REVIEW_COMMENT ->
-                    base + ISSUES + stringKey + REVIEWS + primaryId + COMMENTS + secondaryId;
+            case REVIEW_COMMENT -> base + ISSUES + stringKey + REVIEWS + primaryId + COMMENTS + secondaryId;
             case SPRINT -> base + SPRINTS + stringKey;
             case WORKSPACE_MEMBER -> base + MEMBERS + primaryId;
             case WORKSPACE -> base;

@@ -37,12 +37,7 @@ public class MemberCommandService implements MemberCommandUseCase {
             throw MemberExceptions.emailNotVerified(cmd.email());
         }
 
-        Member member =
-                Member.create(
-                        cmd.email(),
-                        cmd.username(),
-                        passwordEncoder.encode(cmd.password()),
-                        cmd.name());
+        Member member = Member.create(cmd.email(), cmd.username(), passwordEncoder.encode(cmd.password()), cmd.name());
 
         try {
             Member savedMember = memberCommandRepository.save(member);
@@ -109,8 +104,7 @@ public class MemberCommandService implements MemberCommandUseCase {
     public void withdraw(String password, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(member.getEmail(), password));
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(member.getEmail(), password));
 
         memberValidator.ensureWithdrawable(member);
 

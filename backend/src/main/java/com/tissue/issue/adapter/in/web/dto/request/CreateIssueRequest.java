@@ -20,8 +20,7 @@ public record CreateIssueRequest(
         @NotNull Long issueTypeId,
         @Nullable Map<Long, Object> customFields,
         @Nullable Long assigneeMemberId) {
-    public CreateIssueCommand toCommand(
-            String workspaceKey, String projectKey, Long currentMemberId) {
+    public CreateIssueCommand toCommand(String workspaceKey, String projectKey, Long currentMemberId) {
         return CreateIssueCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

@@ -35,29 +35,17 @@ public class MemberUserDetailsService implements UserDetailsService {
     /** Find by username(in this case email) extracted from the JWT token */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member =
-                memberRepository
-                        .findByEmailAndStatus(email, MemberStatus.ACTIVE)
-                        .orElseThrow(
-                                () ->
-                                        new UsernameNotFoundException(
-                                                "Member not found for email: " + email));
+        Member member = memberRepository
+                .findByEmailAndStatus(email, MemberStatus.ACTIVE)
+                .orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 
-        var workspaceRoles =
-                workspaceMemberRepository.findAllByMember(member).stream()
-                        .collect(
-                                Collectors.toMap(
-                                        WorkspaceMember::getWorkspaceKey,
-                                        WorkspaceMember::getRole));
+        var workspaceRoles = workspaceMemberRepository.findAllByMember(member).stream()
+                .collect(Collectors.toMap(WorkspaceMember::getWorkspaceKey, WorkspaceMember::getRole));
 
-        var projectRoles =
-                projectMemberRepository.findAllByMemberId(member.getId()).stream()
-                        .collect(
-                                Collectors.groupingBy(
-                                        ProjectMember::getWorkspaceKey,
-                                        Collectors.toMap(
-                                                ProjectMember::getProjectKey,
-                                                ProjectMember::getRole)));
+        var projectRoles = projectMemberRepository.findAllByMemberId(member.getId()).stream()
+                .collect(Collectors.groupingBy(
+                        ProjectMember::getWorkspaceKey,
+                        Collectors.toMap(ProjectMember::getProjectKey, ProjectMember::getRole)));
 
         return new MemberUserDetails(member, workspaceRoles, projectRoles);
     }

@@ -46,8 +46,7 @@ public class IssueAggregationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
         if (event.parentId() != null) {
-            log.debug(
-                    "Syncing aggregation for parent {} due to child creation.", event.parentKey());
+            log.debug("Syncing aggregation for parent {} due to child creation.", event.parentKey());
             aggregationService.syncStatistics(event.parentId());
         }
     }
@@ -56,8 +55,7 @@ public class IssueAggregationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueDeleted(IssueDeletedEvent event) {
         if (event.parentId() != null) {
-            log.debug(
-                    "Syncing aggregation for parent {} due to child deletion.", event.parentKey());
+            log.debug("Syncing aggregation for parent {} due to child deletion.", event.parentKey());
             aggregationService.syncStatistics(event.parentId());
         }
     }
@@ -66,9 +64,7 @@ public class IssueAggregationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
         if (event.parentId() != null) {
-            log.debug(
-                    "Syncing aggregation for parent {} due to issue workflow transition.",
-                    event.parentKey());
+            log.debug("Syncing aggregation for parent {} due to issue workflow transition.", event.parentKey());
             aggregationService.syncStatistics(event.parentId());
         }
     }

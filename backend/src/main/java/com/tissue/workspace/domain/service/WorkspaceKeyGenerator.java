@@ -11,8 +11,7 @@ public final class WorkspaceKeyGenerator {
     private static final int KEY_LENGTH = 8;
     private static final String WORKSPACE_KEY_PREFIX = "WS-";
 
-    private static final char[] BASE62 =
-            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final SecureRandom RANDOM = new SecureRandom();
 
     public static String generateWorkspaceKey() {

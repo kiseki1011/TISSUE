@@ -51,9 +51,7 @@ public class Position extends BaseEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(
-                name = "value",
-                column = @Column(name = "position_name", nullable = false, length = 64)),
+        @AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
         @AttributeOverride(
                 name = "normalized",
                 column = @Column(name = "position_name_norm", nullable = false, length = 64))

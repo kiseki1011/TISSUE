@@ -26,17 +26,12 @@ public class AuthenticationService implements AuthenticationUseCase {
     @Transactional
     public LoginResponse login(String loginEmail, String password) {
         Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(loginEmail, password));
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
         MemberUserDetails userDetails = (MemberUserDetails) authentication.getPrincipal();
 
-        String accessToken =
-                jwtTokenService.createAccessToken(
-                        userDetails.getMemberId(), userDetails.getEmail());
-        String refreshToken =
-                jwtTokenService.createRefreshToken(
-                        userDetails.getMemberId(), userDetails.getEmail());
+        String accessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        String refreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
 
         return LoginResponse.from(accessToken, refreshToken);
     }
@@ -51,28 +46,21 @@ public class AuthenticationService implements AuthenticationUseCase {
         String loginEmail = jwtTokenService.getSubjectFromToken(refreshToken);
 
         // load user to ensure they still exist and are valid
-        MemberUserDetails userDetails =
-                (MemberUserDetails) userDetailsService.loadUserByUsername(loginEmail);
+        MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(loginEmail);
 
         // create new access token
-        String newAccessToken =
-                jwtTokenService.createAccessToken(
-                        userDetails.getMemberId(), userDetails.getEmail());
+        String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
 
         // RTR (Refresh Token Rotation): Issue a new refresh token
-        String newRefreshToken =
-                jwtTokenService.createRefreshToken(
-                        userDetails.getMemberId(), userDetails.getEmail());
+        String newRefreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
 
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 
     @Override
     @Transactional
-    public ElevatedTokenResponse elevatePermission(
-            String loginEmail, String password, Long memberId) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginEmail, password));
+    public ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
         String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginEmail);
 

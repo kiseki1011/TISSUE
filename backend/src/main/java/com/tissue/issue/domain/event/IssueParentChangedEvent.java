@@ -24,10 +24,7 @@ public record IssueParentChangedEvent(
         implements DomainEvent {
 
     public static IssueParentChangedEvent create(
-            Issue issue,
-            @Nullable Issue oldParent,
-            @Nullable Issue newParent,
-            ProjectMember actor) {
+            Issue issue, @Nullable Issue oldParent, @Nullable Issue newParent, ProjectMember actor) {
         return new IssueParentChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

@@ -32,17 +32,15 @@ public class WorkspaceInviteLinkController {
 
     @PostMapping
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid CreateWorkspaceInviteLinkRequest request) {
+            @PathVariable String workspaceKey, @RequestBody @Valid CreateWorkspaceInviteLinkRequest request) {
         var command = request.toCommand(workspaceKey);
         String token = inviteLinkUseCase.createWorkspaceLink(command);
 
         // TODO: do i have to write the full uri path? cant i just do "/{token}"?
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                        .buildAndExpand(workspaceKey, token)
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .buildAndExpand(workspaceKey, token)
+                .toUri();
 
         return ResponseEntity.created(location)
                 .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
@@ -57,19 +55,17 @@ public class WorkspaceInviteLinkController {
         String token = inviteLinkUseCase.createProjectLink(command);
 
         // TODO: do i have to write the full uri path? cant i just do "/{token}"?
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
-                        .buildAndExpand(workspaceKey, token)
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .buildAndExpand(workspaceKey, token)
+                .toUri();
 
         return ResponseEntity.created(location)
                 .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
     }
 
     @DeleteMapping("/{token}")
-    public ResponseEntity<Void> expireLink(
-            @PathVariable String workspaceKey, @PathVariable String token) {
+    public ResponseEntity<Void> expireLink(@PathVariable String workspaceKey, @PathVariable String token) {
         var command = new ExpireLinkCommand(workspaceKey, token);
         inviteLinkUseCase.expireLink(command);
 

@@ -36,10 +36,9 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
 
         Comment parent = null;
         if (cmd.parentCommentId() != null) {
-            parent =
-                    commentRepository
-                            .findById(cmd.parentCommentId())
-                            .orElseThrow(() -> CommentExceptions.notFound(cmd.parentCommentId()));
+            parent = commentRepository
+                    .findById(cmd.parentCommentId())
+                    .orElseThrow(() -> CommentExceptions.notFound(cmd.parentCommentId()));
         }
 
         // Use WorkspaceMember as the author
@@ -54,10 +53,9 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     @Transactional
     @Override
     public void update(UpdateCommentCommand cmd) {
-        Comment comment =
-                commentRepository
-                        .findById(cmd.commentId())
-                        .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+        Comment comment = commentRepository
+                .findById(cmd.commentId())
+                .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
 
         if (comment.isSoftDeleted()) {
             throw CommentExceptions.notFound(cmd.commentId());
@@ -76,10 +74,9 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     @Transactional
     @Override
     public void delete(DeleteCommentCommand cmd) {
-        Comment comment =
-                commentRepository
-                        .findById(cmd.commentId())
-                        .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+        Comment comment = commentRepository
+                .findById(cmd.commentId())
+                .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
 
         if (comment.isSoftDeleted()) {
             throw CommentExceptions.notFound(cmd.commentId());

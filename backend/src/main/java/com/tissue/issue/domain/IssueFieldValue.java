@@ -25,7 +25,8 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueFieldValue extends BaseEntity {
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,9 +70,7 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue = (LocalDate) value;
             case BOOLEAN -> this.booleanValue = (Boolean) value;
             case ENUM -> this.enumOption = (EnumFieldOption) value;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unsupported field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException("Unsupported field type: " + field.getIssueFieldType());
         }
         markPresent();
     }
@@ -94,9 +93,7 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue;
             case BOOLEAN -> this.booleanValue;
             case ENUM -> this.enumOption;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unexpected field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException("Unexpected field type: " + field.getIssueFieldType());
         };
     }
 

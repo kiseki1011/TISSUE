@@ -66,8 +66,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         List<ProjectJoinConfigDto> singleProjectConfig =
                 List.of(new ProjectJoinConfigDto(cmd.projectKey(), cmd.role()));
 
-        return processInvitation(
-                workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectConfig);
+        return processInvitation(workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectConfig);
     }
 
     @Override
@@ -98,8 +97,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - controller does not know this method unless it directly depends on this service
     // TODO: currently considering if i should separate this to a application service of its own
     public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        Optional<WorkspaceMember> activeMember =
-                workspaceMemberFinder.findOptionalBy(member, workspace);
+        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
@@ -109,17 +107,14 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         return workspaceMemberFinder
                 .findAnyOptionalBy(member.getId(), workspace.getKey())
-                .map(
-                        returningMember -> {
-                            returningMember.restoreSoftDeleted();
-                            return returningMember;
-                        })
-                .orElseGet(
-                        () -> {
-                            WorkspaceMember newMember =
-                                    WorkspaceMember.create(member, workspace, role);
-                            return workspaceMemberCommandRepository.save(newMember);
-                        });
+                .map(returningMember -> {
+                    returningMember.restoreSoftDeleted();
+                    return returningMember;
+                })
+                .orElseGet(() -> {
+                    WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
+                    return workspaceMemberCommandRepository.save(newMember);
+                });
     }
 
     private InviteMembersResponse processInvitation(
@@ -137,8 +132,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
             if (projectConfigs != null) {
                 for (var config : projectConfigs) {
-                    Project project =
-                            projectFinder.getModifiableBy(config.projectKey(), workspace.getKey());
+                    Project project = projectFinder.getModifiableBy(config.projectKey(), workspace.getKey());
                     invitation.addProjectConfig(project, config.role());
                 }
             }
@@ -158,17 +152,12 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
 
-        Set<Long> joinedIds =
-                workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
+        Set<Long> joinedIds = workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
         Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
 
-        Map<Boolean, List<Member>> partitioned =
-                candidates.stream()
-                        .collect(
-                                Collectors.partitioningBy(
-                                        m ->
-                                                !joinedIds.contains(m.getId())
-                                                        && !pendingIds.contains(m.getId())));
+        Map<Boolean, List<Member>> partitioned = candidates.stream()
+                .collect(Collectors.partitioningBy(
+                        m -> !joinedIds.contains(m.getId()) && !pendingIds.contains(m.getId())));
 
         return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
     }

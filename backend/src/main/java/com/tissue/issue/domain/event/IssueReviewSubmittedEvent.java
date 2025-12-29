@@ -19,8 +19,7 @@ public record IssueReviewSubmittedEvent(
         String actorDisplayName)
         implements DomainEvent {
 
-    public static IssueReviewSubmittedEvent create(
-            Issue issue, ReviewStatus status, ProjectMember actor) {
+    public static IssueReviewSubmittedEvent create(Issue issue, ReviewStatus status, ProjectMember actor) {
         return new IssueReviewSubmittedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

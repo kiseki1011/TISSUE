@@ -24,10 +24,7 @@ public record IssueStoryPointChangedEvent(
         implements DomainEvent {
 
     public static IssueStoryPointChangedEvent create(
-            Issue issue,
-            @Nullable Issue parentIssue,
-            @Nullable Integer oldStoryPoint,
-            ProjectMember actor) {
+            Issue issue, @Nullable Issue parentIssue, @Nullable Integer oldStoryPoint, ProjectMember actor) {
         return new IssueStoryPointChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

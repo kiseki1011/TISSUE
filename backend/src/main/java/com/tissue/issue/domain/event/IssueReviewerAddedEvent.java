@@ -17,8 +17,7 @@ public record IssueReviewerAddedEvent(
         Long actorMemberId,
         String actorDisplayName) {
 
-    public static IssueReviewerAddedEvent create(
-            Issue issue, ProjectMember reviewer, ProjectMember actor) {
+    public static IssueReviewerAddedEvent create(Issue issue, ProjectMember reviewer, ProjectMember actor) {
         return new IssueReviewerAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

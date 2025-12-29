@@ -6,8 +6,7 @@ import com.tissue.issuetype.application.dto.request.AddOptionCommand;
 import jakarta.validation.constraints.NotBlank;
 
 public record AddOptionRequest(@NotBlank @LabelSize String optionName) {
-    public AddOptionCommand toCommand(
-            String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId) {
+    public AddOptionCommand toCommand(String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId) {
         return AddOptionCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
