@@ -44,7 +44,8 @@ checkstyle {
 spotless {
   java {
     toggleOffOn()
-    googleJavaFormat('1.24.0').aosp().reflowLongStrings()
+    //  googleJavaFormat('1.24.0').aosp().reflowLongStrings()
+    palantirJavaFormat('2.83.0')
 
     removeUnusedImports()
     trimTrailingWhitespace()
@@ -98,6 +99,21 @@ tasks.withType(JavaCompile) {
   options.errorprone {
     check("NullAway", CheckSeverity.ERROR)
     option("NullAway:AnnotatedPackages", "com.tissue")
+    option("NullAway:ExcludedFieldAnnotations",
+      "jakarta.persistence.Id," +
+        "jakarta.persistence.Column," +
+        "jakarta.persistence.OneToOne," +
+        "jakarta.persistence.OneToMany," +
+        "jakarta.persistence.ManyToOne," +
+        "jakarta.persistence.ManyToMany," +
+        "jakarta.persistence.Version," +
+        "org.springframework.data.annotation.CreatedDate," +
+        "org.springframework.data.annotation.LastModifiedDate," +
+        "org.springframework.data.annotation.CreatedBy," +
+        "org.springframework.data.annotation.LastModifiedBy," +
+        "org.springframework.beans.factory.annotation.Autowired," +
+        "org.springframework.beans.factory.annotation.Value"
+    )
   }
 }
 
@@ -124,5 +140,4 @@ tasks.named('compileJava') {
 
 test {
   useJUnitPlatform()
-  exclude '**/deprecated/**'
 }
