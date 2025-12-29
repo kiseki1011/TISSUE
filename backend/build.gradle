@@ -1,9 +1,10 @@
 plugins {
-  id 'java'
+  id 'java-library'
   id 'org.springframework.boot' version '3.3.3'
   id 'io.spring.dependency-management' version '1.1.6'
   id 'checkstyle'
   id 'com.diffplug.spotless' version '8.1.0'
+  id "net.ltgt.errorprone" version '4.3.0'
 }
 
 group = 'com.tissue'
@@ -40,17 +41,6 @@ checkstyle {
   toolVersion = "12.3.0"
 }
 
-tasks.withType(Checkstyle).configureEach {
-  reports {
-    xml.required = true
-    html.required = true
-  }
-
-  javaLauncher = javaToolchains.launcherFor {
-    languageVersion = javaVersion
-  }
-}
-
 spotless {
   java {
     toggleOffOn()
@@ -72,7 +62,10 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-mail'
   implementation 'org.springframework.retry:spring-retry'
 
-  implementation 'com.google.code.findbugs:jsr305:3.0.2'
+  api "org.jspecify:jspecify:1.0.0"
+
+  errorprone 'com.uber.nullaway:nullaway:0.12.15'
+  errorprone 'com.google.errorprone:error_prone_core:2.45.0'
 
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
@@ -97,6 +90,32 @@ dependencies {
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   testCompileOnly 'org.projectlombok:lombok'
   testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+tasks.withType(JavaCompile) {
+  options.errorprone {
+    check("NullAway", CheckSeverity.ERROR)
+    option("NullAway:AnnotatedPackages", "com.tissue")
+  }
+}
+
+tasks.named('compileTestJava') {
+  options.errorprone{
+    disable("NullAway")
+  }
+}
+
+tasks.withType(Checkstyle).configureEach {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+
+  javaLauncher = javaToolchains.launcherFor {
+    languageVersion = javaVersion
+  }
 }
 
 tasks.named('compileJava') {
