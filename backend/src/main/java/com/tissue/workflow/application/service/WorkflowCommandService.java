@@ -3,6 +3,7 @@ package com.tissue.workflow.application.service;
 import com.tissue.common.util.Patchers;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
 import com.tissue.workflow.application.dto.request.DeleteWorkflowCommand;
@@ -22,6 +23,7 @@ import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
 import com.tissue.workflow.domain.service.TransitionGuardRegistry;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,14 +56,43 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                     workflowRepository.save(Workflow.create(project, cmd.name(), cmd.description(), cmd.color()));
 
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
+
             for (var s : cmd.stateDefinitions()) {
+
                 WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
-                stateByTempKey.put(s.stateRef().tempKey(), state);
+
+                if (s.identifier() instanceof NodeIdentifier.TempKey tk) {
+
+                    stateByTempKey.put(tk.key(), state);
+
+                } else {
+
+                    throw WorkflowExceptions.invalidGraphRequest(
+                            "Creation requires temporary keys", "state", "invalid_identifier_type");
+                }
             }
 
             for (var t : cmd.transitionDefinitions()) {
-                WorkflowState source = stateByTempKey.get(t.sourceStateRef().tempKey());
-                WorkflowState target = stateByTempKey.get(t.targetStateRef().tempKey());
+
+                String sourceKey = ((NodeIdentifier.TempKey) t.sourceIdentifier()).key();
+
+                String targetKey = ((NodeIdentifier.TempKey) t.targetIdentifier()).key();
+
+                WorkflowState source = stateByTempKey.get(sourceKey);
+
+                WorkflowState target = stateByTempKey.get(targetKey);
+
+                if (source == null) {
+
+                    throw WorkflowExceptions.invalidGraphRequest(
+                            "Source state not found for key: " + sourceKey, "transition", "missing_source_state");
+                }
+
+                if (target == null) {
+
+                    throw WorkflowExceptions.invalidGraphRequest(
+                            "Target state not found for key: " + targetKey, "transition", "missing_target_state");
+                }
 
                 workflow.addTransition(t.name(), t.description(), source, target);
             }
@@ -143,10 +174,13 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             guardRegistry.ensureGuardExists(g.guardType());
             workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
 
-            TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
-            guardImplementation.validateParams(g.params(), g.guardType());
+            // TODO: needs explanation
+            Map<String, Object> params = g.params() != null ? g.params() : Collections.emptyMap();
 
-            workflow.addTransitionGuard(transition, g.guardType(), g.params(), g.order());
+            TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());
+            guardImplementation.validateParams(params, g.guardType());
+
+            workflow.addTransitionGuard(transition, g.guardType(), params, g.order());
         }
     }
 }

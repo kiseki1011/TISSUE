@@ -26,7 +26,9 @@ public enum WorkflowErrorCode implements ErrorCode {
     CANNOT_DELETE_INITIAL_STATE("Cannot delete the 'INITIAL' state"),
     INITIAL_STATE_BELONG_MISMATCH("State must belong to the workflow"),
     INITIAL_STATE_CATEGORY_MISMATCH("Initial state must be of category 'INITIAL'"),
-    INVALID_GUARD_PARAMETER("Invalid parameter for transition guard");
+    INVALID_GUARD_PARAMETER("Invalid parameter for transition guard"),
+    INVALID_GRAPH_REQUEST("Invalid workflow graph request format"),
+    WORKFLOW_VERSION_MISMATCH("Workflow has been modified by another user");
 
     private final String defaultMessage;
 }

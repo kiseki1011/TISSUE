@@ -2,7 +2,8 @@ package com.tissue.workflow.adapter.in.web.dto.request;
 
 import com.tissue.common.enums.ColorType;
 import com.tissue.common.vo.Name;
-import com.tissue.workflow.application.dto.EntityRef;
+import com.tissue.workflow.application.dto.NodeIdentifier;
+import com.tissue.workflow.application.dto.NodeIdentifier.TempKey;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
@@ -37,16 +38,20 @@ public record CreateWorkflowRequest(
     public CreateWorkflowCommand toCommand(String workspaceKey, String projectKey) {
         List<StateDefinition> stateDefinitions = createStatusRequests.stream()
                 .map(s -> new StateDefinition(
-                        new EntityRef(null, s.tempKey()), Name.of(s.name()), s.description(), s.color(), s.category))
+                        new NodeIdentifier.TempKey(s.tempKey()),
+                        Name.of(s.name()),
+                        s.description(),
+                        s.color(),
+                        s.category))
                 .toList();
 
         List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
                 .map(t -> new TransitionDefinition(
-                        null,
+                        new TempKey("trans-" + t.sourceTempKey() + "-to-" + t.targetTempKey()),
                         Name.of(t.name()),
                         t.description(),
-                        new EntityRef(null, t.sourceTempKey()),
-                        new EntityRef(null, t.targetTempKey())))
+                        new TempKey(t.sourceTempKey()),
+                        new TempKey(t.targetTempKey())))
                 .toList();
 
         return CreateWorkflowCommand.builder()

@@ -67,7 +67,7 @@ public class WorkflowGraphValidator {
     }
 
     private void ensureNoOrphans(Workflow wf) {
-        WorkflowState initial = ensureInitialExists(wf);
+        WorkflowState initial = wf.getInitialState();
 
         Map<WorkflowState, List<WorkflowState>> reachableFrom = new HashMap<>();
         for (var transition : wf.getTransitions()) {
@@ -123,14 +123,5 @@ public class WorkflowGraphValidator {
         if (!deadEnds.isEmpty()) {
             throw WorkflowExceptions.deadEndState(deadEnds);
         }
-    }
-
-    // TODO: is this really needed? doesnt ensureSingleInitial already validates this?
-    private WorkflowState ensureInitialExists(Workflow wf) {
-        WorkflowState state = wf.getInitialState();
-        if (state == null || state.isArchived()) {
-            throw new IllegalStateException("Initial must exist and be active");
-        }
-        return state;
     }
 }

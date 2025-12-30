@@ -1,30 +1,80 @@
 package com.tissue.workflow.adapter.in.web.dto.request;
 
-import com.tissue.workflow.application.dto.EntityRef;
+import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 import com.tissue.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.workflow.domain.enums.StateCategory;
+import com.tissue.workflow.domain.exception.WorkflowExceptions;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
- * TODO: 자세한 문서화 필요 - 기존 status, transition은 id 전달 - 새로 추가되는 status, transition은 tempKey 전달 -
- * tempKey는 클라이언트에서 생성. UUID 계열 권장(원하면 transliteration 사용)
+ * TODO: needs javadoc
+ *  - existing states/transitions pass on IDs, while newly added states/transitions pass on tempKeys
+ *  - should the tempKey be created on the client side? also what format should we use? UUID?
+ *  or a custom format like "temp-trans-{uuid}"?
  */
 public record ReplaceWorkflowGraphRequest(
         @NotNull Long version,
         @NotEmpty List<ReplaceStatusRequest> replaceStatusRequests,
         @NotEmpty List<ReplaceTransitionRequest> replaceTransitionRequests) {
+
     public record ReplaceStatusRequest(
-            Long id, String tempKey, @NotNull StateCategory category) {}
+            @Nullable Long id,
+            @Nullable String tempKey,
+            @NotNull StateCategory category) {
+
+        NodeIdentifier toIdentifier() {
+            if (id != null) {
+                return new NodeIdentifier.ExistingId(id);
+            }
+            if (tempKey != null) {
+                return new NodeIdentifier.TempKey(tempKey);
+            }
+            throw WorkflowExceptions.invalidGraphRequest(
+                    "Either id or tempKey must be provided for state node identifier",
+                    "state_node",
+                    "missing_identifier");
+        }
+    }
 
     public record ReplaceTransitionRequest(
-            Long id,
-            String tempKey,
-            @NotNull EntityRef source,
-            @NotNull EntityRef target) {}
+            @Nullable Long id,
+            @Nullable String tempKey,
+            @NotNull Ref source,
+            @NotNull Ref target) {
+
+        public record Ref(@Nullable Long id, @Nullable String tempKey) {
+            NodeIdentifier toIdentifier() {
+                if (id != null) {
+                    return new NodeIdentifier.ExistingId(id);
+                }
+                if (tempKey != null) {
+                    return new NodeIdentifier.TempKey(tempKey);
+                }
+                throw WorkflowExceptions.invalidGraphRequest(
+                        "Either id or tempKey must be provided for state node identifier",
+                        "state_node",
+                        "missing_identifier");
+            }
+        }
+
+        NodeIdentifier toIdentifier() {
+            if (id != null) {
+                return new NodeIdentifier.ExistingId(id);
+            }
+            if (tempKey != null) {
+                return new NodeIdentifier.TempKey(tempKey);
+            }
+            throw WorkflowExceptions.invalidGraphRequest(
+                    "Either id or tempKey must be provided for transition node identifier",
+                    "transition_node",
+                    "missing_identifier");
+        }
+    }
 
     public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
         return new ReplaceWorkflowGraphCommand(
@@ -34,15 +84,15 @@ public record ReplaceWorkflowGraphRequest(
                 version,
                 replaceStatusRequests.stream()
                         .map(s -> StateDefinition.builder()
-                                .stateRef(new EntityRef(s.id(), s.tempKey()))
+                                .identifier(s.toIdentifier())
                                 .category(s.category)
                                 .build())
                         .toList(),
                 replaceTransitionRequests.stream()
                         .map(t -> TransitionDefinition.builder()
-                                .transitionRef(new EntityRef(t.id(), t.tempKey()))
-                                .sourceStateRef(t.source)
-                                .targetStateRef(t.target)
+                                .identifier(t.toIdentifier())
+                                .sourceIdentifier(t.source.toIdentifier())
+                                .targetIdentifier(t.target.toIdentifier())
                                 .build())
                         .toList());
     }

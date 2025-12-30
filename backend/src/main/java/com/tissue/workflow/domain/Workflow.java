@@ -32,8 +32,8 @@ import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
+@SQLRestriction("softDeleted = false")
 public class Workflow extends BaseEntity {
 
     @Id
@@ -56,7 +56,7 @@ public class Workflow extends BaseEntity {
     private Name name;
 
     @Nullable
-    @Column(name = "description", length = 255)
+    @Column(name = "description")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -69,10 +69,14 @@ public class Workflow extends BaseEntity {
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowTransition> transitions = new ArrayList<>();
 
-    // TODO: add javadoc why @Nullable is used for initialState due to changeStateCategory and the workflowGraphReplace,
-    //  and why or when it is safe
+    /**
+     * This field is technically null during the initial construction/persistence phase.
+     * However, a valid, persisted Workflow domain object must have an initial state.
+     * I marked the field @Nullable for NullAway/JPA, but the getter guarantees non-nullity.
+     */
+    @Nullable
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initial_state_id")
+    @JoinColumn(name = "initial_state_id") // mark nullable = false for DB contstraint?
     private WorkflowState initialState;
 
     @Column(name = "system_provided", nullable = false)
@@ -92,6 +96,13 @@ public class Workflow extends BaseEntity {
         wf.systemProvided = false;
 
         return wf;
+    }
+
+    public WorkflowState getInitialState() {
+        if (this.initialState == null) {
+            throw new IllegalStateException("Workflow %d (id) has no initial state".formatted(id));
+        }
+        return this.initialState;
     }
 
     public WorkflowState addState(

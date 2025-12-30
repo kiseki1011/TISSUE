@@ -6,8 +6,8 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record TransitionDefinition(
-        @Nullable EntityRef transitionRef,
+        NodeIdentifier identifier,
         Name name,
         @Nullable String description,
-        EntityRef sourceStateRef,
-        EntityRef targetStateRef) {}
+        NodeIdentifier sourceIdentifier,
+        NodeIdentifier targetIdentifier) {}
