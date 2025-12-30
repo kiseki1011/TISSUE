@@ -49,16 +49,19 @@ public class Sprint extends BaseEntity {
     private String goal;
 
     @Nullable
+    @Column(name = "started_at")
     private Instant startedAt;
 
     @Nullable
+    @Column(name = "due_at")
     private Instant dueAt;
 
     @Nullable
+    @Column(name = "completed_at")
     private Instant completedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "sprint_status", nullable = false)
     private SprintStatus status;
 
     @SuppressWarnings("NullAway.Init")

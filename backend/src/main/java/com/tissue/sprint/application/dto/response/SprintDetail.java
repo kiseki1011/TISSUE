@@ -4,19 +4,21 @@ import com.tissue.sprint.domain.Sprint;
 import com.tissue.sprint.domain.enums.SprintStatus;
 import java.time.Instant;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record SprintDetail(
         Long id,
         String sprintKey,
         String title,
-        String goal,
-        Instant startedAt,
-        Instant dueAt,
-        Instant completedAt,
+        @Nullable String goal,
+        @Nullable Instant startedAt,
+        @Nullable Instant dueAt,
+        @Nullable Instant completedAt,
         SprintStatus status,
         Instant createdAt,
         Long createdBy) {
+
     public static SprintDetail from(Sprint sprint) {
         return SprintDetail.builder()
                 .id(sprint.getId())
