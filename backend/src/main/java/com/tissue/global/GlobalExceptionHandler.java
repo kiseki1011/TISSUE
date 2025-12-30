@@ -202,12 +202,6 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         String detail = "A database constraint was violated";
 
-        if (ex.getMessage().contains("duplicate key")) {
-            detail = "Duplicate entry detected";
-        } else if (ex.getMessage().contains("foreign key")) {
-            detail = "Referenced resource does not exist";
-        }
-
         log.warn("[DATA_INTEGRITY_VIOLATION] {} | error={}", detail, ex.getMessage());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
