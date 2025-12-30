@@ -10,32 +10,34 @@ import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record IssueCommonDetail(
         Long issueId,
         String issueKey,
         String title,
-        String content,
-        String summary,
+        @Nullable String content,
+        @Nullable String summary,
         IssuePriority priority,
-        Integer storyPoint,
-        Instant dueAt,
-        Instant startedAt,
-        Instant resolvedAt,
+        @Nullable Integer storyPoint,
+        @Nullable Instant dueAt,
+        @Nullable Instant startedAt,
+        @Nullable Instant resolvedAt,
 
-        // TODO: 진행도는 따로 분리해서 조회하는거 고려(캐싱 고려)
-        Integer countBasedProgress,
-        Integer pointBasedProgress,
         IssueTypeInfo issueType,
         StateInfo currentState,
 
-        // TODO: 관련자 따로 분리해서 조회하는 것 고려
-        ParticipantInfo author,
-        ParticipantInfo assignee,
-        ParticipantInfo reporter,
+        // TODO: should i separate this to another query api?
+        @Nullable Integer countBasedProgress,
+        @Nullable Integer pointBasedProgress,
+
+        // TODO: should i separate this to another query api?
+        @Nullable ParticipantInfo author,
+        @Nullable ParticipantInfo assignee,
+        @Nullable ParticipantInfo reporter,
         List<ParticipantInfo> reviewers,
-        ParticipantInfo lastUpdatedBy,
+        @Nullable ParticipantInfo lastUpdatedBy,
         Integer subscribersCount,
         Instant createdAt,
         Instant lastUpdatedAt) {

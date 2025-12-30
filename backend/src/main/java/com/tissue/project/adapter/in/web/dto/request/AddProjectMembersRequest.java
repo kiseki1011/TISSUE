@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record AddProjectMembersRequest(List<MemberRequestConfig> members) {
+
     public record MemberRequestConfig(
             @NotNull Long memberId, @NotNull ProjectRole role) {}
 

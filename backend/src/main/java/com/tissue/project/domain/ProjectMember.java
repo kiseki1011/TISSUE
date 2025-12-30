@@ -15,18 +15,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Table(
         name = "project_member",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("softDeleted = false")
 public class ProjectMember extends BaseEntity {
 
     @Id
@@ -54,15 +51,17 @@ public class ProjectMember extends BaseEntity {
     @Column(nullable = false)
     private ProjectRole role;
 
+    @SuppressWarnings("NullAway.Init")
+    protected ProjectMember() {}
+
     public static ProjectMember create(Project project, WorkspaceMember workspaceMember, ProjectRole role) {
+
         ProjectMember projectMember = new ProjectMember();
         projectMember.project = project;
         projectMember.projectKey = project.getKey();
         projectMember.workspaceKey = project.getWorkspaceKey();
-
         projectMember.workspaceMember = workspaceMember;
         projectMember.memberId = workspaceMember.getMemberId();
-
         projectMember.role = role;
 
         return projectMember;

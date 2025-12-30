@@ -2,7 +2,12 @@ package com.tissue.workflow.application.dto;
 
 import com.tissue.common.vo.Name;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record TransitionDefinition(
-        EntityRef transitionRef, Name name, String description, EntityRef sourceStateRef, EntityRef targetStateRef) {}
+        @Nullable EntityRef transitionRef,
+        Name name,
+        @Nullable String description,
+        EntityRef sourceStateRef,
+        EntityRef targetStateRef) {}

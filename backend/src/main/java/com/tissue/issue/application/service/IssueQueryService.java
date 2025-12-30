@@ -7,7 +7,7 @@ import com.tissue.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
+import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.issue.application.port.out.IssueFieldValueQueryRepository;
@@ -86,24 +86,24 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public IssueIdentificationInfo getParent(String workspaceKey, String projectKey, String issueKey) {
+    public IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey) {
         Issue issue = issueQueryRepo
                 .findWithParent(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {
-            return IssueIdentificationInfo.asNull();
+            return IssueIdentifierResponse.asNull();
         }
 
-        return IssueIdentificationInfo.from(parent);
+        return IssueIdentifierResponse.from(parent);
     }
 
     @Override
-    public List<IssueIdentificationInfo> getChildren(String workspaceKey, String projectKey, String issueKey) {
+    public List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey) {
         List<Issue> children = issueQueryRepo.findChildren(workspaceKey, issueKey);
 
-        return children.stream().map(IssueIdentificationInfo::from).toList();
+        return children.stream().map(IssueIdentifierResponse::from).toList();
     }
 
     @Override

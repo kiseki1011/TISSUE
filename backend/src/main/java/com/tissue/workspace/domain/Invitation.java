@@ -20,15 +20,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Invitation extends BaseEntity {
 
     @Id
@@ -58,14 +53,16 @@ public class Invitation extends BaseEntity {
     @Column(name = "project_configs", columnDefinition = "jsonb")
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
-    public static Invitation create(
-            @NonNull Workspace workspace, @NonNull Member member, @Nullable WorkspaceRole workspaceRole) {
+    @SuppressWarnings("NullAway.Init")
+    protected Invitation() {}
+
+    public static Invitation create(Workspace workspace, Member member, WorkspaceRole workspaceRole) {
         Invitation invitation = new Invitation();
         invitation.member = member;
         invitation.workspace = workspace;
         invitation.workspaceKey = workspace.getKey();
         invitation.status = InvitationStatus.PENDING;
-        invitation.workspaceRole = (workspaceRole != null) ? workspaceRole : WorkspaceRole.MEMBER;
+        invitation.workspaceRole = workspaceRole;
 
         return invitation;
     }

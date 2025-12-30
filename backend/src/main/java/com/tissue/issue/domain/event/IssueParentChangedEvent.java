@@ -6,7 +6,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record IssueParentChangedEvent(
         UUID eventId,
@@ -15,16 +15,17 @@ public record IssueParentChangedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        String oldParentKey,
-        Long oldParentId,
-        String newParentKey,
-        Long newParentId,
+        @Nullable String oldParentKey,
+        @Nullable Long oldParentId,
+        @Nullable String newParentKey,
+        @Nullable Long newParentId,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
 
     public static IssueParentChangedEvent create(
             Issue issue, @Nullable Issue oldParent, @Nullable Issue newParent, ProjectMember actor) {
+
         return new IssueParentChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

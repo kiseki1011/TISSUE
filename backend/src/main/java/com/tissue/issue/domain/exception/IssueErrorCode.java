@@ -28,6 +28,7 @@ public enum IssueErrorCode implements ErrorCode {
     RELATION_CIRCULAR_DEPENDENCY("Circular dependency detected in the issue relation graph"),
     RELATION_ISSUE_TYPE_MISMATCH("Some relation types require both issues to be of the same issue type"),
     RELATION_ALREADY_EXISTS("A relation already exists between these two issues"),
+    RELATION_NOT_FOUND("Relation not found between these two issues"),
     RELATION_WORKSPACE_MISMATCH("Both issues in a relation must belong to the same workspace"),
 
     CUSTOM_FIELD_REQUIRED("Required custom field is missing or empty"),

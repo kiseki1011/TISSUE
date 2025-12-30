@@ -1,12 +1,12 @@
 package com.tissue.workflow.application.listener;
 
-import static com.tissue.workflow.domain.guard.GuardType.*;
-import static com.tissue.workflow.domain.guard.types.ApprovalGuard.*;
+import static com.tissue.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
+import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
+import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_REJECT_TRANSITION;
 
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
-import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkflowAutomationEventListener {
 
-    private final IssueFinder issueFinder;
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueQueryRepository issueQueryRepository;
 

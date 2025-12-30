@@ -85,6 +85,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void syncTransitions(
             Workflow workflow, List<TransitionDefinition> transitionDefinitions, StateResolver stateResolver) {
+
         deleteRemovedTransitions(workflow, transitionDefinitions);
         Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(workflow);
 
@@ -92,7 +93,8 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState src = stateResolver.resolve(cmd.sourceStateRef());
             WorkflowState trg = stateResolver.resolve(cmd.targetStateRef());
 
-            if (cmd.transitionRef().isExisting()) {
+            EntityRef ref = cmd.transitionRef();
+            if (ref != null && ref.isExisting()) {
                 rewireExistingTransition(workflow, cmd, src, trg, existingTransitions);
                 continue;
             }
@@ -155,8 +157,15 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
             WorkflowState src,
             WorkflowState trg,
             Map<Long, WorkflowTransition> existingTransitions) {
-        WorkflowTransition transition =
-                existingTransitions.get(cmd.transitionRef().id());
+
+        EntityRef ref = cmd.transitionRef();
+        if (ref == null) {
+            throw new IllegalStateException("Entity reference must not be null");
+        }
+        WorkflowTransition transition = existingTransitions.get(ref.id());
+        if (transition == null) {
+            throw new IllegalStateException("Transition must not be null");
+        }
         workflow.rewireTransitionSource(transition, src);
         workflow.rewireTransitionTarget(transition, trg);
     }

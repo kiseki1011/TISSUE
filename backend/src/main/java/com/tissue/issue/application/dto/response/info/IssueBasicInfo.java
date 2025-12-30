@@ -5,6 +5,7 @@ import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record IssueBasicInfo(
@@ -13,11 +14,13 @@ public record IssueBasicInfo(
         String title,
         Instant createdAt,
         Instant lastUpdatedAt,
-        ParticipantInfo author,
-        ParticipantInfo lastUpdatedBy,
-        ParticipantInfo assignee,
+        @Nullable ParticipantInfo author,
+        // TODO: is this nullable? i wonder how the lastModifiedBy works in jpa audit
+        @Nullable ParticipantInfo lastUpdatedBy,
+        @Nullable ParticipantInfo assignee,
         IssuePriority priority,
         StateInfo currentState) {
+
     public static IssueBasicInfo from(Issue issue, ProjectMember author, ProjectMember lastUpdatedBy) {
         return IssueBasicInfo.builder()
                 .issueKey(issue.getKey())

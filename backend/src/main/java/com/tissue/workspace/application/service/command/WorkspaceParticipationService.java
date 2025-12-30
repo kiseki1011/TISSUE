@@ -1,6 +1,6 @@
 package com.tissue.workspace.application.service.command;
 
-import static com.tissue.member.domain.MemberStatus.*;
+import static com.tissue.member.domain.MemberStatus.ACTIVE;
 
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
@@ -159,7 +159,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                 .collect(Collectors.partitioningBy(
                         m -> !joinedIds.contains(m.getId()) && !pendingIds.contains(m.getId())));
 
-        return new InvitationFilterResult(partitioned.get(true), partitioned.get(false));
+        List<Member> targets = partitioned.getOrDefault(true, Collections.emptyList());
+        List<Member> skipped = partitioned.getOrDefault(false, Collections.emptyList());
+
+        return new InvitationFilterResult(targets, skipped);
     }
 
     private void checkWorkspaceCapacity(Workspace workspace) {

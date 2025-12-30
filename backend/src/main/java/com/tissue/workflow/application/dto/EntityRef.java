@@ -1,6 +1,9 @@
 package com.tissue.workflow.application.dto;
 
-public record EntityRef(Long id, String tempKey) {
+import org.jspecify.annotations.Nullable;
+
+public record EntityRef(@Nullable Long id, String tempKey) {
+
     public EntityRef {
         if ((id == null) == (tempKey == null)) {
             throw new IllegalArgumentException("One of id or tempKey must be provided");

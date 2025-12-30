@@ -1,6 +1,8 @@
 package com.tissue.sprint.domain;
 
-import static com.tissue.sprint.domain.enums.SprintStatus.*;
+import static com.tissue.sprint.domain.enums.SprintStatus.ACTIVE;
+import static com.tissue.sprint.domain.enums.SprintStatus.COMPLETED;
+import static com.tissue.sprint.domain.enums.SprintStatus.PLANNING;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.project.domain.Project;
@@ -17,16 +19,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.Instant;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 // TODO: softDelete
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Sprint extends BaseEntity {
 
     @Id
@@ -43,22 +41,30 @@ public class Sprint extends BaseEntity {
     @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
 
-    // TODO: size max = 50
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String title;
 
-    // TODO: size max = 255
+    @Nullable
+    @Column(name = "goal")
     private String goal;
 
+    @Nullable
     private Instant startedAt;
+
+    @Nullable
     private Instant dueAt;
+
+    @Nullable
     private Instant completedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SprintStatus status;
 
-    public static Sprint create(@NonNull Project project, @NonNull String title, @Nullable String goal) {
+    @SuppressWarnings("NullAway.Init")
+    protected Sprint() {}
+
+    public static Sprint create(Project project, String title, @Nullable String goal) {
         Sprint sprint = new Sprint();
         sprint.project = project;
         sprint.projectKey = project.getKey();
@@ -74,7 +80,7 @@ public class Sprint extends BaseEntity {
         return status == COMPLETED;
     }
 
-    public void updateTitle(@NonNull String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
@@ -82,21 +88,21 @@ public class Sprint extends BaseEntity {
         this.goal = goal;
     }
 
-    public void updateStartedAt(@NonNull Instant startedAt) {
+    public void updateStartedAt(Instant startedAt) {
         if (this.dueAt != null) {
             ensureValidPeriod(startedAt, this.dueAt);
         }
         this.startedAt = startedAt;
     }
 
-    public void updateDueAt(@NonNull Instant dueAt) {
+    public void updateDueAt(Instant dueAt) {
         if (this.startedAt != null) {
             ensureValidPeriod(this.startedAt, dueAt);
         }
         this.dueAt = dueAt;
     }
 
-    public void start(@NonNull Instant dueAt) {
+    public void start(Instant dueAt) {
         if (this.status != PLANNING) {
             throw SprintExceptions.invalidStatusTransition(this.status, PLANNING, ACTIVE);
         }

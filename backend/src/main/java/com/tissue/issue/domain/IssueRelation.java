@@ -18,7 +18,6 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
@@ -46,8 +45,7 @@ public class IssueRelation extends BaseEntity {
     @Column(nullable = false)
     private IssueRelationType relationType;
 
-    static IssueRelation create(
-            @NonNull Issue sourceIssue, @NonNull Issue targetIssue, @NonNull IssueRelationType type) {
+    static IssueRelation create(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
         ensureSameWorkspace(sourceIssue, targetIssue);
         ensureNotSelfReference(sourceIssue, targetIssue);
         validateRelationType(type, sourceIssue, targetIssue);
@@ -76,7 +74,7 @@ public class IssueRelation extends BaseEntity {
         }
     }
 
-    private static void validateRelationType(@NonNull IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
+    private static void validateRelationType(IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
         if (type == IssueRelationType.DUPLICATES) {
             boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
             if (issueTypeMismatch) {

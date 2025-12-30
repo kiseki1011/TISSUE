@@ -1,7 +1,28 @@
 package com.tissue.issuetype.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.*;
-import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.*;
+import static com.tissue.global.exception.ContextKeys.FIELD_OPTION_ID;
+import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD;
+import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD_OPTION;
+import static com.tissue.global.exception.ContextKeys.ISSUE_TYPE;
+import static com.tissue.global.exception.ContextKeys.ISSUE_TYPE_ID;
+import static com.tissue.global.exception.ContextKeys.PROJECT_KEY;
+import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.DUPLICATE_FIELD_OPTION_NAME;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.DUPLICATE_ISSUE_FIELD_NAME;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.DUPLICATE_ISSUE_TYPE_NAME;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.FIELD_OPTION_IN_USE;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.FIELD_OPTION_NOT_FOUND;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_IN_USE;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_FIELD_NOT_FOUND;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_TYPE_IN_USE;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.ISSUE_TYPE_NOT_FOUND;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.OPTION_LIMIT_EXCEEDED;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.OPTION_REORDER_DUPLICATE_ID;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.OPTION_REORDER_SIZE_MISMATCH;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.OPTION_REORDER_UNKNOWN_ID;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.SYSTEM_ISSUE_TYPE_NOT_DELETABLE;
+import static com.tissue.issuetype.domain.exception.IssueTypeErrorCode.UNSUPPORTED_FIELD_TYPE;
 
 import com.tissue.common.vo.Name;
 import com.tissue.global.exception.base.BadRequestException;
@@ -11,6 +32,7 @@ import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
+import org.jspecify.annotations.Nullable;
 
 public class IssueTypeExceptions {
 
@@ -86,7 +108,7 @@ public class IssueTypeExceptions {
         return new BadRequestException(OPTION_REORDER_DUPLICATE_ID);
     }
 
-    public static BadRequestException optionReorderUnknownId(Long unknownId) {
+    public static BadRequestException optionReorderUnknownId(@Nullable Long unknownId) {
         return new BadRequestException(OPTION_REORDER_UNKNOWN_ID).addContext("unknownOptionId", unknownId);
     }
 

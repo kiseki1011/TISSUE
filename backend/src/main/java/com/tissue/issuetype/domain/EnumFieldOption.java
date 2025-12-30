@@ -12,14 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EnumFieldOption extends BaseEntity {
 
     @Id
@@ -36,12 +32,15 @@ public class EnumFieldOption extends BaseEntity {
     @Embedded
     private Name name;
 
+    // TODO: should i change it to "order"?
     @Column(nullable = false)
     private int position;
 
-    public static EnumFieldOption create(@NonNull IssueField issueField, @NonNull Name name, Integer position) {
-        EnumFieldOption option = new EnumFieldOption();
+    @SuppressWarnings("NullAway.Init")
+    protected EnumFieldOption() {}
 
+    public static EnumFieldOption create(IssueField issueField, Name name, Integer position) {
+        EnumFieldOption option = new EnumFieldOption();
         option.issueField = issueField;
         option.name = name;
         option.position = (position == null) ? 0 : position;
@@ -53,7 +52,7 @@ public class EnumFieldOption extends BaseEntity {
         return name.getDisplay();
     }
 
-    public void rename(@NonNull Name name) {
+    public void rename(Name name) {
         this.name = name;
     }
 

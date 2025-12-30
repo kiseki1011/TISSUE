@@ -4,13 +4,14 @@ import com.tissue.common.enums.ColorType;
 import com.tissue.common.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueTypeCommand(
         String workspaceKey,
         String projectKey,
         Name name,
-        String description,
+        @Nullable String description,
         ColorType color,
         IssueHierarchy issueHierarchy,
         Long workflowId) {}

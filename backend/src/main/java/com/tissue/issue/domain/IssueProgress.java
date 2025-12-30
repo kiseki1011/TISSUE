@@ -1,27 +1,28 @@
 package com.tissue.issue.domain;
 
-import com.tissue.issue.domain.enums.ProgressType;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Embeddable
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueProgress {
 
     private static final int MIN_PERCENTAGE = 0;
     private static final int MAX_PERCENTAGE = 100;
 
+    @Nullable
     @Column(name = "count_based_progress")
     private Integer countBasedProgress;
 
+    @Nullable
     @Column(name = "point_based_progress")
     private Integer pointBasedProgress;
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueProgress() {}
 
     static IssueProgress init() {
         return new IssueProgress();
@@ -32,14 +33,7 @@ public class IssueProgress {
         this.pointBasedProgress = ensureValidPercentageRange(pointBased);
     }
 
-    public Integer getByType(ProgressType type) {
-        return switch (type) {
-            case COUNT_BASED -> countBasedProgress;
-            case POINT_BASED -> pointBasedProgress;
-        };
-    }
-
-    private Integer ensureValidPercentageRange(Integer value) {
+    private @Nullable Integer ensureValidPercentageRange(@Nullable Integer value) {
         if (value == null) {
             return null;
         }

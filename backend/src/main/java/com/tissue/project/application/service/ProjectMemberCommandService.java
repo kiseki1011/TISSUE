@@ -20,6 +20,7 @@ import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
                 continue;
             }
 
-            ProjectRole role = roleMap.get(wm.getMemberId());
+            ProjectRole role = Objects.requireNonNull(roleMap.get(wm.getMemberId()));
             newMembers.add(ProjectMember.create(project, wm, role));
         }
 

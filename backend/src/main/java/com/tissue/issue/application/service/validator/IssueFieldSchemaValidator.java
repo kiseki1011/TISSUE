@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -66,16 +67,16 @@ public class IssueFieldSchemaValidator {
         return loadFields(issue).stream().collect(Collectors.toMap(IssueField::getId, it -> it));
     }
 
-    private boolean isEmptyValue(IssueField field, Object raw) {
+    private boolean isEmptyValue(IssueField field, @Nullable Object raw) {
         return fieldTypeHandler.isBlank(field, raw);
     }
 
-    private void parseAndAssignValue(IssueFieldValue val, IssueField field, Object raw) {
+    private void parseAndAssignValue(IssueFieldValue val, IssueField field, @Nullable Object raw) {
         Object parsed = fieldTypeHandler.parse(field, raw);
         fieldTypeHandler.assign(val, parsed);
     }
 
-    private void ensureValueExistsIfRequired(IssueField field, Object raw) {
+    private void ensureValueExistsIfRequired(IssueField field, @Nullable Object raw) {
         boolean fieldNotRequired = !field.isRequired();
         if (fieldNotRequired) {
             return;

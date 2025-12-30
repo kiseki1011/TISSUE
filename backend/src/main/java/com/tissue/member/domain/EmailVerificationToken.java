@@ -13,7 +13,6 @@ import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Entity
 @Getter
@@ -40,8 +39,7 @@ public class EmailVerificationToken {
     private Instant expiresAt;
 
     // TODO: is there a way to enforce to set all fields? instead of using a AllArgsConstructor?
-    public static EmailVerificationToken create(
-            @NonNull String email, @NonNull String tokenValue, @NonNull Duration ttl) {
+    public static EmailVerificationToken create(String email, String tokenValue, Duration ttl) {
         EmailVerificationToken token = new EmailVerificationToken();
         token.email = email;
         token.tokenValue = tokenValue;

@@ -3,8 +3,8 @@ package com.tissue.issue.domain.service.handler;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("StringConcatToTextBlock")
 public class IntegerFieldHandler implements FieldTypeHandler {
 
     @Qualifier("domainConversionService")
@@ -24,7 +25,7 @@ public class IntegerFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public Object parse(@NonNull IssueField field, @NonNull Object raw) {
+    public Object parse(IssueField field, @Nullable Object raw) {
         try {
             return cs.convert(raw, Integer.class);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {

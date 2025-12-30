@@ -15,10 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -28,7 +26,6 @@ import lombok.NoArgsConstructor;
                     name = "UK_EVENT_RECEIVER",
                     columnNames = {"eventId", "receiverMemberId"})
         })
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseDateEntity {
 
     @Id
@@ -62,16 +59,24 @@ public class Notification extends BaseDateEntity {
     @Column(nullable = false)
     private boolean isRead;
 
+    @SuppressWarnings("NullAway.Init")
+    protected Notification() {}
+
+    // TODO: consider using static factory method
     @Builder
     public Notification(
             UUID eventId,
             NotificationType notificationType,
+            //            String workspaceKey,
+            //            String projectKey,
             EntityReference entityReference,
             Long actorMemberId,
             String actorDisplayName,
+            //            String actorUseraname,
             Long receiverMemberId,
             String receiverEmail,
             NotificationMessage message) {
+
         this.eventId = eventId;
         this.type = notificationType;
         this.entityReference = entityReference;

@@ -34,9 +34,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -80,13 +79,16 @@ public class Issue extends BaseEntity {
     @Column(name = "priority", nullable = false)
     private IssuePriority priority;
 
+    @Nullable
     @Column(name = "story_point")
     private Integer storyPoint;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_issue_id")
     private Issue parentIssue;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sprint_id")
     private Sprint sprint;
@@ -102,19 +104,21 @@ public class Issue extends BaseEntity {
 
     // TODO: need to add Tag entity(used for search and categorization)
 
+    @SuppressWarnings("NullAway.Init")
     protected Issue() {}
 
     public static Issue create(
-            @NonNull Project project,
+            Project project,
             @Nullable Sprint sprint,
-            @NonNull IssueType issueType,
-            @NonNull String title,
-            @NonNull IssueContent content,
-            @NonNull IssueSchedule schedule,
-            @NonNull IssueParticipants participants,
-            @Nullable IssuePriority priority,
+            IssueType issueType,
+            String title,
+            IssueContent content,
+            IssueSchedule schedule,
+            IssueParticipants participants,
+            IssuePriority priority,
             @Nullable Integer storyPoint,
             @Nullable Issue parentIssue) {
+
         Issue issue = new Issue();
         issue.project = project;
         issue.workspaceKey = project.getWorkspaceKey();
@@ -125,7 +129,7 @@ public class Issue extends BaseEntity {
         issue.content = content;
         issue.schedule = schedule;
         issue.participants = participants;
-        issue.priority = priority == null ? IssuePriority.NORMAL : priority;
+        issue.priority = priority;
 
         if (storyPoint != null) {
             issue.updateStoryPoint(storyPoint);
@@ -150,15 +154,23 @@ public class Issue extends BaseEntity {
     }
 
     public String getContent() {
-        return content.getContent();
+        return content.getContent() != null ? content.getContent() : "";
     }
 
     public String getSummary() {
-        return content.getSummary();
+        return content.getSummary() != null ? content.getSummary() : "";
     }
 
     public List<IssueFieldValue> getFieldValues() {
         return Collections.unmodifiableList(fieldValues);
+    }
+
+    public @Nullable String getParentKey() {
+        return (this.parentIssue != null) ? this.parentIssue.getKey() : null;
+    }
+
+    public @Nullable Long getParentId() {
+        return (this.parentIssue != null) ? this.parentIssue.getId() : null;
     }
 
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
@@ -172,7 +184,7 @@ public class Issue extends BaseEntity {
                 });
     }
 
-    public void setSprint(@NonNull Sprint sprint) {
+    public void setSprint(Sprint sprint) {
         this.sprint = sprint;
     }
 
@@ -180,14 +192,14 @@ public class Issue extends BaseEntity {
         this.sprint = null;
     }
 
-    public void changeReporter(@NonNull ProjectMember reporter) {
+    public void changeReporter(ProjectMember reporter) {
         if (participants.isReporter(reporter)) {
             return;
         }
         participants.changeReporter(reporter);
     }
 
-    public void updateTitle(@NonNull String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
@@ -203,7 +215,7 @@ public class Issue extends BaseEntity {
         schedule.updateDueDate(dueAt);
     }
 
-    public void updatePriority(@NonNull IssuePriority priority) {
+    public void updatePriority(IssuePriority priority) {
         this.priority = priority;
     }
 
@@ -223,16 +235,16 @@ public class Issue extends BaseEntity {
         progress.update(countBased, pointBased);
     }
 
-    public IssueRelation addRelation(@NonNull Issue targetIssue, @NonNull IssueRelationType type) {
+    public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
         return relations.addRelation(this, targetIssue, type);
     }
 
-    public IssueRelation removeRelation(@NonNull Issue otherIssue) {
-        return relations.removeRelation(otherIssue);
+    public IssueRelation removeRelation(Issue otherIssue) {
+        return relations.removeRelation(this, otherIssue);
     }
 
     // TODO: should i separate this to a separate domain service?
-    public void transitionTo(@NonNull WorkflowState newState) {
+    public void transitionTo(WorkflowState newState) {
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
 
@@ -247,15 +259,15 @@ public class Issue extends BaseEntity {
         }
     }
 
-    public void addSubscriber(@NonNull ProjectMember projectMember) {
+    public void addSubscriber(ProjectMember projectMember) {
         participants.addSubscriber(projectMember, this);
     }
 
-    public void removeSubscriber(@NonNull ProjectMember projectMember) {
+    public void removeSubscriber(ProjectMember projectMember) {
         participants.removeSubscriber(projectMember);
     }
 
-    public void assignTo(@NonNull ProjectMember assignee) {
+    public void assignTo(ProjectMember assignee) {
         participants.assignTo(assignee);
     }
 
@@ -263,15 +275,15 @@ public class Issue extends BaseEntity {
         participants.unassign();
     }
 
-    public void addReviewer(@NonNull ProjectMember projectMember) {
+    public void addReviewer(ProjectMember projectMember) {
         participants.addReviewer(projectMember, this);
     }
 
-    public void removeReviewer(@NonNull ProjectMember projectMember) {
+    public void removeReviewer(ProjectMember projectMember) {
         participants.removeReviewer(projectMember);
     }
 
-    public void setParentIssue(@NonNull Issue newParent) {
+    public void setParentIssue(Issue newParent) {
         ensureCanSetParent(newParent);
         this.parentIssue = newParent;
     }
@@ -311,7 +323,7 @@ public class Issue extends BaseEntity {
         }
     }
 
-    private void ensureCanSetParent(@NonNull Issue parentIssue) {
+    private void ensureCanSetParent(Issue parentIssue) {
         ensureSameWorkspace(parentIssue);
         if (this.getHierarchy().cannotHaveCrossProjectParent()) {
             ensureSameProject(parentIssue);

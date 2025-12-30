@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -56,7 +57,7 @@ public class IssueFieldChangeTracker {
     }
 
     /** 내부 값을 로그/비교용 데이터로 변환 */
-    private Object formatValue(IssueFieldValue fv) {
+    private @Nullable Object formatValue(IssueFieldValue fv) {
         Object value = fv.getValue();
 
         if (value == null) {

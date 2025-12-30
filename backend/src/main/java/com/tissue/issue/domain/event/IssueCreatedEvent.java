@@ -6,6 +6,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record IssueCreatedEvent(
         UUID eventId,
@@ -14,8 +15,8 @@ public record IssueCreatedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        String parentKey,
-        Long parentId,
+        @Nullable String parentKey,
+        @Nullable Long parentId,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {

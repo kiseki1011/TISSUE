@@ -7,6 +7,7 @@ import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record IssueTransitionedEvent(
         UUID eventId,
@@ -15,8 +16,8 @@ public record IssueTransitionedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        String parentKey,
-        Long parentId,
+        @Nullable String parentKey,
+        @Nullable Long parentId,
         Long transitionId,
         String transitionName,
         Long oldStatusId,
@@ -25,6 +26,7 @@ public record IssueTransitionedEvent(
         String newStatusName,
         Long actorMemberId,
         String actorDisplayName) {
+
     public static IssueTransitionedEvent create(
             Issue issue, WorkflowTransition transition, WorkflowState oldState, ProjectMember actor) {
         Issue parentIssue = issue.getParentIssue();

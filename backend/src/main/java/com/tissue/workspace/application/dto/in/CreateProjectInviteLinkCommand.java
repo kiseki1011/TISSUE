@@ -3,7 +3,7 @@ package com.tissue.workspace.application.dto.in;
 import com.tissue.project.domain.enums.ProjectRole;
 import java.time.Instant;
 import lombok.Builder;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateProjectInviteLinkCommand(

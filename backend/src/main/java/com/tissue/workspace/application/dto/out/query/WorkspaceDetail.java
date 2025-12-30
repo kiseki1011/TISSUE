@@ -3,18 +3,20 @@ package com.tissue.workspace.application.dto.out.query;
 import com.tissue.workspace.domain.Workspace;
 import java.time.Instant;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record WorkspaceDetail(
         Long id,
         String key,
         String name,
-        String description,
+        @Nullable String description,
         // int memberCount,
         Long createdBy,
         Instant createdAt,
         Long updatedBy,
         Instant updatedAt) {
+
     public static WorkspaceDetail from(Workspace workspace) {
         return WorkspaceDetail.builder()
                 .id(workspace.getId())

@@ -3,9 +3,11 @@ package com.tissue.issue.domain.policy;
 import com.tissue.issue.domain.exception.IssueExceptions;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import org.jspecify.annotations.Nullable;
 
 public record FieldValuePolicy(
         int decimalScale, RoundingMode roundingMode, int maxIntegerDigits, int maxFractionDigits) {
+
     public void ensureDigits(BigDecimal value, Long fieldId) {
         if (value == null) {
             return;
@@ -22,7 +24,7 @@ public record FieldValuePolicy(
         }
     }
 
-    public BigDecimal normalizeDecimal(BigDecimal input) {
+    public @Nullable BigDecimal normalizeDecimal(BigDecimal input) {
         if (input == null) {
             return null;
         }

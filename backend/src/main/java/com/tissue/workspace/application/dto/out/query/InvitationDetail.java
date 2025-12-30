@@ -7,7 +7,7 @@ import com.tissue.workspace.domain.enums.InvitationStatus;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record InvitationDetail(

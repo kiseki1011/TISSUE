@@ -4,8 +4,8 @@ import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("StringConcatToTextBlock")
 public class EnumFieldHandler implements FieldTypeHandler {
 
     private final EnumFieldOptionQueryRepository optionRepo;
@@ -26,7 +27,7 @@ public class EnumFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public Object parse(@NonNull IssueField field, @NonNull Object raw) {
+    public @Nullable Object parse(IssueField field, @Nullable Object raw) {
         try {
             Long optionId = cs.convert(raw, Long.class);
             return optionRepo

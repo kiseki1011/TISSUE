@@ -5,13 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 
 @Getter
 public abstract class TissueException extends RuntimeException {
 
     private final ErrorCode errorCode;
+
+    @Nullable
     private final String detailMessage;
+
     private final Map<String, Object> context = new HashMap<>();
 
     public abstract HttpStatus getHttpStatus();
@@ -40,7 +44,7 @@ public abstract class TissueException extends RuntimeException {
         this.detailMessage = detailMessage;
     }
 
-    public String getLoggingMessage() {
+    public @Nullable String getLoggingMessage() {
         String logMessage = (detailMessage != null && !detailMessage.isBlank()) ? detailMessage : getMessage();
 
         if (context.isEmpty()) {
@@ -56,7 +60,7 @@ public abstract class TissueException extends RuntimeException {
 
     // TODO: 정적 팩토리 내에서만 사용 가능하다는 javadoc 추가
     @SuppressWarnings("unchecked")
-    public <T extends TissueException> T addContext(String key, Object value) {
+    public <T extends TissueException> T addContext(String key, @Nullable Object value) {
         this.context.put(key, value);
         return (T) this;
     }

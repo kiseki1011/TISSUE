@@ -6,7 +6,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record IssueStoryPointChangedEvent(
         UUID eventId,
@@ -15,16 +15,17 @@ public record IssueStoryPointChangedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        String parentKey,
-        Long parentId,
-        Integer oldStoryPoint,
-        Integer newStoryPoint,
+        @Nullable String parentKey,
+        @Nullable Long parentId,
+        @Nullable Integer oldStoryPoint,
+        @Nullable Integer newStoryPoint,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
 
     public static IssueStoryPointChangedEvent create(
             Issue issue, @Nullable Issue parentIssue, @Nullable Integer oldStoryPoint, ProjectMember actor) {
+
         return new IssueStoryPointChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

@@ -9,7 +9,7 @@ import com.tissue.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
+import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,10 +27,10 @@ public interface IssueQueryUseCase {
     IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    IssueIdentificationInfo getParent(String workspaceKey, String projectKey, String issueKey);
+    IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
-    List<IssueIdentificationInfo> getChildren(String workspaceKey, String projectKey, String issueKey);
+    List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey);
 
     @PreAuthorize(REQUIRES_PROJECT_VIEWER)
     IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey);

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public record AddProjectMembersCommand(
         String workspaceKey, String projectKey, List<ProjectMemberConfig> targetMembers) {
+
     public record ProjectMemberConfig(Long memberId, ProjectRole projectRole) {}
 
     public Set<Long> extractMemberIds() {

@@ -7,7 +7,7 @@ import com.tissue.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
+import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.security.authentication.MemberUserDetails;
@@ -59,22 +59,22 @@ public class IssueQueryController {
     }
 
     @GetMapping("/{issueKey}/parent")
-    public ResponseEntity<IssueIdentificationInfo> getParent(
+    public ResponseEntity<IssueIdentifierResponse> getParent(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueIdentificationInfo response = issueQueryUseCase.getParent(workspaceKey, projectKey, issueKey);
+        IssueIdentifierResponse response = issueQueryUseCase.getParent(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/children")
-    public ResponseEntity<List<IssueIdentificationInfo>> getChildren(
+    public ResponseEntity<List<IssueIdentifierResponse>> getChildren(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        List<IssueIdentificationInfo> response = issueQueryUseCase.getChildren(workspaceKey, projectKey, issueKey);
+        List<IssueIdentifierResponse> response = issueQueryUseCase.getChildren(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
@@ -88,7 +88,6 @@ public class IssueQueryController {
         return ResponseEntity.ok(response);
     }
 
-    // TODO: author vs creator 더 좋은 표현은?
     @GetMapping("/{issueKey}/author")
     public ResponseEntity<ParticipantInfo> getAuthor(
             @PathVariable String workspaceKey,

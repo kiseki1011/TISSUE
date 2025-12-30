@@ -1,13 +1,16 @@
 package com.tissue.common.util;
 
 import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
 
 public final class NullSafe {
+
     private NullSafe() {
-        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    public static <T, R> R get(T target, Function<T, R> mapper) {
+    // TODO: refactor to not use this util. make a getParentId, getParentKey in the Issue entity.
+    public static <T, R> @Nullable R get(@Nullable T target, Function<T, R> mapper) {
         return target != null ? mapper.apply(target) : null;
     }
 }

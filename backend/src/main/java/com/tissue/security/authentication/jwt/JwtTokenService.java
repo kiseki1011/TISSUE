@@ -161,23 +161,6 @@ public class JwtTokenService {
         return elevated != null && elevated;
     }
 
-    /** Extract memberId from token */
-    public Long getMemberIdFromToken(String token) {
-        Object memberIdClaim = parseAndValidateClaims(token).get(CLAIM_MEMBER_ID);
-
-        if (memberIdClaim instanceof Number number) {
-            return number.longValue();
-        }
-
-        log.warn("Invalid or missing member ID claim. member ID claim type: {}", memberIdClaim.getClass());
-        throw new JwtAuthenticationException("Invalid or missing member ID claim");
-    }
-
-    /** Check token type (access/refresh) */
-    public String getTokenType(String token) {
-        return parseAndValidateClaims(token).get(CLAIM_TOKEN_TYPE, String.class);
-    }
-
     /** Validate Access Token */
     public void validateAccessToken(String token) {
         Claims claims = parseAndValidateClaims(token);

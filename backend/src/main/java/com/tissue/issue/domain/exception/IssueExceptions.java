@@ -1,7 +1,63 @@
 package com.tissue.issue.domain.exception;
 
-import static com.tissue.global.exception.ContextKeys.*;
-import static com.tissue.issue.domain.exception.IssueErrorCode.*;
+import static com.tissue.global.exception.ContextKeys.CHILD_HIERARCHY;
+import static com.tissue.global.exception.ContextKeys.CHILD_ISSUE_KEY;
+import static com.tissue.global.exception.ContextKeys.CHILD_WORKSPACE_KEY;
+import static com.tissue.global.exception.ContextKeys.CURRENT_HIERARCHY;
+import static com.tissue.global.exception.ContextKeys.CURRENT_STATE;
+import static com.tissue.global.exception.ContextKeys.EXPECTED_TYPE;
+import static com.tissue.global.exception.ContextKeys.FIELD_OPTION_ID;
+import static com.tissue.global.exception.ContextKeys.HIERARCHIES_REQUIRING_PARENT;
+import static com.tissue.global.exception.ContextKeys.INPUT_DATE;
+import static com.tissue.global.exception.ContextKeys.INPUT_VALUE;
+import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD;
+import static com.tissue.global.exception.ContextKeys.ISSUE_FIELD_ID;
+import static com.tissue.global.exception.ContextKeys.ISSUE_ID;
+import static com.tissue.global.exception.ContextKeys.ISSUE_KEY;
+import static com.tissue.global.exception.ContextKeys.ISSUE_TYPE;
+import static com.tissue.global.exception.ContextKeys.ISSUE_TYPE_ID;
+import static com.tissue.global.exception.ContextKeys.MEMBER_ID;
+import static com.tissue.global.exception.ContextKeys.PARENT_HIERARCHY;
+import static com.tissue.global.exception.ContextKeys.PARENT_ISSUE_KEY;
+import static com.tissue.global.exception.ContextKeys.PARENT_WORKSPACE_KEY;
+import static com.tissue.global.exception.ContextKeys.PROVIDED_VALUE;
+import static com.tissue.global.exception.ContextKeys.RELATION_TYPE;
+import static com.tissue.global.exception.ContextKeys.REQUIRED_STATE;
+import static com.tissue.global.exception.ContextKeys.SOURCE_ISSUE_KEY;
+import static com.tissue.global.exception.ContextKeys.SOURCE_ISSUE_TYPE;
+import static com.tissue.global.exception.ContextKeys.SOURCE_WORKSPACE_KEY;
+import static com.tissue.global.exception.ContextKeys.STATE_CATEGORY;
+import static com.tissue.global.exception.ContextKeys.STORY_POINT_ALLOWED_HIERARCHIES;
+import static com.tissue.global.exception.ContextKeys.TARGET_ISSUE_KEY;
+import static com.tissue.global.exception.ContextKeys.TARGET_ISSUE_TYPE;
+import static com.tissue.global.exception.ContextKeys.TARGET_WORKSPACE_KEY;
+import static com.tissue.global.exception.ContextKeys.TRANSITION_ID;
+import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
+import static com.tissue.issue.domain.exception.IssueErrorCode.CANNOT_DELETE_ISSUE_WITH_CHILDREN;
+import static com.tissue.issue.domain.exception.IssueErrorCode.CUSTOM_FIELD_REQUIRED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.CUSTOM_FIELD_TYPE_MISMATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.DECIMAL_SCALE_EXCEEDED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.DUE_DATE_MUST_BE_FUTURE;
+import static com.tissue.issue.domain.exception.IssueErrorCode.INTEGER_DIGITS_EXCEEDED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.INVALID_PARENT_HIERARCHY;
+import static com.tissue.issue.domain.exception.IssueErrorCode.INVALID_PERCENTAGE_EXCEPTION;
+import static com.tissue.issue.domain.exception.IssueErrorCode.ISSUE_NOT_FOUND;
+import static com.tissue.issue.domain.exception.IssueErrorCode.ISSUE_SELF_REFERENCE;
+import static com.tissue.issue.domain.exception.IssueErrorCode.MAX_REVIEWERS_EXCEEDED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.ONLY_INITIAL_STATE_DELETION_ALLOWED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.PARENT_PROJECT_MISMATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.PARENT_REQUIRED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.PARENT_WORKSPACE_MISMATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.RELATION_ALREADY_EXISTS;
+import static com.tissue.issue.domain.exception.IssueErrorCode.RELATION_CIRCULAR_DEPENDENCY;
+import static com.tissue.issue.domain.exception.IssueErrorCode.RELATION_ISSUE_TYPE_MISMATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.RELATION_NOT_FOUND;
+import static com.tissue.issue.domain.exception.IssueErrorCode.RELATION_WORKSPACE_MISMATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.REVIEWER_NOT_FOUND;
+import static com.tissue.issue.domain.exception.IssueErrorCode.STORY_POINT_NOT_ALLOWED;
+import static com.tissue.issue.domain.exception.IssueErrorCode.TRANSITION_SOURCE_STATE_NOT_MATCH;
+import static com.tissue.issue.domain.exception.IssueErrorCode.UNKNOWN_CUSTOM_FIELD_ID;
+import static com.tissue.issue.domain.exception.IssueErrorCode.UNKNOWN_ENUM_OPTION;
 
 import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.global.exception.base.ResourceNotFoundException;
@@ -11,6 +67,7 @@ import com.tissue.issuetype.domain.enums.IssueFieldType;
 import com.tissue.workflow.domain.enums.StateCategory;
 import java.time.Instant;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 public class IssueExceptions {
 
@@ -128,6 +185,14 @@ public class IssueExceptions {
                 .addContext(TARGET_ISSUE_KEY, targetIssueKey);
     }
 
+    public static ResourceNotFoundException relationNotFound(
+            String workspaceKey, String sourceIssueKey, String targetIssueKey) {
+        return new ResourceNotFoundException(RELATION_NOT_FOUND)
+                .addContext(WORKSPACE_KEY, workspaceKey)
+                .addContext(SOURCE_ISSUE_KEY, sourceIssueKey)
+                .addContext(TARGET_ISSUE_KEY, targetIssueKey);
+    }
+
     public static BadRequestException relationWorkspaceMismatch(
             String sourceWorkspaceKey, String sourceIssueKey, String targetWorkspaceKey, String targetIssueKey) {
         return new BadRequestException(RELATION_WORKSPACE_MISMATCH)
@@ -172,7 +237,7 @@ public class IssueExceptions {
     }
 
     public static BadRequestException customFieldTypeMismatch(
-            Long fieldId, String fieldName, IssueFieldType expectedType, Object inputValue) {
+            Long fieldId, String fieldName, IssueFieldType expectedType, @Nullable Object inputValue) {
         return new BadRequestException(CUSTOM_FIELD_TYPE_MISMATCH)
                 .addContext(ISSUE_FIELD_ID, fieldId)
                 .addContext(ISSUE_FIELD, fieldName)

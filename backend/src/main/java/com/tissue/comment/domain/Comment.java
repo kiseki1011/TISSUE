@@ -19,8 +19,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -52,11 +51,7 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "parentComment")
     private final List<Comment> childComments = new ArrayList<>();
 
-    public static Comment create(
-            @NonNull Issue issue,
-            @NonNull WorkspaceMember author,
-            @NonNull String content,
-            @Nullable Comment parentComment) {
+    public static Comment create(Issue issue, WorkspaceMember author, String content, @Nullable Comment parentComment) {
         Comment comment = new Comment();
         comment.issue = issue;
         comment.author = author;

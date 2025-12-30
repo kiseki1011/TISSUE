@@ -3,9 +3,16 @@ package com.tissue.position.application.dto.response;
 import com.tissue.common.enums.ColorType;
 import com.tissue.position.domain.Position;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
-public record PositionDetail(String workspaceKey, Long positionId, String name, String description, ColorType color) {
+public record PositionDetail(
+        String workspaceKey,
+        Long positionId,
+        String name,
+        @Nullable String description,
+        ColorType color) {
+
     public static PositionDetail from(Position position) {
         return PositionDetail.builder()
                 .workspaceKey(position.getWorkspaceKey())

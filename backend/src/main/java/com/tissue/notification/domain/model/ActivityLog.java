@@ -2,7 +2,6 @@ package com.tissue.notification.domain.model;
 
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.model.vo.EntityReference;
 import com.tissue.notification.domain.model.vo.NotificationMessage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -13,14 +12,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.util.UUID;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ActivityLog extends BaseDateEntity {
 
     @Id
@@ -34,8 +30,8 @@ public class ActivityLog extends BaseDateEntity {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Embedded
-    private EntityReference entityReference;
+    //    @Embedded
+    //    private EntityReference entityReference;
 
     @Embedded
     private NotificationMessage message;
@@ -43,16 +39,20 @@ public class ActivityLog extends BaseDateEntity {
     @Column(nullable = false)
     private Long actorMemberId;
 
+    @SuppressWarnings("NullAway.Init")
+    protected ActivityLog() {}
+
+    // TODO: consider using statiuc factory method
     @Builder
     public ActivityLog(
             UUID eventId,
             NotificationType type,
-            EntityReference entityReference,
+            //            EntityReference entityReference,
             NotificationMessage message,
             Long actorMemberId) {
         this.eventId = eventId;
         this.type = type;
-        this.entityReference = entityReference;
+        //        this.entityReference = entityReference;
         this.message = message;
         this.actorMemberId = actorMemberId;
     }

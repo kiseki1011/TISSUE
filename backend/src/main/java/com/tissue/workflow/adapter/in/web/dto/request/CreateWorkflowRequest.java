@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record CreateWorkflowRequest(
         @NotBlank @Size(max = 32) String name,
@@ -20,6 +20,7 @@ public record CreateWorkflowRequest(
         @NotNull ColorType color,
         @NotEmpty List<CreateStatusRequest> createStatusRequests,
         @NotEmpty List<CreateTransitionRequest> createTransitionRequests) {
+
     public record CreateStatusRequest(
             @NotBlank String tempKey,
             @NotBlank @Size(max = 32) String name,
