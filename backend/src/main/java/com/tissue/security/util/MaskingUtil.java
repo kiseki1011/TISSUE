@@ -2,6 +2,7 @@ package com.tissue.security.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jspecify.annotations.Nullable;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MaskingUtil {
@@ -13,7 +14,7 @@ public class MaskingUtil {
      * Masks the middle of a string, keeping a specified number of characters at the beginning and
      * end visible. Example: 1234567890 → 12345...7890
      */
-    public static String mask(String input, int unmaskedPrefix, int unmaskedSuffix) {
+    public static String mask(@Nullable String input, int unmaskedPrefix, int unmaskedSuffix) {
         if (input == null || input.isBlank()) {
             return "***";
         }
@@ -50,7 +51,7 @@ public class MaskingUtil {
     }
 
     /** Masks the identifier for Member. Identifier can be loginId or email. */
-    public static String maskIdentifier(String identifier) {
+    public static String maskIdentifier(@Nullable String identifier) {
         if (identifier == null || identifier.isBlank()) {
             return "***";
         }
@@ -61,7 +62,7 @@ public class MaskingUtil {
     }
 
     /** Masks all but the first character of a name. Example: John → J*** */
-    public static String maskName(String name) {
+    public static String maskName(@Nullable String name) {
         if (name == null || name.isBlank()) {
             return "***";
         }
@@ -83,7 +84,7 @@ public class MaskingUtil {
      * Masks numeric IDs (e.g., social security or business IDs), showing only a defined prefix.
      * Example: 123456-1234567 → 123456-*******
      */
-    public static String maskNumericId(String id, int unmaskedLength) {
+    public static String maskNumericId(@Nullable String id, int unmaskedLength) {
         if (id == null || id.length() <= unmaskedLength) {
             return "***";
         }

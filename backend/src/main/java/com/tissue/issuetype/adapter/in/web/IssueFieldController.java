@@ -37,8 +37,7 @@ public class IssueFieldController {
             @PathVariable String projectKey,
             @PathVariable Long typeId,
             @RequestBody @Valid CreateIssueFieldRequest request) {
-        IssueFieldResponse response =
-                issueFieldService.create(request.toCommand(workspaceKey, projectKey, typeId));
+        IssueFieldResponse response = issueFieldService.create(request.toCommand(workspaceKey, projectKey, typeId));
         // TODO: created 사용
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -71,13 +70,12 @@ public class IssueFieldController {
             @PathVariable String projectKey,
             @PathVariable Long typeId,
             @PathVariable Long fieldId) {
-        issueFieldService.delete(
-                DeleteIssueFieldCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueTypeId(typeId)
-                        .issueFieldId(fieldId)
-                        .build());
+        issueFieldService.delete(DeleteIssueFieldCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueTypeId(typeId)
+                .issueFieldId(fieldId)
+                .build());
         return ResponseEntity.noContent().build();
     }
 
@@ -89,8 +87,7 @@ public class IssueFieldController {
             @PathVariable Long fieldId,
             @RequestBody @Valid AddOptionRequest request) {
         IssueFieldResponse response =
-                issueFieldService.addOption(
-                        request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+                issueFieldService.addOption(request.toCommand(workspaceKey, projectKey, typeId, fieldId));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -102,8 +99,7 @@ public class IssueFieldController {
             @PathVariable Long fieldId,
             @PathVariable Long optionId,
             @RequestBody @Valid RenameOptionRequest request) {
-        issueFieldService.renameOption(
-                request.toCommand(workspaceKey, projectKey, typeId, fieldId, optionId));
+        issueFieldService.renameOption(request.toCommand(workspaceKey, projectKey, typeId, fieldId, optionId));
         return ResponseEntity.noContent().build();
     }
 
@@ -115,8 +111,7 @@ public class IssueFieldController {
             @PathVariable Long fieldId,
             @RequestBody @Valid ReorderOptionsRequest request) {
         ReorderedOptionsResponse response =
-                issueFieldService.reorderOptions(
-                        request.toCommand(workspaceKey, projectKey, typeId, fieldId));
+                issueFieldService.reorderOptions(request.toCommand(workspaceKey, projectKey, typeId, fieldId));
         return ResponseEntity.ok(response);
     }
 
@@ -127,14 +122,13 @@ public class IssueFieldController {
             @PathVariable Long typeId,
             @PathVariable Long fieldId,
             @PathVariable Long optionId) {
-        issueFieldService.deleteOption(
-                DeleteOptionCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueTypeId(typeId)
-                        .issueFieldId(fieldId)
-                        .optionId(optionId)
-                        .build());
+        issueFieldService.deleteOption(DeleteOptionCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueTypeId(typeId)
+                .issueFieldId(fieldId)
+                .optionId(optionId)
+                .build());
         return ResponseEntity.noContent().build();
     }
 }

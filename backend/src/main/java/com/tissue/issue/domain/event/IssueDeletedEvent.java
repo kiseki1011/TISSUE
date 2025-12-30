@@ -6,6 +6,7 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record IssueDeletedEvent(
         UUID eventId,
@@ -14,8 +15,8 @@ public record IssueDeletedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        String parentKey,
-        Long parentId,
+        @Nullable String parentKey,
+        @Nullable Long parentId,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {

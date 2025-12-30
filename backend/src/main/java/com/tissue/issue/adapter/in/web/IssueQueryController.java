@@ -7,7 +7,7 @@ import com.tissue.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
+import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.security.authentication.MemberUserDetails;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/issues")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/issues")
 @RequiredArgsConstructor
 public class IssueQueryController {
 
@@ -30,9 +30,10 @@ public class IssueQueryController {
     @GetMapping("/{issueKey}/basic")
     public ResponseEntity<IssueBasicInfo> getBasicInfo(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueBasicInfo response = issueQueryUseCase.getBasic(workspaceKey, issueKey);
+        IssueBasicInfo response = issueQueryUseCase.getBasic(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
@@ -40,84 +41,90 @@ public class IssueQueryController {
     @GetMapping("/{issueKey}")
     public ResponseEntity<IssueCommonDetail> getCommon(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueCommonDetail response = issueQueryUseCase.getCommon(workspaceKey, issueKey);
+        IssueCommonDetail response = issueQueryUseCase.getCommon(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/custom-fields")
     public ResponseEntity<IssueCustomDetail> getCustomFields(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueCustomDetail response = issueQueryUseCase.getCustom(workspaceKey, issueKey);
+        IssueCustomDetail response = issueQueryUseCase.getCustom(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/parent")
-    public ResponseEntity<IssueIdentificationInfo> getParent(
+    public ResponseEntity<IssueIdentifierResponse> getParent(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueIdentificationInfo response = issueQueryUseCase.getParent(workspaceKey, issueKey);
+        IssueIdentifierResponse response = issueQueryUseCase.getParent(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/children")
-    public ResponseEntity<List<IssueIdentificationInfo>> getChildren(
+    public ResponseEntity<List<IssueIdentifierResponse>> getChildren(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        List<IssueIdentificationInfo> response =
-                issueQueryUseCase.getChildren(workspaceKey, issueKey);
+        List<IssueIdentifierResponse> response = issueQueryUseCase.getChildren(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/relations")
     public ResponseEntity<IssueRelationsDetail> getRelations(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueRelationsDetail response = issueQueryUseCase.getRelations(workspaceKey, issueKey);
+        IssueRelationsDetail response = issueQueryUseCase.getRelations(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
-    // TODO: author vs creator 더 좋은 표현은?
     @GetMapping("/{issueKey}/author")
     public ResponseEntity<ParticipantInfo> getAuthor(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        ParticipantInfo response = issueQueryUseCase.getAuthor(workspaceKey, issueKey);
+        ParticipantInfo response = issueQueryUseCase.getAuthor(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/reviewers")
     public ResponseEntity<IssueReviewersDetail> getReviewers(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueReviewersDetail response = issueQueryUseCase.getReviewers(workspaceKey, issueKey);
+        IssueReviewersDetail response = issueQueryUseCase.getReviewers(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/subscribers")
     public ResponseEntity<IssueSubscribersDetail> getSubscribers(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        IssueSubscribersDetail response = issueQueryUseCase.getSubscribers(workspaceKey, issueKey);
+        IssueSubscribersDetail response = issueQueryUseCase.getSubscribers(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{issueKey}/transitions")
     public ResponseEntity<List<TransitionDetail>> getAvailableTransitions(
             @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        List<TransitionDetail> response =
-                issueQueryUseCase.getAvailableTransitions(workspaceKey, issueKey);
+        List<TransitionDetail> response = issueQueryUseCase.getAvailableTransitions(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
 

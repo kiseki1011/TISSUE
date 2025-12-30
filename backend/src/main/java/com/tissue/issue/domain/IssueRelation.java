@@ -18,7 +18,6 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.ToString;
 
 @Entity
@@ -46,10 +45,7 @@ public class IssueRelation extends BaseEntity {
     @Column(nullable = false)
     private IssueRelationType relationType;
 
-    static IssueRelation create(
-            @NonNull Issue sourceIssue,
-            @NonNull Issue targetIssue,
-            @NonNull IssueRelationType type) {
+    static IssueRelation create(Issue sourceIssue, Issue targetIssue, IssueRelationType type) {
         ensureSameWorkspace(sourceIssue, targetIssue);
         ensureNotSelfReference(sourceIssue, targetIssue);
         validateRelationType(type, sourceIssue, targetIssue);
@@ -67,26 +63,20 @@ public class IssueRelation extends BaseEntity {
 
     private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
         if (sourceIssue.equals(targetIssue)) {
-            throw IssueExceptions.issueSelfReference(
-                    sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
+            throw IssueExceptions.issueSelfReference(sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
         }
     }
 
     private static void ensureSameWorkspace(Issue source, Issue target) {
         if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
             throw IssueExceptions.relationWorkspaceMismatch(
-                    source.getWorkspaceKey(),
-                    source.getKey(),
-                    target.getWorkspaceKey(),
-                    target.getKey());
+                    source.getWorkspaceKey(), source.getKey(), target.getWorkspaceKey(), target.getKey());
         }
     }
 
-    private static void validateRelationType(
-            @NonNull IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
+    private static void validateRelationType(IssueRelationType type, Issue sourceIssue, Issue targetIssue) {
         if (type == IssueRelationType.DUPLICATES) {
-            boolean issueTypeMismatch =
-                    !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
+            boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
             if (issueTypeMismatch) {
                 throw IssueExceptions.relationIssueTypeMismatch(
                         sourceIssue.getWorkspaceKey(),

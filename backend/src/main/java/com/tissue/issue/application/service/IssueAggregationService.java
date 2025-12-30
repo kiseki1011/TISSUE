@@ -16,13 +16,10 @@ public class IssueAggregationService {
 
     @Transactional
     public void syncStatistics(Long issueId) {
-        issueQueryRepository
-                .findById(issueId)
-                .ifPresent(
-                        issue -> {
-                            syncEpicStoryPoint(issue);
-                            syncProgress(issue);
-                        });
+        issueQueryRepository.findById(issueId).ifPresent(issue -> {
+            syncEpicStoryPoint(issue);
+            syncProgress(issue);
+        });
     }
 
     private void syncEpicStoryPoint(Issue issue) {
@@ -39,8 +36,7 @@ public class IssueAggregationService {
         Integer pointBasedProgress = null;
         if (issue.getHierarchy().isEpic()) {
             IssuePointStats pointStats = issueQueryRepository.getChildPointStats(issue.getId());
-            pointBasedProgress =
-                    calculatePercent(pointStats.donePoints(), pointStats.totalPoints());
+            pointBasedProgress = calculatePercent(pointStats.donePoints(), pointStats.totalPoints());
         }
 
         issue.updateProgress(countBasedProgress, pointBasedProgress);

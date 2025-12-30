@@ -5,11 +5,11 @@ import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateWorkspaceInviteLinkCommand(
         String workspaceKey,
         WorkspaceRole workspaceRole,
-        List<ProjectJoinConfigDto> targetProjects,
+        @Nullable List<ProjectJoinConfigDto> targetProjects,
         @Nullable Instant expiredAt) {}

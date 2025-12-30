@@ -2,7 +2,8 @@ package com.tissue.workflow.adapter.in.web.dto.request;
 
 import com.tissue.common.enums.ColorType;
 import com.tissue.common.vo.Name;
-import com.tissue.workflow.application.dto.EntityRef;
+import com.tissue.workflow.application.dto.NodeIdentifier;
+import com.tissue.workflow.application.dto.NodeIdentifier.TempKey;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
@@ -12,7 +13,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record CreateWorkflowRequest(
         @NotBlank @Size(max = 32) String name,
@@ -20,6 +21,7 @@ public record CreateWorkflowRequest(
         @NotNull ColorType color,
         @NotEmpty List<CreateStatusRequest> createStatusRequests,
         @NotEmpty List<CreateTransitionRequest> createTransitionRequests) {
+
     public record CreateStatusRequest(
             @NotBlank String tempKey,
             @NotBlank @Size(max = 32) String name,
@@ -34,29 +36,23 @@ public record CreateWorkflowRequest(
             @NotBlank String targetTempKey) {}
 
     public CreateWorkflowCommand toCommand(String workspaceKey, String projectKey) {
-        List<StateDefinition> stateDefinitions =
-                createStatusRequests.stream()
-                        .map(
-                                s ->
-                                        new StateDefinition(
-                                                new EntityRef(null, s.tempKey()),
-                                                Name.of(s.name()),
-                                                s.description(),
-                                                s.color(),
-                                                s.category))
-                        .toList();
+        List<StateDefinition> stateDefinitions = createStatusRequests.stream()
+                .map(s -> new StateDefinition(
+                        new NodeIdentifier.TempKey(s.tempKey()),
+                        Name.of(s.name()),
+                        s.description(),
+                        s.color(),
+                        s.category))
+                .toList();
 
-        List<TransitionDefinition> transitionCommands =
-                createTransitionRequests.stream()
-                        .map(
-                                t ->
-                                        new TransitionDefinition(
-                                                null,
-                                                Name.of(t.name()),
-                                                t.description(),
-                                                new EntityRef(null, t.sourceTempKey()),
-                                                new EntityRef(null, t.targetTempKey())))
-                        .toList();
+        List<TransitionDefinition> transitionCommands = createTransitionRequests.stream()
+                .map(t -> new TransitionDefinition(
+                        new TempKey("trans-" + t.sourceTempKey() + "-to-" + t.targetTempKey()),
+                        Name.of(t.name()),
+                        t.description(),
+                        new TempKey(t.sourceTempKey()),
+                        new TempKey(t.targetTempKey())))
+                .toList();
 
         return CreateWorkflowCommand.builder()
                 .workspaceKey(workspaceKey)

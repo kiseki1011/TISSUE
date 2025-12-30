@@ -20,6 +20,7 @@ import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,11 +44,9 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         Set<Long> targetMemberIds = cmd.extractMemberIds();
         Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
 
-        List<WorkspaceMember> workspaceMembers =
-                workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
+        List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
 
-        Set<Long> existingMemberIds =
-                projectMemberFinder.findExistingMemberIdsBy(project, targetMemberIds);
+        Set<Long> existingMemberIds = projectMemberFinder.findExistingMemberIdsBy(project, targetMemberIds);
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
@@ -56,7 +55,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
                 continue;
             }
 
-            ProjectRole role = roleMap.get(wm.getMemberId());
+            ProjectRole role = Objects.requireNonNull(roleMap.get(wm.getMemberId()));
             newMembers.add(ProjectMember.create(project, wm, role));
         }
 
@@ -71,13 +70,11 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
     @Transactional
     public ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember =
-                workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
 
         projectValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
 
-        ProjectMember projectMember =
-                ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
+        ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
         projectMemberRepository.save(projectMember);
 
         // TODO: ProjectMemberJoinedEvent

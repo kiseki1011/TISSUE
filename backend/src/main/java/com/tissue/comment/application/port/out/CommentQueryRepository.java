@@ -10,22 +10,20 @@ import org.springframework.data.repository.query.Param;
 
 public interface CommentQueryRepository extends Repository<Comment, Long> {
 
-    @Query(
-            """
+    @Query("""
                 SELECT c
                 FROM Comment c
                 JOIN FETCH c.author wm
                 JOIN FETCH wm.member m
-                WHERE c.issue.projectKey = :projectKey
-                  AND c.issue.key = :issueKey
+                JOIN c.issue i
+                JOIN i.project p
+                WHERE p.workspaceKey = :workspaceKey
+                  AND i.key.value = :issueKey
                 ORDER BY c.createdAt ASC
             """)
-    List<Comment> findByIssue(
-            @Param("projectKey") String projectKey, @Param("issueKey") String issueKey);
+    List<Comment> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query(
-            value =
-                    """
+    @Query(value = """
                         SELECT c
                         FROM Comment c
                         JOIN FETCH c.author wm
@@ -34,9 +32,7 @@ public interface CommentQueryRepository extends Repository<Comment, Long> {
                         WHERE c.createdBy = :memberId
                           AND c.softDeleted = false
                         ORDER BY c.createdAt DESC
-                    """,
-            countQuery =
-                    """
+                    """, countQuery = """
                         SELECT COUNT(c)
                         FROM Comment c
                         WHERE c.createdBy = :memberId

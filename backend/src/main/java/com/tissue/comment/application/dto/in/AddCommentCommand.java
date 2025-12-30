@@ -1,6 +1,7 @@
 package com.tissue.comment.application.dto.in;
 
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record AddCommentCommand(
@@ -8,5 +9,5 @@ public record AddCommentCommand(
         String projectKey,
         String issueKey,
         String content,
-        Long parentCommentId,
+        @Nullable Long parentCommentId,
         Long actorMemberId) {}

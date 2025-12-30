@@ -1,9 +1,11 @@
 package com.tissue.issue.application.dto.response.info;
 
 import com.tissue.issuetype.domain.EnumFieldOption;
+import org.jspecify.annotations.Nullable;
 
 public record EnumOptionInfo(Long id, String displayName) {
-    public static EnumOptionInfo of(EnumFieldOption option) {
+
+    public @Nullable static EnumOptionInfo of(@Nullable EnumFieldOption option) {
         if (option == null) {
             return null;
         }

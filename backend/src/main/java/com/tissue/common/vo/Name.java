@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Embeddable
 @Getter
@@ -16,7 +15,7 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Name {
 
-    // TODO: change field name to value
+    // TODO: consider changing field name to value
     @Column(nullable = false, length = 64)
     private String display;
 
@@ -28,7 +27,7 @@ public class Name {
         this.normalized = normalized;
     }
 
-    public static Name of(@NonNull String raw) {
+    public static Name of(String raw) {
         String checked = Objects.requireNonNull(raw);
 
         // TODO: add length check if(>64)
@@ -39,7 +38,7 @@ public class Name {
         return new Name(display, norm);
     }
 
-    public boolean isSameAs(@NonNull String name) {
+    public boolean isSameAs(String name) {
         String otherNormalized = TextNormalizer.normalizeForUniq(name);
         return this.normalized.equals(otherNormalized);
     }

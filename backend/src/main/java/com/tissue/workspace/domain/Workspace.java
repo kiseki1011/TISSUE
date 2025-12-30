@@ -1,6 +1,6 @@
 package com.tissue.workspace.domain;
 
-import static com.tissue.workspace.domain.enums.WorkspaceRole.*;
+import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.workspace.domain.exception.WorkspaceExceptions;
@@ -12,9 +12,8 @@ import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @SQLRestriction("softDeleted = false")
@@ -30,16 +29,17 @@ public class Workspace extends BaseEntity {
     @Column(name = "workspace_key", unique = true, nullable = false)
     private String key;
 
-    @Column(nullable = false)
+    // TODO: should i change the column name from "name" -> "workspace_name"?
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Nullable
+    @Column(name = "description")
     private String description;
 
     // TODO: consider adding a icon field
 
-    public static Workspace create(
-            @NonNull String key, @NonNull String name, @Nullable String description) {
+    public static Workspace create(String key, String name, @Nullable String description) {
         Workspace workspace = new Workspace();
         workspace.key = key;
         workspace.name = name;
@@ -49,8 +49,7 @@ public class Workspace extends BaseEntity {
     }
 
     // TODO: should i separate this into a separate domain service?
-    public void transferOwnership(
-            @NonNull WorkspaceMember owner, @NonNull WorkspaceMember newOwner) {
+    public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
         if (!owner.isOwner()) {
             throw WorkspaceExceptions.ownershipRequired(owner);
         }
@@ -58,7 +57,7 @@ public class Workspace extends BaseEntity {
         newOwner.changeRoleToOwner();
     }
 
-    public void updateName(@NonNull String name) {
+    public void updateName(String name) {
         this.name = name;
     }
 

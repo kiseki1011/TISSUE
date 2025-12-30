@@ -4,10 +4,11 @@ import com.tissue.comment.domain.Comment;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 public record CommentDetailResponse(
         Long commentId,
-        String content,
+        @Nullable String content,
         boolean isEdited,
         boolean isDeleted,
         Instant createdAt,

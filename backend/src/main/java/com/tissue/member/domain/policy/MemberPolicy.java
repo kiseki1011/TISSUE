@@ -13,8 +13,7 @@ public class MemberPolicy {
         this.maxJoinedWorkspaces = maxJoinedWorkspaces;
     }
 
-    public void ensureCanCreateWorkspace(
-            int currentOwnedCount, int currentJoinedCount, Member member) {
+    public void ensureCanCreateWorkspace(int currentOwnedCount, int currentJoinedCount, Member member) {
         if (currentOwnedCount >= maxOwnedWorkspaces) {
             throw MemberExceptions.workspaceOwnageLimit(member, maxOwnedWorkspaces);
         }

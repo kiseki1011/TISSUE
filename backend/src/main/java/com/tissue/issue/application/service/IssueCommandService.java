@@ -63,36 +63,29 @@ public class IssueCommandService implements IssueCommandUseCase {
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
         ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
-        Sprint sprint =
-                Optional.ofNullable(cmd.sprintId())
-                        .map(id -> sprintFinder.findBy(id, project))
-                        .orElse(null);
+        Sprint sprint = Optional.ofNullable(cmd.sprintId())
+                .map(id -> sprintFinder.findBy(id, project))
+                .orElse(null);
 
-        Issue parent =
-                Optional.ofNullable(cmd.parentKey())
-                        .map(
-                                parentKey ->
-                                        resolveParentIssue(
-                                                parentKey, cmd.parentProjectKey(), project))
-                        .orElse(null);
+        Issue parent = Optional.ofNullable(cmd.parentKey())
+                .map(parentKey -> resolveParentIssue(parentKey, cmd.parentProjectKey(), project))
+                .orElse(null);
 
-        ProjectMember assignee =
-                Optional.ofNullable(cmd.assigneeMemberId())
-                        .map(id -> projectMemberFinder.findBy(project, id))
-                        .orElse(null);
+        ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
+                .map(id -> projectMemberFinder.findBy(project, id))
+                .orElse(null);
 
-        Issue issue =
-                Issue.create(
-                        project,
-                        sprint,
-                        issueType,
-                        cmd.title(),
-                        IssueContent.of(cmd.content(), cmd.summary()),
-                        IssueSchedule.of(cmd.dueAt()),
-                        IssueParticipants.of(actor, assignee),
-                        cmd.priority(),
-                        cmd.storyPoint(),
-                        parent);
+        Issue issue = Issue.create(
+                project,
+                sprint,
+                issueType,
+                cmd.title(),
+                IssueContent.of(cmd.content(), cmd.summary()),
+                IssueSchedule.of(cmd.dueAt()),
+                IssueParticipants.of(actor, assignee),
+                cmd.priority(),
+                cmd.storyPoint(),
+                parent);
 
         fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);
@@ -112,18 +105,10 @@ public class IssueCommandService implements IssueCommandUseCase {
         Map<String, FieldChange> changes = new HashMap<>();
 
         Patchers.applyWithLog(cmd.title(), issue::getTitle, issue::updateTitle, "title", changes);
-        Patchers.applyWithLog(
-                cmd.content(), issue::getContent, issue::updateContent, "content", changes);
-        Patchers.applyWithLog(
-                cmd.summary(), issue::getSummary, issue::updateSummary, "summary", changes);
-        Patchers.applyWithLog(
-                cmd.dueAt(),
-                () -> issue.getSchedule().getDueAt(),
-                issue::updateDueAt,
-                "dueAt",
-                changes);
-        Patchers.applyWithLog(
-                cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
+        Patchers.applyWithLog(cmd.content(), issue::getContent, issue::updateContent, "content", changes);
+        Patchers.applyWithLog(cmd.summary(), issue::getSummary, issue::updateSummary, "summary", changes);
+        Patchers.applyWithLog(cmd.dueAt(), () -> issue.getSchedule().getDueAt(), issue::updateDueAt, "dueAt", changes);
+        Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
         if (!changes.isEmpty()) {
             eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
@@ -142,8 +127,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         fieldSchemaValidator.validateAndApplyPatch(cmd.customFields(), issue);
 
         Map<String, Object> newSnapshot = fieldChangeTracker.captureSnapshot(issue);
-        Map<String, FieldChange> changes =
-                fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
+        Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
 
         if (!changes.isEmpty()) {
             eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
@@ -161,8 +145,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         issue.updateStoryPoint(cmd.storyPoint());
 
         eventPublisher.publishEvent(
-                IssueStoryPointChangedEvent.create(
-                        issue, issue.getParentIssue(), oldStoryPoint, actor));
+                IssueStoryPointChangedEvent.create(issue, issue.getParentIssue(), oldStoryPoint, actor));
     }
 
     @Override
@@ -172,16 +155,14 @@ public class IssueCommandService implements IssueCommandUseCase {
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
-        Project parentProject =
-                projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
+        Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
         Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
 
         Issue oldParent = issue.getParentIssue();
 
         issue.setParentIssue(parent);
 
-        eventPublisher.publishEvent(
-                IssueParentChangedEvent.create(issue, oldParent, parent, actor));
+        eventPublisher.publishEvent(IssueParentChangedEvent.create(issue, oldParent, parent, actor));
     }
 
     @Override
@@ -210,14 +191,11 @@ public class IssueCommandService implements IssueCommandUseCase {
         eventPublisher.publishEvent(IssueDeletedEvent.create(issue, actor));
     }
 
-    private Issue resolveParentIssue(
-            String parentKey, String parentProjectKey, Project currentProject) {
+    private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {
         Project targetProject = currentProject;
 
         if (parentProjectKey != null && !parentProjectKey.equals(currentProject.getKey())) {
-            targetProject =
-                    projectFinder.getModifiableBy(
-                            parentProjectKey, currentProject.getWorkspaceKey());
+            targetProject = projectFinder.getModifiableBy(parentProjectKey, currentProject.getWorkspaceKey());
         }
 
         return issueFinder.findBy(parentKey, targetProject);

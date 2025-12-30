@@ -16,47 +16,45 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("softDeleted = false")
 public class WorkflowState extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
-    @Column(nullable = false, length = 255)
+    @Nullable
+    @Column(name = "description", length = 255)
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "color", nullable = false)
     private ColorType color;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "state_category", nullable = false)
     private StateCategory category;
 
-    static WorkflowState of(
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull ColorType color,
-            @NonNull StateCategory category) {
+    @SuppressWarnings("NullAway.Init")
+    protected WorkflowState() {}
+
+    static WorkflowState of(Name name, @Nullable String description, ColorType color, StateCategory category) {
         WorkflowState ws = new WorkflowState();
         ws.name = name;
         ws.description = description;
@@ -66,11 +64,11 @@ public class WorkflowState extends BaseEntity {
         return ws;
     }
 
-    void attachToWorkflow(@NonNull Workflow workflow) {
+    void attachToWorkflow(Workflow workflow) {
         this.workflow = workflow;
     }
 
-    void updateName(@NonNull Name name) {
+    void updateName(Name name) {
         this.name = name;
     }
 
@@ -78,11 +76,11 @@ public class WorkflowState extends BaseEntity {
         this.description = description;
     }
 
-    public void updateColor(@NonNull ColorType color) {
+    public void updateColor(ColorType color) {
         this.color = color;
     }
 
-    void categorizeAs(@NonNull StateCategory category) {
+    void categorizeAs(StateCategory category) {
         this.category = category;
     }
 

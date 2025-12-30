@@ -20,8 +20,7 @@ public class WorkspaceMemberFinder {
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     public Optional<WorkspaceMember> findAnyOptionalBy(Long memberId, String workspaceKey) {
-        return workspaceMemberQueryRepository.findAnyByMemberIdAndWorkspaceKey(
-                memberId, workspaceKey);
+        return workspaceMemberQueryRepository.findAnyByMemberIdAndWorkspaceKey(memberId, workspaceKey);
     }
 
     public WorkspaceMember findBy(Long memberId, String workspaceKey) {
@@ -33,8 +32,7 @@ public class WorkspaceMemberFinder {
     public WorkspaceMember findBy(Long memberId, Workspace workspace) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspace(memberId, workspace)
-                .orElseThrow(
-                        () -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
+                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
     }
 
     public Optional<WorkspaceMember> findOptionalBy(Member member, Workspace workspace) {
@@ -46,8 +44,7 @@ public class WorkspaceMemberFinder {
     }
 
     public List<WorkspaceMember> findAllBy(Collection<Long> memberIds, String workspaceKey) {
-        return workspaceMemberQueryRepository.findAllByMember_IdInAndWorkspaceKey(
-                memberIds, workspaceKey);
+        return workspaceMemberQueryRepository.findAllByMember_IdInAndWorkspaceKey(memberIds, workspaceKey);
     }
 
     public Set<Long> findJoinedMemberIdsBy(String workspaceKey, Collection<Long> memberIds) {
@@ -59,8 +56,7 @@ public class WorkspaceMemberFinder {
     }
 
     public int countOwnedWorkspacesBy(Member member) {
-        return (int)
-                workspaceMemberQueryRepository.countByMemberAndRole(member, WorkspaceRole.OWNER);
+        return (int) workspaceMemberQueryRepository.countByMemberAndRole(member, WorkspaceRole.OWNER);
     }
 
     public int countJoinedWorkspacesBy(Member member) {

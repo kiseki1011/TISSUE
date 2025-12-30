@@ -128,11 +128,10 @@ public class WorkspaceMember extends BaseEntity {
     }
 
     public void removePosition(Position position) {
-        WorkspaceMemberPosition wmp =
-                this.workspaceMemberPositions.stream()
-                        .filter(w -> w.getPosition().equals(position))
-                        .findFirst()
-                        .orElse(null);
+        WorkspaceMemberPosition wmp = this.workspaceMemberPositions.stream()
+                .filter(w -> w.getPosition().equals(position))
+                .findFirst()
+                .orElse(null);
 
         if (wmp != null) {
             this.workspaceMemberPositions.remove(wmp);
@@ -145,11 +144,10 @@ public class WorkspaceMember extends BaseEntity {
     }
 
     public void removeTeam(Team team) {
-        WorkspaceMemberTeam wmp =
-                this.workspaceMemberTeams.stream()
-                        .filter(w -> w.getTeam().equals(team))
-                        .findFirst()
-                        .orElse(null);
+        WorkspaceMemberTeam wmp = this.workspaceMemberTeams.stream()
+                .filter(w -> w.getTeam().equals(team))
+                .findFirst()
+                .orElse(null);
 
         if (wmp != null) {
             this.workspaceMemberTeams.remove(wmp);

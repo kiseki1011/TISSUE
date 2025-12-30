@@ -19,12 +19,10 @@ public class MemberEmailVerificationService {
         String tokenValue = UUID.randomUUID().toString();
         repository.saveToken(email, tokenValue, properties.getTtl());
 
-        String link =
-                properties.getVerificationUrl() + "?email=%s&token=%s".formatted(email, tokenValue);
+        String link = properties.getVerificationUrl() + "?email=%s&token=%s".formatted(email, tokenValue);
 
         String subject = "Tissue - Email Verification";
-        String content =
-                """
+        String content = """
                 Hello,
 
                 Please verify your email address by clicking the link below:
@@ -34,8 +32,7 @@ public class MemberEmailVerificationService {
                 This link is valid for 30 minutes.
 
                 - Tissue Team
-                """
-                        .formatted(link);
+                """.formatted(link);
 
         emailClient.send(email, subject, content);
     }

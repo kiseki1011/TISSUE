@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(
-        name = "email.verification.strategy",
-        havingValue = "rdb",
-        matchIfMissing = true)
+@ConditionalOnProperty(name = "email.verification.strategy", havingValue = "rdb", matchIfMissing = true)
 @RequiredArgsConstructor
 public class RdbEmailVerificationRepository implements EmailVerificationRepository {
 
@@ -27,15 +24,13 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Override
     @Transactional
     public void saveToken(String email, String tokenValue, Duration ttl) {
-        EmailVerificationToken verificationToken =
-                tokenRepository
-                        .findByEmail(email)
-                        .map(
-                                t -> {
-                                    t.markVerified(); // invalidate token
-                                    return EmailVerificationToken.create(email, tokenValue, ttl);
-                                })
-                        .orElse(EmailVerificationToken.create(email, tokenValue, ttl));
+        EmailVerificationToken verificationToken = tokenRepository
+                .findByEmail(email)
+                .map(t -> {
+                    t.markVerified(); // invalidate token
+                    return EmailVerificationToken.create(email, tokenValue, ttl);
+                })
+                .orElse(EmailVerificationToken.create(email, tokenValue, ttl));
         try {
             tokenRepository.save(verificationToken);
         } catch (DataIntegrityViolationException e) {
@@ -48,9 +43,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     @Transactional
     public boolean verify(String email, String tokenValue) {
         EmailVerificationToken token =
-                tokenRepository
-                        .findByEmail(email)
-                        .orElseThrow(AuthenticationExceptions::invalidVerificationToken);
+                tokenRepository.findByEmail(email).orElseThrow(AuthenticationExceptions::invalidVerificationToken);
 
         if (token.isExpired() || token.tokenValueNotMatch(tokenValue)) {
             return false;

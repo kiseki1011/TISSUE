@@ -36,24 +36,21 @@ public class WorkspaceController {
 
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
-            @RequestBody @Valid CreateWorkspaceRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberUserDetails userDetails) {
         var command = request.toCommand(userDetails.getMemberId());
         WorkspaceCreateResponse response = workspaceCreateUseCase.create(command);
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{workspaceKey}")
-                        .buildAndExpand(response.workspaceKey())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{workspaceKey}")
+                .buildAndExpand(response.workspaceKey())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
 
     @PatchMapping("/{workspaceKey}")
     public ResponseEntity<Void> updateWorkspaceInfo(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid UpdateWorkspaceInfoRequest request) {
+            @PathVariable String workspaceKey, @RequestBody @Valid UpdateWorkspaceInfoRequest request) {
         var command = request.toCommand(workspaceKey);
         workspaceCommandUseCase.updateInfo(command);
 
@@ -73,8 +70,7 @@ public class WorkspaceController {
             @PathVariable String workspaceKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new TransferOwnershipCommand(workspaceKey, memberId, userDetails.getMemberId());
+        var command = new TransferOwnershipCommand(workspaceKey, memberId, userDetails.getMemberId());
         workspaceCommandUseCase.transferOwnership(command);
 
         return ResponseEntity.noContent().build();

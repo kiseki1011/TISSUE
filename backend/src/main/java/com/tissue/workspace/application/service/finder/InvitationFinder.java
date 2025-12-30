@@ -22,9 +22,7 @@ public class InvitationFinder {
     }
 
     public Invitation getBy(Long id) {
-        return invitationQueryRepository
-                .findById(id)
-                .orElseThrow(() -> WorkspaceExceptions.invitationNotFound(id));
+        return invitationQueryRepository.findById(id).orElseThrow(() -> WorkspaceExceptions.invitationNotFound(id));
     }
 
     public Set<Long> findPendingMemberIds(String workspaceKey, Collection<Long> memberIds) {

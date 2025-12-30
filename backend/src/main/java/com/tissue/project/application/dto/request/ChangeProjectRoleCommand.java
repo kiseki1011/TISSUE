@@ -5,8 +5,4 @@ import lombok.Builder;
 
 @Builder
 public record ChangeProjectRoleCommand(
-        String workspaceKey,
-        String projectKey,
-        Long targetMemberId,
-        ProjectRole newRole,
-        Long actorMemberId) {}
+        String workspaceKey, String projectKey, Long targetMemberId, ProjectRole newRole, Long actorMemberId) {}

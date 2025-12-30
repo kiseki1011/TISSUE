@@ -43,8 +43,7 @@ public class MemberUserDetails implements UserDetails {
         this.role = member.getRole();
         this.status = member.getStatus();
 
-        this.authorities =
-                Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
+        this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
 
         this.workspaceRoles = workspaceRoles != null ? workspaceRoles : Collections.emptyMap();
         this.projectRoles = projectRoles != null ? projectRoles : Collections.emptyMap();

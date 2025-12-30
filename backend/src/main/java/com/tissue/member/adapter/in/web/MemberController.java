@@ -36,24 +36,21 @@ public class MemberController {
     private final MemberQueryUseCase memberQueryUseCase;
 
     @PostMapping
-    public ResponseEntity<MemberSignupResponse> signup(
-            @Valid @RequestBody SignupMemberRequest request) {
+    public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
         MemberSignupResponse response = memberCommandUseCase.signup(command);
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{memberId}")
-                        .buildAndExpand(response.memberId())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{memberId}")
+                .buildAndExpand(response.memberId())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
 
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
-            @RequestBody @Valid UpdateMemberNameRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberUserDetails userDetails) {
         memberCommandUseCase.updateName(request.newName(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -62,8 +59,7 @@ public class MemberController {
     // TODO: consider 2-factor
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
-            @RequestBody @Valid UpdateMemberEmailRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
         memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
@@ -73,8 +69,7 @@ public class MemberController {
 
     @PatchMapping("/username")
     public ResponseEntity<MemberSignupResponse> updateMemberUsername(
-            @RequestBody @Valid UpdateMemberUsernameRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
         memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
@@ -85,8 +80,7 @@ public class MemberController {
     // TODO: consider 2-factor
     @PatchMapping("/password")
     public ResponseEntity<MemberSignupResponse> updateMemberPassword(
-            @RequestBody @Valid UpdateMemberPasswordRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
         memberCommandUseCase.updatePassword(
@@ -97,8 +91,7 @@ public class MemberController {
 
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
-            @RequestBody WithdrawMemberRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody WithdrawMemberRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
         memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());

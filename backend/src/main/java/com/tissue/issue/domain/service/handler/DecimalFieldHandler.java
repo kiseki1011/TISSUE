@@ -5,8 +5,8 @@ import com.tissue.issue.domain.policy.FieldValuePolicy;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import java.math.BigDecimal;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("StringConcatToTextBlock")
 public class DecimalFieldHandler implements FieldTypeHandler {
 
-    private final FieldValuePolicy policy; // digits/scale domain rules
+    private final FieldValuePolicy policy; // digits/scale rules
 
     @Qualifier("domainConversionService")
     private final ConversionService cs;
@@ -28,7 +29,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public Object parse(@NonNull IssueField field, @NonNull Object raw) {
+    public @Nullable Object parse(IssueField field, @Nullable Object raw) {
         try {
             BigDecimal bd = cs.convert(raw, BigDecimal.class);
             policy.ensureDigits(bd, field.getId());

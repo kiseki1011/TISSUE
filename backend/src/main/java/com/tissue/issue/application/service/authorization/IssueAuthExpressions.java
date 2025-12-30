@@ -8,15 +8,13 @@ public interface IssueAuthExpressions {
      * @see IssueAuthorizationService#canEdit(String, String, String, MemberUserDetails)
      */
     String REQUIRES_ISSUE_EDIT_PERMISSION =
-            "@issueSecurityGuard.canEdit(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueKey,"
-                    + " principal)";
+            "@issueSecurityGuard.canEdit(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueKey," + " principal)";
 
     /**
      * @see IssueAuthorizationService#canDelete(String, String, String, MemberUserDetails)
      */
     String REQUIRES_ISSUE_DELETE_PERMISSION =
-            "@issueSecurityGuard.canDelete(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueKey,"
-                    + " principal)";
+            "@issueSecurityGuard.canDelete(#cmd.workspaceKey, #cmd.projectKey, #cmd.issueKey," + " principal)";
 
     /**
      * @see IssueAuthorizationService#canManageParticipants(String, String, String,
@@ -30,6 +28,5 @@ public interface IssueAuthExpressions {
      * @see IssueAuthorizationService#canManageReviewers(String, String, String, MemberUserDetails)
      */
     String REQUIRES_ISSUE_REVIEWER_MANAGE_PERMISSION =
-            "@issueSecurityGuard.canManageReviewers(#cmd.workspaceKey, #cmd.projectKey,"
-                    + " #cmd.issueKey, principal)";
+            "@issueSecurityGuard.canManageReviewers(#cmd.workspaceKey, #cmd.projectKey," + " #cmd.issueKey, principal)";
 }

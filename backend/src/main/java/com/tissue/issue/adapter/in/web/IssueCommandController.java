@@ -13,7 +13,6 @@ import com.tissue.issue.application.dto.request.AddReviewerCommand;
 import com.tissue.issue.application.dto.request.AssignIssueCommand;
 import com.tissue.issue.application.dto.request.AssignParentCommand;
 import com.tissue.issue.application.dto.request.ChangeReporterCommand;
-import com.tissue.issue.application.dto.request.CreateIssueCommand;
 import com.tissue.issue.application.dto.request.DeleteIssueCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
@@ -22,7 +21,6 @@ import com.tissue.issue.application.dto.request.RemoveParentCommand;
 import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
 import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
 import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
-import com.tissue.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.issue.application.dto.request.UpdateCustomFieldsCommand;
 import com.tissue.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
@@ -61,9 +59,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @RequestBody @Valid CreateIssueRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        CreateIssueCommand command =
-                request.toCommand(workspaceKey, projectKey, userDetails.getMemberId());
 
+        var command = request.toCommand(workspaceKey, projectKey, userDetails.getMemberId());
         IssueCreateResponse response = commandUseCase.create(command);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -76,9 +73,8 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCommonFieldsRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        UpdateCommonFieldsCommand command =
-                request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
 
+        var command = request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
         commandUseCase.updateCommonFields(command);
 
         return ResponseEntity.noContent().build();
@@ -91,14 +87,9 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateCustomFieldsRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new UpdateCustomFieldsCommand(
-                        workspaceKey,
-                        projectKey,
-                        issueKey,
-                        request.customFields(),
-                        userDetails.getMemberId());
 
+        var command = new UpdateCustomFieldsCommand(
+                workspaceKey, projectKey, issueKey, request.customFields(), userDetails.getMemberId());
         commandUseCase.updateCustomFields(command);
 
         return ResponseEntity.noContent().build();
@@ -111,13 +102,9 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid UpdateStoryPointRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new UpdateStoryPointCommand(
-                        workspaceKey,
-                        projectKey,
-                        issueKey,
-                        request.storyPoint(),
-                        userDetails.getMemberId());
+
+        var command = new UpdateStoryPointCommand(
+                workspaceKey, projectKey, issueKey, request.storyPoint(), userDetails.getMemberId());
 
         commandUseCase.updateStoryPoint(command);
 
@@ -131,15 +118,14 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid AssignParentIssueRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new AssignParentCommand(
-                        workspaceKey,
-                        projectKey,
-                        issueKey,
-                        request.parentProjectKey(),
-                        request.parentIssueKey(),
-                        userDetails.getMemberId());
 
+        var command = new AssignParentCommand(
+                workspaceKey,
+                projectKey,
+                issueKey,
+                request.parentProjectKey(),
+                request.parentIssueKey(),
+                userDetails.getMemberId());
         commandUseCase.assignParent(command);
 
         return ResponseEntity.noContent().build();
@@ -151,10 +137,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new RemoveParentCommand(
-                        workspaceKey, projectKey, issueKey, userDetails.getMemberId());
 
+        var command = new RemoveParentCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
         commandUseCase.removeParent(command);
 
         return ResponseEntity.noContent().build();
@@ -169,15 +153,14 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid PerformTransitionRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                PerformTransitionCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .transitionId(request.transitionId())
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = PerformTransitionCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .transitionId(request.transitionId())
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         transitionUseCase.performTransition(command);
 
         return ResponseEntity.noContent().build();
@@ -189,10 +172,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new DeleteIssueCommand(
-                        workspaceKey, projectKey, issueKey, userDetails.getMemberId());
 
+        var command = new DeleteIssueCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
         commandUseCase.softDelete(command);
 
         return ResponseEntity.noContent().build();
@@ -205,15 +186,14 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                ChangeReporterCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .targetMemberId(memberId)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = ChangeReporterCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .targetMemberId(memberId)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.changeReporter(command);
 
         return ResponseEntity.noContent().build();
@@ -226,15 +206,14 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                AssignIssueCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .targetMemberId(memberId)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = AssignIssueCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .targetMemberId(memberId)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.assign(command);
 
         return ResponseEntity.noContent().build();
@@ -246,10 +225,8 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new RemoveAssigneeCommand(
-                        workspaceKey, projectKey, issueKey, userDetails.getMemberId());
 
+        var command = new RemoveAssigneeCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
         participantUseCase.unassign(command);
 
         return ResponseEntity.noContent().build();
@@ -261,14 +238,13 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                SubscribeIssueCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = SubscribeIssueCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.subscribe(command);
 
         return ResponseEntity.noContent().build();
@@ -280,14 +256,13 @@ public class IssueCommandController {
             @PathVariable String projectKey,
             @PathVariable String issueKey,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                UnsubscribeIssueCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = UnsubscribeIssueCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.unsubscribe(command);
 
         return ResponseEntity.noContent().build();
@@ -300,15 +275,14 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                AddReviewerCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .targetMemberId(memberId)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = AddReviewerCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .targetMemberId(memberId)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.addReviewer(command);
 
         return ResponseEntity.noContent().build();
@@ -321,16 +295,16 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                RemoveReviewerCommand.builder()
-                        .workspaceKey(workspaceKey)
-                        .projectKey(projectKey)
-                        .issueKey(issueKey)
-                        .targetMemberId(memberId)
-                        .actorMemberId(userDetails.getMemberId())
-                        .build();
 
+        var command = RemoveReviewerCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .targetMemberId(memberId)
+                .actorMemberId(userDetails.getMemberId())
+                .build();
         participantUseCase.removeReviewer(command);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -341,9 +315,9 @@ public class IssueCommandController {
             @PathVariable String issueKey,
             @RequestBody @Valid AddIssueRelationRequest request,
             @CurrentMember MemberUserDetails userDetails) {
+
         AddIssueRelationCommand command =
                 request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
-
         relationUseCase.add(command);
 
         return ResponseEntity.noContent().build();
@@ -356,15 +330,14 @@ public class IssueCommandController {
             @PathVariable String sourceIssueKey,
             @RequestBody @Valid RemoveIssueRelationRequest request,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new RemoveIssueRelationCommand(
-                        workspaceKey,
-                        projectKey,
-                        sourceIssueKey,
-                        request.targetProjectKey(),
-                        request.targetIssueKey(),
-                        userDetails.getMemberId());
 
+        var command = new RemoveIssueRelationCommand(
+                workspaceKey,
+                projectKey,
+                sourceIssueKey,
+                request.targetProjectKey(),
+                request.targetIssueKey(),
+                userDetails.getMemberId());
         relationUseCase.remove(command);
 
         return ResponseEntity.noContent().build();

@@ -5,7 +5,7 @@ import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record CreateProjectInviteLinkRequest(
         @NotNull ProjectRole role, @Nullable @Future Instant expiredAt) {

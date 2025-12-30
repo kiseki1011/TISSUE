@@ -5,6 +5,7 @@ import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import java.util.EnumMap;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,23 +23,22 @@ public class IssueFieldTypeHandlerRegistry {
         }
     }
 
-    public boolean isBlank(IssueField field, Object raw) {
+    public boolean isBlank(IssueField field, @Nullable Object raw) {
         return requireHandler(field).isBlank(raw);
     }
 
-    public Object parse(IssueField field, Object raw) {
+    public @Nullable Object parse(IssueField field, @Nullable Object raw) {
         return requireHandler(field).parse(field, raw);
     }
 
-    public void assign(IssueFieldValue target, Object parsed) {
+    public void assign(IssueFieldValue target, @Nullable Object parsed) {
         requireHandler(target.getField()).assign(target, parsed);
     }
 
     private FieldTypeHandler requireHandler(IssueField field) {
         FieldTypeHandler handler = handlers.get(field.getIssueFieldType());
         if (handler == null) {
-            throw new IllegalStateException(
-                    "Handler not configured for field type: " + field.getIssueFieldType());
+            throw new IllegalStateException("Handler not configured for field type: " + field.getIssueFieldType());
         }
         return handler;
     }

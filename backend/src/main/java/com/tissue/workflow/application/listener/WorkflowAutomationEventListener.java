@@ -1,12 +1,12 @@
 package com.tissue.workflow.application.listener;
 
-import static com.tissue.workflow.domain.guard.GuardType.*;
-import static com.tissue.workflow.domain.guard.types.ApprovalGuard.*;
+import static com.tissue.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
+import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;
+import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_REJECT_TRANSITION;
 
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
-import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkflowAutomationEventListener {
 
-    private final IssueFinder issueFinder;
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueQueryRepository issueQueryRepository;
 
@@ -42,28 +41,23 @@ public class WorkflowAutomationEventListener {
     }
 
     private void processAutoRejection(IssueReviewSubmittedEvent event) {
-        Issue issue =
-                issueQueryRepository
-                        .findById(event.issueId())
-                        .orElseThrow(() -> IssueExceptions.notFound(event.issueId()));
+        Issue issue = issueQueryRepository
+                .findById(event.issueId())
+                .orElseThrow(() -> IssueExceptions.notFound(event.issueId()));
 
         List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 
-        String targetTransitionName = findAutoRejectTargetName(outgoingTransitions).orElse(null);
+        String targetTransitionName =
+                findAutoRejectTargetName(outgoingTransitions).orElse(null);
 
         // 설정이 아예 없으면 -> 정상 종료
         if (targetTransitionName == null) {
             return;
         }
 
-        WorkflowTransition targetTransition =
-                findTransitionByName(outgoingTransitions, targetTransitionName)
-                        .orElseThrow(
-                                () ->
-                                        WorkflowExceptions.autoTransitionTargetNotFound(
-                                                issue.getKey(),
-                                                issue.getCurrentState().getDisplayName(),
-                                                targetTransitionName));
+        WorkflowTransition targetTransition = findTransitionByName(outgoingTransitions, targetTransitionName)
+                .orElseThrow(() -> WorkflowExceptions.autoTransitionTargetNotFound(
+                        issue.getKey(), issue.getCurrentState().getDisplayName(), targetTransitionName));
 
         log.info(
                 "Auto-executing reject transition '{}' for issue {} in workspace {}",
@@ -71,13 +65,12 @@ public class WorkflowAutomationEventListener {
                 issue.getKey(),
                 issue.getWorkspaceKey());
 
-        transitionUseCase.performTransition(
-                new PerformTransitionCommand(
-                        issue.getWorkspaceKey(),
-                        issue.getProjectKey(),
-                        issue.getKey(),
-                        targetTransition.getId(),
-                        event.actorMemberId()));
+        transitionUseCase.performTransition(new PerformTransitionCommand(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                targetTransition.getId(),
+                event.actorMemberId()));
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {
@@ -98,9 +91,10 @@ public class WorkflowAutomationEventListener {
                 .findFirst();
     }
 
-    private Optional<WorkflowTransition> findTransitionByName(
-            List<WorkflowTransition> transitions, String name) {
-        return transitions.stream().filter(t -> t.getName().getDisplay().equals(name)).findFirst();
+    private Optional<WorkflowTransition> findTransitionByName(List<WorkflowTransition> transitions, String name) {
+        return transitions.stream()
+                .filter(t -> t.getName().getDisplay().equals(name))
+                .findFirst();
     }
 
     private boolean isAutoRejectEnabled(Map<String, Object> params) {

@@ -8,6 +8,7 @@ import java.util.List;
 public record IssueCustomDetail(String issueKey, List<CustomFieldValueInfo> customFields) {
     public static IssueCustomDetail from(Issue issue, List<IssueFieldValue> fieldValues) {
         return new IssueCustomDetail(
-                issue.getKey(), fieldValues.stream().map(CustomFieldValueInfo::from).toList());
+                issue.getKey(),
+                fieldValues.stream().map(CustomFieldValueInfo::from).toList());
     }
 }

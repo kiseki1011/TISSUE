@@ -33,8 +33,7 @@ public class ProjectAuthorizationService {
         return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN);
     }
 
-    public boolean canJoinViaDirectAccess(
-            String workspaceKey, String projectKey, MemberUserDetails userDetails) {
+    public boolean canJoinViaDirectAccess(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
         if (workspaceAuthorizationService.isAdmin(workspaceKey, userDetails)) {
             return true;
         }
@@ -45,38 +44,26 @@ public class ProjectAuthorizationService {
     }
 
     public boolean canGrantRole(
-            String workspaceKey,
-            String projectKey,
-            ProjectRole grantRole,
-            MemberUserDetails userDetails) {
+            String workspaceKey, String projectKey, ProjectRole grantRole, MemberUserDetails userDetails) {
         if (!isViewer(workspaceKey, projectKey, userDetails)) {
             return false;
         }
         return userDetails.hasProjectRole(workspaceKey, projectKey, grantRole);
     }
 
-    public boolean canEditSprint(
-            String workspaceKey, String projectKey, Long sprintId, MemberUserDetails userDetails) {
-        return isAdmin(workspaceKey, projectKey, userDetails)
-                || isSprintCreator(projectKey, sprintId, userDetails);
+    public boolean canEditSprint(String workspaceKey, String projectKey, Long sprintId, MemberUserDetails userDetails) {
+        return isAdmin(workspaceKey, projectKey, userDetails) || isSprintCreator(projectKey, sprintId, userDetails);
     }
 
     public boolean canEditIssueType(
-            String workspaceKey,
-            String projectKey,
-            Long issueTypeId,
-            MemberUserDetails userDetails) {
+            String workspaceKey, String projectKey, Long issueTypeId, MemberUserDetails userDetails) {
         return isAdmin(workspaceKey, projectKey, userDetails)
                 || isIssueTypeCreator(projectKey, issueTypeId, userDetails);
     }
 
     public boolean canEditWorkflow(
-            String workspaceKey,
-            String projectKey,
-            Long workflowId,
-            MemberUserDetails userDetails) {
-        return isAdmin(workspaceKey, projectKey, userDetails)
-                || isWorkflowCreator(workflowId, userDetails);
+            String workspaceKey, String projectKey, Long workflowId, MemberUserDetails userDetails) {
+        return isAdmin(workspaceKey, projectKey, userDetails) || isWorkflowCreator(workflowId, userDetails);
     }
 
     private boolean isWorkflowCreator(Long workflowId, MemberUserDetails userDetails) {
@@ -86,16 +73,14 @@ public class ProjectAuthorizationService {
                 .orElse(false);
     }
 
-    private Boolean isIssueTypeCreator(
-            String projectKey, Long issueTypeId, MemberUserDetails userDetails) {
+    private Boolean isIssueTypeCreator(String projectKey, Long issueTypeId, MemberUserDetails userDetails) {
         return issueTypeRepository
                 .findByIdAndProjectKey(issueTypeId, projectKey)
                 .map(issueType -> issueType.getCreatedBy().equals(userDetails.getMemberId()))
                 .orElse(false);
     }
 
-    private Boolean isSprintCreator(
-            String projectKey, Long sprintId, MemberUserDetails userDetails) {
+    private Boolean isSprintCreator(String projectKey, Long sprintId, MemberUserDetails userDetails) {
         return sprintRepository
                 .findByIdAndProject_Key(sprintId, projectKey)
                 .map(sprint -> sprint.getCreatedBy().equals(userDetails.getMemberId()))

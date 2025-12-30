@@ -36,13 +36,12 @@ public class PositionService implements PositionUseCase {
 
         positionValidator.ensureUniqueName(workspace, cmd.name());
 
-        Position position =
-                Position.builder()
-                        .workspace(workspace)
-                        .name(cmd.name())
-                        .description(cmd.description())
-                        .color(cmd.color())
-                        .build();
+        Position position = Position.builder()
+                .workspace(workspace)
+                .name(cmd.name())
+                .description(cmd.description())
+                .color(cmd.color())
+                .build();
 
         return PositionCreateResponse.from(positionCommandRepository.save(position));
     }
@@ -53,15 +52,13 @@ public class PositionService implements PositionUseCase {
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
 
-        Patchers.apply(
-                cmd.name(),
-                newName -> {
-                    if ((position.getName().isSameAs(newName))) {
-                        return;
-                    }
-                    positionValidator.ensureUniqueName(workspace, newName);
-                    position.updateName(newName);
-                });
+        Patchers.apply(cmd.name(), newName -> {
+            if ((position.getName().isSameAs(newName))) {
+                return;
+            }
+            positionValidator.ensureUniqueName(workspace, newName);
+            position.updateName(newName);
+        });
         Patchers.apply(cmd.description(), position::updateDescription);
         Patchers.apply(cmd.color(), position::updateColor);
     }
@@ -87,8 +84,7 @@ public class PositionService implements PositionUseCase {
     @Override
     @Transactional(readOnly = true)
     public GetPositions getPositions(String workspaceKey) {
-        List<Position> positions =
-                positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
+        List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return GetPositions.from(positions);
     }
 }

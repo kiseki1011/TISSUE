@@ -7,11 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record RenameOptionRequest(@NotBlank @LabelSize String name) {
     public RenameOptionCommand toCommand(
-            String workspaceKey,
-            String projectKey,
-            Long issueTypeId,
-            Long issueFieldId,
-            Long optionId) {
+            String workspaceKey, String projectKey, Long issueTypeId, Long issueFieldId, Long optionId) {
         return RenameOptionCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

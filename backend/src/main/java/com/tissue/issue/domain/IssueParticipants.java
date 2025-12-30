@@ -9,21 +9,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Embeddable
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueParticipants {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)
     private ProjectMember reporter;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignee_id")
     private ProjectMember assignee;
@@ -34,8 +31,10 @@ public class IssueParticipants {
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueSubscriber> subscribers = new HashSet<>();
 
-    public static IssueParticipants of(
-            @NonNull ProjectMember reporter, @Nullable ProjectMember assignee) {
+    @SuppressWarnings("NullAway.Init")
+    protected IssueParticipants() {}
+
+    public static IssueParticipants of(ProjectMember reporter, @Nullable ProjectMember assignee) {
         IssueParticipants participants = new IssueParticipants();
         participants.reporter = reporter;
         participants.assignee = assignee;
@@ -43,11 +42,11 @@ public class IssueParticipants {
         return participants;
     }
 
-    void changeReporter(@NonNull ProjectMember reporter) {
+    void changeReporter(ProjectMember reporter) {
         this.reporter = reporter;
     }
 
-    void assignTo(@NonNull ProjectMember assignee) {
+    void assignTo(ProjectMember assignee) {
         this.assignee = assignee;
     }
 
@@ -55,25 +54,25 @@ public class IssueParticipants {
         this.assignee = null;
     }
 
-    void addReviewer(@NonNull ProjectMember projectMember, @NonNull Issue issue) {
+    void addReviewer(ProjectMember projectMember, Issue issue) {
         if (isReviewer(projectMember)) {
             return;
         }
         reviewers.add(new IssueReviewer(projectMember, issue));
     }
 
-    void removeReviewer(@NonNull ProjectMember projectMember) {
+    void removeReviewer(ProjectMember projectMember) {
         reviewers.removeIf(r -> r.getReviewer().equals(projectMember));
     }
 
-    void addSubscriber(@NonNull ProjectMember projectMember, @NonNull Issue issue) {
+    void addSubscriber(ProjectMember projectMember, Issue issue) {
         if (isSubscriber(projectMember)) {
             return;
         }
         subscribers.add(new IssueSubscriber(projectMember, issue));
     }
 
-    void removeSubscriber(@NonNull ProjectMember projectMember) {
+    void removeSubscriber(ProjectMember projectMember) {
         subscribers.removeIf(s -> s.getSubscriber().equals(projectMember));
     }
 

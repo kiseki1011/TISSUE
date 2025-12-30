@@ -27,16 +27,11 @@ public class IssueAuthorizationService {
      *   <li>The member is the author or assignee of the issue
      * </ul>
      */
-    public boolean canEdit(
-            String workspaceKey,
-            String projectKey,
-            String issueKey,
-            MemberUserDetails userDetails) {
+    public boolean canEdit(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
         if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
             return true;
         }
-        return issueQueryRepository.isAuthorOrAssignee(
-                workspaceKey, issueKey, userDetails.getMemberId());
+        return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, userDetails.getMemberId());
     }
 
     /**
@@ -51,11 +46,7 @@ public class IssueAuthorizationService {
      *   <li>The member is the author of the issue
      * </ul>
      */
-    public boolean canDelete(
-            String workspaceKey,
-            String projectKey,
-            String issueKey,
-            MemberUserDetails userDetails) {
+    public boolean canDelete(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
         if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
             return true;
         }
@@ -75,10 +66,7 @@ public class IssueAuthorizationService {
      * </ul>
      */
     public boolean canManageReviewers(
-            String workspaceKey,
-            String projectKey,
-            String issueKey,
-            MemberUserDetails userDetails) {
+            String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
         return canEdit(workspaceKey, projectKey, issueKey, userDetails);
     }
 
@@ -95,10 +83,7 @@ public class IssueAuthorizationService {
      * </ul>
      */
     public boolean canManageParticipants(
-            String workspaceKey,
-            String projectKey,
-            String issueKey,
-            MemberUserDetails userDetails) {
+            String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
         return canDelete(workspaceKey, projectKey, issueKey, userDetails);
     }
 }

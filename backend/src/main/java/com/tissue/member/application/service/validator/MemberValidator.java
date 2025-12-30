@@ -31,8 +31,7 @@ public class MemberValidator {
     }
 
     public void ensureWithdrawable(Member member) {
-        boolean hasOwnedWorkspaces =
-                workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
+        boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
             throw MemberExceptions.ownerNotWithdrawable(member);
         }

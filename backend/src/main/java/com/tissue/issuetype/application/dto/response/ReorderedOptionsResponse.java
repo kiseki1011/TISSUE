@@ -7,15 +7,9 @@ public record ReorderedOptionsResponse(Long issueFieldId, List<OptionDetail> opt
     public record OptionDetail(Long id, String name, int position) {}
 
     public static ReorderedOptionsResponse from(Long fieldId, List<EnumFieldOption> options) {
-        List<OptionDetail> details =
-                options.stream()
-                        .map(
-                                opt ->
-                                        new OptionDetail(
-                                                opt.getId(),
-                                                opt.getDisplayName(),
-                                                opt.getPosition()))
-                        .toList();
+        List<OptionDetail> details = options.stream()
+                .map(opt -> new OptionDetail(opt.getId(), opt.getDisplayName(), opt.getPosition()))
+                .toList();
         return new ReorderedOptionsResponse(fieldId, details);
     }
 }

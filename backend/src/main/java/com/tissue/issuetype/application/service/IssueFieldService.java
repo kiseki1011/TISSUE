@@ -63,12 +63,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         issueTypeValidator.ensureUniqueFieldLabel(issueType, cmd.name());
 
         IssueField issueField =
-                IssueField.create(
-                        cmd.name(),
-                        cmd.description(),
-                        cmd.issueFieldType(),
-                        cmd.required(),
-                        issueType);
+                IssueField.create(cmd.name(), cmd.description(), cmd.issueFieldType(), cmd.required(), issueType);
 
         IssueField savedField = issueFieldCommandRepo.save(issueField);
 
@@ -137,8 +132,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
         IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
-        EnumFieldOption option =
-                fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
+        EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
         if (labelUnchanged(option.getName(), cmd.name())) {
             return;
@@ -155,8 +149,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
 
         EnumFieldOptions options =
-                EnumFieldOptions.fromCurrentOptions(
-                        issueField, fieldOptionFinder.findActiveOptions(issueField));
+                EnumFieldOptions.fromCurrentOptions(issueField, fieldOptionFinder.findActiveOptions(issueField));
 
         options.ensureExactActiveIds(cmd.targetOrderedIds());
         options.bumpPositions();
@@ -173,8 +166,7 @@ public class IssueFieldService implements IssueFieldUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
         IssueField issueField = issueFieldFinder.findBy(cmd.issueFieldId(), issueType);
-        EnumFieldOption option =
-                fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
+        EnumFieldOption option = fieldOptionFinder.findByIdAndIssueField(cmd.optionId(), issueField);
 
         issueTypeValidator.ensureOptionDeletable(option);
 

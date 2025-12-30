@@ -18,8 +18,7 @@ public class PositionExceptions {
                 .addContext(POSITION_ID, positionId);
     }
 
-    public static ResourceConflictException duplicateName(
-            String positionName, String workspaceKey) {
+    public static ResourceConflictException duplicateName(String positionName, String workspaceKey) {
         return new ResourceConflictException(DUPLICATE_POSITION_NAME)
                 .addContext(WORKSPACE_KEY, workspaceKey)
                 .addContext(POSITION_NAME, positionName);

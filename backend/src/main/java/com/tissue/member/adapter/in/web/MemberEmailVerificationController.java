@@ -24,15 +24,13 @@ public class MemberEmailVerificationController {
     private final EmailVerificationProperties properties;
 
     @PostMapping("/request")
-    public ResponseEntity<Void> requestVerification(
-            @RequestBody @Valid EmailVerificationRequest request) {
+    public ResponseEntity<Void> requestVerification(@RequestBody @Valid EmailVerificationRequest request) {
         memberEmailVerificationService.sendVerificationEmail(request.email());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Void> verifyEmail(
-            @RequestParam String email, @RequestParam String token) {
+    public ResponseEntity<Void> verifyEmail(@RequestParam String email, @RequestParam String token) {
         boolean verified = memberEmailVerificationService.verifyEmail(email, token);
 
         // TODO: what is the use for the redirect url?

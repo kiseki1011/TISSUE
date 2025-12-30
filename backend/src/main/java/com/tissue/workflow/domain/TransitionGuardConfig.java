@@ -16,13 +16,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -36,7 +33,6 @@ import org.springframework.lang.Nullable;
                     name = "uk_guard_config_order",
                     columnNames = {"transition_id", "execution_order"})
         })
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TransitionGuardConfig extends BaseEntity {
 
     @Id
@@ -48,7 +44,7 @@ public class TransitionGuardConfig extends BaseEntity {
     private WorkflowTransition transition;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    @Column(name = "guard_type", nullable = false)
     private GuardType guardType;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -58,11 +54,15 @@ public class TransitionGuardConfig extends BaseEntity {
     @Column(nullable = false)
     private int executionOrder;
 
+    @SuppressWarnings("NullAway.Init")
+    protected TransitionGuardConfig() {}
+
     public static TransitionGuardConfig create(
-            @NonNull WorkflowTransition transition,
-            @NonNull GuardType guardType,
+            WorkflowTransition transition,
+            GuardType guardType,
             @Nullable Map<String, Object> guardParams,
             int executionOrder) {
+
         TransitionGuardConfig config = new TransitionGuardConfig();
         config.transition = transition;
         config.guardType = guardType;

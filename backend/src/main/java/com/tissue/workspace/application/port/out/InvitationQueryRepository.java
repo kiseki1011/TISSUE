@@ -17,8 +17,7 @@ public interface InvitationQueryRepository extends Repository<Invitation, Long> 
 
     Optional<Invitation> findByIdAndMember(Long id, Member member);
 
-    @Query(
-            """
+    @Query("""
                 SELECT i
                 FROM Invitation i
                 JOIN FETCH i.workspace
@@ -28,12 +27,10 @@ public interface InvitationQueryRepository extends Repository<Invitation, Long> 
     List<Invitation> findAllByMemberIdAndStatus(
             @Param("memberId") Long memberId, @Param("status") InvitationStatus status);
 
-    @Query(
-            "SELECT i.member.id FROM Invitation i "
-                    + "WHERE i.workspaceKey = :workspaceKey "
-                    + "AND i.member.id IN :candidateIds "
-                    + "AND i.status = 'PENDING'")
+    @Query("SELECT i.member.id FROM Invitation i "
+            + "WHERE i.workspaceKey = :workspaceKey "
+            + "AND i.member.id IN :candidateIds "
+            + "AND i.status = 'PENDING'")
     Set<Long> findPendingMemberIds(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("candidateIds") Collection<Long> candidateIds);
+            @Param("workspaceKey") String workspaceKey, @Param("candidateIds") Collection<Long> candidateIds);
 }

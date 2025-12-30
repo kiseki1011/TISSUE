@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record CreateIssueFieldRequest(
         @NotBlank @LabelSize String name,
@@ -18,8 +18,8 @@ public record CreateIssueFieldRequest(
         @NotNull IssueFieldType issueFieldType,
         @NotNull Boolean required,
         @Nullable @Size(max = 100) List<@NotBlank @LabelSize String> initialOptions) {
-    public CreateIssueFieldCommand toCommand(
-            String workspaceKey, String projectKey, Long issueTypeId) {
+
+    public CreateIssueFieldCommand toCommand(String workspaceKey, String projectKey, Long issueTypeId) {
         return CreateIssueFieldCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

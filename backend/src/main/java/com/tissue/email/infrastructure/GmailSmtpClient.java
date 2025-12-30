@@ -35,8 +35,7 @@ public class GmailSmtpClient implements EmailClient {
         }
     }
 
-    private MimeMessage createMimeMessage(String to, String subject, String body)
-            throws MessagingException {
+    private MimeMessage createMimeMessage(String to, String subject, String body) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
 

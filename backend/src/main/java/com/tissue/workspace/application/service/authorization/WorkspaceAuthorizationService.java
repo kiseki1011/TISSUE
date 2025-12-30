@@ -28,13 +28,11 @@ public class WorkspaceAuthorizationService {
         return userDetails.hasWorkspaceRole(workspaceKey, OWNER);
     }
 
-    public boolean isSelfModification(
-            String workspaceKey, Long memberId, MemberUserDetails userDetails) {
+    public boolean isSelfModification(String workspaceKey, Long memberId, MemberUserDetails userDetails) {
         return isAdmin(workspaceKey, userDetails) || memberId.equals(userDetails.getMemberId());
     }
 
-    public boolean hasHigherRoleThanTarget(
-            String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+    public boolean hasHigherRoleThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
         if (targetMemberId.equals(userDetails.getMemberId())) {
             return false;
         }
@@ -44,8 +42,7 @@ public class WorkspaceAuthorizationService {
         return hasHigherRoleThan(workspaceKey, targetMemberId, userDetails);
     }
 
-    public boolean canGrantRole(
-            String workspaceKey, WorkspaceRole grantRole, MemberUserDetails userDetails) {
+    public boolean canGrantRole(String workspaceKey, WorkspaceRole grantRole, MemberUserDetails userDetails) {
         if (grantRole == WorkspaceRole.OWNER) {
             return false;
         }
@@ -55,10 +52,8 @@ public class WorkspaceAuthorizationService {
         return userDetails.hasWorkspaceRole(workspaceKey, grantRole);
     }
 
-    public boolean canEditInviteLink(
-            String workspaceKey, String token, MemberUserDetails userDetails) {
-        return userDetails.hasWorkspaceRole(workspaceKey, WorkspaceRole.ADMIN)
-                || isLinkCreator(token, userDetails);
+    public boolean canEditInviteLink(String workspaceKey, String token, MemberUserDetails userDetails) {
+        return userDetails.hasWorkspaceRole(workspaceKey, WorkspaceRole.ADMIN) || isLinkCreator(token, userDetails);
     }
 
     private boolean isLinkCreator(String token, MemberUserDetails userDetails) {
@@ -68,8 +63,7 @@ public class WorkspaceAuthorizationService {
                 .orElse(false);
     }
 
-    private boolean hasHigherRoleThan(
-            String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+    private boolean hasHigherRoleThan(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
                 .map(target -> userDetails.hasWorkspaceRole(workspaceKey, target.getRole()))

@@ -24,12 +24,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 // TODO: should position use soft-delete or hard-delete?
 //  current policy: check if anybody uses it, if nobody uses, then hard-delete
@@ -41,7 +38,6 @@ import org.springframework.lang.Nullable;
                     name = "uk_workspace_position_name",
                     columnNames = {"workspace_id", "position_name_norm"})
         })
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Position extends BaseEntity {
 
     @Id
@@ -51,16 +47,15 @@ public class Position extends BaseEntity {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(
-                name = "value",
-                column = @Column(name = "position_name", nullable = false, length = 64)),
+        @AttributeOverride(name = "value", column = @Column(name = "position_name", nullable = false, length = 64)),
         @AttributeOverride(
                 name = "normalized",
                 column = @Column(name = "position_name_norm", nullable = false, length = 64))
     })
     private Name name;
 
-    @Column(name = "description")
+    @Nullable
+    @Column(name = "description", length = 255)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -77,13 +72,11 @@ public class Position extends BaseEntity {
     @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkspaceMemberPosition> workspaceMemberPositions = new ArrayList<>();
 
-    // TODO: should i consider using a static factory method?
+    @SuppressWarnings("NullAway.Init")
+    protected Position() {}
+
     @Builder
-    public Position(
-            @NonNull Workspace workspace,
-            @NonNull String name,
-            @Nullable String description,
-            @NonNull ColorType color) {
+    public Position(Workspace workspace, String name, @Nullable String description, ColorType color) {
         this.workspace = workspace;
         this.workspaceKey = workspace.getKey();
         this.name = Name.of(name);
@@ -91,7 +84,7 @@ public class Position extends BaseEntity {
         this.color = color;
     }
 
-    public void updateName(@NonNull String name) {
+    public void updateName(String name) {
         this.name = Name.of(name);
     }
 
@@ -99,7 +92,7 @@ public class Position extends BaseEntity {
         this.description = description;
     }
 
-    public void updateColor(@NonNull ColorType color) {
+    public void updateColor(ColorType color) {
         this.color = color;
     }
 

@@ -8,10 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface NotificationPreferenceRepository
-        extends JpaRepository<NotificationPreference, Long> {
-    @Query(
-            """
+public interface NotificationPreferenceRepository extends JpaRepository<NotificationPreference, Long> {
+    @Query("""
             SELECT p FROM NotificationPreference p
             WHERE p.receiverMemberId = :memberId
             AND p.workspaceKey = :workspaceKey

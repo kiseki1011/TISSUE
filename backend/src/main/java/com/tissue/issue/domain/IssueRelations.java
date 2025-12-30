@@ -10,13 +10,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Embeddable
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueRelations {
 
     @OneToMany(mappedBy = "sourceIssue", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -24,6 +21,9 @@ public class IssueRelations {
 
     @OneToMany(mappedBy = "targetIssue", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<IssueRelation> incomingRelations = new HashSet<>();
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueRelations() {}
 
     static IssueRelations init() {
         return new IssueRelations();
@@ -34,7 +34,7 @@ public class IssueRelations {
         return IssueRelation.create(sourceIssue, targetIssue, type);
     }
 
-    IssueRelation removeRelation(Issue otherIssue) {
+    IssueRelation removeRelation(Issue sourceIssue, Issue otherIssue) {
         Iterator<IssueRelation> iterator = outgoingRelations.iterator();
         while (iterator.hasNext()) {
             IssueRelation relation = iterator.next();
@@ -46,7 +46,8 @@ public class IssueRelations {
             }
         }
 
-        return null;
+        throw IssueExceptions.relationNotFound(
+                sourceIssue.getWorkspaceKey(), sourceIssue.getKey(), otherIssue.getKey());
     }
 
     void clear() {
@@ -118,13 +119,11 @@ public class IssueRelations {
     }
 
     private static void ensureNoRelationExists(Issue source, Issue target) {
-        boolean exists =
-                source.getRelations().getOutgoingRelations().stream()
-                        .anyMatch(relation -> relation.getTargetIssue().equals(target));
+        boolean exists = source.getRelations().getOutgoingRelations().stream()
+                .anyMatch(relation -> relation.getTargetIssue().equals(target));
 
         if (exists) {
-            throw IssueExceptions.relationAlreadyExists(
-                    source.getWorkspaceKey(), source.getKey(), target.getKey());
+            throw IssueExceptions.relationAlreadyExists(source.getWorkspaceKey(), source.getKey(), target.getKey());
         }
     }
 

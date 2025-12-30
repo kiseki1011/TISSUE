@@ -21,29 +21,24 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
      * <p>Uses a <b>native query</b> to bypass Hibernate {@link
      * org.hibernate.annotations.SQLRestriction @SqlRestriction}
      */
-    @Query(
-            value =
-                    """
+    @Query(value = """
                     SELECT * FROM project_member
                     WHERE project_id = :projectId
                       AND member_id = :memberId
-                    """,
-            nativeQuery = true)
+                    """, nativeQuery = true)
     Optional<ProjectMember> findAnyByProjectIdAndMemberId(
             @Param("projectId") Long projectId, @Param("memberId") Long memberId);
 
-    @Query(
-            "SELECT pm.role FROM ProjectMember pm "
-                    + "WHERE pm.workspaceKey = :workspaceKey "
-                    + "AND pm.projectKey = :projectKey "
-                    + "AND pm.memberId = :memberId")
+    @Query("SELECT pm.role FROM ProjectMember pm "
+            + "WHERE pm.workspaceKey = :workspaceKey "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.memberId = :memberId")
     Optional<ProjectRole> findRoleByKeysAndMemberId(
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("memberId") Long memberId);
 
-    @Query(
-            """
+    @Query("""
                 SELECT pm.memberId
                 FROM ProjectMember pm
                 WHERE pm.project = :project
@@ -53,8 +48,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     Set<Long> findMemberIdsByProjectAndMemberIds(
             @Param("project") Project project, @Param("memberIds") Collection<Long> memberIds);
 
-    @Query(
-            """
+    @Query("""
                 SELECT pm
                 FROM ProjectMember pm
                 WHERE pm.workspaceKey = :workspaceKey
@@ -67,8 +61,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("projectKeys") Collection<String> projectKeys,
             @Param("memberId") Long memberId);
 
-    boolean existsByWorkspaceKeyAndProjectKeyAndMemberId(
-            String workspaceKey, String projectKey, Long memberId);
+    boolean existsByWorkspaceKeyAndProjectKeyAndMemberId(String workspaceKey, String projectKey, Long memberId);
 
     boolean existsByProjectAndMemberId(Project project, Long memberId);
 

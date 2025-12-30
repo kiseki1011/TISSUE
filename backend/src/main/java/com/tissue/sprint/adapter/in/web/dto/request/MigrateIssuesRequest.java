@@ -6,4 +6,5 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record MigrateIssuesRequest(
-        @NotNull Long newSprintId, @NotEmpty @Size(max = 100) List<String> issueKeys) {}
+        @NotNull Long newSprintId,
+        @NotEmpty @Size(max = 100) List<String> issueKeys) {}

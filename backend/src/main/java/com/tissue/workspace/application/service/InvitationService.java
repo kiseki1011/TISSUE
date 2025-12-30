@@ -42,11 +42,8 @@ public class InvitationService implements InvitationUseCase {
 
         invitation.accept();
 
-        WorkspaceMember workspaceMember =
-                workspaceParticipationService.join(
-                        invitation.getWorkspace(),
-                        memberFinder.getActiveBy(memberId),
-                        invitation.getWorkspaceRole());
+        WorkspaceMember workspaceMember = workspaceParticipationService.join(
+                invitation.getWorkspace(), memberFinder.getActiveBy(memberId), invitation.getWorkspaceRole());
 
         List<ProjectJoinConfig> projectConfigs = invitation.getProjectConfigs();
 
@@ -76,29 +73,21 @@ public class InvitationService implements InvitationUseCase {
     @Override
     public List<InvitationDetail> getMyInvitations(Long memberId) {
         // TODO: N+1, consider optimization
-        return invitationQueryRepository
-                .findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING)
-                .stream()
-                .map(
-                        invitation -> {
-                            Member inviter =
-                                    memberFinder
-                                            .getOptActiveBy(invitation.getCreatedBy())
-                                            .orElse(null);
-                            return InvitationDetail.from(invitation, inviter);
-                        })
+        return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING).stream()
+                .map(invitation -> {
+                    Member inviter = memberFinder
+                            .getOptActiveBy(invitation.getCreatedBy())
+                            .orElse(null);
+                    return InvitationDetail.from(invitation, inviter);
+                })
                 .toList();
     }
 
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
-            projectFinder
-                    .findOptionalBy(config.projectId())
-                    .ifPresent(
-                            project -> {
-                                projectMemberCommandService.addMember(
-                                        project, workspaceMember.getMemberId(), config.role());
-                            });
+            projectFinder.findOptionalBy(config.projectId()).ifPresent(project -> {
+                projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
+            });
         }
     }
 }

@@ -5,10 +5,8 @@ import com.tissue.issuetype.application.dto.request.PatchIssueTypeCommand;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
-public record UpdateIssueTypeRequest(
-        JsonNullable<@Size(max = 255) String> description, JsonNullable<ColorType> color) {
-    public PatchIssueTypeCommand toCommand(
-            String workspaceKey, String projectKey, Long issueTypeId) {
+public record UpdateIssueTypeRequest(JsonNullable<@Size(max = 255) String> description, JsonNullable<ColorType> color) {
+    public PatchIssueTypeCommand toCommand(String workspaceKey, String projectKey, Long issueTypeId) {
         return PatchIssueTypeCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

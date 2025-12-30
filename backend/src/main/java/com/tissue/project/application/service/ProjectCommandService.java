@@ -30,8 +30,7 @@ public class ProjectCommandService implements ProjectCommandUseCase {
     public ProjectCommandResult create(CreateProjectCommand cmd) {
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
-        Project project =
-                Project.create(workspace, cmd.projectKey(), cmd.title(), cmd.description());
+        Project project = Project.create(workspace, cmd.projectKey(), cmd.title(), cmd.description());
 
         projectValidator.ensureUniqueProjectKey(project.getKey(), workspace.getKey());
 

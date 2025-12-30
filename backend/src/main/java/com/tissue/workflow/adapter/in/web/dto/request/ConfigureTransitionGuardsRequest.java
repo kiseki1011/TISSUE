@@ -5,8 +5,7 @@ import com.tissue.workflow.application.dto.request.ConfigureTransitionGuardsComm
 import java.util.List;
 
 public record ConfigureTransitionGuardsRequest(List<GuardConfigData> guards) {
-    public ConfigureTransitionGuardsCommand toCommand(
-            String workspaceKey, Long workflowId, Long transitionId) {
+    public ConfigureTransitionGuardsCommand toCommand(String workspaceKey, Long workflowId, Long transitionId) {
         return ConfigureTransitionGuardsCommand.builder()
                 .workspaceKey(workspaceKey)
                 .workflowId(workflowId)

@@ -7,7 +7,7 @@ import com.tissue.workspace.domain.enums.InvitationStatus;
 import java.time.Instant;
 import java.util.List;
 import lombok.Builder;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record InvitationDetail(
@@ -27,13 +27,9 @@ public record InvitationDetail(
                 .invitationId(invitation.getId())
                 .workspaceKey(invitation.getWorkspaceKey())
                 .workspaceName(invitation.getWorkspace().getName())
-                .projectConfigs(
-                        invitation.getProjectConfigs().stream()
-                                .map(
-                                        config ->
-                                                new ProjectJoinConfigDto(
-                                                        config.projectKey(), config.role()))
-                                .toList())
+                .projectConfigs(invitation.getProjectConfigs().stream()
+                        .map(config -> new ProjectJoinConfigDto(config.projectKey(), config.role()))
+                        .toList())
                 .inviterName(name)
                 .inviterEmail(email)
                 .status(invitation.getStatus())

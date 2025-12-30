@@ -1,10 +1,11 @@
-package com.tissue.common.util;
+package com.tissue.workspace.domain.service;
 
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-// TODO: might use. if not used after beta is released, remove
+/** The random nickname generator will be removed in the future. */
+@Deprecated(forRemoval = true)
 @Component
 @RequiredArgsConstructor
 public class RandomNicknameGenerator {
@@ -34,7 +35,6 @@ public class RandomNicknameGenerator {
 
         @Override
         public String toString() {
-            // HAPPY -> Happy
             return name().charAt(0) + name().substring(1).toLowerCase();
         }
     }
@@ -72,7 +72,6 @@ public class RandomNicknameGenerator {
 
         @Override
         public String toString() {
-            // PANDA -> Panda
             return name().charAt(0) + name().substring(1).toLowerCase();
         }
     }

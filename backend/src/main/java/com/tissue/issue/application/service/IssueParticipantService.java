@@ -47,8 +47,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
         issue.changeReporter(newReporter);
 
-        eventPublisher.publishEvent(
-                IssueReporterChangedEvent.create(issue, oldReporter, newReporter, actor));
+        eventPublisher.publishEvent(IssueReporterChangedEvent.create(issue, oldReporter, newReporter, actor));
     }
 
     @Override
@@ -65,13 +64,18 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         eventPublisher.publishEvent(IssueAssignedEvent.create(issue, assignee, actor));
     }
 
+    // TODO: refactor?
     @Override
     @Transactional
     public void unassign(RemoveAssigneeCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
+        // TODO: refactor using optional?
         ProjectMember assignee = issue.getParticipants().getAssignee();
+        if (assignee == null) {
+            return;
+        }
         ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
 
         issue.unassign();

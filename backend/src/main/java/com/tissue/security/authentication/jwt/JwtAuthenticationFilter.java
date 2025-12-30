@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,8 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * saves it in SecurityContext.
      */
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         SecurityContextHolder.clearContext();
@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * <p>Header form - Authorization: Bearer {token} Remove "Bearer" prefix and return token
      * string.
      */
-    private String extractTokenFromRequest(HttpServletRequest request) {
+    private @Nullable String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {

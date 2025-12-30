@@ -17,8 +17,7 @@ public record IssueAssignedEvent(
         Long actorMemberId,
         String actorDisplayName) {
 
-    public static IssueAssignedEvent create(
-            Issue issue, ProjectMember assignee, ProjectMember actor) {
+    public static IssueAssignedEvent create(Issue issue, ProjectMember assignee, ProjectMember actor) {
         return new IssueAssignedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

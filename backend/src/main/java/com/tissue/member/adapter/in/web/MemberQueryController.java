@@ -19,8 +19,7 @@ public class MemberQueryController {
 
     // TODO: should i just use the uri as "/api/v1/members"?
     @GetMapping("/my")
-    public ResponseEntity<GetMemberProfile> getMyProfile(
-            @CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<GetMemberProfile> getMyProfile(@CurrentMember MemberUserDetails userDetails) {
         GetMemberProfile response = memberQueryUseCase.getMyProfile(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }

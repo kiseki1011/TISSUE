@@ -17,8 +17,7 @@ public record IssueUnassignedEvent(
         Long actorMemberId,
         String actorDisplayName) {
 
-    public static IssueUnassignedEvent create(
-            Issue issue, ProjectMember removedAssignee, ProjectMember actor) {
+    public static IssueUnassignedEvent create(Issue issue, ProjectMember removedAssignee, ProjectMember actor) {
         return new IssueUnassignedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

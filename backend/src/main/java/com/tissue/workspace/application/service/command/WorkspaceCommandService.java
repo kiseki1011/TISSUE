@@ -42,8 +42,7 @@ public class WorkspaceCommandService implements WorkspaceCommandUseCase {
     @Override
     public void transferOwnership(TransferOwnershipCommand cmd) {
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember originalOwner =
-                workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
+        WorkspaceMember originalOwner = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
         WorkspaceMember newOwner = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
 
         workspace.transferOwnership(originalOwner, newOwner);

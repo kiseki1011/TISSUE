@@ -19,30 +19,29 @@ import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkflowTransition extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workflow_id")
     private Workflow workflow;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
-    @Column(nullable = false, length = 255)
+    @Nullable
+    @Column(name = "description", length = 255)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -55,11 +54,12 @@ public class WorkflowTransition extends BaseEntity {
     @OrderBy("executionOrder ASC")
     private List<TransitionGuardConfig> guardConfigs = new ArrayList<>();
 
+    @SuppressWarnings("NullAway.Init")
+    protected WorkflowTransition() {}
+
     public static WorkflowTransition of(
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull WorkflowState sourceState,
-            @NonNull WorkflowState targetState) {
+            Name name, @Nullable String description, WorkflowState sourceState, WorkflowState targetState) {
+
         WorkflowTransition wt = new WorkflowTransition();
         wt.name = name;
         wt.description = description;
@@ -69,7 +69,7 @@ public class WorkflowTransition extends BaseEntity {
         return wt;
     }
 
-    void updateName(@NonNull Name name) {
+    void updateName(Name name) {
         this.name = name;
     }
 
@@ -77,20 +77,19 @@ public class WorkflowTransition extends BaseEntity {
         this.description = description;
     }
 
-    void attachToWorkflow(@NonNull Workflow workflow) {
+    void attachToWorkflow(Workflow workflow) {
         this.workflow = workflow;
     }
 
-    void rewireSource(@NonNull WorkflowState sourceState) {
+    void rewireSource(WorkflowState sourceState) {
         this.sourceState = sourceState;
     }
 
-    void rewireTarget(@NonNull WorkflowState targetState) {
+    void rewireTarget(WorkflowState targetState) {
         this.targetState = targetState;
     }
 
-    // Guard 추가 (GuardType enum 사용)
-    void addGuard(@NonNull GuardType guardType, @Nullable Map<String, Object> params, int order) {
+    void addGuard(GuardType guardType, @Nullable Map<String, Object> params, int order) {
         TransitionGuardConfig config = TransitionGuardConfig.create(this, guardType, params, order);
         guardConfigs.add(config);
     }

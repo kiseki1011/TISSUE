@@ -24,12 +24,10 @@ public class NotificationTargetService {
     }
 
     /** Retrieve workspace administrators and a specific member as notification targets. */
-    public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(
-            String workspaceCode, Long memberId) {
+    public Set<WorkspaceMember> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
 
-        Set<WorkspaceMember> targets =
-                workspaceMemberQueryRepository.findAdminsByWorkspace_Key(
-                        workspaceCode, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER));
+        Set<WorkspaceMember> targets = workspaceMemberQueryRepository.findAdminsByWorkspace_Key(
+                workspaceCode, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER));
 
         workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(memberId, workspaceCode)

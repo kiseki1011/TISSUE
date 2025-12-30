@@ -5,6 +5,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,7 +19,8 @@ public abstract class BaseEntity extends BaseDateEntity {
     @Column(updatable = false)
     private Long createdBy;
 
-    @LastModifiedBy private Long lastModifiedBy;
+    @LastModifiedBy
+    private Long lastModifiedBy;
 
     @Column(nullable = false)
     private boolean archived = false;
@@ -26,8 +28,10 @@ public abstract class BaseEntity extends BaseDateEntity {
     @Column(nullable = false)
     private boolean softDeleted = false;
 
+    @Nullable
     private Instant archivedAt;
 
+    @Nullable
     private Instant softDeletedAt;
 
     public abstract Long getId();

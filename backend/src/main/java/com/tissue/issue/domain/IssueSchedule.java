@@ -4,24 +4,27 @@ import com.tissue.issue.domain.exception.IssueExceptions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Embeddable
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueSchedule {
 
+    @Nullable
     @Column(name = "started_at")
     private Instant startedAt;
 
+    @Nullable
     @Column(name = "resolved_at")
     private Instant resolvedAt;
 
+    @Nullable
     @Column(name = "due_at")
     private Instant dueAt;
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueSchedule() {}
 
     public static IssueSchedule of(@Nullable Instant dueAt) {
         IssueSchedule schedule = new IssueSchedule();
@@ -50,7 +53,7 @@ public class IssueSchedule {
         this.dueAt = ensureValidDueAt(dueAt);
     }
 
-    private static Instant ensureValidDueAt(Instant instant) {
+    private static @Nullable Instant ensureValidDueAt(@Nullable Instant instant) {
         if (instant == null) {
             return null;
         }

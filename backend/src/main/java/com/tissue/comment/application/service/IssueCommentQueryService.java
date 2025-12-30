@@ -22,30 +22,22 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
     private final CommentQueryRepository commentQueryRepository;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(
-            String workspaceKey, String projectKey, String issueKey) {
-        List<Comment> allComments = commentQueryRepository.findByIssue(projectKey, issueKey);
+    public List<CommentDetailResponse> getIssueComments(String workspaceKey, String projectKey, String issueKey) {
+        List<Comment> allComments = commentQueryRepository.findByIssue(workspaceKey, issueKey);
 
-        Map<Long, List<Comment>> repliesByParentId =
-                allComments.stream()
-                        .filter(c -> c.getParentComment() != null)
-                        .collect(Collectors.groupingBy(c -> c.getParentComment().getId()));
+        Map<Long, List<Comment>> repliesByParentId = allComments.stream()
+                .filter(c -> c.getParentComment() != null)
+                .collect(Collectors.groupingBy(c -> c.getParentComment().getId()));
 
         return allComments.stream()
                 .filter(c -> c.getParentComment() == null) // Root comments
-                .map(
-                        root -> {
-                            List<Comment> replies =
-                                    repliesByParentId.getOrDefault(root.getId(), List.of());
-                            List<CommentDetailResponse> replyDtos =
-                                    replies.stream()
-                                            .map(
-                                                    reply ->
-                                                            CommentDetailResponse.from(
-                                                                    reply, List.of()))
-                                            .toList();
-                            return CommentDetailResponse.from(root, replyDtos);
-                        })
+                .map(root -> {
+                    List<Comment> replies = repliesByParentId.getOrDefault(root.getId(), List.of());
+                    List<CommentDetailResponse> replyDtos = replies.stream()
+                            .map(reply -> CommentDetailResponse.from(reply, List.of()))
+                            .toList();
+                    return CommentDetailResponse.from(root, replyDtos);
+                })
                 .toList();
     }
 

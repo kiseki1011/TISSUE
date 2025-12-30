@@ -36,9 +36,7 @@ public class ApprovalGuard implements TransitionGuard {
         Set<IssueReviewer> reviewers = context.getIssue().getParticipants().getReviewers();
 
         if (blockOnRequest) {
-            boolean hasReject =
-                    reviewers.stream()
-                            .anyMatch(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED);
+            boolean hasReject = reviewers.stream().anyMatch(r -> r.getStatus() == ReviewStatus.CHANGES_REQUESTED);
 
             if (hasReject) {
                 String reason = "Transition blocked by change requests";
@@ -47,13 +45,12 @@ public class ApprovalGuard implements TransitionGuard {
             }
         }
 
-        long approvedCount =
-                reviewers.stream().filter(r -> r.getStatus() == ReviewStatus.APPROVED).count();
+        long approvedCount = reviewers.stream()
+                .filter(r -> r.getStatus() == ReviewStatus.APPROVED)
+                .count();
 
         if (approvedCount < minApprovals) {
-            String reason =
-                    "Insufficient approvals. Current: %d, Required: %d."
-                            .formatted(approvedCount, minApprovals);
+            String reason = "Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals);
             throw WorkflowExceptions.transitionGuardFailed(
                     getType(), reason, context.getIssue().getKey(), context.getWorkspaceKey());
         }
@@ -72,8 +69,7 @@ public class ApprovalGuard implements TransitionGuard {
         String rejectTransName = (String) params.get(KEY_REJECT_TRANSITION);
 
         if (autoReject && (rejectTransName == null || rejectTransName.isBlank())) {
-            String reason =
-                    "%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION);
+            String reason = "%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION);
             throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
         }
     }
@@ -82,8 +78,7 @@ public class ApprovalGuard implements TransitionGuard {
     public List<GuardParamMetaData> getParamMetaData() {
         return List.of(
                 GuardParamMetaData.of(KEY_MIN_APPROVALS, GuardParamType.NUMBER, 1, true),
-                GuardParamMetaData.of(
-                        KEY_BLOCK_ON_CHANGE_REQUEST, GuardParamType.BOOLEAN, true, true),
+                GuardParamMetaData.of(KEY_BLOCK_ON_CHANGE_REQUEST, GuardParamType.BOOLEAN, true, true),
                 GuardParamMetaData.of(KEY_AUTO_REJECT, GuardParamType.BOOLEAN, false, false),
                 GuardParamMetaData.of(KEY_REJECT_TRANSITION, GuardParamType.TEXT, null, false));
     }

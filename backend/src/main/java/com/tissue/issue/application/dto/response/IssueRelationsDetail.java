@@ -21,7 +21,9 @@ public record IssueRelationsDetail(
                 issue.getRelations().getBlockedByIssues().stream()
                         .map(RelatedIssueInfo::from)
                         .toList(),
-                issue.getRelations().getDuplicates().stream().map(RelatedIssueInfo::from).toList(),
+                issue.getRelations().getDuplicates().stream()
+                        .map(RelatedIssueInfo::from)
+                        .toList(),
                 issue.getRelations().getDuplicatedBy().stream()
                         .map(RelatedIssueInfo::from)
                         .toList(),
@@ -30,8 +32,7 @@ public record IssueRelationsDetail(
                         .toList());
     }
 
-    public static IssueRelationsDetail from(
-            List<IssueRelation> outgoing, List<IssueRelation> incoming) {
+    public static IssueRelationsDetail from(List<IssueRelation> outgoing, List<IssueRelation> incoming) {
         List<RelatedIssueInfo> blocks = new ArrayList<>();
         List<RelatedIssueInfo> duplicates = new ArrayList<>();
         List<RelatedIssueInfo> relevant = new ArrayList<>();

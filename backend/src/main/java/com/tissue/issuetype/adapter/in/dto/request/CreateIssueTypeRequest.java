@@ -8,7 +8,7 @@ import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public record CreateIssueTypeRequest(
         @NotBlank @LabelSize String name,
@@ -16,6 +16,7 @@ public record CreateIssueTypeRequest(
         @NotNull ColorType color,
         @NotNull IssueHierarchy issueHierarchy,
         @NotNull Long workflowId) {
+
     public CreateIssueTypeCommand toCommand(String workspaceKey, String projectKey) {
         return CreateIssueTypeCommand.builder()
                 .workspaceKey(workspaceKey)

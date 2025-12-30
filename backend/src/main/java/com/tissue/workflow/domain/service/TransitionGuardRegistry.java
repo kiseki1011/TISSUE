@@ -15,9 +15,7 @@ public class TransitionGuardRegistry {
     private final Map<GuardType, TransitionGuard> guards;
 
     public TransitionGuardRegistry(List<TransitionGuard> guardList) {
-        this.guards =
-                guardList.stream()
-                        .collect(Collectors.toMap(TransitionGuard::getType, Function.identity()));
+        this.guards = guardList.stream().collect(Collectors.toMap(TransitionGuard::getType, Function.identity()));
     }
 
     public TransitionGuard getGuard(GuardType type) {

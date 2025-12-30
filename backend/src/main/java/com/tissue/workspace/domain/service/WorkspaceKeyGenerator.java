@@ -1,33 +1,27 @@
 package com.tissue.workspace.domain.service;
 
-import com.tissue.common.util.Base62Encoder;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class WorkspaceKeyGenerator {
+public final class WorkspaceKeyGenerator {
 
-    private static final int KEY_SUFFIX_LENGTH = 8;
-    private static final String HASH_ALGORITHM = "SHA-256";
-    private static final String WORKSPACE_KEY_PREFIX = "WS";
-
-    public static String generateWorkspaceKey() {
-        byte[] randomBytes = new byte[9];
-        new SecureRandom().nextBytes(randomBytes);
-        String code = Base62Encoder.encode(randomBytes);
-        return WORKSPACE_KEY_PREFIX + "-" + code.substring(0, KEY_SUFFIX_LENGTH);
+    private WorkspaceKeyGenerator() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    private byte[] hashFunction(String inputString) {
-        try {
-            MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
-            return md.digest(inputString.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            throw WorkspaceExceptions.keyGenerationFailed(e);
+    private static final int KEY_LENGTH = 8;
+    private static final String WORKSPACE_KEY_PREFIX = "WS-";
+
+    private static final char[] BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    public static String generateWorkspaceKey() {
+        StringBuilder sb = new StringBuilder(KEY_LENGTH + WORKSPACE_KEY_PREFIX.length());
+        sb.append(WORKSPACE_KEY_PREFIX);
+
+        for (int i = 0; i < KEY_LENGTH; i++) {
+            sb.append(BASE62[RANDOM.nextInt(BASE62.length)]);
         }
+
+        return sb.toString();
     }
 }

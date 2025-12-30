@@ -1,5 +1,7 @@
 package com.tissue.common.util;
 
+import org.jspecify.annotations.Nullable;
+
 public final class EtagUtil {
 
     private EtagUtil() {
@@ -8,7 +10,7 @@ public final class EtagUtil {
 
     // removes quotation marks ("")
     // example: "5" → 5
-    public static Long parseIfMatch(String raw) {
+    public static @Nullable Long parseIfMatch(@Nullable String raw) {
         if (raw == null || raw.isBlank()) {
             return null;
         }

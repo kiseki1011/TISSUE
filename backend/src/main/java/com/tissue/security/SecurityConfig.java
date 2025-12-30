@@ -36,31 +36,22 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // allow endpoints
-                .authorizeHttpRequests(
-                        auth ->
-                                auth.requestMatchers(
-                                                "/api/v1/auth/login",
-                                                "/api/v1/members/check*",
-                                                "/swagger-ui/**",
-                                                "/actuator/**")
-                                        .permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/v1/members")
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
-                .exceptionHandling(
-                        ex ->
-                                ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                                        .accessDeniedHandler(apiAccessDeniedHandler))
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/api/v1/auth/login", "/api/v1/members/check*", "/swagger-ui/**", "/actuator/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/members")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(apiAccessDeniedHandler))
 
                 // place filters in order
                 .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(
-                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -71,8 +62,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(
-            MemberUserDetailsService userDetailsService) {
+    public DaoAuthenticationProvider authenticationProvider(MemberUserDetailsService userDetailsService) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
@@ -80,8 +70,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            HttpSecurity http, DaoAuthenticationProvider provider) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity http, DaoAuthenticationProvider provider)
+            throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .authenticationProvider(provider)
                 .build();

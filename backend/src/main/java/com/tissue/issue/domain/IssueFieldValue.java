@@ -15,17 +15,15 @@ import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueFieldValue extends BaseEntity {
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,21 +35,36 @@ public class IssueFieldValue extends BaseEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private IssueField field;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enum_option_id")
     private EnumFieldOption enumOption;
 
+    @Nullable
     private String stringValue;
+
+    @Nullable
     private Integer integerValue;
+
+    @Nullable
     private BigDecimal decimalValue;
+
+    @Nullable
     private Instant timestampValue;
+
+    @Nullable
     private LocalDate dateValue;
+
+    @Nullable
     private Boolean booleanValue;
 
     @Column(name = "value_present", nullable = false)
     private boolean valuePresent;
 
-    public static IssueFieldValue of(@NonNull Issue issue, @NonNull IssueField field) {
+    @SuppressWarnings("NullAway.Init")
+    protected IssueFieldValue() {}
+
+    public static IssueFieldValue of(Issue issue, IssueField field) {
         IssueFieldValue fieldValue = new IssueFieldValue();
         fieldValue.issue = issue;
         fieldValue.field = field;
@@ -59,7 +72,7 @@ public class IssueFieldValue extends BaseEntity {
         return fieldValue;
     }
 
-    public void apply(@NonNull Object value) {
+    public void apply(@Nullable Object value) {
         clearColumnsOnly();
         switch (field.getIssueFieldType()) {
             case TEXT -> this.stringValue = (String) value;
@@ -69,9 +82,7 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue = (LocalDate) value;
             case BOOLEAN -> this.booleanValue = (Boolean) value;
             case ENUM -> this.enumOption = (EnumFieldOption) value;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unsupported field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException("Unsupported field type: " + field.getIssueFieldType());
         }
         markPresent();
     }
@@ -81,7 +92,7 @@ public class IssueFieldValue extends BaseEntity {
         markEmpty();
     }
 
-    public Object getValue() {
+    public @Nullable Object getValue() {
         if (!this.valuePresent) {
             return null;
         }
@@ -94,9 +105,7 @@ public class IssueFieldValue extends BaseEntity {
             case DATE -> this.dateValue;
             case BOOLEAN -> this.booleanValue;
             case ENUM -> this.enumOption;
-            default ->
-                    throw new IllegalArgumentException(
-                            "Unexpected field type: " + field.getIssueFieldType());
+            default -> throw new IllegalArgumentException("Unexpected field type: " + field.getIssueFieldType());
         };
     }
 

@@ -15,33 +15,32 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueField extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
-    @Column(nullable = false, length = 255)
+    @Nullable
+    @Column(name = "description")
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IssueFieldType issueFieldType;
 
-    @Column(nullable = false)
+    @Column(name = "required", nullable = false)
     private boolean required;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -50,14 +49,17 @@ public class IssueField extends BaseEntity {
 
     // private String icon;
 
-    public static IssueField create(
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull IssueFieldType issueFieldType,
-            boolean required,
-            @NonNull IssueType issueType) {
-        IssueField issueField = new IssueField();
+    @SuppressWarnings("NullAway.Init")
+    protected IssueField() {}
 
+    public static IssueField create(
+            Name name,
+            @Nullable String description,
+            IssueFieldType issueFieldType,
+            boolean required,
+            IssueType issueType) {
+
+        IssueField issueField = new IssueField();
         issueField.name = name;
         issueField.description = description;
         issueField.issueFieldType = issueFieldType;
@@ -75,7 +77,7 @@ public class IssueField extends BaseEntity {
         return name.getDisplay();
     }
 
-    public void rename(@NonNull Name name) {
+    public void rename(Name name) {
         this.name = name;
     }
 

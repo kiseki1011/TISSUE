@@ -1,7 +1,5 @@
 package com.tissue.issue.application.service;
 
-import static com.tissue.common.util.IssueKeyUtil.*;
-
 import com.tissue.issue.application.dto.response.IssueCommonDetail;
 import com.tissue.issue.application.dto.response.IssueCustomDetail;
 import com.tissue.issue.application.dto.response.IssueRelationsDetail;
@@ -9,7 +7,7 @@ import com.tissue.issue.application.dto.response.IssueReviewersDetail;
 import com.tissue.issue.application.dto.response.IssueSubscribersDetail;
 import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
-import com.tissue.issue.application.dto.response.info.IssueIdentificationInfo;
+import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.issue.application.port.in.IssueQueryUseCase;
 import com.tissue.issue.application.port.out.IssueFieldValueQueryRepository;
@@ -47,13 +45,12 @@ public class IssueQueryService implements IssueQueryUseCase {
     private final ProjectMemberFinder projectMemberFinder;
 
     @Override
-    public IssueBasicInfo getBasic(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithBasicInfo(workspaceKey, issueKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithBasicInfo(workspaceKey, issueKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
+        Project project = projectFinder.getBy(projectKey, workspaceKey);
 
         ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
         ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
@@ -62,13 +59,12 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public IssueCommonDetail getCommon(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithDetail(workspaceKey, issueKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public IssueCommonDetail getCommon(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithDetail(workspaceKey, issueKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
+        Project project = projectFinder.getBy(projectKey, workspaceKey);
 
         ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
         ProjectMember updatedBy = projectMemberFinder.findBy(project, issue.getLastModifiedBy());
@@ -78,11 +74,10 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public IssueCustomDetail getCustom(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithBasicInfo(workspaceKey, issueKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithBasicInfo(workspaceKey, issueKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
         List<IssueFieldValue> fieldValues =
                 issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey, issueKey);
@@ -91,76 +86,70 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public IssueIdentificationInfo getParent(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithParent(workspaceKey, issueKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithParent(workspaceKey, issueKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {
-            return IssueIdentificationInfo.asNull();
+            return IssueIdentifierResponse.asNull();
         }
 
-        return IssueIdentificationInfo.from(parent);
+        return IssueIdentifierResponse.from(parent);
     }
 
     @Override
-    public List<IssueIdentificationInfo> getChildren(String workspaceKey, String issueKey) {
+    public List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey) {
         List<Issue> children = issueQueryRepo.findChildren(workspaceKey, issueKey);
 
-        return children.stream().map(IssueIdentificationInfo::from).toList();
+        return children.stream().map(IssueIdentifierResponse::from).toList();
     }
 
     @Override
-    public IssueRelationsDetail getRelations(String workspaceKey, String issueKey) {
-        List<IssueRelation> allRelations =
-                relationQueryRepo.findAllRelations(workspaceKey, issueKey);
+    public IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey) {
+        List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(workspaceKey, issueKey);
 
-        List<IssueRelation> outgoing =
-                allRelations.stream()
-                        .filter(r -> r.getSourceIssue().getKey().equals(issueKey))
-                        .toList();
+        List<IssueRelation> outgoing = allRelations.stream()
+                .filter(r -> r.getSourceIssue().getKey().equals(issueKey))
+                .toList();
 
-        List<IssueRelation> incoming =
-                allRelations.stream()
-                        .filter(r -> r.getTargetIssue().getKey().equals(issueKey))
-                        .toList();
+        List<IssueRelation> incoming = allRelations.stream()
+                .filter(r -> r.getTargetIssue().getKey().equals(issueKey))
+                .toList();
 
         return IssueRelationsDetail.from(outgoing, incoming);
     }
 
     @Override
-    public ParticipantInfo getAuthor(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithBasicInfo(workspaceKey, issueKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public ParticipantInfo getAuthor(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithBasicInfo(workspaceKey, issueKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(extractProjectKey(issueKey), workspaceKey);
+        Project project = projectFinder.getBy(projectKey, workspaceKey);
         ProjectMember author = projectMemberFinder.findBy(project, issue.getCreatedBy());
 
         return ParticipantInfo.from(author);
     }
 
     @Override
-    public IssueReviewersDetail getReviewers(String workspaceKey, String issueKey) {
+    public IssueReviewersDetail getReviewers(String workspaceKey, String projectKey, String issueKey) {
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
         return IssueReviewersDetail.from(reviewers);
     }
 
     @Override
-    public IssueSubscribersDetail getSubscribers(String workspaceKey, String issueKey) {
+    public IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey) {
         List<IssueSubscriber> subscribers = subscriberQueryRepo.findByIssue(workspaceKey, issueKey);
         return IssueSubscribersDetail.from(subscribers);
     }
 
     @Override
-    public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String issueKey) {
-        Issue issue =
-                issueQueryRepo
-                        .findWithBasicInfo(issueKey, workspaceKey)
-                        .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+    public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String projectKey, String issueKey) {
+        Issue issue = issueQueryRepo
+                .findWithBasicInfo(issueKey, workspaceKey)
+                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
         Workflow workflow = issue.getIssueType().getWorkflow();
 

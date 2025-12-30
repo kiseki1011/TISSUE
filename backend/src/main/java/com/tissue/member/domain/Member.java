@@ -14,14 +14,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseDateEntity {
 
     @Id
@@ -52,11 +48,10 @@ public class Member extends BaseDateEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Invitation> invitations = new ArrayList<>();
 
-    public static Member create(
-            @NonNull String email,
-            @NonNull String username,
-            @NonNull String password,
-            @NonNull String name) {
+    @SuppressWarnings("NullAway.Init")
+    protected Member() {}
+
+    public static Member create(String email, String username, String password, String name) {
         Member member = new Member();
         member.email = email;
         member.username = username;
@@ -68,19 +63,19 @@ public class Member extends BaseDateEntity {
         return member;
     }
 
-    public void updateEmail(@NonNull String email) {
+    public void updateEmail(String email) {
         this.email = email;
     }
 
-    public void updateUsername(@NonNull String username) {
+    public void updateUsername(String username) {
         this.username = username;
     }
 
-    public void updatePassword(@NonNull String password) {
+    public void updatePassword(String password) {
         this.password = password;
     }
 
-    public void updateName(@NonNull String name) {
+    public void updateName(String name) {
         this.name = name;
     }
 

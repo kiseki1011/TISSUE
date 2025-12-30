@@ -1,6 +1,6 @@
 package com.tissue.workflow.domain;
 
-import static com.tissue.workflow.domain.enums.StateCategory.*;
+import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.common.enums.ColorType;
@@ -27,24 +27,21 @@ import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("softDeleted = false")
 public class Workflow extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Project project;
@@ -55,13 +52,15 @@ public class Workflow extends BaseEntity {
     @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
-    @Column(nullable = false, length = 255)
+    @Nullable
+    @Column(name = "description")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "color", nullable = false)
     private ColorType color;
 
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.PERSIST)
@@ -70,18 +69,23 @@ public class Workflow extends BaseEntity {
     @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WorkflowTransition> transitions = new ArrayList<>();
 
+    /**
+     * This field is technically null during the initial construction/persistence phase.
+     * However, a valid, persisted Workflow domain object must have an initial state.
+     * I marked the field @Nullable for NullAway/JPA, but the getter guarantees non-nullity.
+     */
+    @Nullable
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initial_state_id")
+    @JoinColumn(name = "initial_state_id") // mark nullable = false for DB contstraint?
     private WorkflowState initialState;
 
-    @Column(nullable = false)
+    @Column(name = "system_provided", nullable = false)
     private boolean systemProvided;
 
-    public static Workflow create(
-            @NonNull Project project,
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull ColorType color) {
+    @SuppressWarnings("NullAway.Init")
+    protected Workflow() {}
+
+    public static Workflow create(Project project, Name name, @Nullable String description, ColorType color) {
         Workflow wf = new Workflow();
         wf.project = project;
         wf.projectKey = project.getKey();
@@ -94,11 +98,16 @@ public class Workflow extends BaseEntity {
         return wf;
     }
 
+    public WorkflowState getInitialState() {
+        if (this.initialState == null) {
+            throw new IllegalStateException("Workflow %d (id) has no initial state".formatted(id));
+        }
+        return this.initialState;
+    }
+
     public WorkflowState addState(
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull ColorType color,
-            @NonNull StateCategory stateCategory) {
+            Name name, @Nullable String description, ColorType color, StateCategory stateCategory) {
+
         ensureUniqueStateName(name);
 
         WorkflowState state = WorkflowState.of(name, description, color, stateCategory);
@@ -113,10 +122,8 @@ public class Workflow extends BaseEntity {
     }
 
     public WorkflowTransition addTransition(
-            @NonNull Name name,
-            @Nullable String description,
-            @NonNull WorkflowState source,
-            @NonNull WorkflowState target) {
+            Name name, @Nullable String description, WorkflowState source, WorkflowState target) {
+
         ensureUniqueTransitionNameForSource(name, source);
         ensureNoDuplicateEdge(source, target);
 
@@ -136,10 +143,12 @@ public class Workflow extends BaseEntity {
     }
 
     public List<WorkflowState> getStatesByCategory(StateCategory category) {
-        return states.stream().filter(s -> !s.isArchived() && s.getCategory() == category).toList();
+        return states.stream()
+                .filter(s -> !s.isArchived() && s.getCategory() == category)
+                .toList();
     }
 
-    public void setInitialState(@NonNull WorkflowState state) {
+    public void setInitialState(WorkflowState state) {
         if (!states.contains(state)) {
             throw WorkflowExceptions.initialStateBelongMismatch();
         }
@@ -153,7 +162,7 @@ public class Workflow extends BaseEntity {
         this.systemProvided = true;
     }
 
-    public void rename(@NonNull Name name) {
+    public void rename(Name name) {
         this.name = name;
     }
 
@@ -161,11 +170,11 @@ public class Workflow extends BaseEntity {
         this.description = description;
     }
 
-    public void updateColor(@Nullable ColorType color) {
+    public void updateColor(ColorType color) {
         this.color = color;
     }
 
-    public void deleteState(@NonNull WorkflowState state) {
+    public void deleteState(WorkflowState state) {
         if (state.getCategory().isInitial()) {
             throw WorkflowExceptions.cannotDeleteInitialState(
                     this.getId(), this.getDisplayName(), state.getDisplayName());
@@ -174,11 +183,11 @@ public class Workflow extends BaseEntity {
         states.remove(state);
     }
 
-    public void deleteTransition(@NonNull WorkflowTransition transition) {
+    public void deleteTransition(WorkflowTransition transition) {
         transitions.remove(transition);
     }
 
-    public void renameState(@NonNull WorkflowState state, @NonNull Name newName) {
+    public void renameState(WorkflowState state, Name newName) {
         if (state.getName().equals(newName)) {
             return;
         }
@@ -186,7 +195,7 @@ public class Workflow extends BaseEntity {
         state.updateName(newName);
     }
 
-    public void renameTransition(@NonNull WorkflowTransition transition, @NonNull Name newName) {
+    public void renameTransition(WorkflowTransition transition, Name newName) {
         if (transition.getName().equals(newName)) {
             return;
         }
@@ -201,66 +210,50 @@ public class Workflow extends BaseEntity {
         if (newCategory.isInitial()) {
             this.initialState = state;
         }
-        if (state.getCategory().isInitial()) {
-            this.initialState = null;
-        }
 
         state.categorizeAs(newCategory);
     }
 
-    public void rewireTransitionSource(
-            @NonNull WorkflowTransition transition, @NonNull WorkflowState newSource) {
+    public void rewireTransitionSource(WorkflowTransition transition, WorkflowState newSource) {
         transition.rewireSource(newSource);
     }
 
-    public void rewireTransitionTarget(
-            @NonNull WorkflowTransition transition, @NonNull WorkflowState newTarget) {
+    public void rewireTransitionTarget(WorkflowTransition transition, WorkflowState newTarget) {
         transition.rewireTarget(newTarget);
     }
 
     public void addTransitionGuard(
-            @NonNull WorkflowTransition transition,
-            @NonNull GuardType guardType,
-            @Nullable Map<String, Object> params,
-            int order) {
+            WorkflowTransition transition, GuardType guardType, @Nullable Map<String, Object> params, int order) {
         transition.addGuard(guardType, params, order);
     }
 
-    public void clearGuardsForTransition(@NonNull WorkflowTransition transition) {
+    public void clearGuardsForTransition(WorkflowTransition transition) {
         transition.clearGuards();
     }
 
     private void ensureNoDuplicateEdge(WorkflowState source, WorkflowState target) {
-        boolean dup =
-                transitions.stream()
-                        .filter(t -> !t.isArchived())
-                        .anyMatch(
-                                x ->
-                                        x.getSourceState().equals(source)
-                                                && x.getTargetState().equals(target));
+        boolean dup = transitions.stream()
+                .filter(t -> !t.isArchived())
+                .anyMatch(x ->
+                        x.getSourceState().equals(source) && x.getTargetState().equals(target));
         if (dup) {
-            throw WorkflowExceptions.duplicateTransitionEdge(
-                    source.getDisplayName(), target.getDisplayName());
+            throw WorkflowExceptions.duplicateTransitionEdge(source.getDisplayName(), target.getDisplayName());
         }
     }
 
     private void ensureUniqueStateName(Name newName) {
-        boolean dup =
-                states.stream()
-                        .filter(t -> !t.isArchived())
-                        .anyMatch(s -> s.getName().equals(newName));
+        boolean dup = states.stream().filter(t -> !t.isArchived()).anyMatch(s -> s.getName()
+                .equals(newName));
         if (dup) {
-            throw WorkflowExceptions.duplicateStateName(
-                    newName.getDisplay(), name.getDisplay(), id);
+            throw WorkflowExceptions.duplicateStateName(newName.getDisplay(), name.getDisplay(), id);
         }
     }
 
     private void ensureUniqueTransitionNameForSource(Name newName, WorkflowState source) {
-        boolean dup =
-                transitions.stream()
-                        .filter(t -> !t.isArchived())
-                        .filter(t -> t.getSourceState().equals(source))
-                        .anyMatch(t -> t.getName().equals(newName));
+        boolean dup = transitions.stream()
+                .filter(t -> !t.isArchived())
+                .filter(t -> t.getSourceState().equals(source))
+                .anyMatch(t -> t.getName().equals(newName));
         if (dup) {
             throw WorkflowExceptions.duplicateTransitionName(
                     newName.getDisplay(), source.getDisplayName(), name.getDisplay(), id);

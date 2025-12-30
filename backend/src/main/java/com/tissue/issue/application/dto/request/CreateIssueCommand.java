@@ -4,6 +4,7 @@ import com.tissue.issue.domain.enums.IssuePriority;
 import java.time.Instant;
 import java.util.Map;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueCommand(
@@ -11,14 +12,14 @@ public record CreateIssueCommand(
         String projectKey,
         Long sprintId,
         String parentProjectKey,
-        String parentKey,
+        @Nullable String parentKey,
         String title,
-        String content,
-        String summary,
+        @Nullable String content,
+        @Nullable String summary,
         IssuePriority priority,
-        Instant dueAt,
-        Integer storyPoint,
+        @Nullable Instant dueAt,
+        @Nullable Integer storyPoint,
         Long issueTypeId,
         Map<Long, Object> customFields,
-        Long assigneeMemberId,
+        @Nullable Long assigneeMemberId,
         Long actorMemberId) {}

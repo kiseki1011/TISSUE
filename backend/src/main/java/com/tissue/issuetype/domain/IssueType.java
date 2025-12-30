@@ -18,44 +18,43 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
 @SQLRestriction("softDeleted = false")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IssueType extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version private Long version;
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "project_key", nullable = false, updatable = false)
     private String projectKey;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
 
-    @Embedded private Name name;
+    @Embedded
+    private Name name;
 
-    @Column(nullable = false, length = 255)
+    @Nullable
+    @Column(name = "description", length = 255)
     private String description;
 
     // private String icon;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "color", nullable = false)
     private ColorType color;
 
     @Enumerated(EnumType.STRING)
@@ -66,20 +65,24 @@ public class IssueType extends BaseEntity {
     @JoinColumn(name = "workflow_id", nullable = false)
     private Workflow workflow;
 
+    // TODO: change field name to "systemProvided"
     @Column(nullable = false)
     private boolean systemType;
 
-    // TODO: should i make this(IssueType) bi-directional relation with IssueField
+    // TODO: should i make this(IssueType) bi-directional relation with IssueField?
+
+    @SuppressWarnings("NullAway.Init")
+    protected IssueType() {}
 
     public static IssueType create(
-            @NonNull Project project,
-            @NonNull Name name,
+            Project project,
+            Name name,
             @Nullable String description,
-            @NonNull ColorType color,
-            @NonNull IssueHierarchy issueHierarchy,
-            @NonNull Workflow workflow) {
-        IssueType issueType = new IssueType();
+            ColorType color,
+            IssueHierarchy issueHierarchy,
+            Workflow workflow) {
 
+        IssueType issueType = new IssueType();
         issueType.project = project;
         issueType.projectKey = project.getKey();
         issueType.workspaceKey = project.getWorkspaceKey();
@@ -105,7 +108,7 @@ public class IssueType extends BaseEntity {
         return name.getDisplay();
     }
 
-    public void rename(@NonNull Name name) {
+    public void rename(Name name) {
         this.name = name;
     }
 
@@ -113,11 +116,11 @@ public class IssueType extends BaseEntity {
         this.description = description;
     }
 
-    public void updateColor(@NonNull ColorType color) {
+    public void updateColor(ColorType color) {
         this.color = color;
     }
 
-    public void setWorkflow(@NonNull Workflow workflow) {
+    public void setWorkflow(Workflow workflow) {
         this.workflow = workflow;
     }
 

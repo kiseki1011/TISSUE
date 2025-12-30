@@ -33,11 +33,10 @@ public class PositionController {
         var command = request.toCommand(workspaceKey);
         PositionCreateResponse response = positionUseCase.create(command);
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{positionId}")
-                        .buildAndExpand(response.positionId())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{positionId}")
+                .buildAndExpand(response.positionId())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
@@ -54,8 +53,7 @@ public class PositionController {
     }
 
     @DeleteMapping("/{positionId}")
-    public ResponseEntity<Void> deletePosition(
-            @PathVariable String workspaceKey, @PathVariable Long positionId) {
+    public ResponseEntity<Void> deletePosition(@PathVariable String workspaceKey, @PathVariable Long positionId) {
         positionUseCase.delete(workspaceKey, positionId);
         return ResponseEntity.noContent().build();
     }

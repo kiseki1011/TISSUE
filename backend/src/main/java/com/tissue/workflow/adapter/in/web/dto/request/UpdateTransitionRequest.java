@@ -8,8 +8,7 @@ import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 public record UpdateTransitionRequest(
-        JsonNullable<@NotBlank @Size(max = 32) String> name,
-        JsonNullable<@Size(max = 255) String> description) {
+        JsonNullable<@NotBlank @Size(max = 32) String> name, JsonNullable<@Size(max = 255) String> description) {
     public UpdateTransitionCommand toCommand(
             String workspaceKey, String projectKey, Long workflowId, Long transitionId) {
         return UpdateTransitionCommand.builder()

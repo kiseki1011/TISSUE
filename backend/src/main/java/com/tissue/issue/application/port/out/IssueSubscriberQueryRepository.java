@@ -8,9 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface IssueSubscriberQueryRepository extends Repository<IssueSubscriber, Long> {
 
-    /** 특정 이슈의 구독자 목록 조회 */
-    @Query(
-            """
+    /** Get the list of subsribers for a specific issue. */
+    @Query("""
                 SELECT s
                 FROM IssueSubscriber s
                 JOIN FETCH s.subscriber pm
@@ -20,35 +19,31 @@ public interface IssueSubscriberQueryRepository extends Repository<IssueSubscrib
                 JOIN FETCH i.project p
                 JOIN FETCH p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND i.key = :issueKey
+                  AND i.key.value = :issueKey
             """)
-    List<IssueSubscriber> findByIssue(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    List<IssueSubscriber> findByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    /** 구독자 수 조회 */
-    @Query(
-            """
+    /** Get the number of subsribers for a specific issue. */
+    @Query("""
                 SELECT COUNT(s)
                 FROM IssueSubscriber s
                 JOIN s.issue i
                 JOIN i.project p
                 JOIN p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND i.key = :issueKey
+                  AND i.key.value = :issueKey
             """)
-    int countByIssue(
-            @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
+    int countByIssue(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    /** 특정 회원이 특정 이슈를 구독하는지 확인 */
-    @Query(
-            """
+    /** Check if a specific member subscribes a specific issue. */
+    @Query("""
                 SELECT COUNT(s) > 0
                 FROM IssueSubscriber s
                 JOIN s.issue i
                 JOIN i.project p
                 JOIN p.workspace w
                 WHERE w.key = :workspaceKey
-                  AND i.key = :issueKey
+                  AND i.key.value = :issueKey
                   AND s.subscriber.memberId = :memberId
             """)
     boolean existsByIssueAndMember(

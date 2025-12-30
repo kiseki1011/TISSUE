@@ -1,18 +1,21 @@
 package com.tissue.issue.domain;
 
-import static com.tissue.workflow.domain.enums.StateCategory.*;
+import static com.tissue.workflow.domain.enums.StateCategory.COMPLETED;
+import static com.tissue.workflow.domain.enums.StateCategory.INITIAL;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
 import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.vo.IssueKey;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.WorkflowState;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -30,32 +33,26 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.hibernate.annotations.SQLRestriction;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("softDeleted = false")
 public class Issue extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "issue_key", nullable = false)
-    private String key;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "issue_key", nullable = false))
+    private IssueKey key;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
     private Project project;
-
-    @Column(name = "project_key", nullable = false, updatable = false)
-    private String projectKey;
 
     @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
@@ -63,36 +60,41 @@ public class Issue extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Embedded private IssueContent content;
+    @Embedded
+    private IssueContent content;
 
-    @Embedded private IssueSchedule schedule;
+    @Embedded
+    private IssueSchedule schedule;
 
-    @Embedded private IssueProgress progress;
+    @Embedded
+    private IssueProgress progress;
 
-    @Embedded private IssueParticipants participants;
+    @Embedded
+    private IssueParticipants participants;
 
-    @Embedded private IssueRelations relations;
+    @Embedded
+    private IssueRelations relations;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority", nullable = false)
     private IssuePriority priority;
 
+    @Nullable
     @Column(name = "story_point")
     private Integer storyPoint;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_issue_id")
     private Issue parentIssue;
 
+    @Nullable
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sprint_id")
     private Sprint sprint;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private IssueType issueType;
-
-    // TODO: when adding a issueType update feature, must need to clear storyPoint if the hierarchy
-    // doesnt support it
 
     @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowState currentState;
@@ -102,31 +104,32 @@ public class Issue extends BaseEntity {
 
     // TODO: need to add Tag entity(used for search and categorization)
 
+    @SuppressWarnings("NullAway.Init")
+    protected Issue() {}
+
     public static Issue create(
-            @NonNull Project project,
+            Project project,
             @Nullable Sprint sprint,
-            @NonNull IssueType issueType,
-            @NonNull String title,
-            @NonNull IssueContent content,
-            @NonNull IssueSchedule schedule,
-            @NonNull IssueParticipants participants,
-            @Nullable IssuePriority priority,
+            IssueType issueType,
+            String title,
+            IssueContent content,
+            IssueSchedule schedule,
+            IssueParticipants participants,
+            IssuePriority priority,
             @Nullable Integer storyPoint,
             @Nullable Issue parentIssue) {
+
         Issue issue = new Issue();
         issue.project = project;
-        issue.projectKey = project.getKey();
         issue.workspaceKey = project.getWorkspaceKey();
-
         issue.sprint = sprint;
-
-        issue.key = project.generateNextIssueKey();
+        issue.key = IssueKey.of(project.getKey(), project.generateNextIssueNumber());
         issue.issueType = issueType;
         issue.title = title;
         issue.content = content;
         issue.schedule = schedule;
         issue.participants = participants;
-        issue.priority = priority == null ? IssuePriority.NORMAL : priority;
+        issue.priority = priority;
 
         if (storyPoint != null) {
             issue.updateStoryPoint(storyPoint);
@@ -142,31 +145,46 @@ public class Issue extends BaseEntity {
         return issue;
     }
 
+    public String getProjectKey() {
+        return key.getProjectKey();
+    }
+
+    public String getKey() {
+        return key.getValue();
+    }
+
     public String getContent() {
-        return content.getContent();
+        return content.getContent() != null ? content.getContent() : "";
     }
 
     public String getSummary() {
-        return content.getSummary();
+        return content.getSummary() != null ? content.getSummary() : "";
     }
 
     public List<IssueFieldValue> getFieldValues() {
         return Collections.unmodifiableList(fieldValues);
     }
 
+    public @Nullable String getParentKey() {
+        return (this.parentIssue != null) ? this.parentIssue.getKey() : null;
+    }
+
+    public @Nullable Long getParentId() {
+        return (this.parentIssue != null) ? this.parentIssue.getId() : null;
+    }
+
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
         return this.fieldValues.stream()
                 .filter(fv -> fv.getField().equals(field))
                 .findFirst()
-                .orElseGet(
-                        () -> {
-                            IssueFieldValue newValue = IssueFieldValue.of(this, field);
-                            this.fieldValues.add(newValue);
-                            return newValue;
-                        });
+                .orElseGet(() -> {
+                    IssueFieldValue newValue = IssueFieldValue.of(this, field);
+                    this.fieldValues.add(newValue);
+                    return newValue;
+                });
     }
 
-    public void setSprint(@NonNull Sprint sprint) {
+    public void setSprint(Sprint sprint) {
         this.sprint = sprint;
     }
 
@@ -174,14 +192,14 @@ public class Issue extends BaseEntity {
         this.sprint = null;
     }
 
-    public void changeReporter(@NonNull ProjectMember reporter) {
+    public void changeReporter(ProjectMember reporter) {
         if (participants.isReporter(reporter)) {
             return;
         }
         participants.changeReporter(reporter);
     }
 
-    public void updateTitle(@NonNull String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
@@ -197,7 +215,7 @@ public class Issue extends BaseEntity {
         schedule.updateDueDate(dueAt);
     }
 
-    public void updatePriority(@NonNull IssuePriority priority) {
+    public void updatePriority(IssuePriority priority) {
         this.priority = priority;
     }
 
@@ -217,16 +235,16 @@ public class Issue extends BaseEntity {
         progress.update(countBased, pointBased);
     }
 
-    public IssueRelation addRelation(@NonNull Issue targetIssue, @NonNull IssueRelationType type) {
+    public IssueRelation addRelation(Issue targetIssue, IssueRelationType type) {
         return relations.addRelation(this, targetIssue, type);
     }
 
-    public IssueRelation removeRelation(@NonNull Issue otherIssue) {
-        return relations.removeRelation(otherIssue);
+    public IssueRelation removeRelation(Issue otherIssue) {
+        return relations.removeRelation(this, otherIssue);
     }
 
     // TODO: should i separate this to a separate domain service?
-    public void transitionTo(@NonNull WorkflowState newState) {
+    public void transitionTo(WorkflowState newState) {
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
 
@@ -241,15 +259,15 @@ public class Issue extends BaseEntity {
         }
     }
 
-    public void addSubscriber(@NonNull ProjectMember projectMember) {
+    public void addSubscriber(ProjectMember projectMember) {
         participants.addSubscriber(projectMember, this);
     }
 
-    public void removeSubscriber(@NonNull ProjectMember projectMember) {
+    public void removeSubscriber(ProjectMember projectMember) {
         participants.removeSubscriber(projectMember);
     }
 
-    public void assignTo(@NonNull ProjectMember assignee) {
+    public void assignTo(ProjectMember assignee) {
         participants.assignTo(assignee);
     }
 
@@ -257,15 +275,15 @@ public class Issue extends BaseEntity {
         participants.unassign();
     }
 
-    public void addReviewer(@NonNull ProjectMember projectMember) {
+    public void addReviewer(ProjectMember projectMember) {
         participants.addReviewer(projectMember, this);
     }
 
-    public void removeReviewer(@NonNull ProjectMember projectMember) {
+    public void removeReviewer(ProjectMember projectMember) {
         participants.removeReviewer(projectMember);
     }
 
-    public void setParentIssue(@NonNull Issue newParent) {
+    public void setParentIssue(Issue newParent) {
         ensureCanSetParent(newParent);
         this.parentIssue = newParent;
     }
@@ -292,7 +310,7 @@ public class Issue extends BaseEntity {
         if (!currentState.isCategorizedAs(INITIAL)) {
             throw IssueExceptions.onlyInitialStateDeletionAllowed(
                     this.getWorkspaceKey(),
-                    this.getKey(),
+                    this.getKey().toString(),
                     this.getCurrentState().getDisplayName(),
                     this.getCurrentState().getCategory());
         }
@@ -301,11 +319,11 @@ public class Issue extends BaseEntity {
     private void ensureCanModifyStoryPoint() {
         if (this.getHierarchy().cannotModifyStoryPoint()) {
             throw IssueExceptions.storyPointNotAllowed(
-                    this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
         }
     }
 
-    private void ensureCanSetParent(@NonNull Issue parentIssue) {
+    private void ensureCanSetParent(Issue parentIssue) {
         ensureSameWorkspace(parentIssue);
         if (this.getHierarchy().cannotHaveCrossProjectParent()) {
             ensureSameProject(parentIssue);
@@ -321,28 +339,28 @@ public class Issue extends BaseEntity {
         if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
             throw IssueExceptions.invalidParentHierarchy(
                     this.getWorkspaceKey(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     parentHierarchy,
-                    this.getKey(),
+                    this.getKey().toString(),
                     childHierarchy);
         }
     }
 
     private void ensureNotSelfReference(Issue parentIssue) {
         if (this.equals(parentIssue)) {
-            throw IssueExceptions.issueSelfReference(this.getWorkspaceKey(), this.getKey());
+            throw IssueExceptions.issueSelfReference(
+                    this.getWorkspaceKey(), this.getKey().toString());
         }
     }
 
     private void ensureSameWorkspace(Issue parentIssue) {
-        boolean isDifferentWorkspace =
-                !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
+        boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
         if (isDifferentWorkspace) {
             throw IssueExceptions.parentWorkspaceMismatch(
                     parentIssue.getWorkspaceKey(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     this.getWorkspaceKey(),
-                    this.getKey());
+                    this.getKey().toString());
         }
     }
 
@@ -351,22 +369,22 @@ public class Issue extends BaseEntity {
         if (isDifferentProject) {
             throw IssueExceptions.parentProjectMismatch(
                     parentIssue.getHierarchy(),
-                    parentIssue.getKey(),
+                    parentIssue.getKey().toString(),
                     this.getHierarchy(),
-                    this.getKey());
+                    this.getKey().toString());
         }
     }
 
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
             throw IssueExceptions.parentRequired(
-                    this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
+                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
         }
     }
 
     @Override
     public String toString() {
         return "Issue{id=%d, key='%s', project='%s', workspace='%s', title='%s'}"
-                .formatted(id, key, projectKey, workspaceKey, title);
+                .formatted(id, key, getProjectKey(), workspaceKey, title);
     }
 }

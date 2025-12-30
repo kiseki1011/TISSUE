@@ -22,15 +22,12 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AccessDeniedException accessDeniedException)
+            HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
             throws IOException {
         log.warn("Access denied. Reason: {}", accessDeniedException.getMessage());
 
-        ProblemDetail problemDetail =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.FORBIDDEN, "You do not have permission to access this resource");
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN, "You do not have permission to access this resource");
         problemDetail.setTitle("Forbidden");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
 

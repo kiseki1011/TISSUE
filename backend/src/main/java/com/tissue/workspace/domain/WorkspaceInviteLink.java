@@ -22,8 +22,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -48,7 +47,8 @@ public class WorkspaceInviteLink extends BaseEntity {
     private boolean active;
 
     /** If expiredAt is null, the link is permanent. */
-    @Column(nullable = true)
+    @Nullable
+    @Column(name = "expired_at")
     private Instant expiredAt;
 
     @Enumerated(EnumType.STRING)
@@ -60,10 +60,8 @@ public class WorkspaceInviteLink extends BaseEntity {
     private List<ProjectJoinConfig> projectConfigs = new ArrayList<>();
 
     public static WorkspaceInviteLink create(
-            @NonNull Workspace workspace,
-            @NonNull String token,
-            @Nullable WorkspaceRole role,
-            @Nullable Instant expiredAt) {
+            Workspace workspace, String token, @Nullable WorkspaceRole role, @Nullable Instant expiredAt) {
+
         WorkspaceInviteLink link = new WorkspaceInviteLink();
         link.workspace = workspace;
         link.workspaceKey = workspace.getKey();

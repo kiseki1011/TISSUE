@@ -27,8 +27,7 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToWorkspace(
-            @PathVariable String workspaceKey,
-            @RequestBody @Valid InviteToWorkspaceRequest request) {
+            @PathVariable String workspaceKey, @RequestBody @Valid InviteToWorkspaceRequest request) {
         var command = request.toCommand(workspaceKey);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
 
@@ -59,8 +58,7 @@ public class WorkspaceParticipationController {
             @PathVariable String workspaceKey,
             @PathVariable Long memberId,
             @CurrentMember MemberUserDetails userDetails) {
-        var command =
-                new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId());
+        var command = new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId());
         workspaceParticipationUseCase.kick(command);
 
         return ResponseEntity.noContent().build();

@@ -33,11 +33,10 @@ public class TeamController {
         var command = request.toCommand(workspaceKey);
         TeamCreateResponse response = teamUseCase.create(command);
 
-        URI location =
-                ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{teamId}")
-                        .buildAndExpand(response.teamId())
-                        .toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{teamId}")
+                .buildAndExpand(response.teamId())
+                .toUri();
 
         return ResponseEntity.created(location).body(response);
     }
@@ -54,15 +53,13 @@ public class TeamController {
     }
 
     @DeleteMapping("/{teamId}")
-    public ResponseEntity<Void> deleteTeam(
-            @PathVariable String workspaceKey, @PathVariable Long teamId) {
+    public ResponseEntity<Void> deleteTeam(@PathVariable String workspaceKey, @PathVariable Long teamId) {
         teamUseCase.delete(workspaceKey, teamId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{teamId}")
-    public ResponseEntity<TeamDetail> getTeamDetail(
-            @PathVariable String workspaceKey, @PathVariable Long teamId) {
+    public ResponseEntity<TeamDetail> getTeamDetail(@PathVariable String workspaceKey, @PathVariable Long teamId) {
         TeamDetail response = teamUseCase.getTeam(workspaceKey, teamId);
         return ResponseEntity.ok(response);
     }

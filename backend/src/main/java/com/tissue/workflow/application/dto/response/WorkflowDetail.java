@@ -6,24 +6,22 @@ import com.tissue.workflow.domain.Workflow;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
 
 public record WorkflowDetail(
         Long id,
         String name,
-        String description,
+        @Nullable String description,
         ColorType color,
         boolean isSystemProvided,
         boolean isArchived,
         Long initialStateId,
         List<StateDetail> states,
         List<TransitionDetail> transitions) {
+
     public static WorkflowDetail of(Workflow wf, List<IssueCountProjection> projections) {
-        Map<Long, Long> countMap =
-                projections.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        IssueCountProjection::stateId,
-                                        IssueCountProjection::count));
+        Map<Long, Long> countMap = projections.stream()
+                .collect(Collectors.toMap(IssueCountProjection::stateId, IssueCountProjection::count));
 
         return new WorkflowDetail(
                 wf.getId(),

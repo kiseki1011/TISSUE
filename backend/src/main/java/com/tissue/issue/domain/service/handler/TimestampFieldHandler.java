@@ -4,8 +4,8 @@ import com.tissue.issue.domain.exception.IssueExceptions;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import java.time.Instant;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("StringConcatToTextBlock")
 public class TimestampFieldHandler implements FieldTypeHandler {
 
     @Qualifier("domainConversionService")
@@ -25,7 +26,7 @@ public class TimestampFieldHandler implements FieldTypeHandler {
     }
 
     @Override
-    public Object parse(@NonNull IssueField field, @NonNull Object raw) {
+    public Object parse(IssueField field, @Nullable Object raw) {
         try {
             return cs.convert(raw, Instant.class);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {

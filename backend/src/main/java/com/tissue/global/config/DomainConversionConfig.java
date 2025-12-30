@@ -17,7 +17,8 @@ public class DomainConversionConfig {
     public ConversionService domainConversionService() {
         ApplicationConversionService cs = new ApplicationConversionService();
 
-        cs.addConverter(String.class, Instant.class, s -> OffsetDateTime.parse(s).toInstant());
+        cs.addConverter(
+                String.class, Instant.class, s -> OffsetDateTime.parse(s).toInstant());
 
         return cs;
     }

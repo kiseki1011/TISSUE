@@ -23,8 +23,7 @@ public final class EnumFieldOptions {
         ensureNonDecreasingOrder();
     }
 
-    public static EnumFieldOptions fromCurrentOptions(
-            IssueField field, List<EnumFieldOption> currentOptions) {
+    public static EnumFieldOptions fromCurrentOptions(IssueField field, List<EnumFieldOption> currentOptions) {
         return new EnumFieldOptions(field, currentOptions);
     }
 
@@ -49,8 +48,7 @@ public final class EnumFieldOptions {
     }
 
     public void reorderTo(List<Long> orderedIds) {
-        Map<Long, EnumFieldOption> byId =
-                active.stream().collect(Collectors.toMap(EnumFieldOption::getId, x -> x));
+        Map<Long, EnumFieldOption> byId = active.stream().collect(Collectors.toMap(EnumFieldOption::getId, x -> x));
         for (int i = 0; i < orderedIds.size(); i++) {
             Long id = orderedIds.get(i);
             EnumFieldOption option = byId.get(id);
@@ -104,8 +102,7 @@ public final class EnumFieldOptions {
     private void ensureNonDecreasingOrder() {
         for (int i = 1; i < active.size(); i++) {
             if (active.get(i - 1).getPosition() > active.get(i).getPosition()) {
-                throw new IllegalStateException(
-                        "Active options must be ordered by position (non-decreasing).");
+                throw new IllegalStateException("Active options must be ordered by position (non-decreasing).");
             }
         }
     }

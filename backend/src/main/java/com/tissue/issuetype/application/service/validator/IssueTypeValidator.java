@@ -26,8 +26,7 @@ public class IssueTypeValidator {
     private final IssueFieldValueQueryRepository fieldValueRepo;
 
     public void ensureUniqueLabel(Project project, Name name) {
-        boolean duplicated =
-                issueTypeQueryRepo.existsByName_NormalizedAndProject(name.getNormalized(), project);
+        boolean duplicated = issueTypeQueryRepo.existsByName_NormalizedAndProject(name.getNormalized(), project);
         if (duplicated) {
             throw IssueTypeExceptions.duplicateTypeName(name, project);
         }
@@ -38,8 +37,7 @@ public class IssueTypeValidator {
     }
 
     public void ensureUniqueFieldLabel(IssueType issueType, Name name) {
-        boolean duplicated =
-                issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
+        boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
         if (duplicated) {
             throw IssueTypeExceptions.duplicateFieldName(name, issueType);
         }
