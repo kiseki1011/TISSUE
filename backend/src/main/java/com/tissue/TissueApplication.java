@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan(basePackages = "com.tissue")
 @EnableJpaRepositories(basePackages = "com.tissue")
 @SpringBootApplication
-public class TaskmanagerApplication {
+public class TissueApplication {
     public static void main(String[] args) {
-        SpringApplication.run(TaskmanagerApplication.class, args);
+        SpringApplication.run(TissueApplication.class, args);
     }
 }
