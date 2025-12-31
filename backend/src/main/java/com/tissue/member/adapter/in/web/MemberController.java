@@ -68,7 +68,7 @@ public class MemberController {
     }
 
     @PatchMapping("/username")
-    public ResponseEntity<MemberSignupResponse> updateMemberUsername(
+    public ResponseEntity<Void> updateMemberUsername(
             @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
@@ -79,7 +79,7 @@ public class MemberController {
 
     // TODO: consider 2-factor
     @PatchMapping("/password")
-    public ResponseEntity<MemberSignupResponse> updateMemberPassword(
+    public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
         validatePermissionElevated(userDetails);
 
