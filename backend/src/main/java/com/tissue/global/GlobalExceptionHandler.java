@@ -17,6 +17,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -31,6 +32,17 @@ public class GlobalExceptionHandler {
 
     private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
             ".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*", Pattern.CASE_INSENSITIVE);
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("[ACCESS_DENIED] {}", ex.getMessage());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access denied");
+        problem.setTitle("ACCESS_DENIED");
+        problem.setProperty("occurredAt", Instant.now());
+
+        return problem;
+    }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpectedException(Exception ex) {
