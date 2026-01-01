@@ -1,6 +1,7 @@
 package com.tissue.project.application.service.authorization;
 
 import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
@@ -20,17 +21,18 @@ public class ProjectAuthorizationService {
     private final SprintQueryRepository sprintRepository;
     private final IssueTypeQueryRepository issueTypeRepository;
     private final WorkflowQueryRepository workflowQueryRepository;
+    private final ProjectMemberQueryRepository projectMemberRepository;
 
     public boolean isViewer(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
-        return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.VIEWER);
+        return hasProjectRole(workspaceKey, projectKey, userDetails, ProjectRole.VIEWER);
     }
 
     public boolean isMember(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
-        return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.MEMBER);
+        return hasProjectRole(workspaceKey, projectKey, userDetails, ProjectRole.MEMBER);
     }
 
     public boolean isAdmin(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
-        return userDetails.hasProjectRole(workspaceKey, projectKey, ProjectRole.ADMIN);
+        return hasProjectRole(workspaceKey, projectKey, userDetails, ProjectRole.ADMIN);
     }
 
     public boolean canJoinViaDirectAccess(String workspaceKey, String projectKey, MemberUserDetails userDetails) {
@@ -48,7 +50,7 @@ public class ProjectAuthorizationService {
         if (!isViewer(workspaceKey, projectKey, userDetails)) {
             return false;
         }
-        return userDetails.hasProjectRole(workspaceKey, projectKey, grantRole);
+        return hasProjectRole(workspaceKey, projectKey, userDetails, grantRole);
     }
 
     public boolean canEditSprint(String workspaceKey, String projectKey, Long sprintId, MemberUserDetails userDetails) {
@@ -64,6 +66,17 @@ public class ProjectAuthorizationService {
     public boolean canEditWorkflow(
             String workspaceKey, String projectKey, Long workflowId, MemberUserDetails userDetails) {
         return isAdmin(workspaceKey, projectKey, userDetails) || isWorkflowCreator(workflowId, userDetails);
+    }
+
+    private boolean hasProjectRole(
+            String workspaceKey, String projectKey, MemberUserDetails userDetails, ProjectRole requiredRole) {
+        if (workspaceAuthorizationService.isAdmin(workspaceKey, userDetails)) {
+            return true;
+        }
+        return projectMemberRepository
+                .findRoleByKeysAndMemberId(workspaceKey, projectKey, userDetails.getMemberId())
+                .map(role -> role.isEqualOrHigherThan(requiredRole))
+                .orElse(false);
     }
 
     private boolean isWorkflowCreator(Long workflowId, MemberUserDetails userDetails) {

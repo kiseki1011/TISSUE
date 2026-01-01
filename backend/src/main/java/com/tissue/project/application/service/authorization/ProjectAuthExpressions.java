@@ -9,29 +9,29 @@ public interface ProjectAuthExpressions {
     /**
      * @see ProjectAuthorizationService#isViewer(String, String, MemberUserDetails)
      */
-    String REQUIRES_PROJECT_VIEWER = "@projectSecurityGuard.isViewer(#cmd.workspaceKey, #cmd.projectKey, principal)";
+    String REQUIRES_PROJECT_VIEWER = "@projectAuthorizationService.isViewer(#cmd.workspaceKey, #cmd.projectKey, principal)";
 
     /**
      * @see ProjectAuthorizationService#isMember(String, String, MemberUserDetails)
      */
-    String REQUIRES_PROJECT_MEMBER = "@projectSecurityGuard.isMember(#cmd.workspaceKey, #cmd.projectKey, principal)";
+    String REQUIRES_PROJECT_MEMBER = "@projectAuthorizationService.isMember(#cmd.workspaceKey, #cmd.projectKey, principal)";
 
     /**
      * @see ProjectAuthorizationService#isAdmin(String, String, MemberUserDetails)
      */
-    String REQUIRES_PROJECT_ADMIN = "@projectSecurityGuard.isAdmin(#cmd.workspaceKey, #cmd.projectKey, principal)";
+    String REQUIRES_PROJECT_ADMIN = "@projectAuthorizationService.isAdmin(#cmd.workspaceKey, #cmd.projectKey, principal)";
 
     /**
      * @see ProjectAuthorizationService#canJoinViaDirectAccess(String, String, MemberUserDetails)
      */
     String REQUIRES_PROJECT_JOIN_PERMISSION =
-            "@projectSecurityGuard.canJoinViaDirectAccess(#cmd.workspaceKey, #cmd.projectKey," + " principal)";
+            "@projectAuthorizationService.canJoinViaDirectAccess(#cmd.workspaceKey, #cmd.projectKey," + " principal)";
 
     /**
      * @see ProjectAuthorizationService#canGrantRole(String, String, ProjectRole, MemberUserDetails)
      */
     String REQUIRES_PROJECT_ROLE_GRANT_PERMISSION =
-            "@projectSecurityGuard.canGrantRole(#cmd.workspaceKey, #cmd.projectKey, #cmd.grantRole," + " principal)";
+            "@projectAuthorizationService.canGrantRole(#cmd.workspaceKey, #cmd.projectKey, #cmd.grantRole," + " principal)";
 
     /**
      * @see ProjectAuthorizationService#canEditSprint(String, String, Long, MemberUserDetails)

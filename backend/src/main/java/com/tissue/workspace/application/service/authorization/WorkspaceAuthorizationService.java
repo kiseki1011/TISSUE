@@ -1,6 +1,8 @@
 package com.tissue.workspace.application.service.authorization;
 
-import static com.tissue.workspace.domain.enums.WorkspaceRole.*;
+import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
+import static com.tissue.workspace.domain.enums.WorkspaceRole.MEMBER;
+import static com.tissue.workspace.domain.enums.WorkspaceRole.OWNER;
 
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
@@ -17,15 +19,15 @@ public class WorkspaceAuthorizationService {
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     public boolean isMember(String workspaceKey, MemberUserDetails userDetails) {
-        return userDetails.hasWorkspaceRole(workspaceKey, MEMBER);
+        return hasWorkspaceRole(workspaceKey, userDetails, MEMBER);
     }
 
     public boolean isAdmin(String workspaceKey, MemberUserDetails userDetails) {
-        return userDetails.hasWorkspaceRole(workspaceKey, ADMIN);
+        return hasWorkspaceRole(workspaceKey, userDetails, ADMIN);
     }
 
     public boolean isOwner(String workspaceKey, MemberUserDetails userDetails) {
-        return userDetails.hasWorkspaceRole(workspaceKey, OWNER);
+        return hasWorkspaceRole(workspaceKey, userDetails, OWNER);
     }
 
     public boolean isSelfModification(String workspaceKey, Long memberId, MemberUserDetails userDetails) {
@@ -49,11 +51,18 @@ public class WorkspaceAuthorizationService {
         if (isNotAdmin(workspaceKey, userDetails)) {
             return false;
         }
-        return userDetails.hasWorkspaceRole(workspaceKey, grantRole);
+        return hasWorkspaceRole(workspaceKey, userDetails, grantRole);
     }
 
     public boolean canEditInviteLink(String workspaceKey, String token, MemberUserDetails userDetails) {
-        return userDetails.hasWorkspaceRole(workspaceKey, WorkspaceRole.ADMIN) || isLinkCreator(token, userDetails);
+        return isAdmin(workspaceKey, userDetails) || isLinkCreator(token, userDetails);
+    }
+
+    private boolean hasWorkspaceRole(String workspaceKey, MemberUserDetails userDetails, WorkspaceRole requiredRole) {
+        return workspaceMemberQueryRepository
+                .findByMember_IdAndWorkspaceKey(userDetails.getMemberId(), workspaceKey)
+                .map(member -> member.getRole().isEqualOrHigherThan(requiredRole))
+                .orElse(false);
     }
 
     private boolean isLinkCreator(String token, MemberUserDetails userDetails) {
@@ -66,11 +75,11 @@ public class WorkspaceAuthorizationService {
     private boolean hasHigherRoleThan(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
-                .map(target -> userDetails.hasWorkspaceRole(workspaceKey, target.getRole()))
+                .map(target -> hasWorkspaceRole(workspaceKey, userDetails, target.getRole()))
                 .orElse(false);
     }
 
     private boolean isNotAdmin(String workspaceKey, MemberUserDetails userDetails) {
-        return !userDetails.hasWorkspaceRole(workspaceKey, ADMIN);
+        return !isAdmin(workspaceKey, userDetails);
     }
 }
