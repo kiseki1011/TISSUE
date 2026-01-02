@@ -2,9 +2,11 @@ package com.tissue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 @SpringBootTest
-class TaskmanagerApplicationTests {
+@Import(TestcontainersConfiguration.class)
+class TissueApplicationTests {
 
     @Test
     void contextLoads() {}

@@ -12,6 +12,7 @@ import com.tissue.issue.application.dto.request.UpdateStoryPointCommand;
 import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
+import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.application.service.validator.IssueFieldSchemaValidator;
 import com.tissue.issue.application.service.validator.IssueValidator;
@@ -27,10 +28,12 @@ import com.tissue.issue.domain.event.IssueStoryPointChangedEvent;
 import com.tissue.issue.domain.service.IssueFieldChangeTracker;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
 import java.util.HashMap;
@@ -55,13 +58,19 @@ public class IssueCommandService implements IssueCommandUseCase {
     private final IssueFieldChangeTracker fieldChangeTracker;
     private final IssueCommandRepository issueCommandRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProjectAuthorizationService projectAuthService;
+    private final IssueAuthorizationService issueAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     @Transactional
     public IssueCreateResponse create(CreateIssueCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.findBy(id, project))
@@ -98,9 +107,13 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Map<String, FieldChange> changes = new HashMap<>();
 
@@ -118,9 +131,13 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void updateCustomFields(UpdateCustomFieldsCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
@@ -137,9 +154,13 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void updateStoryPoint(UpdateStoryPointCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(cmd.storyPoint());
@@ -151,9 +172,13 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void assignParent(AssignParentCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
         Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
@@ -168,10 +193,14 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void removeParent(RemoveParentCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
         Issue parent = issue.getParentIssue();
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         issue.removeParentIssue();
 
@@ -181,9 +210,13 @@ public class IssueCommandService implements IssueCommandUseCase {
     @Override
     @Transactional
     public void softDelete(DeleteIssueCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueDeletePermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         issueValidator.ensureCanDelete(issue);
         issue.delete();

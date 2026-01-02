@@ -8,5 +8,4 @@ public record RemoveIssueRelationCommand(
         String sourceProjectKey,
         String sourceIssueKey,
         String targetProjectKey,
-        String targetIssueKey,
-        Long actorMemberId) {}
+        String targetIssueKey) {}

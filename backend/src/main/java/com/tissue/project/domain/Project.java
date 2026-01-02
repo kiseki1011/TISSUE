@@ -31,7 +31,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
 
 @Entity
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 @Table(
         name = "project",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"workspace_id", "project_key"})})
@@ -70,10 +70,10 @@ public class Project extends BaseEntity {
     @Column(nullable = false)
     private Long issueNumber;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.PERSIST)
     private List<IssueType> issueTypes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.PERSIST)
     private List<Workflow> workflows = new ArrayList<>();
 
     public static Project create(Workspace workspace, String key, String title, @Nullable String description) {
@@ -121,6 +121,7 @@ public class Project extends BaseEntity {
         this.defaultJoinRole = defaultJoinRole;
     }
 
+    // TODO: use atomic update("select for update") for issue creation
     public Long generateNextIssueNumber() {
         return this.issueNumber++;
     }

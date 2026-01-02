@@ -6,5 +6,4 @@ public record UpdateStoryPointCommand(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        @Nullable Integer storyPoint,
-        Long actorMemberId) {}
+        @Nullable Integer storyPoint) {}

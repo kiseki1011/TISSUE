@@ -2,6 +2,7 @@ package com.tissue.issue.application.service;
 
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
@@ -10,6 +11,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.Workflow;
@@ -37,13 +39,19 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final IssueValidator issueValidator;
     private final TransitionGuardRegistry guardRegistry;
     private final ApplicationEventPublisher eventPublisher;
+    private final IssueAuthorizationService issueAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     @Transactional
     public void performTransition(PerformTransitionCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, actorMemberId);
 
         Workflow workflow = issue.getIssueType().getWorkflow();
         WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
@@ -52,7 +60,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
         issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
 
-        executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, cmd.actorMemberId());
+        executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, actorMemberId);
 
         issue.transitionTo(transition.getTargetState());
 
@@ -62,14 +70,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
                 issue.getKey(),
-                cmd.actorMemberId());
+                actorMemberId);
 
         eventPublisher.publishEvent(IssueTransitionedEvent.create(issue, transition, oldState, actor));
     }
 
     private void executeGuards(
             String workspaceKey, String projectKey, Issue issue, WorkflowTransition transition, Long actorMemberId) {
-        // TODO: guardConfigs를 JOIN FETCH로 가져와서 N+1 방지
+        // TODO: how should i prevent N+1? get guardConfigs with JOIN FETCH?
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
         if (configs.isEmpty()) {

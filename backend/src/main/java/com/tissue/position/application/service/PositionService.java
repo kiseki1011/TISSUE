@@ -12,6 +12,8 @@ import com.tissue.position.application.port.out.PositionQueryRepository;
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.application.service.validator.PositionValidator;
 import com.tissue.position.domain.Position;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PositionService implements PositionUseCase {
 
@@ -28,10 +31,14 @@ public class PositionService implements PositionUseCase {
     private final PositionCommandRepository positionCommandRepository;
     private final PositionQueryRepository positionQueryRepository;
     private final PositionValidator positionValidator;
+    private final CurrentMemberProvider currentMemberProvider;
+    private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    @Transactional
     public PositionCreateResponse create(CreatePositionCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         positionValidator.ensureUniqueName(workspace, cmd.name());
@@ -47,8 +54,10 @@ public class PositionService implements PositionUseCase {
     }
 
     @Override
-    @Transactional
     public void update(UpdatePositionCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
 
@@ -64,8 +73,10 @@ public class PositionService implements PositionUseCase {
     }
 
     @Override
-    @Transactional
     public void delete(String workspaceKey, Long positionId) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(workspaceKey, actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(workspaceKey);
         Position position = positionFinder.getBy(positionId, workspace);
 
@@ -76,7 +87,10 @@ public class PositionService implements PositionUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public PositionDetail getPosition(String workspaceKey, Long positionId) {
+    public PositionDetail getPositionDetail(String workspaceKey, Long positionId) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+
         Position position = positionFinder.getBy(positionId, workspaceKey);
         return PositionDetail.from(position);
     }
@@ -84,6 +98,9 @@ public class PositionService implements PositionUseCase {
     @Override
     @Transactional(readOnly = true)
     public GetPositions getPositions(String workspaceKey) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+
         List<Position> positions = positionQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return GetPositions.from(positions);
     }

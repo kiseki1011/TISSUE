@@ -7,7 +7,6 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import com.tissue.workspace.application.port.out.InvitationQueryRepository;
-import com.tissue.workspace.application.service.command.WorkspaceParticipationService;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.ProjectJoinConfig;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class InvitationService implements InvitationUseCase {
 
@@ -30,9 +30,12 @@ public class InvitationService implements InvitationUseCase {
     private final ProjectMemberCommandService projectMemberCommandService;
     private final InvitationQueryRepository invitationQueryRepository;
 
-    @Transactional
     @Override
     public void accept(Long memberId, Long invitationId) {
+        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
+        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
+        //  use CurrentMemberProvider to get userDetails.getMemberId
+
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
@@ -54,9 +57,11 @@ public class InvitationService implements InvitationUseCase {
         // TODO: InvitationAcceptedEvent
     }
 
-    @Transactional
     @Override
     public void reject(Long memberId, Long invitationId) {
+        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
+        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
+
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
@@ -69,8 +74,8 @@ public class InvitationService implements InvitationUseCase {
         // TODO: InvitationRejectedEvent
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<InvitationDetail> getMyInvitations(Long memberId) {
         // TODO: N+1, consider optimization
         return invitationQueryRepository.findAllByMemberIdAndStatus(memberId, InvitationStatus.PENDING).stream()

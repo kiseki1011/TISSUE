@@ -66,11 +66,7 @@ public class WorkflowAutomationEventListener {
                 issue.getWorkspaceKey());
 
         transitionUseCase.performTransition(new PerformTransitionCommand(
-                issue.getWorkspaceKey(),
-                issue.getProjectKey(),
-                issue.getKey(),
-                targetTransition.getId(),
-                event.actorMemberId()));
+                issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey(), targetTransition.getId()));
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {

@@ -5,6 +5,8 @@ import com.tissue.comment.application.dto.out.MyCommentResponse;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,9 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
+    private final ProjectAuthorizationService projectAuthorizationService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public List<CommentDetailResponse> getIssueComments(String workspaceKey, String projectKey, String issueKey) {
+        projectAuthorizationService.requireProjectViewer(
+                workspaceKey, projectKey, currentMemberProvider.getCurrentMemberId());
+
         List<Comment> allComments = commentQueryRepository.findByIssue(workspaceKey, issueKey);
 
         Map<Long, List<Comment>> repliesByParentId = allComments.stream()
@@ -30,7 +37,7 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
                 .collect(Collectors.groupingBy(c -> c.getParentComment().getId()));
 
         return allComments.stream()
-                .filter(c -> c.getParentComment() == null) // Root comments
+                .filter(c -> c.getParentComment() == null)
                 .map(root -> {
                     List<Comment> replies = repliesByParentId.getOrDefault(root.getId(), List.of());
                     List<CommentDetailResponse> replyDtos = replies.stream()

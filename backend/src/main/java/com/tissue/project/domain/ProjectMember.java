@@ -23,7 +23,7 @@ import org.hibernate.annotations.SQLRestriction;
         name = "project_member",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 public class ProjectMember extends BaseEntity {
 
     @Id

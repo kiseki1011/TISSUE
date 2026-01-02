@@ -1,17 +1,14 @@
 package com.tissue.issue.application.port.in;
 
-import static com.tissue.issue.application.service.authorization.IssueAuthExpressions.*;
-
 import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.issue.application.dto.request.RemoveIssueRelationCommand;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface IssueRelationUseCase {
 
-    // TODO: 관계를 형성하는 타켓 이슈가 다른 프로젝트에 존재하는 경우 권한을 어떻게 처리할까?
-    @PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
+    // TODO: if the target issue for the relation is in different project, how should i handle permissions?
+    //  option 1: just allow it
+    //  option 2: must be at least a ProjectRole.VIEWER(or MEMBER) for the other project
     void add(AddIssueRelationCommand cmd);
 
-    @PreAuthorize(REQUIRES_ISSUE_EDIT_PERMISSION)
     void remove(RemoveIssueRelationCommand cmd);
 }

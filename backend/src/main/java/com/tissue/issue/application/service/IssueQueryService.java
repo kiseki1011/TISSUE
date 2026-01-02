@@ -21,10 +21,12 @@ import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.IssueSubscriber;
 import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.domain.Workflow;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +34,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class IssueQueryService implements IssueQueryUseCase {
 
     private final IssueQueryRepository issueQueryRepo;
@@ -43,9 +45,13 @@ public class IssueQueryService implements IssueQueryUseCase {
     private final IssueRelationQueryRepository relationQueryRepo;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
+    private final ProjectAuthorizationService projectAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -60,6 +66,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueCommonDetail getCommon(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithDetail(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -75,6 +83,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -87,6 +97,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithParent(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -101,6 +113,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         List<Issue> children = issueQueryRepo.findChildren(workspaceKey, issueKey);
 
         return children.stream().map(IssueIdentifierResponse::from).toList();
@@ -108,6 +122,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(workspaceKey, issueKey);
 
         List<IssueRelation> outgoing = allRelations.stream()
@@ -123,6 +139,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public ParticipantInfo getAuthor(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -135,18 +153,24 @@ public class IssueQueryService implements IssueQueryUseCase {
 
     @Override
     public IssueReviewersDetail getReviewers(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
         return IssueReviewersDetail.from(reviewers);
     }
 
     @Override
     public IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         List<IssueSubscriber> subscribers = subscriberQueryRepo.findByIssue(workspaceKey, issueKey);
         return IssueSubscribersDetail.from(subscribers);
     }
 
     @Override
     public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String projectKey, String issueKey) {
+        requireProjectViewer(workspaceKey, projectKey);
+
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(issueKey, workspaceKey)
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
@@ -157,5 +181,10 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .filter(t -> t.getSourceState().equals(issue.getCurrentState()))
                 .map(TransitionDetail::from)
                 .toList();
+    }
+
+    private void requireProjectViewer(String workspaceKey, String projectKey) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectViewer(workspaceKey, projectKey, actorMemberId);
     }
 }

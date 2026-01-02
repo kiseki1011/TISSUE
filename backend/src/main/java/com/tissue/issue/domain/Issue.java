@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 public class Issue extends BaseEntity {
 
     @Id

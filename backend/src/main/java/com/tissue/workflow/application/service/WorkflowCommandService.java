@@ -1,8 +1,10 @@
 package com.tissue.workflow.application.service;
 
 import com.tissue.common.util.Patchers;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
@@ -29,12 +31,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkflowCommandService implements WorkflowCommandUseCase {
 
@@ -44,12 +46,16 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     private final WorkflowValidator workflowValidator;
     private final WorkflowGraphValidator graphValidator;
     private final TransitionGuardRegistry guardRegistry;
+    private final ProjectAuthorizationService projectAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
 
-        workflowValidator.ensureLabelUnique(project, cmd.name());
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        workflowValidator.ensureNameUnique(project, cmd.name());
 
         try {
             Workflow workflow =
@@ -58,38 +64,28 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             Map<String, WorkflowState> stateByTempKey = new HashMap<>();
 
             for (var s : cmd.stateDefinitions()) {
-
                 WorkflowState state = workflow.addState(s.name(), s.description(), s.color(), s.category());
 
                 if (s.identifier() instanceof NodeIdentifier.TempKey tk) {
-
                     stateByTempKey.put(tk.key(), state);
-
                 } else {
-
                     throw WorkflowExceptions.invalidGraphRequest(
                             "Creation requires temporary keys", "state", "invalid_identifier_type");
                 }
             }
 
             for (var t : cmd.transitionDefinitions()) {
-
                 String sourceKey = ((NodeIdentifier.TempKey) t.sourceIdentifier()).key();
-
                 String targetKey = ((NodeIdentifier.TempKey) t.targetIdentifier()).key();
 
                 WorkflowState source = stateByTempKey.get(sourceKey);
-
                 WorkflowState target = stateByTempKey.get(targetKey);
 
                 if (source == null) {
-
                     throw WorkflowExceptions.invalidGraphRequest(
                             "Source state not found for key: " + sourceKey, "transition", "missing_source_state");
                 }
-
                 if (target == null) {
-
                     throw WorkflowExceptions.invalidGraphRequest(
                             "Target state not found for key: " + targetKey, "transition", "missing_target_state");
                 }
@@ -98,6 +94,8 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             }
 
             graphValidator.ensureValidWorkflowGraph(workflow);
+
+            // TODO: WorkflowCreatedEvent
 
             return WorkflowCreateResponse.from(workflow);
         } catch (DataIntegrityViolationException e) {
@@ -108,21 +106,31 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void update(UpdateWorkflowCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
-        Patchers.apply(cmd.name(), newLabel -> {
-            if (!workflow.getName().equals(newLabel)) {
-                workflowValidator.ensureLabelUnique(project, newLabel);
-                workflow.rename(newLabel);
+        Patchers.apply(cmd.name(), newName -> {
+            if (!workflow.getName().equals(newName)) {
+                workflowValidator.ensureNameUnique(project, newName);
+                workflow.rename(newName);
             }
         });
         Patchers.apply(cmd.description(), workflow::updateDescription);
         Patchers.apply(cmd.color(), workflow::updateColor);
+
+        // TODO: WorkflowUpdatedEvent
     }
 
     @Override
     public void delete(DeleteWorkflowCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
@@ -133,10 +141,17 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         // workflowValidator.ensureDeletable();
 
         workflow.softDelete();
+
+        // TODO: WorkflowDeletedEvent
     }
 
+    // TODO: is there a better name? updateStateData? updateStateMetaData?
     @Override
     public void updateState(UpdateStateCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
         WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
@@ -146,8 +161,13 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Patchers.apply(cmd.color(), state::updateColor);
     }
 
+    // TODO: is there a better name? updateTransitionData? updateTransitionMetaData?
     @Override
     public void updateTransition(UpdateTransitionCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
         WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
@@ -156,8 +176,13 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         Patchers.apply(cmd.description(), transition::updateDescription);
     }
 
+    // TODO: add javadoc to explain the process
     @Override
     public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
@@ -174,7 +199,6 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
             guardRegistry.ensureGuardExists(g.guardType());
             workflowValidator.ensureNoDuplicateGuard(g, usedTypes);
 
-            // TODO: needs explanation
             Map<String, Object> params = g.params() != null ? g.params() : Collections.emptyMap();
 
             TransitionGuard guardImplementation = guardRegistry.getGuard(g.guardType());

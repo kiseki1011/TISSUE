@@ -9,8 +9,8 @@ public record AddIssueRelationRequest(
         @NotBlank String targetProjectKey,
         @NotBlank String targetIssueKey,
         @NotNull IssueRelationType relationType) {
-    public AddIssueRelationCommand toCommand(
-            String workspaceKey, String sourceProjectKey, String sourceIssueKey, Long currentMemberId) {
+
+    public AddIssueRelationCommand toCommand(String workspaceKey, String sourceProjectKey, String sourceIssueKey) {
         return AddIssueRelationCommand.builder()
                 .workspaceKey(workspaceKey)
                 .sourceProjectKey(sourceProjectKey)
@@ -18,7 +18,6 @@ public record AddIssueRelationRequest(
                 .targetProjectKey(targetProjectKey)
                 .targetIssueKey(targetIssueKey)
                 .relationType(relationType)
-                .actorMemberId(currentMemberId)
                 .build();
     }
 }

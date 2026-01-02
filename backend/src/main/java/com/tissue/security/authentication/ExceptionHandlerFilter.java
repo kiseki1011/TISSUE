@@ -9,13 +9,12 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-// TODO: refactor to use ProblemDetail
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -39,17 +38,18 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         log.error("Unexpected exception occured during the security filter chain process", ex);
 
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        String message = "An unexpected error occurred";
+        String detail = "An unexpected error occurred";
 
         if (ex instanceof IllegalArgumentException) {
             status = HttpStatus.BAD_REQUEST;
-            message = ex.getMessage();
+            detail = ex.getMessage();
         }
 
-        ResponseEntity<String> apiResponse = ResponseEntity.status(status).body(message);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, detail);
+        problemDetail.setTitle(status.getReasonPhrase());
 
         response.setStatus(status.value());
         response.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(response.getWriter(), apiResponse);
+        objectMapper.writeValue(response.getWriter(), problemDetail);
     }
 }

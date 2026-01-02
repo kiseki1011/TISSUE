@@ -12,8 +12,10 @@ import com.tissue.issuetype.application.port.out.IssueTypeCommandRepository;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.Workflow;
 import java.util.Objects;
@@ -31,9 +33,14 @@ public class IssueTypeService implements IssueTypeUseCase {
     private final IssueTypeFinder issueTypeFinder;
     private final IssueTypeCommandRepository issueTypeCommandRepository;
     private final IssueTypeValidator issueTypeValidator;
+    private final ProjectAuthorizationService projectAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), currentUserId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
@@ -49,6 +56,10 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void rename(RenameIssueTypeCommand cmd) {
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireIssueTypeEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
@@ -62,6 +73,10 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void update(PatchIssueTypeCommand cmd) {
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireIssueTypeEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
@@ -71,10 +86,14 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void delete(DeleteIssueTypeCommand cmd) {
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireIssueTypeEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
 
-        // TODO: consider IssueType migration feature(make it in IssueConfigUseCase)
+        // TODO: consider IssueType migration feature(make it in IssueConfigUseCase in issue package)
         //  current policy: cant delete if there is a issue that uses this IssueType
         issueTypeValidator.ensureDeletable(issueType);
 

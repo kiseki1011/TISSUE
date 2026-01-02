@@ -27,4 +27,7 @@
 
   <!-- Suppress strict variable distance check -->
   <suppress checks="VariableDeclarationUsageDistance" files=".*"/>
+
+  <!-- Supress method name check on test codes -->
+  <suppress checks="MethodName" files=".*Test\.java"/>
 </suppressions>

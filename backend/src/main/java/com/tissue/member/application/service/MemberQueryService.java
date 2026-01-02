@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberQueryService implements MemberQueryUseCase {
 
@@ -17,21 +18,17 @@ public class MemberQueryService implements MemberQueryUseCase {
     private final MemberValidator memberValidator;
 
     @Override
-    @Transactional(readOnly = true)
     public GetMemberProfile getMyProfile(Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         return GetMemberProfile.from(member);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void checkEmailAvailability(String email) {
-        // Refactored: Delegated from Controller to Service to keep Controller clean.
         memberValidator.ensureUniqueEmail(email);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void checkUsernameAvailability(String username) {
         memberValidator.ensureUniqueUsername(username);
     }

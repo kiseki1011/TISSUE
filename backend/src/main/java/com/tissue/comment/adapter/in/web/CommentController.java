@@ -2,15 +2,12 @@ package com.tissue.comment.adapter.in.web;
 
 import com.tissue.comment.adapter.in.web.dto.AddCommentRequest;
 import com.tissue.comment.adapter.in.web.dto.UpdateCommentRequest;
-import com.tissue.comment.application.dto.in.AddCommentCommand;
 import com.tissue.comment.application.dto.in.DeleteCommentCommand;
 import com.tissue.comment.application.dto.in.UpdateCommentCommand;
 import com.tissue.comment.application.dto.out.CommentAddResponse;
 import com.tissue.comment.application.dto.out.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +35,8 @@ public class CommentController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @RequestBody @Valid AddCommentRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
-        AddCommentCommand command = request.toCommand(workspaceKey, projectKey, issueKey, userDetails.getMemberId());
+            @RequestBody @Valid AddCommentRequest request) {
+        var command = request.toCommand(workspaceKey, projectKey, issueKey);
 
         CommentAddResponse response = commentCommandUseCase.add(command);
 
@@ -48,19 +44,17 @@ public class CommentController {
     }
 
     @PatchMapping("/{commentId}")
-    public ResponseEntity<Void> update(
-            @PathVariable Long commentId,
-            @RequestBody @Valid UpdateCommentRequest request,
-            @CurrentMember MemberUserDetails userDetails) {
-        UpdateCommentCommand command = request.toCommand(commentId, userDetails.getMemberId());
+    public ResponseEntity<Void> update(@PathVariable Long commentId, @RequestBody @Valid UpdateCommentRequest request) {
+        var command = new UpdateCommentCommand(commentId, request.content());
         commentCommandUseCase.update(command);
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> delete(@PathVariable Long commentId, @CurrentMember MemberUserDetails userDetails) {
-        DeleteCommentCommand command = new DeleteCommentCommand(commentId, userDetails.getMemberId());
+    public ResponseEntity<Void> delete(
+            @PathVariable Long commentId, @PathVariable String workspaceKey, @PathVariable String projectKey) {
+        var command = new DeleteCommentCommand(commentId);
         commentCommandUseCase.delete(command);
 
         return ResponseEntity.noContent().build();

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MemberCommandService implements MemberCommandUseCase {
 
@@ -28,7 +29,6 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final MemberEmailVerificationService memberEmailVerificationService;
 
     @Override
-    @Transactional
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
         memberValidator.ensureUniqueEmail(cmd.email());
         memberValidator.ensureUniqueUsername(cmd.username());
@@ -49,14 +49,12 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
-    @Transactional
     public void updateName(String name, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         member.updateName(name);
     }
 
     @Override
-    @Transactional
     public void updateEmail(String newEmail, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 
@@ -75,7 +73,6 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
-    @Transactional
     public void updateUsername(String newUsername, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 
@@ -89,7 +86,6 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
-    @Transactional
     public void updatePassword(String originalPassword, String newPassword, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 

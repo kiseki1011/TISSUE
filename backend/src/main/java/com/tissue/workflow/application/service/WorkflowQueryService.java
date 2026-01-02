@@ -2,8 +2,10 @@ package com.tissue.workflow.application.service;
 
 import com.tissue.issue.application.dto.IssueCountProjection;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.workflow.application.port.in.WorkflowQueryUseCase;
@@ -14,8 +16,10 @@ import com.tissue.workflow.domain.WorkflowState;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class WorkflowQueryService implements WorkflowQueryUseCase {
 
@@ -23,23 +27,28 @@ public class WorkflowQueryService implements WorkflowQueryUseCase {
     private final WorkflowFinder workflowFinder;
     private final WorkflowQueryRepository workflowQueryRepository;
     private final IssueQueryRepository issueQueryRepository;
+    private final CurrentMemberProvider currentMemberProvider;
+    private final ProjectAuthorizationService projectAuthService;
 
     @Override
-    public List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived) {
+    public List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.isViewer(workspaceKey, projectKey, actorMemberId);
+
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
         List<Workflow> workflows;
-        if (includeArchived) {
-            workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
-        } else {
-            workflows = workflowQueryRepository.findAllByProjectAndArchivedFalseOrderByLabel(project);
-        }
+
+        workflows = workflowQueryRepository.findAllByProjectOrderByLabel(project);
 
         return workflows.stream().map(WorkflowSummary::from).toList();
     }
 
     @Override
     public WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.isViewer(workspaceKey, projectKey, actorMemberId);
+
         Project project = projectFinder.getBy(projectKey, workspaceKey);
         Workflow workflow = workflowFinder.findBy(workflowId, project);
 

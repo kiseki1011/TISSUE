@@ -28,6 +28,7 @@ public class WorkspaceParticipationController {
     @PostMapping("/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToWorkspace(
             @PathVariable String workspaceKey, @RequestBody @Valid InviteToWorkspaceRequest request) {
+
         var command = request.toCommand(workspaceKey);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
 
@@ -39,6 +40,7 @@ public class WorkspaceParticipationController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid InviteToProjectRequest request) {
+
         var command = request.toCommand(workspaceKey, projectKey);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
 
@@ -48,17 +50,15 @@ public class WorkspaceParticipationController {
     @DeleteMapping("/me")
     public ResponseEntity<Void> leaveWorkspace(
             @PathVariable String workspaceKey, @CurrentMember MemberUserDetails userDetails) {
+
         var command = new LeaveWorkspaceCommand(workspaceKey, userDetails.getMemberId());
         workspaceParticipationUseCase.leave(command);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> kickWorkspaceMember(
-            @PathVariable String workspaceKey,
-            @PathVariable Long memberId,
-            @CurrentMember MemberUserDetails userDetails) {
-        var command = new KickWorkspaceMemberCommand(workspaceKey, memberId, userDetails.getMemberId());
+    public ResponseEntity<Void> kickWorkspaceMember(@PathVariable String workspaceKey, @PathVariable Long memberId) {
+        var command = new KickWorkspaceMemberCommand(workspaceKey, memberId);
         workspaceParticipationUseCase.kick(command);
 
         return ResponseEntity.noContent().build();

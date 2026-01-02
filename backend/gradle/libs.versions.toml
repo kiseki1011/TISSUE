@@ -1,0 +1,56 @@
+[versions]
+springBoot = "3.3.3"
+springDependencyManagement = "1.1.6"
+
+jjwt = "0.12.6"
+lombok = "1.18.30"
+jacksonDatabindNullable = "0.2.7"
+jspecify = "1.0.0"
+
+checkstyle = "12.3.0"
+spotless = "8.1.0"
+errorPronePlugin = "4.3.0"
+nullAway = "0.12.15"
+errorProneCore = "2.45.0"
+
+[libraries]
+spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
+
+spring-boot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" }
+spring-boot-starter-data-redis = { group = "org.springframework.boot", name = "spring-boot-starter-data-redis" }
+spring-boot-starter-thymeleaf = { group = "org.springframework.boot", name = "spring-boot-starter-thymeleaf" }
+spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web" }
+spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
+spring-boot-starter-aop = { group = "org.springframework.boot", name = "spring-boot-starter-aop" }
+spring-boot-starter-mail = { group = "org.springframework.boot", name = "spring-boot-starter-mail" }
+spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache" }
+spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
+spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
+
+spring-retry = { group = "org.springframework.retry", name = "spring-retry" }
+spring-security-test = { group = "org.springframework.security", name = "spring-security-test" }
+caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine" }
+postgresql = { group = "org.postgresql", name = "postgresql" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+lombok = { group = "org.projectlombok", name = "lombok" }
+
+# Testcontainers
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql" }
+
+# Third Party
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+
+jackson-databind-nullable = { group = "org.openapitools", name = "jackson-databind-nullable", version.ref = "jacksonDatabindNullable" }
+jspecify = { group = "org.jspecify", name = "jspecify", version.ref = "jspecify" }
+
+nullaway = { group = "com.uber.nullaway", name = "nullaway", version.ref = "nullAway" }
+errorprone-core = { group = "com.google.errorprone", name = "error_prone_core", version.ref = "errorProneCore" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorPronePlugin" }

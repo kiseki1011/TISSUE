@@ -21,5 +21,4 @@ public record CreateIssueCommand(
         @Nullable Integer storyPoint,
         Long issueTypeId,
         Map<Long, Object> customFields,
-        @Nullable Long assigneeMemberId,
-        Long actorMemberId) {}
+        @Nullable Long assigneeMemberId) {}

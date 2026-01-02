@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {

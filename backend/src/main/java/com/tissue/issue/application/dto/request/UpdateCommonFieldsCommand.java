@@ -14,5 +14,4 @@ public record UpdateCommonFieldsCommand(
         JsonNullable<String> content,
         JsonNullable<String> summary,
         JsonNullable<IssuePriority> priority,
-        JsonNullable<Instant> dueAt,
-        Long actorMemberId) {}
+        JsonNullable<Instant> dueAt) {}

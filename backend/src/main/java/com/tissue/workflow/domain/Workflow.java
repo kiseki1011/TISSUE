@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 public class Workflow extends BaseEntity {
 
     @Id
@@ -138,6 +138,8 @@ public class Workflow extends BaseEntity {
         return name.getDisplay();
     }
 
+    // TODO: im not going to use archived for Workflow(inlcuding states and transtitions)
+    // TODO: is softDeleted = false is filtered out?
     public List<WorkflowState> getActiveStates() {
         return states.stream().filter(s -> !s.isArchived()).toList();
     }

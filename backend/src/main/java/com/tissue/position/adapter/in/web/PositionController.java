@@ -61,7 +61,7 @@ public class PositionController {
     @GetMapping("/{positionId}")
     public ResponseEntity<PositionDetail> getPositionDetail(
             @PathVariable String workspaceKey, @PathVariable Long positionId) {
-        PositionDetail response = positionUseCase.getPosition(workspaceKey, positionId);
+        PositionDetail response = positionUseCase.getPositionDetail(workspaceKey, positionId);
         return ResponseEntity.ok(response);
     }
 

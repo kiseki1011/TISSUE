@@ -14,12 +14,14 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueCommentCommandService implements CommentCommandUseCase {
 
@@ -27,13 +29,13 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     private final IssueFinder issueFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
-    @Transactional
     public CommentAddResponse add(AddCommentCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.findBy(project, cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.findBy(project, currentMemberProvider.getCurrentMemberId());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
                 .map(id -> commentRepository.findById(id).orElseThrow(() -> CommentExceptions.notFound(id)))
@@ -48,18 +50,19 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     }
 
     @Override
-    @Transactional
     public void update(UpdateCommentCommand cmd) {
+        // TODO: consider making a CommentFinder (honestly looks kinda overkill)
         Comment comment = commentRepository
                 .findById(cmd.commentId())
                 .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
 
         if (comment.isSoftDeleted()) {
             throw CommentExceptions.notFound(cmd.commentId());
         }
-
-        if (!comment.getCreatedBy().equals(cmd.actorMemberId())) {
-            throw CommentExceptions.notAuthor(cmd.commentId(), cmd.actorMemberId());
+        // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
+        if (!comment.getCreatedBy().equals(actorMemberId)) {
+            throw CommentExceptions.notAuthor(cmd.commentId(), actorMemberId);
         }
 
         comment.updateContent(cmd.content());
@@ -67,22 +70,20 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         // TODO: Publish CommentUpdatedEvent
     }
 
-    // TODO: should i allow ProjectRole.ADMIN for delete?
-    //  if OK, then lets make a auth security method to use for PreAuthorize
-    //  and include the author check logic too
+    // TODO: allow ProjectRole.ADMIN for delete(add logic in the auth service)
     @Override
-    @Transactional
     public void delete(DeleteCommentCommand cmd) {
         Comment comment = commentRepository
                 .findById(cmd.commentId())
                 .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
 
         if (comment.isSoftDeleted()) {
             throw CommentExceptions.notFound(cmd.commentId());
         }
-
-        if (!comment.getCreatedBy().equals(cmd.actorMemberId())) {
-            throw CommentExceptions.notAuthor(cmd.commentId(), cmd.actorMemberId());
+        // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
+        if (!comment.getCreatedBy().equals(actorMemberId)) {
+            throw CommentExceptions.notAuthor(cmd.commentId(), actorMemberId);
         }
 
         comment.softDelete();
