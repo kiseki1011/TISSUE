@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
-@SQLRestriction("softDeleted = false")
+@SQLRestriction("soft_deleted = false")
 public class WorkflowState extends BaseEntity {
 
     @Id
