@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    @org.springframework.beans.factory.annotation.Value("${tissue.email.verification.ttl}")
+    @Value("${tissue.email.verification.ttl}")
     private Duration ttl;
 
     private static final String PREFIX = "email_verification:";

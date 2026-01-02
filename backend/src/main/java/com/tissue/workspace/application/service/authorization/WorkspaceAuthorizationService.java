@@ -1,14 +1,10 @@
 package com.tissue.workspace.application.service.authorization;
 
-import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
-import static com.tissue.workspace.domain.enums.WorkspaceRole.MEMBER;
-import static com.tissue.workspace.domain.enums.WorkspaceRole.OWNER;
-
-import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,68 +14,96 @@ public class WorkspaceAuthorizationService {
     private final WorkspaceLinkQueryRepository linkRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    public boolean isMember(String workspaceKey, MemberUserDetails userDetails) {
-        return hasWorkspaceRole(workspaceKey, userDetails, MEMBER);
-    }
-
-    public boolean isAdmin(String workspaceKey, MemberUserDetails userDetails) {
-        return hasWorkspaceRole(workspaceKey, userDetails, ADMIN);
-    }
-
-    public boolean isOwner(String workspaceKey, MemberUserDetails userDetails) {
-        return hasWorkspaceRole(workspaceKey, userDetails, OWNER);
-    }
-
-    public boolean isSelfModification(String workspaceKey, Long memberId, MemberUserDetails userDetails) {
-        return isAdmin(workspaceKey, userDetails) || memberId.equals(userDetails.getMemberId());
-    }
-
-    public boolean hasHigherRoleThanTarget(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
-        if (targetMemberId.equals(userDetails.getMemberId())) {
-            return false;
+    public void requireWorkspaceMember(String workspaceKey, Long actorMemberId) {
+        if (isMember(workspaceKey, actorMemberId)) {
+            return;
         }
-        if (isNotAdmin(workspaceKey, userDetails)) {
-            return false;
-        }
-        return hasHigherRoleThan(workspaceKey, targetMemberId, userDetails);
+        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.MEMBER.name());
     }
 
-    public boolean canGrantRole(String workspaceKey, WorkspaceRole grantRole, MemberUserDetails userDetails) {
+    public void requireWorkspaceAdmin(String workspaceKey, Long actorMemberId) {
+        if (isAdmin(workspaceKey, actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
+    }
+
+    public void requireWorkspaceOwner(String workspaceKey, Long actorMemberId) {
+        if (isOwner(workspaceKey, actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.OWNER.name());
+    }
+
+    public void requireWorkspaceAdminOrSelf(String workspaceKey, Long targetMemberId, Long actorMemberId) {
+        if (isAdmin(workspaceKey, actorMemberId) || targetMemberId.equals(actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires workspace %s or the modification target must be yourself"
+                .formatted(WorkspaceRole.ADMIN.name()));
+    }
+
+    public void requireRoleEditPermission(
+            String workspaceKey, WorkspaceRole grantRole, Long targetMemberId, Long actorMemberId) {
         if (grantRole == WorkspaceRole.OWNER) {
-            return false;
+            throw new AccessDeniedException("Cannot grant workspace OWNER. Use workspace owner transfer instead.");
         }
-        if (isNotAdmin(workspaceKey, userDetails)) {
-            return false;
+        if (!isAdmin(workspaceKey, actorMemberId)) {
+            throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
         }
-        return hasWorkspaceRole(workspaceKey, userDetails, grantRole);
+        if (hasEqualOrHigherRoleThan(workspaceKey, targetMemberId, actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires higher workspace role than target");
     }
 
-    public boolean canEditInviteLink(String workspaceKey, String token, MemberUserDetails userDetails) {
-        return isAdmin(workspaceKey, userDetails) || isLinkCreator(token, userDetails);
+    public void requireGrantRolePermission(String workspaceKey, WorkspaceRole grantRole, Long actorMemberId) {
+        if (grantRole == WorkspaceRole.OWNER) {
+            throw new AccessDeniedException("Cannot grant workspace OWNER. Use workspace owner transfer instead.");
+        }
+        if (isAdmin(workspaceKey, actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
     }
 
-    private boolean hasWorkspaceRole(String workspaceKey, MemberUserDetails userDetails, WorkspaceRole requiredRole) {
+    public void requireInviteLinkEditPermission(String workspaceKey, String token, Long actorMemberId) {
+        if (isAdmin(workspaceKey, actorMemberId) || isLinkCreator(token, actorMemberId)) {
+            return;
+        }
+        throw new AccessDeniedException("Requires workspace %s or link creator".formatted(WorkspaceRole.ADMIN.name()));
+    }
+
+    public boolean isMember(String workspaceKey, Long actorMemberId) {
+        return hasWorkspaceRole(workspaceKey, actorMemberId, WorkspaceRole.MEMBER);
+    }
+
+    public boolean isAdmin(String workspaceKey, Long actorMemberId) {
+        return hasWorkspaceRole(workspaceKey, actorMemberId, WorkspaceRole.ADMIN);
+    }
+
+    public boolean isOwner(String workspaceKey, Long actorMemberId) {
+        return hasWorkspaceRole(workspaceKey, actorMemberId, WorkspaceRole.OWNER);
+    }
+
+    private boolean hasWorkspaceRole(String workspaceKey, Long actorMemberId, WorkspaceRole requiredRole) {
         return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceKey(userDetails.getMemberId(), workspaceKey)
+                .findByMember_IdAndWorkspaceKey(actorMemberId, workspaceKey)
                 .map(member -> member.getRole().isEqualOrHigherThan(requiredRole))
                 .orElse(false);
     }
 
-    private boolean isLinkCreator(String token, MemberUserDetails userDetails) {
-        return linkRepository
-                .findByToken(token)
-                .map(link -> link.getCreatedBy().equals(userDetails.getMemberId()))
-                .orElse(false);
-    }
-
-    private boolean hasHigherRoleThan(String workspaceKey, Long targetMemberId, MemberUserDetails userDetails) {
+    private boolean hasEqualOrHigherRoleThan(String workspaceKey, Long targetMemberId, Long actorMemberId) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
-                .map(target -> hasWorkspaceRole(workspaceKey, userDetails, target.getRole()))
+                .map(target -> hasWorkspaceRole(workspaceKey, actorMemberId, target.getRole()))
                 .orElse(false);
     }
 
-    private boolean isNotAdmin(String workspaceKey, MemberUserDetails userDetails) {
-        return !isAdmin(workspaceKey, userDetails);
+    private boolean isLinkCreator(String token, Long actorMemberId) {
+        return linkRepository
+                .findByToken(token)
+                .map(link -> link.getCreatedBy().equals(actorMemberId))
+                .orElse(false);
     }
 }

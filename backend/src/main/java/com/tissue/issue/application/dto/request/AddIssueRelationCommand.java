@@ -10,5 +10,4 @@ public record AddIssueRelationCommand(
         String sourceIssueKey,
         String targetProjectKey,
         String targetIssueKey,
-        IssueRelationType relationType,
-        Long actorMemberId) {}
+        IssueRelationType relationType) {}

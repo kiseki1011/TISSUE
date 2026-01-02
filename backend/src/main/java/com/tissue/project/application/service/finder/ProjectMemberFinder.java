@@ -16,13 +16,21 @@ public class ProjectMemberFinder {
     private final ProjectMemberQueryRepository queryRepository;
 
     // TODO: use JOIN FETCH(or some other way) with WorkspaceMember at findAnyByProjectIdAndMemberId
-    // for optimization
+    //  for optimization
+    // TODO: find -> get
     public ProjectMember findBy(Project project, Long memberId) {
         return queryRepository
                 .findAnyByProjectIdAndMemberId(project.getId(), memberId)
                 .orElseThrow(() -> ProjectExceptions.memberNotFound(project, memberId));
     }
 
+    // TODO: getIncludingSoftDeleted
+    //  - is there a better name?
+    //  - a pagination api
+    //  - is used by ADMIN(WorkspaceRole, ProjectRole, SystemRole) to see all ProjectMember for a project
+    //  including soft-deleted ProjectMembers
+
+    // TODO: find -> get
     public Set<Long> findExistingMemberIdsBy(Project project, Collection<Long> memberIds) {
         return queryRepository.findMemberIdsByProjectAndMemberIds(project, memberIds);
     }

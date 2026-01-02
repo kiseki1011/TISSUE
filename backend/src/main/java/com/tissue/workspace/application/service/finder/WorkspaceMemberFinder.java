@@ -19,22 +19,26 @@ public class WorkspaceMemberFinder {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
+    // TODO: find -> get
     public Optional<WorkspaceMember> findAnyOptionalBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository.findAnyByMemberIdAndWorkspaceKey(memberId, workspaceKey);
     }
 
+    // TODO: find -> get
     public WorkspaceMember findBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
                 .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
     }
 
+    // TODO: find -> get
     public WorkspaceMember findBy(Long memberId, Workspace workspace) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspace(memberId, workspace)
                 .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
     }
 
+    // TODO: find -> get
     public Optional<WorkspaceMember> findOptionalBy(Member member, Workspace workspace) {
         return workspaceMemberQueryRepository.findByMemberAndWorkspace(member, workspace);
     }
@@ -43,10 +47,12 @@ public class WorkspaceMemberFinder {
         return workspaceMemberQueryRepository.existsByMemberAndWorkspace(member, workspace);
     }
 
+    // TODO: find -> get
     public List<WorkspaceMember> findAllBy(Collection<Long> memberIds, String workspaceKey) {
         return workspaceMemberQueryRepository.findAllByMember_IdInAndWorkspaceKey(memberIds, workspaceKey);
     }
 
+    // TODO: find -> get
     public Set<Long> findJoinedMemberIdsBy(String workspaceKey, Collection<Long> memberIds) {
         return workspaceMemberQueryRepository.findJoinedMemberIds(workspaceKey, memberIds);
     }

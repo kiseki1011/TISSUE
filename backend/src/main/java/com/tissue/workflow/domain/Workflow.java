@@ -138,6 +138,8 @@ public class Workflow extends BaseEntity {
         return name.getDisplay();
     }
 
+    // TODO: im not going to use archived for Workflow(inlcuding states and transtitions)
+    // TODO: is softDeleted = false is filtered out?
     public List<WorkflowState> getActiveStates() {
         return states.stream().filter(s -> !s.isArchived()).toList();
     }

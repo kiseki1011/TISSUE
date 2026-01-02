@@ -1,4 +1,4 @@
-package com.tissue.workspace.application.service.command;
+package com.tissue.workspace.application.service;
 
 import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.member.application.service.finder.MemberFinder;

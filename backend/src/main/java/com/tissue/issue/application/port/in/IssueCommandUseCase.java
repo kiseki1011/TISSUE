@@ -26,11 +26,14 @@ public interface IssueCommandUseCase {
     void softDelete(DeleteIssueCommand cmd);
 
     // TODO: restore()
-    // TODO: approve()
-    //   - reject(), requestChange()도 추가해야 하나?
+    //  - restore a soft deleted issue
+    //  - must be ProjectRole.ADMIN
+    //  - should i allow the author to restore it too?
     // TODO: batchChangeParent()
+    //  - change or set a batch of issues parents
+    //  - needs to consider validation logic
     // TODO: batchSoftDelete()
-    // TODO: cloneIssue()
-    //  - 특정 이슈 내용 복사해서 새로 생성? 필요한지는 모르겠네...
-    //  - 필요해도 아마 다른 프로젝트로 특정 이슈를 복사하는 것 정도?
+    //  - soft delete a batch if issues
+    //  - needs to consider validation logic
+    // TODO: cloneIssue() -> cant i just make this on the client side without making a api?
 }

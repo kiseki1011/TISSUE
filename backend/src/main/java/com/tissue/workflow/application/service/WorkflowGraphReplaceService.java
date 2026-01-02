@@ -1,7 +1,9 @@
 package com.tissue.workflow.application.service;
 
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
@@ -23,10 +25,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase {
 
@@ -34,10 +39,17 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     private final WorkflowFinder workflowFinder;
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
+    private final ProjectAuthorizationService projectAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
+    // TODO: add javadoc to explain process(consider adding javadoc to private methods for complex processes)
+    // TODO: add logging(inlcuding debug logging, this method need thorough testing)
     @Override
-    @Transactional
     public void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireWorkflowEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+
         Workflow workflow = loadWorkflowAndCheckVersion(cmd);
 
         StateResolver stateResolver = buildStateResolver(workflow, cmd.stateDefinitions());
@@ -83,7 +95,6 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void syncTransitions(
             Workflow workflow, List<TransitionDefinition> transitionDefinitions, StateResolver stateResolver) {
-
         deleteRemovedTransitions(workflow, transitionDefinitions);
         Map<Long, WorkflowTransition> existingTransitions = indexExistingTransitions(workflow);
 
@@ -113,7 +124,6 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
     private void resolveAndSetInitial(
             Workflow workflow, List<StateDefinition> stateDefinitions, StateResolver stateResolver) {
-
         var todoCmds = stateDefinitions.stream()
                 .filter(cmd -> cmd.category() == StateCategory.INITIAL)
                 .toList();

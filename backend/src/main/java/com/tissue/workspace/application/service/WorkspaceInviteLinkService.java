@@ -2,8 +2,10 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.project.application.service.ProjectMemberCommandService;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
@@ -14,7 +16,7 @@ import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
 import com.tissue.workspace.application.port.out.WorkspaceLinkCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
-import com.tissue.workspace.application.service.command.WorkspaceParticipationService;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.ProjectJoinConfig;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
@@ -43,18 +46,25 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     private final WorkspaceLinkQueryRepository linkQueryRepository;
     private final WorkspaceParticipationService workspaceParticipationService;
     private final ProjectMemberCommandService projectMemberCommandService;
+    private final ProjectAuthorizationService projectAuthService;
+    private final WorkspaceAuthorizationService workspaceAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
-    @Transactional
     public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         return saveLink(workspace, cmd.workspaceRole(), cmd.targetProjects(), cmd.expiredAt());
     }
 
     @Override
-    @Transactional
     public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         var projectJoinConfig = new ProjectJoinConfigDto(cmd.projectKey(), cmd.role());
@@ -64,8 +74,10 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     }
 
     @Override
-    @Transactional
     public void expireLink(ExpireLinkCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireInviteLinkEditPermission(cmd.workspaceKey(), cmd.token(), actorMemberId);
+
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(cmd.token())
                 .orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
@@ -74,7 +86,6 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     }
 
     @Override
-    @Transactional
     public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(cmd.token())
@@ -99,6 +110,9 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     @Override
     @Transactional(readOnly = true)
     public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
                 .orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));

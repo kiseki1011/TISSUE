@@ -9,5 +9,4 @@ public record AddCommentCommand(
         String projectKey,
         String issueKey,
         String content,
-        @Nullable Long parentCommentId,
-        Long actorMemberId) {}
+        @Nullable Long parentCommentId) {}

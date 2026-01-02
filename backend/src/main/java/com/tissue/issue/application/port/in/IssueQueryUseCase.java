@@ -11,7 +11,6 @@ import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import java.util.List;
 
-// TODO: use projectKey instead of extracting it from the issueKey
 public interface IssueQueryUseCase {
 
     IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey);

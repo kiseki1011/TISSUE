@@ -1,6 +1,7 @@
 package com.tissue.team.application.service;
 
 import com.tissue.common.util.Patchers;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.team.application.dto.request.CreateTeamCommand;
 import com.tissue.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.team.application.dto.response.GetTeams;
@@ -12,6 +13,7 @@ import com.tissue.team.application.port.out.TeamQueryRepository;
 import com.tissue.team.application.service.finder.TeamFinder;
 import com.tissue.team.application.service.validator.TeamValidator;
 import com.tissue.team.domain.Team;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;
 import java.util.List;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TeamService implements TeamUseCase {
 
@@ -28,10 +31,14 @@ public class TeamService implements TeamUseCase {
     private final TeamCommandRepository teamCommandRepository;
     private final TeamQueryRepository teamQueryRepository;
     private final TeamValidator teamValidator;
+    private final CurrentMemberProvider currentMemberProvider;
+    private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
-    @Transactional
     public TeamCreateResponse create(CreateTeamCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         teamValidator.ensureUniqueName(workspace, cmd.name());
@@ -47,8 +54,10 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    @Transactional
     public void update(UpdateTeamCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Team team = teamFinder.getBy(cmd.teamId(), workspace);
 
@@ -64,8 +73,10 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    @Transactional
     public void delete(String workspaceKey, Long teamId) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(workspaceKey, actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(workspaceKey);
         Team team = teamFinder.getBy(teamId, workspace);
 
@@ -77,6 +88,9 @@ public class TeamService implements TeamUseCase {
     @Override
     @Transactional(readOnly = true)
     public TeamDetail getTeam(String workspaceKey, Long teamId) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+
         Team team = teamFinder.getBy(teamId, workspaceKey);
         return TeamDetail.from(team);
     }
@@ -84,6 +98,9 @@ public class TeamService implements TeamUseCase {
     @Override
     @Transactional(readOnly = true)
     public GetTeams getTeams(String workspaceKey) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+
         List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
         return GetTeams.from(teams);
     }

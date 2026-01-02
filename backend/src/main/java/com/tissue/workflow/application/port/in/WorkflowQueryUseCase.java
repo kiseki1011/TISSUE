@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface WorkflowQueryUseCase {
 
-    List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey, boolean includeArchived);
+    List<WorkflowSummary> getWorkflows(String workspaceKey, String projectKey);
 
     WorkflowDetail getWorkflowDetail(String workspaceKey, String projectKey, Long workflowId);
 }

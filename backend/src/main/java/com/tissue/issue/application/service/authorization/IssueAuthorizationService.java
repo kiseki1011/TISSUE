@@ -3,9 +3,8 @@ package com.tissue.issue.application.service.authorization;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,75 +14,63 @@ public class IssueAuthorizationService {
     private final IssueQueryRepository issueQueryRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
 
-    /**
-     * Checks whether the member has permission to modify the specified issue.
-     *
-     * <p>A member can modify an issue if they meet any of the following conditions:
-     *
-     * <ul>
-     *   <li>The member is a project administrator ({@link ProjectRole#ADMIN})
-     *   <li>The member has workspace administrator privileges or higher ({@link
-     *       WorkspaceRole#ADMIN} or above)
-     *   <li>The member is the author or assignee of the issue
-     * </ul>
-     */
-    public boolean canEdit(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
+    public void requireIssueEditPermission(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (canEdit(workspaceKey, projectKey, issueKey, memberId)) {
+            return;
+        }
+        throw new AccessDeniedException(
+                "Requires project %s or is the author/assignee of the issue".formatted(ProjectRole.ADMIN.name()));
+    }
+
+    public void requireIssueDeletePermission(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (canDelete(workspaceKey, projectKey, issueKey, memberId)) {
+            return;
+        }
+        throw new AccessDeniedException(
+                "Requires project %s or is the author of the issue".formatted(ProjectRole.ADMIN.name()));
+    }
+
+    public void requireReviewerManagePermission(
+            String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (canManageReviewers(workspaceKey, projectKey, issueKey, memberId)) {
+            return;
+        }
+        throw new AccessDeniedException(
+                "Requires project %s or is the author/assignee of the issue".formatted(ProjectRole.ADMIN.name()));
+    }
+
+    public void requireParticipantManagePermission(
+            String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (canManageParticipants(workspaceKey, projectKey, issueKey, memberId)) {
+            return;
+        }
+        throw new AccessDeniedException(
+                "Requires project %s or is the author of the issue".formatted(ProjectRole.ADMIN.name()));
+    }
+
+    private boolean canManageReviewers(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        return canEdit(workspaceKey, projectKey, issueKey, memberId);
+    }
+
+    private boolean canManageParticipants(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        return canDelete(workspaceKey, projectKey, issueKey, memberId);
+    }
+
+    // TODO: should i change it to just find the issue entity? the issue entity needs to be retrieved from the DB
+    // anyway,
+    //  and since were in the same transaction the application service logic can use the persistence-context
+    //  so another DB call wont happen
+    private boolean canEdit(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
             return true;
         }
-        return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, userDetails.getMemberId());
+        return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, memberId);
     }
 
-    /**
-     * Checks whether the member has permission to delete the specified issue.
-     *
-     * <p>A member can delete an issue if they meet any of the following conditions:
-     *
-     * <ul>
-     *   <li>The member is a project administrator ({@link ProjectRole#ADMIN})
-     *   <li>The member has workspace administrator privileges or higher ({@link
-     *       WorkspaceRole#ADMIN} or above)
-     *   <li>The member is the author of the issue
-     * </ul>
-     */
-    public boolean canDelete(String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, userDetails)) {
+    private boolean canDelete(String workspaceKey, String projectKey, String issueKey, Long memberId) {
+        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
             return true;
         }
-        return issueQueryRepository.isAuthor(workspaceKey, issueKey, userDetails.getMemberId());
-    }
-
-    /**
-     * Checks whether the member has permission to manage issue reviewers.
-     *
-     * <p>A member can manage reviewers of an issue if they meet any of the following conditions:
-     *
-     * <ul>
-     *   <li>The member is a project administrator ({@link ProjectRole#ADMIN})
-     *   <li>The member has workspace administrator privileges or higher ({@link
-     *       WorkspaceRole#ADMIN} or above)
-     *   <li>The member is the author or assignee of the issue
-     * </ul>
-     */
-    public boolean canManageReviewers(
-            String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-        return canEdit(workspaceKey, projectKey, issueKey, userDetails);
-    }
-
-    /**
-     * Checks whether the member has permission to manage issue participants.
-     *
-     * <p>A member can manage participants of an issue if they meet any of the following conditions:
-     *
-     * <ul>
-     *   <li>The member is a project administrator ({@link ProjectRole#ADMIN})
-     *   <li>The member has workspace administrator privileges or higher ({@link
-     *       WorkspaceRole#ADMIN} or above)
-     *   <li>The member is the author of the issue
-     * </ul>
-     */
-    public boolean canManageParticipants(
-            String workspaceKey, String projectKey, String issueKey, MemberUserDetails userDetails) {
-        return canDelete(workspaceKey, projectKey, issueKey, userDetails);
+        return issueQueryRepository.isAuthor(workspaceKey, issueKey, memberId);
     }
 }

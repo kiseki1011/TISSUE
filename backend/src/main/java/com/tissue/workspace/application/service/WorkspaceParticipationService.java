@@ -1,12 +1,14 @@
-package com.tissue.workspace.application.service.command;
+package com.tissue.workspace.application.service;
 
 import static com.tissue.member.domain.MemberStatus.ACTIVE;
 
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.security.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
 import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
@@ -16,6 +18,7 @@ import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
@@ -49,11 +52,17 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
+    private final WorkspaceAuthorizationService workspaceAuthService;
+    private final ProjectAuthorizationService projectAuthService;
+    private final CurrentMemberProvider currentMemberProvider;
 
     // private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjects());
@@ -61,6 +70,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
         List<ProjectJoinConfigDto> singleProjectConfig =
@@ -71,6 +83,9 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void leave(LeaveWorkspaceCommand cmd) {
+        // TODO: should i add authorization for cmd.memberId() == userDetails.getMemberId?
+        //  currently memberId is passed from the controller using userDetails.getMemberId
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), workspace);
 
@@ -82,8 +97,11 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
     @Override
     public void kick(KickWorkspaceMemberCommand cmd) {
+        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember actor = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
+        WorkspaceMember actor = workspaceMemberFinder.findBy(actorMemberId, workspace);
         WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
 
         target.softDelete();
@@ -96,7 +114,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
     // TODO: currently considering if i should separate this to a application service of its own
-    public WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
+    protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
         Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();

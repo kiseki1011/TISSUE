@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -25,14 +24,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-@RestControllerAdvice
 @Slf4j
-@RequiredArgsConstructor
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Pattern SENSITIVE_PATTERN = Pattern.compile(
             ".*(?:password|passwd|pwd|token|secret|credential|apikey|privatekey).*", Pattern.CASE_INSENSITIVE);
 
+    // TODO: consider moving to a separate SecurityExceptionHandler
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
         log.warn("[ACCESS_DENIED] {}", ex.getMessage());
@@ -42,6 +41,17 @@ public class GlobalExceptionHandler {
         problem.setProperty("occurredAt", Instant.now());
 
         return problem;
+    }
+
+    // TODO: consider moving to a separate SecurityExceptionHandler
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleSecurityException(ForbiddenException ex) {
+        log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
+
+        // TODO: consider logging security audits if needed
+        // securityAuditLogger.log(ex, request);
+
+        return createProblemDetail(ex);
     }
 
     @ExceptionHandler(Exception.class)
@@ -78,17 +88,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TissueException.class)
     public ProblemDetail handleTissueException(TissueException ex) {
         log.info("[{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
-
-        return createProblemDetail(ex);
-    }
-
-    // TODO: consider moving to a separate SecurityExceptionHandler
-    @ExceptionHandler(ForbiddenException.class)
-    public ProblemDetail handleSecurityException(ForbiddenException ex) {
-        log.warn("[SECURITY_VIOLATION] [{}] {}", ex.getErrorCode().name(), ex.getLoggingMessage());
-
-        // TODO: consider logging security audits if needed
-        // securityAuditLogger.log(ex, request);
 
         return createProblemDetail(ex);
     }

@@ -21,7 +21,7 @@ public record CreateIssueRequest(
         @Nullable Long assigneeMemberId) {
 
     // TODO: need to change to match CreateIssueCommand
-    public CreateIssueCommand toCommand(String workspaceKey, String projectKey, Long currentMemberId) {
+    public CreateIssueCommand toCommand(String workspaceKey, String projectKey) {
         return CreateIssueCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
@@ -32,7 +32,6 @@ public record CreateIssueRequest(
                 .dueAt(dueAt)
                 .issueTypeId(issueTypeId)
                 .customFields(customFields == null ? Map.of() : customFields)
-                .actorMemberId(currentMemberId)
                 .assigneeMemberId(assigneeMemberId)
                 .build();
     }

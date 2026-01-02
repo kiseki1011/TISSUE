@@ -8,8 +8,6 @@ import com.tissue.sprint.adapter.in.web.dto.request.StartSprintRequest;
 import com.tissue.sprint.adapter.in.web.dto.request.UpdateSprintRequest;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
-import com.tissue.sprint.application.dto.request.GetSprintDetailQuery;
-import com.tissue.sprint.application.dto.request.GetSprintIssueKeysQuery;
 import com.tissue.sprint.application.dto.request.MigrateSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
@@ -43,6 +41,7 @@ public class SprintController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateSprintRequest request) {
+
         SprintCommandResult response = sprintCommandUseCase.createSprint(request.toCommand(workspaceKey, projectKey));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -53,6 +52,7 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid UpdateSprintRequest request) {
+
         SprintCommandResult response =
                 sprintCommandUseCase.updateSprint(request.toCommand(workspaceKey, projectKey, sprintId));
         return ResponseEntity.ok(response);
@@ -64,6 +64,7 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid StartSprintRequest request) {
+
         SprintCommandResult response =
                 sprintCommandUseCase.start(request.toCommand(workspaceKey, projectKey, sprintId));
         return ResponseEntity.ok(response);
@@ -72,6 +73,7 @@ public class SprintController {
     @PostMapping("/{sprintId}/complete")
     public ResponseEntity<SprintCommandResult> completeSprint(
             @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
+
         SprintCommandResult response =
                 sprintCommandUseCase.complete(new CompleteSprintCommand(workspaceKey, projectKey, sprintId));
         return ResponseEntity.ok(response);
@@ -94,6 +96,7 @@ public class SprintController {
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid MigrateIssuesRequest request) {
+
         SprintCommandResult response = sprintCommandUseCase.migrateIssues(MigrateSprintIssuesCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
@@ -105,11 +108,12 @@ public class SprintController {
     }
 
     @DeleteMapping("/{sprintId}/issues")
-    public ResponseEntity<SprintCommandResult> removeIssue(
+    public ResponseEntity<SprintCommandResult> removeIssues(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long sprintId,
             @RequestBody @Valid RemoveSprintIssuesRequest request) {
+
         SprintCommandResult response = sprintCommandUseCase.removeIssues(
                 new RemoveSprintIssuesCommand(workspaceKey, projectKey, sprintId, request.issueKeys()));
         return ResponseEntity.ok(response);
@@ -118,16 +122,16 @@ public class SprintController {
     @GetMapping("/{sprintId}")
     public ResponseEntity<SprintDetail> getSprintDetail(
             @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
-        SprintDetail response =
-                sprintQueryUseCase.getSprintDetail(new GetSprintDetailQuery(workspaceKey, projectKey, sprintId));
+
+        SprintDetail response = sprintQueryUseCase.getSprintDetail(workspaceKey, projectKey, sprintId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{sprintId}/issues")
-    public ResponseEntity<SprintIssueKeys> getSprintIssues(
+    public ResponseEntity<SprintIssueKeys> getSprintIssueKeys(
             @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
-        SprintIssueKeys response =
-                sprintQueryUseCase.getSprintIssueKeys(new GetSprintIssueKeysQuery(workspaceKey, projectKey, sprintId));
+
+        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(workspaceKey, projectKey, sprintId);
         return ResponseEntity.ok(response);
     }
 }

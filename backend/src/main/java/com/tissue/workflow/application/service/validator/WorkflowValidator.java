@@ -1,6 +1,6 @@
 package com.tissue.workflow.application.service.validator;
 
-import static com.tissue.workflow.domain.enums.StateCategory.*;
+import static com.tissue.workflow.domain.enums.StateCategory.COMPLETED;
 
 import com.tissue.common.vo.Name;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
@@ -23,7 +23,7 @@ public class WorkflowValidator {
     private final WorkflowQueryRepository workflowQueryRepository;
     private final IssueQueryRepository issueRepository;
 
-    public void ensureLabelUnique(Project project, Name name) {
+    public void ensureNameUnique(Project project, Name name) {
         boolean dup = workflowQueryRepository.existsByProjectAndName_Normalized(project, name.getNormalized());
         if (dup) {
             throw WorkflowExceptions.duplicateWorkflowName(

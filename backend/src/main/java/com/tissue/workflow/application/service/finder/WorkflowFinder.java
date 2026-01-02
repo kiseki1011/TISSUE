@@ -19,18 +19,21 @@ public class WorkflowFinder {
     private final WorkflowStateRepository statusRepo;
     private final WorkflowTransitionRepository transitionRepo;
 
+    // TODO: find -> get
     public Workflow findBy(Long id, Project project) {
         return workflowQueryRepo
                 .findByIdAndProject(id, project)
                 .orElseThrow(() -> WorkflowExceptions.notFound(id, project.getKey()));
     }
 
+    // TODO: find -> get
     public WorkflowState findStateBy(Long id, Workflow workflow) {
         return statusRepo
                 .findByIdAndWorkflow(id, workflow)
                 .orElseThrow(() -> WorkflowExceptions.stateNotFound(id, workflow.getId()));
     }
 
+    // TODO: find -> get
     public WorkflowTransition findTransitionBy(Long id, Workflow workflow) {
         return transitionRepo
                 .findByIdAndWorkflow(id, workflow)

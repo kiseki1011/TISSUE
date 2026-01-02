@@ -19,9 +19,5 @@ public interface WorkflowQueryRepository extends Repository<Workflow, Long> {
     @Query("SELECT w FROM Workflow w WHERE w.project = :project ORDER BY w.name.display ASC")
     List<Workflow> findAllByProjectOrderByLabel(@Param("project") Project project);
 
-    @Query("SELECT w FROM Workflow w WHERE w.project = :project AND w.archived = false ORDER BY"
-            + " w.name.display ASC")
-    List<Workflow> findAllByProjectAndArchivedFalseOrderByLabel(@Param("project") Project project);
-
     boolean existsByProjectAndName_Normalized(Project project, String name);
 }
