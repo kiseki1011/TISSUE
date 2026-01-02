@@ -2,6 +2,7 @@ package com.tissue.workspace.application.service.authorization;
 
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
+import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,6 +36,7 @@ public class WorkspaceAuthorizationService {
         throw new AccessDeniedException("Requires workspace " + WorkspaceRole.OWNER.name());
     }
 
+    // TODO: should i consider taking in the WorkspaceMember as the parameter instead of memberId?
     public void requireWorkspaceAdminOrSelf(String workspaceKey, Long targetMemberId, Long actorMemberId) {
         if (isAdmin(workspaceKey, actorMemberId) || targetMemberId.equals(actorMemberId)) {
             return;
@@ -43,28 +45,18 @@ public class WorkspaceAuthorizationService {
                 .formatted(WorkspaceRole.ADMIN.name()));
     }
 
-    public void requireRoleEditPermission(
-            String workspaceKey, WorkspaceRole grantRole, Long targetMemberId, Long actorMemberId) {
+    public void requireRoleGrantPermission(
+            String workspaceKey, WorkspaceRole grantRole, WorkspaceMember target, WorkspaceMember actor) {
         if (grantRole == WorkspaceRole.OWNER) {
             throw new AccessDeniedException("Cannot grant workspace OWNER. Use workspace owner transfer instead.");
         }
-        if (!isAdmin(workspaceKey, actorMemberId)) {
+        if (!isAdmin(workspaceKey, actor.getMemberId())) {
             throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
         }
-        if (hasEqualOrHigherRoleThan(workspaceKey, targetMemberId, actorMemberId)) {
+        if (hasHigherRoleThan(target, actor)) {
             return;
         }
         throw new AccessDeniedException("Requires higher workspace role than target");
-    }
-
-    public void requireGrantRolePermission(String workspaceKey, WorkspaceRole grantRole, Long actorMemberId) {
-        if (grantRole == WorkspaceRole.OWNER) {
-            throw new AccessDeniedException("Cannot grant workspace OWNER. Use workspace owner transfer instead.");
-        }
-        if (isAdmin(workspaceKey, actorMemberId)) {
-            return;
-        }
-        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
     }
 
     public void requireInviteLinkEditPermission(String workspaceKey, String token, Long actorMemberId) {
@@ -86,6 +78,8 @@ public class WorkspaceAuthorizationService {
         return hasWorkspaceRole(workspaceKey, actorMemberId, WorkspaceRole.OWNER);
     }
 
+    // TODO: should i consider taking in the WorkspaceMember as the parameter instead of memberId?
+    //  but in some cases, there is no existing WorkspaceMember entity that was fetched in the service
     private boolean hasWorkspaceRole(String workspaceKey, Long actorMemberId, WorkspaceRole requiredRole) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(actorMemberId, workspaceKey)
@@ -93,11 +87,8 @@ public class WorkspaceAuthorizationService {
                 .orElse(false);
     }
 
-    private boolean hasEqualOrHigherRoleThan(String workspaceKey, Long targetMemberId, Long actorMemberId) {
-        return workspaceMemberQueryRepository
-                .findByMember_IdAndWorkspaceKey(targetMemberId, workspaceKey)
-                .map(target -> hasWorkspaceRole(workspaceKey, actorMemberId, target.getRole()))
-                .orElse(false);
+    private boolean hasHigherRoleThan(WorkspaceMember actor, WorkspaceMember target) {
+        return actor.getRole().isHigherThan(target.getRole());
     }
 
     private boolean isLinkCreator(String token, Long actorMemberId) {

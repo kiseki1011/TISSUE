@@ -5,7 +5,7 @@ import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
-import com.tissue.sprint.application.port.out.SprintQueryRepository;
+import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -17,9 +17,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProjectAuthorizationService {
 
-    private final ProjectQueryRepository projectQueryRepository;
     private final WorkspaceAuthorizationService workspaceAuthorizationService;
-    private final SprintQueryRepository sprintRepository;
+    private final ProjectQueryRepository projectQueryRepository;
     private final IssueTypeQueryRepository issueTypeRepository;
     private final WorkflowQueryRepository workflowQueryRepository;
     private final ProjectMemberQueryRepository projectMemberRepository;
@@ -46,7 +45,7 @@ public class ProjectAuthorizationService {
     }
 
     public void requireDirectJoinPermission(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (canJoinViaDirectAccess(workspaceKey, projectKey, actorMemberId)) {
+        if (canJoinDirectly(workspaceKey, projectKey, actorMemberId)) {
             return;
         }
         throw new AccessDeniedException(
@@ -63,9 +62,8 @@ public class ProjectAuthorizationService {
                         .formatted(WorkspaceRole.ADMIN.name()));
     }
 
-    public void requireSprintEditPermission(String workspaceKey, String projectKey, Long sprintId, Long actorMemberId) {
-        if ((isAdmin(workspaceKey, projectKey, actorMemberId)
-                || isSprintCreator(projectKey, sprintId, actorMemberId))) {
+    public void requireSprintEditPermission(String workspaceKey, String projectKey, Sprint sprint, Long actorMemberId) {
+        if ((isAdmin(workspaceKey, projectKey, actorMemberId) || isSprintCreator(sprint, actorMemberId))) {
             return;
         }
         throw new AccessDeniedException(
@@ -103,12 +101,12 @@ public class ProjectAuthorizationService {
         return hasProjectRole(workspaceKey, projectKey, actorMemberId, ProjectRole.ADMIN);
     }
 
-    public boolean canJoinViaDirectAccess(String workspaceKey, String projectKey, Long actorMemberId) {
+    public boolean canJoinDirectly(String workspaceKey, String projectKey, Long actorMemberId) {
+        if (!workspaceAuthorizationService.isMember(workspaceKey, actorMemberId)) {
+            return false;
+        }
         if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
             return true;
-        }
-        if (isNotWorkspaceMember(workspaceKey, actorMemberId)) {
-            return false;
         }
         return isProjectVisibilityPublic(workspaceKey, projectKey);
     }
@@ -117,9 +115,11 @@ public class ProjectAuthorizationService {
         if (!isViewer(workspaceKey, projectKey, actorMemberId)) {
             return false;
         }
-        return hasProjectRole(workspaceKey, projectKey, actorMemberId, grantRole);
+        return hasHigherProjectRole(workspaceKey, projectKey, actorMemberId, grantRole);
     }
 
+    // TODO: consider using the ProjectMember entity as the parameter instead of querying the DB
+    //   in this case repository might be needed if the service calling this method doesnt retrieve ProjectMember
     private boolean hasProjectRole(
             String workspaceKey, String projectKey, Long actorMemberId, ProjectRole requiredRole) {
         if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
@@ -131,6 +131,18 @@ public class ProjectAuthorizationService {
                 .orElse(false);
     }
 
+    private boolean hasHigherProjectRole(
+            String workspaceKey, String projectKey, Long actorMemberId, ProjectRole requiredRole) {
+        if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
+            return true;
+        }
+        return projectMemberRepository
+                .findRoleByKeysAndMemberId(workspaceKey, projectKey, actorMemberId)
+                .map(role -> role.isHigherThan(requiredRole))
+                .orElse(false);
+    }
+
+    // TODO: consider using the Workflow entity as the parameter instead of querying the DB
     private boolean isWorkflowCreator(Long workflowId, Long actorMemberId) {
         return workflowQueryRepository
                 .findById(workflowId)
@@ -138,6 +150,7 @@ public class ProjectAuthorizationService {
                 .orElse(false);
     }
 
+    // TODO: consider using the IssueType entity as the parameter instead of querying the DB
     private Boolean isIssueTypeCreator(String projectKey, Long issueTypeId, Long actorMemberId) {
         return issueTypeRepository
                 .findByIdAndProjectKey(issueTypeId, projectKey)
@@ -145,17 +158,12 @@ public class ProjectAuthorizationService {
                 .orElse(false);
     }
 
-    private Boolean isSprintCreator(String projectKey, Long sprintId, Long actorMemberId) {
-        return sprintRepository
-                .findByIdAndProject_Key(sprintId, projectKey)
-                .map(sprint -> sprint.getCreatedBy().equals(actorMemberId))
-                .orElse(false);
+    private Boolean isSprintCreator(Sprint sprint, Long actorMemberId) {
+        return sprint.getCreatedBy().equals(actorMemberId);
     }
 
-    private boolean isNotWorkspaceMember(String workspaceKey, Long actorMemberId) {
-        return !workspaceAuthorizationService.isMember(workspaceKey, actorMemberId);
-    }
-
+    // TODO: consider using the Project entity as the parameter instead of querying the DB
+    //  check Visibility in memory
     private Boolean isProjectVisibilityPublic(String workspaceKey, String projectKey) {
         return projectQueryRepository
                 .findVisibilityByKeys(workspaceKey, projectKey)

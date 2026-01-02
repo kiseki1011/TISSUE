@@ -134,7 +134,8 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
     @Override
     public ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd) {
         Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), currentUserId);
+        projectAuthService.requireRoleGrantPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.newRole(), currentUserId);
 
         if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
             throw ProjectExceptions.selfRole();

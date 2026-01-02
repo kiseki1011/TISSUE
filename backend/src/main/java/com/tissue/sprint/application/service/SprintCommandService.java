@@ -80,12 +80,11 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult updateSprint(UpdateSprintCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireSprintEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.sprintId(), currentUserId);
-
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireSprintEditPermission(cmd.workspaceKey(), cmd.projectKey(), sprint, currentUserId);
 
         Patchers.apply(cmd.title(), sprint::updateTitle);
         Patchers.apply(cmd.goal(), sprint::updateGoal);
@@ -99,12 +98,11 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult start(StartSprintCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireSprintEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.sprintId(), currentUserId);
-
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireSprintEditPermission(cmd.workspaceKey(), cmd.projectKey(), sprint, currentUserId);
 
         sprintValidator.ensureSprintNotClosed(sprint);
         sprintValidator.ensureNoActiveSprint(project);
@@ -118,12 +116,11 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult complete(CompleteSprintCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireSprintEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.sprintId(), currentUserId);
-
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
+
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireSprintEditPermission(cmd.workspaceKey(), cmd.projectKey(), sprint, currentUserId);
 
         List<String> incompleteIssueKeys = issueFinder.findIncompleteIssueKeysBySprint(sprint);
 
@@ -142,15 +139,14 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     @Override
     public SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireSprintEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.originalSprintId(), currentUserId);
-        projectAuthService.requireSprintEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.newSprintId(), currentUserId);
-
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Sprint originalSprint = sprintFinder.findBy(cmd.originalSprintId(), project);
         Sprint newSprint = sprintFinder.findBy(cmd.newSprintId(), project);
+
+        Long currentUserId = currentMemberProvider.getCurrentMemberId();
+        projectAuthService.requireSprintEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), originalSprint, currentUserId);
+        projectAuthService.requireSprintEditPermission(cmd.workspaceKey(), cmd.projectKey(), newSprint, currentUserId);
 
         sprintValidator.ensureSprintNotClosed(originalSprint);
         sprintValidator.ensureSprintNotClosed(newSprint);

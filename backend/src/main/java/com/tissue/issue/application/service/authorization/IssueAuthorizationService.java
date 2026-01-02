@@ -56,10 +56,8 @@ public class IssueAuthorizationService {
         return canDelete(workspaceKey, projectKey, issueKey, memberId);
     }
 
-    // TODO: should i change it to just find the issue entity? the issue entity needs to be retrieved from the DB
-    // anyway,
-    //  and since were in the same transaction the application service logic can use the persistence-context
-    //  so another DB call wont happen
+    // TODO: consider using the Issue entity as the parameter instead of querying the DB
+    //  check Author or Assignee in memory
     private boolean canEdit(String workspaceKey, String projectKey, String issueKey, Long memberId) {
         if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
             return true;
@@ -67,6 +65,7 @@ public class IssueAuthorizationService {
         return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, memberId);
     }
 
+    // TODO: consider using the Issue entity as the parameter instead of querying the DB
     private boolean canDelete(String workspaceKey, String projectKey, String issueKey, Long memberId) {
         if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
             return true;
