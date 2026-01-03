@@ -35,7 +35,8 @@ public class MemberController {
     private final MemberCommandUseCase memberCommandUseCase;
     private final MemberQueryUseCase memberQueryUseCase;
 
-    @PostMapping
+    // TODO: should i separate to signup controller
+    @PostMapping("/signup/email")
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
         MemberSignupResponse response = memberCommandUseCase.signup(command);

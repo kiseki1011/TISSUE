@@ -1,6 +1,8 @@
 package com.tissue.security.authentication;
 
-import com.tissue.member.application.port.out.MemberQueryRepository;
+import com.tissue.member.application.port.out.AuthIdentityRepository;
+import com.tissue.member.domain.AuthIdentity;
+import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.MemberStatus;
 import lombok.RequiredArgsConstructor;
@@ -10,28 +12,47 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
- * Spring security uses this service to search UserDetails
+ * Spring Security의 인증 과정에서 사용자 정보를 로드하는 서비스
  *
- * <p>Gets Member from the DB using the email extracted from the JWT. Then converts the Member to
- * MemberUserDetails.
- *
- * <p>Why is this needed?
- * <li>Spring security cannot know the user's current information only with the JWT
- * <li>A user's role or status can be changed anytime
+ * <p>
+ * <b>동작 방식:</b><br>
+ * 로그인 시 이메일을 입력받아, 해당 이메일로 연결된 `EMAIL` 타입의 `AuthIdentity`를 조회<br>
+ * 조회된 Identity에서 `Member` 정보와 `Credential`(비밀번호)을 추출하여 `MemberUserDetails`를 구성
+ * </p>
  */
 @Service
 @RequiredArgsConstructor
 public class MemberUserDetailsService implements UserDetailsService {
 
-    private final MemberQueryRepository memberRepository;
+    private final AuthIdentityRepository authIdentityRepository;
 
-    /** Find by username(in this case email) extracted from the JWT token */
+    /**
+     * 이메일(Username)을 기반으로 사용자 인증 정보를 조회.
+     *
+     * <p>
+     * 이 메서드는 주로 `AuthenticationManager`가 비밀번호 검증을 수행하기 위해 호출
+     * 따라서 반드시 비밀번호가 포함된 `MemberUserDetails`를 반환해야 함
+     * </p>
+     *
+     * @param email 로그인 이메일
+     * @return UserDetails 객체 (Member 정보 + 비밀번호)
+     * @throws UsernameNotFoundException 해당 이메일의 인증 정보가 없거나 회원이 비활성 상태인 경우
+     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository
-                .findByEmailAndStatus(email, MemberStatus.ACTIVE)
+        // EMAIL 제공자로 등록된 AuthIdentity를 찾기
+        AuthIdentity authIdentity = authIdentityRepository
+                .findByProviderAndIdentifier(AuthProvider.EMAIL, email)
                 .orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 
-        return new MemberUserDetails(member);
+        Member member = authIdentity.getMember();
+
+        // 회원의 상태가 ACTIVE인지 확인
+        if (member.getStatus() != MemberStatus.ACTIVE) {
+            throw new UsernameNotFoundException("Member is not active: " + email);
+        }
+
+        //  Member 정보와 비밀번호를 포함한 UserDetails를 반환
+        return new MemberUserDetails(member, authIdentity.getCredential());
     }
 }

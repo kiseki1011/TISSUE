@@ -31,9 +31,6 @@ public class Member extends BaseDateEntity {
     @Column(name = "username", unique = true, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
-    private String password;
-
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -51,11 +48,13 @@ public class Member extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
 
-    public static Member create(String email, String username, String password, String name) {
+    /**
+     * 회원을 생성. (비밀번호는 AuthIdentity에서 별도로 관리)
+     */
+    public static Member create(String email, String username, String name) {
         Member member = new Member();
         member.email = email;
         member.username = username;
-        member.password = password;
         member.name = name;
         member.status = MemberStatus.ACTIVE;
         member.role = SystemRole.USER;
@@ -69,10 +68,6 @@ public class Member extends BaseDateEntity {
 
     public void updateUsername(String username) {
         this.username = username;
-    }
-
-    public void updatePassword(String password) {
-        this.password = password;
     }
 
     public void updateName(String name) {

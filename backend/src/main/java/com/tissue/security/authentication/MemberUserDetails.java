@@ -8,17 +8,28 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Spring Security에서 사용하는 사용자 정보 객체입니다.
+ * <p>
+ * Member 도메인 객체와 Spring Security의 UserDetails 인터페이스 사이의 어댑터 역할을 합니다.
+ * 비밀번호는 Member 엔티티가 아닌 AuthIdentity에서 가져온 값을 사용합니다.
+ * </p>
+ */
 @Getter
 public class MemberUserDetails implements UserDetails {
 
     private final Long memberId;
     private final String email;
     private final String nickname;
+
+    @Nullable
     private final String password;
+
     private final SystemRole role;
     private final MemberStatus status;
 
@@ -26,15 +37,28 @@ public class MemberUserDetails implements UserDetails {
 
     private boolean elevated;
 
-    public MemberUserDetails(Member member) {
+    /**
+     * Member 객체와 비밀번호를 받아 UserDetails를 생성
+     *
+     * @param member 회원 정보
+     * @param password 암호화된 비밀번호 (OAuth 로그인 등의 경우 null일 수 있음)
+     */
+    public MemberUserDetails(Member member, @Nullable String password) {
         this.memberId = member.getId();
         this.email = member.getEmail();
         this.nickname = member.getUsername();
-        this.password = member.getPassword();
+        this.password = password;
         this.role = member.getRole();
         this.status = member.getStatus();
 
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
+    }
+
+    /**
+     * 편의 생성자 (비밀번호가 없는 경우, 예: JWT 파싱 후)
+     */
+    public MemberUserDetails(Member member) {
+        this(member, null);
     }
 
     public void setElevated(boolean elevated) {
@@ -52,6 +76,7 @@ public class MemberUserDetails implements UserDetails {
     }
 
     @Override
+    @Nullable
     public String getPassword() {
         return password;
     }

@@ -46,6 +46,7 @@ public class JwtTokenService {
 
     @Getter
     private final long refreshTokenValidityInSeconds;
+
     private final long elevatedTokenValidityInSeconds;
     private final MemberUserDetailsService userDetailsService;
 
