@@ -11,4 +11,6 @@ public interface AuthenticationUseCase {
     RefreshTokenResponse refreshToken(String refreshToken);
 
     ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId);
+
+    void logout(String email);
 }

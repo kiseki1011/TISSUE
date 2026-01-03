@@ -18,7 +18,8 @@ public enum AuthenticationErrorCode implements ErrorCode {
     INVALID_VERIFICATION_TOKEN("Invalid verification token"),
     VERIFICATION_TOKEN_EXPIRED("Verification token is expired"),
     EMAIL_NOT_VERIFIED("Email is not verified"),
-    ELEVATED_PERMISSION_REQUIRED("Elevated permission required for this operation");
+    ELEVATED_PERMISSION_REQUIRED("Elevated permission required for this operation"),
+    REFRESH_TOKEN_REUSED("Refresh token reuse detected");
 
     private final String defaultMessage;
 }

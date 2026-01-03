@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 import javax.crypto.SecretKey;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,6 +43,8 @@ public class JwtTokenService {
 
     private final SecretKey secretKey;
     private final long accessTokenValidityInSeconds;
+
+    @Getter
     private final long refreshTokenValidityInSeconds;
     private final long elevatedTokenValidityInSeconds;
     private final MemberUserDetailsService userDetailsService;
