@@ -3,8 +3,10 @@ package com.tissue.security.authentication;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.MemberStatus;
 import com.tissue.security.authorization.SystemRole;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,6 +43,11 @@ public class MemberUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (elevated) {
+            List<GrantedAuthority> newAuthorities = new ArrayList<>(authorities);
+            newAuthorities.add(new SimpleGrantedAuthority("ELEVATED"));
+            return newAuthorities;
+        }
         return authorities;
     }
 

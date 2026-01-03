@@ -46,8 +46,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        // TODO: implement token blacklisting if needed!
+    public ResponseEntity<Void> logout(@CurrentMember MemberUserDetails userDetails) {
+        authenticationUseCase.logout(userDetails.getEmail());
         return ResponseEntity.noContent().build();
     }
 }

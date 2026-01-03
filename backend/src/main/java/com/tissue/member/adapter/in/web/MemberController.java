@@ -10,7 +10,7 @@ import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
 import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.exception.AuthenticationExceptions;
+import com.tissue.security.authentication.presentation.annotation.RequireElevated;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -57,43 +57,39 @@ public class MemberController {
     }
 
     // TODO: consider 2-factor
+    @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberUserDetails userDetails) {
-        validatePermissionElevated(userDetails);
-
         memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
+    @RequireElevated
     @PatchMapping("/username")
     public ResponseEntity<Void> updateMemberUsername(
             @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberUserDetails userDetails) {
-        validatePermissionElevated(userDetails);
-
         memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
     // TODO: consider 2-factor
+    @RequireElevated
     @PatchMapping("/password")
     public ResponseEntity<Void> updateMemberPassword(
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
-        validatePermissionElevated(userDetails);
-
         memberCommandUseCase.updatePassword(
                 request.originalPassword(), request.newPassword(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
     }
 
+    @RequireElevated
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
             @RequestBody WithdrawMemberRequest request, @CurrentMember MemberUserDetails userDetails) {
-        validatePermissionElevated(userDetails);
-
         memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -117,12 +113,5 @@ public class MemberController {
     public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
         memberQueryUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();
-    }
-
-    private void validatePermissionElevated(MemberUserDetails userDetails) {
-        boolean notElevated = !userDetails.isElevated();
-        if (notElevated) {
-            throw AuthenticationExceptions.elevatedPermissionRequired();
-        }
     }
 }
