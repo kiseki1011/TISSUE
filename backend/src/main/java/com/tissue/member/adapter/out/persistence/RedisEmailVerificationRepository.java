@@ -2,7 +2,6 @@ package com.tissue.member.adapter.out.persistence;
 
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import java.time.Duration;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +21,7 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
     private Duration ttl;
 
     private static final String PREFIX = "email_verification:";
-    private static final String VERIFIED = "verified";
+    private static final String VERIFIED_SUFFIX = ":verified";
 
     @Override
     public void saveToken(String email, String tokenValue, Duration ttl) {
@@ -35,18 +34,25 @@ public class RedisEmailVerificationRepository implements EmailVerificationReposi
 
         log.debug("Stored token: {}, input token: {}", storedValue, tokenValue);
 
-        if (!Objects.equals(tokenValue, storedValue)) {
+        if (storedValue == null || !storedValue.equals(tokenValue)) {
             return false;
         }
 
-        redisTemplate.opsForValue().set(PREFIX + email, VERIFIED, ttl);
+        // Mark as verified by appending suffix, but keep the original token
+        redisTemplate.opsForValue().set(PREFIX + email, tokenValue + VERIFIED_SUFFIX, ttl);
         return true;
     }
 
     @Override
     public boolean isVerified(String email) {
         String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
-        return Objects.equals(VERIFIED, storedValue);
+        return storedValue != null && storedValue.endsWith(VERIFIED_SUFFIX);
+    }
+
+    @Override
+    public boolean checkVerifiedToken(String email, String token) {
+        String storedValue = redisTemplate.opsForValue().get(PREFIX + email);
+        return storedValue != null && storedValue.equals(token + VERIFIED_SUFFIX);
     }
 
     @Override

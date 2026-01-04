@@ -62,6 +62,14 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
     }
 
     @Override
+    public boolean checkVerifiedToken(String email, String token) {
+        return tokenRepository
+                .findByEmail(email)
+                .map(t -> t.isVerified() && !t.isExpired() && !t.tokenValueNotMatch(token))
+                .orElse(false);
+    }
+
+    @Override
     @Transactional
     public void deleteToken(String email) {
         tokenRepository.deleteByEmail(email);

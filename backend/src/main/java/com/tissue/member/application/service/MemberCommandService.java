@@ -12,6 +12,7 @@ import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.security.authentication.exception.AuthenticationExceptions;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,8 +49,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueEmail(cmd.email());
         memberValidator.ensureUniqueUsername(cmd.username());
 
-        if (!memberEmailVerificationService.isEmailVerified(cmd.email())) {
-            throw MemberExceptions.emailNotVerified(cmd.email());
+        if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken())) {
+            throw AuthenticationExceptions.invalidVerificationToken();
         }
 
         Member member = Member.create(cmd.email(), cmd.username(), cmd.name());

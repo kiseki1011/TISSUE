@@ -10,5 +10,7 @@ public interface EmailVerificationRepository {
 
     boolean isVerified(String email);
 
+    boolean checkVerifiedToken(String email, String token);
+
     void deleteToken(String email);
 }

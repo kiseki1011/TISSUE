@@ -38,6 +38,14 @@ public class MemberEmailVerificationController {
         //  in this case shouldnt i create a thymeleaf page for each url?
         String redirectUrl = verified ? properties.getSuccessUrl() : properties.getFailureUrl();
 
+        if (verified) {
+            redirectUrl = org.springframework.web.util.UriComponentsBuilder.fromUriString(redirectUrl)
+                    .queryParam("email", email)
+                    .queryParam("token", token)
+                    .build()
+                    .toUriString();
+        }
+
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, redirectUrl)
                 .build();
