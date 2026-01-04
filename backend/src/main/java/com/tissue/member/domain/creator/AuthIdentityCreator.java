@@ -4,7 +4,6 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 
-
 public interface AuthIdentityCreator {
 
     boolean supports(AuthProvider provider);
