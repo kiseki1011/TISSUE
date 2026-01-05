@@ -1,6 +1,6 @@
 package com.tissue.security.authentication.presentation.filter;
 
-import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
 
     /**
      * JWT Authentication.
@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = extractTokenFromRequest(request);
 
         if (StringUtils.hasText(token)) {
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+            Authentication authentication = tokenProvider.getAuthentication(token);
 
             if (authentication instanceof AbstractAuthenticationToken authToken) {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

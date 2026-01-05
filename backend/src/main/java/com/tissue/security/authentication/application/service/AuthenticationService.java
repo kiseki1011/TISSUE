@@ -2,10 +2,10 @@ package com.tissue.security.authentication.application.service;
 
 import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.MemberUserDetails;
 import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
-import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthenticationService implements AuthenticationUseCase {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
     private final MemberUserDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -36,32 +36,29 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         MemberUserDetails userDetails = (MemberUserDetails) authentication.getPrincipal();
 
-        String accessToken = jwtTokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
-        String refreshToken = jwtTokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+        String accessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
 
         refreshTokenRepository.save(
                 userDetails.getEmail(),
                 refreshToken,
-                Duration.ofSeconds(jwtTokenProvider.getRefreshTokenValidityInSeconds()));
+                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
         return LoginResponse.from(accessToken, refreshToken);
     }
 
     @Override
     public RefreshTokenResponse refreshToken(String refreshToken) {
-        jwtTokenProvider.validateRefreshToken(refreshToken);
+        tokenProvider.validateRefreshToken(refreshToken);
 
-        String loginEmail = jwtTokenProvider.getSubjectFromToken(refreshToken);
+        String loginEmail = tokenProvider.getSubjectFromToken(refreshToken);
 
-        // TODO: cant i use optional instead of "if (storedToken == null)" ?
         String storedToken = refreshTokenRepository.findByEmail(loginEmail).orElse(null);
 
-        // if the stored token is null, it means it expired or user logged out
         if (storedToken == null) {
             throw new JwtAuthenticationException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage());
         }
 
-        // if the stored token differs from incoming, it's a reuse attempt
         if (!storedToken.equals(refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
             log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
@@ -70,13 +67,13 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(loginEmail);
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+        String newAccessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        String newRefreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
 
         refreshTokenRepository.save(
                 userDetails.getEmail(),
                 newRefreshToken,
-                Duration.ofSeconds(jwtTokenProvider.getRefreshTokenValidityInSeconds()));
+                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
@@ -85,7 +82,7 @@ public class AuthenticationService implements AuthenticationUseCase {
     public ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        String elevatedToken = jwtTokenProvider.createElevatedToken(memberId, loginEmail);
+        String elevatedToken = tokenProvider.createElevatedToken(memberId, loginEmail);
 
         return new ElevatedTokenResponse(elevatedToken);
     }

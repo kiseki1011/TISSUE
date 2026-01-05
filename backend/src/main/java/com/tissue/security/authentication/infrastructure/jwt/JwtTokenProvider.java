@@ -1,5 +1,6 @@
 package com.tissue.security.authentication.infrastructure.jwt;
 
+import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.application.service.MemberUserDetailsService;
 import com.tissue.security.authentication.domain.MemberUserDetails;
 import com.tissue.security.authentication.domain.TokenType;
@@ -31,15 +32,8 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProvider implements TokenProvider {
 
-    public static final String CLAIM_TOKEN_TYPE = "tokenType";
-    public static final String CLAIM_MEMBER_ID = "memberId";
-    public static final String CLAIM_ELEVATED = "elevated";
-    public static final String CLAIM_PROVIDER = "provider";
-    public static final String CLAIM_IDENTIFIER = "identifier";
-    public static final String CLAIM_EMAIL = "email";
-    public static final String CLAIM_JTI = "jti";
     public static final String ISSUER = "tissue";
     public static final int SECRET_KEY_LENGTH = 32;
 
@@ -163,17 +157,13 @@ public class JwtTokenProvider {
             validateAccessToken(token);
             email = getSubjectFromToken(token);
 
-            // Get MemberUserDetails(check real time status of the member)
+            // get MemberUserDetails(check real time status of the member)
             MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(email);
 
             boolean elevated = getElevatedFromToken(token);
             userDetails.setElevated(elevated);
 
-            // Create Authentication object
-            //  - principal: user's information (UserDetails)
-            //  - credentials: null (Does not need a password since JWT token is the authentication
-            // medium)
-            //  - authorities: list of the authorities of the user
+            // create authentication object
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         } catch (UsernameNotFoundException e) {

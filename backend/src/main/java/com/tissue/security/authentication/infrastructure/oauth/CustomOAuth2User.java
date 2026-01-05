@@ -15,6 +15,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Nullable
     private final Member member;
+
     private final Map<String, Object> attributes;
     private final String nameAttributeKey;
     private final String provider;

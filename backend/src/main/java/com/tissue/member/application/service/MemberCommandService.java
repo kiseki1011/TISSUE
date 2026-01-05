@@ -14,8 +14,8 @@ import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.member.domain.exception.MemberExceptions;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
-import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
@@ -40,7 +40,7 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
@@ -71,11 +71,11 @@ public class MemberCommandService implements MemberCommandUseCase {
 
     @Override
     public OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand cmd) {
-        Claims claims = jwtTokenProvider.validateRegisterToken(cmd.registerToken());
+        Claims claims = tokenProvider.validateRegisterToken(cmd.registerToken());
 
-        String providerStr = claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class);
-        String identifier = claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class);
-        String email = claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class);
+        String providerStr = claims.get(TokenProvider.CLAIM_PROVIDER, String.class);
+        String identifier = claims.get(TokenProvider.CLAIM_IDENTIFIER, String.class);
+        String email = claims.get(TokenProvider.CLAIM_EMAIL, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
 
         memberValidator.ensureUniqueUsername(cmd.username());
@@ -86,18 +86,17 @@ public class MemberCommandService implements MemberCommandUseCase {
         try {
             Member savedMember = memberCommandRepository.save(member);
 
-            // OAuth credential is null
             AuthIdentity authIdentity = authIdentityManager.create(savedMember, provider, identifier, null);
             authIdentityRepository.save(authIdentity);
 
-            // Auto-login after signup
-            String accessToken = jwtTokenProvider.createAccessToken(savedMember.getId(), savedMember.getEmail());
-            String refreshToken = jwtTokenProvider.createRefreshToken(savedMember.getId(), savedMember.getEmail());
+            // auto-login after signup
+            String accessToken = tokenProvider.createAccessToken(savedMember.getId(), savedMember.getEmail());
+            String refreshToken = tokenProvider.createRefreshToken(savedMember.getId(), savedMember.getEmail());
 
             refreshTokenRepository.save(
                     savedMember.getEmail(),
                     refreshToken,
-                    Duration.ofSeconds(jwtTokenProvider.getRefreshTokenValidityInSeconds()));
+                    Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
             return OAuthSignupResponse.builder()
                     .accessToken(accessToken)
@@ -111,21 +110,19 @@ public class MemberCommandService implements MemberCommandUseCase {
 
     @Override
     public void linkOAuthAccount(String registerToken, Long memberId) {
-        Claims claims = jwtTokenProvider.validateRegisterToken(registerToken);
+        Claims claims = tokenProvider.validateRegisterToken(registerToken);
 
-        String providerStr = claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class);
-        String identifier = claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class);
+        String providerStr = claims.get(TokenProvider.CLAIM_PROVIDER, String.class);
+        String identifier = claims.get(TokenProvider.CLAIM_IDENTIFIER, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
 
         Member member = memberFinder.getActiveBy(memberId);
 
-        // Check if this OAuth account is already linked to SOMEONE (should be empty if we are here via RegisterToken,
-        // but double check)
         if (authIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
             throw MemberExceptions.signUpConflict(
-                    claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class),
+                    claims.get(TokenProvider.CLAIM_EMAIL, String.class),
                     "OAuth Account already linked",
                     new DataIntegrityViolationException("Duplicate Identity"));
         }
@@ -141,7 +138,6 @@ public class MemberCommandService implements MemberCommandUseCase {
         if (authIdentityRepository
                 .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
                 .isPresent()) {
-            // TODO: Create a specific exception for this
             throw new IllegalArgumentException("Password already exists. Use update password instead.");
         }
 
@@ -202,13 +198,12 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         AuthIdentity authIdentity = authIdentityRepository
                 .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
-                .orElseThrow(() -> MemberExceptions.notFound(memberId)); // TODO: IdentityNotFound
+                .orElseThrow(() -> MemberExceptions.notFound(memberId));
 
         authIdentity.updateCredential(passwordEncoder.encode(newPassword));
     }
 
     @Override
-    @Transactional
     public void withdraw(String password, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
 

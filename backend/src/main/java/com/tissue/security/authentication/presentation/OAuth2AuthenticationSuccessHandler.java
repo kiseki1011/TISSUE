@@ -1,7 +1,7 @@
 package com.tissue.security.authentication.presentation;
 
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2User;
 import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.security.authentication.util.CookieUtils;
@@ -24,7 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
 
@@ -57,15 +57,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // already a member -> login
         if (oAuth2User.getMember() != null) {
-            String accessToken = jwtTokenProvider.createAccessToken(
+            String accessToken = tokenProvider.createAccessToken(
                     oAuth2User.getMember().getId(), oAuth2User.getMember().getEmail());
-            String refreshToken = jwtTokenProvider.createRefreshToken(
+            String refreshToken = tokenProvider.createRefreshToken(
                     oAuth2User.getMember().getId(), oAuth2User.getMember().getEmail());
 
             refreshTokenRepository.save(
                     oAuth2User.getMember().getEmail(),
                     refreshToken,
-                    Duration.ofSeconds(jwtTokenProvider.getRefreshTokenValidityInSeconds()));
+                    Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
             return UriComponentsBuilder.fromUriString(targetUrl)
                     .queryParam("status", "LOGIN_SUCCESS") // TODO: use constant
@@ -76,7 +76,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
         // new user -> needs signup
         else {
-            String registerToken = jwtTokenProvider.createRegisterToken(
+            String registerToken = tokenProvider.createRegisterToken(
                     oAuth2User.getProvider(), oAuth2User.getIdentifier(), oAuth2User.getEmail());
 
             return UriComponentsBuilder.fromUriString(targetUrl)
