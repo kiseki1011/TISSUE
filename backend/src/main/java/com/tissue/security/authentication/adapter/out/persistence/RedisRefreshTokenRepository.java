@@ -2,6 +2,7 @@ package com.tissue.security.authentication.adapter.out.persistence;
 
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import java.time.Duration;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,7 @@ public class RedisRefreshTokenRepository implements RefreshTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     // TODO: To support multi-device login, change the key structure to include deviceId (e.g.,
-    // "refresh_token:email:deviceId")
+    //  "refresh_token:email:deviceId")
     //  Currently, a new login invalidates previous sessions because the key is simply "refresh_token:email".
     private static final String PREFIX = "refresh_token:";
 
@@ -22,9 +23,9 @@ public class RedisRefreshTokenRepository implements RefreshTokenRepository {
     }
 
     @Override
-    public java.util.Optional<String> findByEmail(String email) {
+    public Optional<String> findByEmail(String email) {
         String token = redisTemplate.opsForValue().get(PREFIX + email);
-        return java.util.Optional.ofNullable(token);
+        return Optional.ofNullable(token);
     }
 
     @Override

@@ -15,15 +15,10 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Nullable
     private final Member member;
-
     private final Map<String, Object> attributes;
-
     private final String nameAttributeKey;
-
     private final String provider;
-
     private final String identifier;
-
     private final String email;
 
     public CustomOAuth2User(
@@ -60,21 +55,5 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public String getName() {
         return member != null ? member.getId().toString() : identifier;
-    }
-
-    public @Nullable Member getMember() {
-        return member;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public String getEmail() {
-        return email;
     }
 }
