@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TokenType {
     ACCESS("access"),
-    REFRESH("refresh");
+    REFRESH("refresh"),
+    REGISTER("register");
 
     private final String value;
 

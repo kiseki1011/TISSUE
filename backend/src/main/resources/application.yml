@@ -7,8 +7,22 @@ spring:
     basename: messages
     encoding: UTF-8
     fallback-to-system-locale: false
-    cache-duration: 0
-
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
   jpa:
     hibernate:
       ddl-auto: create

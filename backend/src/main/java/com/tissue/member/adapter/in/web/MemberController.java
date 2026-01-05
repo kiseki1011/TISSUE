@@ -1,6 +1,7 @@
 package com.tissue.member.adapter.in.web;
 
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
+import com.tissue.member.adapter.in.web.dto.request.SignupOAuthMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberNameRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberPasswordRequest;
@@ -11,6 +12,7 @@ import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
 import com.tissue.security.authentication.MemberUserDetails;
 import com.tissue.security.authentication.presentation.annotation.RequireElevated;
+import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import com.tissue.security.authentication.resolver.CurrentMember;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -26,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-// TODO: consdier OAuth
 @RestController
 @RequestMapping("/api/v1/members")
 @RequiredArgsConstructor
@@ -35,7 +36,6 @@ public class MemberController {
     private final MemberCommandUseCase memberCommandUseCase;
     private final MemberQueryUseCase memberQueryUseCase;
 
-    // TODO: should i separate to signup controller
     @PostMapping("/signup/email")
     public ResponseEntity<MemberSignupResponse> signup(@Valid @RequestBody SignupMemberRequest request) {
         var command = request.toCommand();
@@ -47,6 +47,12 @@ public class MemberController {
                 .toUri();
 
         return ResponseEntity.created(location).body(response);
+    }
+
+    @PostMapping("/signup/oauth")
+    public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
+        OAuthSignupResponse response = memberCommandUseCase.signupOAuth(request.toCommand());
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/name")

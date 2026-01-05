@@ -33,10 +33,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenService {
 
-    // TODO: should i move constants to a separate interface
     public static final String CLAIM_TOKEN_TYPE = "tokenType";
     public static final String CLAIM_MEMBER_ID = "memberId";
     public static final String CLAIM_ELEVATED = "elevated";
+    public static final String CLAIM_PROVIDER = "provider";
+    public static final String CLAIM_IDENTIFIER = "identifier";
+    public static final String CLAIM_EMAIL = "email";
     public static final String CLAIM_JTI = "jti";
     public static final String ISSUER = "tissue";
     public static final int SECRET_KEY_LENGTH = 32;
@@ -48,6 +50,7 @@ public class JwtTokenService {
     private final long refreshTokenValidityInSeconds;
 
     private final long elevatedTokenValidityInSeconds;
+    private final long registerTokenValidityInSeconds = 600; // 10 minutes
     private final MemberUserDetailsService userDetailsService;
 
     /** Initialize secret key and validity in constructor */
@@ -89,6 +92,35 @@ public class JwtTokenService {
     /** Create Elevated (Access) Token */
     public String createElevatedToken(Long memberId, String email) {
         return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
+    }
+
+    /** Create Register Token for OAuth2 Signup */
+    public String createRegisterToken(String provider, String identifier, String email) {
+        try {
+            Instant now = Instant.now();
+            return Jwts.builder()
+                    .subject(email)
+                    .issuedAt(Date.from(now))
+                    .expiration(Date.from(now.plusSeconds(registerTokenValidityInSeconds)))
+                    .issuer(ISSUER)
+                    .claim(CLAIM_TOKEN_TYPE, TokenType.REGISTER.getValue())
+                    .claim(CLAIM_PROVIDER, provider)
+                    .claim(CLAIM_IDENTIFIER, identifier)
+                    .claim(CLAIM_EMAIL, email)
+                    .signWith(secretKey)
+                    .compact();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new JwtCreationException("Failed to create REGISTER token", e);
+        }
+    }
+
+    public Claims validateRegisterToken(String token) {
+        Claims claims = parseAndValidateClaims(token);
+        validateTokenType(claims, TokenType.REGISTER);
+        if (claims.get(CLAIM_PROVIDER) == null || claims.get(CLAIM_IDENTIFIER) == null) {
+            throw new JwtAuthenticationException("Token validation failed. Required claims missing.");
+        }
+        return claims;
     }
 
     private String createToken(
