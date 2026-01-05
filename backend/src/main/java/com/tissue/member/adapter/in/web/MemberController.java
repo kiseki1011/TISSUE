@@ -1,5 +1,6 @@
 package com.tissue.member.adapter.in.web;
 
+import com.tissue.member.adapter.in.web.dto.request.LinkOAuthAccountRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupOAuthMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
@@ -53,6 +54,13 @@ public class MemberController {
     public ResponseEntity<OAuthSignupResponse> signupOAuth(@Valid @RequestBody SignupOAuthMemberRequest request) {
         OAuthSignupResponse response = memberCommandUseCase.signupOAuth(request.toCommand());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/link/oauth")
+    public ResponseEntity<Void> linkOAuthAccount(
+            @Valid @RequestBody LinkOAuthAccountRequest request, @CurrentMember MemberUserDetails userDetails) {
+        memberCommandUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/name")

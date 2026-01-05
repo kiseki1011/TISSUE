@@ -119,6 +119,31 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
+    public void linkOAuthAccount(String registerToken, Long memberId) {
+        Claims claims = jwtTokenService.validateRegisterToken(registerToken);
+
+        String providerStr = claims.get(JwtTokenService.CLAIM_PROVIDER, String.class);
+        String identifier = claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class);
+        AuthProvider provider = AuthProvider.valueOf(providerStr);
+
+        Member member = memberFinder.getActiveBy(memberId);
+
+        // Check if this OAuth account is already linked (should be empty if we are here via RegisterToken,
+        // but double check)
+        if (authIdentityRepository
+                .findByProviderAndIdentifier(provider, identifier)
+                .isPresent()) {
+            throw MemberExceptions.signUpConflict(
+                    claims.get(JwtTokenService.CLAIM_EMAIL, String.class),
+                    "OAuth Account already linked",
+                    new DataIntegrityViolationException("Duplicate Identity"));
+        }
+
+        AuthIdentity authIdentity = authIdentityManager.create(member, provider, identifier, null);
+        authIdentityRepository.save(authIdentity);
+    }
+
+    @Override
     public void updateName(String name, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         member.updateName(name);

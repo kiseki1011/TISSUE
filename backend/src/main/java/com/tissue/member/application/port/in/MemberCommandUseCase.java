@@ -11,6 +11,8 @@ public interface MemberCommandUseCase {
 
     OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand cmd);
 
+    void linkOAuthAccount(String registerToken, Long memberId);
+
     void updateName(String name, Long memberId);
 
     void updateEmail(String newEmail, Long memberId);
