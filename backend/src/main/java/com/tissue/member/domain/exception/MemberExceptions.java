@@ -2,7 +2,7 @@ package com.tissue.member.domain.exception;
 
 import static com.tissue.global.exception.ContextKeys.*;
 import static com.tissue.member.domain.exception.MemberErrorCode.*;
-import static com.tissue.security.authentication.exception.AuthenticationErrorCode.*;
+import static com.tissue.security.authentication.domain.exception.AuthenticationErrorCode.*;
 
 import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.global.exception.base.ForbiddenException;

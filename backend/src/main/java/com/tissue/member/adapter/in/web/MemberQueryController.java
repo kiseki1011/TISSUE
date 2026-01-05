@@ -2,8 +2,8 @@ package com.tissue.member.adapter.in.web;
 
 import com.tissue.member.application.dto.response.GetMemberProfile;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

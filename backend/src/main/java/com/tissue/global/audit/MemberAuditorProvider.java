@@ -1,6 +1,6 @@
 package com.tissue.global.audit;
 
-import com.tissue.security.authentication.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberUserDetails;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;

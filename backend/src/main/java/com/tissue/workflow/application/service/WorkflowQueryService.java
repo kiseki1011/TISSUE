@@ -5,7 +5,7 @@ import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.response.WorkflowDetail;
 import com.tissue.workflow.application.dto.response.WorkflowSummary;
 import com.tissue.workflow.application.port.in.WorkflowQueryUseCase;

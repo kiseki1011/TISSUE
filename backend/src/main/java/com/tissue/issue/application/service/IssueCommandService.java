@@ -33,7 +33,7 @@ import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
 import java.util.HashMap;

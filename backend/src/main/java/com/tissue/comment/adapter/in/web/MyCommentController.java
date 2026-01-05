@@ -2,8 +2,8 @@ package com.tissue.comment.adapter.in.web;
 
 import com.tissue.comment.application.dto.out.MyCommentResponse;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

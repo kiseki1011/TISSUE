@@ -4,7 +4,7 @@ import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.domain.EmailVerificationToken;
 import com.tissue.member.domain.exception.MemberExceptions;
-import com.tissue.security.authentication.exception.AuthenticationExceptions;
+import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

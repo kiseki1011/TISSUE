@@ -16,7 +16,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.exception.ProjectExceptions;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.ArrayList;

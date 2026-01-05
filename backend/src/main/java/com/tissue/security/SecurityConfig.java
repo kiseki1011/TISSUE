@@ -1,11 +1,11 @@
 package com.tissue.security.config;
 
-import com.tissue.security.authentication.ExceptionHandlerFilter;
-import com.tissue.security.authentication.jwt.JwtAuthenticationEntryPoint;
-import com.tissue.security.authentication.jwt.JwtAuthenticationFilter;
-import com.tissue.security.authentication.oauth2.CustomOAuth2UserService;
-import com.tissue.security.authentication.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.tissue.security.authentication.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2UserService;
+import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.tissue.security.authentication.presentation.OAuth2AuthenticationSuccessHandler;
+import com.tissue.security.authentication.presentation.filter.ExceptionHandlerFilter;
+import com.tissue.security.authentication.presentation.filter.JwtAuthenticationEntryPoint;
+import com.tissue.security.authentication.presentation.filter.JwtAuthenticationFilter;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

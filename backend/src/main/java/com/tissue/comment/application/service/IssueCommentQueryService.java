@@ -6,7 +6,7 @@ import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

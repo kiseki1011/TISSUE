@@ -2,7 +2,7 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.domain.Position;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.team.application.service.finder.TeamFinder;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.application.dto.in.ManagePositionCommand;

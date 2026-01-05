@@ -2,8 +2,8 @@ package com.tissue.notification.presentation.controller;
 
 import com.tissue.notification.application.service.command.NotificationPreferenceService;
 import com.tissue.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;

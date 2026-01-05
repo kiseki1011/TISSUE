@@ -14,8 +14,8 @@ import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.member.domain.exception.MemberExceptions;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.exception.AuthenticationExceptions;
-import com.tissue.security.authentication.jwt.JwtTokenService;
+import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
+import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
@@ -40,7 +40,7 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MemberEmailVerificationService memberEmailVerificationService;
-    private final JwtTokenService jwtTokenService;
+    private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
@@ -71,11 +71,11 @@ public class MemberCommandService implements MemberCommandUseCase {
 
     @Override
     public OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand cmd) {
-        Claims claims = jwtTokenService.validateRegisterToken(cmd.registerToken());
+        Claims claims = jwtTokenProvider.validateRegisterToken(cmd.registerToken());
 
-        String providerStr = claims.get(JwtTokenService.CLAIM_PROVIDER, String.class);
-        String identifier = claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class);
-        String email = claims.get(JwtTokenService.CLAIM_EMAIL, String.class);
+        String providerStr = claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class);
+        String identifier = claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class);
+        String email = claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
 
         memberValidator.ensureUniqueUsername(cmd.username());
@@ -91,13 +91,13 @@ public class MemberCommandService implements MemberCommandUseCase {
             authIdentityRepository.save(authIdentity);
 
             // Auto-login after signup
-            String accessToken = jwtTokenService.createAccessToken(savedMember.getId(), savedMember.getEmail());
-            String refreshToken = jwtTokenService.createRefreshToken(savedMember.getId(), savedMember.getEmail());
+            String accessToken = jwtTokenProvider.createAccessToken(savedMember.getId(), savedMember.getEmail());
+            String refreshToken = jwtTokenProvider.createRefreshToken(savedMember.getId(), savedMember.getEmail());
 
             refreshTokenRepository.save(
                     savedMember.getEmail(),
                     refreshToken,
-                    Duration.ofSeconds(jwtTokenService.getRefreshTokenValidityInSeconds()));
+                    Duration.ofSeconds(jwtTokenProvider.getRefreshTokenValidityInSeconds()));
 
             return OAuthSignupResponse.builder()
                     .accessToken(accessToken)
@@ -111,10 +111,10 @@ public class MemberCommandService implements MemberCommandUseCase {
 
     @Override
     public void linkOAuthAccount(String registerToken, Long memberId) {
-        Claims claims = jwtTokenService.validateRegisterToken(registerToken);
+        Claims claims = jwtTokenProvider.validateRegisterToken(registerToken);
 
-        String providerStr = claims.get(JwtTokenService.CLAIM_PROVIDER, String.class);
-        String identifier = claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class);
+        String providerStr = claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class);
+        String identifier = claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class);
         AuthProvider provider = AuthProvider.valueOf(providerStr);
 
         Member member = memberFinder.getActiveBy(memberId);
@@ -125,7 +125,7 @@ public class MemberCommandService implements MemberCommandUseCase {
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
             throw MemberExceptions.signUpConflict(
-                    claims.get(JwtTokenService.CLAIM_EMAIL, String.class),
+                    claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class),
                     "OAuth Account already linked",
                     new DataIntegrityViolationException("Duplicate Identity"));
         }

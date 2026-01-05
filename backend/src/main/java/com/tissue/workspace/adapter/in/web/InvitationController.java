@@ -1,7 +1,7 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import java.util.List;

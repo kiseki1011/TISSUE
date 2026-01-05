@@ -1,7 +1,7 @@
 package com.tissue.team.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.team.application.dto.request.CreateTeamCommand;
 import com.tissue.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.team.application.dto.response.GetTeams;

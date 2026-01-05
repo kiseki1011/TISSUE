@@ -22,7 +22,7 @@ import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.jwt.JwtTokenService;
+import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import io.jsonwebtoken.Claims;
 import java.util.Optional;
@@ -66,7 +66,7 @@ class MemberCommandServiceTest {
     MemberEmailVerificationService memberEmailVerificationService;
 
     @Mock
-    JwtTokenService jwtTokenService;
+    JwtTokenProvider jwtTokenProvider;
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
@@ -157,10 +157,10 @@ class MemberCommandServiceTest {
             SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "Test User");
 
             Claims claims = mock(Claims.class);
-            given(claims.get(JwtTokenService.CLAIM_PROVIDER, String.class)).willReturn("GOOGLE");
-            given(claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class)).willReturn("sub123");
-            given(claims.get(JwtTokenService.CLAIM_EMAIL, String.class)).willReturn("google@test.com");
-            given(jwtTokenService.validateRegisterToken(registerToken)).willReturn(claims);
+            given(claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class)).willReturn("GOOGLE");
+            given(claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class)).willReturn("sub123");
+            given(claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class)).willReturn("google@test.com");
+            given(jwtTokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
 
             Member savedMember = mock(Member.class);
             given(savedMember.getId()).willReturn(1L);
@@ -171,8 +171,8 @@ class MemberCommandServiceTest {
             given(authIdentityManager.create(savedMember, AuthProvider.GOOGLE, "sub123", null))
                     .willReturn(authIdentity);
 
-            given(jwtTokenService.createAccessToken(1L, "google@test.com")).willReturn("access");
-            given(jwtTokenService.createRefreshToken(1L, "google@test.com")).willReturn("refresh");
+            given(jwtTokenProvider.createAccessToken(1L, "google@test.com")).willReturn("access");
+            given(jwtTokenProvider.createRefreshToken(1L, "google@test.com")).willReturn("refresh");
 
             OAuthSignupResponse response = sut.signupOAuth(cmd);
 
@@ -196,9 +196,9 @@ class MemberCommandServiceTest {
             String registerToken = "regToken";
 
             Claims claims = mock(Claims.class);
-            given(claims.get(JwtTokenService.CLAIM_PROVIDER, String.class)).willReturn("GITHUB");
-            given(claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class)).willReturn("gh123");
-            given(jwtTokenService.validateRegisterToken(registerToken)).willReturn(claims);
+            given(claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class)).willReturn("GITHUB");
+            given(claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class)).willReturn("gh123");
+            given(jwtTokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
 
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
@@ -222,10 +222,10 @@ class MemberCommandServiceTest {
             String registerToken = "regToken";
 
             Claims claims = mock(Claims.class);
-            given(claims.get(JwtTokenService.CLAIM_PROVIDER, String.class)).willReturn("GITHUB");
-            given(claims.get(JwtTokenService.CLAIM_IDENTIFIER, String.class)).willReturn("gh123");
-            given(claims.get(JwtTokenService.CLAIM_EMAIL, String.class)).willReturn("gh@test.com");
-            given(jwtTokenService.validateRegisterToken(registerToken)).willReturn(claims);
+            given(claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class)).willReturn("GITHUB");
+            given(claims.get(JwtTokenProvider.CLAIM_IDENTIFIER, String.class)).willReturn("gh123");
+            given(claims.get(JwtTokenProvider.CLAIM_EMAIL, String.class)).willReturn("gh@test.com");
+            given(jwtTokenProvider.validateRegisterToken(registerToken)).willReturn(claims);
 
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
