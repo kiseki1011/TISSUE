@@ -13,6 +13,8 @@ public interface MemberCommandUseCase {
 
     void linkOAuthAccount(String registerToken, Long memberId);
 
+    void addPassword(String newPassword, Long memberId);
+
     void updateName(String name, Long memberId);
 
     void updateEmail(String newEmail, Long memberId);

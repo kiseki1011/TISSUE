@@ -27,15 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 회원 관련 변경 작업(가입, 수정, 탈퇴)을 처리하는 서비스입니다.
- *
- * <p>
- * <b>주요 변경 사항 (AuthIdentity 도입):</b><br>
- * 비밀번호는 이제 `Member` 엔티티가 아닌 `AuthIdentity` 엔티티에서 관리됩니다.
- * 따라서 회원가입 시 `Member`와 `AuthIdentity`를 함께 생성하며, 비밀번호 변경 시 `AuthIdentity`를 수정합니다.
- * </p>
- */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -128,7 +119,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         Member member = memberFinder.getActiveBy(memberId);
 
-        // Check if this OAuth account is already linked (should be empty if we are here via RegisterToken,
+        // Check if this OAuth account is already linked to SOMEONE (should be empty if we are here via RegisterToken,
         // but double check)
         if (authIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
@@ -141,6 +132,22 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         AuthIdentity authIdentity = authIdentityManager.create(member, provider, identifier, null);
         authIdentityRepository.save(authIdentity);
+    }
+
+    @Override
+    public void addPassword(String newPassword, Long memberId) {
+        Member member = memberFinder.getActiveBy(memberId);
+
+        if (authIdentityRepository
+                .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
+                .isPresent()) {
+            // TODO: Create a specific exception for this
+            throw new IllegalArgumentException("Password already exists. Use update password instead.");
+        }
+
+        AuthIdentity emailIdentity =
+                AuthIdentity.createEmailIdentity(member, member.getEmail(), passwordEncoder.encode(newPassword));
+        authIdentityRepository.save(emailIdentity);
     }
 
     @Override

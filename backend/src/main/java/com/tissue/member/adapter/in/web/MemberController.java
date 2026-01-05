@@ -1,5 +1,6 @@
 package com.tissue.member.adapter.in.web;
 
+import com.tissue.member.adapter.in.web.dto.request.AddPasswordRequest;
 import com.tissue.member.adapter.in.web.dto.request.LinkOAuthAccountRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupOAuthMemberRequest;
@@ -63,6 +64,13 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/password")
+    public ResponseEntity<Void> addPassword(
+            @Valid @RequestBody AddPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
+        memberCommandUseCase.addPassword(request.password(), userDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
             @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberUserDetails userDetails) {
@@ -71,7 +79,6 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: consider 2-factor
     @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
@@ -90,7 +97,6 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: consider 2-factor
     @RequireElevated
     @PatchMapping("/password")
     public ResponseEntity<Void> updateMemberPassword(
@@ -110,23 +116,20 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: resetPassword
-    //  1. send email with a short-life(15~30 min) token
-    //  2. email should have a password reset link
-    //  3. change password through that link -> expire token
-
-    /** Check email uniqueness */
     @GetMapping("/checkEmail")
     public ResponseEntity<Void> checkEmailAvailability(@RequestParam String email) {
-        // Refactored: now uses the query use case instead of direct validator call
         memberQueryUseCase.checkEmailAvailability(email);
         return ResponseEntity.noContent().build();
     }
 
-    /** Check username uniqueness */
     @GetMapping("/checkUsername")
     public ResponseEntity<Void> checkUsernameAvailability(@RequestParam String username) {
         memberQueryUseCase.checkUsernameAvailability(username);
         return ResponseEntity.noContent().build();
     }
+
+    // TODO: resetPassword
+    //  1. send email with a short-life(15~30 min) token
+    //  2. email should have a password reset link
+    //  3. change password through that link -> expire token
 }
