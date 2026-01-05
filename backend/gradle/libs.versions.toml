@@ -27,6 +27,7 @@ spring-boot-starter-cache = { group = "org.springframework.boot", name = "spring
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
+spring-boot-starter-oauth2-client = { group = "org.springframework.boot", name = "spring-boot-starter-oauth2-client" }
 
 spring-retry = { group = "org.springframework.retry", name = "spring-retry" }
 spring-security-test = { group = "org.springframework.security", name = "spring-security-test" }
