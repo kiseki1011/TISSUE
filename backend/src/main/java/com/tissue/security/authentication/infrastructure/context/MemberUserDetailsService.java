@@ -1,4 +1,4 @@
-package com.tissue.security.authentication.application.service;
+package com.tissue.security.authentication.infrastructure.context;
 
 import com.tissue.member.application.port.out.AuthIdentityRepository;
 import com.tissue.member.domain.AuthIdentity;

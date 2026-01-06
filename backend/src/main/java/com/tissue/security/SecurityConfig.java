@@ -1,4 +1,4 @@
-package com.tissue.security.config;
+package com.tissue.security;
 
 import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2UserService;
 import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;

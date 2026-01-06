@@ -6,6 +6,7 @@ import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.MemberUserDetails;
 import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.infrastructure.context.MemberUserDetailsService;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;

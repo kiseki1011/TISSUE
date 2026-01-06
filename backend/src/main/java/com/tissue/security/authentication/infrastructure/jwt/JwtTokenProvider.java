@@ -1,12 +1,12 @@
 package com.tissue.security.authentication.infrastructure.jwt;
 
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.application.service.MemberUserDetailsService;
 import com.tissue.security.authentication.domain.MemberUserDetails;
 import com.tissue.security.authentication.domain.TokenType;
 import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
 import com.tissue.security.authentication.domain.exception.JwtCreationException;
 import com.tissue.security.authentication.domain.exception.JwtSecretException;
+import com.tissue.security.authentication.infrastructure.context.MemberUserDetailsService;
 import com.tissue.security.authentication.util.MaskingUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
