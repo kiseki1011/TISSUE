@@ -3,11 +3,17 @@ package com.tissue.security.authentication.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
-import org.springframework.util.SerializationUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 
+@Slf4j
 public class CookieUtils {
 
     public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
@@ -45,10 +51,26 @@ public class CookieUtils {
     }
 
     public static String serialize(Object object) {
-        return Base64.getUrlEncoder().encodeToString(SerializationUtils.serialize(object));
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(object);
+            return Base64.getUrlEncoder().encodeToString(baos.toByteArray());
+        } catch (Exception e) {
+            log.error("Failed to serialize object", e);
+            throw new IllegalArgumentException("Failed to serialize object", e);
+        }
     }
 
-    public static <T> T deserialize(Cookie cookie, Class<T> cls) {
-        return cls.cast(SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue())));
+    public static <T> @Nullable T deserialize(Cookie cookie, Class<T> cls) {
+        try {
+            byte[] data = Base64.getUrlDecoder().decode(cookie.getValue());
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                    ObjectInputStream ois = new ObjectInputStream(bais)) {
+                return cls.cast(ois.readObject());
+            }
+        } catch (Exception e) {
+            log.error("Failed to deserialize cookie: {}", cookie.getName(), e);
+            return null;
+        }
     }
 }
