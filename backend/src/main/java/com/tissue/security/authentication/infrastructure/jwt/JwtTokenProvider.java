@@ -74,21 +74,25 @@ public class JwtTokenProvider implements TokenProvider {
     /**
      * Create Access Token - subject: email - memberId: Primary Key for Member - tokenType: "access"
      */
+    @Override
     public String createAccessToken(Long memberId, String email) {
         return createToken(email, TokenType.ACCESS, accessTokenValidityInSeconds, false, memberId);
     }
 
     /** Create Refresh Token */
+    @Override
     public String createRefreshToken(Long memberId, String email) {
         return createToken(email, TokenType.REFRESH, refreshTokenValidityInSeconds, false, memberId);
     }
 
     /** Create Elevated (Access) Token */
+    @Override
     public String createElevatedToken(Long memberId, String email) {
         return createToken(email, TokenType.ACCESS, elevatedTokenValidityInSeconds, true, memberId);
     }
 
     /** Create Register Token for OAuth2 Signup */
+    @Override
     public String createRegisterToken(String provider, String identifier, String email) {
         try {
             Instant now = Instant.now();
@@ -108,6 +112,7 @@ public class JwtTokenProvider implements TokenProvider {
         }
     }
 
+    @Override
     public Claims validateRegisterToken(String token) {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REGISTER);
@@ -150,6 +155,7 @@ public class JwtTokenProvider implements TokenProvider {
      * from token 3. Get MemberUserDetails using userDetailsService.loadUserByUsername 4. Create and
      * return Authentication object
      */
+    @Override
     public Authentication getAuthentication(String token) {
         String email = null;
 
@@ -177,17 +183,20 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     /** Extract subject(identifier) from token */
+    @Override
     public String getSubjectFromToken(String token) {
         return parseAndValidateClaims(token).getSubject();
     }
 
     /** Extract elevated claim from token */
+    @Override
     public boolean getElevatedFromToken(String token) {
         Boolean elevated = parseAndValidateClaims(token).get(CLAIM_ELEVATED, Boolean.class);
         return elevated != null && elevated;
     }
 
     /** Validate Access Token */
+    @Override
     public void validateAccessToken(String token) {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.ACCESS);
@@ -195,6 +204,7 @@ public class JwtTokenProvider implements TokenProvider {
     }
 
     /** Validate Refresh Token */
+    @Override
     public void validateRefreshToken(String token) {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REFRESH);
@@ -222,6 +232,7 @@ public class JwtTokenProvider implements TokenProvider {
      * Calculate the expiration time of a token (seconds) Can be used by client when refreshing
      * token.
      */
+    @Override
     public long getTokenRemainingSeconds(String token) {
         try {
             Claims claims = parseAndValidateClaims(token);

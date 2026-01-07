@@ -54,11 +54,10 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         String loginEmail = tokenProvider.getSubjectFromToken(refreshToken);
 
-        String storedToken = refreshTokenRepository.findByEmail(loginEmail).orElse(null);
-
-        if (storedToken == null) {
-            throw new JwtAuthenticationException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage());
-        }
+        String storedToken = refreshTokenRepository
+                .findByEmail(loginEmail)
+                .orElseThrow(() ->
+                        new JwtAuthenticationException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage()));
 
         if (!storedToken.equals(refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
@@ -66,6 +65,7 @@ public class AuthenticationService implements AuthenticationUseCase {
             throw new JwtAuthenticationException(AuthenticationErrorCode.REFRESH_TOKEN_REUSED.getDefaultMessage());
         }
 
+        // TODO: 이게 굳이 필요한가? 그냥 토큰의 loginEmail을 사용하면 되는거 아닌가?
         MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
 
         String newAccessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
