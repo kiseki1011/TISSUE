@@ -1,6 +1,6 @@
 package com.tissue.global.audit;
 
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.AuditorAware;
@@ -20,7 +20,7 @@ public class MemberAuditorProvider implements AuditorAware<Long> {
             return Optional.empty();
         }
 
-        if (authentication.getPrincipal() instanceof MemberUserDetails userDetails) {
+        if (authentication.getPrincipal() instanceof MemberDetails userDetails) {
             return Optional.ofNullable(userDetails.getMemberId());
         }
 

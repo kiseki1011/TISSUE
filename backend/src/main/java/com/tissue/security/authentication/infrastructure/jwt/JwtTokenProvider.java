@@ -1,12 +1,12 @@
 package com.tissue.security.authentication.infrastructure.jwt;
 
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.domain.TokenType;
 import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
 import com.tissue.security.authentication.domain.exception.JwtCreationException;
 import com.tissue.security.authentication.domain.exception.JwtSecretException;
-import com.tissue.security.authentication.infrastructure.context.MemberUserDetailsService;
+import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.util.MaskingUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -45,7 +45,7 @@ public class JwtTokenProvider implements TokenProvider {
 
     private final long elevatedTokenValidityInSeconds;
     private final long registerTokenValidityInSeconds = 600; // 10 minutes
-    private final MemberUserDetailsService userDetailsService;
+    private final MemberDetailsService userDetailsService;
 
     /** Initialize secret key and validity in constructor */
     // TODO: should i use a properties class
@@ -54,7 +54,7 @@ public class JwtTokenProvider implements TokenProvider {
             @Value("${tissue.jwt.access-token-validity:3600}") long accessTokenValidityInSeconds,
             @Value("${tissue.jwt.refresh-token-validity:604800}") long refreshTokenValidityInSeconds,
             @Value("${tissue.jwt.elevated-token-validity:300}") long elevatedTokenValidityInSeconds,
-            MemberUserDetailsService userDetailsService) {
+            MemberDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
 
         if (secret.length() < SECRET_KEY_LENGTH) {
@@ -158,7 +158,7 @@ public class JwtTokenProvider implements TokenProvider {
             email = getSubjectFromToken(token);
 
             // get MemberUserDetails(check real time status of the member)
-            MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(email);
+            MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(email);
 
             boolean elevated = getElevatedFromToken(token);
             userDetails.setElevated(elevated);

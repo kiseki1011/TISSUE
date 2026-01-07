@@ -12,7 +12,7 @@ import com.tissue.member.adapter.in.web.dto.request.WithdrawMemberRequest;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.security.authentication.presentation.annotation.RequireElevated;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
@@ -59,21 +59,21 @@ public class MemberController {
 
     @PostMapping("/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
-            @Valid @RequestBody LinkOAuthAccountRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @Valid @RequestBody LinkOAuthAccountRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/password")
     public ResponseEntity<Void> addPassword(
-            @Valid @RequestBody AddPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @Valid @RequestBody AddPasswordRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.addPassword(request.password(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
-            @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updateName(request.newName(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -82,7 +82,7 @@ public class MemberController {
     @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
-            @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -91,7 +91,7 @@ public class MemberController {
     @RequireElevated
     @PatchMapping("/username")
     public ResponseEntity<Void> updateMemberUsername(
-            @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();
@@ -100,7 +100,7 @@ public class MemberController {
     @RequireElevated
     @PatchMapping("/password")
     public ResponseEntity<Void> updateMemberPassword(
-            @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updatePassword(
                 request.originalPassword(), request.newPassword(), userDetails.getMemberId());
 
@@ -110,7 +110,7 @@ public class MemberController {
     @RequireElevated
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
-            @RequestBody WithdrawMemberRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody WithdrawMemberRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());
 
         return ResponseEntity.noContent().build();

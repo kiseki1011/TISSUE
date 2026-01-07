@@ -1,6 +1,6 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
@@ -74,9 +74,7 @@ public class WorkspaceInviteLinkController {
 
     @PostMapping("/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
-            @PathVariable String workspaceKey,
-            @PathVariable String token,
-            @CurrentMember MemberUserDetails userDetails) {
+            @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails userDetails) {
         var command = new JoinViaLinkCommand(workspaceKey, token, userDetails.getMemberId());
         WorkspaceMemberResponse response = inviteLinkUseCase.joinViaLink(command);
 

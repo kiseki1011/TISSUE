@@ -3,10 +3,10 @@ package com.tissue.security.authentication.application.service;
 import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
 import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
-import com.tissue.security.authentication.infrastructure.context.MemberUserDetailsService;
+import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
@@ -27,7 +27,7 @@ public class AuthenticationService implements AuthenticationUseCase {
 
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
-    private final MemberUserDetailsService userDetailsService;
+    private final MemberDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
@@ -35,7 +35,7 @@ public class AuthenticationService implements AuthenticationUseCase {
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        MemberUserDetails userDetails = (MemberUserDetails) authentication.getPrincipal();
+        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
         String accessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
@@ -66,7 +66,7 @@ public class AuthenticationService implements AuthenticationUseCase {
             throw new JwtAuthenticationException(AuthenticationErrorCode.REFRESH_TOKEN_REUSED.getDefaultMessage());
         }
 
-        MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(loginEmail);
+        MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
 
         String newAccessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
         String newRefreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());

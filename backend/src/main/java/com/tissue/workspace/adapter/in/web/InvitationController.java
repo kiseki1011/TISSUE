@@ -1,6 +1,6 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
@@ -21,19 +21,19 @@ public class InvitationController {
     private final InvitationUseCase invitationUseCase;
 
     @PostMapping("/{invitationId}/accept")
-    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberDetails userDetails) {
         invitationUseCase.accept(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{invitationId}/reject")
-    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberDetails userDetails) {
         invitationUseCase.reject(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberDetails userDetails) {
         List<InvitationDetail> response = invitationUseCase.getMyInvitations(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }

@@ -2,7 +2,7 @@ package com.tissue.security.authentication.presentation;
 
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2User;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.security.authentication.util.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -53,39 +53,22 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // fallback to default if no redirect uri found in cookie
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
-        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
 
-        // already a member -> login
-        if (oAuth2User.getMember() != null) {
-            String accessToken = tokenProvider.createAccessToken(
-                    oAuth2User.getMember().getId(), oAuth2User.getMember().getEmail());
-            String refreshToken = tokenProvider.createRefreshToken(
-                    oAuth2User.getMember().getId(), oAuth2User.getMember().getEmail());
+        String accessToken = tokenProvider.createAccessToken(memberDetails.getMemberId(), memberDetails.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(memberDetails.getMemberId(), memberDetails.getEmail());
 
-            refreshTokenRepository.save(
-                    oAuth2User.getMember().getEmail(),
-                    refreshToken,
-                    Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
+        refreshTokenRepository.save(
+                memberDetails.getEmail(),
+                refreshToken,
+                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
-            return UriComponentsBuilder.fromUriString(targetUrl)
-                    .queryParam("status", "LOGIN_SUCCESS") // TODO: use constant
-                    .queryParam("accessToken", accessToken)
-                    .queryParam("refreshToken", refreshToken)
-                    .build()
-                    .toUriString();
-        }
-        // new user -> needs signup
-        else {
-            String registerToken = tokenProvider.createRegisterToken(
-                    oAuth2User.getProvider(), oAuth2User.getIdentifier(), oAuth2User.getEmail());
-
-            return UriComponentsBuilder.fromUriString(targetUrl)
-                    .queryParam("status", "NEEDS_SIGNUP") // TODO: use constant
-                    .queryParam("registerToken", registerToken)
-                    .queryParam("email", oAuth2User.getEmail()) // pre-fill email for convenience
-                    .build()
-                    .toUriString();
-        }
+        return UriComponentsBuilder.fromUriString(targetUrl)
+                .queryParam("status", "LOGIN_SUCCESS")
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
+                .build()
+                .toUriString();
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {

@@ -10,7 +10,7 @@ import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
 import com.tissue.issue.application.port.in.IssueQueryUseCase;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueBasicInfo response = issueQueryUseCase.getBasic(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -43,7 +43,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueCommonDetail response = issueQueryUseCase.getCommon(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -53,7 +53,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueCustomDetail response = issueQueryUseCase.getCustom(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -63,7 +63,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueIdentifierResponse response = issueQueryUseCase.getParent(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -73,7 +73,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         List<IssueIdentifierResponse> response = issueQueryUseCase.getChildren(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -83,7 +83,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueRelationsDetail response = issueQueryUseCase.getRelations(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -93,7 +93,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         ParticipantInfo response = issueQueryUseCase.getAuthor(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -103,7 +103,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueReviewersDetail response = issueQueryUseCase.getReviewers(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -113,7 +113,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         IssueSubscribersDetail response = issueQueryUseCase.getSubscribers(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }
@@ -123,7 +123,7 @@ public class IssueQueryController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @CurrentMember MemberUserDetails userDetails) {
+            @CurrentMember MemberDetails userDetails) {
         List<TransitionDetail> response = issueQueryUseCase.getAvailableTransitions(workspaceKey, projectKey, issueKey);
         return ResponseEntity.ok(response);
     }

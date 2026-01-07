@@ -2,7 +2,7 @@ package com.tissue.security.authentication.presentation;
 
 import com.tissue.member.adapter.in.web.dto.request.PermissionRequest;
 import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.security.authentication.presentation.dto.request.LoginRequest;
 import com.tissue.security.authentication.presentation.dto.request.RefreshTokenRequest;
@@ -38,7 +38,7 @@ public class AuthenticationController {
 
     @PostMapping("/token/elevate")
     public ResponseEntity<ElevatedTokenResponse> elevatePermission(
-            @RequestBody @Valid PermissionRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid PermissionRequest request, @CurrentMember MemberDetails userDetails) {
         ElevatedTokenResponse response = authenticationUseCase.elevatePermission(
                 userDetails.getEmail(), request.password(), userDetails.getMemberId());
 
@@ -46,7 +46,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CurrentMember MemberUserDetails userDetails) {
+    public ResponseEntity<Void> logout(@CurrentMember MemberDetails userDetails) {
         authenticationUseCase.logout(userDetails.getEmail());
         return ResponseEntity.noContent().build();
     }

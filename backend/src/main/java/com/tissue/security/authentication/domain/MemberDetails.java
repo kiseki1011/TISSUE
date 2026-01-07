@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /**
  * Spring Security에서 사용하는 사용자 정보 객체입니다.
@@ -21,10 +23,11 @@ import org.springframework.security.core.userdetails.UserDetails;
  * </p>
  */
 @Getter
-public class MemberUserDetails implements UserDetails {
+public class MemberDetails implements UserDetails, OAuth2User {
 
     private final Long memberId;
     private final String email;
+    private final String name;
     private final String nickname;
 
     @Nullable
@@ -35,30 +38,37 @@ public class MemberUserDetails implements UserDetails {
 
     private final Collection<? extends GrantedAuthority> authorities;
 
+    @Nullable
+    private Map<String, Object> attributes;
+
     private boolean elevated;
 
     /**
-     * Member 객체와 비밀번호를 받아 UserDetails를 생성
+     * Member 객체와 비밀번호를 받아 UserDetails를 생성 (Form Login 용)
      *
      * @param member 회원 정보
-     * @param password 암호화된 비밀번호 (OAuth 로그인 등의 경우 null일 수 있음)
+     * @param password 암호화된 비밀번호
      */
-    public MemberUserDetails(Member member, @Nullable String password) {
+    public MemberDetails(Member member, @Nullable String password) {
         this.memberId = member.getId();
         this.email = member.getEmail();
+        this.name = member.getName();
         this.nickname = member.getUsername();
         this.password = password;
         this.role = member.getRole();
         this.status = member.getStatus();
-
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role.getAuthority()));
     }
 
     /**
-     * 편의 생성자 (비밀번호가 없는 경우, 예: JWT 파싱 후)
+     * Member 객체와 OAuth2 속성을 받아 UserDetails를 생성 (OAuth2 Login 용)
+     *
+     * @param member 회원 정보
+     * @param attributes OAuth2 속성
      */
-    public MemberUserDetails(Member member) {
-        this(member, null);
+    public MemberDetails(Member member, Map<String, Object> attributes) {
+        this(member, (String) null);
+        this.attributes = attributes;
     }
 
     public void setElevated(boolean elevated) {
@@ -76,14 +86,23 @@ public class MemberUserDetails implements UserDetails {
     }
 
     @Override
-    @Nullable
-    public String getPassword() {
-        return password;
+    public @Nullable Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     @Override
     public String getUsername() {
         return email;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public @Nullable String getPassword() {
+        return password;
     }
 
     @Override

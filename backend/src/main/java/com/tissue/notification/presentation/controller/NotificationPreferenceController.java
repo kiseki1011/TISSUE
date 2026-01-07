@@ -2,7 +2,7 @@ package com.tissue.notification.presentation.controller;
 
 import com.tissue.notification.application.service.command.NotificationPreferenceService;
 import com.tissue.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class NotificationPreferenceController {
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceCode,
-            @CurrentMember MemberUserDetails userDetails,
+            @CurrentMember MemberDetails userDetails,
             @RequestBody UpdateNotificationPreferenceRequest request) {
         preferenceService.updatePreference(workspaceCode, userDetails.getMemberId(), request);
         return ResponseEntity.noContent().build();

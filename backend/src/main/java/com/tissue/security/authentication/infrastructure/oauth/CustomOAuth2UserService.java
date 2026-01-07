@@ -4,6 +4,7 @@ import com.tissue.member.application.port.out.AuthIdentityRepository;
 import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
+import com.tissue.security.authentication.domain.MemberDetails;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -27,32 +28,25 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
-
-        String userNameAttributeName = userRequest
-                .getClientRegistration()
-                .getProviderDetails()
-                .getUserInfoEndpoint()
-                .getUserNameAttributeName();
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
-        OAuth2UserProfile userProfile = OAuth2UserProfile.of(provider, attributes);
+
+        OAuth2UserInfo oAuth2UserInfo =
+                switch (provider) {
+                    case GOOGLE -> new GoogleOAuth2UserInfo(attributes);
+                    case GITHUB -> new GithubOAuth2UserInfo(attributes);
+                    default -> throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
+                };
 
         Member member = authIdentityRepository
-                .findByProviderAndIdentifier(provider, userProfile.identifier())
+                .findByProviderAndIdentifier(provider, oAuth2UserInfo.getProviderId())
                 .map(AuthIdentity::getMember)
-                .map(m -> updateMember(m, userProfile))
-                .orElse(null);
+                .map(m -> updateMember(m, oAuth2UserInfo))
+                .orElseThrow(() -> new OAuth2AuthenticationException("Member not found"));
 
-        return new CustomOAuth2User(
-                member,
-                attributes,
-                userNameAttributeName,
-                provider.name(),
-                userProfile.identifier(),
-                userProfile.email());
+        return new MemberDetails(member, attributes);
     }
 
-    private Member updateMember(Member member, OAuth2UserProfile userProfile) {
+    private Member updateMember(Member member, OAuth2UserInfo userInfo) {
         // TODO: update info if needed
         return member;
     }

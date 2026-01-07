@@ -5,7 +5,7 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.MemberStatus;
-import com.tissue.security.authentication.domain.MemberUserDetails;
+import com.tissue.security.authentication.domain.MemberDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class MemberUserDetailsService implements UserDetailsService {
+public class MemberDetailsService implements UserDetailsService {
 
     private final AuthIdentityRepository authIdentityRepository;
 
@@ -41,19 +41,16 @@ public class MemberUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // EMAIL 제공자로 등록된 AuthIdentity를 찾기
         AuthIdentity authIdentity = authIdentityRepository
                 .findByProviderAndIdentifier(AuthProvider.EMAIL, email)
                 .orElseThrow(() -> new UsernameNotFoundException("Member not found for email: " + email));
 
         Member member = authIdentity.getMember();
 
-        // 회원의 상태가 ACTIVE인지 확인
         if (member.getStatus() != MemberStatus.ACTIVE) {
             throw new UsernameNotFoundException("Member is not active: " + email);
         }
 
-        //  Member 정보와 비밀번호를 포함한 UserDetails를 반환
-        return new MemberUserDetails(member, authIdentity.getCredential());
+        return new MemberDetails(member, authIdentity.getCredential());
     }
 }
