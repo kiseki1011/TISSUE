@@ -24,13 +24,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+        OAuth2User oauth2User = super.loadUser(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase(Locale.ROOT));
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+        Map<String, Object> attributes = oauth2User.getAttributes();
 
-        OAuth2UserInfo oAuth2UserInfo =
+        OAuth2UserInfo oauth2UserInfo =
                 switch (provider) {
                     case GOOGLE -> new GoogleOAuth2UserInfo(attributes);
                     case GITHUB -> new GithubOAuth2UserInfo(attributes);
@@ -38,9 +38,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 };
 
         Member member = authIdentityRepository
-                .findByProviderAndIdentifier(provider, oAuth2UserInfo.getProviderId())
+                .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
                 .map(AuthIdentity::getMember)
-                .map(m -> updateMember(m, oAuth2UserInfo))
+                .map(m -> updateMember(m, oauth2UserInfo))
                 .orElseThrow(() -> new OAuth2AuthenticationException("Member not found"));
 
         return new MemberDetails(member, attributes);

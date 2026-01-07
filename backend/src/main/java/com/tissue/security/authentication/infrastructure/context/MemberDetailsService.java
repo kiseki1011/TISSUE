@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 /**
  * Spring Security의 인증 과정에서 사용자 정보를 로드하는 서비스
  *
- * <p>
- * <b>동작 방식:</b><br>
- * 로그인 시 이메일을 입력받아, 해당 이메일로 연결된 `EMAIL` 타입의 `AuthIdentity`를 조회<br>
+ * <p>로그인 시 이메일을 입력받아, 해당 이메일로 연결된 `EMAIL` 타입의 `AuthIdentity`를 조회<br>
  * 조회된 Identity에서 `Member` 정보와 `Credential`(비밀번호)을 추출하여 `MemberUserDetails`를 구성
  * </p>
  */
@@ -30,10 +28,8 @@ public class MemberDetailsService implements UserDetailsService {
     /**
      * 이메일(Username)을 기반으로 사용자 인증 정보를 조회.
      *
-     * <p>
-     * 이 메서드는 주로 `AuthenticationManager`가 비밀번호 검증을 수행하기 위해 호출
-     * 따라서 반드시 비밀번호가 포함된 `MemberUserDetails`를 반환해야 함
-     * </p>
+     * <p>이 메서드는 주로 `AuthenticationManager`가 비밀번호 검증을 수행하기 위해 호출
+     * 따라서 반드시 비밀번호가 포함된 `MemberUserDetails`를 반환해야 함</p>
      *
      * @param email 로그인 이메일
      * @return UserDetails 객체 (Member 정보 + 비밀번호)

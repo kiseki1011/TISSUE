@@ -33,7 +33,5 @@ public interface TokenProvider {
 
     void validateRefreshToken(String token);
 
-    long getTokenRemainingSeconds(String token);
-
     long getRefreshTokenValidityInSeconds();
 }

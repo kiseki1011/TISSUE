@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     // OAuth2 Dependencies
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Bean
@@ -80,7 +80,7 @@ public class SecurityConfig {
                                         .authorizationRequestRepository(cookieAuthorizationRequestRepository))
                                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/*"))
                                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                                .successHandler(oAuth2AuthenticationSuccessHandler))
+                                .successHandler(oauth2AuthenticationSuccessHandler))
                 .exceptionHandling(handler -> handler.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(exceptionHandlerFilter, JwtAuthenticationFilter.class);

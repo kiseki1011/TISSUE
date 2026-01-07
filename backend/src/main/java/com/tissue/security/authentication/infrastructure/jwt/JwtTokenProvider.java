@@ -228,25 +228,6 @@ public class JwtTokenProvider implements TokenProvider {
         }
     }
 
-    /**
-     * Calculate the expiration time of a token (seconds) Can be used by client when refreshing
-     * token.
-     */
-    @Override
-    public long getTokenRemainingSeconds(String token) {
-        try {
-            Claims claims = parseAndValidateClaims(token);
-            Date expiration = claims.getExpiration();
-
-            long remainingMillis = expiration.getTime() - System.currentTimeMillis();
-            return Math.max(0, remainingMillis / 1000);
-
-        } catch (JwtException e) {
-            log.debug("Failed to calculate remaining time for token", e);
-            return 0;
-        }
-    }
-
     /** Parse and validate token */
     private Claims parseAndValidateClaims(String token) {
         try {

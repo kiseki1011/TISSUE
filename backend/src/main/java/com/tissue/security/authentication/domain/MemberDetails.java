@@ -17,10 +17,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /**
  * Spring Security에서 사용하는 사용자 정보 객체입니다.
- * <p>
- * Member 도메인 객체와 Spring Security의 UserDetails 인터페이스 사이의 어댑터 역할을 합니다.
- * 비밀번호는 Member 엔티티가 아닌 AuthIdentity에서 가져온 값을 사용합니다.
- * </p>
+ *
+ * <p>Member 도메인 객체와 Spring Security의 UserDetails 인터페이스 사이의 어댑터 역할을 합니다.
+ * 비밀번호는 Member 엔티티가 아닌 AuthIdentity에서 가져온 값을 사용합니다.</p>
  */
 @Getter
 public class MemberDetails implements UserDetails, OAuth2User {
