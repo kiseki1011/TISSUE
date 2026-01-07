@@ -86,7 +86,7 @@ class MemberCommandServiceTest {
                     .verificationToken("token")
                     .username("testuser")
                     .password("password")
-                    .name("Test User")
+                    .name("name")
                     .build();
 
             given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken()))
@@ -154,7 +154,7 @@ class MemberCommandServiceTest {
         @DisplayName("success: creates member and identity, returns login tokens")
         void success() {
             String registerToken = "regToken";
-            SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "Test User");
+            SignupOAuthMemberCommand cmd = new SignupOAuthMemberCommand(registerToken, "testuser", "name");
 
             Claims claims = mock(Claims.class);
             given(claims.get(JwtTokenProvider.CLAIM_PROVIDER, String.class)).willReturn("GOOGLE");
@@ -247,6 +247,7 @@ class MemberCommandServiceTest {
             Long memberId = 1L;
             String newPassword = "newPassword";
             Member member = mock(Member.class);
+
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
@@ -265,6 +266,7 @@ class MemberCommandServiceTest {
         void fail_AlreadyExists() {
             Long memberId = 1L;
             Member member = mock(Member.class);
+
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
@@ -282,7 +284,8 @@ class MemberCommandServiceTest {
         @DisplayName("success: updates name")
         void success_UpdateName() {
             Long memberId = 1L;
-            String newName = "New Name";
+            String newName = "newName";
+
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
@@ -300,6 +303,7 @@ class MemberCommandServiceTest {
         void success_UpdateEmail() {
             Long memberId = 1L;
             String newEmail = "new@tissue.com";
+
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("old@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
@@ -321,7 +325,8 @@ class MemberCommandServiceTest {
         @DisplayName("success: updates username")
         void success_UpdateUsername() {
             Long memberId = 1L;
-            String newUsername = "newUser";
+            String newUsername = "newUserName";
+
             Member member = mock(Member.class);
             given(memberFinder.getActiveBy(memberId)).willReturn(member);
 
@@ -341,6 +346,7 @@ class MemberCommandServiceTest {
             Long memberId = 1L;
             String oldPass = "oldPassword";
             String newPass = "newPassword";
+
             Member member = mock(Member.class);
             given(member.getEmail()).willReturn("test@tissue.com");
             given(memberFinder.getActiveBy(memberId)).willReturn(member);

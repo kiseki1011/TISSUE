@@ -1,0 +1,182 @@
+package com.tissue.security.authentication.application.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+
+import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
+import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
+import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
+import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
+import java.time.Duration;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+
+@ExtendWith(MockitoExtension.class)
+class AuthenticationServiceTest {
+
+    @Mock
+    AuthenticationManager authenticationManager;
+
+    @Mock
+    TokenProvider tokenProvider;
+
+    @Mock
+    MemberDetailsService userDetailsService;
+
+    @Mock
+    RefreshTokenRepository refreshTokenRepository;
+
+    @InjectMocks
+    AuthenticationService sut;
+
+    @Nested
+    @DisplayName("login")
+    class Login {
+        @Test
+        @DisplayName("success: authenticates and returns tokens")
+        void success_Login() {
+            String email = "test@tissue.com";
+            String password = "password";
+            Long memberId = 1L;
+            String accessToken = "accessTokenValue";
+            String refreshToken = "refreshTokenValue";
+
+            Authentication authentication = mock(Authentication.class);
+            MemberDetails memberDetails = mock(MemberDetails.class);
+
+            given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                    .willReturn(authentication);
+            given(authentication.getPrincipal()).willReturn(memberDetails);
+            given(memberDetails.getMemberId()).willReturn(memberId);
+            given(memberDetails.getEmail()).willReturn(email);
+
+            given(tokenProvider.createAccessToken(memberId, email)).willReturn(accessToken);
+            given(tokenProvider.createRefreshToken(memberId, email)).willReturn(refreshToken);
+            given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
+
+            LoginResponse response = sut.login(email, password);
+
+            assertThat(response.accessToken()).isEqualTo(accessToken);
+            assertThat(response.refreshToken()).isEqualTo(refreshToken);
+
+            then(refreshTokenRepository).should().save(eq(email), eq(refreshToken), any(Duration.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("refresh token")
+    class RefreshToken {
+        @Test
+        @DisplayName("success: validates and rotates tokens")
+        void success_RefreshToken() {
+            String oldRefreshToken = "oldRefreshToken";
+            String email = "test@tissue.com";
+            Long memberId = 1L;
+            String newAccessToken = "newAccessTokenValue";
+            String newRefreshToken = "newRefreshTokenValue";
+
+            given(tokenProvider.getSubjectFromToken(oldRefreshToken)).willReturn(email);
+            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(oldRefreshToken));
+
+            MemberDetails memberDetails = mock(MemberDetails.class);
+            given(userDetailsService.loadUserByUsername(email)).willReturn(memberDetails);
+            given(memberDetails.getMemberId()).willReturn(memberId);
+            given(memberDetails.getEmail()).willReturn(email);
+
+            given(tokenProvider.createAccessToken(memberId, email)).willReturn(newAccessToken);
+            given(tokenProvider.createRefreshToken(memberId, email)).willReturn(newRefreshToken);
+            given(tokenProvider.getRefreshTokenValidityInSeconds()).willReturn(3600L);
+
+            RefreshTokenResponse response = sut.refreshToken(oldRefreshToken);
+
+            assertThat(response.accessToken()).isEqualTo(newAccessToken);
+            assertThat(response.refreshToken()).isEqualTo(newRefreshToken);
+
+            then(tokenProvider).should().validateRefreshToken(oldRefreshToken);
+            then(refreshTokenRepository).should().save(eq(email), eq(newRefreshToken), any(Duration.class));
+        }
+
+        @Test
+        @DisplayName("fail: token not found in storage")
+        void fail_TokenNotFound() {
+            String refreshToken = "refreshToken";
+            String email = "test@tissue.com";
+
+            given(tokenProvider.getSubjectFromToken(refreshToken)).willReturn(email);
+            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.empty());
+
+            assertThatThrownBy(() -> sut.refreshToken(refreshToken))
+                    .isInstanceOf(JwtAuthenticationException.class)
+                    .hasMessageContaining("Invalid token");
+        }
+
+        @Test
+        @DisplayName("fail: token reuse detected")
+        void fail_TokenReuse() {
+            String incomingToken = "stolenToken";
+            String storedToken = "latestToken";
+            String email = "test@tissue.com";
+
+            given(tokenProvider.getSubjectFromToken(incomingToken)).willReturn(email);
+            given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
+
+            assertThatThrownBy(() -> sut.refreshToken(incomingToken))
+                    .isInstanceOf(JwtAuthenticationException.class)
+                    .hasMessageContaining("Refresh token reuse detected");
+
+            then(refreshTokenRepository).should().deleteByEmail(email);
+        }
+    }
+
+    @Nested
+    @DisplayName("elevate permission")
+    class ElevatePermission {
+        @Test
+        @DisplayName("success: authenticates and returns elevated token")
+        void success_ElevatePermission() {
+            String email = "test@tissue.com";
+            String password = "password";
+            Long memberId = 1L;
+            String elevatedToken = "elevatedTokenValue";
+
+            given(tokenProvider.createElevatedToken(memberId, email)).willReturn(elevatedToken);
+
+            ElevatedTokenResponse response = sut.elevatePermission(email, password, memberId);
+
+            assertThat(response.elevatedToken()).isEqualTo(elevatedToken);
+            then(authenticationManager).should().authenticate(any(UsernamePasswordAuthenticationToken.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("logout")
+    class Logout {
+        @Test
+        @DisplayName("success: deletes refresh token")
+        void success_Logout() {
+            String email = "test@tissue.com";
+
+            sut.logout(email);
+
+            then(refreshTokenRepository).should().deleteByEmail(email);
+        }
+    }
+}
