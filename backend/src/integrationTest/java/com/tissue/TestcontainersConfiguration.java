@@ -6,6 +6,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
@@ -14,15 +15,18 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     public PostgreSQLContainer<?> postgresContainer(
-            @Value("${tissue.test.db-image:postgres:16-alpine}") String dbImageName) {
+            @Value("${tissue.test.db.image:postgres:16-alpine}") String dbImageName) {
         return new PostgreSQLContainer<>(DockerImageName.parse(dbImageName));
     }
 
     @Bean
     @ServiceConnection(name = "redis")
     public GenericContainer<?> redisContainer(
-            @Value("${tissue.test.redis-image:redis:alpine}") String redisImageName,
-            @Value("${tissue.test.redis-port:6379}") int redisExposedPort) {
-        return new GenericContainer<>(DockerImageName.parse(redisImageName)).withExposedPorts(redisExposedPort);
+            @Value("${tissue.test.redis.image:redis:7.2-alpine}") String redisImageName,
+            @Value("${tissue.test.redis.port:6379}") int redisExposedPort) {
+        return new GenericContainer<>(DockerImageName.parse(redisImageName))
+            .withExposedPorts(redisExposedPort)
+            .withReuse(true)
+            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
     }
 }

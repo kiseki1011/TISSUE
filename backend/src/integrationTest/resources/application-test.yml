@@ -1,8 +1,10 @@
 tissue:
   test:
-    db-image: "postgres:16-alpine"
-    redis-image: "redis:alpine"
-    redis-port: 6379
+    db:
+      image: "postgres:16-alpine"
+    redis:
+      image: "redis:7.2-alpine"
+      port: 6379
   jwt:
     secret: "very_secret_key_that_is_at_least_32_chars_long_123"
     access-token-validity: 3600
