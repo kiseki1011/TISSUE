@@ -1,3 +1,17 @@
 tissue:
   test:
     db-image: "postgres:16-alpine"
+    redis-image: "redis:alpine"
+    redis-port: 6379
+  jwt:
+    secret: "very_secret_key_that_is_at_least_32_chars_long_123"
+    access-token-validity: 3600
+    refresh-token-validity: 604800
+    elevated-token-validity: 300
+  email:
+    verification:
+      strategy: redis
+      ttl: 1800s
+      verification-url: http://localhost:8080/api/v1/members/verification/verify
+    provider: dummy
+    sender: noreply@tissue.com

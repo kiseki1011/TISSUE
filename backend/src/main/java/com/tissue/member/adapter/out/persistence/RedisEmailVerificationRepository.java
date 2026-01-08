@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "email.verification.strategy", havingValue = "redis")
+@ConditionalOnProperty(name = "tissue.email.verification.strategy", havingValue = "redis")
 @RequiredArgsConstructor
 public class RedisEmailVerificationRepository implements EmailVerificationRepository {
 
