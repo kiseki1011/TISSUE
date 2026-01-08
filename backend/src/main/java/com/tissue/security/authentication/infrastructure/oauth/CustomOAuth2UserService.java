@@ -4,7 +4,6 @@ import com.tissue.member.application.port.out.AuthIdentityRepository;
 import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
-import com.tissue.security.authentication.domain.MemberDetails;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -40,14 +39,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Member member = authIdentityRepository
                 .findByProviderAndIdentifier(provider, oauth2UserInfo.getProviderId())
                 .map(AuthIdentity::getMember)
-                .map(m -> updateMember(m, oauth2UserInfo))
-                .orElseThrow(() -> new OAuth2AuthenticationException("Member not found"));
+                .orElse(null);
 
-        return new MemberDetails(member, attributes);
-    }
-
-    private Member updateMember(Member member, OAuth2UserInfo userInfo) {
-        // TODO: update info if needed
-        return member;
+        return new CustomOAuth2User(member, oauth2UserInfo);
     }
 }

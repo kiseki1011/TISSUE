@@ -1,8 +1,10 @@
 package com.tissue.security.authentication.presentation;
 
+import com.tissue.member.domain.Member;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.infrastructure.oauth.CustomOAuth2User;
+import com.tissue.security.authentication.infrastructure.oauth.OAuth2UserInfo;
 import com.tissue.security.authentication.infrastructure.persistence.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tissue.security.authentication.util.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,22 +56,38 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // fallback to default if no redirect uri found in cookie
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
+        CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        String accessToken = tokenProvider.createAccessToken(memberDetails.getMemberId(), memberDetails.getEmail());
-        String refreshToken = tokenProvider.createRefreshToken(memberDetails.getMemberId(), memberDetails.getEmail());
+        if (oauth2User.isRegistered()) {
+            Member member = Objects.requireNonNull(oauth2User.getMember());
+            String accessToken = tokenProvider.createAccessToken(member.getId(), member.getEmail());
+            String refreshToken = tokenProvider.createRefreshToken(member.getId(), member.getEmail());
 
-        refreshTokenRepository.save(
-                memberDetails.getEmail(),
-                refreshToken,
-                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
+            refreshTokenRepository.save(
+                    member.getEmail(),
+                    refreshToken,
+                    Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
-        return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("status", "LOGIN_SUCCESS")
-                .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken)
-                .build()
-                .toUriString();
+            return UriComponentsBuilder.fromUriString(targetUrl)
+                    .queryParam("status", "LOGIN_SUCCESS")
+                    .queryParam("accessToken", accessToken)
+                    .queryParam("refreshToken", refreshToken)
+                    .build()
+                    .toUriString();
+        } else {
+            OAuth2UserInfo userInfo = oauth2User.getUserInfo();
+            String email = Objects.requireNonNull(userInfo.getEmail(), "Email not found from provider");
+            String registerToken =
+                    tokenProvider.createRegisterToken(userInfo.getProvider(), userInfo.getProviderId(), email);
+
+            return UriComponentsBuilder.fromUriString(targetUrl)
+                    .queryParam("status", "NEEDS_SIGNUP")
+                    .queryParam("registerToken", registerToken)
+                    .queryParam("email", email)
+                    .queryParam("name", userInfo.getName())
+                    .build()
+                    .toUriString();
+        }
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
