@@ -15,16 +15,15 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @RequiredArgsConstructor
 public class EmailClientConfig {
 
-    private final JavaMailSender mailSender;
-
     @Bean
     @ConditionalOnProperty(name = "tissue.email.provider", havingValue = "dummy", matchIfMissing = true)
     public EmailClient dummyEmailClient() {
         return new DummyEmailClient();
     }
 
+    @Bean
     @ConditionalOnProperty(name = "tissue.email.provider", havingValue = "google")
-    public EmailClient gmailEmailClient() {
+    public EmailClient gmailEmailClient(JavaMailSender mailSender) {
         return new GmailSmtpClient(mailSender);
     }
 }
