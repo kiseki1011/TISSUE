@@ -25,8 +25,8 @@ public class TestcontainersConfiguration {
             @Value("${tissue.test.redis.image:redis:7.2-alpine}") String redisImageName,
             @Value("${tissue.test.redis.port:6379}") int redisExposedPort) {
         return new GenericContainer<>(DockerImageName.parse(redisImageName))
-            .withExposedPorts(redisExposedPort)
-            .withReuse(true)
-            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
+                .withExposedPorts(redisExposedPort)
+                .withReuse(true)
+                .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
     }
 }
