@@ -3,7 +3,7 @@ package com.tissue.project.application.service.finder;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.project.domain.exception.ProjectMemberNotFoundException;
 import java.util.Collection;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,8 @@ public class ProjectMemberFinder {
     public ProjectMember findBy(Project project, Long memberId) {
         return queryRepository
                 .findAnyByProjectIdAndMemberId(project.getId(), memberId)
-                .orElseThrow(() -> ProjectExceptions.memberNotFound(project, memberId));
+                .orElseThrow(() ->
+                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
     }
 
     // TODO: getIncludingSoftDeleted

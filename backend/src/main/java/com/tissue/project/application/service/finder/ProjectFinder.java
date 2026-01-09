@@ -2,7 +2,8 @@ package com.tissue.project.application.service.finder;
 
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.project.domain.exception.ProjectArchivedException;
+import com.tissue.project.domain.exception.ProjectNotFoundException;
 import com.tissue.workspace.domain.exception.WorkspaceExceptions;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class ProjectFinder {
         // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
         return queryRepository
                 .findByKeyAndWorkspaceKey(projectKey, workspaceKey)
-                .orElseThrow(() -> ProjectExceptions.notFound(workspaceKey, projectKey));
+                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
     }
 
     // TODO: add javadoc for the following information
@@ -35,12 +36,13 @@ public class ProjectFinder {
             throw WorkspaceExceptions.archived(project.getWorkspace());
         }
         if (project.isArchived()) {
-            throw ProjectExceptions.isArchived(project);
+            throw new ProjectArchivedException(workspaceKey, projectKey);
         }
 
         return project;
     }
 
+    // TODO: getOptionalBy
     public Optional<Project> findOptionalBy(Long projectId) {
         return queryRepository.findById(projectId);
     }

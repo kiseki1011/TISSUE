@@ -1,5 +1,6 @@
 package com.tissue.project.application.service;
 
+import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
 import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
@@ -15,7 +16,7 @@ import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.project.domain.exception.ProjectErrorCode;
 import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -117,8 +118,8 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         Long currentUserId = currentMemberProvider.getCurrentMemberId();
         projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), currentUserId);
 
-        if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
-            throw ProjectExceptions.selfKick();
+        if (currentUserId.equals(cmd.targetMemberId())) {
+            throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
@@ -137,8 +138,8 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         projectAuthService.requireRoleGrantPermission(
                 cmd.workspaceKey(), cmd.projectKey(), cmd.newRole(), currentUserId);
 
-        if (cmd.actorMemberId().equals(cmd.targetMemberId())) {
-            throw ProjectExceptions.selfRole();
+        if (currentUserId.equals(cmd.targetMemberId())) {
+            throw new BadRequestException(ProjectErrorCode.SELF_ROLE_MODIFICATION_NOT_ALLOWED);
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
