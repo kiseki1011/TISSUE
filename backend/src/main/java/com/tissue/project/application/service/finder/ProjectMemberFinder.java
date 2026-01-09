@@ -15,12 +15,16 @@ public class ProjectMemberFinder {
 
     private final ProjectMemberQueryRepository queryRepository;
 
-    // TODO: use JOIN FETCH(or some other way) with WorkspaceMember at findAnyByProjectIdAndMemberId
-    //  for optimization
-    // TODO: is there a better name then getIncludingSoftDeleted?
-    public ProjectMember getIncludingSoftDeleted(Project project, Long memberId) {
+    public ProjectMember getBy(Project project, Long memberId) {
         return queryRepository
-                .findAnyByProjectIdAndMemberId(project.getId(), memberId)
+                .findByProjectIdAndMemberId(project.getId(), memberId)
+                .orElseThrow(() ->
+                        new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+    }
+
+    public ProjectMember getActiveBy(Project project, Long memberId) {
+        return queryRepository
+                .findByProjectIdAndMemberIdAndSoftDeletedFalse(project.getId(), memberId)
                 .orElseThrow(() ->
                         new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
     }

@@ -121,7 +121,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
             throw WorkspaceExceptions.invalidLink(link);
         }
 
-        WorkspaceMember linkCreator = workspaceMemberFinder.findBy(link.getCreatedBy(), workspaceKey);
+        WorkspaceMember linkCreator = workspaceMemberFinder.getBy(link.getCreatedBy(), workspaceKey);
 
         return WorkspaceInviteLinkDetail.of(link, linkCreator);
     }

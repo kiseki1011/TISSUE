@@ -74,6 +74,7 @@ public class Member extends BaseDateEntity {
         this.name = name;
     }
 
+    // TODO: active -> activate
     public void active() {
         this.status = MemberStatus.ACTIVE;
     }
@@ -81,4 +82,6 @@ public class Member extends BaseDateEntity {
     public void withdraw() {
         this.status = MemberStatus.DELETED;
     }
+
+    // TODO: add lock
 }

@@ -70,7 +70,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
                 .map(id -> sprintFinder.findBy(id, project))
@@ -81,7 +81,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
-                .map(id -> projectMemberFinder.getIncludingSoftDeleted(project, id))
+                .map(id -> projectMemberFinder.getBy(project, id))
                 .orElse(null);
 
         Issue issue = Issue.create(
@@ -113,7 +113,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Map<String, FieldChange> changes = new HashMap<>();
 
@@ -137,7 +137,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
@@ -160,7 +160,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(cmd.storyPoint());
@@ -178,7 +178,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
         Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
@@ -200,7 +200,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
         Issue parent = issue.getParentIssue();
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.removeParentIssue();
 
@@ -216,7 +216,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issueValidator.ensureCanDelete(issue);
         issue.delete();

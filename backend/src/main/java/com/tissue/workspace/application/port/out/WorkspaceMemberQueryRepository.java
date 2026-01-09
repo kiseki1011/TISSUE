@@ -20,19 +20,7 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
 
-    /**
-     * Retrieves a workspace member regardless of their delete status (active or soft-deleted).
-     *
-     * <p>Uses a <b>native query</b> to bypass Hibernate {@link
-     * org.hibernate.annotations.SQLRestriction @SqlRestriction}
-     */
-    @Query(value = """
-                    SELECT * FROM workspace_member
-                    WHERE workspace_key = :workspaceKey
-                      AND member_id = :memberId
-                    """, nativeQuery = true)
-    Optional<WorkspaceMember> findAnyByMemberIdAndWorkspaceKey(
-            @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
+    Optional<WorkspaceMember> findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(Long memberId, String workspaceKey);
 
     List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 

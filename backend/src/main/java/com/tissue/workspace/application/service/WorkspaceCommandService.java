@@ -54,8 +54,8 @@ public class WorkspaceCommandService implements WorkspaceCommandUseCase {
         workspaceAuthService.requireWorkspaceOwner(cmd.workspaceKey(), currentUserId);
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember originalOwner = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
-        WorkspaceMember newOwner = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
+        WorkspaceMember originalOwner = workspaceMemberFinder.getBy(cmd.actorMemberId(), workspace);
+        WorkspaceMember newOwner = workspaceMemberFinder.getBy(cmd.targetMemberId(), workspace);
 
         workspace.transferOwnership(originalOwner, newOwner);
 

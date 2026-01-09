@@ -14,20 +14,10 @@ import org.springframework.data.repository.query.Param;
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
 
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
+    Optional<ProjectMember> findByProjectIdAndMemberId(Long projectId, Long memberId);
 
-    /**
-     * Retrieves a project member regardless of their delete status (active or soft-deleted).
-     *
-     * <p>Uses a <b>native query</b> to bypass Hibernate {@link
-     * org.hibernate.annotations.SQLRestriction @SqlRestriction}
-     */
-    @Query(value = """
-                    SELECT * FROM project_member
-                    WHERE project_id = :projectId
-                      AND member_id = :memberId
-                    """, nativeQuery = true)
-    Optional<ProjectMember> findAnyByProjectIdAndMemberId(
-            @Param("projectId") Long projectId, @Param("memberId") Long memberId);
+    // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
+    Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
 
     @Query("SELECT pm.role FROM ProjectMember pm "
             + "WHERE pm.workspaceKey = :workspaceKey "

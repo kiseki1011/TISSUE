@@ -32,7 +32,7 @@ public class IssueReviewService implements IssueReviewUseCase {
     public void submitReview(SubmitReviewCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(issue.getProject(), cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), cmd.actorMemberId());
 
         // TODO: since im finding whether the actor is a reviewer i dont need to add the method
         //  in the IssueAuthorizationService?

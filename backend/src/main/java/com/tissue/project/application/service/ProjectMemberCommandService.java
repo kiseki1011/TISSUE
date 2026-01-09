@@ -54,7 +54,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         Set<Long> targetMemberIds = cmd.extractMemberIds();
         Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
 
-        List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
+        List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.getAllBy(targetMemberIds, cmd.workspaceKey());
 
         Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
@@ -65,6 +65,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
                 continue;
             }
 
+            // TODO: 개선 - 꼭 Objects.requireNonNull를 사용해야 할까?
             ProjectRole role = Objects.requireNonNull(roleMap.get(wm.getMemberId()));
             newMembers.add(ProjectMember.create(project, wm, role));
         }
@@ -82,7 +83,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         projectAuthService.requireDirectJoinPermission(cmd.workspaceKey(), cmd.projectKey(), currentUserId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.actorMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.actorMemberId(), cmd.workspaceKey());
 
         projectValidator.ensureNotAlreadyJoined(project, cmd.actorMemberId());
 
@@ -104,7 +105,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(projectKey, workspaceKey);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, memberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, memberId);
 
         actor.remove();
 
@@ -123,7 +124,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getBy(project, cmd.targetMemberId());
 
         target.remove();
 
@@ -143,7 +144,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getBy(project, cmd.targetMemberId());
 
         target.changeRole(cmd.newRole());
 
@@ -160,7 +161,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
             return;
         }
 
-        WorkspaceMember wm = workspaceMemberFinder.findBy(memberId, project.getWorkspaceKey());
+        WorkspaceMember wm = workspaceMemberFinder.getBy(memberId, project.getWorkspaceKey());
 
         ProjectMember pm = ProjectMember.create(project, wm, role);
         projectMemberRepository.save(pm);

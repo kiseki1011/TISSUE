@@ -52,8 +52,8 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
         ProjectMember oldReporter = issue.getParticipants().getReporter();
-        ProjectMember newReporter = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember newReporter = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.changeReporter(newReporter);
 
@@ -69,8 +69,8 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-        ProjectMember assignee = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember assignee = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.assignTo(assignee);
 
@@ -91,7 +91,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         if (assignee == null) {
             return;
         }
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.unassign();
 
@@ -106,7 +106,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-        ProjectMember subscriber = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.addSubscriber(subscriber);
     }
@@ -119,7 +119,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-        ProjectMember subscriber = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.removeSubscriber(subscriber);
     }
@@ -133,8 +133,8 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-        ProjectMember reviewer = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issuePolicy.ensureCanAddReviewer(issue);
         issue.addReviewer(reviewer);
@@ -151,8 +151,8 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
 
-        ProjectMember reviewer = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.removeReviewer(reviewer);
 

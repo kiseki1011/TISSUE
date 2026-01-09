@@ -58,8 +58,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getBy(project, issue.getLastModifiedBy());
 
         return IssueBasicInfo.from(issue, author, updatedBy);
     }
@@ -74,8 +74,8 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getBy(project, issue.getLastModifiedBy());
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
 
         return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
@@ -146,7 +146,7 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
-        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
+        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
 
         return ParticipantInfo.from(author);
     }

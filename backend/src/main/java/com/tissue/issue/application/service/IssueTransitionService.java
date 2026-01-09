@@ -51,7 +51,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Issue issue = issueFinder.findBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Workflow workflow = issue.getIssueType().getWorkflow();
         WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);

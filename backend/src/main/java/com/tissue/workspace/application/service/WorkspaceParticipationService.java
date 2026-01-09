@@ -87,7 +87,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         //  currently memberId is passed from the controller using userDetails.getMemberId
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), workspace);
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.memberId(), workspace);
 
         workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
         workspaceMember.softDelete();
@@ -101,8 +101,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember actor = workspaceMemberFinder.findBy(actorMemberId, workspace);
-        WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
+        WorkspaceMember actor = workspaceMemberFinder.getBy(actorMemberId, workspace);
+        WorkspaceMember target = workspaceMemberFinder.getBy(cmd.targetMemberId(), workspace);
 
         target.softDelete();
 
@@ -115,7 +115,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - controller does not know this method unless it directly depends on this service
     // TODO: currently considering if i should separate this to a application service of its own
     protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
+        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
@@ -124,7 +124,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         checkMemberJoinCapacity(member);
 
         return workspaceMemberFinder
-                .findAnyOptionalBy(member.getId(), workspace.getKey())
+                .getOptionalBy(member.getId(), workspace.getKey())
                 .map(returningMember -> {
                     returningMember.restoreSoftDeleted();
                     return returningMember;
@@ -170,7 +170,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
 
-        Set<Long> joinedIds = workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
+        Set<Long> joinedIds = workspaceMemberFinder.getJoinedMemberIdsBy(workspaceKey, candidateIds);
         Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
 
         Map<Boolean, List<Member>> partitioned = candidates.stream()

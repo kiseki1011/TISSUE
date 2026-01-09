@@ -15,21 +15,25 @@ public class ProjectFinder {
 
     private final ProjectQueryRepository queryRepository;
 
-    // TODO: add javadoc for the following information
-    //  - its only for read-only API's
-    // TODO: should i change the name to getReadableBy or just use getBy?
+    /**
+     * Retrieves a Project entity for read-only purposes.
+     *
+     * <p>This method does NOT check if the project or its workspace is archived.
+     * It should only be used for query/read-only APIs where the archived status might not matter
+     * or is handled separately.
+     */
     public Project getBy(String projectKey, String workspaceKey) {
-        // TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
-        // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key which is better?
         return queryRepository
-                .findByKeyAndWorkspaceKey(projectKey, workspaceKey)
+                .findWithWorkspaceByKeyAndWorkspaceKey(projectKey, workspaceKey)
                 .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
     }
 
-    // TODO: add javadoc for the following information
-    //  - its only for command API's
-    //  - will throw an exception if workspace or project was archived
-    // TODO: 성능 최적화 할 방법이 있을까?
+    /**
+     * Retrieves a Project entity for command/modification purposes.
+     *
+     * <p>This method validates that the Project and its Workspace are NOT archived.
+     * If either is archived, an exception is thrown to prevent modification.
+     */
     public Project getModifiableBy(String projectKey, String workspaceKey) {
         Project project = getBy(projectKey, workspaceKey);
 

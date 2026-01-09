@@ -40,7 +40,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
         workspaceMember.updateDisplayName(cmd.displayName());
     }
 
@@ -50,8 +50,8 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember actor = workspaceMemberFinder.findBy(actorMemberId, cmd.workspaceKey());
-        WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember actor = workspaceMemberFinder.getBy(actorMemberId, cmd.workspaceKey());
+        WorkspaceMember target = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
 
         workspaceAuthService.requireRoleGrantPermission(cmd.workspaceKey(), cmd.role(), target, actor);
 
@@ -68,7 +68,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
         // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
 
         workspaceMember.addPosition(position);
 
@@ -83,7 +83,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
         // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
 
         workspaceMember.removePosition(position);
 
@@ -97,7 +97,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
 
         workspaceMember.addTeam(team);
 
@@ -111,7 +111,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
         Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(cmd.targetMemberId(), cmd.workspaceKey());
 
         workspaceMember.removeTeam(team);
 
