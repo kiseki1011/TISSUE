@@ -2,7 +2,7 @@ package com.tissue.sprint.application.service;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.sprint.application.dto.response.SprintDetail;
 import com.tissue.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.sprint.application.port.in.SprintQueryUseCase;

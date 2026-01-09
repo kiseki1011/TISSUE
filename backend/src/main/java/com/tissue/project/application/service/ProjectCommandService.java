@@ -11,7 +11,7 @@ import com.tissue.project.application.service.authorization.ProjectAuthorization
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;

@@ -29,7 +29,7 @@ import com.tissue.issuetype.domain.policy.FieldDefintionPolicy;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;

@@ -7,6 +7,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+// TODO: should consider making a email verifcation usecase interface?
 @Service
 @RequiredArgsConstructor
 public class MemberEmailVerificationService {
@@ -43,6 +44,10 @@ public class MemberEmailVerificationService {
 
     public boolean isEmailVerified(String email) {
         return repository.isVerified(email);
+    }
+
+    public boolean isTokenVerified(String email, String token) {
+        return repository.checkVerifiedToken(email, token);
     }
 
     public void clearVerification(String email) {

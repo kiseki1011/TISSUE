@@ -74,6 +74,7 @@ dependencies {
   implementation libs.spring.boot.starter.cache
   implementation libs.caffeine
   implementation libs.spring.boot.starter.security
+  implementation libs.spring.boot.starter.oauth2.client
 
   implementation libs.jjwt.api
   runtimeOnly libs.jjwt.impl
@@ -125,8 +126,13 @@ tasks.withType(JavaCompile).configureEach {
 tasks.named('compileTestJava') {
   options.errorprone { disable("NullAway") }
 }
+
 tasks.named('compileIntegrationTestJava') {
   options.errorprone { disable("NullAway") }
+}
+
+tasks.named('compileJava') {
+  dependsOn 'spotlessApply'
 }
 
 tasks.withType(Checkstyle).configureEach {
@@ -137,10 +143,6 @@ tasks.withType(Checkstyle).configureEach {
   javaLauncher = javaToolchains.launcherFor {
     languageVersion = javaVersion
   }
-}
-
-tasks.named('compileJava') {
-  dependsOn 'spotlessApply'
 }
 
 test {

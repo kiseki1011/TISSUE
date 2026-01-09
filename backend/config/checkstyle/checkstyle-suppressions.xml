@@ -28,6 +28,9 @@
   <!-- Suppress strict variable distance check -->
   <suppress checks="VariableDeclarationUsageDistance" files=".*"/>
 
+  <!-- Supress name capital letter check -->
+  <suppress checks="AbbreviationAsWordInName" files=".*"/>
+
   <!-- Supress method name check on test codes -->
   <suppress checks="MethodName" files=".*Test\.java"/>
 </suppressions>

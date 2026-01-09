@@ -1,69 +1,95 @@
 package com.tissue.security.authentication.application.service;
 
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.MemberUserDetailsService;
 import com.tissue.security.authentication.application.port.in.AuthenticationUseCase;
-import com.tissue.security.authentication.jwt.JwtTokenService;
+import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.security.authentication.application.port.out.TokenProvider;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
+import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AuthenticationService implements AuthenticationUseCase {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenService jwtTokenService;
-    private final MemberUserDetailsService userDetailsService;
+    private final TokenProvider tokenProvider;
+    private final MemberDetailsService userDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
-    @Transactional
     public LoginResponse login(String loginEmail, String password) {
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        MemberUserDetails userDetails = (MemberUserDetails) authentication.getPrincipal();
+        MemberDetails userDetails = (MemberDetails) authentication.getPrincipal();
 
-        String accessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
-        String refreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+        String accessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+
+        refreshTokenRepository.save(
+                userDetails.getEmail(),
+                refreshToken,
+                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
         return LoginResponse.from(accessToken, refreshToken);
     }
 
     @Override
-    @Transactional
     public RefreshTokenResponse refreshToken(String refreshToken) {
-        // validate refresh token
-        jwtTokenService.validateRefreshToken(refreshToken);
+        tokenProvider.validateRefreshToken(refreshToken);
 
-        // extract subject (login email)
-        String loginEmail = jwtTokenService.getSubjectFromToken(refreshToken);
+        String loginEmail = tokenProvider.getSubjectFromToken(refreshToken);
 
-        // load user to ensure they still exist and are valid
-        MemberUserDetails userDetails = (MemberUserDetails) userDetailsService.loadUserByUsername(loginEmail);
+        String storedToken = refreshTokenRepository
+                .findByEmail(loginEmail)
+                .orElseThrow(() ->
+                        new JwtAuthenticationException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage()));
 
-        // create new access token
-        String newAccessToken = jwtTokenService.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        if (!storedToken.equals(refreshToken)) {
+            refreshTokenRepository.deleteByEmail(loginEmail);
+            log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
+            throw new JwtAuthenticationException(AuthenticationErrorCode.REFRESH_TOKEN_REUSED.getDefaultMessage());
+        }
 
-        // RTR (Refresh Token Rotation): Issue a new refresh token
-        String newRefreshToken = jwtTokenService.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+        // TODO: 이게 굳이 필요한가? 그냥 토큰의 loginEmail을 사용하면 되는거 아닌가?
+        MemberDetails userDetails = (MemberDetails) userDetailsService.loadUserByUsername(loginEmail);
+
+        String newAccessToken = tokenProvider.createAccessToken(userDetails.getMemberId(), userDetails.getEmail());
+        String newRefreshToken = tokenProvider.createRefreshToken(userDetails.getMemberId(), userDetails.getEmail());
+
+        refreshTokenRepository.save(
+                userDetails.getEmail(),
+                newRefreshToken,
+                Duration.ofSeconds(tokenProvider.getRefreshTokenValidityInSeconds()));
 
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 
     @Override
-    @Transactional
     public ElevatedTokenResponse elevatePermission(String loginEmail, String password, Long memberId) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginEmail, password));
 
-        String elevatedToken = jwtTokenService.createElevatedToken(memberId, loginEmail);
+        String elevatedToken = tokenProvider.createElevatedToken(memberId, loginEmail);
 
         return new ElevatedTokenResponse(elevatedToken);
+    }
+
+    @Override
+    public void logout(String email) {
+        refreshTokenRepository.deleteByEmail(email);
     }
 }

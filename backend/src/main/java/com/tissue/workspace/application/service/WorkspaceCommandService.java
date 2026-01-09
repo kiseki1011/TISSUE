@@ -1,7 +1,7 @@
 package com.tissue.workspace.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
 import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.in.UpdateWorkspaceInfoCommand;

@@ -5,7 +5,7 @@ import com.tissue.project.application.service.ProjectMemberCommandService;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;

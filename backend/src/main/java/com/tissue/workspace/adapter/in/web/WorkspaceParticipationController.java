@@ -1,7 +1,7 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
 import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
@@ -49,7 +49,7 @@ public class WorkspaceParticipationController {
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> leaveWorkspace(
-            @PathVariable String workspaceKey, @CurrentMember MemberUserDetails userDetails) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails userDetails) {
 
         var command = new LeaveWorkspaceCommand(workspaceKey, userDetails.getMemberId());
         workspaceParticipationUseCase.leave(command);

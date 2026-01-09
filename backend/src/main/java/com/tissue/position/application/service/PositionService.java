@@ -12,7 +12,7 @@ import com.tissue.position.application.port.out.PositionQueryRepository;
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.application.service.validator.PositionValidator;
 import com.tissue.position.domain.Position;
-import com.tissue.security.application.port.out.CurrentMemberProvider;
+import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;

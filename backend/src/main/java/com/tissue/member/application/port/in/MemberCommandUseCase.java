@@ -1,14 +1,20 @@
 package com.tissue.member.application.port.in;
 
 import com.tissue.member.application.dto.request.SignupMemberCommand;
+import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
+import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 
 public interface MemberCommandUseCase {
 
     MemberSignupResponse signup(SignupMemberCommand cmd);
 
-    // TODO: should i change method names to updateMyXxx?
-    //  for example: updateName -> updateMyName
+    OAuthSignupResponse signupOAuth(SignupOAuthMemberCommand cmd);
+
+    void linkOAuthAccount(String registerToken, Long memberId);
+
+    void addPassword(String newPassword, Long memberId);
+
     void updateName(String name, Long memberId);
 
     void updateEmail(String newEmail, Long memberId);

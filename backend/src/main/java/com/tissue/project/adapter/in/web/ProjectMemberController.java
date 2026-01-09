@@ -8,8 +8,8 @@ import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberCommandUseCase;
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -44,7 +44,7 @@ public class ProjectMemberController {
     public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @CurrentMember MemberUserDetails currentMember) {
+            @CurrentMember MemberDetails currentMember) {
         var command = new DirectJoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
         ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
 
@@ -55,7 +55,7 @@ public class ProjectMemberController {
     public ResponseEntity<ProjectMemberCommandResult> leaveProject(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @CurrentMember MemberUserDetails currentMember) {
+            @CurrentMember MemberDetails currentMember) {
         ProjectMemberCommandResult response =
                 commandUseCase.leave(workspaceKey, projectKey, currentMember.getMemberId());
 
@@ -67,7 +67,7 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long memberId,
-            @CurrentMember MemberUserDetails currentMember) {
+            @CurrentMember MemberDetails currentMember) {
         var command = KickProjectMemberCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
@@ -86,7 +86,7 @@ public class ProjectMemberController {
             @PathVariable String projectKey,
             @PathVariable Long memberId,
             @RequestBody @Valid ChangeProjectRoleRequest request,
-            @CurrentMember MemberUserDetails currentMember) {
+            @CurrentMember MemberDetails currentMember) {
         var command = ChangeProjectRoleCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)

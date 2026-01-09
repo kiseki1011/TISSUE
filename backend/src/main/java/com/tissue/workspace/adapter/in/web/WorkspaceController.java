@@ -1,7 +1,7 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.MemberUserDetails;
-import com.tissue.security.authentication.resolver.CurrentMember;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
 import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
@@ -36,7 +36,7 @@ public class WorkspaceController {
 
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
-            @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberUserDetails userDetails) {
+            @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails userDetails) {
         var command = request.toCommand(userDetails.getMemberId());
         WorkspaceCreateResponse response = workspaceCreateUseCase.create(command);
 
@@ -67,9 +67,7 @@ public class WorkspaceController {
 
     @PatchMapping("/{workspaceKey}/members/{memberId}/ownership")
     public ResponseEntity<Void> transferOwnership(
-            @PathVariable String workspaceKey,
-            @PathVariable Long memberId,
-            @CurrentMember MemberUserDetails userDetails) {
+            @PathVariable String workspaceKey, @PathVariable Long memberId, @CurrentMember MemberDetails userDetails) {
         var command = new TransferOwnershipCommand(workspaceKey, memberId, userDetails.getMemberId());
         workspaceCommandUseCase.transferOwnership(command);
 
