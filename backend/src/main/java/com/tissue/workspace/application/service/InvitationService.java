@@ -90,7 +90,7 @@ public class InvitationService implements InvitationUseCase {
 
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
-            projectFinder.findOptionalBy(config.projectId()).ifPresent(project -> {
+            projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
                 projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
             });
         }

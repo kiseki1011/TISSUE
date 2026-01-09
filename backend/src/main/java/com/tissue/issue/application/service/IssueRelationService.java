@@ -44,7 +44,7 @@ public class IssueRelationService implements IssueRelationUseCase {
         Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
         Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
 
-        ProjectMember actor = projectMemberFinder.findBy(sourceProject, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(sourceProject, actorMemberId);
 
         relationCycleDetector.ensureNoCycle(source, target, cmd.relationType());
         IssueRelation relation = source.addRelation(target, cmd.relationType());
@@ -63,7 +63,7 @@ public class IssueRelationService implements IssueRelationUseCase {
         Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
         Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
 
-        ProjectMember actor = projectMemberFinder.findBy(sourceProject, actorMemberId);
+        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(sourceProject, actorMemberId);
 
         IssueRelation removedRelation = source.removeRelation(target);
 

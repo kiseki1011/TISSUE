@@ -56,7 +56,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
         List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.findAllBy(targetMemberIds, cmd.workspaceKey());
 
-        Set<Long> existingMemberIds = projectMemberFinder.findExistingMemberIdsBy(project, targetMemberIds);
+        Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
         List<ProjectMember> newMembers = new ArrayList<>();
 
@@ -104,7 +104,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(projectKey, workspaceKey);
-        ProjectMember actor = projectMemberFinder.findBy(project, memberId);
+        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(project, memberId);
 
         actor.remove();
 
@@ -123,7 +123,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
 
         target.remove();
 
@@ -143,7 +143,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         }
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.findBy(project, cmd.targetMemberId());
+        ProjectMember target = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
 
         target.changeRole(cmd.newRole());
 

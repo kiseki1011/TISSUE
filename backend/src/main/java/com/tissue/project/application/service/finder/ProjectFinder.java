@@ -20,7 +20,7 @@ public class ProjectFinder {
     // TODO: should i change the name to getReadableBy or just use getBy?
     public Project getBy(String projectKey, String workspaceKey) {
         // TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
-        // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
+        // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key which is better?
         return queryRepository
                 .findByKeyAndWorkspaceKey(projectKey, workspaceKey)
                 .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
@@ -29,6 +29,7 @@ public class ProjectFinder {
     // TODO: add javadoc for the following information
     //  - its only for command API's
     //  - will throw an exception if workspace or project was archived
+    // TODO: 성능 최적화 할 방법이 있을까?
     public Project getModifiableBy(String projectKey, String workspaceKey) {
         Project project = getBy(projectKey, workspaceKey);
 
@@ -42,8 +43,7 @@ public class ProjectFinder {
         return project;
     }
 
-    // TODO: getOptionalBy
-    public Optional<Project> findOptionalBy(Long projectId) {
+    public Optional<Project> getOptionalBy(Long projectId) {
         return queryRepository.findById(projectId);
     }
 }
