@@ -16,14 +16,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(
         name = "project_member",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"project_id", "workspace_member_id"})})
 @Getter
-@SQLRestriction("soft_deleted = false")
 public class ProjectMember extends BaseEntity {
 
     @Id
