@@ -12,7 +12,7 @@ import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.ProjectJoinConfig;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.InvitationStatus;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.InvitationAlreadyProcessedException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class InvitationService implements InvitationUseCase {
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
+            throw new InvitationAlreadyProcessedException(invitation);
         }
 
         invitation.accept();
@@ -66,7 +66,7 @@ public class InvitationService implements InvitationUseCase {
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
+            throw new InvitationAlreadyProcessedException(invitation);
         }
 
         invitation.reject();

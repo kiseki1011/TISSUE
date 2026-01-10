@@ -13,7 +13,7 @@ import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceKeyGenerationFailedException;
 import com.tissue.workspace.domain.service.WorkspaceKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +66,6 @@ public class WorkspaceCreateService implements WorkspaceCreateUseCase {
     @Recover
     public WorkspaceCreateResponse recover(DataIntegrityViolationException exception, CreateWorkspaceCommand cmd) {
         log.error("Retry failed. Workspace code collision could not be resolved after {} attempts.", MAX_RETRIES);
-        throw WorkspaceExceptions.keyGenerationFailed(exception);
+        throw new WorkspaceKeyGenerationFailedException(exception);
     }
 }

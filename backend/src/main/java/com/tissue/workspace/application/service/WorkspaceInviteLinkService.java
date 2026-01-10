@@ -24,7 +24,8 @@ import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceInviteLink;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.InvalidWorkspaceInviteLinkException;
+import com.tissue.workspace.domain.exception.WorkspaceInviteLinkNotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(cmd.token())
-                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(cmd.workspaceKey(), cmd.token()));
 
         link.expire();
     }
@@ -89,10 +90,10 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     public WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd) {
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(cmd.token())
-                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(cmd.workspaceKey(), cmd.token()));
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(cmd.workspaceKey(), cmd.token()));
 
         if (!link.isValid()) {
-            throw WorkspaceExceptions.invalidLink(link);
+            throw new InvalidWorkspaceInviteLinkException(link);
         }
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
@@ -115,10 +116,10 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
-                .orElseThrow(() -> WorkspaceExceptions.linkNotFound(workspaceKey, token));
+                .orElseThrow(() -> new WorkspaceInviteLinkNotFoundException(workspaceKey, token));
 
         if (!link.isValid()) {
-            throw WorkspaceExceptions.invalidLink(link);
+            throw new InvalidWorkspaceInviteLinkException(link);
         }
 
         WorkspaceMember linkCreator = workspaceMemberFinder.getBy(link.getCreatedBy(), workspaceKey);

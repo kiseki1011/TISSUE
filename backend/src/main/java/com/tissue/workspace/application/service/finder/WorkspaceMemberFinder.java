@@ -5,7 +5,7 @@ import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceMemberNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,19 +22,19 @@ public class WorkspaceMemberFinder {
     public WorkspaceMember getBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
-                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
     }
 
     public WorkspaceMember getBy(Long memberId, Workspace workspace) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspace(memberId, workspace)
-                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
     }
 
     public WorkspaceMember getActiveBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(memberId, workspaceKey)
-                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
     }
 
     public Optional<WorkspaceMember> getOptionalBy(Long memberId, String workspaceKey) {

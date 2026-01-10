@@ -5,7 +5,7 @@ import com.tissue.member.domain.Member;
 import com.tissue.position.domain.Position;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -96,7 +96,7 @@ public class WorkspaceMember extends BaseEntity {
             return;
         }
         if (newRole == WorkspaceRole.OWNER) {
-            throw WorkspaceExceptions.cannotChangeRoleToOwner();
+            throw new CannotChangeRoleToOwnerException();
         }
         this.role = newRole;
     }

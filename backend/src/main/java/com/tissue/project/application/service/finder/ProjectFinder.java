@@ -4,7 +4,7 @@ import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.exception.ProjectArchivedException;
 import com.tissue.project.domain.exception.ProjectNotFoundException;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ public class ProjectFinder {
         Project project = getBy(projectKey, workspaceKey);
 
         if (project.getWorkspace().isArchived()) {
-            throw WorkspaceExceptions.archived(project.getWorkspace());
+            throw new WorkspaceArchivedException(project.getWorkspace());
         }
         if (project.isArchived()) {
             throw new ProjectArchivedException(workspaceKey, projectKey);
