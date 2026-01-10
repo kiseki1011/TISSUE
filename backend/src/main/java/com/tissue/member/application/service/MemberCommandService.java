@@ -13,10 +13,12 @@ import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,8 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
@@ -212,5 +216,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureWithdrawable(member);
 
         member.withdraw();
+
+        workspaceMemberQueryRepository.softDeleteAllByMemberId(memberId);
+        projectMemberQueryRepository.softDeleteAllByMemberId(memberId);
     }
 }

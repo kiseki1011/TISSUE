@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,19 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "
+            + "pm.archived = true, pm.archivedAt = CURRENT_TIMESTAMP "
+            + "WHERE pm.workspaceKey = :workspaceKey AND pm.memberId = :memberId")
+    void softDeleteAllByWorkspaceKeyAndMemberId(
+            @Param("workspaceKey") String workspaceKey, @Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "
+            + "pm.archived = true, pm.archivedAt = CURRENT_TIMESTAMP "
+            + "WHERE pm.memberId = :memberId")
+    void softDeleteAllByMemberId(@Param("memberId") Long memberId);
 
     @Query("SELECT pm.role FROM ProjectMember pm "
             + "WHERE pm.workspaceKey = :workspaceKey "

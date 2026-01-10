@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +22,14 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
 
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(Long memberId, String workspaceKey);
+
+    Optional<WorkspaceMember> findByMemberAndWorkspaceAndSoftDeletedFalse(Member member, Workspace workspace);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE WorkspaceMember wm SET wm.softDeleted = true, wm.softDeletedAt = CURRENT_TIMESTAMP, "
+            + "wm.archived = true, wm.archivedAt = CURRENT_TIMESTAMP "
+            + "WHERE wm.member.id = :memberId")
+    void softDeleteAllByMemberId(@Param("memberId") Long memberId);
 
     List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 

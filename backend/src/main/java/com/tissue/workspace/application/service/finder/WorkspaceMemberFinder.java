@@ -21,28 +21,28 @@ public class WorkspaceMemberFinder {
 
     public WorkspaceMember getBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
-            .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
-            .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
+                .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
+                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
     }
 
     public WorkspaceMember getBy(Long memberId, Workspace workspace) {
         return workspaceMemberQueryRepository
-            .findByMember_IdAndWorkspace(memberId, workspace)
-            .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
+                .findByMember_IdAndWorkspace(memberId, workspace)
+                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspace.getKey()));
     }
 
     public WorkspaceMember getActiveBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
-            .findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(memberId, workspaceKey)
-            .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
+                .findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(memberId, workspaceKey)
+                .orElseThrow(() -> WorkspaceExceptions.memberNotFound(memberId, workspaceKey));
     }
 
     public Optional<WorkspaceMember> getOptionalBy(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository.findByMember_IdAndWorkspaceKey(memberId, workspaceKey);
     }
 
-    public Optional<WorkspaceMember> getOptionalBy(Member member, Workspace workspace) {
-        return workspaceMemberQueryRepository.findByMemberAndWorkspace(member, workspace);
+    public Optional<WorkspaceMember> getActiveOptionalBy(Member member, Workspace workspace) {
+        return workspaceMemberQueryRepository.findByMemberAndWorkspaceAndSoftDeletedFalse(member, workspace);
     }
 
     public List<WorkspaceMember> getAllBy(Collection<Long> memberIds, String workspaceKey) {

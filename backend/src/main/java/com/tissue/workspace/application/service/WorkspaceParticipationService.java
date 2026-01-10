@@ -5,6 +5,7 @@ import static com.tissue.member.domain.MemberStatus.ACTIVE;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
@@ -50,6 +51,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final MemberQueryRepository memberQueryRepository;
     private final InvitationCommandRepository invitationRepository;
     private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
     private final WorkspaceAuthorizationService workspaceAuthService;
@@ -92,6 +94,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
         workspaceMember.softDelete();
 
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(cmd.workspaceKey(), cmd.memberId());
+
         // TODO: WorkspaceMemberLeftEvent
     }
 
@@ -106,6 +110,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         target.softDelete();
 
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(cmd.workspaceKey(), cmd.targetMemberId());
+
         // TODO: WorkspaceMemberKickedEvent
     }
 
@@ -113,9 +119,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    // TODO: currently considering if i should separate this to a application service of its own
     protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getOptionalBy(member, workspace);
+        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
