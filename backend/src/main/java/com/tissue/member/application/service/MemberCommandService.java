@@ -12,7 +12,11 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
-import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.member.domain.exception.DuplicateEmailException;
+import com.tissue.member.domain.exception.DuplicateUsernameException;
+import com.tissue.member.domain.exception.EmailNotVerifiedException;
+import com.tissue.member.domain.exception.MemberNotFoundException;
+import com.tissue.member.domain.exception.MemberSignupConflictException;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
@@ -69,7 +73,7 @@ public class MemberCommandService implements MemberCommandUseCase {
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.signUpConflict(cmd.email(), cmd.username(), e);
+            throw new MemberSignupConflictException(cmd.email(), cmd.username(), e);
         }
     }
 
@@ -108,7 +112,7 @@ public class MemberCommandService implements MemberCommandUseCase {
                     .build();
 
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.signUpConflict(email, cmd.username(), e);
+            throw new MemberSignupConflictException(email, cmd.username(), e);
         }
     }
 
@@ -125,7 +129,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         if (authIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
-            throw MemberExceptions.signUpConflict(
+            throw new MemberSignupConflictException(
                     claims.get(TokenProvider.CLAIM_EMAIL, String.class),
                     "OAuth Account already linked",
                     new DataIntegrityViolationException("Duplicate Identity"));
@@ -164,7 +168,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueEmail(newEmail);
 
         if (!memberEmailVerificationService.isEmailVerified(newEmail)) {
-            throw MemberExceptions.emailNotVerified(newEmail);
+            throw new EmailNotVerifiedException(newEmail);
         }
 
         try {
@@ -176,7 +180,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
             memberEmailVerificationService.clearVerification(newEmail);
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.duplicateEmail(newEmail, e);
+            throw new DuplicateEmailException(newEmail, e);
         }
     }
 
@@ -189,7 +193,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         try {
             member.updateUsername(newUsername);
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.duplicateUsername(newUsername, e);
+            throw new DuplicateUsernameException(newUsername, e);
         }
     }
 
@@ -202,7 +206,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         AuthIdentity authIdentity = authIdentityRepository
                 .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
-                .orElseThrow(() -> MemberExceptions.notFound(memberId));
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         authIdentity.updateCredential(passwordEncoder.encode(newPassword));
     }

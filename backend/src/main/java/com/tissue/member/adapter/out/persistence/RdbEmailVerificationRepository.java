@@ -3,7 +3,7 @@ package com.tissue.member.adapter.out.persistence;
 import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.domain.EmailVerificationToken;
-import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.member.domain.exception.DuplicateVerificationTokenException;
 import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
             tokenRepository.save(verificationToken);
         } catch (DataIntegrityViolationException e) {
             log.warn("Duplicate verification token for email: {}", email, e);
-            throw MemberExceptions.verificationTokenDuplicate(email, e);
+            throw new DuplicateVerificationTokenException(email, e);
         }
     }
 
