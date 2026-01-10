@@ -21,9 +21,11 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -70,6 +72,12 @@ class MemberCommandServiceTest {
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    ProjectMemberQueryRepository projectMemberQueryRepository;
+
+    @Mock
+    WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     @InjectMocks
     MemberCommandService sut;
@@ -380,6 +388,8 @@ class MemberCommandServiceTest {
             then(authenticationManager).should().authenticate(any());
             then(memberValidator).should().ensureWithdrawable(member);
             then(member).should().withdraw();
+            then(workspaceMemberQueryRepository).should().softDeleteAllByMemberId(memberId);
+            then(projectMemberQueryRepository).should().softDeleteAllByMemberId(memberId);
         }
     }
 }
