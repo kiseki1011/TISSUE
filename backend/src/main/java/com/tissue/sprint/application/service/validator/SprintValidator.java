@@ -4,7 +4,10 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.sprint.domain.exception.SprintExceptions;
+import com.tissue.sprint.domain.exception.ActiveSprintAlreadyExistsException;
+import com.tissue.sprint.domain.exception.IncompleteSprintIssuesFoundException;
+import com.tissue.sprint.domain.exception.SprintClosedException;
+import com.tissue.sprint.domain.exception.SprintIssueProjectMismatchException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,25 +20,25 @@ public class SprintValidator {
 
     public void ensureIssueInSprintProject(Issue issue, Project project) {
         if (!issue.getProjectKey().equals(project.getKey())) {
-            throw SprintExceptions.issueProjectMismatch(issue, project.getKey());
+            throw new SprintIssueProjectMismatchException(issue, project.getKey());
         }
     }
 
     public void ensureAllIssuesCompleted(List<String> incompleteIssueKeys, Sprint sprint) {
         if (!incompleteIssueKeys.isEmpty()) {
-            throw SprintExceptions.incompleteIssuesFound(incompleteIssueKeys, sprint);
+            throw new IncompleteSprintIssuesFoundException(incompleteIssueKeys, sprint);
         }
     }
 
     public void ensureSprintNotClosed(Sprint sprint) {
         if (sprint.isCompleted()) {
-            throw SprintExceptions.sprintClosed(sprint);
+            throw new SprintClosedException(sprint);
         }
     }
 
     public void ensureNoActiveSprint(Project project) {
         sprintFinder.findActiveBy(project).ifPresent(activeSprint -> {
-            throw SprintExceptions.activeSprintAlreadyExists(project.getKey(), activeSprint);
+            throw new ActiveSprintAlreadyExistsException(project.getKey(), activeSprint);
         });
     }
 }

@@ -8,7 +8,7 @@ import com.tissue.sprint.application.dto.response.SprintIssueKeys;
 import com.tissue.sprint.application.port.in.SprintQueryUseCase;
 import com.tissue.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.sprint.domain.exception.SprintExceptions;
+import com.tissue.sprint.domain.exception.SprintNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class SprintQueryService implements SprintQueryUseCase {
 
         Sprint sprint = sprintQueryRepository
                 .findByIdAndProject_Key(sprintId, projectKey)
-                .orElseThrow(() -> SprintExceptions.notFound(sprintId, projectKey));
+                .orElseThrow(() -> new SprintNotFoundException(sprintId, projectKey));
 
         return SprintDetail.from(sprint);
     }
@@ -43,7 +43,7 @@ public class SprintQueryService implements SprintQueryUseCase {
 
         Sprint sprint = sprintQueryRepository
                 .findByIdAndProject_Key(sprintId, projectKey)
-                .orElseThrow(() -> SprintExceptions.notFound(sprintId, projectKey));
+                .orElseThrow(() -> new SprintNotFoundException(sprintId, projectKey));
 
         List<String> issueKeys = issueQueryRepository.findIssueKeysBySprint(sprint);
 

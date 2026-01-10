@@ -4,7 +4,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.sprint.application.port.out.SprintQueryRepository;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.sprint.domain.enums.SprintStatus;
-import com.tissue.sprint.domain.exception.SprintExceptions;
+import com.tissue.sprint.domain.exception.SprintNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,14 +19,14 @@ public class SprintFinder {
     public Sprint findBy(Long sprintId, Project project) {
         return sprintQueryRepository
                 .findByIdAndProject(sprintId, project)
-                .orElseThrow(() -> SprintExceptions.notFound(sprintId, project));
+                .orElseThrow(() -> new SprintNotFoundException(sprintId, project));
     }
 
     // TODO: getBy
     public Sprint findBy(Long sprintId, String projectKey) {
         return sprintQueryRepository
                 .findByIdAndProject_Key(sprintId, projectKey)
-                .orElseThrow(() -> SprintExceptions.notFound(sprintId, projectKey));
+                .orElseThrow(() -> new SprintNotFoundException(sprintId, projectKey));
     }
 
     public Optional<Sprint> findOptBy(Long sprintId, Project project) {

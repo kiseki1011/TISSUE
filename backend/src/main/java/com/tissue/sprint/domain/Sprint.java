@@ -7,7 +7,8 @@ import static com.tissue.sprint.domain.enums.SprintStatus.PLANNING;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.enums.SprintStatus;
-import com.tissue.sprint.domain.exception.SprintExceptions;
+import com.tissue.sprint.domain.exception.InvalidSprintPeriodException;
+import com.tissue.sprint.domain.exception.InvalidSprintStatusTransitionException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -107,7 +108,7 @@ public class Sprint extends BaseEntity {
 
     public void start(Instant dueAt) {
         if (this.status != PLANNING) {
-            throw SprintExceptions.invalidStatusTransition(this.status, PLANNING, ACTIVE);
+            throw new InvalidSprintStatusTransitionException(this.status, PLANNING, ACTIVE);
         }
 
         this.startedAt = Instant.now();
@@ -118,7 +119,7 @@ public class Sprint extends BaseEntity {
 
     public void complete() {
         if (this.status != ACTIVE) {
-            throw SprintExceptions.invalidStatusTransition(this.status, ACTIVE, COMPLETED);
+            throw new InvalidSprintStatusTransitionException(this.status, ACTIVE, COMPLETED);
         }
         this.status = COMPLETED;
         this.completedAt = Instant.now();
@@ -126,7 +127,7 @@ public class Sprint extends BaseEntity {
 
     private void ensureValidPeriod(Instant start, Instant end) {
         if (end.isBefore(start)) {
-            throw SprintExceptions.invalidPeriod(start, end);
+            throw new InvalidSprintPeriodException(start, end);
         }
     }
 }
