@@ -7,7 +7,8 @@ import com.tissue.comment.application.dto.out.CommentAddResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.out.CommentRepository;
 import com.tissue.comment.domain.Comment;
-import com.tissue.comment.domain.exception.CommentExceptions;
+import com.tissue.comment.domain.exception.CommentNotFoundException;
+import com.tissue.comment.domain.exception.NotCommentAuthorException;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.service.finder.ProjectFinder;
@@ -38,7 +39,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         ProjectMember actor = projectMemberFinder.getBy(project, currentMemberProvider.getCurrentMemberId());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
-                .map(id -> commentRepository.findById(id).orElseThrow(() -> CommentExceptions.notFound(id)))
+                .map(id -> commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(id)))
                 .orElse(null);
 
         Comment comment = Comment.create(issue, actor.getWorkspaceMember(), cmd.content(), parent);
@@ -54,15 +55,15 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         // TODO: consider making a CommentFinder (honestly looks kinda overkill)
         Comment comment = commentRepository
                 .findById(cmd.commentId())
-                .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId()));
         Long actorMemberId = currentMemberProvider.getCurrentMemberId();
 
         if (comment.isSoftDeleted()) {
-            throw CommentExceptions.notFound(cmd.commentId());
+            throw new CommentNotFoundException(cmd.commentId());
         }
         // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
         if (!comment.getCreatedBy().equals(actorMemberId)) {
-            throw CommentExceptions.notAuthor(cmd.commentId(), actorMemberId);
+            throw new NotCommentAuthorException(cmd.commentId(), actorMemberId);
         }
 
         comment.updateContent(cmd.content());
@@ -75,15 +76,15 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     public void delete(DeleteCommentCommand cmd) {
         Comment comment = commentRepository
                 .findById(cmd.commentId())
-                .orElseThrow(() -> CommentExceptions.notFound(cmd.commentId()));
+                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId()));
         Long actorMemberId = currentMemberProvider.getCurrentMemberId();
 
         if (comment.isSoftDeleted()) {
-            throw CommentExceptions.notFound(cmd.commentId());
+            throw new CommentNotFoundException(cmd.commentId());
         }
         // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
         if (!comment.getCreatedBy().equals(actorMemberId)) {
-            throw CommentExceptions.notAuthor(cmd.commentId(), actorMemberId);
+            throw new NotCommentAuthorException(cmd.commentId(), actorMemberId);
         }
 
         comment.softDelete();
