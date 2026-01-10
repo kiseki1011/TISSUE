@@ -34,7 +34,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     @Override
     public CommentAddResponse add(AddCommentCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, currentMemberProvider.getCurrentMemberId());
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())

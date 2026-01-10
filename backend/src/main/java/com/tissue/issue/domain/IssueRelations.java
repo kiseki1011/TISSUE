@@ -1,7 +1,8 @@
 package com.tissue.issue.domain;
 
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.RelationAlreadyExistsException;
+import com.tissue.issue.domain.exception.RelationNotFoundException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.OneToMany;
@@ -46,8 +47,7 @@ public class IssueRelations {
             }
         }
 
-        throw IssueExceptions.relationNotFound(
-                sourceIssue.getWorkspaceKey(), sourceIssue.getKey(), otherIssue.getKey());
+        throw new RelationNotFoundException(sourceIssue.getWorkspaceKey(), sourceIssue.getKey(), otherIssue.getKey());
     }
 
     void clear() {
@@ -123,7 +123,7 @@ public class IssueRelations {
                 .anyMatch(relation -> relation.getTargetIssue().equals(target));
 
         if (exists) {
-            throw IssueExceptions.relationAlreadyExists(source.getWorkspaceKey(), source.getKey(), target.getKey());
+            throw new RelationAlreadyExistsException(source.getWorkspaceKey(), source.getKey(), target.getKey());
         }
     }
 

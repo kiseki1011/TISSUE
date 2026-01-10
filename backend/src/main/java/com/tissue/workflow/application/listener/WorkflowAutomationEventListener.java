@@ -10,7 +10,7 @@ import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.IssueNotFoundException;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
@@ -43,7 +43,7 @@ public class WorkflowAutomationEventListener {
     private void processAutoRejection(IssueReviewSubmittedEvent event) {
         Issue issue = issueQueryRepository
                 .findById(event.issueId())
-                .orElseThrow(() -> IssueExceptions.notFound(event.issueId()));
+                .orElseThrow(() -> new IssueNotFoundException(event.issueId()));
 
         List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 

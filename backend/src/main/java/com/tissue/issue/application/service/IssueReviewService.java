@@ -7,7 +7,7 @@ import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.ReviewerNotFoundException;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
@@ -31,7 +31,7 @@ public class IssueReviewService implements IssueReviewUseCase {
     @Override
     public void submitReview(SubmitReviewCommand cmd) {
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), cmd.actorMemberId());
 
         // TODO: since im finding whether the actor is a reviewer i dont need to add the method
@@ -52,6 +52,6 @@ public class IssueReviewService implements IssueReviewUseCase {
         return issue.getParticipants().getReviewers().stream()
                 .filter(r -> r.getReviewer().equals(actor))
                 .findFirst()
-                .orElseThrow(() -> IssueExceptions.reviewerNotFound(actor.getMemberId()));
+                .orElseThrow(() -> new ReviewerNotFoundException(actor.getMemberId()));
     }
 }

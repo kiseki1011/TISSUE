@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.service.handler;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CustomFieldTypeMismatchException;
 import com.tissue.issue.domain.policy.FieldValuePolicy;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
@@ -35,7 +35,7 @@ public class DecimalFieldHandler implements FieldTypeHandler {
             policy.ensureDigits(bd, field.getId());
             return policy.normalizeDecimal(bd);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw IssueExceptions.customFieldTypeMismatch(
+            throw new CustomFieldTypeMismatchException(
                     field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
         }
     }

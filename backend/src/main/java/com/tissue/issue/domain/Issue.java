@@ -7,7 +7,13 @@ import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issue.domain.enums.IssuePriority;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.InvalidParentHierarchyException;
+import com.tissue.issue.domain.exception.IssueSelfReferenceException;
+import com.tissue.issue.domain.exception.OnlyInitialStateDeletionAllowedException;
+import com.tissue.issue.domain.exception.ParentProjectMismatchException;
+import com.tissue.issue.domain.exception.ParentRequiredException;
+import com.tissue.issue.domain.exception.ParentWorkspaceMismatchException;
+import com.tissue.issue.domain.exception.StoryPointNotAllowedException;
 import com.tissue.issue.domain.vo.IssueKey;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
@@ -308,9 +314,9 @@ public class Issue extends BaseEntity {
 
     private void ensureIsInitial() {
         if (!currentState.isCategorizedAs(INITIAL)) {
-            throw IssueExceptions.onlyInitialStateDeletionAllowed(
+            throw new OnlyInitialStateDeletionAllowedException(
                     this.getWorkspaceKey(),
-                    this.getKey().toString(),
+                    this.getKey(),
                     this.getCurrentState().getDisplayName(),
                     this.getCurrentState().getCategory());
         }
@@ -318,8 +324,7 @@ public class Issue extends BaseEntity {
 
     private void ensureCanModifyStoryPoint() {
         if (this.getHierarchy().cannotModifyStoryPoint()) {
-            throw IssueExceptions.storyPointNotAllowed(
-                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
+            throw new StoryPointNotAllowedException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
         }
     }
 
@@ -337,48 +342,36 @@ public class Issue extends BaseEntity {
         IssueHierarchy childHierarchy = this.getHierarchy();
 
         if (parentHierarchy.cannotBeParentOf(childHierarchy)) {
-            throw IssueExceptions.invalidParentHierarchy(
-                    this.getWorkspaceKey(),
-                    parentIssue.getKey().toString(),
-                    parentHierarchy,
-                    this.getKey().toString(),
-                    childHierarchy);
+            throw new InvalidParentHierarchyException(
+                    this.getWorkspaceKey(), parentIssue.getKey(), parentHierarchy, this.getKey(), childHierarchy);
         }
     }
 
     private void ensureNotSelfReference(Issue parentIssue) {
         if (this.equals(parentIssue)) {
-            throw IssueExceptions.issueSelfReference(
-                    this.getWorkspaceKey(), this.getKey().toString());
+            throw new IssueSelfReferenceException(this.getWorkspaceKey(), this.getKey());
         }
     }
 
     private void ensureSameWorkspace(Issue parentIssue) {
         boolean isDifferentWorkspace = !this.getWorkspaceKey().equals(parentIssue.getWorkspaceKey());
         if (isDifferentWorkspace) {
-            throw IssueExceptions.parentWorkspaceMismatch(
-                    parentIssue.getWorkspaceKey(),
-                    parentIssue.getKey().toString(),
-                    this.getWorkspaceKey(),
-                    this.getKey().toString());
+            throw new ParentWorkspaceMismatchException(
+                    parentIssue.getWorkspaceKey(), parentIssue.getKey(), this.getWorkspaceKey(), this.getKey());
         }
     }
 
     private void ensureSameProject(Issue parentIssue) {
         boolean isDifferentProject = !this.getProjectKey().equals(parentIssue.getProjectKey());
         if (isDifferentProject) {
-            throw IssueExceptions.parentProjectMismatch(
-                    parentIssue.getHierarchy(),
-                    parentIssue.getKey().toString(),
-                    this.getHierarchy(),
-                    this.getKey().toString());
+            throw new ParentProjectMismatchException(
+                    parentIssue.getHierarchy(), parentIssue.getKey(), this.getHierarchy(), this.getKey());
         }
     }
 
     private void ensureCanRemoveParent() {
         if (getHierarchy().mustHaveParent()) {
-            throw IssueExceptions.parentRequired(
-                    this.getWorkspaceKey(), this.getKey().toString(), this.getHierarchy());
+            throw new ParentRequiredException(this.getWorkspaceKey(), this.getKey(), this.getHierarchy());
         }
     }
 

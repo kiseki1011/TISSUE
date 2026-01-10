@@ -50,7 +50,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Workflow workflow = issue.getIssueType().getWorkflow();

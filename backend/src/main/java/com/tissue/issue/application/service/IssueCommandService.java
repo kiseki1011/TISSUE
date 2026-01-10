@@ -112,7 +112,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Map<String, FieldChange> changes = new HashMap<>();
@@ -136,7 +136,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
@@ -159,7 +159,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Integer oldStoryPoint = issue.getStoryPoint();
@@ -177,11 +177,11 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
-        Issue parent = issueFinder.findBy(cmd.parentIssueKey(), parentProject);
+        Issue parent = issueFinder.getBy(cmd.parentIssueKey(), parentProject);
 
         Issue oldParent = issue.getParentIssue();
 
@@ -198,7 +198,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         Issue parent = issue.getParentIssue();
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
@@ -215,7 +215,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issueValidator.ensureCanDelete(issue);
@@ -231,6 +231,6 @@ public class IssueCommandService implements IssueCommandUseCase {
             targetProject = projectFinder.getModifiableBy(parentProjectKey, currentProject.getWorkspaceKey());
         }
 
-        return issueFinder.findBy(parentKey, targetProject);
+        return issueFinder.getBy(parentKey, targetProject);
     }
 }

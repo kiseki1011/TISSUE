@@ -49,7 +49,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember oldReporter = issue.getParticipants().getReporter();
         ProjectMember newReporter = projectMemberFinder.getBy(project, cmd.targetMemberId());
@@ -67,7 +67,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember assignee = projectMemberFinder.getBy(project, cmd.targetMemberId());
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
@@ -84,7 +84,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         // TODO: refactor using optional?
         ProjectMember assignee = issue.getParticipants().getAssignee();
@@ -104,7 +104,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         projectAuthService.requireProjectViewer(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
 
@@ -117,7 +117,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
         projectAuthService.requireProjectViewer(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
 
@@ -131,7 +131,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
@@ -149,7 +149,7 @@ public class IssueParticipantService implements IssueParticipantUseCase {
                 cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Issue issue = issueFinder.findBy(cmd.issueKey(), project);
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
         ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
         ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);

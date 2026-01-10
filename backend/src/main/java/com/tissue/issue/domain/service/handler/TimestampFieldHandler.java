@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.service.handler;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CustomFieldTypeMismatchException;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import java.time.Instant;
@@ -30,7 +30,7 @@ public class TimestampFieldHandler implements FieldTypeHandler {
         try {
             return cs.convert(raw, Instant.class);
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw IssueExceptions.customFieldTypeMismatch(
+            throw new CustomFieldTypeMismatchException(
                     field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
         }
     }

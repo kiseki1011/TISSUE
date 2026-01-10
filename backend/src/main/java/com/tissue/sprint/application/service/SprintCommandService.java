@@ -60,7 +60,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         Sprint sprint = sprintFinder.findBy(cmd.sprintId(), project);
-        List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), cmd.workspaceKey());
 
         sprintValidator.ensureSprintNotClosed(sprint);
 
@@ -122,7 +122,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         Long currentUserId = currentMemberProvider.getCurrentMemberId();
         projectAuthService.requireSprintEditPermission(cmd.workspaceKey(), cmd.projectKey(), sprint, currentUserId);
 
-        List<String> incompleteIssueKeys = issueFinder.findIncompleteIssueKeysBySprint(sprint);
+        List<String> incompleteIssueKeys = issueFinder.getIncompleteIssueKeysBySprint(sprint);
 
         if (sprint.isCompleted()) {
             return SprintCommandResult.from(sprint);
@@ -151,7 +151,7 @@ public class SprintCommandService implements SprintCommandUseCase {
         sprintValidator.ensureSprintNotClosed(originalSprint);
         sprintValidator.ensureSprintNotClosed(newSprint);
 
-        List<Issue> issues = issueFinder.findIncompleteIssuesBySprint(originalSprint);
+        List<Issue> issues = issueFinder.getIncompleteIssuesBySprint(originalSprint);
 
         if (issues.isEmpty()) {
             return SprintCommandResult.from(originalSprint);
@@ -176,7 +176,7 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         sprintValidator.ensureSprintNotClosed(sprint);
 
-        List<Issue> issues = issueFinder.findAllBy(cmd.issueKeys(), cmd.workspaceKey());
+        List<Issue> issues = issueFinder.getAllBy(cmd.issueKeys(), cmd.workspaceKey());
 
         for (Issue issue : issues) {
             sprintValidator.ensureIssueInSprintProject(issue, project);

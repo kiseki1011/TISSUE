@@ -40,9 +40,9 @@ public class IssueRelationService implements IssueRelationUseCase {
                 cmd.workspaceKey(), cmd.sourceProjectKey(), cmd.sourceIssueKey(), actorMemberId);
 
         Project sourceProject = projectFinder.getModifiableBy(cmd.sourceProjectKey(), cmd.workspaceKey());
-        Issue source = issueFinder.findBy(cmd.sourceIssueKey(), sourceProject);
+        Issue source = issueFinder.getBy(cmd.sourceIssueKey(), sourceProject);
         Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
-        Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
+        Issue target = issueFinder.getBy(cmd.targetIssueKey(), targetProject);
 
         ProjectMember actor = projectMemberFinder.getBy(sourceProject, actorMemberId);
 
@@ -59,9 +59,9 @@ public class IssueRelationService implements IssueRelationUseCase {
                 cmd.workspaceKey(), cmd.sourceProjectKey(), cmd.sourceIssueKey(), actorMemberId);
 
         Project sourceProject = projectFinder.getModifiableBy(cmd.sourceProjectKey(), cmd.workspaceKey());
-        Issue source = issueFinder.findBy(cmd.sourceIssueKey(), sourceProject);
+        Issue source = issueFinder.getBy(cmd.sourceIssueKey(), sourceProject);
         Project targetProject = projectFinder.getModifiableBy(cmd.targetProjectKey(), cmd.workspaceKey());
-        Issue target = issueFinder.findBy(cmd.targetIssueKey(), targetProject);
+        Issue target = issueFinder.getBy(cmd.targetIssueKey(), targetProject);
 
         ProjectMember actor = projectMemberFinder.getBy(sourceProject, actorMemberId);
 

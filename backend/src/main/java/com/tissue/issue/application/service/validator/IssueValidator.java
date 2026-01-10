@@ -2,7 +2,8 @@ package com.tissue.issue.application.service.validator;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CannotDeleteIssueWithChildrenException;
+import com.tissue.issue.domain.exception.TransitionSourceStateMismatchException;
 import com.tissue.workflow.domain.WorkflowTransition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class IssueValidator {
             Issue issue, Long transitionId, String workspaceKey, WorkflowTransition transition) {
         boolean sourceStateMisMatch = !issue.getCurrentState().equals(transition.getSourceState());
         if (sourceStateMisMatch) {
-            throw IssueExceptions.transitionSourceStateMismatch(
+            throw new TransitionSourceStateMismatchException(
                     workspaceKey,
                     issue.getKey(),
                     transitionId,
@@ -33,7 +34,7 @@ public class IssueValidator {
     private void ensureNoChildren(Issue issue) {
         boolean hasChildren = issueQueryRepo.hasChildren(issue.getWorkspaceKey(), issue.getKey());
         if (hasChildren) {
-            throw IssueExceptions.cannotDeleteIssueWithChildren(issue.getKey());
+            throw new CannotDeleteIssueWithChildrenException(issue.getKey());
         }
     }
 }

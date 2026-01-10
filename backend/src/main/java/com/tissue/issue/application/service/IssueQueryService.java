@@ -20,7 +20,7 @@ import com.tissue.issue.domain.IssueFieldValue;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.IssueSubscriber;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.IssueNotFoundException;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
@@ -54,7 +54,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
@@ -70,7 +70,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithDetail(workspaceKey, issueKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
 
@@ -87,7 +87,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         List<IssueFieldValue> fieldValues =
                 issueFieldValueQueryRepo.findByWorkspaceKeyAndIssueKey(workspaceKey, issueKey);
@@ -101,7 +101,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithParent(workspaceKey, issueKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {
@@ -143,7 +143,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Project project = projectFinder.getBy(projectKey, workspaceKey);
         ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
@@ -173,7 +173,7 @@ public class IssueQueryService implements IssueQueryUseCase {
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(issueKey, workspaceKey)
-                .orElseThrow(() -> IssueExceptions.notFound(workspaceKey, issueKey));
+                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Workflow workflow = issue.getIssueType().getWorkflow();
 

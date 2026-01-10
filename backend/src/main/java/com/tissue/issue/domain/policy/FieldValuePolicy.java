@@ -1,6 +1,7 @@
 package com.tissue.issue.domain.policy;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.DecimalScaleExceededException;
+import com.tissue.issue.domain.exception.IntegerDigitsExceededException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import org.jspecify.annotations.Nullable;
@@ -15,12 +16,12 @@ public record FieldValuePolicy(
         BigDecimal abs = value.abs();
         int scale = abs.scale();
         if (scale > maxFractionDigits) {
-            throw IssueExceptions.decimalScaleExceeded(fieldId, maxFractionDigits);
+            throw new DecimalScaleExceededException(fieldId, maxFractionDigits);
         }
         int precision = abs.precision();
         int integerDigits = Math.max(0, precision - scale);
         if (integerDigits > maxIntegerDigits) {
-            throw IssueExceptions.integerDigitsExceeded(fieldId, maxIntegerDigits);
+            throw new IntegerDigitsExceededException(fieldId, maxIntegerDigits);
         }
     }
 
