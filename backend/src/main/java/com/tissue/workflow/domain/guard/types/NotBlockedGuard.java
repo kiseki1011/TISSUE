@@ -3,7 +3,7 @@ package com.tissue.workflow.domain.guard.types;
 import static com.tissue.workflow.domain.enums.StateCategory.*;
 
 import com.tissue.issue.domain.Issue;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.workflow.domain.guard.GuardContext;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
@@ -35,7 +35,7 @@ public class NotBlockedGuard implements TransitionGuard {
                 .toList();
 
         if (!unresolvedKeys.isEmpty()) {
-            throw WorkflowExceptions.transitionGuardFailed(
+            throw new TransitionGuardFailedException(
                     getType(),
                     "This issue is blocked by: %s. Resolve blocking issues first.".formatted(unresolvedKeys),
                     issue.getKey(),

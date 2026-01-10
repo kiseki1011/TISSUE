@@ -14,7 +14,7 @@ import com.tissue.issue.domain.exception.IssueNotFoundException;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.AutoTransitionTargetNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +56,7 @@ public class WorkflowAutomationEventListener {
         }
 
         WorkflowTransition targetTransition = findTransitionByName(outgoingTransitions, targetTransitionName)
-                .orElseThrow(() -> WorkflowExceptions.autoTransitionTargetNotFound(
+                .orElseThrow(() -> new AutoTransitionTargetNotFoundException(
                         issue.getKey(), issue.getCurrentState().getDisplayName(), targetTransitionName));
 
         log.info(

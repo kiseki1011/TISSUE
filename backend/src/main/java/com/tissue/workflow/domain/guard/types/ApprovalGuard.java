@@ -2,7 +2,8 @@ package com.tissue.workflow.domain.guard.types;
 
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.enums.ReviewStatus;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.InvalidGuardParameterException;
+import com.tissue.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.workflow.domain.guard.GuardContext;
 import com.tissue.workflow.domain.guard.GuardParamMetaData;
 import com.tissue.workflow.domain.guard.GuardParamType;
@@ -40,7 +41,7 @@ public class ApprovalGuard implements TransitionGuard {
 
             if (hasReject) {
                 String reason = "Transition blocked by change requests";
-                throw WorkflowExceptions.transitionGuardFailed(
+                throw new TransitionGuardFailedException(
                         getType(), reason, context.getIssue().getKey(), context.getWorkspaceKey());
             }
         }
@@ -51,7 +52,7 @@ public class ApprovalGuard implements TransitionGuard {
 
         if (approvedCount < minApprovals) {
             String reason = "Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals);
-            throw WorkflowExceptions.transitionGuardFailed(
+            throw new TransitionGuardFailedException(
                     getType(), reason, context.getIssue().getKey(), context.getWorkspaceKey());
         }
     }
@@ -62,7 +63,7 @@ public class ApprovalGuard implements TransitionGuard {
         int min = getInt(params, KEY_MIN_APPROVALS, 1);
         if (min < 1) {
             String reason = "%s must be at least 1".formatted(KEY_MIN_APPROVALS);
-            throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
+            throw new InvalidGuardParameterException(reason, guardType);
         }
 
         boolean autoReject = getBool(params, KEY_AUTO_REJECT, false);
@@ -70,7 +71,7 @@ public class ApprovalGuard implements TransitionGuard {
 
         if (autoReject && (rejectTransName == null || rejectTransName.isBlank())) {
             String reason = "%s is required when auto-reject is enabled".formatted(KEY_REJECT_TRANSITION);
-            throw WorkflowExceptions.invalidGuardParameter(reason, guardType);
+            throw new InvalidGuardParameterException(reason, guardType);
         }
     }
 

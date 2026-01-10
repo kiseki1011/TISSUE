@@ -5,7 +5,11 @@ import static com.tissue.workflow.domain.enums.StateCategory.*;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.DeadEndStateException;
+import com.tissue.workflow.domain.exception.InvalidInitialStateCountException;
+import com.tissue.workflow.domain.exception.InvalidTransitionTargetException;
+import com.tissue.workflow.domain.exception.MissingCompletedStateException;
+import com.tissue.workflow.domain.exception.OrphanStateException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -34,7 +38,7 @@ public class WorkflowGraphValidator {
         List<WorkflowState> initialStates = wf.getStatesByCategory(INITIAL);
 
         if (initialStates.size() != 1) {
-            throw WorkflowExceptions.invalidInitialStateCount(initialStates.size());
+            throw new InvalidInitialStateCountException(initialStates.size());
         }
 
         WorkflowState initialState = initialStates.get(0);
@@ -46,7 +50,7 @@ public class WorkflowGraphValidator {
     private void ensureAtLeastOneCompleted(Workflow wf) {
         boolean completedNotExist = wf.getStatesByCategory(COMPLETED).isEmpty();
         if (completedNotExist) {
-            throw WorkflowExceptions.missingCompletedState();
+            throw new MissingCompletedStateException();
         }
     }
 
@@ -62,7 +66,7 @@ public class WorkflowGraphValidator {
                     .map(t -> t.getSourceState().getDisplayName())
                     .toList();
 
-            throw WorkflowExceptions.invalidTransitionTarget(sourceNames, initialState.getDisplayName());
+            throw new InvalidTransitionTargetException(sourceNames, initialState.getDisplayName());
         }
     }
 
@@ -104,7 +108,7 @@ public class WorkflowGraphValidator {
                 .toList();
 
         if (!orphanStates.isEmpty()) {
-            throw WorkflowExceptions.orphanState(orphanStates, initial.getDisplayName());
+            throw new OrphanStateException(orphanStates, initial.getDisplayName());
         }
     }
 
@@ -121,7 +125,7 @@ public class WorkflowGraphValidator {
                 .toList();
 
         if (!deadEnds.isEmpty()) {
-            throw WorkflowExceptions.deadEndState(deadEnds);
+            throw new DeadEndStateException(deadEnds);
         }
     }
 }

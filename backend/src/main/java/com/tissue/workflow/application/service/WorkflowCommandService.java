@@ -21,7 +21,9 @@ import com.tissue.workflow.application.service.validator.WorkflowValidator;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.DuplicateWorkflowNameException;
+import com.tissue.workflow.domain.exception.InvalidGraphRequestException;
+import com.tissue.workflow.domain.exception.WorkflowTransitionNotFoundException;
 import com.tissue.workflow.domain.guard.GuardType;
 import com.tissue.workflow.domain.guard.TransitionGuard;
 import com.tissue.workflow.domain.service.TransitionGuardRegistry;
@@ -69,7 +71,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 if (s.identifier() instanceof NodeIdentifier.TempKey tk) {
                     stateByTempKey.put(tk.key(), state);
                 } else {
-                    throw WorkflowExceptions.invalidGraphRequest(
+                    throw new InvalidGraphRequestException(
                             "Creation requires temporary keys", "state", "invalid_identifier_type");
                 }
             }
@@ -82,11 +84,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
                 WorkflowState target = stateByTempKey.get(targetKey);
 
                 if (source == null) {
-                    throw WorkflowExceptions.invalidGraphRequest(
+                    throw new InvalidGraphRequestException(
                             "Source state not found for key: " + sourceKey, "transition", "missing_source_state");
                 }
                 if (target == null) {
-                    throw WorkflowExceptions.invalidGraphRequest(
+                    throw new InvalidGraphRequestException(
                             "Target state not found for key: " + targetKey, "transition", "missing_target_state");
                 }
 
@@ -99,7 +101,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
             return WorkflowCreateResponse.from(workflow);
         } catch (DataIntegrityViolationException e) {
-            throw WorkflowExceptions.duplicateWorkflowName(
+            throw new DuplicateWorkflowNameException(
                     cmd.name().getDisplay(), project.getKey(), project.getWorkspaceKey());
         }
     }
@@ -189,7 +191,7 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
         WorkflowTransition transition = workflow.getTransitions().stream()
                 .filter(t -> t.getId().equals(cmd.transitionId()))
                 .findFirst()
-                .orElseThrow(() -> WorkflowExceptions.transitionNotFound(cmd.transitionId(), workflow.getId()));
+                .orElseThrow(() -> new WorkflowTransitionNotFoundException(cmd.transitionId(), workflow.getId()));
 
         workflow.clearGuardsForTransition(transition);
 

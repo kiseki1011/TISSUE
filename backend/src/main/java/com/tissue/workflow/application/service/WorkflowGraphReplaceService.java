@@ -16,7 +16,9 @@ import com.tissue.workflow.domain.Workflow;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.InvalidInitialStateCountException;
+import com.tissue.workflow.domain.exception.WorkflowTransitionNotFoundException;
+import com.tissue.workflow.domain.exception.WorkflowVersionMismatchException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
 
         if (!Objects.equals(workflow.getVersion(), cmd.version())) {
-            throw WorkflowExceptions.versionMismatch(cmd.version(), workflow.getVersion());
+            throw new WorkflowVersionMismatchException(cmd.version(), workflow.getVersion());
         }
         return workflow;
     }
@@ -129,7 +131,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
                 .toList();
 
         if (todoCmds.size() != 1) {
-            throw WorkflowExceptions.invalidInitialStateCount(todoCmds.size());
+            throw new InvalidInitialStateCountException(todoCmds.size());
         }
 
         WorkflowState todoState = stateResolver.resolve(todoCmds.get(0).identifier());
@@ -168,7 +170,7 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
 
         WorkflowTransition transition = existingTransitions.get(transitionId);
         if (transition == null) {
-            throw WorkflowExceptions.transitionNotFound(transitionId, workflow.getId());
+            throw new WorkflowTransitionNotFoundException(transitionId, workflow.getId());
         }
         workflow.rewireTransitionSource(transition, src);
         workflow.rewireTransitionTarget(transition, trg);
