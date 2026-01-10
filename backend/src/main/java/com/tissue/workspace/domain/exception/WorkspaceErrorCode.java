@@ -23,7 +23,13 @@ public enum WorkspaceErrorCode implements ErrorCode {
     CANNOT_CHANGE_ROLE_TO_OWNER("Cannot directly change workspace role to OWNER"),
 
     WORKSPACE_KEY_GENERATION_FAILED("Failed to generate unique workspace key"),
-    INVALID_WORKSPACE_KEY_FORMAT("Invalid workspace key format");
+    INVALID_WORKSPACE_KEY_FORMAT("Invalid workspace key format"),
+
+    // Authorization
+    INSUFFICIENT_WORKSPACE_ROLE("Insufficient workspace role"),
+    WORKSPACE_ADMIN_OR_SELF_REQUIRED("Workspace admin role or self-modification required"),
+    ROLE_GRANT_NOT_ALLOWED("Insufficient permission to grant this role"),
+    INVITE_LINK_EDIT_NOT_ALLOWED("Insufficient permission to edit invite link");
 
     private final String defaultMessage;
 }

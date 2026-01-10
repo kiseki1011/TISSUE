@@ -5,12 +5,14 @@ import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
+import com.tissue.project.domain.exception.InsufficientProjectRoleException;
+import com.tissue.project.domain.exception.ProjectJoinNotAllowedException;
+import com.tissue.project.domain.exception.ResourceOwnershipRequiredException;
+import com.tissue.project.domain.exception.RoleGrantNotAllowedException;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,29 +29,28 @@ public class ProjectAuthorizationService {
         if (isViewer(workspaceKey, projectKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires project " + ProjectRole.VIEWER.name());
+        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.VIEWER);
     }
 
     public void requireProjectMember(String workspaceKey, String projectKey, Long actorMemberId) {
         if (isMember(workspaceKey, projectKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires project " + ProjectRole.MEMBER.name());
+        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.MEMBER);
     }
 
     public void requireProjectAdmin(String workspaceKey, String projectKey, Long actorMemberId) {
         if (isAdmin(workspaceKey, projectKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires project " + ProjectRole.ADMIN.name());
+        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.ADMIN);
     }
 
     public void requireDirectJoinPermission(String workspaceKey, String projectKey, Long actorMemberId) {
         if (canJoinDirectly(workspaceKey, projectKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "If project visibility is not public, requires workspace %s".formatted(WorkspaceRole.ADMIN.name()));
+        throw new ProjectJoinNotAllowedException(workspaceKey, projectKey);
     }
 
     public void requireRoleGrantPermission(
@@ -57,17 +58,14 @@ public class ProjectAuthorizationService {
         if (canGrantRole(workspaceKey, projectKey, grantRole, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Requires workspace %s or an equal or higher role than the project role you are trying to grant"
-                        .formatted(WorkspaceRole.ADMIN.name()));
+        throw new RoleGrantNotAllowedException(workspaceKey, projectKey, grantRole);
     }
 
     public void requireSprintEditPermission(String workspaceKey, String projectKey, Sprint sprint, Long actorMemberId) {
         if ((isAdmin(workspaceKey, projectKey, actorMemberId) || isSprintCreator(sprint, actorMemberId))) {
             return;
         }
-        throw new AccessDeniedException(
-                "Needs project %s or is the sprint creator".formatted(ProjectRole.ADMIN.name()));
+        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "Sprint");
     }
 
     public void requireIssueTypeEditPermission(
@@ -76,8 +74,7 @@ public class ProjectAuthorizationService {
                 || isIssueTypeCreator(projectKey, issueTypeId, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Needs project %s or is the issue type creator".formatted(ProjectRole.ADMIN.name()));
+        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "IssueType");
     }
 
     public void requireWorkflowEditPermission(
@@ -85,8 +82,7 @@ public class ProjectAuthorizationService {
         if ((isAdmin(workspaceKey, projectKey, actorMemberId) || isWorkflowCreator(workflowId, actorMemberId))) {
             return;
         }
-        throw new AccessDeniedException(
-                "Needs project %s or is the workflow creator".formatted(ProjectRole.ADMIN.name()));
+        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "Workflow");
     }
 
     public boolean isViewer(String workspaceKey, String projectKey, Long actorMemberId) {

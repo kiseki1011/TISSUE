@@ -10,7 +10,7 @@ import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
-import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.domain.exception.MalformedTokenException;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
 import com.tissue.security.authentication.presentation.dto.response.RefreshTokenResponse;
 import com.tissue.support.IntegrationTestSupport;
@@ -91,11 +91,11 @@ class AuthenticationServiceIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Using invalid refresh token throws exception")
     void refreshTokenInvalid() {
         // given
-        String invalidToken = "invalid.token.here";
+        String invalidToken = "malformed.token.value";
 
         // when & then
         assertThatThrownBy(() -> authenticationService.refreshToken(invalidToken))
-                .isInstanceOf(JwtAuthenticationException.class);
+                .isInstanceOf(MalformedTokenException.class);
     }
 
     @Test

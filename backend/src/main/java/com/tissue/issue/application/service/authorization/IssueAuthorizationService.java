@@ -1,10 +1,11 @@
 package com.tissue.issue.application.service.authorization;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.issue.domain.exception.InsufficientIssuePermissionException;
+import com.tissue.issue.domain.exception.IssueParticipantManageNotAllowedException;
+import com.tissue.issue.domain.exception.IssueReviewerManageNotAllowedException;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.project.domain.enums.ProjectRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,16 +19,14 @@ public class IssueAuthorizationService {
         if (canEdit(workspaceKey, projectKey, issueKey, memberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Requires project %s or is the author/assignee of the issue".formatted(ProjectRole.ADMIN.name()));
+        throw new InsufficientIssuePermissionException(workspaceKey, projectKey, issueKey);
     }
 
     public void requireIssueDeletePermission(String workspaceKey, String projectKey, String issueKey, Long memberId) {
         if (canDelete(workspaceKey, projectKey, issueKey, memberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Requires project %s or is the author of the issue".formatted(ProjectRole.ADMIN.name()));
+        throw new InsufficientIssuePermissionException(workspaceKey, projectKey, issueKey);
     }
 
     public void requireReviewerManagePermission(
@@ -35,8 +34,7 @@ public class IssueAuthorizationService {
         if (canManageReviewers(workspaceKey, projectKey, issueKey, memberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Requires project %s or is the author/assignee of the issue".formatted(ProjectRole.ADMIN.name()));
+        throw new IssueReviewerManageNotAllowedException(workspaceKey, projectKey, issueKey);
     }
 
     public void requireParticipantManagePermission(
@@ -44,8 +42,7 @@ public class IssueAuthorizationService {
         if (canManageParticipants(workspaceKey, projectKey, issueKey, memberId)) {
             return;
         }
-        throw new AccessDeniedException(
-                "Requires project %s or is the author of the issue".formatted(ProjectRole.ADMIN.name()));
+        throw new IssueParticipantManageNotAllowedException(workspaceKey, projectKey, issueKey);
     }
 
     private boolean canManageReviewers(String workspaceKey, String projectKey, String issueKey, Long memberId) {

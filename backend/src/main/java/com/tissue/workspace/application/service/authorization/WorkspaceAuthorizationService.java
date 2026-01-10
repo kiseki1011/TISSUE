@@ -4,8 +4,12 @@ import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
+import com.tissue.workspace.domain.exception.InsufficientWorkspaceRoleException;
+import com.tissue.workspace.domain.exception.InviteLinkEditNotAllowedException;
+import com.tissue.workspace.domain.exception.WorkspaceAdminOrSelfRequiredException;
+import com.tissue.workspace.domain.exception.WorkspaceRoleGrantNotAllowedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,21 +23,21 @@ public class WorkspaceAuthorizationService {
         if (isMember(workspaceKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.MEMBER.name());
+        throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.MEMBER);
     }
 
     public void requireWorkspaceAdmin(String workspaceKey, Long actorMemberId) {
         if (isAdmin(workspaceKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
+        throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.ADMIN);
     }
 
     public void requireWorkspaceOwner(String workspaceKey, Long actorMemberId) {
         if (isOwner(workspaceKey, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires workspace " + WorkspaceRole.OWNER.name());
+        throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.OWNER);
     }
 
     // TODO: should i consider taking in the WorkspaceMember as the parameter instead of memberId?
@@ -41,29 +45,28 @@ public class WorkspaceAuthorizationService {
         if (isAdmin(workspaceKey, actorMemberId) || targetMemberId.equals(actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires workspace %s or the modification target must be yourself"
-                .formatted(WorkspaceRole.ADMIN.name()));
+        throw new WorkspaceAdminOrSelfRequiredException(workspaceKey, targetMemberId);
     }
 
     public void requireRoleGrantPermission(
             String workspaceKey, WorkspaceRole grantRole, WorkspaceMember target, WorkspaceMember actor) {
         if (grantRole == WorkspaceRole.OWNER) {
-            throw new AccessDeniedException("Cannot grant workspace OWNER. Use workspace owner transfer instead.");
+            throw new CannotChangeRoleToOwnerException();
         }
         if (!isAdmin(workspaceKey, actor.getMemberId())) {
-            throw new AccessDeniedException("Requires workspace " + WorkspaceRole.ADMIN.name());
+            throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.ADMIN);
         }
         if (hasHigherRoleThan(target, actor)) {
             return;
         }
-        throw new AccessDeniedException("Requires higher workspace role than target");
+        throw new WorkspaceRoleGrantNotAllowedException(workspaceKey, grantRole);
     }
 
     public void requireInviteLinkEditPermission(String workspaceKey, String token, Long actorMemberId) {
         if (isAdmin(workspaceKey, actorMemberId) || isLinkCreator(token, actorMemberId)) {
             return;
         }
-        throw new AccessDeniedException("Requires workspace %s or link creator".formatted(WorkspaceRole.ADMIN.name()));
+        throw new InviteLinkEditNotAllowedException(workspaceKey, token);
     }
 
     public boolean isMember(String workspaceKey, Long actorMemberId) {
