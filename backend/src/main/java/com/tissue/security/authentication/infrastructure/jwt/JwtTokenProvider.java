@@ -3,9 +3,13 @@ package com.tissue.security.authentication.infrastructure.jwt;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.domain.TokenType;
-import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.domain.exception.ExpiredTokenException;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.domain.exception.JwtCreationException;
 import com.tissue.security.authentication.domain.exception.JwtSecretException;
+import com.tissue.security.authentication.domain.exception.MalformedTokenException;
+import com.tissue.security.authentication.domain.exception.TokenMissingClaimException;
+import com.tissue.security.authentication.domain.exception.UnsupportedTokenException;
 import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.util.MaskingUtil;
 import io.jsonwebtoken.Claims;
@@ -117,7 +121,7 @@ public class JwtTokenProvider implements TokenProvider {
         Claims claims = parseAndValidateClaims(token);
         validateTokenType(claims, TokenType.REGISTER);
         if (claims.get(CLAIM_PROVIDER) == null || claims.get(CLAIM_IDENTIFIER) == null) {
-            throw new JwtAuthenticationException("Token validation failed. Required claims missing.");
+            throw new TokenMissingClaimException("Token validation failed. Required claims missing.");
         }
         return claims;
     }
@@ -175,10 +179,10 @@ public class JwtTokenProvider implements TokenProvider {
         } catch (UsernameNotFoundException e) {
             // TODO: do i really need to mask the email?
             log.warn("Member not found for email: {}", MaskingUtil.maskIdentifier(email));
-            throw new JwtAuthenticationException("Member not found for email: %s".formatted(email), e);
+            throw new InvalidTokenException("Member not found for email: %s".formatted(email), e);
         } catch (JwtException e) {
             log.warn("JWT validation failed. token: {}", MaskingUtil.maskToken(token));
-            throw new JwtAuthenticationException("JWT validation failed", e);
+            throw new InvalidTokenException("JWT validation failed", e);
         }
     }
 
@@ -214,17 +218,17 @@ public class JwtTokenProvider implements TokenProvider {
     private void validateTokenType(Claims claims, TokenType expectedType) {
         TokenType tokenType = TokenType.from(claims.get(CLAIM_TOKEN_TYPE, String.class));
         if (!Objects.equals(expectedType, tokenType)) {
-            throw new JwtAuthenticationException("Token validation failed. Expected type: %s | Actual: %s"
+            throw new InvalidTokenException("Token validation failed. Expected type: %s | Actual: %s"
                     .formatted(expectedType.getValue(), tokenType.getValue()));
         }
     }
 
     private void validateRequiredClaims(Claims claims) {
         if (claims.getSubject() == null) {
-            throw new JwtAuthenticationException("Token validation failed. Subject claim is missing.");
+            throw new TokenMissingClaimException("Token validation failed. Subject claim is missing.");
         }
         if (claims.get(CLAIM_MEMBER_ID) == null) {
-            throw new JwtAuthenticationException("Token validation failed. Member ID claim is missing.");
+            throw new TokenMissingClaimException("Token validation failed. Member ID claim is missing.");
         }
     }
 
@@ -239,16 +243,16 @@ public class JwtTokenProvider implements TokenProvider {
 
         } catch (ExpiredJwtException e) {
             log.warn("Token is expired. token: {}", MaskingUtil.maskToken(token));
-            throw new JwtAuthenticationException("Token is expired", e);
+            throw new ExpiredTokenException("Token is expired", e);
         } catch (UnsupportedJwtException e) {
             log.warn("Unsupported JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new JwtAuthenticationException("Unsupported JWT token", e);
+            throw new UnsupportedTokenException("Unsupported JWT token", e);
         } catch (MalformedJwtException e) {
             log.warn("Malformed JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new JwtAuthenticationException("Malformed JWT token", e);
+            throw new MalformedTokenException("Malformed JWT token", e);
         } catch (SecurityException | IllegalArgumentException e) {
             log.warn("Invalid JWT token. token: {}", MaskingUtil.maskToken(token));
-            throw new JwtAuthenticationException("Invalid JWT token", e);
+            throw new InvalidTokenException("Invalid JWT token", e);
         }
     }
 }

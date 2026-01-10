@@ -1,6 +1,6 @@
 package com.tissue.security.authentication.domain;
 
-import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,6 @@ public enum TokenType {
         return Arrays.stream(values())
                 .filter(t -> t.value.equals(value))
                 .findFirst()
-                .orElseThrow(() -> new JwtAuthenticationException("Invalid token type: " + value));
+                .orElseThrow(() -> new InvalidTokenException("Invalid token type: " + value));
     }
 }
