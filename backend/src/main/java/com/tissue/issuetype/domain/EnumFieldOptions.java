@@ -1,6 +1,8 @@
 package com.tissue.issuetype.domain;
 
-import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
+import com.tissue.issuetype.domain.exception.OptionReorderDuplicateIdException;
+import com.tissue.issuetype.domain.exception.OptionReorderSizeMismatchException;
+import com.tissue.issuetype.domain.exception.OptionReorderUnknownIdException;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +55,7 @@ public final class EnumFieldOptions {
             Long id = orderedIds.get(i);
             EnumFieldOption option = byId.get(id);
             if (option == null) {
-                throw IssueTypeExceptions.optionReorderUnknownId(id);
+                throw new OptionReorderUnknownIdException(id);
             }
             if (option.getPosition() != i) {
                 option.movePositionTo(i);
@@ -63,20 +65,20 @@ public final class EnumFieldOptions {
 
     private void ensureSameSizeAsActive(List<Long> orderedIds) {
         if (orderedIds.size() != active.size()) {
-            throw IssueTypeExceptions.optionReorderSizeMismatch(active.size(), orderedIds.size());
+            throw new OptionReorderSizeMismatchException(active.size(), orderedIds.size());
         }
     }
 
     private void ensureNoNullElements(List<Long> orderedIds) {
         if (orderedIds.contains(null)) {
-            throw IssueTypeExceptions.optionReorderUnknownId(null);
+            throw new OptionReorderUnknownIdException(null);
         }
     }
 
     private void ensureNoDuplicateIds(List<Long> orderedIds) {
         Set<Long> uniq = new HashSet<>(orderedIds);
         if (uniq.size() != orderedIds.size()) {
-            throw IssueTypeExceptions.optionReorderDuplicateId();
+            throw new OptionReorderDuplicateIdException();
         }
     }
 
@@ -86,7 +88,7 @@ public final class EnumFieldOptions {
         if (!uniq.equals(actual)) {
             uniq.removeAll(actual);
             Long unknown = uniq.isEmpty() ? null : uniq.iterator().next();
-            throw IssueTypeExceptions.optionReorderUnknownId(unknown);
+            throw new OptionReorderUnknownIdException(unknown);
         }
     }
 

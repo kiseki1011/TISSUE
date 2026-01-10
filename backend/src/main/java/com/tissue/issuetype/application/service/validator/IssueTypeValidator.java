@@ -9,7 +9,12 @@ import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
 import com.tissue.issuetype.domain.EnumFieldOption;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.IssueType;
-import com.tissue.issuetype.domain.exception.IssueTypeExceptions;
+import com.tissue.issuetype.domain.exception.DuplicateEnumFieldOptionNameException;
+import com.tissue.issuetype.domain.exception.DuplicateIssueFieldNameException;
+import com.tissue.issuetype.domain.exception.DuplicateIssueTypeNameException;
+import com.tissue.issuetype.domain.exception.EnumFieldOptionInUseException;
+import com.tissue.issuetype.domain.exception.IssueFieldInUseException;
+import com.tissue.issuetype.domain.exception.IssueTypeInUseException;
 import com.tissue.project.domain.Project;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,7 +33,7 @@ public class IssueTypeValidator {
     public void ensureUniqueLabel(Project project, Name name) {
         boolean duplicated = issueTypeQueryRepo.existsByName_NormalizedAndProject(name.getNormalized(), project);
         if (duplicated) {
-            throw IssueTypeExceptions.duplicateTypeName(name, project);
+            throw new DuplicateIssueTypeNameException(name, project);
         }
     }
 
@@ -39,7 +44,7 @@ public class IssueTypeValidator {
     public void ensureUniqueFieldLabel(IssueType issueType, Name name) {
         boolean duplicated = issueFieldRepo.existsByIssueTypeAndName_Normalized(issueType, name.getNormalized());
         if (duplicated) {
-            throw IssueTypeExceptions.duplicateFieldName(name, issueType);
+            throw new DuplicateIssueFieldNameException(name, issueType);
         }
     }
 
@@ -49,7 +54,7 @@ public class IssueTypeValidator {
 
     public void ensureUniqueOptionLabel(IssueField field, Name name) {
         if (optionRepo.existsByIssueFieldAndName_Normalized(field, name.getNormalized())) {
-            throw IssueTypeExceptions.duplicateOptionName(name, field);
+            throw new DuplicateEnumFieldOptionNameException(name, field);
         }
     }
 
@@ -59,19 +64,19 @@ public class IssueTypeValidator {
 
     private void ensureTypeNotInUse(IssueType issueType) {
         if (issueQueryRepo.existsByIssueType(issueType)) {
-            throw IssueTypeExceptions.typeInUse(issueType);
+            throw new IssueTypeInUseException(issueType);
         }
     }
 
     private void ensureFieldNotInUse(IssueField issueField) {
         if (fieldValueRepo.existsByField(issueField)) {
-            throw IssueTypeExceptions.fieldInUse(issueField);
+            throw new IssueFieldInUseException(issueField);
         }
     }
 
     private void ensureOptionNotInUse(EnumFieldOption option) {
         if (optionRepo.isInUse(option)) {
-            throw IssueTypeExceptions.optionInUse(option);
+            throw new EnumFieldOptionInUseException(option);
         }
     }
 }
