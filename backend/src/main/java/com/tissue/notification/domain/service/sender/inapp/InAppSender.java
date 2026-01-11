@@ -1,7 +1,7 @@
 package com.tissue.notification.domain.service.sender.inapp;
 
+import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationChannel;
-import com.tissue.notification.domain.model.Notification;
 import com.tissue.notification.domain.service.sender.NotificationSender;
 import org.springframework.stereotype.Component;
 

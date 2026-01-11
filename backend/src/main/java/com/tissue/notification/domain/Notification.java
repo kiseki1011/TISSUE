@@ -1,9 +1,9 @@
-package com.tissue.notification.domain.model;
+package com.tissue.notification.domain;
 
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.model.vo.EntityReference;
-import com.tissue.notification.domain.model.vo.NotificationMessage;
+import com.tissue.notification.domain.vo.EntityReference;
+import com.tissue.notification.domain.vo.NotificationMessage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -67,16 +67,12 @@ public class Notification extends BaseDateEntity {
     public Notification(
             UUID eventId,
             NotificationType notificationType,
-            //            String workspaceKey,
-            //            String projectKey,
             EntityReference entityReference,
             Long actorMemberId,
             String actorDisplayName,
-            //            String actorUseraname,
             Long receiverMemberId,
             String receiverEmail,
             NotificationMessage message) {
-
         this.eventId = eventId;
         this.type = notificationType;
         this.entityReference = entityReference;
@@ -90,13 +86,5 @@ public class Notification extends BaseDateEntity {
 
     public void markAsRead() {
         this.isRead = true;
-    }
-
-    public String getTitle() {
-        return message.title();
-    }
-
-    public String getContent() {
-        return message.content();
     }
 }

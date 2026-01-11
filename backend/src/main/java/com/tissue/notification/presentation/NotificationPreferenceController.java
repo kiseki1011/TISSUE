@@ -1,6 +1,6 @@
-package com.tissue.notification.presentation.controller;
+package com.tissue.notification.presentation;
 
-import com.tissue.notification.application.service.command.NotificationPreferenceService;
+import com.tissue.notification.application.service.NotificationPreferenceService;
 import com.tissue.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
@@ -21,10 +21,11 @@ public class NotificationPreferenceController {
 
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
-            @PathVariable String workspaceCode,
+            @PathVariable String workspaceKey,
             @CurrentMember MemberDetails userDetails,
             @RequestBody UpdateNotificationPreferenceRequest request) {
-        preferenceService.updatePreference(workspaceCode, userDetails.getMemberId(), request);
+
+        preferenceService.updatePreference(workspaceKey, userDetails.getMemberId(), request);
         return ResponseEntity.noContent().build();
     }
 }

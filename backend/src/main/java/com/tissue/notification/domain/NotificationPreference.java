@@ -1,4 +1,4 @@
-package com.tissue.notification.domain.model;
+package com.tissue.notification.domain;
 
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;

@@ -1,8 +1,8 @@
 package com.tissue.notification.domain.service.message;
 
-import com.tissue.common.event.DomainEvent;
-import com.tissue.notification.domain.model.vo.NotificationMessage;
+import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.vo.NotificationMessage;
 
 public interface NotificationMessageFactory {
-    <T extends DomainEvent> NotificationMessage createMessage(T event);
+    NotificationMessage createMessage(NotificationType type, Object... args);
 }

@@ -1,8 +1,8 @@
-package com.tissue.notification.domain.model;
+package com.tissue.notification.domain;
 
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.model.vo.NotificationMessage;
+import com.tissue.notification.domain.vo.NotificationMessage;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
