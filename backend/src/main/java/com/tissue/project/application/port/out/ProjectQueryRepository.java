@@ -27,5 +27,5 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     @Query("SELECT p.visibility FROM Project p WHERE p.key = :projectKey AND p.workspaceKey =" + " :workspaceKey")
     Optional<ProjectVisibility> findVisibilityByKeys(
-            @Param("projectKey") String projectKey, @Param("workspaceKey") String workspaceKey);
+            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 }

@@ -172,7 +172,7 @@ public class IssueQueryService implements IssueQueryUseCase {
         requireProjectViewer(workspaceKey, projectKey);
 
         Issue issue = issueQueryRepo
-                .findWithBasicInfo(issueKey, workspaceKey)
+                .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
         Workflow workflow = issue.getIssueType().getWorkflow();

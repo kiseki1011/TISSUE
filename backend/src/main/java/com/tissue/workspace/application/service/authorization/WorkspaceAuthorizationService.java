@@ -56,7 +56,7 @@ public class WorkspaceAuthorizationService {
         if (!isAdmin(workspaceKey, actor.getMemberId())) {
             throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.ADMIN);
         }
-        if (hasHigherRoleThan(target, actor)) {
+        if (hasHigherRoleThan(actor, target)) {
             return;
         }
         throw new WorkspaceRoleGrantNotAllowedException(workspaceKey, grantRole);

@@ -62,7 +62,7 @@ public class TeamService implements TeamUseCase {
         Team team = teamFinder.getBy(cmd.teamId(), workspace);
 
         Patchers.apply(cmd.name(), newName -> {
-            if ((team.getName().isSameAs(newName))) {
+            if (team.getName().isSameAs(newName)) {
                 return;
             }
             teamValidator.ensureUniqueName(workspace, newName);

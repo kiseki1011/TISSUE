@@ -62,7 +62,7 @@ public class PositionService implements PositionUseCase {
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
 
         Patchers.apply(cmd.name(), newName -> {
-            if ((position.getName().isSameAs(newName))) {
+            if (position.getName().isSameAs(newName)) {
                 return;
             }
             positionValidator.ensureUniqueName(workspace, newName);
