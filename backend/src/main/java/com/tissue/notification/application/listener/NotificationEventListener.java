@@ -2,7 +2,7 @@ package com.tissue.notification.application.listener;
 
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
-import com.tissue.notification.application.service.command.NotificationTargetService;
+import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.EntityReference;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;

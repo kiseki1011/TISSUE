@@ -1,4 +1,4 @@
-package com.tissue.notification.application.service.command;
+package com.tissue.notification.application.service;
 
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;

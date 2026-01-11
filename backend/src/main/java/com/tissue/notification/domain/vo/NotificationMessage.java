@@ -9,7 +9,7 @@ import java.util.List;
 
 @Embeddable
 public record NotificationMessage(
-        // Note: Title/Content are derived from NotificationType and Args during display
+        // title/content are derived from NotificationType and args during display
         @Column(columnDefinition = "TEXT") @Convert(converter = StringListConverter.class)
         List<String> args) {
 

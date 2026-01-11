@@ -28,28 +28,25 @@ public class NotificationProcessor {
             return;
         }
 
-        // Context optimization: All notifications in this batch belong to same workspace and type
         Notification context = notifications.get(0);
         String workspaceKey = context.getEntityReference().getWorkspaceKey();
         var type = context.getType();
         List<Long> receiverIds =
                 notifications.stream().map(Notification::getReceiverMemberId).toList();
 
-        // 1. Bulk load preferences
+        // bulk load preferences
         List<NotificationPreference> preferences =
                 preferenceRepository.findByWorkspaceKeyAndTypeAndReceiverMemberIdIn(workspaceKey, type, receiverIds);
 
-        // 2. Build Lookup Map: ReceiverId -> Channel -> Enabled
+        // build lookup map: receiverId -> channel -> enabled
         Map<Long, Map<NotificationChannel, Boolean>> prefMap = preferences.stream()
                 .collect(Collectors.groupingBy(
                         NotificationPreference::getReceiverMemberId,
                         Collectors.toMap(NotificationPreference::getChannel, NotificationPreference::isEnabled)));
 
-        // 3. Dispatch
         for (NotificationSender sender : senders) {
             NotificationChannel channel = sender.getChannel();
             if (channel == NotificationChannel.IN_APP) {
-                // Already saved to DB. No further action needed for In-App in this processor.
                 continue;
             }
 
@@ -70,9 +67,7 @@ public class NotificationProcessor {
 
     private boolean isChannelEnabled(
             Long memberId, NotificationChannel channel, Map<Long, Map<NotificationChannel, Boolean>> prefMap) {
-
         Map<NotificationChannel, Boolean> memberPrefs = prefMap.getOrDefault(memberId, Collections.emptyMap());
-        // Default is true if no preference exists
         return memberPrefs.getOrDefault(channel, true);
     }
 }

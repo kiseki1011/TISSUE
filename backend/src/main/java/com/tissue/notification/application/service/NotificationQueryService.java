@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
     private final MessageSource messageSource;
 
-    @Transactional(readOnly = true)
+    // TODO: 모든 알림을 가져오는건 성능 문제가 있지 않을까? paging api로 구현하는게 좋을 것 같음
     public List<NotificationResponse> getNotifications(String workspaceKey, Long memberId, boolean unreadOnly) {
         List<Notification> notifications;
         if (unreadOnly) {
@@ -34,10 +35,10 @@ public class NotificationQueryService {
         return notifications.stream().map(this::toResponse).toList();
     }
 
-    private NotificationResponse toResponse(Notification n) {
+    private NotificationResponse toResponse(Notification notification) {
         Locale locale = LocaleContextHolder.getLocale();
-        NotificationType type = n.getType();
-        List<String> args = n.getMessage().args();
+        NotificationType type = notification.getType();
+        List<String> args = notification.getMessage().args();
         Object[] argArray = args.toArray();
 
         String titleKey = "event." + type.name() + ".title";
@@ -47,16 +48,16 @@ public class NotificationQueryService {
         String content = messageSource.getMessage(contentKey, argArray, contentKey, locale);
 
         return NotificationResponse.builder()
-                .id(n.getId())
-                .eventId(n.getEventId())
+                .id(notification.getId())
+                .eventId(notification.getEventId())
                 .type(type)
                 .title(title)
                 .content(content)
-                .entityReference(n.getEntityReference())
-                .actorMemberId(n.getActorMemberId())
-                .actorDisplayName(n.getActorDisplayName())
-                .isRead(n.isRead())
-                .createdAt(n.getCreatedAt())
+                .entityReference(notification.getEntityReference())
+                .actorMemberId(notification.getActorMemberId())
+                .actorDisplayName(notification.getActorDisplayName())
+                .isRead(notification.isRead())
+                .createdAt(notification.getCreatedAt())
                 .build();
     }
 }
