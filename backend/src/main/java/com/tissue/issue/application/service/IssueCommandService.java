@@ -13,6 +13,7 @@ import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.out.IssueCommandRepository;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
+import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.application.service.validator.IssueFieldSchemaValidator;
 import com.tissue.issue.application.service.validator.IssueValidator;
@@ -20,11 +21,6 @@ import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueContent;
 import com.tissue.issue.domain.IssueParticipants;
 import com.tissue.issue.domain.IssueSchedule;
-import com.tissue.issue.domain.event.IssueCreatedEvent;
-import com.tissue.issue.domain.event.IssueDeletedEvent;
-import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
-import com.tissue.issue.domain.event.IssueParentChangedEvent;
-import com.tissue.issue.domain.event.IssueStoryPointChangedEvent;
 import com.tissue.issue.domain.service.IssueFieldChangeTracker;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.domain.IssueType;
@@ -40,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +52,7 @@ public class IssueCommandService implements IssueCommandUseCase {
     private final IssueValidator issueValidator;
     private final IssueFieldChangeTracker fieldChangeTracker;
     private final IssueCommandRepository issueCommandRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final IssueEventPublisher eventPublisher;
     private final ProjectAuthorizationService projectAuthService;
     private final IssueAuthorizationService issueAuthService;
     private final CurrentMemberProvider currentMemberProvider;
@@ -99,7 +94,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);
 
-        eventPublisher.publishEvent(IssueCreatedEvent.create(issue, actor));
+        eventPublisher.publishIssueCreated(issue, actor);
 
         return IssueCreateResponse.from(issue);
     }
@@ -124,7 +119,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
         if (!changes.isEmpty()) {
-            eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
+            eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
         }
     }
 
@@ -147,7 +142,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
 
         if (!changes.isEmpty()) {
-            eventPublisher.publishEvent(IssueFieldsUpdatedEvent.create(issue, changes, actor));
+            eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
         }
     }
 
@@ -165,8 +160,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(cmd.storyPoint());
 
-        eventPublisher.publishEvent(
-                IssueStoryPointChangedEvent.create(issue, issue.getParentIssue(), oldStoryPoint, actor));
+        eventPublisher.publishStoryPointChanged(issue, oldStoryPoint, actor);
     }
 
     @Override
@@ -187,7 +181,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         issue.setParentIssue(parent);
 
-        eventPublisher.publishEvent(IssueParentChangedEvent.create(issue, oldParent, parent, actor));
+        eventPublisher.publishParentChanged(issue, oldParent, parent, actor);
     }
 
     @Override
@@ -204,7 +198,7 @@ public class IssueCommandService implements IssueCommandUseCase {
 
         issue.removeParentIssue();
 
-        eventPublisher.publishEvent(IssueParentChangedEvent.create(issue, parent, null, actor));
+        eventPublisher.publishParentChanged(issue, parent, null, actor);
     }
 
     @Override
@@ -221,7 +215,7 @@ public class IssueCommandService implements IssueCommandUseCase {
         issueValidator.ensureCanDelete(issue);
         issue.delete();
 
-        eventPublisher.publishEvent(IssueDeletedEvent.create(issue, actor));
+        eventPublisher.publishIssueDeleted(issue, actor);
     }
 
     private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {

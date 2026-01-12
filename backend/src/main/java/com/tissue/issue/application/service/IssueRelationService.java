@@ -4,11 +4,10 @@ import com.tissue.issue.application.dto.request.AddIssueRelationCommand;
 import com.tissue.issue.application.dto.request.RemoveIssueRelationCommand;
 import com.tissue.issue.application.port.in.IssueRelationUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
+import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueRelation;
-import com.tissue.issue.domain.event.IssueRelationAddedEvent;
-import com.tissue.issue.domain.event.IssueRelationRemovedEvent;
 import com.tissue.issue.domain.service.relation.RelationCycleDetector;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
@@ -16,7 +15,6 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +27,7 @@ public class IssueRelationService implements IssueRelationUseCase {
     private final ProjectMemberFinder projectMemberFinder;
     private final IssueFinder issueFinder;
     private final RelationCycleDetector relationCycleDetector;
-    private final ApplicationEventPublisher eventPublisher;
+    private final IssueEventPublisher eventPublisher;
     private final IssueAuthorizationService issueAuthService;
     private final CurrentMemberProvider currentMemberProvider;
 
@@ -49,7 +47,7 @@ public class IssueRelationService implements IssueRelationUseCase {
         relationCycleDetector.ensureNoCycle(source, target, cmd.relationType());
         IssueRelation relation = source.addRelation(target, cmd.relationType());
 
-        eventPublisher.publishEvent(IssueRelationAddedEvent.create(source, target, relation, actor));
+        eventPublisher.publishRelationAdded(source, target, relation, actor);
     }
 
     @Override
@@ -67,6 +65,6 @@ public class IssueRelationService implements IssueRelationUseCase {
 
         IssueRelation removedRelation = source.removeRelation(target);
 
-        eventPublisher.publishEvent(IssueRelationRemovedEvent.create(source, target, removedRelation, actor));
+        eventPublisher.publishRelationRemoved(source, target, removedRelation, actor);
     }
 }

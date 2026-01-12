@@ -3,10 +3,10 @@ package com.tissue.issue.application.service;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
+import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
-import com.tissue.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
@@ -23,7 +23,6 @@ import com.tissue.workflow.domain.service.TransitionGuardRegistry;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final WorkflowFinder workflowFinder;
     private final IssueValidator issueValidator;
     private final TransitionGuardRegistry guardRegistry;
-    private final ApplicationEventPublisher eventPublisher;
+    private final IssueEventPublisher eventPublisher;
     private final IssueAuthorizationService issueAuthService;
     private final CurrentMemberProvider currentMemberProvider;
 
@@ -72,7 +71,7 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue.getKey(),
                 actorMemberId);
 
-        eventPublisher.publishEvent(IssueTransitionedEvent.create(issue, transition, oldState, actor));
+        eventPublisher.publishTransitioned(issue, transition, oldState, actor);
     }
 
     private void executeGuards(

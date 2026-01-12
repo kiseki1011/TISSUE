@@ -1,9 +1,6 @@
 package com.tissue.issue.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.common.util.NullSafe;
-import com.tissue.issue.domain.Issue;
-import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -24,20 +21,29 @@ public record IssueParentChangedEvent(
         implements DomainEvent {
 
     public static IssueParentChangedEvent create(
-            Issue issue, @Nullable Issue oldParent, @Nullable Issue newParent, ProjectMember actor) {
+            String workspaceKey,
+            String projectKey,
+            String issueKey,
+            Long issueId,
+            @Nullable String oldParentKey,
+            @Nullable Long oldParentId,
+            @Nullable String newParentKey,
+            @Nullable Long newParentId,
+            Long actorMemberId,
+            String actorDisplayName) {
 
         return new IssueParentChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                issue.getWorkspaceKey(),
-                issue.getProjectKey(),
-                issue.getKey(),
-                issue.getId(),
-                NullSafe.get(oldParent, Issue::getKey),
-                NullSafe.get(oldParent, Issue::getId),
-                NullSafe.get(newParent, Issue::getKey),
-                NullSafe.get(newParent, Issue::getId),
-                actor.getMemberId(),
-                actor.getDisplayName());
+                workspaceKey,
+                projectKey,
+                issueKey,
+                issueId,
+                oldParentKey,
+                oldParentId,
+                newParentKey,
+                newParentId,
+                actorMemberId,
+                actorDisplayName);
     }
 }

@@ -37,19 +37,6 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
         return issueJpaRepository.findWithDetail(workspaceKey, issueKey);
     }
 
-    // Since I cannot implement all methods right now without copying all JPQL queries to JpaRepository or this class,
-    // I will focus on the instruction's goal: "Refactor ... to remove problematic JPQL ... and Cartesian Products".
-    // I already moved `findWithBasicInfo` and `findWithDetail` to `IssueJpaRepository` with EntityGraphs.
-    // For the rest of the methods, I will assume they are migrated or I would need to add them to `IssueJpaRepository`.
-    // However, `IssueQueryRepository` interface has MANY methods.
-    // To make this code compile and work, I need to implement ALL methods.
-    // This requires adding the rest of the query methods to `IssueJpaRepository`.
-
-    @Override
-    public Optional<Issue> findByKeyAndWorkspaceKey(String issueKey, String workspaceKey) {
-        return issueJpaRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey);
-    }
-
     @Override
     public Optional<Issue> findByKeyAndProject(String issueKey, Project project) {
         return issueJpaRepository.findByKeyAndProject(issueKey, project);

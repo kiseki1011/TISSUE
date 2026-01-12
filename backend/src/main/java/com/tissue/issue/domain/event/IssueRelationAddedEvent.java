@@ -1,10 +1,7 @@
 package com.tissue.issue.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.issue.domain.Issue;
-import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -25,20 +22,30 @@ public record IssueRelationAddedEvent(
         implements DomainEvent {
 
     public static IssueRelationAddedEvent create(
-            Issue source, Issue target, IssueRelation relation, ProjectMember actor) {
+            String workspaceKey,
+            String sourceProjectKey,
+            String sourceIssueKey,
+            Long sourceIssueId,
+            String targetProjectKey,
+            String targetIssueKey,
+            Long targetIssueId,
+            Long relationId,
+            IssueRelationType relationType,
+            Long actorMemberId,
+            String actorDisplayName) {
         return new IssueRelationAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                source.getWorkspaceKey(),
-                source.getProjectKey(),
-                source.getKey(),
-                source.getId(),
-                target.getProjectKey(),
-                target.getKey(),
-                target.getId(),
-                relation.getId(),
-                relation.getRelationType(),
-                actor.getMemberId(),
-                actor.getDisplayName());
+                workspaceKey,
+                sourceProjectKey,
+                sourceIssueKey,
+                sourceIssueId,
+                targetProjectKey,
+                targetIssueKey,
+                targetIssueId,
+                relationId,
+                relationType,
+                actorMemberId,
+                actorDisplayName);
     }
 }
