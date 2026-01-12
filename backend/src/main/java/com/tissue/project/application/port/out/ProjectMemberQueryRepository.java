@@ -3,6 +3,7 @@ package com.tissue.project.application.port.out;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -70,4 +71,25 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     boolean existsByProjectAndMemberId(Project project, Long memberId);
 
     List<ProjectMember> findAllByMemberId(Long memberId);
+
+    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+            + "FROM ProjectMember pm "
+            + "JOIN pm.workspaceMember wm "
+            + "WHERE pm.workspaceKey = :workspaceKey "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.softDeleted = false")
+    List<WorkspaceMemberContact> findAllContactsByProjectKey(
+            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
+
+    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+            + "FROM ProjectMember pm "
+            + "JOIN pm.workspaceMember wm "
+            + "WHERE pm.workspaceKey = :workspaceKey "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.memberId <> :excludedMemberId "
+            + "AND pm.softDeleted = false")
+    List<WorkspaceMemberContact> findAllContactsByProjectKeyExcluding(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("excludedMemberId") Long excludedMemberId);
 }

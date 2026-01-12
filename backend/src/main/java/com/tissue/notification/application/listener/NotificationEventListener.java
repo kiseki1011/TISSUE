@@ -2,7 +2,6 @@ package com.tissue.notification.application.listener;
 
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
-import com.tissue.notification.application.service.NotificationTargetService;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.EntityReference;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
@@ -20,15 +19,20 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class NotificationEventListener {
 
     private final NotificationCommandService commandService;
-    private final NotificationTargetService targetService;
+    private final com.tissue.notification.application.service.command.NotificationTargetService targetService;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCreated(IssueCreatedEvent event) {
-        log.info("Handling IssueCreatedEvent for issue: {}", event.issueKey());
+        // Project-level notification (notify project members, excluding actor)
+        List<WorkspaceMemberContact> targets = targetService.getProjectMembersExcluding(
+                event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
-        List<WorkspaceMemberContact> targets =
-                targetService.getAllWorkspaceMembersExcluding(event.workspaceKey(), event.actorMemberId());
+        log.info(
+                "Handling IssueCreatedEvent: issue={} in project={}, targets={}",
+                event.issueKey(),
+                event.projectKey(),
+                targets.size());
 
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());

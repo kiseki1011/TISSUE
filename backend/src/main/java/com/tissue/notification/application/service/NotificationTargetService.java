@@ -1,5 +1,6 @@
-package com.tissue.notification.application.service;
+package com.tissue.notification.application.service.command;
 
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class NotificationTargetService {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
 
     /** Retrieve all members in the workspace as notification targets. */
     public List<WorkspaceMemberContact> getWorkspaceWideMemberTargets(String workspaceCode) {
@@ -23,6 +25,18 @@ public class NotificationTargetService {
     /** Retrieve all members in the workspace as notification targets, excluding a specific member. */
     public List<WorkspaceMemberContact> getAllWorkspaceMembersExcluding(String workspaceCode, Long excludedMemberId) {
         return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyExcluding(workspaceCode, excludedMemberId);
+    }
+
+    /** Retrieve all members in the project as notification targets. */
+    public List<WorkspaceMemberContact> getProjectMemberTargets(String workspaceCode, String projectCode) {
+        return projectMemberQueryRepository.findAllContactsByProjectKey(workspaceCode, projectCode);
+    }
+
+    /** Retrieve all members in the project as notification targets, excluding a specific member. */
+    public List<WorkspaceMemberContact> getProjectMembersExcluding(
+            String workspaceCode, String projectCode, Long excludedMemberId) {
+        return projectMemberQueryRepository.findAllContactsByProjectKeyExcluding(
+                workspaceCode, projectCode, excludedMemberId);
     }
 
     /** Retrieve workspace administrators and a specific member as notification targets. */
