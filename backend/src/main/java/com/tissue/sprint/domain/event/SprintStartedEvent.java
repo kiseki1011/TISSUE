@@ -1,8 +1,6 @@
 package com.tissue.sprint.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.project.domain.ProjectMember;
-import com.tissue.sprint.domain.Sprint;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -12,7 +10,7 @@ public record SprintStartedEvent(
         String workspaceKey,
         String projectKey,
         Long sprintId,
-        String sprintName,
+        String sprintTitle,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
@@ -21,7 +19,7 @@ public record SprintStartedEvent(
             String workspaceKey,
             String projectKey,
             Long sprintId,
-            String sprintName,
+            String sprintTitle,
             Long actorMemberId,
             String actorDisplayName) {
         return new SprintStartedEvent(
@@ -30,7 +28,7 @@ public record SprintStartedEvent(
                 workspaceKey,
                 projectKey,
                 sprintId,
-                sprintName,
+                sprintTitle,
                 actorMemberId,
                 actorDisplayName);
     }

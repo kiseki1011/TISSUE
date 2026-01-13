@@ -168,7 +168,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
         ProjectMember pm = ProjectMember.create(project, wm, role);
         projectMemberRepository.save(pm);
-        
+
         // Publish event with the member themselves as actor (assuming invitation acceptance context)
         eventPublisher.publishMemberJoinedProject(pm, memberId);
     }

@@ -1,7 +1,6 @@
 package com.tissue.project.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
 

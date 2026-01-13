@@ -23,15 +23,8 @@ public class WorkspaceEventPublisher {
     }
 
     public void publishWorkspaceRoleChanged(
-            WorkspaceMember targetMember,
-            WorkspaceRole oldRole,
-            WorkspaceRole newRole,
-            Long actorMemberId) {
+            WorkspaceMember targetMember, WorkspaceRole oldRole, WorkspaceRole newRole, Long actorMemberId) {
         eventPublisher.publishEvent(WorkspaceRoleChangedEvent.create(
-                targetMember.getWorkspaceKey(),
-                targetMember.getMemberId(),
-                oldRole,
-                newRole,
-                actorMemberId));
+                targetMember.getWorkspaceKey(), targetMember.getMemberId(), oldRole, newRole, actorMemberId));
     }
 }

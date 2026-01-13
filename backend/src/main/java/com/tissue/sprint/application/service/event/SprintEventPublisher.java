@@ -19,7 +19,7 @@ public class SprintEventPublisher {
                 sprint.getProject().getWorkspaceKey(),
                 sprint.getProject().getKey(),
                 sprint.getId(),
-                sprint.getName(),
+                sprint.getTitle(),
                 actor.getMemberId(),
                 actor.getDisplayName()));
     }
@@ -29,7 +29,7 @@ public class SprintEventPublisher {
                 sprint.getProject().getWorkspaceKey(),
                 sprint.getProject().getKey(),
                 sprint.getId(),
-                sprint.getName(),
+                sprint.getTitle(),
                 actor.getMemberId(),
                 actor.getDisplayName()));
     }

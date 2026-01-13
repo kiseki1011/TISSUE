@@ -25,10 +25,7 @@ public class ProjectEventPublisher {
     }
 
     public void publishProjectRoleChanged(
-            ProjectMember targetMember,
-            ProjectRole oldRole,
-            ProjectRole newRole,
-            Long actorMemberId) {
+            ProjectMember targetMember, ProjectRole oldRole, ProjectRole newRole, Long actorMemberId) {
         eventPublisher.publishEvent(ProjectRoleChangedEvent.create(
                 targetMember.getWorkspaceKey(),
                 targetMember.getProjectKey(),

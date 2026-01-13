@@ -22,12 +22,6 @@ public record WorkspaceRoleChangedEvent(
             WorkspaceRole newRole,
             Long actorMemberId) {
         return new WorkspaceRoleChangedEvent(
-                UUID.randomUUID(),
-                Instant.now(),
-                workspaceKey,
-                targetMemberId,
-                oldRole,
-                newRole,
-                actorMemberId);
+                UUID.randomUUID(), Instant.now(), workspaceKey, targetMemberId, oldRole, newRole, actorMemberId);
     }
 }
