@@ -2,8 +2,6 @@ package com.tissue.notification.domain.enums;
 
 public enum NotificationType {
     ISSUE_CREATED,
-    ISSUE_PARENT_ASSIGNED,
-    ISSUE_PARENT_REMOVED,
     ISSUE_UPDATED,
     ISSUE_STATUS_CHANGED,
     ISSUE_COMMENT_ADDED,
@@ -18,7 +16,7 @@ public enum NotificationType {
     SPRINT_STARTED,
     SPRINT_COMPLETED,
     MEMBER_JOINED_WORKSPACE,
+    MEMBER_JOINED_PROJECT,
     WORKSPACE_ROLE_CHANGED,
     PROJECT_ROLE_CHANGED;
-    // TODO: MENTIONED_IN_COMMENT?
 }

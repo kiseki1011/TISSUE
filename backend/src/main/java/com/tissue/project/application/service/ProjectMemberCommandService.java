@@ -10,6 +10,7 @@ import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 import com.tissue.project.application.port.in.ProjectMemberCommandUseCase;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.project.application.service.event.ProjectEventPublisher;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
@@ -43,6 +44,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
     private final ProjectMemberCommandRepository projectMemberRepository;
     private final ProjectAuthorizationService projectAuthService;
     private final CurrentMemberProvider currentMemberProvider;
+    private final ProjectEventPublisher eventPublisher;
 
     @Override
     public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
@@ -72,7 +74,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
         projectMemberRepository.saveAll(newMembers);
 
-        // TODO: ProjectMembersAddedEvent
+        newMembers.forEach(pm -> eventPublisher.publishMemberJoinedProject(pm, currentUserId));
 
         return ProjectMembersCommandResult.of(project, newMembers);
     }
@@ -90,7 +92,7 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
         projectMemberRepository.save(projectMember);
 
-        // TODO: ProjectMemberJoinedEvent
+        eventPublisher.publishMemberJoinedProject(projectMember, currentUserId);
 
         return ProjectMemberCommandResult.of(projectMember);
     }
@@ -146,9 +148,10 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
         Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
         ProjectMember target = projectMemberFinder.getBy(project, cmd.targetMemberId());
 
+        ProjectRole oldRole = target.getRole();
         target.changeRole(cmd.newRole());
 
-        // TODO: ProjectMemberRoleChangedEvent
+        eventPublisher.publishProjectRoleChanged(target, oldRole, cmd.newRole(), currentUserId);
 
         return ProjectMemberCommandResult.of(target);
     }
@@ -165,5 +168,8 @@ public class ProjectMemberCommandService implements ProjectMemberCommandUseCase 
 
         ProjectMember pm = ProjectMember.create(project, wm, role);
         projectMemberRepository.save(pm);
+        
+        // Publish event with the member themselves as actor (assuming invitation acceptance context)
+        eventPublisher.publishMemberJoinedProject(pm, memberId);
     }
 }

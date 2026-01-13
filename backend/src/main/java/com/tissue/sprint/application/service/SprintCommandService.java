@@ -5,7 +5,9 @@ import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
+import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
+import com.tissue.project.domain.ProjectMember;
 import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
@@ -17,6 +19,7 @@ import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.sprint.application.port.in.SprintCommandUseCase;
 import com.tissue.sprint.application.port.out.SprintCommandRepository;
+import com.tissue.sprint.application.service.event.SprintEventPublisher;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.application.service.validator.SprintValidator;
 import com.tissue.sprint.domain.Sprint;
@@ -32,11 +35,13 @@ public class SprintCommandService implements SprintCommandUseCase {
 
     private final SprintFinder sprintFinder;
     private final ProjectFinder projectFinder;
+    private final ProjectMemberFinder projectMemberFinder;
     private final IssueFinder issueFinder;
     private final SprintValidator sprintValidator;
     private final SprintCommandRepository sprintRepository;
     private final ProjectAuthorizationService projectAuthService;
     private final CurrentMemberProvider currentMemberProvider;
+    private final SprintEventPublisher eventPublisher;
 
     @Override
     public SprintCommandResult createSprint(CreateSprintCommand cmd) {
@@ -109,7 +114,8 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         sprint.start(cmd.dueAt());
 
-        // TODO: SprintStartedEvent
+        ProjectMember actor = projectMemberFinder.getBy(project, currentUserId);
+        eventPublisher.publishSprintStarted(sprint, actor);
 
         return SprintCommandResult.from(sprint);
     }
@@ -132,7 +138,8 @@ public class SprintCommandService implements SprintCommandUseCase {
 
         sprint.complete();
 
-        // TODO: SprintCompletedEvent
+        ProjectMember actor = projectMemberFinder.getBy(project, currentUserId);
+        eventPublisher.publishSprintCompleted(sprint, actor);
 
         return SprintCommandResult.from(sprint);
     }

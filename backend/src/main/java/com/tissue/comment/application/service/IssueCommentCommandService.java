@@ -6,6 +6,7 @@ import com.tissue.comment.application.dto.in.UpdateCommentCommand;
 import com.tissue.comment.application.dto.out.CommentAddResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.out.CommentRepository;
+import com.tissue.comment.application.service.event.CommentEventPublisher;
 import com.tissue.comment.domain.Comment;
 import com.tissue.comment.domain.exception.CommentNotFoundException;
 import com.tissue.comment.domain.exception.NotCommentAuthorException;
@@ -31,6 +32,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final CurrentMemberProvider currentMemberProvider;
+    private final CommentEventPublisher eventPublisher;
 
     @Override
     public CommentAddResponse add(AddCommentCommand cmd) {
@@ -45,7 +47,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         Comment comment = Comment.create(issue, actor.getWorkspaceMember(), cmd.content(), parent);
         commentRepository.save(comment);
 
-        // TODO: Publish CommentAddedEvent
+        eventPublisher.publishCommentAdded(issue, comment.getId(), actor);
 
         return new CommentAddResponse(cmd.workspaceKey(), cmd.issueKey(), comment.getId());
     }

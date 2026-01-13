@@ -20,6 +20,7 @@ import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
@@ -57,8 +58,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final WorkspaceAuthorizationService workspaceAuthService;
     private final ProjectAuthorizationService projectAuthService;
     private final CurrentMemberProvider currentMemberProvider;
-
-    // private final ApplicationEventPublisher eventPublisher;
+    private final WorkspaceEventPublisher eventPublisher;
 
     @Override
     public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
@@ -128,7 +128,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         checkWorkspaceCapacity(workspace);
         checkMemberJoinCapacity(member);
 
-        return workspaceMemberFinder
+        WorkspaceMember joinedMember = workspaceMemberFinder
                 .getOptionalBy(member.getId(), workspace.getKey())
                 .map(returningMember -> {
                     returningMember.restoreSoftDeleted();
@@ -138,6 +138,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
                     return workspaceMemberCommandRepository.save(newMember);
                 });
+
+        eventPublisher.publishMemberJoinedWorkspace(joinedMember);
+
+        return joinedMember;
     }
 
     private InviteMembersResponse processInvitation(

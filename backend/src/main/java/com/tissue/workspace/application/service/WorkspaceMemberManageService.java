@@ -11,10 +11,12 @@ import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
 import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +32,7 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
     private final TeamFinder teamFinder;
     private final WorkspaceAuthorizationService workspaceAuthService;
     private final CurrentMemberProvider currentMemberProvider;
-
-    // private final ApplicationEventPublisher eventPublisher;
+    private final WorkspaceEventPublisher eventPublisher;
 
     @Override
     public void updateDisplayName(UpdateDisplayNameCommand cmd) {
@@ -55,9 +56,10 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
         workspaceAuthService.requireRoleGrantPermission(cmd.workspaceKey(), cmd.role(), target, actor);
 
+        WorkspaceRole oldRole = target.getRole();
         target.changeRoleTo(cmd.role());
 
-        // TODO: WorkspaceMemberRoleChangedEvent
+        eventPublisher.publishWorkspaceRoleChanged(target, oldRole, cmd.role(), actorMemberId);
     }
 
     @Override
