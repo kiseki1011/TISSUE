@@ -8,6 +8,7 @@ import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.enums.StateCategory;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -51,4 +52,15 @@ public interface IssueQueryRepository {
     boolean isAuthorOrAssignee(String workspaceKey, String issueKey, Long memberId);
 
     boolean isAuthor(String workspaceKey, String issueKey, Long memberId);
+
+    // Notification Support
+    Optional<WorkspaceMemberContact> findAuthorContact(String workspaceKey, String issueKey);
+
+    Optional<WorkspaceMemberContact> findAssigneeContact(String workspaceKey, String issueKey);
+
+    Optional<WorkspaceMemberContact> findReporterContact(String workspaceKey, String issueKey);
+
+    List<WorkspaceMemberContact> findReviewerContacts(String workspaceKey, String issueKey);
+
+    List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey, String issueKey);
 }

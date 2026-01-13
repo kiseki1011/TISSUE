@@ -10,6 +10,7 @@ import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.Project;
 import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.enums.StateCategory;
+import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -115,5 +116,30 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     @Override
     public boolean isAuthor(String workspaceKey, String issueKey, Long memberId) {
         return issueJpaRepository.isAuthor(workspaceKey, issueKey, memberId);
+    }
+
+    @Override
+    public Optional<WorkspaceMemberContact> findAuthorContact(String workspaceKey, String issueKey) {
+        return issueJpaRepository.findAuthorContact(workspaceKey, issueKey);
+    }
+
+    @Override
+    public Optional<WorkspaceMemberContact> findAssigneeContact(String workspaceKey, String issueKey) {
+        return issueJpaRepository.findAssigneeContact(workspaceKey, issueKey);
+    }
+
+    @Override
+    public Optional<WorkspaceMemberContact> findReporterContact(String workspaceKey, String issueKey) {
+        return issueJpaRepository.findReporterContact(workspaceKey, issueKey);
+    }
+
+    @Override
+    public List<WorkspaceMemberContact> findReviewerContacts(String workspaceKey, String issueKey) {
+        return issueJpaRepository.findReviewerContacts(workspaceKey, issueKey);
+    }
+
+    @Override
+    public List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey, String issueKey) {
+        return issueJpaRepository.findSubscriberContacts(workspaceKey, issueKey);
     }
 }
