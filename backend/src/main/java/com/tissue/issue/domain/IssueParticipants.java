@@ -1,5 +1,6 @@
 package com.tissue.issue.domain;
 
+import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.project.domain.ProjectMember;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
@@ -74,6 +75,23 @@ public class IssueParticipants {
 
     void removeSubscriber(ProjectMember projectMember) {
         subscribers.removeIf(s -> s.getSubscriber().equals(projectMember));
+    }
+
+    int resetReviews(Set<Long> reviewerMemberIds) {
+        int count = 0;
+        boolean targetSpecific = reviewerMemberIds != null && !reviewerMemberIds.isEmpty();
+
+        for (IssueReviewer reviewer : reviewers) {
+            boolean isTarget = targetSpecific
+                    ? reviewerMemberIds.contains(reviewer.getReviewer().getMemberId())
+                    : reviewer.getStatus() == ReviewStatus.CHANGES_REQUESTED;
+
+            if (isTarget && reviewer.getStatus() != ReviewStatus.PENDING) {
+                reviewer.resetReview();
+                count++;
+            }
+        }
+        return count;
     }
 
     void clear() {

@@ -13,6 +13,7 @@ import com.tissue.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.issue.domain.event.IssueRelationRemovedEvent;
 import com.tissue.issue.domain.event.IssueReporterChangedEvent;
+import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
@@ -23,6 +24,7 @@ import com.tissue.project.domain.ProjectMember;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -200,6 +202,19 @@ public class IssueEventPublisher {
                 status,
                 actor.getMemberId(),
                 actor.getDisplayName()));
+    }
+
+    public void publishReviewRequested(
+            Issue issue, ProjectMember actor, @Nullable Set<Long> reviewerMemberIds, int reviewerCount) {
+        eventPublisher.publishEvent(IssueReviewRequestedEvent.create(
+                issue.getWorkspaceKey(),
+                issue.getProjectKey(),
+                issue.getKey(),
+                issue.getId(),
+                actor.getMemberId(),
+                actor.getDisplayName(),
+                reviewerMemberIds,
+                reviewerCount));
     }
 
     public void publishTransitioned(

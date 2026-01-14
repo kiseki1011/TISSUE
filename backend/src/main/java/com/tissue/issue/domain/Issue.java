@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import org.hibernate.annotations.SQLRestriction;
 import org.jspecify.annotations.Nullable;
@@ -104,9 +105,11 @@ public class Issue extends BaseEntity {
     private Sprint sprint;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issue_type_id")
     private IssueType issueType;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_state_id")
     private WorkflowState currentState;
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -253,7 +256,6 @@ public class Issue extends BaseEntity {
         return relations.removeRelation(this, otherIssue);
     }
 
-    // TODO: should i separate this to a separate domain service?
     public void transitionTo(WorkflowState newState) {
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
@@ -291,6 +293,10 @@ public class Issue extends BaseEntity {
 
     public void removeReviewer(ProjectMember projectMember) {
         participants.removeReviewer(projectMember);
+    }
+
+    public int resetReviews(Set<Long> reviewerMemberIds) {
+        return participants.resetReviews(reviewerMemberIds);
     }
 
     public void setParentIssue(Issue newParent) {

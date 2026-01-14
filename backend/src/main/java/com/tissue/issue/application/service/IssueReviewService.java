@@ -1,5 +1,6 @@
 package com.tissue.issue.application.service;
 
+import com.tissue.issue.application.dto.request.RequestReviewCommand;
 import com.tissue.issue.application.dto.request.SubmitReviewCommand;
 import com.tissue.issue.application.port.in.IssueReviewUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
@@ -33,9 +34,6 @@ public class IssueReviewService implements IssueReviewUseCase {
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
         ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), cmd.actorMemberId());
 
-        // TODO: since im finding whether the actor is a reviewer i dont need to add the method
-        //  in the IssueAuthorizationService?
-        //  Or should i separate this logic to a method like IssueAuthorizationService.requireReviewSubmitPermission
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
 
         if (cmd.approved()) {
@@ -45,6 +43,20 @@ public class IssueReviewService implements IssueReviewUseCase {
         }
 
         eventPublisher.publishReviewSubmitted(issue, reviewer.getStatus(), actor);
+    }
+
+    @Override
+    public void requestReview(RequestReviewCommand cmd) {
+        issueAuthService.requireIssueEditPermission(
+                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), cmd.actorMemberId());
+
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+        ProjectMember actor = projectMemberFinder.getBy(project, cmd.actorMemberId());
+
+        int count = issue.resetReviews(cmd.reviewerMemberIds());
+
+        eventPublisher.publishReviewRequested(issue, actor, cmd.reviewerMemberIds(), count);
     }
 
     private IssueReviewer findReviewerEntry(Issue issue, ProjectMember actor) {

@@ -5,6 +5,8 @@ import com.tissue.issue.adapter.in.web.dto.request.AssignParentIssueRequest;
 import com.tissue.issue.adapter.in.web.dto.request.CreateIssueRequest;
 import com.tissue.issue.adapter.in.web.dto.request.PerformTransitionRequest;
 import com.tissue.issue.adapter.in.web.dto.request.RemoveIssueRelationRequest;
+import com.tissue.issue.adapter.in.web.dto.request.RequestReviewRequest;
+import com.tissue.issue.adapter.in.web.dto.request.SubmitReviewRequest;
 import com.tissue.issue.adapter.in.web.dto.request.UpdateCommonFieldsRequest;
 import com.tissue.issue.adapter.in.web.dto.request.UpdateCustomFieldsRequest;
 import com.tissue.issue.adapter.in.web.dto.request.UpdateStoryPointRequest;
@@ -19,6 +21,8 @@ import com.tissue.issue.application.dto.request.RemoveAssigneeCommand;
 import com.tissue.issue.application.dto.request.RemoveIssueRelationCommand;
 import com.tissue.issue.application.dto.request.RemoveParentCommand;
 import com.tissue.issue.application.dto.request.RemoveReviewerCommand;
+import com.tissue.issue.application.dto.request.RequestReviewCommand;
+import com.tissue.issue.application.dto.request.SubmitReviewCommand;
 import com.tissue.issue.application.dto.request.SubscribeIssueCommand;
 import com.tissue.issue.application.dto.request.UnsubscribeIssueCommand;
 import com.tissue.issue.application.dto.request.UpdateCustomFieldsCommand;
@@ -27,7 +31,10 @@ import com.tissue.issue.application.dto.response.IssueCreateResponse;
 import com.tissue.issue.application.port.in.IssueCommandUseCase;
 import com.tissue.issue.application.port.in.IssueParticipantUseCase;
 import com.tissue.issue.application.port.in.IssueRelationUseCase;
+import com.tissue.issue.application.port.in.IssueReviewUseCase;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
+import com.tissue.security.authentication.domain.MemberDetails;
+import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,6 +57,7 @@ public class IssueCommandController {
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueParticipantUseCase participantUseCase;
     private final IssueRelationUseCase relationUseCase;
+    private final IssueReviewUseCase reviewUseCase;
 
     @PostMapping
     public ResponseEntity<IssueCreateResponse> create(
@@ -288,12 +296,52 @@ public class IssueCommandController {
 
         var command = new RemoveIssueRelationCommand(
                 workspaceKey, projectKey, sourceIssueKey, request.targetProjectKey(), request.targetIssueKey());
+
         relationUseCase.remove(command);
 
         return ResponseEntity.noContent().build();
     }
 
-    // TODO: requestReview() - @PostMapping("/issues/{issueKey}/review")
+    @PostMapping("/{issueKey}/review")
+    public ResponseEntity<Void> requestReview(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @RequestBody @Valid RequestReviewRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        var command = RequestReviewCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .actorMemberId(memberDetails.getMemberId())
+                .reviewerMemberIds(request.reviewerMemberIds())
+                .build();
+        reviewUseCase.requestReview(command);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{issueKey}/reviews/submit")
+    public ResponseEntity<Void> submitReview(
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @RequestBody @Valid SubmitReviewRequest request,
+            @CurrentMember MemberDetails memberDetails) {
+
+        var command = SubmitReviewCommand.builder()
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .issueKey(issueKey)
+                .approved(request.approved())
+                .actorMemberId(memberDetails.getMemberId())
+                .build();
+        reviewUseCase.submitReview(command);
+
+        return ResponseEntity.noContent().build();
+    }
+
     // TODO: batchChangeParent() - @PostMapping("/issues/batch/parent")
     // TODO: batchUpdateStoryPoint() - @PostMapping("/issues/batch/storypoint")
     // TODO: batchSoftDelete() - @DeleteMapping("/issues/batch")
