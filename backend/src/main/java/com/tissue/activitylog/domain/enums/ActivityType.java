@@ -12,7 +12,6 @@ public enum ActivityType {
     ISSUE_PARENT_CHANGED,
     ISSUE_RELATION_ADDED,
     ISSUE_RELATION_REMOVED,
-    // TODO: 리뷰 요청을 한 경우도 기록 필요. 리뷰 요청 API 구현 후 추가
     ISSUE_REVIEW_REQUESTED,
     ISSUE_REVIEW_SUBMITTED,
     ISSUE_REVIEWER_ADDED,

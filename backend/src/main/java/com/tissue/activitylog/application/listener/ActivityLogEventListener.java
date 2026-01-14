@@ -15,6 +15,7 @@ import com.tissue.issue.domain.event.IssueParentChangedEvent;
 import com.tissue.issue.domain.event.IssueRelationAddedEvent;
 import com.tissue.issue.domain.event.IssueRelationRemovedEvent;
 import com.tissue.issue.domain.event.IssueReporterChangedEvent;
+import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
@@ -187,6 +188,22 @@ public class ActivityLogEventListener {
                         event.issueKey(),
                         event.actorDisplayName(),
                         event.status().name()));
+
+        activityLogCommandService.createLog(cmd);
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleIssueReviewRequested(IssueReviewRequestedEvent event) {
+        CreateLogCommand cmd = new CreateLogCommand(
+                event.eventId(),
+                ActivityType.ISSUE_REVIEW_REQUESTED,
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
+                event.actorMemberId(),
+                List.of(
+                        event.issueKey(),
+                        event.actorDisplayName(),
+                        String.valueOf(event.reviewerCount())));
 
         activityLogCommandService.createLog(cmd);
     }
