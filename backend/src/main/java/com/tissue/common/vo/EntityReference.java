@@ -1,6 +1,6 @@
-package com.tissue.notification.domain.vo;
+package com.tissue.common.vo;
 
-import com.tissue.notification.domain.enums.ResourceType;
+import com.tissue.common.enums.ResourceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -69,8 +69,6 @@ public class EntityReference {
 
     public static EntityReference forIssueComment(
             String workspaceKey, String projectKey, String issueKey, Long commentId) {
-        // for comments, the primary resource id is the comment id
-        // key is useful for linking to the parent issue context
         return EntityReference.builder()
                 .resourceType(ResourceType.ISSUE_COMMENT)
                 .id(commentId)

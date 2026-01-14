@@ -1,5 +1,6 @@
 package com.tissue.notification.application.listener;
 
+import com.tissue.common.vo.EntityReference;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueDeletedEvent;
@@ -10,7 +11,6 @@ import com.tissue.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.vo.EntityReference;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;

@@ -1,9 +1,9 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.common.vo.EntityReference;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.service.message.NotificationMessageFactory;
-import com.tissue.notification.domain.vo.EntityReference;
 import com.tissue.notification.domain.vo.NotificationMessage;
 import com.tissue.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;

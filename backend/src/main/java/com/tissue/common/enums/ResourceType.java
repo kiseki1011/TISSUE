@@ -1,4 +1,4 @@
-package com.tissue.notification.domain.enums;
+package com.tissue.common.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

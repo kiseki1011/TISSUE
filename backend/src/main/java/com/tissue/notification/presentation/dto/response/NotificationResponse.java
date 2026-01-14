@@ -1,7 +1,7 @@
 package com.tissue.notification.presentation.dto.response;
 
+import com.tissue.common.vo.EntityReference;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.vo.EntityReference;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Builder;
