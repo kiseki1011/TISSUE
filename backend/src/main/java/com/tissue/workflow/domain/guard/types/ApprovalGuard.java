@@ -2,6 +2,8 @@ package com.tissue.workflow.domain.guard.types;
 
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.enums.ReviewStatus;
+import com.tissue.issue.domain.exception.ReviewIncompleteException;
+import com.tissue.issue.domain.policy.IssuePolicy;
 import com.tissue.workflow.domain.exception.InvalidGuardParameterException;
 import com.tissue.workflow.domain.exception.TransitionGuardFailedException;
 import com.tissue.workflow.domain.guard.GuardContext;
@@ -12,15 +14,19 @@ import com.tissue.workflow.domain.guard.TransitionGuard;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ApprovalGuard implements TransitionGuard {
 
     public static final String KEY_MIN_APPROVALS = "min_approvals";
     public static final String KEY_BLOCK_ON_CHANGE_REQUEST = "block_on_change_request";
     public static final String KEY_AUTO_REJECT = "auto_transition_on_reject";
     public static final String KEY_REJECT_TRANSITION = "reject_transition_name";
+
+    private final IssuePolicy issuePolicy;
 
     @Override
     public GuardType getType() {
@@ -51,9 +57,7 @@ public class ApprovalGuard implements TransitionGuard {
                 .count();
 
         if (approvedCount < minApprovals) {
-            String reason = "Insufficient approvals. Current: %d, Required: %d.".formatted(approvedCount, minApprovals);
-            throw new TransitionGuardFailedException(
-                    getType(), reason, context.getIssue().getKey(), context.getWorkspaceKey());
+            throw new ReviewIncompleteException(context.getIssue().getKey(), (int) approvedCount, minApprovals);
         }
     }
 
@@ -63,6 +67,12 @@ public class ApprovalGuard implements TransitionGuard {
         int min = getInt(params, KEY_MIN_APPROVALS, 1);
         if (min < 1) {
             String reason = "%s must be at least 1".formatted(KEY_MIN_APPROVALS);
+            throw new InvalidGuardParameterException(reason, guardType);
+        }
+
+        if (min > issuePolicy.getMaxReviewers()) {
+            String reason = "%s (%d) cannot exceed max reviewers (%d)"
+                    .formatted(KEY_MIN_APPROVALS, min, issuePolicy.getMaxReviewers());
             throw new InvalidGuardParameterException(reason, guardType);
         }
 
