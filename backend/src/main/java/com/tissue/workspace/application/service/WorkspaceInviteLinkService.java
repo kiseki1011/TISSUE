@@ -2,7 +2,7 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.service.finder.MemberFinder;
-import com.tissue.project.application.service.ProjectMemberCommandService;
+import com.tissue.project.application.service.ProjectParticipationService;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
@@ -47,7 +47,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     private final WorkspaceLinkCommandRepository linkRepository;
     private final WorkspaceLinkQueryRepository linkQueryRepository;
     private final WorkspaceParticipationService workspaceParticipationService;
-    private final ProjectMemberCommandService projectMemberCommandService;
+    private final ProjectParticipationService projectMemberCommandService;
     private final ProjectAuthorizationService projectAuthService;
     private final WorkspaceAuthorizationService workspaceAuthService;
     private final CurrentMemberProvider currentMemberProvider;

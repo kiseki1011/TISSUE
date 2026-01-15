@@ -40,6 +40,7 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
         String workspaceKey = getWorkspaceKey(webRequest);
         Long memberId = getMemberId();
 
+        // TODO: WorkspaceMemberQueryRepository에 의존하는게 더 좋을까? 아니면 지금도 ㄱㅊ?
         WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(memberId, workspaceKey);
 
         return WorkspaceMemberInfo.from(workspaceMember);

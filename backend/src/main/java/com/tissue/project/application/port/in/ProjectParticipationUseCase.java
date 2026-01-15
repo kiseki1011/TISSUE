@@ -7,15 +7,15 @@ import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
 
-public interface ProjectMemberCommandUseCase {
+public interface ProjectParticipationUseCase {
 
-    // TODO: addMembers, kickMember, join을 ProjectParticipationUseCase로 분리할까?
     ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd);
 
     ProjectMemberCommandResult kickMember(KickProjectMemberCommand cmd);
 
     ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd);
 
+    // TODO: ProjectMemberCommandUseCase로 분리 고려
     ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd);
 
     ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long meberId);

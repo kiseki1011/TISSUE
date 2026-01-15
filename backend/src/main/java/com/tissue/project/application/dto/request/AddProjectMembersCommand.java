@@ -1,13 +1,14 @@
 package com.tissue.project.application.dto.request;
 
 import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public record AddProjectMembersCommand(
-        String workspaceKey, String projectKey, List<ProjectMemberConfig> targetMembers) {
+        String workspaceKey, String projectKey, List<ProjectMemberConfig> targetMembers, WorkspaceMemberInfo actor) {
 
     public record ProjectMemberConfig(Long memberId, ProjectRole projectRole) {}
 

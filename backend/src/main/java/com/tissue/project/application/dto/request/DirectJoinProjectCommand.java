@@ -1,3 +1,5 @@
 package com.tissue.project.application.dto.request;
 
-public record DirectJoinProjectCommand(String workspaceKey, String projectKey, Long actorMemberId) {}
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+
+public record DirectJoinProjectCommand(String workspaceKey, String projectKey, WorkspaceMemberInfo actor) {}

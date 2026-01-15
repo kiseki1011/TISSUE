@@ -7,9 +7,11 @@ import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
-import com.tissue.project.application.port.in.ProjectMemberCommandUseCase;
+import com.tissue.project.application.port.in.ProjectParticipationUseCase;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
+import com.tissue.workspace.adapter.in.web.annotation.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,14 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects/{projectKey}/members")
 public class ProjectMemberController {
 
-    private final ProjectMemberCommandUseCase commandUseCase;
+    private final ProjectParticipationUseCase commandUseCase;
 
     @PostMapping("/batch")
     public ResponseEntity<ProjectMembersCommandResult> addMembers(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @RequestBody @Valid AddProjectMembersRequest request) {
-        var command = request.toCommand(workspaceKey, projectKey);
+            @RequestBody @Valid AddProjectMembersRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberInfo workspaceMemberInfo) {
+
+        var command = request.toCommand(workspaceKey, projectKey, workspaceMemberInfo);
         ProjectMembersCommandResult response = commandUseCase.addMembers(command);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -44,8 +48,9 @@ public class ProjectMemberController {
     public ResponseEntity<ProjectMemberCommandResult> joinProjectDirectly(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @CurrentMember MemberDetails currentMember) {
-        var command = new DirectJoinProjectCommand(workspaceKey, projectKey, currentMember.getMemberId());
+            @CurrentWorkspaceMember WorkspaceMemberInfo workspaceMemberInfo) {
+
+        var command = new DirectJoinProjectCommand(workspaceKey, projectKey, workspaceMemberInfo);
         ProjectMemberCommandResult response = commandUseCase.joinViaDirect(command);
 
         return ResponseEntity.ok(response);
@@ -56,9 +61,9 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @CurrentMember MemberDetails currentMember) {
+
         ProjectMemberCommandResult response =
                 commandUseCase.leave(workspaceKey, projectKey, currentMember.getMemberId());
-
         return ResponseEntity.ok(response);
     }
 
@@ -67,16 +72,16 @@ public class ProjectMemberController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long memberId,
-            @CurrentMember MemberDetails currentMember) {
+            @CurrentWorkspaceMember WorkspaceMemberInfo workspaceMemberInfo) {
+
         var command = KickProjectMemberCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
                 .targetMemberId(memberId)
-                .actorMemberId(currentMember.getMemberId())
+                .actor(workspaceMemberInfo)
                 .build();
 
         ProjectMemberCommandResult response = commandUseCase.kickMember(command);
-
         return ResponseEntity.ok(response);
     }
 
@@ -86,17 +91,17 @@ public class ProjectMemberController {
             @PathVariable String projectKey,
             @PathVariable Long memberId,
             @RequestBody @Valid ChangeProjectRoleRequest request,
-            @CurrentMember MemberDetails currentMember) {
+            @CurrentWorkspaceMember WorkspaceMemberInfo workspaceMemberInfo) {
+
         var command = ChangeProjectRoleCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
                 .newRole(request.newProjectRole())
                 .targetMemberId(memberId)
-                .actorMemberId(currentMember.getMemberId())
+                .actor(workspaceMemberInfo)
                 .build();
 
         ProjectMemberCommandResult response = commandUseCase.changeProjectRole(command);
-
         return ResponseEntity.ok(response);
     }
 }

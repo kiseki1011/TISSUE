@@ -3,7 +3,7 @@ package com.tissue.workspace.application.service;
 import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
-import com.tissue.project.application.service.ProjectMemberCommandService;
+import com.tissue.project.application.service.ProjectParticipationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
@@ -28,7 +28,7 @@ public class InvitationService implements InvitationUseCase {
     private final MemberFinder memberFinder;
     private final ProjectFinder projectFinder;
     private final WorkspaceParticipationService workspaceParticipationService;
-    private final ProjectMemberCommandService projectMemberCommandService;
+    private final ProjectParticipationService projectMemberCommandService;
     private final InvitationQueryRepository invitationQueryRepository;
 
     @Override

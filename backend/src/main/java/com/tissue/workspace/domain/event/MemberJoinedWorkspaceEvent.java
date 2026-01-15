@@ -6,6 +6,7 @@ import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
 import java.util.UUID;
 
+// TODO: consider adding actorDisplayName for context
 public record MemberJoinedWorkspaceEvent(
         UUID eventId,
         Instant occurredAt,
