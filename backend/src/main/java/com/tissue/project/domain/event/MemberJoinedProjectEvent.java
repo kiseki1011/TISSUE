@@ -1,6 +1,8 @@
 package com.tissue.project.domain.event;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.common.event.DomainEvent;
+import com.tissue.project.domain.enums.ProjectRole;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -8,28 +10,40 @@ public record MemberJoinedProjectEvent(
         UUID eventId,
         Instant occurredAt,
         String workspaceKey,
+        Long workspaceId,
         String projectKey,
-        Long memberId,
-        String memberEmail,
-        String memberDisplayName,
+        Long projectId,
+        Long joinedMemberId,
+        String joinedMemberEmail,
+        String joinedMemberDisplayName,
+        ProjectRole role,
+        JoinMethod joinMethod,
         Long actorMemberId)
         implements DomainEvent {
 
     public static MemberJoinedProjectEvent create(
             String workspaceKey,
+            Long workspaceId,
             String projectKey,
-            Long memberId,
-            String memberEmail,
-            String memberDisplayName,
+            Long projectId,
+            Long joinedMemberId,
+            String joinedMemberEmail,
+            String joinedMemberDisplayName,
+            ProjectRole role,
+            JoinMethod joinMethod,
             Long actorMemberId) {
         return new MemberJoinedProjectEvent(
                 UUID.randomUUID(),
                 Instant.now(),
                 workspaceKey,
+                workspaceId,
                 projectKey,
-                memberId,
-                memberEmail,
-                memberDisplayName,
+                projectId,
+                joinedMemberId,
+                joinedMemberEmail,
+                joinedMemberDisplayName,
+                role,
+                joinMethod,
                 actorMemberId);
     }
 }

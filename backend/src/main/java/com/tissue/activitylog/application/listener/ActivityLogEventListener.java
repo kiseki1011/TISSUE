@@ -200,10 +200,7 @@ public class ActivityLogEventListener {
                 ActivityType.ISSUE_REVIEW_REQUESTED,
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
                 event.actorMemberId(),
-                List.of(
-                        event.issueKey(),
-                        event.actorDisplayName(),
-                        String.valueOf(event.reviewerCount())));
+                List.of(event.issueKey(), event.actorDisplayName(), String.valueOf(event.reviewerCount())));
 
         activityLogCommandService.createLog(cmd);
     }

@@ -10,5 +10,7 @@ public enum ResourceType {
     ISSUE_COMMENT,
     SPRINT,
     WORKSPACE,
-    WORKSPACE_MEMBER
+    WORKSPACE_MEMBER,
+    PROJECT,
+    PROJECT_MEMBER
 }

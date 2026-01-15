@@ -86,11 +86,29 @@ public class EntityReference {
                 .build();
     }
 
-    public static EntityReference forWorkspaceMember(String workspaceKey, Long workspaceMemberId) {
+    public static EntityReference forProject(String workspaceKey, String projectKey, Long projectId) {
+        return EntityReference.builder()
+                .resourceType(ResourceType.PROJECT)
+                .id(projectId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
+                .build();
+    }
+
+    public static EntityReference forWorkspaceMember(String workspaceKey, Long memberId) {
         return EntityReference.builder()
                 .resourceType(ResourceType.WORKSPACE_MEMBER)
-                .id(workspaceMemberId)
+                .id(memberId)
                 .workspaceKey(workspaceKey)
+                .build();
+    }
+
+    public static EntityReference forProjectMember(String workspaceKey, String projectKey, Long memberId) {
+        return EntityReference.builder()
+                .resourceType(ResourceType.PROJECT_MEMBER)
+                .id(memberId)
+                .workspaceKey(workspaceKey)
+                .projectKey(projectKey)
                 .build();
     }
 }

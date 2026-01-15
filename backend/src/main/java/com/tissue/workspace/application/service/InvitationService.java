@@ -1,5 +1,6 @@
 package com.tissue.workspace.application.service;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
 import com.tissue.project.application.service.ProjectMemberCommandService;
@@ -32,10 +33,6 @@ public class InvitationService implements InvitationUseCase {
 
     @Override
     public void accept(Long memberId, Long invitationId) {
-        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
-        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
-        //  use CurrentMemberProvider to get userDetails.getMemberId
-
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
@@ -46,22 +43,21 @@ public class InvitationService implements InvitationUseCase {
         invitation.accept();
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
-                invitation.getWorkspace(), memberFinder.getActiveBy(memberId), invitation.getWorkspaceRole());
+                invitation.getWorkspace(),
+                memberFinder.getActiveBy(memberId),
+                invitation.getWorkspaceRole(),
+                invitation.getCreatedBy(),
+                JoinMethod.INVITATION);
 
         List<ProjectJoinConfig> projectConfigs = invitation.getProjectConfigs();
 
         if (invitation.projectConfigsNotEmpty()) {
             joinProjects(projectConfigs, workspaceMember);
         }
-
-        // TODO: InvitationAcceptedEvent
     }
 
     @Override
     public void reject(Long memberId, Long invitationId) {
-        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
-        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
-
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
@@ -70,8 +66,6 @@ public class InvitationService implements InvitationUseCase {
         }
 
         invitation.reject();
-
-        // TODO: InvitationRejectedEvent
     }
 
     @Override
@@ -91,7 +85,8 @@ public class InvitationService implements InvitationUseCase {
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
             projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
-                projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
+                projectMemberCommandService.join(
+                        project, workspaceMember.getMemberId(), config.role(), JoinMethod.INVITATION);
             });
         }
     }

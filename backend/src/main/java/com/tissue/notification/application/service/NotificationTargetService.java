@@ -1,4 +1,4 @@
-package com.tissue.notification.application.service.command;
+package com.tissue.notification.application.service;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.project.application.port.out.ProjectMemberQueryRepository;

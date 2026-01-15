@@ -1,5 +1,6 @@
 package com.tissue.workspace.application.service;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.project.application.service.ProjectMemberCommandService;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
@@ -97,7 +98,11 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
         }
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
-                link.getWorkspace(), memberFinder.getActiveBy(cmd.memberId()), link.getWorkspaceRole());
+                link.getWorkspace(),
+                memberFinder.getActiveBy(cmd.memberId()),
+                link.getWorkspaceRole(),
+                cmd.memberId(),
+                JoinMethod.LINK);
 
         List<ProjectJoinConfig> projectConfigs = link.getProjectConfigs();
 
@@ -156,7 +161,8 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
             projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
-                projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
+                projectMemberCommandService.join(
+                        project, workspaceMember.getMemberId(), config.role(), JoinMethod.LINK);
             });
         }
     }

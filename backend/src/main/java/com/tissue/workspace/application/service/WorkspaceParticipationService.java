@@ -2,6 +2,7 @@ package com.tissue.workspace.application.service;
 
 import static com.tissue.member.domain.MemberStatus.ACTIVE;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
@@ -119,7 +120,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
+    // TODO: actorMemberId를 파라미터로 받자(이벤트 컨텍스트로 넘기기 위해서, @Nullable 붙이고)
+    protected WorkspaceMember join(
+            Workspace workspace, Member member, WorkspaceRole role, Long actorMemberId, JoinMethod joinMethod) {
+
         Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
@@ -139,7 +143,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     return workspaceMemberCommandRepository.save(newMember);
                 });
 
-        eventPublisher.publishMemberJoinedWorkspace(joinedMember);
+        eventPublisher.publishMemberJoinedWorkspace(joinedMember, joinMethod, actorMemberId);
 
         return joinedMember;
     }

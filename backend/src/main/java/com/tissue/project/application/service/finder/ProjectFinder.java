@@ -37,6 +37,7 @@ public class ProjectFinder {
     public Project getModifiableBy(String projectKey, String workspaceKey) {
         Project project = getBy(projectKey, workspaceKey);
 
+        // TODO: 서비스 계층에서 WorspaceFinder.getModifiableBy를 호출 하도록 변경하자(아래는 제거)
         if (project.getWorkspace().isArchived()) {
             throw new WorkspaceArchivedException(project.getWorkspace());
         }
