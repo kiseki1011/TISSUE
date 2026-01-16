@@ -58,6 +58,7 @@ public class WorkspaceMember extends BaseEntity {
     @Column(nullable = false)
     private String displayName;
 
+    // TODO: 제거하는게 좋을까? 워크스페이스별 email 두기?
     @Column(nullable = false)
     private String email;
 

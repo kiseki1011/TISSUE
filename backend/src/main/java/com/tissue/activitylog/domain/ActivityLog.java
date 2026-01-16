@@ -4,7 +4,7 @@ import com.tissue.activitylog.domain.enums.ActivityType;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.common.jpa.converter.FieldChangeMapConverter;
-import com.tissue.common.jpa.converter.StringListConverter;
+import com.tissue.common.jpa.converter.StringMapConverter;
 import com.tissue.common.vo.EntityReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -15,9 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Builder;
@@ -41,9 +39,9 @@ public class ActivityLog extends BaseDateEntity {
     @Embedded
     private EntityReference entityReference;
 
-    @Column(name = "activity_args", columnDefinition = "TEXT")
-    @Convert(converter = StringListConverter.class)
-    List<String> args = new ArrayList<>();
+    @Column(name = "activity_data", columnDefinition = "TEXT")
+    @Convert(converter = StringMapConverter.class)
+    private Map<String, String> data = new HashMap<>();
 
     @Column(name = "changes", columnDefinition = "TEXT")
     @Convert(converter = FieldChangeMapConverter.class)
@@ -61,13 +59,13 @@ public class ActivityLog extends BaseDateEntity {
             UUID eventId,
             ActivityType activityType,
             EntityReference entityReference,
-            List<String> args,
+            Map<String, String> data,
             Map<String, FieldChange> changes,
             Long actorMemberId) {
         this.eventId = eventId;
         this.activityType = activityType;
         this.entityReference = entityReference;
-        this.args = args;
+        this.data = data;
         this.changes = changes;
         this.actorMemberId = actorMemberId;
     }

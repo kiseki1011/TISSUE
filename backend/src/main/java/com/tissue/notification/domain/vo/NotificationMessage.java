@@ -1,19 +1,18 @@
 package com.tissue.notification.domain.vo;
 
-import com.tissue.common.jpa.converter.StringListConverter;
+import com.tissue.common.jpa.converter.StringMapConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Embeddable
 public record NotificationMessage(
-        // title/content are derived from NotificationType and args during display
-        @Column(columnDefinition = "TEXT") @Convert(converter = StringListConverter.class)
-        List<String> args) {
+        @Column(name = "message_data", columnDefinition = "TEXT") @Convert(converter = StringMapConverter.class)
+        Map<String, String> data) {
 
     public NotificationMessage() {
-        this(new ArrayList<>());
+        this(new HashMap<>());
     }
 }

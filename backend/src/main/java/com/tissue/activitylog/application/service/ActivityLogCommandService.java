@@ -21,7 +21,7 @@ public class ActivityLogCommandService {
                 .activityType(cmd.activityType())
                 .entityReference(cmd.reference())
                 .actorMemberId(cmd.actorMemberId())
-                .args(cmd.args())
+                .data(cmd.data())
                 .changes(cmd.changes())
                 .build();
 
@@ -34,7 +34,7 @@ public class ActivityLogCommandService {
                 .activityType(cmd.activityType())
                 .entityReference(cmd.reference())
                 .actorMemberId(cmd.actorMemberId())
-                .args(cmd.args())
+                .data(cmd.data())
                 .build();
 
         repository.save(log);

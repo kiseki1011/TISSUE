@@ -1,8 +1,7 @@
-package com.tissue.notification.domain.service.sender.inapp;
+package com.tissue.notification.domain.service.sender;
 
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationChannel;
-import com.tissue.notification.domain.service.sender.NotificationSender;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +14,5 @@ public class InAppSender implements NotificationSender {
 
     @Override
     public void send(Notification notification) {
-        // TODO: 인앱 알림은 DB 저장만으로 충분, 필요하면 추가적인 작업 수행
     }
 }

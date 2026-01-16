@@ -6,6 +6,7 @@ import com.tissue.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.notification.presentation.dto.response.NotificationResponse;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -38,14 +39,16 @@ public class NotificationQueryService {
     private NotificationResponse toResponse(Notification notification) {
         Locale locale = LocaleContextHolder.getLocale();
         NotificationType type = notification.getType();
-        List<String> args = notification.getMessage().args();
-        Object[] argArray = args.toArray();
+        Map<String, String> data = notification.getMessage().data();
 
         String titleKey = "event." + type.name() + ".title";
         String contentKey = "event." + type.name() + ".content";
 
-        String title = messageSource.getMessage(titleKey, argArray, titleKey, locale);
-        String content = messageSource.getMessage(contentKey, argArray, contentKey, locale);
+        String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
+        String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
+
+        String title = replacePlaceholders(titleTemplate, data);
+        String content = replacePlaceholders(contentTemplate, data);
 
         return NotificationResponse.builder()
                 .id(notification.getId())
@@ -59,5 +62,13 @@ public class NotificationQueryService {
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .build();
+    }
+
+    private String replacePlaceholders(String template, Map<String, String> data) {
+        String result = template;
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            result = result.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+        }
+        return result;
     }
 }

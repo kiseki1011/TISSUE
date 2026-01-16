@@ -9,6 +9,7 @@ import com.tissue.notification.infrastructure.repository.NotificationRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -31,13 +32,13 @@ public class NotificationCommandService {
             Collection<WorkspaceMemberContact> receivers,
             Long actorMemberId,
             @Nullable String actorDisplayName,
-            Object... messageArgs) {
+            Map<String, String> data) {
 
         if (receivers.isEmpty()) {
             return;
         }
 
-        NotificationMessage message = messageFactory.createMessage(type, messageArgs);
+        NotificationMessage message = messageFactory.createMessage(type, data);
 
         List<Notification> notifications = receivers.stream()
                 .map(receiver -> Notification.builder()

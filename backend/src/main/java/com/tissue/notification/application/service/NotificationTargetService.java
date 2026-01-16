@@ -101,8 +101,8 @@ public class NotificationTargetService {
 
     /**
      * Retrieve Author, Assignee, Reporter, and Subscribers.
-     * Useful for general updates.
      */
+    // TODO: 한번의 쿼리로 해결 못하나?
     public Set<WorkspaceMemberContact> getIssueParticipants(String workspaceKey, String issueKey) {
         Set<WorkspaceMemberContact> targets = new HashSet<>();
         issueQueryRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
@@ -114,7 +114,6 @@ public class NotificationTargetService {
 
     /**
      * Retrieve Author, Assignee, Reporter, Subscribers, and Reviewers.
-     * Useful for status transitions or deletion.
      */
     public Set<WorkspaceMemberContact> getIssueParticipantsAndReviewers(String workspaceKey, String issueKey) {
         Set<WorkspaceMemberContact> targets = getIssueParticipants(workspaceKey, issueKey);

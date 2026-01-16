@@ -1,12 +1,11 @@
-package com.tissue.notification.domain.service.sender.email;
+package com.tissue.notification.domain.service.sender;
 
 import com.tissue.email.domain.EmailClient;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.service.sender.NotificationSender;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -32,14 +31,16 @@ public class EmailSender implements NotificationSender {
 
             Locale locale = notification.getReceiverLanguage().getLocale();
             NotificationType type = notification.getType();
-            List<String> args = notification.getMessage().args();
-            Object[] argArray = args.toArray();
+            Map<String, String> data = notification.getMessage().data();
 
             String titleKey = "event." + type.name() + ".title";
             String contentKey = "event." + type.name() + ".content";
 
-            String subject = messageSource.getMessage(titleKey, argArray, titleKey, locale);
-            String body = messageSource.getMessage(contentKey, argArray, contentKey, locale);
+            String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
+            String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
+
+            String subject = replacePlaceholders(titleTemplate, data);
+            String body = replacePlaceholders(contentTemplate, data);
 
             emailClient.send(to, subject, body);
         } catch (Exception e) {
@@ -49,5 +50,14 @@ public class EmailSender implements NotificationSender {
                     e.getMessage(),
                     e);
         }
+    }
+
+    // TODO: Consider using Apache Commons Text - StringSubstitutor
+    private String replacePlaceholders(String template, Map<String, String> data) {
+        String result = template;
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            result = result.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+        }
+        return result;
     }
 }
