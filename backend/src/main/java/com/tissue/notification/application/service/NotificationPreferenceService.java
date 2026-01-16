@@ -22,17 +22,17 @@ public class NotificationPreferenceService {
     public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long memberId) {
         NotificationPreference preference = repository
                 .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
-                .orElse(null); // Return null if not found, we will use defaults
+                .orElse(null);
 
         List<NotificationPreferenceResponse> responses = new ArrayList<>();
 
         for (NotificationType type : NotificationType.values()) {
             for (NotificationChannel channel : NotificationChannel.values()) {
                 if (channel == NotificationChannel.IN_APP) {
-                    continue; // IN_APP is mandatory
+                    continue;
                 }
 
-                boolean enabled = true; // Default
+                boolean enabled = true;
                 if (preference != null) {
                     enabled = preference.isEnabled(channel, type);
                 }
