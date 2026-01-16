@@ -30,8 +30,7 @@ public class EmailSender implements NotificationSender {
         try {
             String to = notification.getReceiverEmail();
 
-            // Resolve message (TODO: Use user's preferred locale)
-            Locale locale = Locale.getDefault();
+            Locale locale = notification.getReceiverLanguage().getLocale();
             NotificationType type = notification.getType();
             List<String> args = notification.getMessage().args();
             Object[] argArray = args.toArray();

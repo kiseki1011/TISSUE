@@ -15,6 +15,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProjectMemberQueryRepository extends Repository<ProjectMember, Long> {
 
+    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
+
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberId(Long projectId, Long memberId);
 
@@ -72,7 +74,8 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     List<ProjectMember> findAllByMemberId(Long memberId);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "
@@ -81,7 +84,8 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     List<WorkspaceMemberContact> findAllContactsByProjectKey(
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "
@@ -93,7 +97,8 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("projectKey") String projectKey,
             @Param("excludedMemberId") Long excludedMemberId);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "

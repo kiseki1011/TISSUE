@@ -15,6 +15,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
+    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
+
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
     Optional<WorkspaceMember> findByMember_IdAndWorkspace(Long memberId, Workspace workspace);
@@ -58,26 +60,31 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     List<WorkspaceMember> findAllByMember(Member member);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(wm.member.id, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(wm.member.id, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id <> :excludedMemberId")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyExcluding(
             @Param("workspaceKey") String workspaceKey, @Param("excludedMemberId") Long excludedMemberId);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(wm.member.id, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.role IN :roles")
     Set<WorkspaceMemberContact> findAdminContactsByWorkspace_Key(
             @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(wm.member.id, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.member.id = :memberId AND wm.workspaceKey = :workspaceKey")
     Optional<WorkspaceMemberContact> findContactByMemberIdAndWorkspaceKey(
             @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
 
-    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(wm.member.id, wm.email) "
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id IN :memberIds")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("memberIds") Collection<Long> memberIds);

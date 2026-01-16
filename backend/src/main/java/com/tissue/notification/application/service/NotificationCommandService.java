@@ -48,14 +48,13 @@ public class NotificationCommandService {
                         .actorDisplayName(actorDisplayName)
                         .receiverMemberId(receiver.memberId())
                         .receiverEmail(receiver.email())
+                        .receiverLanguage(receiver.language())
                         .message(message)
                         .build())
                 .toList();
 
         notificationRepository.saveAll(notifications);
 
-        // Dispatch to external channels (e.g. Email, Slack) asynchronously
-        // In-App is already handled by saving to DB
         processor.process(notifications);
     }
 }

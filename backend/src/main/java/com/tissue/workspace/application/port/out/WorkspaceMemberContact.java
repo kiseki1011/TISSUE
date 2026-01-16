@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.port.out;
 
-public record WorkspaceMemberContact(Long memberId, String email) {}
+import com.tissue.common.enums.SupportedLanguage;
+
+public record WorkspaceMemberContact(Long memberId, String email, SupportedLanguage language) {}

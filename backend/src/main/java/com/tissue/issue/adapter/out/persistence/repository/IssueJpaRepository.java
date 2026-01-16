@@ -19,6 +19,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface IssueJpaRepository extends Repository<Issue, Long> {
 
+    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
+
     Optional<Issue> findById(Long id);
 
     @EntityGraph(attributePaths = {"project", "issueType", "issueType.workflow", "currentState"})
@@ -37,10 +39,6 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
             })
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
-
-    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
-    Optional<Issue> findByKeyAndWorkspaceKey(
-            @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
 
     @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.project = :project")
     Optional<Issue> findByKeyAndProject(@Param("issueKey") String issueKey, @Param("project") Project project);
@@ -173,60 +171,51 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
             @Param("issueKey") String issueKey,
             @Param("memberId") Long memberId);
 
-    @Query("""
-            SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(m.id, m.email)
-            FROM Issue i
-            JOIN i.project p
-            JOIN com.tissue.workspace.domain.WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey
-            """)
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.project p "
+            + "JOIN WorkspaceMember wm ON wm.member.id = i.createdBy AND wm.workspace.id = p.workspace.id "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findAuthorContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("""
-            SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(m.id, m.email)
-            FROM Issue i
-            JOIN i.participants.assignee pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey
-            """)
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.participants.assignee pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findAssigneeContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("""
-            SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(m.id, m.email)
-            FROM Issue i
-            JOIN i.participants.reporter pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey
-            """)
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM Issue i "
+            + "JOIN i.participants.reporter pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<WorkspaceMemberContact> findReporterContact(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("""
-            SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(m.id, m.email)
-            FROM IssueReviewer r
-            JOIN r.issue i
-            JOIN r.reviewer pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey
-            """)
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM IssueReviewer r "
+            + "JOIN r.issue i "
+            + "JOIN r.reviewer pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     List<WorkspaceMemberContact> findReviewerContacts(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("""
-            SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(m.id, m.email)
-            FROM IssueSubscriber s
-            JOIN s.issue i
-            JOIN s.subscriber pm
-            JOIN pm.workspaceMember wm
-            JOIN wm.member m
-            WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey
-            """)
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(m.id, m.email, m.language) "
+            + "FROM IssueSubscriber s "
+            + "JOIN s.issue i "
+            + "JOIN s.subscriber pm "
+            + "JOIN pm.workspaceMember wm "
+            + "JOIN wm.member m "
+            + "WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     List<WorkspaceMemberContact> findSubscriberContacts(
             @Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 }

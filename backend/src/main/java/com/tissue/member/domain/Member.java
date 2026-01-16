@@ -1,6 +1,7 @@
 package com.tissue.member.domain;
 
 import com.tissue.common.entity.BaseDateEntity;
+import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.security.authorization.SystemRole;
 import com.tissue.workspace.domain.Invitation;
 import jakarta.persistence.CascadeType;
@@ -33,6 +34,10 @@ public class Member extends BaseDateEntity {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language", nullable = false)
+    private SupportedLanguage language = SupportedLanguage.EN;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -72,6 +77,10 @@ public class Member extends BaseDateEntity {
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateLanguage(SupportedLanguage language) {
+        this.language = language;
     }
 
     // TODO: active -> activate

@@ -1,6 +1,7 @@
 package com.tissue.notification.domain;
 
 import com.tissue.common.entity.BaseDateEntity;
+import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.NotificationMessage;
@@ -44,6 +45,10 @@ public class Notification extends BaseDateEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private SupportedLanguage receiverLanguage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private NotificationType type;
 
     @Embedded
@@ -74,6 +79,7 @@ public class Notification extends BaseDateEntity {
             @Nullable String actorDisplayName,
             Long receiverMemberId,
             String receiverEmail,
+            SupportedLanguage receiverLanguage,
             NotificationMessage message) {
         this.eventId = eventId;
         this.type = notificationType;
@@ -82,6 +88,7 @@ public class Notification extends BaseDateEntity {
         this.actorDisplayName = actorDisplayName;
         this.receiverMemberId = receiverMemberId;
         this.receiverEmail = receiverEmail;
+        this.receiverLanguage = receiverLanguage;
         this.message = message;
         this.isRead = false;
     }

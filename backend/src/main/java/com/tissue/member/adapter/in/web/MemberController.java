@@ -5,6 +5,7 @@ import com.tissue.member.adapter.in.web.dto.request.LinkOAuthAccountRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupOAuthMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
+import com.tissue.member.adapter.in.web.dto.request.UpdateMemberLanguageRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberNameRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberUsernameRequest;
@@ -79,12 +80,18 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/language")
+    public ResponseEntity<Void> updateMemberLanguage(
+            @RequestBody @Valid UpdateMemberLanguageRequest request, @CurrentMember MemberDetails userDetails) {
+        memberCommandUseCase.updateLanguage(request.language(), userDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
     @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
             @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
@@ -93,7 +100,6 @@ public class MemberController {
     public ResponseEntity<Void> updateMemberUsername(
             @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
@@ -103,7 +109,6 @@ public class MemberController {
             @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.updatePassword(
                 request.originalPassword(), request.newPassword(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
@@ -112,7 +117,6 @@ public class MemberController {
     public ResponseEntity<Void> withdrawMember(
             @RequestBody WithdrawMemberRequest request, @CurrentMember MemberDetails userDetails) {
         memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 

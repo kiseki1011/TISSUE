@@ -1,5 +1,6 @@
 package com.tissue.member.application.service;
 
+import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
@@ -159,6 +160,12 @@ public class MemberCommandService implements MemberCommandUseCase {
     public void updateName(String name, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         member.updateName(name);
+    }
+
+    @Override
+    public void updateLanguage(SupportedLanguage language, Long memberId) {
+        Member member = memberFinder.getActiveBy(memberId);
+        member.updateLanguage(language);
     }
 
     @Override
