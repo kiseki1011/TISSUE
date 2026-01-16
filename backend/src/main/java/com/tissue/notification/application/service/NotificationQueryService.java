@@ -36,6 +36,11 @@ public class NotificationQueryService {
         return notifications.stream().map(this::toResponse).toList();
     }
 
+    public boolean checkUnreadStatus(String workspaceKey, Long memberId) {
+        return notificationRepository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
+                memberId, workspaceKey);
+    }
+
     private NotificationResponse toResponse(Notification notification) {
         Locale locale = LocaleContextHolder.getLocale();
         NotificationType type = notification.getType();
