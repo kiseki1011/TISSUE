@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-public record ExpireLinkCommand(String workspaceKey, String token) {}
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+
+public record ExpireLinkCommand(String workspaceKey, String token, WorkspaceMemberInfo actor) {}

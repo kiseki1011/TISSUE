@@ -6,12 +6,12 @@ import com.tissue.project.application.service.ProjectParticipationService;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
 import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
 import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
@@ -50,12 +50,11 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     private final ProjectParticipationService projectMemberCommandService;
     private final ProjectAuthorizationService projectAuthService;
     private final WorkspaceAuthorizationService workspaceAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public String createWorkspaceLink(CreateWorkspaceInviteLinkCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberInfo actor = cmd.actor();
+        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actor.memberId());
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
@@ -64,8 +63,8 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
     @Override
     public String createProjectLink(CreateProjectInviteLinkCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+        WorkspaceMemberInfo actor = cmd.actor();
+        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actor.memberId());
 
         Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
 
@@ -77,8 +76,8 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
     @Override
     public void expireLink(ExpireLinkCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireInviteLinkEditPermission(cmd.workspaceKey(), cmd.token(), actorMemberId);
+        WorkspaceMemberInfo actor = cmd.actor();
+        workspaceAuthService.requireInviteLinkEditPermission(cmd.workspaceKey(), cmd.token(), actor.memberId());
 
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(cmd.token())
@@ -99,9 +98,10 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
         WorkspaceMember workspaceMember = workspaceParticipationService.join(
                 link.getWorkspace(),
-                memberFinder.getActiveBy(cmd.memberId()),
+                memberFinder.getActiveBy(cmd.actorMemberId()),
                 link.getWorkspaceRole(),
-                cmd.memberId(),
+                cmd.actorMemberId(),
+                null,
                 JoinMethod.LINK);
 
         List<ProjectJoinConfig> projectConfigs = link.getProjectConfigs();
@@ -115,9 +115,8 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
+    public WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, WorkspaceMemberInfo actor) {
+        workspaceAuthService.requireWorkspaceMember(workspaceKey, actor.memberId());
 
         WorkspaceInviteLink link = linkQueryRepository
                 .findByToken(token)
@@ -161,8 +160,7 @@ public class WorkspaceInviteLinkService implements WorkspaceInviteLinkUseCase {
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
             projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
-                projectMemberCommandService.join(
-                        project, workspaceMember.getMemberId(), config.role(), JoinMethod.LINK);
+                projectMemberCommandService.join(project, workspaceMember, config.role(), JoinMethod.LINK);
             });
         }
     }

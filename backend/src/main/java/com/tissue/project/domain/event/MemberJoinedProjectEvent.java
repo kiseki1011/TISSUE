@@ -18,7 +18,8 @@ public record MemberJoinedProjectEvent(
         String joinedMemberDisplayName,
         ProjectRole role,
         JoinMethod joinMethod,
-        Long actorMemberId)
+        Long actorMemberId,
+        String actorDisplayName)
         implements DomainEvent {
 
     public static MemberJoinedProjectEvent create(
@@ -31,7 +32,8 @@ public record MemberJoinedProjectEvent(
             String joinedMemberDisplayName,
             ProjectRole role,
             JoinMethod joinMethod,
-            Long actorMemberId) {
+            Long actorMemberId,
+            String actorDisplayName) {
         return new MemberJoinedProjectEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -44,6 +46,7 @@ public record MemberJoinedProjectEvent(
                 joinedMemberDisplayName,
                 role,
                 joinMethod,
-                actorMemberId);
+                actorMemberId,
+                actorDisplayName);
     }
 }

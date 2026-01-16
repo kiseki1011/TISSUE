@@ -30,6 +30,8 @@ public class SprintEventPublisher {
                 sprint.getProject().getKey(),
                 sprint.getId(),
                 sprint.getTitle(),
+                sprint.getStartedAt(),
+                sprint.getCompletedAt(),
                 actor.getMemberId(),
                 actor.getDisplayName()));
     }

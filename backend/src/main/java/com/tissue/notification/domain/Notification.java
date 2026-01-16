@@ -17,6 +17,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Getter
@@ -54,6 +55,7 @@ public class Notification extends BaseDateEntity {
     @Column(nullable = false)
     private Long actorMemberId;
 
+    @Nullable
     private String actorDisplayName;
 
     @Column(nullable = false)
@@ -69,7 +71,7 @@ public class Notification extends BaseDateEntity {
             NotificationType notificationType,
             EntityReference entityReference,
             Long actorMemberId,
-            String actorDisplayName,
+            @Nullable String actorDisplayName,
             Long receiverMemberId,
             String receiverEmail,
             NotificationMessage message) {

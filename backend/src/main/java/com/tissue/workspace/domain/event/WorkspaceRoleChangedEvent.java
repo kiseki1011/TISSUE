@@ -12,7 +12,9 @@ public record WorkspaceRoleChangedEvent(
         Long targetMemberId,
         WorkspaceRole oldRole,
         WorkspaceRole newRole,
-        Long actorMemberId)
+        Long actorMemberId,
+        String actorDisplayName,
+        String targetDisplayName)
         implements DomainEvent {
 
     public static WorkspaceRoleChangedEvent create(
@@ -20,8 +22,18 @@ public record WorkspaceRoleChangedEvent(
             Long targetMemberId,
             WorkspaceRole oldRole,
             WorkspaceRole newRole,
-            Long actorMemberId) {
+            Long actorMemberId,
+            String actorDisplayName,
+            String targetDisplayName) {
         return new WorkspaceRoleChangedEvent(
-                UUID.randomUUID(), Instant.now(), workspaceKey, targetMemberId, oldRole, newRole, actorMemberId);
+                UUID.randomUUID(),
+                Instant.now(),
+                workspaceKey,
+                targetMemberId,
+                oldRole,
+                newRole,
+                actorMemberId,
+                actorDisplayName,
+                targetDisplayName);
     }
 }

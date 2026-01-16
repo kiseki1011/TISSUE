@@ -42,17 +42,18 @@ public class InvitationService implements InvitationUseCase {
 
         invitation.accept();
 
-        WorkspaceMember workspaceMember = workspaceParticipationService.join(
+        WorkspaceMember joinedWorkspaceMember = workspaceParticipationService.join(
                 invitation.getWorkspace(),
                 memberFinder.getActiveBy(memberId),
                 invitation.getWorkspaceRole(),
-                invitation.getCreatedBy(),
+                memberId,
+                null,
                 JoinMethod.INVITATION);
 
         List<ProjectJoinConfig> projectConfigs = invitation.getProjectConfigs();
 
         if (invitation.projectConfigsNotEmpty()) {
-            joinProjects(projectConfigs, workspaceMember);
+            joinProjects(projectConfigs, joinedWorkspaceMember);
         }
     }
 
@@ -85,8 +86,7 @@ public class InvitationService implements InvitationUseCase {
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
             projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
-                projectMemberCommandService.join(
-                        project, workspaceMember.getMemberId(), config.role(), JoinMethod.INVITATION);
+                projectMemberCommandService.join(project, workspaceMember, config.role(), JoinMethod.INVITATION);
             });
         }
     }

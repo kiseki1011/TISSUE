@@ -2,7 +2,6 @@ package com.tissue.workspace.application.service.authorization;
 
 import com.tissue.workspace.application.port.out.WorkspaceLinkQueryRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
-import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
 import com.tissue.workspace.domain.exception.InsufficientWorkspaceRoleException;
@@ -49,14 +48,18 @@ public class WorkspaceAuthorizationService {
     }
 
     public void requireRoleGrantPermission(
-            String workspaceKey, WorkspaceRole grantRole, WorkspaceMember target, WorkspaceMember actor) {
+            String workspaceKey,
+            WorkspaceRole grantRole,
+            Long actorMemberId,
+            WorkspaceRole targetRole,
+            WorkspaceRole actorRole) {
         if (grantRole == WorkspaceRole.OWNER) {
             throw new CannotChangeRoleToOwnerException();
         }
-        if (!isAdmin(workspaceKey, actor.getMemberId())) {
+        if (!isAdmin(workspaceKey, actorMemberId)) {
             throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.ADMIN);
         }
-        if (hasHigherRoleThan(actor, target)) {
+        if (hasHigherRoleThan(actorRole, targetRole)) {
             return;
         }
         throw new WorkspaceRoleGrantNotAllowedException(workspaceKey, grantRole);
@@ -90,8 +93,8 @@ public class WorkspaceAuthorizationService {
                 .orElse(false);
     }
 
-    private boolean hasHigherRoleThan(WorkspaceMember actor, WorkspaceMember target) {
-        return actor.getRole().isHigherThan(target.getRole());
+    private boolean hasHigherRoleThan(WorkspaceRole actorRole, WorkspaceRole targetRole) {
+        return actorRole.isHigherThan(targetRole);
     }
 
     private boolean isLinkCreator(String token, Long actorMemberId) {

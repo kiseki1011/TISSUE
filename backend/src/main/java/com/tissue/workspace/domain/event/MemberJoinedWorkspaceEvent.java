@@ -5,8 +5,8 @@ import com.tissue.common.event.DomainEvent;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
-// TODO: consider adding actorDisplayName for context
 public record MemberJoinedWorkspaceEvent(
         UUID eventId,
         Instant occurredAt,
@@ -17,7 +17,8 @@ public record MemberJoinedWorkspaceEvent(
         String joinedMemberDisplayName,
         WorkspaceRole role,
         JoinMethod joinMethod,
-        Long actorMemberId)
+        Long actorMemberId,
+        @Nullable String actorDisplayName)
         implements DomainEvent {
 
     public static MemberJoinedWorkspaceEvent create(
@@ -28,7 +29,8 @@ public record MemberJoinedWorkspaceEvent(
             String memberDisplayName,
             WorkspaceRole role,
             JoinMethod joinMethod,
-            Long actorMemberId) {
+            Long actorMemberId,
+            @Nullable String actorDisplayName) {
         return new MemberJoinedWorkspaceEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -39,6 +41,7 @@ public record MemberJoinedWorkspaceEvent(
                 memberDisplayName,
                 role,
                 joinMethod,
-                actorMemberId);
+                actorMemberId,
+                actorDisplayName);
     }
 }

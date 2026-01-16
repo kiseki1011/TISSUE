@@ -4,6 +4,7 @@ import com.tissue.workspace.application.dto.in.CreateProjectInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
 import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
 
@@ -17,8 +18,7 @@ public interface WorkspaceInviteLinkUseCase {
 
     WorkspaceMemberResponse joinViaLink(JoinViaLinkCommand cmd);
 
-    // TODO: getLinkInfo -> getLinkDetail
-    WorkspaceInviteLinkDetail getLinkInfo(String workspaceKey, String token);
+    WorkspaceInviteLinkDetail getLinkDetail(String workspaceKey, String token, WorkspaceMemberInfo actor);
 
     // TODO: getWorkspaceLinks
     //  all active links for the workspace

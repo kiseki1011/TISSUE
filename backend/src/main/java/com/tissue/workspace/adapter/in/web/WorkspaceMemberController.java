@@ -1,11 +1,13 @@
 package com.tissue.workspace.adapter.in.web;
 
+import com.tissue.workspace.adapter.in.web.annotation.CurrentWorkspaceMember;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateDisplayNameRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateRoleRequest;
 import com.tissue.workspace.application.dto.in.ManagePositionCommand;
 import com.tissue.workspace.application.dto.in.ManageTeamCommand;
 import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
 import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.port.in.WorkspaceMemberQueryUseCase;
 import jakarta.validation.Valid;
@@ -30,9 +32,11 @@ public class WorkspaceMemberController {
     public ResponseEntity<Void> updateDisplayName(
             @PathVariable String workspaceKey,
             @PathVariable Long memberId,
-            @RequestBody @Valid UpdateDisplayNameRequest request) {
+            @RequestBody @Valid UpdateDisplayNameRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new UpdateDisplayNameCommand(workspaceKey, memberId, request.displayName());
+        var command =
+                new UpdateDisplayNameCommand(workspaceKey, memberId, request.displayName(), currentWorkspaceMember);
         workspaceMemberManageUseCase.updateDisplayName(command);
 
         return ResponseEntity.noContent().build();
@@ -42,9 +46,10 @@ public class WorkspaceMemberController {
     public ResponseEntity<Void> updateRole(
             @PathVariable String workspaceKey,
             @PathVariable Long memberId,
-            @RequestBody @Valid UpdateRoleRequest request) {
+            @RequestBody @Valid UpdateRoleRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new UpdateRoleCommand(workspaceKey, memberId, request.role());
+        var command = new UpdateRoleCommand(workspaceKey, memberId, request.role(), currentWorkspaceMember);
         workspaceMemberManageUseCase.updateRole(command);
 
         return ResponseEntity.noContent().build();
@@ -52,9 +57,12 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/positions/{positionId}")
     public ResponseEntity<Void> addPosition(
-            @PathVariable String workspaceKey, @PathVariable Long memberId, @PathVariable Long positionId) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long memberId,
+            @PathVariable Long positionId,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new ManagePositionCommand(workspaceKey, memberId, positionId);
+        var command = new ManagePositionCommand(workspaceKey, memberId, positionId, currentWorkspaceMember);
         workspaceMemberManageUseCase.addPosition(command);
 
         return ResponseEntity.noContent().build();
@@ -62,9 +70,12 @@ public class WorkspaceMemberController {
 
     @DeleteMapping("/{memberId}/positions/{positionId}")
     public ResponseEntity<Void> removePosition(
-            @PathVariable String workspaceKey, @PathVariable Long memberId, @PathVariable Long positionId) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long memberId,
+            @PathVariable Long positionId,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new ManagePositionCommand(workspaceKey, memberId, positionId);
+        var command = new ManagePositionCommand(workspaceKey, memberId, positionId, currentWorkspaceMember);
         workspaceMemberManageUseCase.removePosition(command);
 
         return ResponseEntity.noContent().build();
@@ -72,9 +83,12 @@ public class WorkspaceMemberController {
 
     @PatchMapping("/{memberId}/teams/{teamId}")
     public ResponseEntity<Void> addTeam(
-            @PathVariable String workspaceKey, @PathVariable Long memberId, @PathVariable Long teamId) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long memberId,
+            @PathVariable Long teamId,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new ManageTeamCommand(workspaceKey, memberId, teamId);
+        var command = new ManageTeamCommand(workspaceKey, memberId, teamId, currentWorkspaceMember);
         workspaceMemberManageUseCase.addTeam(command);
 
         return ResponseEntity.noContent().build();
@@ -82,9 +96,12 @@ public class WorkspaceMemberController {
 
     @DeleteMapping("/{memberId}/teams/{teamId}")
     public ResponseEntity<Void> removeTeam(
-            @PathVariable String workspaceKey, @PathVariable Long memberId, @PathVariable Long teamId) {
+            @PathVariable String workspaceKey,
+            @PathVariable Long memberId,
+            @PathVariable Long teamId,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
-        var command = new ManageTeamCommand(workspaceKey, memberId, teamId);
+        var command = new ManageTeamCommand(workspaceKey, memberId, teamId, currentWorkspaceMember);
         workspaceMemberManageUseCase.removeTeam(command);
 
         return ResponseEntity.noContent().build();

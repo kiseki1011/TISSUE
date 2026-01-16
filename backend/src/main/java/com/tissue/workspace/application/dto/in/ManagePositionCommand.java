@@ -1,3 +1,6 @@
 package com.tissue.workspace.application.dto.in;
 
-public record ManagePositionCommand(String workspaceKey, Long targetMemberId, Long positionId) {}
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+
+public record ManagePositionCommand(
+        String workspaceKey, Long targetMemberId, Long positionId, WorkspaceMemberInfo actor) {}

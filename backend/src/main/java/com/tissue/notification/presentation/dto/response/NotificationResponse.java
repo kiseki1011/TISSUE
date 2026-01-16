@@ -5,6 +5,7 @@ import com.tissue.notification.domain.enums.NotificationType;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Builder;
+import org.jspecify.annotations.Nullable;
 
 @Builder
 public record NotificationResponse(
@@ -15,6 +16,6 @@ public record NotificationResponse(
         String content,
         EntityReference entityReference,
         Long actorMemberId,
-        String actorDisplayName,
+        @Nullable String actorDisplayName,
         boolean isRead,
         Instant createdAt) {}

@@ -2,10 +2,12 @@ package com.tissue.workspace.adapter.in.web;
 
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
+import com.tissue.workspace.adapter.in.web.annotation.CurrentWorkspaceMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
 import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
 import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
+import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import com.tissue.workspace.application.dto.out.command.InviteLinkResponse;
 import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
@@ -32,8 +34,11 @@ public class WorkspaceInviteLinkController {
 
     @PostMapping
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
-            @PathVariable String workspaceKey, @RequestBody @Valid CreateWorkspaceInviteLinkRequest request) {
-        var command = request.toCommand(workspaceKey);
+            @PathVariable String workspaceKey,
+            @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+
+        var command = request.toCommand(workspaceKey, currentWorkspaceMember);
         String token = inviteLinkUseCase.createWorkspaceLink(command);
 
         // TODO: do i have to write the full uri path? cant i just do "/{token}"?
@@ -50,8 +55,10 @@ public class WorkspaceInviteLinkController {
     public ResponseEntity<InviteLinkResponse> createProjectLink(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @RequestBody @Valid CreateProjectInviteLinkRequest request) {
-        var command = request.toCommand(workspaceKey, projectKey);
+            @RequestBody @Valid CreateProjectInviteLinkRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+
+        var command = request.toCommand(workspaceKey, projectKey, currentWorkspaceMember);
         String token = inviteLinkUseCase.createProjectLink(command);
 
         // TODO: do i have to write the full uri path? cant i just do "/{token}"?
@@ -65,26 +72,33 @@ public class WorkspaceInviteLinkController {
     }
 
     @DeleteMapping("/{token}")
-    public ResponseEntity<Void> expireLink(@PathVariable String workspaceKey, @PathVariable String token) {
-        var command = new ExpireLinkCommand(workspaceKey, token);
-        inviteLinkUseCase.expireLink(command);
+    public ResponseEntity<Void> expireLink(
+            @PathVariable String workspaceKey,
+            @PathVariable String token,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
 
+        var command = new ExpireLinkCommand(workspaceKey, token, currentWorkspaceMember);
+        inviteLinkUseCase.expireLink(command);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
             @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails userDetails) {
+
         var command = new JoinViaLinkCommand(workspaceKey, token, userDetails.getMemberId());
         WorkspaceMemberResponse response = inviteLinkUseCase.joinViaLink(command);
-
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
-            @PathVariable String workspaceKey, @PathVariable String token) {
-        WorkspaceInviteLinkDetail response = inviteLinkUseCase.getLinkInfo(workspaceKey, token);
+            @PathVariable String workspaceKey,
+            @PathVariable String token,
+            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+
+        WorkspaceInviteLinkDetail response =
+                inviteLinkUseCase.getLinkDetail(workspaceKey, token, currentWorkspaceMember);
         return ResponseEntity.ok(response);
     }
 }

@@ -13,7 +13,9 @@ public record ProjectRoleChangedEvent(
         Long targetMemberId,
         ProjectRole oldRole,
         ProjectRole newRole,
-        Long actorMemberId)
+        Long actorMemberId,
+        String actorDisplayName,
+        String targetDisplayName)
         implements DomainEvent {
 
     public static ProjectRoleChangedEvent create(
@@ -22,7 +24,9 @@ public record ProjectRoleChangedEvent(
             Long targetMemberId,
             ProjectRole oldRole,
             ProjectRole newRole,
-            Long actorMemberId) {
+            Long actorMemberId,
+            String actorDisplayName,
+            String targetDisplayName) {
         return new ProjectRoleChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -31,6 +35,8 @@ public record ProjectRoleChangedEvent(
                 targetMemberId,
                 oldRole,
                 newRole,
-                actorMemberId);
+                actorMemberId,
+                actorDisplayName,
+                targetDisplayName);
     }
 }

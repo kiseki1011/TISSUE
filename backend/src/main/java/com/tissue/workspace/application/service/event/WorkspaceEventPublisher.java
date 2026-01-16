@@ -6,6 +6,7 @@ import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.workspace.domain.event.WorkspaceRoleChangedEvent;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,12 @@ public class WorkspaceEventPublisher {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    public void publishMemberJoinedWorkspace(WorkspaceMember joinedMember, JoinMethod joinMethod, Long actorMemberId) {
+    public void publishMemberJoinedWorkspace(
+            WorkspaceMember joinedMember,
+            JoinMethod joinMethod,
+            Long actorMemberId,
+            @Nullable String actorDisplayName) {
+
         eventPublisher.publishEvent(MemberJoinedWorkspaceEvent.create(
                 joinedMember.getWorkspaceKey(),
                 joinedMember.getWorkspace().getId(),
@@ -24,12 +30,24 @@ public class WorkspaceEventPublisher {
                 joinedMember.getDisplayName(),
                 joinedMember.getRole(),
                 joinMethod,
-                actorMemberId));
+                actorMemberId,
+                actorDisplayName));
     }
 
     public void publishWorkspaceRoleChanged(
-            WorkspaceMember targetMember, WorkspaceRole oldRole, WorkspaceRole newRole, Long actorMemberId) {
+            WorkspaceMember targetMember,
+            WorkspaceRole oldRole,
+            WorkspaceRole newRole,
+            Long actorMemberId,
+            String actorDisplayName) {
+
         eventPublisher.publishEvent(WorkspaceRoleChangedEvent.create(
-                targetMember.getWorkspaceKey(), targetMember.getMemberId(), oldRole, newRole, actorMemberId));
+                targetMember.getWorkspaceKey(),
+                targetMember.getMemberId(),
+                oldRole,
+                newRole,
+                actorMemberId,
+                actorDisplayName,
+                targetMember.getDisplayName()));
     }
 }

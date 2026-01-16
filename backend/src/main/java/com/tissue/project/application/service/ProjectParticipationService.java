@@ -1,8 +1,5 @@
 package com.tissue.project.application.service;
 
-import static com.tissue.common.enums.JoinMethod.BY_ADMIN;
-import static com.tissue.common.enums.JoinMethod.DIRECT;
-
 import com.tissue.common.enums.JoinMethod;
 import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
@@ -79,8 +76,8 @@ public class ProjectParticipationService implements ProjectParticipationUseCase 
 
         projectMemberRepository.saveAll(newMembers);
 
-        newMembers.forEach(
-                pm -> eventPublisher.publishMemberJoinedProject(pm, workspace, project, BY_ADMIN, actor.memberId()));
+        newMembers.forEach(pm -> eventPublisher.publishMemberJoinedProject(
+                pm, workspace, project, JoinMethod.BY_ADMIN, actor.memberId(), actor.displayName()));
 
         return ProjectMembersCommandResult.of(project, newMembers);
     }
@@ -99,7 +96,8 @@ public class ProjectParticipationService implements ProjectParticipationUseCase 
         ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
         projectMemberRepository.save(projectMember);
 
-        eventPublisher.publishMemberJoinedProject(projectMember, workspace, project, DIRECT, actor.memberId());
+        eventPublisher.publishMemberJoinedProject(
+                projectMember, workspace, project, JoinMethod.DIRECT, actor.memberId(), actor.displayName());
 
         return ProjectMemberCommandResult.of(projectMember);
     }
@@ -153,7 +151,7 @@ public class ProjectParticipationService implements ProjectParticipationUseCase 
         ProjectRole oldRole = target.getRole();
         target.changeRole(cmd.newRole());
 
-        eventPublisher.publishProjectRoleChanged(target, oldRole, cmd.newRole(), actor.memberId());
+        eventPublisher.publishProjectRoleChanged(target, oldRole, cmd.newRole(), actor.memberId(), actor.displayName());
 
         return ProjectMemberCommandResult.of(target);
     }
@@ -161,16 +159,20 @@ public class ProjectParticipationService implements ProjectParticipationUseCase 
     // TODO: add javadoc about the next information
     //  - is not a UseCase
     //  - is called from another service(internal usage)
-    public void join(Project project, Long memberId, ProjectRole role, JoinMethod joinMethod) {
-        if (projectMemberFinder.existsBy(project, memberId)) {
+    public void join(Project project, WorkspaceMember workspaceMember, ProjectRole role, JoinMethod joinMethod) {
+        if (projectMemberFinder.existsBy(project, workspaceMember.getMemberId())) {
             return;
         }
 
-        WorkspaceMember wm = workspaceMemberFinder.getBy(memberId, project.getWorkspaceKey());
+        ProjectMember projectMember = ProjectMember.create(project, workspaceMember, role);
+        projectMemberRepository.save(projectMember);
 
-        ProjectMember pm = ProjectMember.create(project, wm, role);
-        projectMemberRepository.save(pm);
-
-        eventPublisher.publishMemberJoinedProject(pm, project.getWorkspace(), project, joinMethod, memberId);
+        eventPublisher.publishMemberJoinedProject(
+                projectMember,
+                project.getWorkspace(),
+                project,
+                joinMethod,
+                workspaceMember.getMemberId(),
+                workspaceMember.getDisplayName());
     }
 }

@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,7 +123,12 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - controller does not know this method unless it directly depends on this service
     // TODO: actorMemberId를 파라미터로 받자(이벤트 컨텍스트로 넘기기 위해서, @Nullable 붙이고)
     protected WorkspaceMember join(
-            Workspace workspace, Member member, WorkspaceRole role, Long actorMemberId, JoinMethod joinMethod) {
+            Workspace workspace,
+            Member member,
+            WorkspaceRole role,
+            Long actorMemberId,
+            @Nullable String actorDisplayName,
+            JoinMethod joinMethod) {
 
         Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
@@ -143,7 +149,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     return workspaceMemberCommandRepository.save(newMember);
                 });
 
-        eventPublisher.publishMemberJoinedWorkspace(joinedMember, joinMethod, actorMemberId);
+        eventPublisher.publishMemberJoinedWorkspace(joinedMember, joinMethod, actorMemberId, actorDisplayName);
 
         return joinedMember;
     }

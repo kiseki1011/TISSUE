@@ -462,7 +462,9 @@ public class NotificationEventListener {
         EntityReference reference = EntityReference.forSprint(
                 event.workspaceKey(), event.projectKey(), event.sprintTitle(), event.sprintId());
 
-        // TODO: SprintCompletedEvent에 startedAt, endedAt이 필요하지 않나?
+        String startedAt = event.startedAt() != null ? event.startedAt().toString() : "";
+        String endedAt = event.endedAt() != null ? event.endedAt().toString() : "";
+
         commandService.createAndSend(
                 event.eventId(),
                 NotificationType.SPRINT_COMPLETED,
@@ -473,8 +475,8 @@ public class NotificationEventListener {
                 // args: {0}=workspaceKey, {1}=sprintName, {2}=startedAt, {3}=endedAt
                 event.workspaceKey(),
                 event.sprintTitle(),
-                event.startedAt(),
-                event.endedAt());
+                startedAt,
+                endedAt);
     }
 
     /**
@@ -493,7 +495,6 @@ public class NotificationEventListener {
 
         EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.joinedMemberId());
 
-        // TODO: MemberJoinedWorkspaceEvent에 actorDisplayName가 필요하지 않나?
         commandService.createAndSend(
                 event.eventId(),
                 NotificationType.MEMBER_JOINED_WORKSPACE,
@@ -524,7 +525,6 @@ public class NotificationEventListener {
         EntityReference reference =
                 EntityReference.forProjectMember(event.workspaceKey(), event.projectKey(), event.joinedMemberId());
 
-        // TODO: MemberJoinedProjectEvent에 actorDisplayName가 필요하지 않나?
         commandService.createAndSend(
                 event.eventId(),
                 NotificationType.MEMBER_JOINED_PROJECT,
@@ -553,7 +553,6 @@ public class NotificationEventListener {
 
         EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.targetMemberId());
 
-        // TODO: WorkspaceRoleChangedEvent에 actorDisplayName, targetMemberDisplayName 가 필요하지 않나?
         commandService.createAndSend(
                 event.eventId(),
                 NotificationType.WORKSPACE_ROLE_CHANGED,
@@ -563,7 +562,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 // args: {0}=workspaceKey, {1}=memberName, {2}=actorName, {3}=oldRole, {4}=newRole
                 event.workspaceKey(),
-                event.targetMemberDisplayName(),
+                event.targetDisplayName(),
                 event.actorDisplayName(),
                 event.oldRole().name(),
                 event.newRole().name());
@@ -585,7 +584,6 @@ public class NotificationEventListener {
         EntityReference reference =
                 EntityReference.forProjectMember(event.workspaceKey(), event.projectKey(), event.targetMemberId());
 
-        // TODO: ProjectRoleChangedEvent에 actorDisplayName, targetMemberDisplayName 가 필요하지 않나?
         commandService.createAndSend(
                 event.eventId(),
                 NotificationType.PROJECT_ROLE_CHANGED,
@@ -595,7 +593,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 // args: {0}=projectKey, {1}=memberName, {2}=actorName, {3}=oldRole, {4}=newRole
                 event.projectKey(),
-                event.targetMemberDisplayName(),
+                event.targetDisplayName(),
                 event.actorDisplayName(),
                 event.oldRole().name(),
                 event.newRole().name());

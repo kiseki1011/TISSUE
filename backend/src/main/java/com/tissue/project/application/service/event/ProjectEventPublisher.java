@@ -18,27 +18,32 @@ public class ProjectEventPublisher {
     private final ApplicationEventPublisher eventPublisher;
 
     public void publishMemberJoinedProject(
-            ProjectMember joinedMember,
+            ProjectMember newMember,
             Workspace workspace,
             Project project,
             JoinMethod joinMethod,
-            Long actorMemberId) {
-
+            Long actorMemberId,
+            String actorDisplayName) {
         eventPublisher.publishEvent(MemberJoinedProjectEvent.create(
-                joinedMember.getWorkspaceKey(),
+                workspace.getKey(),
                 workspace.getId(),
                 project.getKey(),
                 project.getId(),
-                joinedMember.getMemberId(),
-                joinedMember.getWorkspaceMember().getEmail(),
-                joinedMember.getDisplayName(),
-                joinedMember.getRole(),
+                newMember.getMemberId(),
+                newMember.getWorkspaceMember().getEmail(),
+                newMember.getDisplayName(),
+                newMember.getRole(),
                 joinMethod,
-                actorMemberId));
+                actorMemberId,
+                actorDisplayName));
     }
 
     public void publishProjectRoleChanged(
-            ProjectMember targetMember, ProjectRole oldRole, ProjectRole newRole, Long actorMemberId) {
+            ProjectMember targetMember,
+            ProjectRole oldRole,
+            ProjectRole newRole,
+            Long actorMemberId,
+            String actorDisplayName) {
 
         eventPublisher.publishEvent(ProjectRoleChangedEvent.create(
                 targetMember.getWorkspaceKey(),
@@ -46,6 +51,8 @@ public class ProjectEventPublisher {
                 targetMember.getMemberId(),
                 oldRole,
                 newRole,
-                actorMemberId));
+                actorMemberId,
+                actorDisplayName,
+                targetMember.getDisplayName()));
     }
 }

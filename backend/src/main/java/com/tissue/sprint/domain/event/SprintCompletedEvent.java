@@ -3,6 +3,7 @@ package com.tissue.sprint.domain.event;
 import com.tissue.common.event.DomainEvent;
 import java.time.Instant;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 
 public record SprintCompletedEvent(
         UUID eventId,
@@ -11,6 +12,8 @@ public record SprintCompletedEvent(
         String projectKey,
         Long sprintId,
         String sprintTitle,
+        @Nullable Instant startedAt,
+        @Nullable Instant endedAt,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
@@ -20,6 +23,8 @@ public record SprintCompletedEvent(
             String projectKey,
             Long sprintId,
             String sprintTitle,
+            @Nullable Instant startedAt,
+            @Nullable Instant endedAt,
             Long actorMemberId,
             String actorDisplayName) {
         return new SprintCompletedEvent(
@@ -29,6 +34,8 @@ public record SprintCompletedEvent(
                 projectKey,
                 sprintId,
                 sprintTitle,
+                startedAt,
+                endedAt,
                 actorMemberId,
                 actorDisplayName);
     }
