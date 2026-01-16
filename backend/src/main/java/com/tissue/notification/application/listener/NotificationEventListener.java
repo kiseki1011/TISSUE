@@ -67,6 +67,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "projectKey", event.projectKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
@@ -104,6 +105,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -142,6 +144,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -180,6 +183,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
                         "changedFields", changedFields));
@@ -218,6 +222,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
                         "oldStatus", event.oldStatusName(),
@@ -255,6 +260,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -293,6 +299,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -326,6 +333,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
                         "status", event.status().name()));
@@ -359,6 +367,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -394,6 +403,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
@@ -432,6 +442,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
                         "removedReviewerName", event.removedReviewerDisplayName()));
@@ -473,6 +484,7 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
+                        "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName()));
     }
