@@ -92,4 +92,16 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("workspaceKey") String workspaceKey,
             @Param("projectKey") String projectKey,
             @Param("excludedMemberId") Long excludedMemberId);
+
+    @Query("SELECT new com.tissue.workspace.application.port.out.WorkspaceMemberContact(pm.memberId, wm.email) "
+            + "FROM ProjectMember pm "
+            + "JOIN pm.workspaceMember wm "
+            + "WHERE pm.workspaceKey = :workspaceKey "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.role = :role "
+            + "AND pm.softDeleted = false")
+    List<WorkspaceMemberContact> findAdminContactsByProjectKey(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("role") ProjectRole role);
 }

@@ -20,56 +20,56 @@ public class NotificationTargetService {
     private final IssueQueryRepository issueQueryRepository;
 
     /** Retrieve all members in the workspace as notification targets. */
-    public List<WorkspaceMemberContact> getWorkspaceWideMemberTargets(String workspaceCode) {
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKey(workspaceCode);
+    public List<WorkspaceMemberContact> getAllWorkspaceMembers(String workspaceKey) {
+        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKey(workspaceKey);
     }
 
     /** Retrieve all members in the workspace as notification targets, excluding a specific member. */
-    public List<WorkspaceMemberContact> getAllWorkspaceMembersExcluding(String workspaceCode, Long excludedMemberId) {
-        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyExcluding(workspaceCode, excludedMemberId);
+    public List<WorkspaceMemberContact> getAllWorkspaceMembersExcluding(String workspaceKey, Long excludedMemberId) {
+        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyExcluding(workspaceKey, excludedMemberId);
     }
 
     /** Retrieve all members in the project as notification targets. */
-    public List<WorkspaceMemberContact> getProjectMemberTargets(String workspaceCode, String projectCode) {
-        return projectMemberQueryRepository.findAllContactsByProjectKey(workspaceCode, projectCode);
+    public List<WorkspaceMemberContact> getAllProjectMembers(String workspaceKey, String projectKey) {
+        return projectMemberQueryRepository.findAllContactsByProjectKey(workspaceKey, projectKey);
     }
 
     /** Retrieve all members in the project as notification targets, excluding a specific member. */
     public List<WorkspaceMemberContact> getProjectMembersExcluding(
-            String workspaceCode, String projectCode, Long excludedMemberId) {
+            String workspaceKey, String projectCode, Long excludedMemberId) {
         return projectMemberQueryRepository.findAllContactsByProjectKeyExcluding(
-                workspaceCode, projectCode, excludedMemberId);
+                workspaceKey, projectCode, excludedMemberId);
     }
 
     /** Retrieve workspace administrators and a specific member as notification targets. */
-    public Set<WorkspaceMemberContact> getAdminAndSpecificMemberTargets(String workspaceCode, Long memberId) {
+    public Set<WorkspaceMemberContact> getAdminAndSpecificMemberTargets(String workspaceKey, Long memberId) {
 
         Set<WorkspaceMemberContact> targets = workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
-                workspaceCode, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER));
+                workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER));
 
         workspaceMemberQueryRepository
-                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceCode)
+                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceKey)
                 .ifPresent(targets::add);
 
         return targets;
     }
 
     /** Retrieve a specific member as a notification target. */
-    public Set<WorkspaceMemberContact> getSpecificMemberTarget(String workspaceCode, Long memberId) {
+    public Set<WorkspaceMemberContact> getSpecificMemberTarget(String workspaceKey, Long memberId) {
 
         Set<WorkspaceMemberContact> target = new HashSet<>();
 
         workspaceMemberQueryRepository
-                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceCode)
+                .findContactByMemberIdAndWorkspaceKey(memberId, workspaceKey)
                 .ifPresent(target::add);
 
         return target;
     }
 
     /** Retrieve specific members as notification targets. */
-    public Set<WorkspaceMemberContact> getSpecificMembersTargets(String workspaceCode, Set<Long> memberIds) {
+    public Set<WorkspaceMemberContact> getSpecificMembersTargets(String workspaceKey, Set<Long> memberIds) {
         return new HashSet<>(
-                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceCode, memberIds));
+                workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, memberIds));
     }
 
     public Set<WorkspaceMemberContact> getIssueAssignee(String workspaceKey, String issueKey) {
@@ -120,5 +120,15 @@ public class NotificationTargetService {
         Set<WorkspaceMemberContact> targets = getIssueParticipants(workspaceKey, issueKey);
         targets.addAll(issueQueryRepository.findReviewerContacts(workspaceKey, issueKey));
         return targets;
+    }
+
+    public List<WorkspaceMemberContact> getWorkspaceAdmins(String workspaceKey) {
+        return List.copyOf(workspaceMemberQueryRepository.findAdminContactsByWorkspace_Key(
+                workspaceKey, Set.of(WorkspaceRole.ADMIN, WorkspaceRole.OWNER)));
+    }
+
+    public List<WorkspaceMemberContact> getProjectAdmins(String workspaceKey, String projectKey) {
+        return projectMemberQueryRepository.findAdminContactsByProjectKey(
+                workspaceKey, projectKey, com.tissue.project.domain.enums.ProjectRole.ADMIN);
     }
 }

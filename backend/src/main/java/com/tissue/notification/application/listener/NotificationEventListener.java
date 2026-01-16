@@ -8,6 +8,7 @@ import com.tissue.issue.domain.event.IssueDeletedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
 import com.tissue.issue.domain.event.IssueReporterChangedEvent;
 import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
+import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;
@@ -49,7 +50,7 @@ public class NotificationEventListener {
                 event.workspaceKey(), event.projectKey(), event.actorMemberId());
 
         log.info(
-                "Handling IssueCreatedEvent: issue={} in project={}, target size={}",
+                "[NOTIFICATION] Handling IssueCreatedEvent: issue={} in project={}, targets={}",
                 event.issueKey(),
                 event.projectKey(),
                 targets.size());
@@ -80,11 +81,16 @@ public class NotificationEventListener {
                 targetService.getIssueAssignee(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling IssueAssignedEvent: issue={}, assignee={}, targets={}",
+                event.issueKey(),
+                event.assigneeMemberId(),
+                targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
-
-        log.info("Handling IssueAssignedEvent: issue={}, assignee={}", event.issueKey(), event.assigneeMemberId());
 
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
@@ -115,9 +121,14 @@ public class NotificationEventListener {
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedAssigneeMemberId());
 
         log.info(
-                "Handling IssueUnassignedEvent: issue={}, removedAssignee={}",
+                "[NOTIFICATION] Handling IssueUnassignedEvent: issue={}, removedAssignee={}, targets={}",
                 event.issueKey(),
-                event.removedAssigneeMemberId());
+                event.removedAssigneeMemberId(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
 
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
@@ -144,17 +155,18 @@ public class NotificationEventListener {
                 targetService.getIssueParticipants(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
-        if (targets.isEmpty()) {
-            return;
-        }
 
         String changedFields = String.join(", ", event.changes().keySet());
 
         log.info(
-                "Handling IssueFieldsUpdatedEvent: issue={}, fields=[{}], targets={}",
+                "[NOTIFICATION] Handling IssueFieldsUpdatedEvent: issue={}, fields=[{}], targets={}",
                 event.issueKey(),
                 changedFields,
                 targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
 
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
@@ -182,16 +194,17 @@ public class NotificationEventListener {
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
-        if (targets.isEmpty()) {
-            return;
-        }
 
         log.info(
-                "Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
+                "[NOTIFICATION] Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
                 event.oldStatusName(),
                 event.newStatusName(),
                 targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
 
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
@@ -220,6 +233,12 @@ public class NotificationEventListener {
                 targetService.getIssueReporter(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling IssueReporterChangedEvent: issue={}, targets={}",
+                event.issueKey(),
+                targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
@@ -252,6 +271,16 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContact> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.reviewerMemberId());
 
+        log.info(
+                "[NOTIFICATION] Handling IssueReviewerAddedEvent: issue={}, reviewer={}, targets={}",
+                event.issueKey(),
+                event.reviewerMemberId(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
 
@@ -267,16 +296,20 @@ public class NotificationEventListener {
                 event.actorDisplayName());
     }
 
-    /**
-     * Target: Notify assignee, reporter (exclude actor)
-     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleIssueReviewSubmitted(com.tissue.issue.domain.event.IssueReviewSubmittedEvent event) {
+    public void handleIssueReviewSubmitted(IssueReviewSubmittedEvent event) {
         Collection<WorkspaceMemberContact> targets =
                 targetService.getIssueAssigneeAndReporter(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
+                event.issueKey(),
+                event.status(),
+                targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
@@ -307,6 +340,9 @@ public class NotificationEventListener {
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info("[NOTIFICATION] Handling IssueDeletedEvent: issue={}, targets={}", event.issueKey(), targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
@@ -336,6 +372,12 @@ public class NotificationEventListener {
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling IssueCommentAddedEvent: issue={}, targets={}",
+                event.issueKey(),
+                targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
@@ -368,6 +410,16 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContact> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.removedReviewerMemberId());
 
+        log.info(
+                "[NOTIFICATION] Handling IssueReviewerRemovedEvent: issue={}, removedReviewer={}, targets={}",
+                event.issueKey(),
+                event.removedReviewerMemberId(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
         EntityReference reference =
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
 
@@ -399,6 +451,12 @@ public class NotificationEventListener {
         }
 
         targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling IssueReviewRequestedEvent: issue={}, targets={}",
+                event.issueKey(),
+                targets.size());
+
         if (targets.isEmpty()) {
             return;
         }
@@ -419,13 +477,20 @@ public class NotificationEventListener {
     }
 
     /**
-     * Target: Notify project members (exclude actor)
+     * Target: Notify project members
      */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintStarted(SprintStartedEvent event) {
-        Collection<WorkspaceMemberContact> targets = targetService.getProjectMembersExcluding(
-                event.workspaceKey(), event.projectKey(), event.actorMemberId());
+        Collection<WorkspaceMemberContact> targets =
+                targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
+
+        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling SprintStartedEvent: sprint={}, targets={}",
+                event.sprintTitle(),
+                targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -447,13 +512,20 @@ public class NotificationEventListener {
     }
 
     /**
-     * Target: Notify project members (exclude actor)
+     * Target: Notify project members
      */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleSprintCompleted(SprintCompletedEvent event) {
-        Collection<WorkspaceMemberContact> targets = targetService.getProjectMembersExcluding(
-                event.workspaceKey(), event.projectKey(), event.actorMemberId());
+        Collection<WorkspaceMemberContact> targets =
+                targetService.getAllProjectMembers(event.workspaceKey(), event.projectKey());
+
+        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling SprintCompletedEvent: sprint={}, targets={}",
+                event.sprintTitle(),
+                targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -480,14 +552,22 @@ public class NotificationEventListener {
     }
 
     /**
-     * Target: Notify workspace admins
+     * Target: Notify workspace admins (exclude actor)
      */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedWorkspace(MemberJoinedWorkspaceEvent event) {
-        // TODO: 해당 워크스페이스의 WorkspaceRole.ADMIN(OWNER 포함) 들로 타겟 변경(필요시 메서드 추가)
-        Collection<WorkspaceMemberContact> targets =
-                targetService.getAllWorkspaceMembersExcluding(event.workspaceKey(), event.joinedMemberId());
+        Collection<WorkspaceMemberContact> targets = targetService.getWorkspaceAdmins(event.workspaceKey());
+
+        // Exclude if actor or joined member is an admin (to avoid self notification)
+        targets.removeIf(
+                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling MemberJoinedWorkspaceEvent: member={}, workspace={}, targets={}",
+                event.joinedMemberId(),
+                event.workspaceKey(),
+                targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -504,7 +584,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 // args: {0}=workspaceKey, {1}=memberName, {2}=role
                 event.workspaceKey(),
-                event.joinedMemberDisplayName(), // Assuming event has this
+                event.joinedMemberDisplayName(),
                 event.role().name());
     }
 
@@ -514,9 +594,18 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleMemberJoinedProject(MemberJoinedProjectEvent event) {
-        // TODO: 해당 프로젝트 ProjectRole.ADMIN 들로 타겟 변경(필요시 메서드 추가)
-        Collection<WorkspaceMemberContact> targets = targetService.getProjectMembersExcluding(
-                event.workspaceKey(), event.projectKey(), event.joinedMemberId());
+        Collection<WorkspaceMemberContact> targets =
+                targetService.getProjectAdmins(event.workspaceKey(), event.projectKey());
+
+        // Exclude if actor or joined member is an admin
+        targets.removeIf(
+                t -> t.memberId().equals(event.actorMemberId()) || t.memberId().equals(event.joinedMemberId()));
+
+        log.info(
+                "[NOTIFICATION] Handling MemberJoinedProjectEvent: member={}, project={}, targets={}",
+                event.joinedMemberId(),
+                event.projectKey(),
+                targets.size());
 
         if (targets.isEmpty()) {
             return;
@@ -551,6 +640,16 @@ public class NotificationEventListener {
         Collection<WorkspaceMemberContact> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
 
+        log.info(
+                "[NOTIFICATION] Handling WorkspaceRoleChangedEvent: targetMember={}, newRole={}, targets={}",
+                event.targetMemberId(),
+                event.newRole(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
         EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.targetMemberId());
 
         commandService.createAndSend(
@@ -580,6 +679,17 @@ public class NotificationEventListener {
 
         Collection<WorkspaceMemberContact> targets =
                 targetService.getSpecificMemberTarget(event.workspaceKey(), event.targetMemberId());
+
+        log.info(
+                "[NOTIFICATION] Handling ProjectRoleChangedEvent: targetMember={}, project={}, newRole={}, targets={}",
+                event.targetMemberId(),
+                event.projectKey(),
+                event.newRole(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
 
         EntityReference reference =
                 EntityReference.forProjectMember(event.workspaceKey(), event.projectKey(), event.targetMemberId());
