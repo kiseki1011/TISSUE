@@ -13,5 +13,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceKeyOrderByCreatedAtDesc(
             Long memberId, String workspaceKey);
 
+    boolean existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(Long memberId, String workspaceKey);
+
     Optional<Notification> findByIdAndReceiverMemberId(Long id, Long memberId);
 }

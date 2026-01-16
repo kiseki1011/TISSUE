@@ -5,6 +5,9 @@ import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
 import com.tissue.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
+import com.tissue.notification.presentation.dto.response.NotificationPreferenceResponse;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,24 +18,46 @@ public class NotificationPreferenceService {
 
     private final NotificationPreferenceRepository repository;
 
-    @Transactional
-    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceRequest request) {
-        NotificationPreference pref = findOrCreatePreference(workspaceKey, memberId, request.type(), request.channel());
+    @Transactional(readOnly = true)
+    public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long memberId) {
+        NotificationPreference preference = repository
+                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .orElse(null); // Return null if not found, we will use defaults
 
-        pref.updateEnabled(request.enabled());
-        repository.save(pref);
+        List<NotificationPreferenceResponse> responses = new ArrayList<>();
+
+        for (NotificationType type : NotificationType.values()) {
+            for (NotificationChannel channel : NotificationChannel.values()) {
+                if (channel == NotificationChannel.IN_APP) {
+                    continue; // IN_APP is mandatory
+                }
+
+                boolean enabled = true; // Default
+                if (preference != null) {
+                    enabled = preference.isEnabled(channel, type);
+                }
+
+                responses.add(NotificationPreferenceResponse.builder()
+                        .type(type)
+                        .channel(channel)
+                        .enabled(enabled)
+                        .build());
+            }
+        }
+
+        return responses;
     }
 
-    private NotificationPreference findOrCreatePreference(
-            String workspaceKey, Long memberId, NotificationType type, NotificationChannel channel) {
-        return repository
-                .findByReceiver(memberId, workspaceKey, type, channel)
+    @Transactional
+    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceRequest request) {
+        NotificationPreference pref = repository
+                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
                 .orElseGet(() -> NotificationPreference.builder()
                         .receiverMemberId(memberId)
                         .workspaceKey(workspaceKey)
-                        .type(type)
-                        .channel(channel)
-                        .enabled(true)
                         .build());
+
+        pref.updatePreference(request.channel(), request.type(), request.enabled());
+        repository.save(pref);
     }
 }

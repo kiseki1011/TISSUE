@@ -13,6 +13,5 @@ public class InAppSender implements NotificationSender {
     }
 
     @Override
-    public void send(Notification notification) {
-    }
+    public void send(Notification notification) {}
 }

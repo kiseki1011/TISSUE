@@ -3,11 +3,12 @@ package com.tissue.notification.application.service;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.NotificationPreference;
 import com.tissue.notification.domain.enums.NotificationChannel;
+import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.service.sender.NotificationSender;
 import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,19 +31,16 @@ public class NotificationProcessor {
 
         Notification context = notifications.get(0);
         String workspaceKey = context.getEntityReference().getWorkspaceKey();
-        var type = context.getType();
+        NotificationType type = context.getType();
         List<Long> receiverIds =
                 notifications.stream().map(Notification::getReceiverMemberId).toList();
 
-        // bulk load preferences
         List<NotificationPreference> preferences =
-                preferenceRepository.findByWorkspaceKeyAndTypeAndReceiverMemberIdIn(workspaceKey, type, receiverIds);
+                preferenceRepository.findAllByWorkspaceKeyAndReceiverMemberIdIn(workspaceKey, receiverIds);
 
-        // build lookup map: receiverId -> channel -> enabled
-        Map<Long, Map<NotificationChannel, Boolean>> prefMap = preferences.stream()
-                .collect(Collectors.groupingBy(
-                        NotificationPreference::getReceiverMemberId,
-                        Collectors.toMap(NotificationPreference::getChannel, NotificationPreference::isEnabled)));
+        // receiverId -> Preference Entity
+        Map<Long, NotificationPreference> prefMap = preferences.stream()
+                .collect(Collectors.toMap(NotificationPreference::getReceiverMemberId, Function.identity()));
 
         for (NotificationSender sender : senders) {
             NotificationChannel channel = sender.getChannel();
@@ -52,7 +50,7 @@ public class NotificationProcessor {
 
             try {
                 List<Notification> targets = notifications.stream()
-                        .filter(n -> isChannelEnabled(n.getReceiverMemberId(), channel, prefMap))
+                        .filter(n -> isChannelEnabled(n.getReceiverMemberId(), channel, type, prefMap))
                         .toList();
 
                 if (!targets.isEmpty()) {
@@ -66,8 +64,14 @@ public class NotificationProcessor {
     }
 
     private boolean isChannelEnabled(
-            Long memberId, NotificationChannel channel, Map<Long, Map<NotificationChannel, Boolean>> prefMap) {
-        Map<NotificationChannel, Boolean> memberPrefs = prefMap.getOrDefault(memberId, Collections.emptyMap());
-        return memberPrefs.getOrDefault(channel, true);
+            Long memberId,
+            NotificationChannel channel,
+            NotificationType type,
+            Map<Long, NotificationPreference> prefMap) {
+        NotificationPreference pref = prefMap.get(memberId);
+        if (pref == null) {
+            return true;
+        }
+        return pref.isEnabled(channel, type);
     }
 }

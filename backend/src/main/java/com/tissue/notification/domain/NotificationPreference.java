@@ -1,16 +1,18 @@
 package com.tissue.notification.domain;
 
+import com.tissue.common.jpa.converter.NotificationPreferenceMapConverter;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,7 +25,7 @@ import lombok.NoArgsConstructor;
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "UK_NOTIFICATION_PREF",
-                    columnNames = {"receiver_member_id", "workspace_key", "type", "channel"})
+                    columnNames = {"receiver_member_id", "workspace_key"})
         })
 public class NotificationPreference {
 
@@ -31,38 +33,33 @@ public class NotificationPreference {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "receiver_member_id", nullable = false)
     private Long receiverMemberId;
 
-    @Column(nullable = false)
+    @Column(name = "workspace_key", nullable = false)
     private String workspaceKey;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationChannel channel;
-
-    @Column(nullable = false)
-    private boolean enabled = true;
+    // Map<ChannelName, Map<TypeName, Boolean>>
+    @Column(name = "preferences", columnDefinition = "TEXT")
+    @Convert(converter = NotificationPreferenceMapConverter.class)
+    private Map<String, Map<String, Boolean>> preferences = new HashMap<>();
 
     @Builder
     public NotificationPreference(
-            Long receiverMemberId,
-            String workspaceKey,
-            NotificationType type,
-            NotificationChannel channel,
-            boolean enabled) {
+            Long receiverMemberId, String workspaceKey, Map<String, Map<String, Boolean>> preferences) {
         this.receiverMemberId = receiverMemberId;
         this.workspaceKey = workspaceKey;
-        this.type = type;
-        this.channel = channel;
-        this.enabled = enabled;
+        this.preferences = preferences != null ? preferences : new HashMap<>();
     }
 
-    public void updateEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void updatePreference(NotificationChannel channel, NotificationType type, boolean enabled) {
+        preferences.computeIfAbsent(channel.name(), k -> new HashMap<>()).put(type.name(), enabled);
+    }
+
+    /**
+     * Default is "true" if not set
+     */
+    public boolean isEnabled(NotificationChannel channel, NotificationType type) {
+        return preferences.getOrDefault(channel.name(), new HashMap<>()).getOrDefault(type.name(), true);
     }
 }
