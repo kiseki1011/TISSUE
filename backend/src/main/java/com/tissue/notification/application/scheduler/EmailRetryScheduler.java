@@ -1,0 +1,45 @@
+package com.tissue.notification.application.scheduler;
+
+import com.tissue.email.domain.EmailClient;
+import com.tissue.notification.domain.FailedEmail;
+import com.tissue.notification.infrastructure.repository.FailedEmailRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class EmailRetryScheduler {
+
+    private final FailedEmailRepository failedEmailRepository;
+    private final EmailClient emailClient;
+
+    @Scheduled(fixedDelayString = "${tissue.notification.email.retry-interval-ms:180000}")
+    @Transactional
+    public void retryFailedEmails() {
+        List<FailedEmail> targets = failedEmailRepository.findAllByNextRetryAtBefore(LocalDateTime.now());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        log.info("Retrying {} failed emails...", targets.size());
+
+        for (FailedEmail failedEmail : targets) {
+            try {
+                emailClient.send(failedEmail.getReceiverEmail(), failedEmail.getSubject(), failedEmail.getBody());
+                failedEmailRepository.delete(failedEmail);
+                log.info("Successfully resent email to {}", failedEmail.getReceiverEmail());
+            } catch (Exception e) {
+                log.warn("Retry failed for email {}: {}", failedEmail.getId(), e.getMessage());
+                failedEmail.incrementRetryCount();
+                failedEmailRepository.save(failedEmail);
+            }
+        }
+    }
+}

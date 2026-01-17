@@ -1,45 +1,39 @@
 package com.tissue.global.config;
 
 import com.tissue.global.concurrent.ThrottledExecutor;
+import com.tissue.global.config.properties.NotificationProperties;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 
 @Slf4j
 @EnableAsync
 @Configuration
+@RequiredArgsConstructor
+@EnableConfigurationProperties(NotificationProperties.class)
 public class AsyncConfig implements AsyncConfigurer {
 
-    @Override
-    public Executor getAsyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(20);
-        executor.setQueueCapacity(200);
-        executor.setThreadNamePrefix("Event-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(60);
-        executor.initialize();
-
-        return new DelegatingSecurityContextAsyncTaskExecutor(executor);
-    }
+    private final NotificationProperties notificationProperties;
 
     @Bean(name = "notificationTaskExecutor")
+    @Primary
     public Executor notificationTaskExecutor() {
+        var properties = notificationProperties.executor();
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("Notification-");
+        executor.setCorePoolSize(properties.corePoolSize());
+        executor.setMaxPoolSize(properties.maxPoolSize());
+        executor.setQueueCapacity(properties.queueCapacity());
+        executor.setThreadNamePrefix(properties.threadNamePrefix());
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(60);
@@ -49,7 +43,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
     @Bean(name = "emailExecutor")
     public Executor emailExecutor() {
-        return new ThrottledExecutor(20);
+        return new ThrottledExecutor(notificationProperties.email().concurrency());
     }
 
     @Override
