@@ -32,7 +32,7 @@ public class NotificationQueryController {
         return ResponseEntity.ok(notifications);
     }
 
-    @GetMapping("/unreadStatus")
+    @GetMapping("/unread-status")
     public ResponseEntity<Boolean> checkUnreadStatus(
             @PathVariable String workspaceKey, @CurrentMember MemberDetails userDetails) {
 
