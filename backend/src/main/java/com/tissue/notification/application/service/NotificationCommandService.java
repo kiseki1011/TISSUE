@@ -1,9 +1,12 @@
 package com.tissue.notification.application.service;
 
 import com.tissue.common.vo.EntityReference;
+import com.tissue.global.exception.base.ForbiddenException;
+import com.tissue.global.exception.base.ResourceNotFoundException;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.exception.NotificationErrorCode;
 import com.tissue.notification.domain.service.NotificationMessageFactory;
 import com.tissue.notification.domain.vo.NotificationMessage;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
@@ -57,5 +60,24 @@ public class NotificationCommandService {
         notificationRepository.saveAll(notifications);
 
         processor.process(notifications);
+    }
+
+    @Transactional
+    public void readNotification(Long notificationId, Long memberId) {
+        Notification notification = notificationRepository
+                .findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+
+        if (!notification.getReceiverMemberId().equals(memberId)) {
+            throw new ForbiddenException(NotificationErrorCode.NOT_YOUR_NOTIFICATION);
+        }
+
+        notification.markAsRead();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void readAllNotifications(String workspaceKey, Long memberId) {
+        notificationRepository.markAllAsRead(memberId, workspaceKey);
     }
 }
