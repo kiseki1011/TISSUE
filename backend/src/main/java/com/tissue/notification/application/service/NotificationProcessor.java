@@ -8,22 +8,31 @@ import com.tissue.notification.domain.service.sender.NotificationSender;
 import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class NotificationProcessor {
 
     private final List<NotificationSender> senders;
     private final NotificationPreferenceRepository preferenceRepository;
+    private final Executor emailExecutor;
 
-    @Async
+    public NotificationProcessor(
+            List<NotificationSender> senders,
+            NotificationPreferenceRepository preferenceRepository,
+            @Qualifier("emailExecutor") Executor emailExecutor) {
+        this.senders = senders;
+        this.preferenceRepository = preferenceRepository;
+        this.emailExecutor = emailExecutor;
+    }
+
     public void process(List<Notification> notifications) {
         if (notifications.isEmpty()) {
             return;
@@ -48,17 +57,16 @@ public class NotificationProcessor {
                 continue;
             }
 
-            try {
-                List<Notification> targets = notifications.stream()
-                        .filter(n -> isChannelEnabled(n.getReceiverMemberId(), channel, type, prefMap))
-                        .toList();
+            List<Notification> targets = notifications.stream()
+                    .filter(n -> isChannelEnabled(n.getReceiverMemberId(), channel, type, prefMap))
+                    .toList();
 
-                if (!targets.isEmpty()) {
-                    // TODO: Consider batch send interface for Senders
-                    targets.forEach(sender::send);
-                }
-            } catch (Exception e) {
-                log.error("Failed to process notification channel: {}", channel, e);
+            if (targets.isEmpty()) {
+                continue;
+            }
+
+            for (Notification target : targets) {
+                emailExecutor.execute(() -> sender.send(target));
             }
         }
     }
@@ -67,11 +75,9 @@ public class NotificationProcessor {
             Long memberId,
             NotificationChannel channel,
             NotificationType type,
-            Map<Long, NotificationPreference> prefMap) {
-        NotificationPreference pref = prefMap.get(memberId);
-        if (pref == null) {
-            return true;
-        }
-        return pref.isEnabled(channel, type);
+            Map<Long, NotificationPreference> preferanceMap) {
+        return Optional.ofNullable(preferanceMap.get(memberId))
+                .map(p -> p.isEnabled(channel, type))
+                .orElse(true);
     }
 }

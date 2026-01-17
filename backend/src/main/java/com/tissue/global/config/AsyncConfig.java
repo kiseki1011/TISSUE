@@ -1,5 +1,6 @@
 package com.tissue.global.config;
 
+import com.tissue.global.concurrent.ThrottledExecutor;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -46,10 +47,14 @@ public class AsyncConfig implements AsyncConfigurer {
         return executor;
     }
 
+    @Bean(name = "emailExecutor")
+    public Executor emailExecutor() {
+        return new ThrottledExecutor(20);
+    }
+
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (ex, method, params) -> {
-            // TODO: [UNCAUGHT ASYNC EXCEPTION]으로 변경할까?
             log.error("[ASYNC TASK FAILED] method {}: {}", method.getName(), ex.getMessage(), ex);
             log.error("method parameters: {}", Arrays.toString(params));
         };
