@@ -1,11 +1,11 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.notification.adapter.in.web.dto.request.UpdateNotificationPreferenceRequest;
+import com.tissue.notification.application.dto.response.NotificationPreferenceResponse;
+import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.domain.NotificationPreference;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
-import com.tissue.notification.presentation.dto.request.UpdateNotificationPreferenceRequest;
-import com.tissue.notification.presentation.dto.response.NotificationPreferenceResponse;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
-package com.tissue.notification.presentation;
+package com.tissue.notification.adapter.in.web;
 
+import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.service.NotificationQueryService;
-import com.tissue.notification.presentation.dto.response.NotificationResponse;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import java.util.List;

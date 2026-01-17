@@ -1,9 +1,9 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.notification.application.dto.response.NotificationResponse;
+import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.infrastructure.repository.NotificationRepository;
-import com.tissue.notification.presentation.dto.response.NotificationResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;

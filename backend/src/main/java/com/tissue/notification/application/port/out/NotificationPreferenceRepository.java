@@ -1,4 +1,4 @@
-package com.tissue.notification.infrastructure.repository;
+package com.tissue.notification.application.port.out;
 
 import com.tissue.notification.domain.NotificationPreference;
 import java.util.Collection;

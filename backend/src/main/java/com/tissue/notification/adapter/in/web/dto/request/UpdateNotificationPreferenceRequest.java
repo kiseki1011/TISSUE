@@ -1,4 +1,4 @@
-package com.tissue.notification.presentation.dto.request;
+package com.tissue.notification.adapter.in.web.dto.request;
 
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;

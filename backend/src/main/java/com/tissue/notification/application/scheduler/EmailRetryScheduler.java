@@ -1,8 +1,8 @@
 package com.tissue.notification.application.scheduler;
 
 import com.tissue.email.domain.EmailClient;
+import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.domain.FailedEmail;
-import com.tissue.notification.infrastructure.repository.FailedEmailRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

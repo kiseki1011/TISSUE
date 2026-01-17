@@ -1,11 +1,12 @@
-package com.tissue.notification.domain.service.sender;
+package com.tissue.notification.adapter.out.sender;
 
 import com.tissue.email.domain.EmailClient;
+import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.domain.FailedEmail;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.infrastructure.repository.FailedEmailRepository;
+import com.tissue.notification.domain.service.NotificationSender;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

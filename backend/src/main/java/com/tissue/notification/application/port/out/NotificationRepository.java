@@ -1,11 +1,12 @@
-package com.tissue.notification.infrastructure.repository;
+package com.tissue.notification.application.port.out;
 
 import com.tissue.notification.domain.Notification;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationRepository extends Repository<Notification, Long> {
+
+    List<Notification> saveAll(Iterable<Notification> notifications);
 
     List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
             Long memberId, String workspaceKey);
@@ -14,6 +15,4 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             Long memberId, String workspaceKey);
 
     boolean existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(Long memberId, String workspaceKey);
-
-    Optional<Notification> findByIdAndReceiverMemberId(Long id, Long memberId);
 }

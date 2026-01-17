@@ -1,4 +1,4 @@
-package com.tissue.global.config.properties;
+package com.tissue.notification.infrastructure.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

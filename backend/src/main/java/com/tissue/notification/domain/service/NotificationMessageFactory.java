@@ -1,4 +1,4 @@
-package com.tissue.notification.domain.service.message;
+package com.tissue.notification.domain.service;
 
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.NotificationMessage;

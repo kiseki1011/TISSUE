@@ -1,11 +1,11 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.notification.application.port.out.NotificationPreferenceRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.NotificationPreference;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
-import com.tissue.notification.domain.service.sender.NotificationSender;
-import com.tissue.notification.infrastructure.repository.NotificationPreferenceRepository;
+import com.tissue.notification.domain.service.NotificationSender;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

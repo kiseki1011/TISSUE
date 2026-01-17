@@ -1,7 +1,7 @@
 package com.tissue.global.config;
 
 import com.tissue.global.concurrent.ThrottledExecutor;
-import com.tissue.global.config.properties.NotificationProperties;
+import com.tissue.notification.infrastructure.config.NotificationProperties;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
