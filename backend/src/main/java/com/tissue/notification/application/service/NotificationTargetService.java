@@ -102,23 +102,15 @@ public class NotificationTargetService {
     /**
      * Retrieve Author, Assignee, Reporter, and Subscribers.
      */
-    // TODO: 한번의 쿼리로 해결 못하나?
     public Set<WorkspaceMemberContact> getIssueParticipants(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContact> targets = new HashSet<>();
-        issueQueryRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
-        issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
-        issueQueryRepository.findReporterContact(workspaceKey, issueKey).ifPresent(targets::add);
-        targets.addAll(issueQueryRepository.findSubscriberContacts(workspaceKey, issueKey));
-        return targets;
+        return issueQueryRepository.findParticipantsContacts(workspaceKey, issueKey);
     }
 
     /**
      * Retrieve Author, Assignee, Reporter, Subscribers, and Reviewers.
      */
     public Set<WorkspaceMemberContact> getIssueParticipantsAndReviewers(String workspaceKey, String issueKey) {
-        Set<WorkspaceMemberContact> targets = getIssueParticipants(workspaceKey, issueKey);
-        targets.addAll(issueQueryRepository.findReviewerContacts(workspaceKey, issueKey));
-        return targets;
+        return issueQueryRepository.findParticipantsAndReviewersContacts(workspaceKey, issueKey);
     }
 
     public List<WorkspaceMemberContact> getWorkspaceAdmins(String workspaceKey) {

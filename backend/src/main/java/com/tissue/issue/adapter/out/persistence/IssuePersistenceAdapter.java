@@ -12,8 +12,10 @@ import com.tissue.sprint.domain.Sprint;
 import com.tissue.workflow.domain.enums.StateCategory;
 import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -141,5 +143,23 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     @Override
     public List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey, String issueKey) {
         return issueJpaRepository.findSubscriberContacts(workspaceKey, issueKey);
+    }
+
+    // TODO: Consider using a single query if possible
+    @Override
+    public Set<WorkspaceMemberContact> findParticipantsContacts(String workspaceKey, String issueKey) {
+        Set<WorkspaceMemberContact> targets = new HashSet<>();
+        issueJpaRepository.findAuthorContact(workspaceKey, issueKey).ifPresent(targets::add);
+        issueJpaRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(targets::add);
+        issueJpaRepository.findReporterContact(workspaceKey, issueKey).ifPresent(targets::add);
+        targets.addAll(issueJpaRepository.findSubscriberContacts(workspaceKey, issueKey));
+        return targets;
+    }
+
+    @Override
+    public Set<WorkspaceMemberContact> findParticipantsAndReviewersContacts(String workspaceKey, String issueKey) {
+        Set<WorkspaceMemberContact> targets = findParticipantsContacts(workspaceKey, issueKey);
+        targets.addAll(issueJpaRepository.findReviewerContacts(workspaceKey, issueKey));
+        return targets;
     }
 }

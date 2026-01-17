@@ -12,6 +12,7 @@ import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IssueQueryRepository {
 
@@ -63,4 +64,8 @@ public interface IssueQueryRepository {
     List<WorkspaceMemberContact> findReviewerContacts(String workspaceKey, String issueKey);
 
     List<WorkspaceMemberContact> findSubscriberContacts(String workspaceKey, String issueKey);
+
+    Set<WorkspaceMemberContact> findParticipantsContacts(String workspaceKey, String issueKey);
+
+    Set<WorkspaceMemberContact> findParticipantsAndReviewersContacts(String workspaceKey, String issueKey);
 }
