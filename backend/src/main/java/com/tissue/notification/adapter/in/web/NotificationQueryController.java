@@ -1,10 +1,10 @@
 package com.tissue.notification.adapter.in.web;
 
+import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.service.NotificationQueryService;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.presentation.annotation.CurrentMember;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,13 +21,15 @@ public class NotificationQueryController {
     private final NotificationQueryService queryService;
 
     @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getNotifications(
+    public ResponseEntity<CursorPageResponse<NotificationResponse>> getNotifications(
             @PathVariable String workspaceKey,
             @CurrentMember MemberDetails userDetails,
-            @RequestParam(required = false, defaultValue = "false") boolean unreadOnly) {
+            @RequestParam(required = false, defaultValue = "false") boolean unreadOnly,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(defaultValue = "20") int limit) {
 
-        List<NotificationResponse> notifications =
-                queryService.getNotifications(workspaceKey, userDetails.getMemberId(), unreadOnly);
+        CursorPageResponse<NotificationResponse> notifications =
+                queryService.getNotifications(workspaceKey, userDetails.getMemberId(), unreadOnly, cursorId, limit);
 
         return ResponseEntity.ok(notifications);
     }

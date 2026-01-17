@@ -1,5 +1,6 @@
 package com.tissue.notification.application.service;
 
+import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
@@ -8,8 +9,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +24,27 @@ public class NotificationQueryService {
     private final NotificationRepository notificationRepository;
     private final MessageSource messageSource;
 
-    // TODO: 모든 알림을 가져오는건 성능 문제가 있지 않을까? paging api로 구현하는게 좋을 것 같음
-    public List<NotificationResponse> getNotifications(String workspaceKey, Long memberId, boolean unreadOnly) {
+    public CursorPageResponse<NotificationResponse> getNotifications(
+            String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long cursorId, int limit) {
+
         List<Notification> notifications;
+        PageRequest pageRequest = PageRequest.of(0, limit);
+
         if (unreadOnly) {
-            notifications = notificationRepository.findByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-                    memberId, workspaceKey);
+            notifications = notificationRepository.findUnreadByCursor(memberId, workspaceKey, cursorId, pageRequest);
         } else {
-            notifications =
-                    notificationRepository.findByReceiverMemberIdAndEntityReference_WorkspaceKeyOrderByCreatedAtDesc(
-                            memberId, workspaceKey);
+            notifications = notificationRepository.findByCursor(memberId, workspaceKey, cursorId, pageRequest);
         }
 
-        return notifications.stream().map(this::toResponse).toList();
+        List<NotificationResponse> content =
+                notifications.stream().map(this::toResponse).toList();
+
+        Long nextCursorId = null;
+        if (!content.isEmpty()) {
+            nextCursorId = content.get(content.size() - 1).id();
+        }
+
+        return CursorPageResponse.of(content, nextCursorId);
     }
 
     public boolean checkUnreadStatus(String workspaceKey, Long memberId) {
@@ -41,6 +52,7 @@ public class NotificationQueryService {
                 memberId, workspaceKey);
     }
 
+    // TODO: Consider abstracting or extracting the render logic
     private NotificationResponse toResponse(Notification notification) {
         Locale locale = LocaleContextHolder.getLocale();
         NotificationType type = notification.getType();
@@ -69,6 +81,7 @@ public class NotificationQueryService {
                 .build();
     }
 
+    // TODO: Consider using Apache Commons Text - StringSubstitutor
     private String replacePlaceholders(String template, Map<String, String> data) {
         String result = template;
         for (Map.Entry<String, String> entry : data.entrySet()) {

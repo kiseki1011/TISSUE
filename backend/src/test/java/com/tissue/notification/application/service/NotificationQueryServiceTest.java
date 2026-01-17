@@ -3,6 +3,7 @@ package com.tissue.notification.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
+import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.notification.application.dto.response.NotificationResponse;
@@ -17,11 +18,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationQueryServiceTest {
@@ -39,11 +43,13 @@ class NotificationQueryServiceTest {
     @DisplayName("get notifications")
     class GetNotifications {
         @Test
-        @DisplayName("success: returns list of unread notifications")
+        @DisplayName("success: returns mapped responses")
         void success_GetNotifications() {
             String workspaceKey = "TESTWS";
             Long memberId = 1L;
             boolean unreadOnly = false;
+            Long cursorId = null;
+            int limit = 20;
 
             Notification notification = Notification.builder()
                     .eventId(UUID.randomUUID())
@@ -57,17 +63,22 @@ class NotificationQueryServiceTest {
                     .message(new NotificationMessage(Map.of("issueKey", "TESTPROJ-1")))
                     .build();
 
-            given(repository.findByReceiverMemberIdAndEntityReference_WorkspaceKeyOrderByCreatedAtDesc(
-                            memberId, workspaceKey))
+            ReflectionTestUtils.setField(notification, "id", 100L);
+
+            given(repository.findByCursor(
+                            ArgumentMatchers.eq(memberId),
+                            ArgumentMatchers.eq(workspaceKey),
+                            ArgumentMatchers.eq(cursorId),
+                            ArgumentMatchers.any(Pageable.class)))
                     .willReturn(List.of(notification));
 
+            // mock message source
             given(messageSource.getMessage(
                             "event.ISSUE_CREATED.title",
                             null,
                             "event.ISSUE_CREATED.title",
                             LocaleContextHolder.getLocale()))
                     .willReturn("Issue Created: {issueKey}");
-
             given(messageSource.getMessage(
                             "event.ISSUE_CREATED.content",
                             null,
@@ -75,10 +86,12 @@ class NotificationQueryServiceTest {
                             LocaleContextHolder.getLocale()))
                     .willReturn("Check it out");
 
-            List<NotificationResponse> result = sut.getNotifications(workspaceKey, memberId, unreadOnly);
+            CursorPageResponse<NotificationResponse> result =
+                    sut.getNotifications(workspaceKey, memberId, unreadOnly, cursorId, limit);
 
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).title()).isEqualTo("Issue Created: TESTPROJ-1");
+            assertThat(result.content()).hasSize(1);
+            assertThat(result.content().get(0).title()).isEqualTo("Issue Created: TESTPROJ-1");
+            assertThat(result.nextCursorId()).isEqualTo(100L);
         }
     }
 
