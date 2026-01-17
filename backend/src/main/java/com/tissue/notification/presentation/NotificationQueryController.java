@@ -34,8 +34,7 @@ public class NotificationQueryController {
 
     @GetMapping("/unreadStatus")
     public ResponseEntity<Boolean> checkUnreadStatus(
-        @PathVariable String workspaceKey,
-        @CurrentMember MemberDetails userDetails) {
+            @PathVariable String workspaceKey, @CurrentMember MemberDetails userDetails) {
 
         boolean hasUnread = queryService.checkUnreadStatus(workspaceKey, userDetails.getMemberId());
         return ResponseEntity.ok(hasUnread);
