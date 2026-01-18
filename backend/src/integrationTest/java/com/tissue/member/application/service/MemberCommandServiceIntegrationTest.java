@@ -45,9 +45,8 @@ class MemberCommandServiceIntegrationTest extends IntegrationTestSupport {
     private TokenProvider tokenProvider;
 
     /**
-     * <li>{@code RedisEmailVerificationRepository#saveToken(email, val)}
-     * saves "email_verification:{email_value}" as key</li>
-     * <li>{@code checkVerifiedToken(email, token)} checks if value is "{token_value}:verified"</li>
+     * RedisEmailVerificationRepository#saveToken(email, val) saves "email_verification:{email_value}" as key
+     * checkVerifiedToken(email, token) checks if value is "{token_value}:verified"
      * <br>
      * Look at {@link RedisEmailVerificationRepository}
      */
