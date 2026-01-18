@@ -1,15 +1,15 @@
 package com.tissue.support;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@RequiredArgsConstructor
 public class DatabaseCleanup {
 
+    @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
