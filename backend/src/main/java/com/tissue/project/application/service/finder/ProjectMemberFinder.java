@@ -15,6 +15,7 @@ public class ProjectMemberFinder {
 
     private final ProjectMemberQueryRepository queryRepository;
 
+    // TODO: getBy -> getAnyBy 로 변경할까?(softDeleted=true까지 포함해서 조회하니깐?)
     public ProjectMember getBy(Project project, Long memberId) {
         return queryRepository
                 .findByProjectIdAndMemberId(project.getId(), memberId)
@@ -27,6 +28,13 @@ public class ProjectMemberFinder {
                 .findByProjectIdAndMemberIdAndSoftDeletedFalse(project.getId(), memberId)
                 .orElseThrow(() ->
                         new ProjectMemberNotFoundException(project.getWorkspaceKey(), project.getKey(), memberId));
+    }
+
+    public ProjectMember getActiveBy(String workspaceKey, String projectKey, Long memberId) {
+        return queryRepository
+            .findByWorkspaceKeyAndProjectKeyAndMemberIdAndSoftDeletedFalse(workspaceKey, projectKey, memberId)
+            .orElseThrow(() ->
+                new ProjectMemberNotFoundException(workspaceKey, projectKey, memberId));
     }
 
     public Set<Long> getExistingMemberIdsBy(Project project, Collection<Long> memberIds) {

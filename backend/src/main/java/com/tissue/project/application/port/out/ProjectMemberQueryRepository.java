@@ -23,6 +23,9 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
 
+    Optional<ProjectMember> findByWorkspaceKeyAndProjectKeyAndMemberIdAndSoftDeletedFalse(String workspaceKey,
+        String projectKey, Long memberId);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "
             + "pm.archived = true, pm.archivedAt = CURRENT_TIMESTAMP "
