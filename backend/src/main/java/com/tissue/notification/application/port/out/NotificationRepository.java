@@ -17,6 +17,8 @@ public interface NotificationRepository extends Repository<Notification, Long> {
 
     Optional<Notification> findById(Long id);
 
+    List<Notification> findAll();
+
     List<Notification> findByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
             Long memberId, String workspaceKey);
 
