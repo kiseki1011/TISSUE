@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "UK_EVENT_RECEIVER",
-                    columnNames = {"eventId", "receiverMemberId"})
+                    columnNames = {"event_id", "receiver_member_id"})
         })
 public class Notification extends BaseDateEntity {
 
