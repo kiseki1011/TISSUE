@@ -26,10 +26,8 @@ import com.tissue.sprint.domain.event.SprintCompletedEvent;
 import com.tissue.sprint.domain.event.SprintStartedEvent;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -37,8 +35,7 @@ public class ActivityLogEventListener {
 
     private final ActivityLogCommandService activityLogCommandService;
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueCreated(IssueCreatedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -53,8 +50,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueUpdated(IssueFieldsUpdatedEvent event) {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
@@ -69,8 +65,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLogWithDiff(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -85,8 +80,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
@@ -103,8 +97,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLogWithDiff(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueAssigned(IssueAssignedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -119,8 +112,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueUnassigned(IssueUnassignedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -135,8 +127,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueDeleted(IssueDeletedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -150,8 +141,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueReporterChanged(IssueReporterChangedEvent event) {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
@@ -168,8 +158,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLogWithDiff(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueReviewerAdded(IssueReviewerAddedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -184,8 +173,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueReviewerRemoved(IssueReviewerRemovedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -200,8 +188,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueReviewSubmitted(IssueReviewSubmittedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -216,8 +203,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleIssueReviewRequested(IssueReviewRequestedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -232,8 +218,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleStoryPointChanged(IssueStoryPointChangedEvent event) {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
@@ -250,8 +235,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLogWithDiff(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleParentChanged(IssueParentChangedEvent event) {
         String oldParent = event.oldParentKey() != null ? event.oldParentKey() : "NONE";
         String newParent = event.newParentKey() != null ? event.newParentKey() : "NONE";
@@ -275,8 +259,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLogWithDiff(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleRelationAdded(IssueRelationAddedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -293,8 +276,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleRelationRemoved(IssueRelationRemovedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -311,8 +293,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleSprintStarted(SprintStartedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
@@ -328,8 +309,7 @@ public class ActivityLogEventListener {
         activityLogCommandService.createLog(cmd);
     }
 
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @EventListener
     public void handleSprintCompleted(SprintCompletedEvent event) {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
