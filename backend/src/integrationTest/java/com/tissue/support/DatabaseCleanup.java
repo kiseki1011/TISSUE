@@ -21,8 +21,8 @@ public class DatabaseCleanup {
                 .executeUpdate();
 
         List<String> tableNames = entityManager
-                .createNativeQuery(
-                        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
+                .createNativeQuery("SELECT table_name FROM information_schema.tables "
+                        + "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
                 .getResultList();
 
         for (String tableName : tableNames) {
