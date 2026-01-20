@@ -16,6 +16,7 @@ public record IssueReporterChangedEvent(
         String newReporterDisplayName,
         Long actorMemberId,
         String actorDisplayName) {
+
     public static IssueReporterChangedEvent create(
             String workspaceKey,
             String projectKey,
@@ -27,6 +28,7 @@ public record IssueReporterChangedEvent(
             String newReporterDisplayName,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueReporterChangedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

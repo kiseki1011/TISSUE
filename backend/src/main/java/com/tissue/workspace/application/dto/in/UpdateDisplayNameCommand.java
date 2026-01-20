@@ -1,6 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
-public record UpdateDisplayNameCommand(
-        String workspaceKey, Long targetMemberId, String displayName, WorkspaceMemberInfo actor) {}
+public record UpdateDisplayNameCommand(Long targetMemberId, String displayName, WorkspaceMemberContext actorContext) {}

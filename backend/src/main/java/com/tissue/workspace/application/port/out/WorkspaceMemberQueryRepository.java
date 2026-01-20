@@ -17,6 +17,7 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
+    // TODO: 굳이 Member_Id로 조회할 필요가 있나? 어차피 memberId 필드가 WorkspaceMember 내부에 있을텐데?
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
     Optional<WorkspaceMember> findByMember_IdAndWorkspace(Long memberId, Workspace workspace);
@@ -25,7 +26,11 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
 
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(Long memberId, String workspaceKey);
 
+    Optional<WorkspaceMember> findByMember_IdAndWorkspaceAndSoftDeletedFalse(Long memberId, Workspace workspace);
+
     Optional<WorkspaceMember> findByMemberAndWorkspaceAndSoftDeletedFalse(Member member, Workspace workspace);
+
+    Optional<WorkspaceMember> findByIdAndSoftDeletedFalse(Long workspaceMemberId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE WorkspaceMember wm SET wm.softDeleted = true, wm.softDeletedAt = CURRENT_TIMESTAMP, "

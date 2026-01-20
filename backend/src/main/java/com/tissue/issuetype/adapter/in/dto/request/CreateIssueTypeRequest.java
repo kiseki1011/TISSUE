@@ -5,6 +5,7 @@ import com.tissue.common.validator.annotation.size.LabelSize;
 import com.tissue.common.vo.Name;
 import com.tissue.issue.domain.enums.IssueHierarchy;
 import com.tissue.issuetype.application.dto.request.CreateIssueTypeCommand;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,7 +18,7 @@ public record CreateIssueTypeRequest(
         @NotNull IssueHierarchy issueHierarchy,
         @NotNull Long workflowId) {
 
-    public CreateIssueTypeCommand toCommand(String workspaceKey, String projectKey) {
+    public CreateIssueTypeCommand toCommand(String workspaceKey, String projectKey, ProjectMemberContext actorContext) {
         return CreateIssueTypeCommand.builder()
                 .workspaceKey(workspaceKey)
                 .projectKey(projectKey)
@@ -26,6 +27,7 @@ public record CreateIssueTypeRequest(
                 .color(color)
                 .issueHierarchy(issueHierarchy)
                 .workflowId(workflowId)
+                .actorContext(actorContext)
                 .build();
     }
 }

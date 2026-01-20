@@ -1,4 +1,4 @@
-package com.tissue.activitylog.domain.enums;
+package com.tissue.activitylog.domain;
 
 public enum ActivityType {
     ISSUE_CREATED,
@@ -6,7 +6,7 @@ public enum ActivityType {
     ISSUE_DELETED,
     ISSUE_ASSIGNED,
     ISSUE_UNASSIGNED,
-    ISSUE_STATUS_CHANGED,
+    ISSUE_WORKFLOW_TRANSITIONED,
     ISSUE_REPORTER_CHANGED,
     ISSUE_STORY_POINT_CHANGED,
     ISSUE_PARENT_CHANGED,

@@ -13,16 +13,15 @@ public interface SprintCommandUseCase {
 
     SprintCommandResult createSprint(CreateSprintCommand cmd);
 
-    SprintCommandResult addIssues(AddSprintIssuesCommand cmd);
+    void addIssues(AddSprintIssuesCommand cmd);
 
-    SprintCommandResult updateSprint(UpdateSprintCommand cmd);
+    void updateSprint(UpdateSprintCommand cmd);
 
-    SprintCommandResult start(StartSprintCommand cmd);
+    void start(StartSprintCommand cmd);
 
-    SprintCommandResult complete(CompleteSprintCommand cmd);
+    void complete(CompleteSprintCommand cmd);
 
-    SprintCommandResult migrateIssues(MigrateSprintIssuesCommand cmd);
+    void migrateIssues(MigrateSprintIssuesCommand cmd);
 
-    // TODO: should removing issues from a sprint be open to anyone that has ProjectRole.MEMBER?
-    SprintCommandResult removeIssues(RemoveSprintIssuesCommand cmd);
+    void removeIssues(RemoveSprintIssuesCommand cmd);
 }

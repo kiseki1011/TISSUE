@@ -1,7 +1,7 @@
 package com.tissue.activitylog.application.dto.response;
 
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.vo.EntityReference;
 import java.time.Instant;

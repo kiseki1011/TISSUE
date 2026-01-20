@@ -1,7 +1,7 @@
 package com.tissue.project.application.service.event;
 
 import com.tissue.common.enums.JoinMethod;
-import com.tissue.project.domain.Project;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.event.MemberJoinedProjectEvent;
@@ -20,18 +20,18 @@ public class ProjectEventPublisher {
     public void publishMemberJoinedProject(
             ProjectMember newMember,
             Workspace workspace,
-            Project project,
             JoinMethod joinMethod,
             Long actorMemberId,
             String actorDisplayName) {
+
         eventPublisher.publishEvent(MemberJoinedProjectEvent.create(
                 workspace.getKey(),
                 workspace.getId(),
-                project.getKey(),
-                project.getId(),
+                newMember.getProjectKey(),
+                newMember.getProject().getId(),
+                newMember.getId(),
                 newMember.getMemberId(),
-                newMember.getWorkspaceMember().getEmail(),
-                newMember.getDisplayName(),
+                newMember.getWorkspaceMember().getDisplayName(),
                 newMember.getRole(),
                 joinMethod,
                 actorMemberId,
@@ -39,20 +39,22 @@ public class ProjectEventPublisher {
     }
 
     public void publishProjectRoleChanged(
-            ProjectMember targetMember,
+            ProjectMember targetProjectMember,
             ProjectRole oldRole,
             ProjectRole newRole,
-            Long actorMemberId,
-            String actorDisplayName) {
+            ProjectMemberContext actorContext) {
 
         eventPublisher.publishEvent(ProjectRoleChangedEvent.create(
-                targetMember.getWorkspaceKey(),
-                targetMember.getProjectKey(),
-                targetMember.getMemberId(),
+                actorContext.workspaceKey(),
+                actorContext.workspaceId(),
+                actorContext.projectKey(),
+                actorContext.projectId(),
+                targetProjectMember.getId(),
+                targetProjectMember.getMemberId(),
+                targetProjectMember.getWorkspaceMember().getDisplayName(),
                 oldRole,
                 newRole,
-                actorMemberId,
-                actorDisplayName,
-                targetMember.getDisplayName()));
+                actorContext.memberId(),
+                actorContext.displayName()));
     }
 }

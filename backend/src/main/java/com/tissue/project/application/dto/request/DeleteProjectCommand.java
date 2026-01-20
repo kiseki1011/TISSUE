@@ -1,3 +1,5 @@
 package com.tissue.project.application.dto.request;
 
-public record DeleteProjectCommand(String workspaceKey, String projectKey) {}
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+
+public record DeleteProjectCommand(String projectKey, WorkspaceMemberContext actor) {}

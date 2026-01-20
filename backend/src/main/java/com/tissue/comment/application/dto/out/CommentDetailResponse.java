@@ -25,7 +25,6 @@ public record CommentDetailResponse(
                 deleted,
                 comment.getCreatedAt(),
                 comment.getLastModifiedAt(),
-                // TODO: should i redact author if deleted?
                 CommentAuthorInfo.from(comment.getAuthor()),
                 replies != null ? replies : new ArrayList<>());
     }

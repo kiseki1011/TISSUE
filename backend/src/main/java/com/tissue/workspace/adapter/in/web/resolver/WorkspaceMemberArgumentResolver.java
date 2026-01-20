@@ -1,8 +1,7 @@
 package com.tissue.workspace.adapter.in.web.resolver;
 
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.workspace.adapter.in.web.annotation.CurrentWorkspaceMember;
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(CurrentWorkspaceMember.class)
-                && parameter.getParameterType().equals(WorkspaceMemberInfo.class);
+                && parameter.getParameterType().equals(WorkspaceMemberContext.class);
     }
 
     @Override
@@ -40,10 +39,9 @@ public class WorkspaceMemberArgumentResolver implements HandlerMethodArgumentRes
         String workspaceKey = getWorkspaceKey(webRequest);
         Long memberId = getMemberId();
 
-        // TODO: WorkspaceMemberQueryRepository에 의존하는게 더 좋을까? 아니면 지금도 ㄱㅊ?
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(memberId, workspaceKey);
+        WorkspaceMember workspaceMember = workspaceMemberFinder.getActive(memberId, workspaceKey);
 
-        return WorkspaceMemberInfo.from(workspaceMember);
+        return WorkspaceMemberContext.from(workspaceMember);
     }
 
     @SuppressWarnings("unchecked")

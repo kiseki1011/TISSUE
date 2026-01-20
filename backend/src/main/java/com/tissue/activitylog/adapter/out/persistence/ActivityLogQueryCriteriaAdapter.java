@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ActivityLogQueryAdapter implements ActivityLogQueryRepository {
+public class ActivityLogQueryCriteriaAdapter implements ActivityLogQueryRepository {
 
     private final EntityManager em;
 
@@ -49,9 +49,11 @@ public class ActivityLogQueryAdapter implements ActivityLogQueryRepository {
         predicates.add(cb.equal(log.get("entityReference").get("resourceType"), resourceType));
 
         if (resourceId != null) {
-            predicates.add(cb.equal(log.get("entityReference").get("id"), resourceId));
+            predicates.add(cb.equal(log.get("entityReference").get("resourceId"), resourceId));
         } else if (resourceKey != null) {
-            predicates.add(cb.equal(log.get("entityReference").get("key"), resourceKey));
+            if (resourceType == ResourceType.ISSUE) {
+                predicates.add(cb.equal(log.get("entityReference").get("issueKey"), resourceKey));
+            }
         }
 
         if (cursorId != null) {

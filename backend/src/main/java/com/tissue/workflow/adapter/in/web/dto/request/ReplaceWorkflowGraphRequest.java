@@ -1,5 +1,6 @@
 package com.tissue.workflow.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
@@ -76,10 +77,8 @@ public record ReplaceWorkflowGraphRequest(
         }
     }
 
-    public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
+    public ReplaceWorkflowGraphCommand toCommand(Long workflowId, ProjectMemberContext actorContext) {
         return new ReplaceWorkflowGraphCommand(
-                workspaceKey,
-                projectKey,
                 workflowId,
                 version,
                 replaceStatusRequests.stream()
@@ -94,6 +93,7 @@ public record ReplaceWorkflowGraphRequest(
                                 .sourceIdentifier(t.source.toIdentifier())
                                 .targetIdentifier(t.target.toIdentifier())
                                 .build())
-                        .toList());
+                        .toList(),
+                actorContext);
     }
 }

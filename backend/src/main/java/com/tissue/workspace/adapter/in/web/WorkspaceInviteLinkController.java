@@ -1,21 +1,23 @@
 package com.tissue.workspace.adapter.in.web;
 
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
-import com.tissue.workspace.adapter.in.web.annotation.CurrentWorkspaceMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateProjectInviteLinkRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceInviteLinkRequest;
+import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.ExpireLinkCommand;
 import com.tissue.workspace.application.dto.in.JoinViaLinkCommand;
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import com.tissue.workspace.application.dto.out.command.InviteLinkResponse;
 import com.tissue.workspace.application.dto.out.command.WorkspaceMemberResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceInviteLinkDetail;
-import com.tissue.workspace.application.port.in.WorkspaceInviteLinkUseCase;
+import com.tissue.workspace.application.port.in.WorkspaceLinkJoinUseCase;
+import com.tissue.workspace.application.port.in.WorkspaceLinkQueryUseCase;
+import com.tissue.workspace.application.port.in.WorkspaceLinkUseCase;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,23 +29,25 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/workspaces/{workspaceKey}/inviteLinks")
+@RequestMapping("/api/v1/workspaces/{workspaceKey}")
 public class WorkspaceInviteLinkController {
 
-    private final WorkspaceInviteLinkUseCase inviteLinkUseCase;
+    private final WorkspaceLinkUseCase linkUseCase;
+    private final WorkspaceLinkQueryUseCase linkQueryUseCase;
+    private final WorkspaceLinkJoinUseCase linkJoinUseCase;
 
-    @PostMapping
+    @PostMapping("/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createWorkspaceLink(
             @PathVariable String workspaceKey,
             @RequestBody @Valid CreateWorkspaceInviteLinkRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = request.toCommand(workspaceKey, currentWorkspaceMember);
-        String token = inviteLinkUseCase.createWorkspaceLink(command);
+        var command = request.toCommand(currentWorkspaceMember);
+        String token = linkUseCase.createWorkspaceLink(command);
 
-        // TODO: do i have to write the full uri path? cant i just do "/{token}"?
+        // TODO: 이게 맞는지 확인 필요
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
@@ -51,19 +55,18 @@ public class WorkspaceInviteLinkController {
                 .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
     }
 
-    @PostMapping("/projects/{projectKey}")
+    @PostMapping("/projects/{projectKey}/inviteLinks")
     public ResponseEntity<InviteLinkResponse> createProjectLink(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @RequestBody @Valid CreateProjectInviteLinkRequest request,
-            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = request.toCommand(workspaceKey, projectKey, currentWorkspaceMember);
-        String token = inviteLinkUseCase.createProjectLink(command);
+        var command = request.toCommand(projectKey, currentWorkspaceMember);
+        String token = linkUseCase.createProjectLink(command);
 
-        // TODO: do i have to write the full uri path? cant i just do "/{token}"?
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}")
+                .path("/api/v1/workspaces/{workspaceKey}/inviteLinks/{token}/join")
                 .buildAndExpand(workspaceKey, token)
                 .toUri();
 
@@ -71,34 +74,33 @@ public class WorkspaceInviteLinkController {
                 .body(new InviteLinkResponse(token, location.toString(), request.expiredAt()));
     }
 
-    @DeleteMapping("/{token}")
+    @DeleteMapping("/inviteLinks/{token}")
     public ResponseEntity<Void> expireLink(
-            @PathVariable String workspaceKey,
-            @PathVariable String token,
-            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new ExpireLinkCommand(workspaceKey, token, currentWorkspaceMember);
-        inviteLinkUseCase.expireLink(command);
+        var command = new ExpireLinkCommand(token, currentWorkspaceMember);
+        linkUseCase.expireLink(command);
+
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{token}/join")
+    @PostMapping("/inviteLinks/{token}/join")
     public ResponseEntity<WorkspaceMemberResponse> joinViaLink(
-            @PathVariable String workspaceKey, @PathVariable String token, @CurrentMember MemberDetails userDetails) {
+            @PathVariable String workspaceKey,
+            @PathVariable String token,
+            @AuthenticationPrincipal MemberDetails currentMember) {
 
-        var command = new JoinViaLinkCommand(workspaceKey, token, userDetails.getMemberId());
-        WorkspaceMemberResponse response = inviteLinkUseCase.joinViaLink(command);
+        var command = new JoinViaLinkCommand(workspaceKey, token, currentMember.getMemberId());
+        WorkspaceMemberResponse response = linkJoinUseCase.joinViaLink(command);
+
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{token}")
+    @GetMapping("/inviteLinks/{token}")
     public ResponseEntity<WorkspaceInviteLinkDetail> getLinkInfo(
-            @PathVariable String workspaceKey,
-            @PathVariable String token,
-            @CurrentWorkspaceMember WorkspaceMemberInfo currentWorkspaceMember) {
+            @PathVariable String token, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        WorkspaceInviteLinkDetail response =
-                inviteLinkUseCase.getLinkDetail(workspaceKey, token, currentWorkspaceMember);
+        WorkspaceInviteLinkDetail response = linkQueryUseCase.getLinkDetail(token, currentWorkspaceMember);
         return ResponseEntity.ok(response);
     }
 }

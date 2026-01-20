@@ -1,5 +1,6 @@
 package com.tissue.workspace.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
 import jakarta.validation.constraints.Email;
@@ -11,7 +12,8 @@ import java.util.Set;
 public record InviteToProjectRequest(
         @NotEmpty Set<@Email @NotBlank String> emails,
         @NotNull ProjectRole role) {
-    public InviteToProjectCommand toCommand(String workspaceKey, String projectKey) {
-        return new InviteToProjectCommand(emails, workspaceKey, projectKey, role);
+
+    public InviteToProjectCommand toCommand(ProjectMemberContext actorContext) {
+        return new InviteToProjectCommand(emails, role, actorContext);
     }
 }

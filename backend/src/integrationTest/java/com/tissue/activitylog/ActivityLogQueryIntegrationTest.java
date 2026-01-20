@@ -2,24 +2,23 @@ package com.tissue.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
 
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.port.out.ActivityLogRepository;
 import com.tissue.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.global.exception.base.ForbiddenException;
 import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.Member;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.support.IntegrationTestSupport;
 import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
 
@@ -57,12 +55,10 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     @Autowired
     ProjectMemberCommandRepository projectMemberCommandRepository;
 
-    @MockBean
-    CurrentMemberProvider currentMemberProvider;
-
     private Member actor;
     private Workspace workspace;
     private Project project;
+    private ProjectMemberContext actorContext;
 
     @BeforeEach
     void setupData() {
@@ -86,8 +82,16 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         ProjectMember actorProjectMember = ProjectMember.create(project, actorWsMember, ProjectRole.ADMIN);
         projectMemberCommandRepository.save(actorProjectMember);
 
-        // mock current user
-        given(currentMemberProvider.getCurrentMemberId()).willReturn(actor.getId());
+        actorContext = new ProjectMemberContext(
+                actorProjectMember.getId(),
+                actor.getId(),
+                workspace.getId(),
+                workspace.getKey(),
+                project.getId(),
+                project.getKey(),
+                actorWsMember.getDisplayName(),
+                actorProjectMember.getRole(),
+                actorWsMember.getRole());
     }
 
     @Test
@@ -115,7 +119,7 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         activityLogRepository.save(log2);
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getIssueActivities(workspace.getKey(), project.getKey(), issueKey, null, 10);
+                queryService.getIssueActivities(actorContext, issueKey, null, 10);
 
         assertThat(response.content()).hasSize(2);
         assertThat(response.content().get(0).id()).isEqualTo(log2.getId());
@@ -131,14 +135,14 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
         ActivityLog log1 = ActivityLog.builder()
                 .eventId(UUID.randomUUID())
                 .activityType(ActivityType.SPRINT_STARTED)
-                .entityReference(EntityReference.forSprint(workspace.getKey(), project.getKey(), sprintTitle, sprintId))
+                .entityReference(EntityReference.forSprint(workspace.getKey(), project.getKey(), sprintId))
                 .actorMemberId(actor.getId())
                 .data(Map.of("test", "sprint1"))
                 .build();
         activityLogRepository.save(log1);
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getSprintActivities(workspace.getKey(), project.getKey(), sprintId, null, 10);
+                queryService.getSprintActivities(actorContext, sprintId, null, 10);
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).id()).isEqualTo(log1.getId());
@@ -148,10 +152,10 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Throw ForbiddenException if user is not project member")
     void forbiddenIfNotProjectMember() {
         Long otherMemberId = 999L;
-        given(currentMemberProvider.getCurrentMemberId()).willReturn(otherMemberId);
+        ProjectMemberContext otherActorContext = new ProjectMemberContext(
+                99L, otherMemberId, 1L, workspace.getKey(), project.getKey(), "other", "Other", ProjectRole.VIEWER);
 
-        assertThatThrownBy(
-                        () -> queryService.getIssueActivities(workspace.getKey(), project.getKey(), "TEST-1", null, 10))
+        assertThatThrownBy(() -> queryService.getIssueActivities(otherActorContext, "TEST-1", null, 10))
                 .isInstanceOf(ForbiddenException.class);
     }
 }

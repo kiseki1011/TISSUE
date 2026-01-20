@@ -1,8 +1,8 @@
 package com.tissue.project.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
@@ -11,12 +11,11 @@ public record AddProjectMembersRequest(List<MemberRequestConfig> members) {
     public record MemberRequestConfig(
             @NotNull Long memberId, @NotNull ProjectRole role) {}
 
-    public AddProjectMembersCommand toCommand(
-            String workspaceKey, String projectKey, WorkspaceMemberInfo workspaceMemberInfo) {
+    public AddProjectMembersCommand toCommand(ProjectMemberContext actorContext) {
         List<AddProjectMembersCommand.ProjectMemberConfig> configs = members.stream()
                 .map(m -> new AddProjectMembersCommand.ProjectMemberConfig(m.memberId(), m.role()))
                 .toList();
 
-        return new AddProjectMembersCommand(workspaceKey, projectKey, configs, workspaceMemberInfo);
+        return new AddProjectMembersCommand(configs, actorContext);
     }
 }

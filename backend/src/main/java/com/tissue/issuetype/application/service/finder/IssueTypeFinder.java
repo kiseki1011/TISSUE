@@ -13,7 +13,7 @@ public class IssueTypeFinder {
 
     private final IssueTypeQueryRepository issueTypeQueryRepository;
 
-    public IssueType findBy(Long issueTypeId, Project project) {
+    public IssueType getBy(Long issueTypeId, Project project) {
         return issueTypeQueryRepository
                 .findByIdAndProject(issueTypeId, project)
                 .orElseThrow(() -> new IssueTypeNotFoundException(issueTypeId, project));

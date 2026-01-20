@@ -1,5 +1,6 @@
 package com.tissue.issue.domain.event;
 
+import com.tissue.common.event.DomainEvent;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -15,12 +16,13 @@ public record IssueTransitionedEvent(
         @Nullable Long parentId,
         Long transitionId,
         String transitionName,
-        Long oldStatusId,
-        String oldStatusName,
-        Long newStatusId,
-        String newStatusName,
+        Long oldStateId,
+        String oldStateName,
+        Long newStateId,
+        String newStateName,
         Long actorMemberId,
-        String actorDisplayName) {
+        String actorDisplayName)
+        implements DomainEvent {
 
     public static IssueTransitionedEvent create(
             String workspaceKey,
@@ -31,10 +33,10 @@ public record IssueTransitionedEvent(
             @Nullable Long parentId,
             Long transitionId,
             String transitionName,
-            Long oldStatusId,
-            String oldStatusName,
-            Long newStatusId,
-            String newStatusName,
+            Long oldStateId,
+            String oldStateName,
+            Long newStateId,
+            String newStateName,
             Long actorMemberId,
             String actorDisplayName) {
 
@@ -49,10 +51,10 @@ public record IssueTransitionedEvent(
                 parentId,
                 transitionId,
                 transitionName,
-                oldStatusId,
-                oldStatusName,
-                newStatusId,
-                newStatusName,
+                oldStateId,
+                oldStateName,
+                newStateId,
+                newStateName,
                 actorMemberId,
                 actorDisplayName);
     }

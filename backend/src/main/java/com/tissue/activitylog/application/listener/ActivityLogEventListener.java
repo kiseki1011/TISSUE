@@ -3,7 +3,7 @@ package com.tissue.activitylog.application.listener;
 import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.activitylog.application.service.ActivityLogCommandService;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.vo.EntityReference;
@@ -84,15 +84,15 @@ public class ActivityLogEventListener {
     public void handleIssueTransitioned(IssueTransitionedEvent event) {
         CreateLogWithDiffCommand cmd = new CreateLogWithDiffCommand(
                 event.eventId(),
-                ActivityType.ISSUE_STATUS_CHANGED,
+                ActivityType.ISSUE_WORKFLOW_TRANSITIONED,
                 EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId()),
                 event.actorMemberId(),
                 Map.of(
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
-                        "oldStatus", event.oldStatusName(),
-                        "newStatus", event.newStatusName()),
-                Map.of("status", new FieldChange(event.oldStatusName(), event.newStatusName())));
+                        "oldState", event.oldStateName(),
+                        "newState", event.newStateName()),
+                Map.of("state", new FieldChange(event.oldStateName(), event.newStateName())));
 
         activityLogCommandService.createLogWithDiff(cmd);
     }
@@ -198,7 +198,7 @@ public class ActivityLogEventListener {
                 Map.of(
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
-                        "status", event.status().name()));
+                        "reviewStatus", event.reviewStatus().name()));
 
         activityLogCommandService.createLog(cmd);
     }
@@ -298,12 +298,11 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.SPRINT_STARTED,
-                EntityReference.forSprint(
-                        event.workspaceKey(), event.projectKey(), event.sprintTitle(), event.sprintId()),
+                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
                         "projectKey", event.projectKey(),
-                        "sprintName", event.sprintTitle(),
+                        "sprintTitle", event.sprintTitle(),
                         "actorName", event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);
@@ -314,12 +313,11 @@ public class ActivityLogEventListener {
         CreateLogCommand cmd = new CreateLogCommand(
                 event.eventId(),
                 ActivityType.SPRINT_COMPLETED,
-                EntityReference.forSprint(
-                        event.workspaceKey(), event.projectKey(), event.sprintTitle(), event.sprintId()),
+                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId()),
                 event.actorMemberId(),
                 Map.of(
                         "projectKey", event.projectKey(),
-                        "sprintName", event.sprintTitle(),
+                        "sprintTitle", event.sprintTitle(),
                         "actorName", event.actorDisplayName()));
 
         activityLogCommandService.createLog(cmd);

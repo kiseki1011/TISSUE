@@ -1,4 +1,8 @@
 package com.tissue.issue.application.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
+import lombok.Builder;
+
+@Builder
 public record AssignParentCommand(
-        String workspaceKey, String projectKey, String issueKey, String parentProjectKey, String parentIssueKey) {}
+        String issueKey, String parentProjectKey, String parentIssueKey, ProjectMemberContext actorContext) {}

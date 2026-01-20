@@ -1,6 +1,5 @@
 package com.tissue.activitylog.domain;
 
-import com.tissue.activitylog.domain.enums.ActivityType;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.entity.BaseDateEntity;
 import com.tissue.common.jpa.converter.FieldChangeMapConverter;

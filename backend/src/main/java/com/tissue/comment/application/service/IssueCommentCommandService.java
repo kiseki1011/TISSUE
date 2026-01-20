@@ -9,19 +9,21 @@ import com.tissue.comment.application.port.out.CommentRepository;
 import com.tissue.comment.application.service.event.CommentEventPublisher;
 import com.tissue.comment.domain.Comment;
 import com.tissue.comment.domain.exception.CommentNotFoundException;
-import com.tissue.comment.domain.exception.NotCommentAuthorException;
+import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
+import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
+import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO: Consider making CommentFinder
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -30,64 +32,56 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
     private final CommentRepository commentRepository;
     private final IssueFinder issueFinder;
     private final ProjectFinder projectFinder;
-    private final ProjectMemberFinder projectMemberFinder;
-    private final CurrentMemberProvider currentMemberProvider;
+    private final WorkspaceMemberFinder workspaceMemberFinder;
+    private final ProjectAuthorizationService projectAuthorizationService;
+    private final IssueAuthorizationService issueAuthorizationService;
     private final CommentEventPublisher eventPublisher;
 
     @Override
     public CommentAddResponse add(AddCommentCommand cmd) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actorContext = cmd.actorContext();
+
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, currentMemberProvider.getCurrentMemberId());
+
+        projectAuthorizationService.requireProjectMember(actorContext);
 
         Comment parent = Optional.ofNullable(cmd.parentCommentId())
-                .map(id -> commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(id)))
+                .map(id -> commentRepository
+                        .findByIdAndIssue_Key(id, issue.getKey())
+                        .orElseThrow(() -> new CommentNotFoundException(id, cmd.issueKey())))
                 .orElse(null);
 
-        Comment comment = Comment.create(issue, actor.getWorkspaceMember(), cmd.content(), parent);
+        WorkspaceMember author = workspaceMemberFinder.getActive(actorContext.memberId(), actorContext.workspaceKey());
+
+        Comment comment = Comment.create(author, issue, cmd.content(), parent);
         commentRepository.save(comment);
 
-        eventPublisher.publishCommentAdded(issue, comment.getId(), actor);
+        eventPublisher.publishCommentAdded(issue, comment, actorContext);
 
-        return new CommentAddResponse(cmd.workspaceKey(), cmd.issueKey(), comment.getId());
+        return new CommentAddResponse(actorContext.workspaceKey(), cmd.issueKey(), comment.getId());
     }
 
     @Override
     public void update(UpdateCommentCommand cmd) {
-        // TODO: consider making a CommentFinder (honestly looks kinda overkill)
         Comment comment = commentRepository
-                .findById(cmd.commentId())
-                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId()));
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+                .findByIdAndIssue_Key(cmd.commentId(), cmd.issueKey())
+                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId(), cmd.issueKey()));
 
-        if (comment.isSoftDeleted()) {
-            throw new CommentNotFoundException(cmd.commentId());
-        }
-        // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
-        if (!comment.getCreatedBy().equals(actorMemberId)) {
-            throw new NotCommentAuthorException(cmd.commentId(), actorMemberId);
-        }
+        issueAuthorizationService.requireCommentEditPermission(comment, cmd.actor());
 
         comment.updateContent(cmd.content());
 
         // TODO: Publish CommentUpdatedEvent
     }
 
-    // TODO: allow ProjectRole.ADMIN for delete(add logic in the auth service)
     @Override
     public void delete(DeleteCommentCommand cmd) {
         Comment comment = commentRepository
-                .findById(cmd.commentId())
-                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId()));
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+                .findByIdAndIssue_Key(cmd.commentId(), cmd.issueKey())
+                .orElseThrow(() -> new CommentNotFoundException(cmd.commentId(), cmd.issueKey()));
 
-        if (comment.isSoftDeleted()) {
-            throw new CommentNotFoundException(cmd.commentId());
-        }
-        // TODO: Make a auth check method in IssueAuthorizationService or CommentAuthorizationService
-        if (!comment.getCreatedBy().equals(actorMemberId)) {
-            throw new NotCommentAuthorException(cmd.commentId(), actorMemberId);
-        }
+        issueAuthorizationService.requireCommentEditPermission(comment, cmd.actor());
 
         comment.softDelete();
 

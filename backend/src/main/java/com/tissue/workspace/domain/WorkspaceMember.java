@@ -54,11 +54,10 @@ public class WorkspaceMember extends BaseEntity {
     @Column(nullable = false)
     private WorkspaceRole role;
 
-    // TODO: consider using nickname or profileName
     @Column(nullable = false)
     private String displayName;
 
-    // TODO: 제거하는게 좋을까? 워크스페이스별 email 두기?
+    // TODO: 제거하는게 좋을까? 아니면 워크스페이스별 email 두는게 좋을까?
     @Column(nullable = false)
     private String email;
 
@@ -70,10 +69,9 @@ public class WorkspaceMember extends BaseEntity {
         workspaceMember.workspace = workspace;
         workspaceMember.workspaceKey = workspace.getKey();
         workspaceMember.member = member;
+        // TODO: member의 email이 변경되는 경우 어떻게?
         workspaceMember.email = member.getEmail();
-        // TODO: after refactoring Member so the "name" field is required, use it for the default
-        // displayName
-        //  member.getUsername() -> member.getName()
+        // TODO: after refactoring Member so the "name" field is required, use it for the default?
         workspaceMember.displayName = member.getUsername();
         workspaceMember.role = role;
 
@@ -92,7 +90,7 @@ public class WorkspaceMember extends BaseEntity {
         return member.getEmail();
     }
 
-    public void changeRoleTo(WorkspaceRole newRole) {
+    public void updateRole(WorkspaceRole newRole) {
         if (role == newRole) {
             return;
         }
@@ -112,14 +110,6 @@ public class WorkspaceMember extends BaseEntity {
 
     public boolean isOwner() {
         return this.role == WorkspaceRole.OWNER;
-    }
-
-    public boolean roleIsLowerThan(WorkspaceRole role) {
-        return this.role.isLowerThan(role);
-    }
-
-    public boolean roleIsEqualOrHigherThan(WorkspaceRole role) {
-        return this.role.isEqualOrHigherThan(role);
     }
 
     public void addPosition(Position position) {

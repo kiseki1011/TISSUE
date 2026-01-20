@@ -1,9 +1,9 @@
 package com.tissue.workflow.application.service;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
@@ -42,17 +42,18 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
     private final WorkflowGraphValidator graphValidator;
     private final WorkflowValidator workflowValidator;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     // TODO: add javadoc to explain process(consider adding javadoc to private methods for complex processes)
     // TODO: add logging(inlcuding debug logging, this method need thorough testing)
     @Override
     public void replaceWorkflowGraph(ReplaceWorkflowGraphCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
 
-        Workflow workflow = loadWorkflowAndCheckVersion(cmd);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
+
+        checkWorkflowVersion(cmd, workflow);
 
         StateResolver stateResolver = buildStateResolver(workflow, cmd.stateDefinitions());
 
@@ -67,14 +68,10 @@ public class WorkflowGraphReplaceService implements WorkflowGraphReplaceUseCase 
         graphValidator.ensureValidWorkflowGraph(workflow);
     }
 
-    private Workflow loadWorkflowAndCheckVersion(ReplaceWorkflowGraphCommand cmd) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-
+    private void checkWorkflowVersion(ReplaceWorkflowGraphCommand cmd, Workflow workflow) {
         if (!Objects.equals(workflow.getVersion(), cmd.version())) {
             throw new WorkflowVersionMismatchException(cmd.version(), workflow.getVersion());
         }
-        return workflow;
     }
 
     private StateResolver buildStateResolver(Workflow workflow, List<StateDefinition> stateDefinitions) {

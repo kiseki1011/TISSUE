@@ -1,3 +1,5 @@
 package com.tissue.issue.application.dto.request;
 
-public record RemoveAssigneeCommand(String workspaceKey, String projectKey, String issueKey) {}
+import com.tissue.project.application.dto.ProjectMemberContext;
+
+public record RemoveAssigneeCommand(String issueKey, ProjectMemberContext actor) {}

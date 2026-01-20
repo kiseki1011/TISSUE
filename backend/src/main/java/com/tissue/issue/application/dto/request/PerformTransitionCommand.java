@@ -1,6 +1,5 @@
 package com.tissue.issue.application.dto.request;
 
-import lombok.Builder;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
-@Builder
-public record PerformTransitionCommand(String workspaceKey, String projectKey, String issueKey, Long transitionId) {}
+public record PerformTransitionCommand(String issueKey, Long transitionId, ProjectMemberContext actorContext) {}

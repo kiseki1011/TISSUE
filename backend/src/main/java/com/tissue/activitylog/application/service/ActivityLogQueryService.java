@@ -4,8 +4,8 @@ import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.common.dto.CursorPageResponse;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -19,25 +19,24 @@ public class ActivityLogQueryService {
 
     private final ActivityLogQueryRepository queryRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     public CursorPageResponse<ActivityLogResponse> getIssueActivities(
-            String workspaceKey, String projectKey, String issueKey, @Nullable Long cursorId, int limit) {
+            ProjectMemberContext actor, String issueKey, @Nullable Long cursorId, int limit) {
 
-        projectAuthorizationService.requireProjectViewer(
-                workspaceKey, projectKey, currentMemberProvider.getCurrentMemberId());
+        projectAuthorizationService.requireProjectViewer(actor);
 
-        List<ActivityLog> logs = queryRepository.findByIssue(workspaceKey, issueKey, cursorId, limit);
+        // TODO: workspaceKey가 아니라 workspaceId를 사용할까
+        List<ActivityLog> logs = queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit);
         return createResponse(logs);
     }
 
     public CursorPageResponse<ActivityLogResponse> getSprintActivities(
-            String workspaceKey, String projectKey, Long sprintId, @Nullable Long cursorId, int limit) {
+            ProjectMemberContext actor, Long sprintId, @Nullable Long cursorId, int limit) {
 
-        projectAuthorizationService.requireProjectViewer(
-                workspaceKey, projectKey, currentMemberProvider.getCurrentMemberId());
+        projectAuthorizationService.requireProjectViewer(actor);
 
-        List<ActivityLog> logs = queryRepository.findBySprint(workspaceKey, sprintId, cursorId, limit);
+        // TODO: workspaceKey가 아니라 workspaceId를 사용할까
+        List<ActivityLog> logs = queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit);
         return createResponse(logs);
     }
 

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CommentErrorCode implements ErrorCode {
     COMMENT_NOT_FOUND("Comment not found"),
-    NOT_COMMENT_AUTHOR("Must be the author to edit the comment"),
+    EDIT_NOT_ALLOWED("Must be the author to edit the comment"),
     NESTED_COMMENT_LIMIT_EXCEEDED("Comments can only be nested one level deep");
 
     private final String defaultMessage;

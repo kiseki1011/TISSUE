@@ -1,17 +1,18 @@
 package com.tissue.project.application.service;
 
 import com.tissue.common.util.Patchers;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.CreateProjectCommand;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
-import com.tissue.project.application.port.in.ProjectCommandUseCase;
+import com.tissue.project.application.port.in.ProjectUseCase;
 import com.tissue.project.application.port.out.ProjectCommandRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.validator.ProjectValidator;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ProjectCommandService implements ProjectCommandUseCase {
+public class ProjectService implements ProjectUseCase {
 
     private final WorkspaceFinder workspaceFinder;
     private final ProjectFinder projectFinder;
@@ -30,19 +31,17 @@ public class ProjectCommandService implements ProjectCommandUseCase {
     private final ProjectCommandRepository projectRepository;
     private final WorkspaceAuthorizationService workspaceAuthService;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public ProjectCommandResult create(CreateProjectCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceMember(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actor = cmd.actor();
+        workspaceAuthService.requireWorkspaceMember(actor);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actor.workspaceId());
+
+        projectValidator.ensureUniqueProjectKey(cmd.projectKey(), workspace.getKey());
 
         Project project = Project.create(workspace, cmd.projectKey(), cmd.title(), cmd.description());
-
-        projectValidator.ensureUniqueProjectKey(project.getKey(), workspace.getKey());
-
         projectRepository.save(project);
 
         // TODO: ProjectCreatedEvent
@@ -52,10 +51,10 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 
     @Override
     public ProjectCommandResult update(UpdateProjectCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+        ProjectMemberContext actor = cmd.actor();
+        projectAuthService.requireProjectAdmin(actor);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actor.projectId());
 
         Patchers.apply(cmd.title(), project::updateTitle);
         Patchers.apply(cmd.description(), project::updateDescription);
@@ -69,10 +68,10 @@ public class ProjectCommandService implements ProjectCommandUseCase {
 
     @Override
     public ProjectCommandResult delete(DeleteProjectCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actor = cmd.actor();
+        workspaceAuthService.requireWorkspaceAdmin(actor);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actor.workspaceKey());
 
         project.softDelete();
 

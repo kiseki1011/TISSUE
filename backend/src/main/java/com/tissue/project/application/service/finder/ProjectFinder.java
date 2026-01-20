@@ -22,10 +22,8 @@ public class ProjectFinder {
      * It should only be used for query/read-only APIs where the archived status might not matter
      * or is handled separately.
      */
-    public Project getBy(String projectKey, String workspaceKey) {
-        return queryRepository
-                .findWithWorkspaceByKeyAndWorkspaceKey(projectKey, workspaceKey)
-                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
+    public Project getBy(Long projectId) {
+        return queryRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(projectId));
     }
 
     /**
@@ -35,14 +33,29 @@ public class ProjectFinder {
      * If either is archived, an exception is thrown to prevent modification.
      */
     public Project getModifiableBy(String projectKey, String workspaceKey) {
-        Project project = getBy(projectKey, workspaceKey);
+        Project project = queryRepository
+                .findWithWorkspaceByKeyAndWorkspaceKey(projectKey, workspaceKey)
+                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
 
-        // TODO: 서비스 계층에서 WorspaceFinder.getModifiableBy를 호출 하도록 변경하자(아래는 제거)
         if (project.getWorkspace().isArchived()) {
             throw new WorkspaceArchivedException(project.getWorkspace());
         }
         if (project.isArchived()) {
-            throw new ProjectArchivedException(workspaceKey, projectKey);
+            throw new ProjectArchivedException(project);
+        }
+
+        return project;
+    }
+
+    public Project getModifiableBy(Long projectId) {
+        Project project =
+                queryRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        if (project.getWorkspace().isArchived()) {
+            throw new WorkspaceArchivedException(project.getWorkspace());
+        }
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project);
         }
 
         return project;

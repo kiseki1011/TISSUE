@@ -1,10 +1,12 @@
 package com.tissue.issue.application.service.authorization;
 
-import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.comment.domain.Comment;
+import com.tissue.comment.domain.exception.CommentEditNotAllowedException;
+import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.exception.InsufficientIssuePermissionException;
 import com.tissue.issue.domain.exception.IssueParticipantManageNotAllowedException;
 import com.tissue.issue.domain.exception.IssueReviewerManageNotAllowedException;
-import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,61 +14,80 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IssueAuthorizationService {
 
-    private final IssueQueryRepository issueQueryRepository;
-    private final ProjectAuthorizationService projectAuthorizationService;
-
-    public void requireIssueEditPermission(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (canEdit(workspaceKey, projectKey, issueKey, memberId)) {
+    public void requireIssueEditPermission(Issue issue, ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new InsufficientIssuePermissionException(workspaceKey, projectKey, issueKey);
-    }
-
-    public void requireIssueDeletePermission(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (canDelete(workspaceKey, projectKey, issueKey, memberId)) {
+        if (actor.isProjectAdmin()) {
             return;
         }
-        throw new InsufficientIssuePermissionException(workspaceKey, projectKey, issueKey);
-    }
-
-    public void requireReviewerManagePermission(
-            String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (canManageReviewers(workspaceKey, projectKey, issueKey, memberId)) {
+        if (isIssueAuthor(issue, actor.memberId()) || isIssueAssignee(issue, actor.projectMemberId())) {
             return;
         }
-        throw new IssueReviewerManageNotAllowedException(workspaceKey, projectKey, issueKey);
+        throw new InsufficientIssuePermissionException(issue);
     }
 
-    public void requireParticipantManagePermission(
-            String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (canManageParticipants(workspaceKey, projectKey, issueKey, memberId)) {
+    public void requireIssueDeletePermission(Issue issue, ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new IssueParticipantManageNotAllowedException(workspaceKey, projectKey, issueKey);
-    }
-
-    private boolean canManageReviewers(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        return canEdit(workspaceKey, projectKey, issueKey, memberId);
-    }
-
-    private boolean canManageParticipants(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        return canDelete(workspaceKey, projectKey, issueKey, memberId);
-    }
-
-    // TODO: consider using the Issue entity as the parameter instead of querying the DB
-    //  check Author or Assignee in memory
-    private boolean canEdit(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
-            return true;
+        if (actor.isProjectAdmin()) {
+            return;
         }
-        return issueQueryRepository.isAuthorOrAssignee(workspaceKey, issueKey, memberId);
+        if (isIssueAuthor(issue, actor.memberId())) {
+            return;
+        }
+        throw new InsufficientIssuePermissionException(issue);
     }
 
-    // TODO: consider using the Issue entity as the parameter instead of querying the DB
-    private boolean canDelete(String workspaceKey, String projectKey, String issueKey, Long memberId) {
-        if (projectAuthorizationService.isAdmin(workspaceKey, projectKey, memberId)) {
-            return true;
+    public void requireReviewerManagePermission(Issue issue, ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
         }
-        return issueQueryRepository.isAuthor(workspaceKey, issueKey, memberId);
+        if (actor.isProjectAdmin()) {
+            return;
+        }
+        if (isIssueAuthor(issue, actor.memberId()) || isIssueAssignee(issue, actor.projectMemberId())) {
+            return;
+        }
+        throw new IssueReviewerManageNotAllowedException(issue);
+    }
+
+    public void requireParticipantManagePermission(Issue issue, ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
+        }
+        if (actor.isProjectAdmin()) {
+            return;
+        }
+        if (isIssueAuthor(issue, actor.memberId())) {
+            return;
+        }
+        throw new IssueParticipantManageNotAllowedException(issue);
+    }
+
+    public void requireCommentEditPermission(Comment comment, ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
+        }
+        if (actor.isProjectAdmin()) {
+            return;
+        }
+        if (isCommentAuthor(comment, actor.memberId())) {
+            return;
+        }
+        throw new CommentEditNotAllowedException(comment, actor.memberId());
+    }
+
+    private boolean isIssueAuthor(Issue issue, Long actorMemberId) {
+        return issue.isAuthor(actorMemberId);
+    }
+
+    private boolean isIssueAssignee(Issue issue, Long actorProjectMemberId) {
+        return issue.isAssignee(actorProjectMemberId);
+    }
+
+    private boolean isCommentAuthor(Comment comment, Long actorMemberId) {
+        return comment.isAuthor(actorMemberId);
     }
 }

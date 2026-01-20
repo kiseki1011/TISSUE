@@ -2,9 +2,13 @@ package com.tissue.project.adapter.in.web;
 
 import com.tissue.project.adapter.in.web.dto.request.CreateProjectRequest;
 import com.tissue.project.adapter.in.web.dto.request.UpdateProjectRequest;
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
-import com.tissue.project.application.port.in.ProjectCommandUseCase;
+import com.tissue.project.application.port.in.ProjectUseCase;
+import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +27,16 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/projects")
 public class ProjectController {
 
-    private final ProjectCommandUseCase projectCommandUseCase;
+    private final ProjectUseCase projectUseCase;
 
     @PostMapping
     public ResponseEntity<ProjectCommandResult> create(
-            @PathVariable String workspaceKey, @RequestBody @Valid CreateProjectRequest request) {
-        var command = request.toCommand(workspaceKey);
-        ProjectCommandResult response = projectCommandUseCase.create(command);
+            @PathVariable String workspaceKey,
+            @RequestBody @Valid CreateProjectRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = request.toCommand(currentWorkspaceMember);
+        ProjectCommandResult response = projectUseCase.create(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{projectKey}")
@@ -43,18 +50,23 @@ public class ProjectController {
     public ResponseEntity<ProjectCommandResult> update(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @RequestBody @Valid UpdateProjectRequest request) {
-        var command = request.toCommand(workspaceKey, projectKey);
-        ProjectCommandResult response = projectCommandUseCase.update(command);
+            @RequestBody @Valid UpdateProjectRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+
+        var command = request.toCommand(currentProjectMember);
+        ProjectCommandResult response = projectUseCase.update(command);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{projectKey}")
     public ResponseEntity<ProjectCommandResult> delete(
-            @PathVariable String workspaceKey, @PathVariable String projectKey) {
-        var command = new DeleteProjectCommand(workspaceKey, projectKey);
-        ProjectCommandResult response = projectCommandUseCase.delete(command);
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = new DeleteProjectCommand(projectKey, currentWorkspaceMember);
+        ProjectCommandResult response = projectUseCase.delete(command);
 
         return ResponseEntity.ok(response);
     }

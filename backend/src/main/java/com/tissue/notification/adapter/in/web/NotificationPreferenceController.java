@@ -4,10 +4,10 @@ import com.tissue.notification.adapter.in.web.dto.request.UpdateNotificationPref
 import com.tissue.notification.application.dto.response.NotificationPreferenceResponse;
 import com.tissue.notification.application.service.NotificationPreferenceService;
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,20 +24,20 @@ public class NotificationPreferenceController {
 
     @GetMapping
     public ResponseEntity<List<NotificationPreferenceResponse>> getPreferences(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails userDetails) {
+            @PathVariable String workspaceKey, @AuthenticationPrincipal MemberDetails currentMember) {
 
         List<NotificationPreferenceResponse> responses =
-                preferenceService.getPreferences(workspaceKey, userDetails.getMemberId());
+                preferenceService.getPreferences(workspaceKey, currentMember.getMemberId());
         return ResponseEntity.ok(responses);
     }
 
     @PostMapping
     public ResponseEntity<Void> updatePreferences(
             @PathVariable String workspaceKey,
-            @CurrentMember MemberDetails userDetails,
-            @RequestBody UpdateNotificationPreferenceRequest request) {
+            @RequestBody UpdateNotificationPreferenceRequest request,
+            @AuthenticationPrincipal MemberDetails currentMember) {
 
-        preferenceService.updatePreference(workspaceKey, userDetails.getMemberId(), request);
+        preferenceService.updatePreference(workspaceKey, currentMember.getMemberId(), request);
         return ResponseEntity.noContent().build();
     }
 }

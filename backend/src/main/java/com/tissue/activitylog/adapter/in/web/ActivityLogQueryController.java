@@ -3,8 +3,8 @@ package com.tissue.activitylog.adapter.in.web;
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.service.ActivityLogQueryService;
 import com.tissue.common.dto.CursorPageResponse;
-import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +27,10 @@ public class ActivityLogQueryController {
             @PathVariable String issueKey,
             @RequestParam(required = false) Long lastLogId,
             @RequestParam(defaultValue = "20") int limit,
-            @CurrentMember MemberDetails userDetails) {
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getIssueActivities(workspaceKey, projectKey, issueKey, lastLogId, limit);
+                queryService.getIssueActivities(currentProjectMember, issueKey, lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }
@@ -42,10 +42,10 @@ public class ActivityLogQueryController {
             @PathVariable Long sprintId,
             @RequestParam(required = false) Long lastLogId,
             @RequestParam(defaultValue = "20") int limit,
-            @CurrentMember MemberDetails userDetails) {
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
         CursorPageResponse<ActivityLogResponse> response =
-                queryService.getSprintActivities(workspaceKey, projectKey, sprintId, lastLogId, limit);
+                queryService.getSprintActivities(currentProjectMember, sprintId, lastLogId, limit);
 
         return ResponseEntity.ok(response);
     }

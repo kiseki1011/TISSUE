@@ -24,7 +24,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -66,7 +65,7 @@ public class Position extends BaseEntity {
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
 
-    @Column(name = "workspace_key", nullable = false)
+    @Column(name = "workspace_key", nullable = false, updatable = false)
     private String workspaceKey;
 
     @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,13 +74,15 @@ public class Position extends BaseEntity {
     @SuppressWarnings("NullAway.Init")
     protected Position() {}
 
-    @Builder
-    public Position(Workspace workspace, String name, @Nullable String description, ColorType color) {
-        this.workspace = workspace;
-        this.workspaceKey = workspace.getKey();
-        this.name = Name.of(name);
-        this.description = description;
-        this.color = color;
+    public static Position create(Workspace workspace, String name, @Nullable String description, ColorType color) {
+        Position position = new Position();
+        position.workspace = workspace;
+        position.workspaceKey = workspace.getKey();
+        position.name = Name.of(name);
+        position.description = description;
+        position.color = color;
+
+        return position;
     }
 
     public void updateName(String name) {

@@ -50,10 +50,11 @@ public class Workspace extends BaseEntity {
 
     // TODO: should i separate this into a separate domain service?
     public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
+        // TODO: 어차피 requireWorkspaceOwner로 서비스 계층에서 검사할텐데 여기서 굳이 검사할 필요 있나?
         if (!owner.isOwner()) {
             throw new WorkspaceOwnershipRequiredException(owner);
         }
-        owner.changeRoleTo(ADMIN);
+        owner.updateRole(ADMIN);
         newOwner.changeRoleToOwner();
     }
 

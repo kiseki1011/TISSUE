@@ -25,7 +25,7 @@ public enum ProjectErrorCode implements ErrorCode {
     INSUFFICIENT_PROJECT_ROLE("Insufficient project role"),
     RESOURCE_OWNERSHIP_REQUIRED("Resource ownership required"),
     PROJECT_JOIN_NOT_ALLOWED("Cannot join project directly"),
-    ROLE_GRANT_NOT_ALLOWED("Insufficient permission to grant this role");
+    ROLE_GRANT_NOT_ALLOWED("Insufficient permission to grant project role");
 
     private final String defaultMessage;
 }

@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-public record KickWorkspaceMemberCommand(String workspaceKey, Long targetMemberId) {}
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+
+public record KickWorkspaceMemberCommand(Long targetMemberId, WorkspaceMemberContext actorContext) {}

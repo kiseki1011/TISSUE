@@ -186,6 +186,14 @@ public class Issue extends BaseEntity {
         return (this.parentIssue != null) ? this.parentIssue.getId() : null;
     }
 
+    public boolean isAuthor(Long memberId) {
+        return getCreatedBy().equals(memberId);
+    }
+
+    public boolean isAssignee(Long projectMemberId) {
+        return participants.isAssignee(projectMemberId);
+    }
+
     public IssueFieldValue addOrUpdateFieldValue(IssueField field) {
         return this.fieldValues.stream()
                 .filter(fv -> fv.getField().equals(field))

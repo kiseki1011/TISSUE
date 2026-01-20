@@ -10,7 +10,6 @@ public record IssueCommentAddedEvent(
         String workspaceKey,
         String projectKey,
         String issueKey,
-        Long issueId,
         Long commentId,
         Long actorMemberId,
         String actorDisplayName)
@@ -20,7 +19,6 @@ public record IssueCommentAddedEvent(
             String workspaceKey,
             String projectKey,
             String issueKey,
-            Long issueId,
             Long commentId,
             Long actorMemberId,
             String actorDisplayName) {
@@ -30,7 +28,6 @@ public record IssueCommentAddedEvent(
                 workspaceKey,
                 projectKey,
                 issueKey,
-                issueId,
                 commentId,
                 actorMemberId,
                 actorDisplayName);

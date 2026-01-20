@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-public record TransferOwnershipCommand(String workspaceKey, Long targetMemberId, Long actorMemberId) {}
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+
+public record TransferOwnershipCommand(Long targetMemberId, WorkspaceMemberContext actorContext) {}

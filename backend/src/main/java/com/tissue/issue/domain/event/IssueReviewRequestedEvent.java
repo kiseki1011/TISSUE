@@ -28,6 +28,7 @@ public record IssueReviewRequestedEvent(
             String actorDisplayName,
             @Nullable Set<Long> reviewerMemberIds,
             int reviewerCount) {
+
         return new IssueReviewRequestedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

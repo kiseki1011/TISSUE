@@ -5,6 +5,7 @@ import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,15 +26,17 @@ public class NotificationQueryService {
     private final MessageSource messageSource;
 
     public CursorPageResponse<NotificationResponse> getNotifications(
-            String workspaceKey, Long memberId, boolean unreadOnly, @Nullable Long cursorId, int limit) {
+            WorkspaceMemberContext actorContext, boolean unreadOnly, @Nullable Long cursorId, int limit) {
 
         List<Notification> notifications;
         PageRequest pageRequest = PageRequest.of(0, limit);
 
         if (unreadOnly) {
-            notifications = notificationRepository.findUnreadByCursor(memberId, workspaceKey, cursorId, pageRequest);
+            notifications = notificationRepository.findUnreadByCursor(
+                    actorContext.memberId(), actorContext.workspaceKey(), cursorId, pageRequest);
         } else {
-            notifications = notificationRepository.findByCursor(memberId, workspaceKey, cursorId, pageRequest);
+            notifications = notificationRepository.findByCursor(
+                    actorContext.memberId(), actorContext.workspaceKey(), cursorId, pageRequest);
         }
 
         List<NotificationResponse> content =
@@ -47,9 +50,9 @@ public class NotificationQueryService {
         return CursorPageResponse.of(content, nextCursorId);
     }
 
-    public boolean checkUnreadStatus(String workspaceKey, Long memberId) {
+    public boolean checkUnreadStatus(WorkspaceMemberContext actorContext) {
         return notificationRepository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
-                memberId, workspaceKey);
+                actorContext.memberId(), actorContext.workspaceKey());
     }
 
     // TODO: Consider abstracting or extracting the render logic

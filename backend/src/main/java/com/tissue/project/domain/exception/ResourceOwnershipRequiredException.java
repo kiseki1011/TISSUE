@@ -5,6 +5,7 @@ import static com.tissue.global.exception.ContextKeys.WORKSPACE_KEY;
 
 import com.tissue.global.exception.base.ForbiddenException;
 
+// TODO: 그냥 SprintOwnershipRequired, IssueOwnershipRequired, 등...으로 쪼개서 예외를 만들까?
 public class ResourceOwnershipRequiredException extends ForbiddenException {
 
     public ResourceOwnershipRequiredException(String workspaceKey, String projectKey, String resourceType) {

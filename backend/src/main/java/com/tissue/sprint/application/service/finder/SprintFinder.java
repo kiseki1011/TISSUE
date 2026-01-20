@@ -15,26 +15,13 @@ public class SprintFinder {
 
     private final SprintQueryRepository sprintQueryRepository;
 
-    // TODO: getBy
-    public Sprint findBy(Long sprintId, Project project) {
+    public Sprint getBy(Long sprintId, Project project) {
         return sprintQueryRepository
                 .findByIdAndProject(sprintId, project)
                 .orElseThrow(() -> new SprintNotFoundException(sprintId, project));
     }
 
-    // TODO: getBy
-    public Sprint findBy(Long sprintId, String projectKey) {
-        return sprintQueryRepository
-                .findByIdAndProject_Key(sprintId, projectKey)
-                .orElseThrow(() -> new SprintNotFoundException(sprintId, projectKey));
-    }
-
-    public Optional<Sprint> findOptBy(Long sprintId, Project project) {
-        return sprintQueryRepository.findByIdAndProject(sprintId, project);
-    }
-
-    // TODO: findOptActiveBy or findOptionalActiveBy
-    public Optional<Sprint> findActiveBy(Project project) {
+    public Optional<Sprint> getActiveOptional(Project project) {
         return sprintQueryRepository.findByProjectAndStatus(project, SprintStatus.ACTIVE);
     }
 

@@ -51,10 +51,10 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "parentComment")
     private final List<Comment> childComments = new ArrayList<>();
 
-    public static Comment create(Issue issue, WorkspaceMember author, String content, @Nullable Comment parentComment) {
+    public static Comment create(WorkspaceMember author, Issue issue, String content, @Nullable Comment parentComment) {
         Comment comment = new Comment();
-        comment.issue = issue;
         comment.author = author;
+        comment.issue = issue;
         comment.content = content;
         comment.isEdited = false;
 

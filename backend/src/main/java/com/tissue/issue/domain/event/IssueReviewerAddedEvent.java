@@ -24,6 +24,7 @@ public record IssueReviewerAddedEvent(
             String reviewerDisplayName,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueReviewerAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

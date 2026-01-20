@@ -1,169 +1,130 @@
 package com.tissue.project.application.service.authorization;
 
-import com.tissue.issuetype.application.port.out.IssueTypeQueryRepository;
-import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
-import com.tissue.project.application.port.out.ProjectQueryRepository;
+import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.project.domain.Project;
+import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
-import com.tissue.project.domain.enums.ProjectVisibility;
 import com.tissue.project.domain.exception.InsufficientProjectRoleException;
 import com.tissue.project.domain.exception.ProjectJoinNotAllowedException;
 import com.tissue.project.domain.exception.ResourceOwnershipRequiredException;
 import com.tissue.project.domain.exception.RoleGrantNotAllowedException;
 import com.tissue.sprint.domain.Sprint;
-import com.tissue.workflow.application.port.out.WorkflowQueryRepository;
-import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.workflow.domain.Workflow;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+// TODO: DB 의존성이 없는데 도메인 서비스로 옮기는게 좋을까?
 @Component
 @RequiredArgsConstructor
 public class ProjectAuthorizationService {
 
-    private final WorkspaceAuthorizationService workspaceAuthorizationService;
-    private final ProjectQueryRepository projectQueryRepository;
-    private final IssueTypeQueryRepository issueTypeRepository;
-    private final WorkflowQueryRepository workflowQueryRepository;
-    private final ProjectMemberQueryRepository projectMemberRepository;
-
-    public void requireProjectViewer(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (isViewer(workspaceKey, projectKey, actorMemberId)) {
+    public void requireProjectViewer(ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.VIEWER);
-    }
-
-    public void requireProjectMember(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (isMember(workspaceKey, projectKey, actorMemberId)) {
+        if (actor.isProjectViewer()) {
             return;
         }
-        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.MEMBER);
+        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.VIEWER);
     }
 
-    public void requireProjectAdmin(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (isAdmin(workspaceKey, projectKey, actorMemberId)) {
+    public void requireProjectMember(ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new InsufficientProjectRoleException(workspaceKey, projectKey, ProjectRole.ADMIN);
-    }
-
-    public void requireDirectJoinPermission(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (canJoinDirectly(workspaceKey, projectKey, actorMemberId)) {
+        if (actor.isProjectMember()) {
             return;
         }
-        throw new ProjectJoinNotAllowedException(workspaceKey, projectKey);
+        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.MEMBER);
     }
 
-    public void requireRoleGrantPermission(
-            String workspaceKey, String projectKey, ProjectRole grantRole, Long actorMemberId) {
-        if (canGrantRole(workspaceKey, projectKey, grantRole, actorMemberId)) {
+    public void requireProjectAdmin(ProjectMemberContext actor) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new RoleGrantNotAllowedException(workspaceKey, projectKey, grantRole);
-    }
-
-    public void requireSprintEditPermission(String workspaceKey, String projectKey, Sprint sprint, Long actorMemberId) {
-        if ((isAdmin(workspaceKey, projectKey, actorMemberId) || isSprintCreator(sprint, actorMemberId))) {
+        if (actor.isProjectAdmin()) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "Sprint");
+        throw new InsufficientProjectRoleException(actor.workspaceKey(), actor.projectKey(), ProjectRole.ADMIN);
     }
 
-    public void requireIssueTypeEditPermission(
-            String workspaceKey, String projectKey, Long issueTypeId, Long actorMemberId) {
-        if (isAdmin(workspaceKey, projectKey, actorMemberId)
-                || isIssueTypeCreator(projectKey, issueTypeId, actorMemberId)) {
+    public void requireDirectJoinPermission(WorkspaceMemberContext actor, Project project) {
+        if (actor.isWorkspaceAdmin()) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "IssueType");
-    }
-
-    public void requireWorkflowEditPermission(
-            String workspaceKey, String projectKey, Long workflowId, Long actorMemberId) {
-        if ((isAdmin(workspaceKey, projectKey, actorMemberId) || isWorkflowCreator(workflowId, actorMemberId))) {
+        if (project.isPublic()) {
             return;
         }
-        throw new ResourceOwnershipRequiredException(workspaceKey, projectKey, "Workflow");
+        throw new ProjectJoinNotAllowedException(actor.workspaceKey(), project.getKey());
     }
 
-    public boolean isViewer(String workspaceKey, String projectKey, Long actorMemberId) {
-        return hasProjectRole(workspaceKey, projectKey, actorMemberId, ProjectRole.VIEWER);
-    }
+    public void requireRoleGrantPermission(ProjectMemberContext actor, ProjectMember target, ProjectRole grantRole) {
+        boolean touchesAdminRole = target.getRole().isAdmin() || grantRole.isAdmin();
 
-    public boolean isMember(String workspaceKey, String projectKey, Long actorMemberId) {
-        return hasProjectRole(workspaceKey, projectKey, actorMemberId, ProjectRole.MEMBER);
-    }
-
-    public boolean isAdmin(String workspaceKey, String projectKey, Long actorMemberId) {
-        return hasProjectRole(workspaceKey, projectKey, actorMemberId, ProjectRole.ADMIN);
-    }
-
-    public boolean canJoinDirectly(String workspaceKey, String projectKey, Long actorMemberId) {
-        if (!workspaceAuthorizationService.isMember(workspaceKey, actorMemberId)) {
-            return false;
+        if (touchesAdminRole) {
+            if (!actor.isWorkspaceAdmin()) {
+                throw new RoleGrantNotAllowedException(actor.workspaceRole(), actor.projectRole());
+            }
+            return;
         }
-        if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
-            return true;
+
+        if (actor.isProjectAdmin() || actor.isWorkspaceAdmin()) {
+            return;
         }
-        return isProjectVisibilityPublic(workspaceKey, projectKey);
+
+        throw new RoleGrantNotAllowedException(actor.workspaceRole(), actor.projectRole());
     }
 
-    public boolean canGrantRole(String workspaceKey, String projectKey, ProjectRole grantRole, Long actorMemberId) {
-        if (!isViewer(workspaceKey, projectKey, actorMemberId)) {
-            return false;
+    public void requireSprintEditPermission(ProjectMemberContext actor, Sprint sprint) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
         }
-        return hasHigherProjectRole(workspaceKey, projectKey, actorMemberId, grantRole);
-    }
-
-    // TODO: consider using the ProjectMember entity as the parameter instead of querying the DB
-    //   in this case repository might be needed if the service calling this method doesnt retrieve ProjectMember
-    private boolean hasProjectRole(
-            String workspaceKey, String projectKey, Long actorMemberId, ProjectRole requiredRole) {
-        if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
-            return true;
+        if (actor.isProjectAdmin()) {
+            return;
         }
-        return projectMemberRepository
-                .findRoleByKeysAndMemberId(workspaceKey, projectKey, actorMemberId)
-                .map(role -> role.isEqualOrHigherThan(requiredRole))
-                .orElse(false);
-    }
-
-    private boolean hasHigherProjectRole(
-            String workspaceKey, String projectKey, Long actorMemberId, ProjectRole requiredRole) {
-        if (workspaceAuthorizationService.isAdmin(workspaceKey, actorMemberId)) {
-            return true;
+        if (isSprintCreator(sprint, actor.memberId())) {
+            return;
         }
-        return projectMemberRepository
-                .findRoleByKeysAndMemberId(workspaceKey, projectKey, actorMemberId)
-                .map(role -> role.isHigherThan(requiredRole))
-                .orElse(false);
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Sprint");
     }
 
-    // TODO: consider using the Workflow entity as the parameter instead of querying the DB
-    private boolean isWorkflowCreator(Long workflowId, Long actorMemberId) {
-        return workflowQueryRepository
-                .findById(workflowId)
-                .map(workflow -> workflow.getCreatedBy().equals(actorMemberId))
-                .orElse(false);
+    public void requireIssueTypeEditPermission(ProjectMemberContext actor, IssueType issueType) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
+        }
+        if (actor.isProjectAdmin()) {
+            return;
+        }
+        if (isIssueTypeCreator(issueType, actor.memberId())) {
+            return;
+        }
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "IssueType");
     }
 
-    // TODO: consider using the IssueType entity as the parameter instead of querying the DB
-    private Boolean isIssueTypeCreator(String projectKey, Long issueTypeId, Long actorMemberId) {
-        return issueTypeRepository
-                .findByIdAndProjectKey(issueTypeId, projectKey)
-                .map(issueType -> issueType.getCreatedBy().equals(actorMemberId))
-                .orElse(false);
+    public void requireWorkflowEditPermission(ProjectMemberContext actor, Workflow workflow) {
+        if (actor.isWorkspaceAdmin()) {
+            return;
+        }
+        if (actor.isProjectAdmin()) {
+            return;
+        }
+        if (isWorkflowCreator(workflow, actor.memberId())) {
+            return;
+        }
+        throw new ResourceOwnershipRequiredException(actor.workspaceKey(), actor.projectKey(), "Workflow");
+    }
+
+    private boolean isWorkflowCreator(Workflow workflow, Long actorMemberId) {
+        return workflow.getCreatedBy().equals(actorMemberId);
+    }
+
+    private Boolean isIssueTypeCreator(IssueType issueType, Long actorMemberId) {
+        return issueType.getCreatedBy().equals(actorMemberId);
     }
 
     private Boolean isSprintCreator(Sprint sprint, Long actorMemberId) {
         return sprint.getCreatedBy().equals(actorMemberId);
-    }
-
-    // TODO: consider using the Project entity as the parameter instead of querying the DB
-    //  check Visibility in memory
-    private Boolean isProjectVisibilityPublic(String workspaceKey, String projectKey) {
-        return projectQueryRepository
-                .findVisibilityByKeys(workspaceKey, projectKey)
-                .map(visibility -> visibility == ProjectVisibility.PUBLIC)
-                .orElse(false);
     }
 }

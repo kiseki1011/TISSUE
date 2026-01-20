@@ -13,12 +13,12 @@ import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.policy.IssuePolicy;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,22 +34,19 @@ public class IssueParticipantService implements IssueParticipantUseCase {
     private final IssuePolicy issuePolicy;
     private final IssueAuthorizationService issueAuthService;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
     private final IssueEventPublisher eventPublisher;
 
     @Override
     public void changeReporter(ChangeReporterCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireParticipantManagePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember oldReporter = issue.getParticipants().getReporter();
-        ProjectMember newReporter = projectMemberFinder.getBy(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        issueAuthService.requireParticipantManagePermission(issue, actor);
 
+        ProjectMember oldReporter = issue.getParticipants().getReporter();
+
+        ProjectMember newReporter = projectMemberFinder.getActive(project, cmd.targetMemberId());
         issue.changeReporter(newReporter);
 
         eventPublisher.publishReporterChanged(issue, oldReporter, newReporter, actor);
@@ -57,16 +54,13 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void assign(AssignIssueCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireParticipantManagePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember assignee = projectMemberFinder.getBy(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        issueAuthService.requireParticipantManagePermission(issue, actor);
 
+        ProjectMember assignee = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
         issue.assignTo(assignee);
 
         eventPublisher.publishAssigned(issue, assignee, actor);
@@ -74,18 +68,16 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void unassign(RemoveAssigneeCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireParticipantManagePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+
+        issueAuthService.requireParticipantManagePermission(issue, actor);
 
         ProjectMember assignee = issue.getParticipants().getAssignee();
         if (assignee == null) {
             return;
         }
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
         issue.unassign();
 
@@ -94,43 +86,38 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void subscribe(SubscribeIssueCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectViewer(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
+        projectAuthService.requireProjectViewer(actor);
 
+        ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
         issue.addSubscriber(subscriber);
     }
 
     @Override
     public void unsubscribe(UnsubscribeIssueCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectViewer(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember subscriber = projectMemberFinder.getBy(project, actorMemberId);
+        projectAuthService.requireProjectViewer(actor);
 
+        ProjectMember subscriber = projectMemberFinder.getActive(project, actor.memberId());
         issue.removeSubscriber(subscriber);
     }
 
     @Override
     public void addReviewer(AddReviewerCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireReviewerManagePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
-
+        issueAuthService.requireReviewerManagePermission(issue, actor);
         issuePolicy.ensureCanAddReviewer(issue);
+
+        ProjectMember reviewer = projectMemberFinder.getActive(project, cmd.targetMemberId());
         issue.addReviewer(reviewer);
 
         eventPublisher.publishReviewerAdded(issue, reviewer, actor);
@@ -138,16 +125,13 @@ public class IssueParticipantService implements IssueParticipantUseCase {
 
     @Override
     public void removeReviewer(RemoveReviewerCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireReviewerManagePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
 
-        ProjectMember reviewer = projectMemberFinder.getBy(project, cmd.targetMemberId());
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        issueAuthService.requireReviewerManagePermission(issue, actor);
 
+        ProjectMember reviewer = projectMemberFinder.getIncludingSoftDeleted(project, cmd.targetMemberId());
         issue.removeReviewer(reviewer);
 
         eventPublisher.publishReviewerRemoved(issue, reviewer, actor);

@@ -5,8 +5,8 @@ import com.tissue.comment.application.dto.out.MyCommentResponse;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
 import com.tissue.comment.application.port.out.CommentQueryRepository;
 import com.tissue.comment.domain.Comment;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,14 +23,14 @@ public class IssueCommentQueryService implements CommentQueryUseCase {
 
     private final CommentQueryRepository commentQueryRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
-    public List<CommentDetailResponse> getIssueComments(String workspaceKey, String projectKey, String issueKey) {
-        projectAuthorizationService.requireProjectViewer(
-                workspaceKey, projectKey, currentMemberProvider.getCurrentMemberId());
+    public List<CommentDetailResponse> getIssueComments(String issueKey, ProjectMemberContext actor) {
+        // TODO: ProjectMemberContext를 컨트롤러에서 전달하기 위해서 어차피 Project에 속한것이 확인되는데,
+        //  굳이 requireProjectViewer를 사용해야할까 고민이 됨.
+        projectAuthorizationService.requireProjectViewer(actor);
 
-        List<Comment> allComments = commentQueryRepository.findByIssue(workspaceKey, issueKey);
+        List<Comment> allComments = commentQueryRepository.findByIssue(actor.workspaceKey(), issueKey);
 
         Map<Long, List<Comment>> repliesByParentId = allComments.stream()
                 .filter(c -> c.getParentComment() != null)

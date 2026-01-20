@@ -7,11 +7,9 @@ import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.application.service.validator.IssueValidator;
 import com.tissue.issue.domain.Issue;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.finder.ProjectFinder;
-import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.Workflow;
@@ -33,33 +31,30 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
     private final IssueFinder issueFinder;
     private final ProjectFinder projectFinder;
-    private final ProjectMemberFinder projectMemberFinder;
     private final WorkflowFinder workflowFinder;
     private final IssueValidator issueValidator;
     private final TransitionGuardRegistry guardRegistry;
     private final IssueEventPublisher eventPublisher;
     private final IssueAuthorizationService issueAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     @Transactional
     public void performTransition(PerformTransitionCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Workflow workflow = issue.getIssueType().getWorkflow();
-        WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
+        WorkflowTransition transition = workflowFinder.getTransitionBy(cmd.transitionId(), workflow);
 
         WorkflowState oldState = issue.getCurrentState();
 
-        issueValidator.ensureValidTransition(issue, cmd.transitionId(), cmd.workspaceKey(), transition);
+        issueValidator.ensureValidTransition(issue, cmd.transitionId(), actorContext.workspaceKey(), transition);
 
-        executeGuards(cmd.workspaceKey(), cmd.projectKey(), issue, transition, actorMemberId);
+        executeGuards(
+                actorContext.workspaceKey(), actorContext.projectKey(), issue, transition, actorContext.memberId());
 
         issue.transitionTo(transition.getTargetState());
 
@@ -69,9 +64,9 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
                 issue.getKey(),
-                actorMemberId);
+                actorContext.memberId());
 
-        eventPublisher.publishTransitioned(issue, transition, oldState, actor);
+        eventPublisher.publishTransitioned(issue, transition, oldState, actorContext);
     }
 
     private void executeGuards(

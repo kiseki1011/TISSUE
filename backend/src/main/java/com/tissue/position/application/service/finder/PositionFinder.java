@@ -19,6 +19,7 @@ public class PositionFinder {
                 .orElseThrow(() -> new PositionNotFoundException(positionId, workspace.getKey()));
     }
 
+    // TODO: 어차피 내부적으로는 workspaceId를 사용할 수 있을텐데, 그냥 positionId + workspaceId 조회로 변경할까?
     public Position getBy(Long positionId, String workspaceKey) {
         return positionRepository
                 .findByIdAndWorkspace_Key(positionId, workspaceKey)

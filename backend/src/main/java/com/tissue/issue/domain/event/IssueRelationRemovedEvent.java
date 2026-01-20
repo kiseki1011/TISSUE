@@ -31,6 +31,7 @@ public record IssueRelationRemovedEvent(
             IssueRelationType relationType,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueRelationRemovedEvent(
                 UUID.randomUUID(),
                 Instant.now(),

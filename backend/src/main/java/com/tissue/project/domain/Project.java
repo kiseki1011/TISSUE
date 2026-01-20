@@ -126,4 +126,8 @@ public class Project extends BaseEntity {
     public Long generateNextIssueNumber() {
         return this.issueNumber++;
     }
+
+    public boolean isPublic() {
+        return visibility == ProjectVisibility.PUBLIC;
+    }
 }

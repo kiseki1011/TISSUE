@@ -21,12 +21,12 @@ import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.IssueSubscriber;
 import com.tissue.issue.domain.exception.IssueNotFoundException;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.domain.Workflow;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -46,44 +46,49 @@ public class IssueQueryService implements IssueQueryUseCase {
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
-    public IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueBasicInfo getBasic(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
+
+        String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(projectKey, workspaceKey);
+        Project project = projectFinder.getBy(actorContext.projectId());
 
-        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getBy(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
 
         return IssueBasicInfo.from(issue, author, updatedBy);
     }
 
     @Override
-    public IssueCommonDetail getCommon(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueCommonDetail getCommon(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
+
+        String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
                 .findWithDetail(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(projectKey, workspaceKey);
+        Project project = projectFinder.getBy(actorContext.projectId());
 
-        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
-        ProjectMember updatedBy = projectMemberFinder.getBy(project, issue.getLastModifiedBy());
+        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
+        ProjectMember updatedBy = projectMemberFinder.getIncludingSoftDeleted(project, issue.getLastModifiedBy());
         List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
 
         return IssueCommonDetail.from(issue, author, updatedBy, reviewers);
     }
 
     @Override
-    public IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueCustomDetail getCustom(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
+
+        String workspaceKey = actorContext.workspaceKey();
 
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
@@ -96,12 +101,12 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueIdentifierResponse getParent(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
         Issue issue = issueQueryRepo
-                .findWithParent(workspaceKey, issueKey)
-                .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
+                .findWithParent(actorContext.workspaceKey(), issueKey)
+                .orElseThrow(() -> new IssueNotFoundException(actorContext.workspaceKey(), issueKey));
 
         Issue parent = issue.getParentIssue();
         if (parent == null) {
@@ -112,19 +117,19 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public List<IssueIdentifierResponse> getChildren(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
-        List<Issue> children = issueQueryRepo.findChildren(workspaceKey, issueKey);
+        List<Issue> children = issueQueryRepo.findChildren(actorContext.workspaceKey(), issueKey);
 
         return children.stream().map(IssueIdentifierResponse::from).toList();
     }
 
     @Override
-    public IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueRelationsDetail getRelations(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
-        List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(workspaceKey, issueKey);
+        List<IssueRelation> allRelations = relationQueryRepo.findAllRelations(actorContext.workspaceKey(), issueKey);
 
         List<IssueRelation> outgoing = allRelations.stream()
                 .filter(r -> r.getSourceIssue().getKey().equals(issueKey))
@@ -138,39 +143,41 @@ public class IssueQueryService implements IssueQueryUseCase {
     }
 
     @Override
-    public ParticipantInfo getAuthor(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public ParticipantInfo getAuthor(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
+        String workspaceKey = actorContext.workspaceKey();
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
 
-        Project project = projectFinder.getBy(projectKey, workspaceKey);
-        ProjectMember author = projectMemberFinder.getBy(project, issue.getCreatedBy());
+        Project project = projectFinder.getBy(actorContext.projectId());
+        ProjectMember author = projectMemberFinder.getIncludingSoftDeleted(project, issue.getCreatedBy());
 
         return ParticipantInfo.from(author);
     }
 
     @Override
-    public IssueReviewersDetail getReviewers(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueReviewersDetail getReviewers(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
-        List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(workspaceKey, issueKey);
+        List<IssueReviewer> reviewers = reviewerQueryRepo.findByIssue(actorContext.workspaceKey(), issueKey);
         return IssueReviewersDetail.from(reviewers);
     }
 
     @Override
-    public IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public IssueSubscribersDetail getSubscribers(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
-        List<IssueSubscriber> subscribers = subscriberQueryRepo.findByIssue(workspaceKey, issueKey);
+        List<IssueSubscriber> subscribers = subscriberQueryRepo.findByIssue(actorContext.workspaceKey(), issueKey);
         return IssueSubscribersDetail.from(subscribers);
     }
 
     @Override
-    public List<TransitionDetail> getAvailableTransitions(String workspaceKey, String projectKey, String issueKey) {
-        requireProjectViewer(workspaceKey, projectKey);
+    public List<TransitionDetail> getAvailableTransitions(String issueKey, ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
+        String workspaceKey = actorContext.workspaceKey();
         Issue issue = issueQueryRepo
                 .findWithBasicInfo(workspaceKey, issueKey)
                 .orElseThrow(() -> new IssueNotFoundException(workspaceKey, issueKey));
@@ -181,10 +188,5 @@ public class IssueQueryService implements IssueQueryUseCase {
                 .filter(t -> t.getSourceState().equals(issue.getCurrentState()))
                 .map(TransitionDetail::from)
                 .toList();
-    }
-
-    private void requireProjectViewer(String workspaceKey, String projectKey) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectViewer(workspaceKey, projectKey, actorMemberId);
     }
 }

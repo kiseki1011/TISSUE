@@ -1,12 +1,12 @@
 package com.tissue.workspace.adapter.in.web;
 
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,19 +21,24 @@ public class InvitationController {
     private final InvitationUseCase invitationUseCase;
 
     @PostMapping("/{invitationId}/accept")
-    public ResponseEntity<Void> accept(@PathVariable Long invitationId, @CurrentMember MemberDetails userDetails) {
+    public ResponseEntity<Void> accept(
+            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+
         invitationUseCase.accept(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{invitationId}/reject")
-    public ResponseEntity<Void> reject(@PathVariable Long invitationId, @CurrentMember MemberDetails userDetails) {
+    public ResponseEntity<Void> reject(
+            @PathVariable Long invitationId, @AuthenticationPrincipal MemberDetails userDetails) {
+
         invitationUseCase.reject(userDetails.getMemberId(), invitationId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@CurrentMember MemberDetails userDetails) {
+    public ResponseEntity<List<InvitationDetail>> getMyInvitations(@AuthenticationPrincipal MemberDetails userDetails) {
+
         List<InvitationDetail> response = invitationUseCase.getMyInvitations(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }

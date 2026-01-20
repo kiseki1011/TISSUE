@@ -7,31 +7,45 @@ import org.jspecify.annotations.Nullable;
 
 public record IssueCreatedEvent(
         UUID eventId,
+
         Instant occurredAt,
+
         String workspaceKey,
+
         String projectKey,
+
+        Long projectId,
+
         String issueKey,
+
         Long issueId,
+
         @Nullable String parentKey,
+
         @Nullable Long parentId,
+
         Long actorMemberId,
+
         String actorDisplayName)
         implements DomainEvent {
 
     public static IssueCreatedEvent create(
             String workspaceKey,
             String projectKey,
+            Long projectId,
             String issueKey,
             Long issueId,
             @Nullable String parentKey,
             @Nullable Long parentId,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueCreatedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
                 workspaceKey,
                 projectKey,
+                projectId,
                 issueKey,
                 issueId,
                 parentKey,

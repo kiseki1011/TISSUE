@@ -5,6 +5,7 @@ import com.tissue.position.application.dto.request.UpdatePositionCommand;
 import com.tissue.position.application.dto.response.GetPositions;
 import com.tissue.position.application.dto.response.PositionCreateResponse;
 import com.tissue.position.application.dto.response.PositionDetail;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
 public interface PositionUseCase {
 
@@ -12,9 +13,9 @@ public interface PositionUseCase {
 
     void update(UpdatePositionCommand cmd);
 
-    void delete(String workspaceKey, Long positionId);
+    void delete(Long positionId, WorkspaceMemberContext actorContext);
 
-    PositionDetail getPositionDetail(String workspaceKey, Long positionId);
+    PositionDetail getPositionDetail(Long positionId, WorkspaceMemberContext actorContext);
 
-    GetPositions getPositions(String workspaceKey);
+    GetPositions getPositions(WorkspaceMemberContext actorContext);
 }

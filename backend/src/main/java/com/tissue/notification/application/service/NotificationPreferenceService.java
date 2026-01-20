@@ -16,11 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NotificationPreferenceService {
 
-    private final NotificationPreferenceRepository repository;
+    private final NotificationPreferenceRepository preferenceRepository;
+
+    @Transactional
+    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceRequest request) {
+        NotificationPreference pref = preferenceRepository
+                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
+                .orElseGet(() -> NotificationPreference.builder()
+                        .receiverMemberId(memberId)
+                        .workspaceKey(workspaceKey)
+                        .build());
+
+        pref.updatePreference(request.channel(), request.type(), request.enabled());
+        preferenceRepository.save(pref);
+    }
 
     @Transactional(readOnly = true)
     public List<NotificationPreferenceResponse> getPreferences(String workspaceKey, Long memberId) {
-        NotificationPreference preference = repository
+        NotificationPreference preference = preferenceRepository
                 .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
                 .orElse(null);
 
@@ -46,18 +59,5 @@ public class NotificationPreferenceService {
         }
 
         return responses;
-    }
-
-    @Transactional
-    public void updatePreference(String workspaceKey, Long memberId, UpdateNotificationPreferenceRequest request) {
-        NotificationPreference pref = repository
-                .findByReceiverMemberIdAndWorkspaceKey(memberId, workspaceKey)
-                .orElseGet(() -> NotificationPreference.builder()
-                        .receiverMemberId(memberId)
-                        .workspaceKey(workspaceKey)
-                        .build());
-
-        pref.updatePreference(request.channel(), request.type(), request.enabled());
-        repository.save(pref);
     }
 }

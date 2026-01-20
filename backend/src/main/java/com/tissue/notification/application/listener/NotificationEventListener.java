@@ -203,8 +203,8 @@ public class NotificationEventListener {
         log.info(
                 "[NOTIFICATION] Handling IssueTransitionedEvent: issue={}, {} -> {}, targets={}",
                 event.issueKey(),
-                event.oldStatusName(),
-                event.newStatusName(),
+                event.oldStateName(),
+                event.newStateName(),
                 targets.size());
 
         if (targets.isEmpty()) {
@@ -225,8 +225,8 @@ public class NotificationEventListener {
                         "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
-                        "oldStatus", event.oldStatusName(),
-                        "newStatus", event.newStatusName()));
+                        "oldState", event.oldStateName(),
+                        "newState", event.newStateName()));
     }
 
     /**
@@ -315,7 +315,7 @@ public class NotificationEventListener {
         log.info(
                 "[NOTIFICATION] Handling IssueReviewSubmittedEvent: issue={}, status={}, targets={}",
                 event.issueKey(),
-                event.status(),
+                event.reviewStatus(),
                 targets.size());
 
         if (targets.isEmpty()) {
@@ -336,7 +336,7 @@ public class NotificationEventListener {
                         "workspaceKey", event.workspaceKey(),
                         "issueKey", event.issueKey(),
                         "actorName", event.actorDisplayName(),
-                        "status", event.status().name()));
+                        "status", event.reviewStatus().name()));
     }
 
     /**
@@ -509,8 +509,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forSprint(
-                event.workspaceKey(), event.projectKey(), event.sprintTitle(), event.sprintId());
+        EntityReference reference =
+                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -521,7 +521,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 Map.of(
                         "workspaceKey", event.workspaceKey(),
-                        "sprintName", event.sprintTitle()));
+                        "sprintTitle", event.sprintTitle()));
     }
 
     /**
@@ -544,8 +544,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forSprint(
-                event.workspaceKey(), event.projectKey(), event.sprintTitle(), event.sprintId());
+        EntityReference reference =
+                EntityReference.forSprint(event.workspaceKey(), event.projectKey(), event.sprintId());
 
         String startedAt = event.startedAt() != null ? event.startedAt().toString() : "";
         String endedAt = event.endedAt() != null ? event.endedAt().toString() : "";
@@ -560,7 +560,7 @@ public class NotificationEventListener {
                 Map.of(
                         "workspaceKey",
                         event.workspaceKey(),
-                        "sprintName",
+                        "sprintTitle",
                         event.sprintTitle(),
                         "startedAt",
                         startedAt,
@@ -590,7 +590,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.joinedMemberId());
+        EntityReference reference = EntityReference.forWorkspaceMember(
+                event.workspaceKey(), event.joinedMemberId(), event.joinedWorkspaceMemberId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -601,7 +602,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 Map.of(
                         "workspaceKey", event.workspaceKey(),
-                        "memberName", event.joinedMemberDisplayName(),
+                        "joinedMemberName", event.joinedMemberDisplayName(),
                         "role", event.role().name()));
     }
 
@@ -628,8 +629,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forProjectMember(event.workspaceKey(), event.projectKey(), event.joinedMemberId());
+        EntityReference reference = EntityReference.forProjectMember(
+                event.workspaceKey(), event.projectKey(), event.joinedMemberId(), event.joinedProjectMemberId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -640,7 +641,7 @@ public class NotificationEventListener {
                 event.actorDisplayName(),
                 Map.of(
                         "projectKey", event.projectKey(),
-                        "memberName", event.joinedMemberDisplayName(),
+                        "joinedMemberName", event.joinedMemberDisplayName(),
                         "role", event.role().name()));
     }
 
@@ -667,7 +668,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference = EntityReference.forWorkspaceMember(event.workspaceKey(), event.targetMemberId());
+        EntityReference reference = EntityReference.forWorkspaceMember(
+                event.workspaceKey(), event.targetMemberId(), event.targetWorkspaceMemberId());
 
         commandService.createAndSend(
                 event.eventId(),
@@ -708,8 +710,8 @@ public class NotificationEventListener {
             return;
         }
 
-        EntityReference reference =
-                EntityReference.forProjectMember(event.workspaceKey(), event.projectKey(), event.targetMemberId());
+        EntityReference reference = EntityReference.forProjectMember(
+                event.workspaceKey(), event.projectKey(), event.targetMemberId(), event.targetProjectMemberId());
 
         commandService.createAndSend(
                 event.eventId(),

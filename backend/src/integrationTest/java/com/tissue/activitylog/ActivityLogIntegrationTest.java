@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tissue.activitylog.application.port.out.ActivityLogRepository;
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
 import com.tissue.issue.domain.event.IssueFieldsUpdatedEvent;
@@ -103,7 +103,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
         ActivityLog log = logs.get(0);
         assertThat(log.getActivityType()).isEqualTo(ActivityType.ISSUE_CREATED);
         assertThat(log.getActorMemberId()).isEqualTo(actor.getId());
-        assertThat(log.getEntityReference().getKey()).isEqualTo(issueKey);
+        assertThat(log.getEntityReference().getIssueKey()).isEqualTo(issueKey);
         assertThat(log.getData().get("issueKey")).isEqualTo(issueKey);
     }
 

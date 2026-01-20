@@ -1,6 +1,6 @@
 package com.tissue.project.adapter.in.web.resolver;
 
-import com.tissue.project.application.dto.ProjectMemberInfo;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.security.authentication.domain.MemberDetails;
@@ -26,7 +26,7 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(CurrentProjectMember.class)
-                && parameter.getParameterType().equals(ProjectMemberInfo.class);
+                && parameter.getParameterType().equals(ProjectMemberContext.class);
     }
 
     @Override
@@ -41,10 +41,10 @@ public class ProjectMemberArgumentResolver implements HandlerMethodArgumentResol
         String projectKey = getProjectKey(webRequest);
         Long memberId = getMemberId();
 
-        ProjectMember projectMember = projectMemberFinder.getActiveBy(workspaceKey, projectKey,
-            memberId);
+        ProjectMember projectMember =
+                projectMemberFinder.getActiveWithWorkspaceMember(workspaceKey, projectKey, memberId);
 
-        return ProjectMemberInfo.from(projectMember);
+        return ProjectMemberContext.from(projectMember);
     }
 
     @SuppressWarnings("unchecked")

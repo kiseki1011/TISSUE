@@ -17,37 +17,39 @@ public class WorkspaceEventPublisher {
     private final ApplicationEventPublisher eventPublisher;
 
     public void publishMemberJoinedWorkspace(
-            WorkspaceMember joinedMember,
+            WorkspaceMember joinedWorkspaceMember,
             JoinMethod joinMethod,
             Long actorMemberId,
             @Nullable String actorDisplayName) {
 
         eventPublisher.publishEvent(MemberJoinedWorkspaceEvent.create(
-                joinedMember.getWorkspaceKey(),
-                joinedMember.getWorkspace().getId(),
-                joinedMember.getMemberId(),
-                joinedMember.getEmail(),
-                joinedMember.getDisplayName(),
-                joinedMember.getRole(),
+                joinedWorkspaceMember.getWorkspaceKey(),
+                joinedWorkspaceMember.getWorkspace().getId(),
+                joinedWorkspaceMember.getId(),
+                joinedWorkspaceMember.getMemberId(),
+                joinedWorkspaceMember.getEmail(),
+                joinedWorkspaceMember.getDisplayName(),
+                joinedWorkspaceMember.getRole(),
                 joinMethod,
                 actorMemberId,
                 actorDisplayName));
     }
 
     public void publishWorkspaceRoleChanged(
-            WorkspaceMember targetMember,
+            WorkspaceMember targetWorkspaceMember,
             WorkspaceRole oldRole,
             WorkspaceRole newRole,
             Long actorMemberId,
             String actorDisplayName) {
 
         eventPublisher.publishEvent(WorkspaceRoleChangedEvent.create(
-                targetMember.getWorkspaceKey(),
-                targetMember.getMemberId(),
+                targetWorkspaceMember.getWorkspaceKey(),
+                targetWorkspaceMember.getId(),
+                targetWorkspaceMember.getMemberId(),
+                targetWorkspaceMember.getDisplayName(),
                 oldRole,
                 newRole,
                 actorMemberId,
-                actorDisplayName,
-                targetMember.getDisplayName()));
+                actorDisplayName));
     }
 }

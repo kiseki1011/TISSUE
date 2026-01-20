@@ -19,22 +19,35 @@ public class WorkspaceMemberFinder {
 
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
-    public WorkspaceMember getBy(Long memberId, String workspaceKey) {
+    public WorkspaceMember getIncludingSoftDeleted(Long memberId, String workspaceKey) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKey(memberId, workspaceKey)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
     }
 
-    public WorkspaceMember getBy(Long memberId, Workspace workspace) {
+    public WorkspaceMember getIncludingSoftDeleted(Long memberId, Workspace workspace) {
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspace(memberId, workspace)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
     }
 
-    public WorkspaceMember getActiveBy(Long memberId, String workspaceKey) {
+    public WorkspaceMember getActive(Long memberId, String workspaceKey) {
+        // TODO: Member와 join fetch를 하는게 좋을까?
         return workspaceMemberQueryRepository
                 .findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(memberId, workspaceKey)
                 .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspaceKey));
+    }
+
+    public WorkspaceMember getActive(Long memberId, Workspace workspace) {
+        return workspaceMemberQueryRepository
+                .findByMember_IdAndWorkspaceAndSoftDeletedFalse(memberId, workspace)
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(memberId, workspace.getKey()));
+    }
+
+    public WorkspaceMember getActive(Long workspaceMemberId) {
+        return workspaceMemberQueryRepository
+                .findByIdAndSoftDeletedFalse(workspaceMemberId)
+                .orElseThrow(() -> new WorkspaceMemberNotFoundException(workspaceMemberId));
     }
 
     public Optional<WorkspaceMember> getOptionalBy(Long memberId, String workspaceKey) {
@@ -51,10 +64,6 @@ public class WorkspaceMemberFinder {
 
     public Set<Long> getJoinedMemberIdsBy(String workspaceKey, Collection<Long> memberIds) {
         return workspaceMemberQueryRepository.findJoinedMemberIds(workspaceKey, memberIds);
-    }
-
-    public boolean existsBy(Member member, Workspace workspace) {
-        return workspaceMemberQueryRepository.existsByMemberAndWorkspace(member, workspace);
     }
 
     public int countTotalMembersBy(String workspaceKey) {

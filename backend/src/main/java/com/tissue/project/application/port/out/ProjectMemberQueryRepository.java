@@ -17,14 +17,25 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
 
+    @Query("SELECT pm " + "FROM ProjectMember pm "
+            + "JOIN FETCH pm.workspaceMember wm "
+            + "WHERE pm.workspaceKey = :workspaceKey "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.memberId = :memberId "
+            + "AND pm.softDeleted = false")
+    Optional<ProjectMember> findActiveWithWorkspaceMemberByKeysAndMemberId(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("memberId") Long memberId);
+
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberId(Long projectId, Long memberId);
 
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
 
-    Optional<ProjectMember> findByWorkspaceKeyAndProjectKeyAndMemberIdAndSoftDeletedFalse(String workspaceKey,
-        String projectKey, Long memberId);
+    Optional<ProjectMember> findByWorkspaceKeyAndProjectKeyAndMemberIdAndSoftDeletedFalse(
+            String workspaceKey, String projectKey, Long memberId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "

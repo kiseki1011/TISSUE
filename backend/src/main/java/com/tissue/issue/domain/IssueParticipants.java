@@ -100,12 +100,15 @@ public class IssueParticipants {
         this.subscribers.clear();
     }
 
-    boolean isReporter(ProjectMember projectMember) {
-        return reporter.equals(projectMember);
+    boolean isAssignee(Long projectMemberId) {
+        if (assignee == null) {
+            return false;
+        }
+        return assignee.getId().equals(projectMemberId);
     }
 
-    boolean isAssignee(ProjectMember projectMember) {
-        return assignee != null && assignee.equals(projectMember);
+    boolean isReporter(ProjectMember projectMember) {
+        return reporter.equals(projectMember);
     }
 
     boolean isReviewer(ProjectMember projectMember) {

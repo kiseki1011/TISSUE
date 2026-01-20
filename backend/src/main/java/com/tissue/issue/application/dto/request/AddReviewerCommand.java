@@ -1,6 +1,7 @@
 package com.tissue.issue.application.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.Builder;
 
 @Builder
-public record AddReviewerCommand(String workspaceKey, String projectKey, String issueKey, Long targetMemberId) {}
+public record AddReviewerCommand(String issueKey, Long targetMemberId, ProjectMemberContext actor) {}

@@ -1,4 +1,4 @@
-package com.tissue.workspace.adapter.in.web.annotation;
+package com.tissue.workspace.adapter.in.web.resolver;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

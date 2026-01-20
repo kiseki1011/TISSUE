@@ -9,11 +9,11 @@ import com.tissue.issue.application.service.finder.IssueFinder;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueReviewer;
 import com.tissue.issue.domain.exception.ReviewerNotFoundException;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,15 +24,15 @@ public class IssueReviewService implements IssueReviewUseCase {
     private final IssueFinder issueFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
-    private final CurrentMemberProvider currentMemberProvider;
     private final IssueAuthorizationService issueAuthService;
     private final IssueEventPublisher eventPublisher;
 
     @Override
     public void submitReview(SubmitReviewCommand cmd) {
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(issue.getProject(), cmd.actorMemberId());
+        ProjectMember actor = projectMemberFinder.getIncludingSoftDeleted(issue.getProject(), actorContext.memberId());
 
         IssueReviewer reviewer = findReviewerEntry(issue, actor);
 
@@ -42,21 +42,20 @@ public class IssueReviewService implements IssueReviewUseCase {
             reviewer.reject();
         }
 
-        eventPublisher.publishReviewSubmitted(issue, reviewer.getStatus(), actor);
+        eventPublisher.publishReviewSubmitted(issue, reviewer.getStatus(), actorContext);
     }
 
     @Override
     public void requestReview(RequestReviewCommand cmd) {
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), cmd.actorMemberId());
-
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, cmd.actorMemberId());
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         int count = issue.resetReviews(cmd.reviewerMemberIds());
 
-        eventPublisher.publishReviewRequested(issue, actor, cmd.reviewerMemberIds(), count);
+        eventPublisher.publishReviewRequested(issue, actorContext, cmd.reviewerMemberIds(), count);
     }
 
     private IssueReviewer findReviewerEntry(Issue issue, ProjectMember actor) {

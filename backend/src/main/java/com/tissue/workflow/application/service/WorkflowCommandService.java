@@ -1,10 +1,10 @@
 package com.tissue.workflow.application.service;
 
 import com.tissue.common.util.Patchers;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.request.ConfigureTransitionGuardsCommand;
 import com.tissue.workflow.application.dto.request.CreateWorkflowCommand;
@@ -49,14 +49,13 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     private final WorkflowGraphValidator graphValidator;
     private final TransitionGuardRegistry guardRegistry;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public WorkflowCreateResponse create(CreateWorkflowCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        projectAuthService.requireProjectMember(actorContext);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         workflowValidator.ensureNameUnique(project, cmd.name());
 
         try {
@@ -108,12 +107,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void update(UpdateWorkflowCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
         Patchers.apply(cmd.name(), newName -> {
             if (!workflow.getName().equals(newName)) {
@@ -129,12 +127,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
 
     @Override
     public void delete(DeleteWorkflowCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
         // TODO: archive(soft-delete) 정책 정하기
         //  - 정책1: 해당 워크플로우를 사용하는 이슈가 단 하나라도 존재한다면 불가
@@ -150,13 +147,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     // TODO: is there a better name? updateStateData? updateStateMetaData?
     @Override
     public void updateState(UpdateStateCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
+        WorkflowState state = workflowFinder.getStateBy(cmd.stateId(), workflow);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-        WorkflowState state = workflowFinder.findStateBy(cmd.stateId(), workflow);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
         Patchers.apply(cmd.name(), l -> workflow.renameState(state, l));
         Patchers.apply(cmd.description(), state::updateDescription);
@@ -166,13 +162,12 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     // TODO: is there a better name? updateTransitionData? updateTransitionMetaData?
     @Override
     public void updateTransition(UpdateTransitionCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
+        WorkflowTransition transition = workflowFinder.getTransitionBy(cmd.transitionId(), workflow);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
-        WorkflowTransition transition = workflowFinder.findTransitionBy(cmd.transitionId(), workflow);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
         Patchers.apply(cmd.name(), l -> workflow.renameTransition(transition, l));
         Patchers.apply(cmd.description(), transition::updateDescription);
@@ -181,12 +176,11 @@ public class WorkflowCommandService implements WorkflowCommandUseCase {
     // TODO: add javadoc to explain the process
     @Override
     public void configureTransitionGuards(ConfigureTransitionGuardsCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireWorkflowEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.workflowId(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        projectAuthService.requireWorkflowEditPermission(actorContext, workflow);
 
         WorkflowTransition transition = workflow.getTransitions().stream()
                 .filter(t -> t.getId().equals(cmd.transitionId()))

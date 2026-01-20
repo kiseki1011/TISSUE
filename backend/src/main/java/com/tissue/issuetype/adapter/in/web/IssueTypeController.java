@@ -6,6 +6,8 @@ import com.tissue.issuetype.adapter.in.dto.request.UpdateIssueTypeRequest;
 import com.tissue.issuetype.application.dto.request.DeleteIssueTypeCommand;
 import com.tissue.issuetype.application.dto.response.IssueTypeResponse;
 import com.tissue.issuetype.application.service.IssueTypeService;
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,8 +32,9 @@ public class IssueTypeController {
     public ResponseEntity<IssueTypeResponse> create(
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
-            @RequestBody @Valid CreateIssueTypeRequest req) {
-        IssueTypeResponse response = issueTypeService.create(req.toCommand(workspaceKey, projectKey));
+            @RequestBody @Valid CreateIssueTypeRequest req,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
+        IssueTypeResponse response = issueTypeService.create(req.toCommand(workspaceKey, projectKey, actorContext));
         // TODO: created 사용
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -41,8 +44,9 @@ public class IssueTypeController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long id,
-            @RequestBody @Valid RenameIssueTypeRequest request) {
-        issueTypeService.rename(request.toCommand(workspaceKey, projectKey, id));
+            @RequestBody @Valid RenameIssueTypeRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
+        issueTypeService.rename(request.toCommand(workspaceKey, projectKey, id, actorContext));
         return ResponseEntity.noContent().build();
     }
 
@@ -51,15 +55,19 @@ public class IssueTypeController {
             @PathVariable String workspaceKey,
             @PathVariable String projectKey,
             @PathVariable Long id,
-            @RequestBody @Valid UpdateIssueTypeRequest request) {
-        issueTypeService.update(request.toCommand(workspaceKey, projectKey, id));
+            @RequestBody @Valid UpdateIssueTypeRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
+        issueTypeService.update(request.toCommand(workspaceKey, projectKey, id, actorContext));
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long id) {
-        issueTypeService.delete(new DeleteIssueTypeCommand(workspaceKey, projectKey, id));
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable Long id,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
+        issueTypeService.delete(new DeleteIssueTypeCommand(workspaceKey, projectKey, id, actorContext));
         return ResponseEntity.noContent().build();
     }
 }

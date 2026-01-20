@@ -24,12 +24,12 @@ import com.tissue.issue.domain.IssueSchedule;
 import com.tissue.issue.domain.service.IssueFieldChangeTracker;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.application.service.finder.ProjectMemberFinder;
 import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.sprint.application.service.finder.SprintFinder;
 import com.tissue.sprint.domain.Sprint;
 import java.util.HashMap;
@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueCommandService implements IssueCommandUseCase {
 
@@ -55,20 +56,18 @@ public class IssueCommandService implements IssueCommandUseCase {
     private final IssueEventPublisher eventPublisher;
     private final ProjectAuthorizationService projectAuthService;
     private final IssueAuthorizationService issueAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
-    @Transactional
     public IssueCreateResponse create(CreateIssueCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+
+        projectAuthService.requireProjectMember(actorContext);
 
         Sprint sprint = Optional.ofNullable(cmd.sprintId())
-                .map(id -> sprintFinder.findBy(id, project))
+                .map(id -> sprintFinder.getBy(id, project))
                 .orElse(null);
 
         Issue parent = Optional.ofNullable(cmd.parentKey())
@@ -76,8 +75,10 @@ public class IssueCommandService implements IssueCommandUseCase {
                 .orElse(null);
 
         ProjectMember assignee = Optional.ofNullable(cmd.assigneeMemberId())
-                .map(id -> projectMemberFinder.getBy(project, id))
+                .map(id -> projectMemberFinder.getActive(project, id))
                 .orElse(null);
+
+        ProjectMember reporter = projectMemberFinder.getActive(project, actorContext.memberId());
 
         Issue issue = Issue.create(
                 project,
@@ -86,7 +87,7 @@ public class IssueCommandService implements IssueCommandUseCase {
                 cmd.title(),
                 IssueContent.of(cmd.content(), cmd.summary()),
                 IssueSchedule.of(cmd.dueAt()),
-                IssueParticipants.of(actor, assignee),
+                IssueParticipants.of(reporter, assignee),
                 cmd.priority(),
                 cmd.storyPoint(),
                 parent);
@@ -94,21 +95,19 @@ public class IssueCommandService implements IssueCommandUseCase {
         fieldSchemaValidator.validateAndAssign(cmd.customFields(), issue);
         issueCommandRepository.save(issue);
 
-        eventPublisher.publishIssueCreated(issue, actor);
+        eventPublisher.publishIssueCreated(issue, actorContext);
 
         return IssueCreateResponse.from(issue);
     }
 
     @Override
-    @Transactional
     public void updateCommonFields(UpdateCommonFieldsCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Map<String, FieldChange> changes = new HashMap<>();
 
@@ -119,20 +118,18 @@ public class IssueCommandService implements IssueCommandUseCase {
         Patchers.applyWithLog(cmd.priority(), issue::getPriority, issue::updatePriority, "priority", changes);
 
         if (!changes.isEmpty()) {
-            eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
+            eventPublisher.publishIssueFieldsUpdated(issue, changes, actorContext);
         }
     }
 
     @Override
-    @Transactional
     public void updateCustomFields(UpdateCustomFieldsCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Map<String, Object> oldSnapshot = fieldChangeTracker.captureSnapshot(issue);
 
@@ -142,80 +139,76 @@ public class IssueCommandService implements IssueCommandUseCase {
         Map<String, FieldChange> changes = fieldChangeTracker.compareChanges(oldSnapshot, newSnapshot);
 
         if (!changes.isEmpty()) {
-            eventPublisher.publishIssueFieldsUpdated(issue, changes, actor);
+            eventPublisher.publishIssueFieldsUpdated(issue, changes, actorContext);
         }
     }
 
     @Override
-    @Transactional
     public void updateStoryPoint(UpdateStoryPointCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
 
         Integer oldStoryPoint = issue.getStoryPoint();
         issue.updateStoryPoint(cmd.storyPoint());
 
-        eventPublisher.publishStoryPointChanged(issue, oldStoryPoint, actor);
+        eventPublisher.publishStoryPointChanged(issue, oldStoryPoint, actorContext);
     }
 
     @Override
-    @Transactional
     public void assignParent(AssignParentCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
-        Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), cmd.workspaceKey());
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
+
+        Project parentProject = projectFinder.getModifiableBy(cmd.parentProjectKey(), actorContext.workspaceKey());
         Issue parent = issueFinder.getBy(cmd.parentIssueKey(), parentProject);
 
         Issue oldParent = issue.getParentIssue();
 
         issue.setParentIssue(parent);
 
-        eventPublisher.publishParentChanged(issue, oldParent, parent, actor);
+        eventPublisher.publishParentChanged(issue, oldParent, parent, actorContext);
     }
 
     @Override
-    @Transactional
     public void removeParent(RemoveParentCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+
+        issueAuthService.requireIssueEditPermission(issue, actorContext);
+
         Issue parent = issue.getParentIssue();
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        if (parent == null) {
+            return;
+        }
 
         issue.removeParentIssue();
 
-        eventPublisher.publishParentChanged(issue, parent, null, actor);
+        eventPublisher.publishParentChanged(issue, parent, null, actorContext);
     }
 
     @Override
-    @Transactional
     public void softDelete(DeleteIssueCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        issueAuthService.requireIssueDeletePermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
         Issue issue = issueFinder.getBy(cmd.issueKey(), project);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
 
+        issueAuthService.requireIssueDeletePermission(issue, actorContext);
         issueValidator.ensureCanDelete(issue);
+
         issue.delete();
 
-        eventPublisher.publishIssueDeleted(issue, actor);
+        eventPublisher.publishIssueDeleted(issue, actorContext);
     }
 
     private Issue resolveParentIssue(String parentKey, String parentProjectKey, Project currentProject) {

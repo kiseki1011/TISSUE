@@ -1,8 +1,6 @@
 package com.tissue.issue.application.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import java.util.Set;
-import lombok.Builder;
 
-@Builder
-public record RequestReviewCommand(
-        String workspaceKey, String projectKey, String issueKey, Set<Long> reviewerMemberIds, Long actorMemberId) {}
+public record RequestReviewCommand(String issueKey, Set<Long> reviewerMemberIds, ProjectMemberContext actorContext) {}

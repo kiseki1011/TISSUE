@@ -1,17 +1,17 @@
 package com.tissue.activitylog.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.port.out.ActivityLogQueryRepository;
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.common.vo.EntityReference;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
+import com.tissue.project.domain.enums.ProjectRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +34,6 @@ class ActivityLogQueryServiceTest {
     @Mock
     ProjectAuthorizationService projectAuthorizationService;
 
-    @Mock
-    CurrentMemberProvider currentMemberProvider;
-
     @InjectMocks
     ActivityLogQueryService sut;
 
@@ -52,8 +49,8 @@ class ActivityLogQueryServiceTest {
             Long memberId = 1L;
             Long cursorId = null;
             int limit = 20;
-
-            given(currentMemberProvider.getCurrentMemberId()).willReturn(memberId);
+            ProjectMemberContext actor = new ProjectMemberContext(
+                    1L, memberId, 1L, workspaceKey, projectKey, "member", "name", ProjectRole.MEMBER);
 
             ActivityLog log1 = ActivityLog.builder()
                     .eventId(UUID.randomUUID())
@@ -64,13 +61,12 @@ class ActivityLogQueryServiceTest {
                     .build();
             ReflectionTestUtils.setField(log1, "id", 10L);
 
-            given(queryRepository.findByIssue(workspaceKey, issueKey, cursorId, limit))
+            given(queryRepository.findByIssue(actor.workspaceKey(), issueKey, cursorId, limit))
                     .willReturn(List.of(log1));
 
-            CursorPageResponse<ActivityLogResponse> response =
-                    sut.getIssueActivities(workspaceKey, projectKey, issueKey, cursorId, limit);
+            CursorPageResponse<ActivityLogResponse> response = sut.getIssueActivities(actor, issueKey, cursorId, limit);
 
-            then(projectAuthorizationService).should().requireProjectViewer(workspaceKey, projectKey, memberId);
+            then(projectAuthorizationService).should().requireProjectViewer(actor);
             assertThat(response.content()).hasSize(1);
             assertThat(response.content().get(0).id()).isEqualTo(10L);
             assertThat(response.nextCursorId()).isEqualTo(10L);
@@ -89,15 +85,16 @@ class ActivityLogQueryServiceTest {
             Long memberId = 1L;
             Long cursorId = null;
             int limit = 20;
+            ProjectMemberContext actor = new ProjectMemberContext(
+                    1L, memberId, 1L, workspaceKey, projectKey, "member", "name", ProjectRole.MEMBER);
 
-            given(currentMemberProvider.getCurrentMemberId()).willReturn(memberId);
-            given(queryRepository.findBySprint(workspaceKey, sprintId, cursorId, limit))
+            given(queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit))
                     .willReturn(Collections.emptyList());
 
             CursorPageResponse<ActivityLogResponse> response =
-                    sut.getSprintActivities(workspaceKey, projectKey, sprintId, cursorId, limit);
+                    sut.getSprintActivities(actor, sprintId, cursorId, limit);
 
-            then(projectAuthorizationService).should().requireProjectViewer(workspaceKey, projectKey, memberId);
+            then(projectAuthorizationService).should().requireProjectViewer(actor);
             assertThat(response.content()).isEmpty();
             assertThat(response.nextCursorId()).isNull();
         }

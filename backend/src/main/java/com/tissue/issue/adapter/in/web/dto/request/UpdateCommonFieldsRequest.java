@@ -2,6 +2,7 @@ package com.tissue.issue.adapter.in.web.dto.request;
 
 import com.tissue.issue.application.dto.request.UpdateCommonFieldsCommand;
 import com.tissue.issue.domain.enums.IssuePriority;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -13,16 +14,16 @@ public record UpdateCommonFieldsRequest(
         JsonNullable<String> summary,
         JsonNullable<IssuePriority> priority,
         JsonNullable<Instant> dueAt) {
-    public UpdateCommonFieldsCommand toCommand(String workspaceKey, String projectKey, String issueKey) {
+
+    public UpdateCommonFieldsCommand toCommand(String issueKey, ProjectMemberContext actorContext) {
         return UpdateCommonFieldsCommand.builder()
-                .workspaceKey(workspaceKey)
-                .projectKey(projectKey)
                 .issueKey(issueKey)
                 .title(title)
                 .content(content)
                 .summary(summary)
                 .priority(priority)
                 .dueAt(dueAt)
+                .actorContext(actorContext)
                 .build();
     }
 }

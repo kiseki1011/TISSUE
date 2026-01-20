@@ -1,7 +1,5 @@
 package com.tissue.issue.application.dto.request;
 
-import lombok.Builder;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
-@Builder
-public record SubmitReviewCommand(
-        String workspaceKey, String projectKey, String issueKey, boolean approved, Long actorMemberId) {}
+public record SubmitReviewCommand(String issueKey, boolean approved, ProjectMemberContext actorContext) {}

@@ -7,7 +7,7 @@ import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
 import com.tissue.activitylog.application.port.out.ActivityLogRepository;
 import com.tissue.activitylog.domain.ActivityLog;
-import com.tissue.activitylog.domain.enums.ActivityType;
+import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.FieldChange;
 import com.tissue.common.vo.EntityReference;
 import java.util.Map;

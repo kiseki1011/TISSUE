@@ -5,17 +5,17 @@ import com.tissue.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.team.application.dto.response.GetTeams;
 import com.tissue.team.application.dto.response.TeamCreateResponse;
 import com.tissue.team.application.dto.response.TeamDetail;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
-// TODO: add @PreAuthorize
 public interface TeamUseCase {
 
     TeamCreateResponse create(CreateTeamCommand cmd);
 
     void update(UpdateTeamCommand cmd);
 
-    void delete(String workspaceKey, Long teamId);
+    void delete(Long teamId, WorkspaceMemberContext actorContext);
 
-    TeamDetail getTeam(String workspaceKey, Long teamId);
+    TeamDetail getTeam(Long teamId, WorkspaceMemberContext actorContext);
 
-    GetTeams getTeams(String workspaceKey);
+    GetTeams getTeams(WorkspaceMemberContext actorContext);
 }

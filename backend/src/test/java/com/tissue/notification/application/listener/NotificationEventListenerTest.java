@@ -40,8 +40,19 @@ class NotificationEventListenerTest {
         @Test
         @DisplayName("success: sends notification to project members")
         void success_HandleIssueCreated() {
+            // spotless:off
             IssueCreatedEvent event =
-                    IssueCreatedEvent.create("TESTWS", "TESTPROJ", "TESTPROJ-1", 100L, null, null, 1L, "Actor");
+                    IssueCreatedEvent.create(
+                        "TESTWS",
+                        "TESTPROJ",
+                        1L,
+                        "TESTPROJ-1",
+                        100L,
+                        null,
+                        null,
+                        1L,
+                        "Actor");
+            // spotless:on
 
             WorkspaceMemberContact contact = new WorkspaceMemberContact(2L, "user2@test.com", SupportedLanguage.EN);
             given(targetService.getProjectMembersExcluding("TESTWS", "TESTPROJ", 1L))
@@ -64,8 +75,19 @@ class NotificationEventListenerTest {
         @Test
         @DisplayName("success: calls createAndSend even if no targets")
         void success_HandleIssueCreated_NoTargets() {
+            // spotless:off
             IssueCreatedEvent event =
-                    IssueCreatedEvent.create("TESTWS", "TESTPROJ", "TESTPROJ-1", 100L, null, null, 1L, "Actor");
+                    IssueCreatedEvent.create(
+                        "TESTWS",
+                        "TESTPROJ",
+                        1L,
+                        "TESTPROJ-1",
+                        100L,
+                        null,
+                        null,
+                        1L,
+                        "Actor");
+            // spotless:on
 
             given(targetService.getProjectMembersExcluding("TESTWS", "TESTPROJ", 1L))
                     .willReturn(Collections.emptyList());

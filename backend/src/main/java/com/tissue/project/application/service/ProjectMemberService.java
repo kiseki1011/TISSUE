@@ -2,13 +2,14 @@ package com.tissue.project.application.service;
 
 import com.tissue.common.enums.JoinMethod;
 import com.tissue.global.exception.base.BadRequestException;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.AddProjectMembersCommand;
 import com.tissue.project.application.dto.request.ChangeProjectRoleCommand;
 import com.tissue.project.application.dto.request.DirectJoinProjectCommand;
 import com.tissue.project.application.dto.request.KickProjectMemberCommand;
 import com.tissue.project.application.dto.response.ProjectMemberCommandResult;
 import com.tissue.project.application.dto.response.ProjectMembersCommandResult;
-import com.tissue.project.application.port.in.ProjectParticipationUseCase;
+import com.tissue.project.application.port.in.ProjectMemberUseCase;
 import com.tissue.project.application.port.out.ProjectMemberCommandRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.event.ProjectEventPublisher;
@@ -19,7 +20,7 @@ import com.tissue.project.domain.Project;
 import com.tissue.project.domain.ProjectMember;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.exception.ProjectErrorCode;
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
@@ -36,29 +37,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ProjectParticipationService implements ProjectParticipationUseCase {
+public class ProjectMemberService implements ProjectMemberUseCase {
 
     private final WorkspaceFinder workspaceFinder;
     private final ProjectFinder projectFinder;
     private final ProjectMemberFinder projectMemberFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
-    private final ProjectValidator projectValidator;
     private final ProjectMemberCommandRepository projectMemberRepository;
+    private final ProjectValidator projectValidator;
     private final ProjectAuthorizationService projectAuthService;
     private final ProjectEventPublisher eventPublisher;
 
     @Override
     public ProjectMembersCommandResult addMembers(AddProjectMembersCommand cmd) {
-        WorkspaceMemberInfo actor = cmd.actor();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actor.memberId());
+        ProjectMemberContext actorContext = cmd.actorContext();
+        projectAuthService.requireProjectAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
 
         Set<Long> targetMemberIds = cmd.extractMemberIds();
         Map<Long, ProjectRole> roleMap = cmd.extractRoleMap();
 
-        List<WorkspaceMember> workspaceMembers = workspaceMemberFinder.getAllBy(targetMemberIds, cmd.workspaceKey());
+        List<WorkspaceMember> workspaceMembers =
+                workspaceMemberFinder.getAllBy(targetMemberIds, actorContext.workspaceKey());
 
         Set<Long> existingMemberIds = projectMemberFinder.getExistingMemberIdsBy(project, targetMemberIds);
 
@@ -77,102 +79,76 @@ public class ProjectParticipationService implements ProjectParticipationUseCase 
         projectMemberRepository.saveAll(newMembers);
 
         newMembers.forEach(pm -> eventPublisher.publishMemberJoinedProject(
-                pm, workspace, project, JoinMethod.BY_ADMIN, actor.memberId(), actor.displayName()));
+                pm, workspace, JoinMethod.BY_ADMIN, actorContext.memberId(), actorContext.displayName()));
 
         return ProjectMembersCommandResult.of(project, newMembers);
     }
 
     @Override
     public ProjectMemberCommandResult joinViaDirect(DirectJoinProjectCommand cmd) {
-        WorkspaceMemberInfo actor = cmd.actor();
-        projectAuthService.requireDirectJoinPermission(cmd.workspaceKey(), cmd.projectKey(), actor.memberId());
+        WorkspaceMemberContext actorContext = cmd.actorContext();
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.getBy(actor.memberId(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), actorContext.workspaceKey());
 
-        projectValidator.ensureNotAlreadyJoined(project, actor.memberId());
+        projectAuthService.requireDirectJoinPermission(actorContext, project);
+        projectValidator.ensureNotAlreadyJoined(project, actorContext.memberId());
 
-        ProjectMember projectMember = ProjectMember.create(project, workspaceMember, project.getDefaultJoinRole());
+        WorkspaceMember actor = workspaceMemberFinder.getActive(actorContext.workspaceMemberId());
+
+        ProjectMember projectMember = ProjectMember.create(project, actor, project.getDefaultJoinRole());
         projectMemberRepository.save(projectMember);
 
         eventPublisher.publishMemberJoinedProject(
-                projectMember, workspace, project, JoinMethod.DIRECT, actor.memberId(), actor.displayName());
+                projectMember, workspace, JoinMethod.DIRECT, actorContext.memberId(), actorContext.displayName());
 
         return ProjectMemberCommandResult.of(projectMember);
     }
 
     @Override
-    public ProjectMemberCommandResult leave(String workspaceKey, String projectKey, Long actorMemberId) {
-        projectAuthService.requireProjectViewer(workspaceKey, projectKey, actorMemberId);
+    public void leave(ProjectMemberContext actorContext) {
+        projectAuthService.requireProjectViewer(actorContext);
 
-        Project project = projectFinder.getModifiableBy(projectKey, workspaceKey);
-        ProjectMember actor = projectMemberFinder.getBy(project, actorMemberId);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        ProjectMember actor = projectMemberFinder.getActive(project, actorContext.memberId());
 
         actor.remove();
 
         // TODO: ProjectMemberLeftEvent
-
-        return ProjectMemberCommandResult.of(actor);
     }
 
     @Override
-    public ProjectMemberCommandResult kickMember(KickProjectMemberCommand cmd) {
-        WorkspaceMemberInfo actor = cmd.actor();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actor.memberId());
+    public void kickMember(KickProjectMemberCommand cmd) {
+        ProjectMemberContext actorContext = cmd.actorContext();
+        projectAuthService.requireProjectAdmin(actorContext);
 
-        if (actor.memberId().equals(cmd.targetMemberId())) {
+        if (actorContext.memberId().equals(cmd.targetMemberId())) {
             throw new BadRequestException(ProjectErrorCode.SELF_KICK_NOT_ALLOWED);
         }
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        ProjectMember target = projectMemberFinder.getActive(project, cmd.targetMemberId());
 
         target.remove();
 
         // TODO: ProjectMemberKickedEvent
-
-        return ProjectMemberCommandResult.of(target);
     }
 
     @Override
-    public ProjectMemberCommandResult changeProjectRole(ChangeProjectRoleCommand cmd) {
-        WorkspaceMemberInfo actor = cmd.actor();
-        projectAuthService.requireRoleGrantPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.newRole(), actor.memberId());
+    public void changeProjectRole(ChangeProjectRoleCommand cmd) {
+        ProjectMemberContext actor = cmd.actor();
+        Project project = projectFinder.getModifiableBy(actor.projectId());
+        ProjectMember target = projectMemberFinder.getActive(project, cmd.targetMemberId());
 
         if (actor.memberId().equals(cmd.targetMemberId())) {
             throw new BadRequestException(ProjectErrorCode.SELF_ROLE_MODIFICATION_NOT_ALLOWED);
         }
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        ProjectMember target = projectMemberFinder.getBy(project, cmd.targetMemberId());
+        projectAuthService.requireRoleGrantPermission(actor, target, cmd.grantRole());
 
         ProjectRole oldRole = target.getRole();
-        target.changeRole(cmd.newRole());
+        target.changeRole(cmd.grantRole());
 
-        eventPublisher.publishProjectRoleChanged(target, oldRole, cmd.newRole(), actor.memberId(), actor.displayName());
-
-        return ProjectMemberCommandResult.of(target);
-    }
-
-    // TODO: add javadoc about the next information
-    //  - is not a UseCase
-    //  - is called from another service(internal usage)
-    public void join(Project project, WorkspaceMember workspaceMember, ProjectRole role, JoinMethod joinMethod) {
-        if (projectMemberFinder.existsBy(project, workspaceMember.getMemberId())) {
-            return;
-        }
-
-        ProjectMember projectMember = ProjectMember.create(project, workspaceMember, role);
-        projectMemberRepository.save(projectMember);
-
-        eventPublisher.publishMemberJoinedProject(
-                projectMember,
-                project.getWorkspace(),
-                project,
-                joinMethod,
-                workspaceMember.getMemberId(),
-                workspaceMember.getDisplayName());
+        eventPublisher.publishProjectRoleChanged(target, oldRole, cmd.grantRole(), actor);
     }
 }

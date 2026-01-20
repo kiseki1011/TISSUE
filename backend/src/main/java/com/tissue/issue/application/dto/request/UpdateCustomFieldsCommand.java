@@ -1,6 +1,7 @@
 package com.tissue.issue.application.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import java.util.Map;
 
 public record UpdateCustomFieldsCommand(
-        String workspaceKey, String projectKey, String issueKey, Map<Long, Object> customFields) {}
+        String issueKey, Map<Long, Object> customFields, ProjectMemberContext actorContext) {}

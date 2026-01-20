@@ -12,7 +12,7 @@ public record IssueReviewSubmittedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        ReviewStatus status,
+        ReviewStatus reviewStatus,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
@@ -22,9 +22,10 @@ public record IssueReviewSubmittedEvent(
             String projectKey,
             String issueKey,
             Long issueId,
-            ReviewStatus status,
+            ReviewStatus reviewStatus,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueReviewSubmittedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -32,7 +33,7 @@ public record IssueReviewSubmittedEvent(
                 projectKey,
                 issueKey,
                 issueId,
-                status,
+                reviewStatus,
                 actorMemberId,
                 actorDisplayName);
     }

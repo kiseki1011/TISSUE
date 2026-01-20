@@ -1,6 +1,7 @@
 package com.tissue.issue.application.dto.request;
 
 import com.tissue.issue.domain.enums.IssuePriority;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import java.time.Instant;
 import java.util.Map;
 import lombok.Builder;
@@ -8,8 +9,6 @@ import org.jspecify.annotations.Nullable;
 
 @Builder
 public record CreateIssueCommand(
-        String workspaceKey,
-        String projectKey,
         Long sprintId,
         String parentProjectKey,
         @Nullable String parentKey,
@@ -21,4 +20,5 @@ public record CreateIssueCommand(
         @Nullable Integer storyPoint,
         Long issueTypeId,
         Map<Long, Object> customFields,
-        @Nullable Long assigneeMemberId) {}
+        @Nullable Long assigneeMemberId,
+        ProjectMemberContext actorContext) {}

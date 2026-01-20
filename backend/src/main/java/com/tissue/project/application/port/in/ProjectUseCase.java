@@ -5,7 +5,7 @@ import com.tissue.project.application.dto.request.DeleteProjectCommand;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.application.dto.response.ProjectCommandResult;
 
-public interface ProjectCommandUseCase {
+public interface ProjectUseCase {
 
     ProjectCommandResult create(CreateProjectCommand cmd);
 

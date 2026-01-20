@@ -1,5 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-import com.tissue.workspace.application.dto.info.WorkspaceMemberInfo;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 
-public record ManageTeamCommand(String workspaceKey, Long targetMemberId, Long teamId, WorkspaceMemberInfo actor) {}
+public record ManageTeamCommand(Long targetMemberId, Long teamId, WorkspaceMemberContext actorContext) {}
