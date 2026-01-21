@@ -99,4 +99,24 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.username IN :usernames")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndUsernames(
             @Param("workspaceKey") String workspaceKey, @Param("usernames") Set<String> usernames);
+
+    @Query("SELECT wm FROM WorkspaceMember wm "
+            + "JOIN FETCH wm.member m "
+            + "WHERE wm.workspaceKey = :workspaceKey "
+            + "AND wm.softDeleted = false "
+            + "AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%')) "
+            + "     OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<WorkspaceMember> searchMembers(@Param("workspaceKey") String workspaceKey, @Param("query") String query);
+
+    @Query("SELECT wm FROM WorkspaceMember wm "
+            + "JOIN FETCH wm.member m "
+            + "WHERE wm.workspaceKey = :workspaceKey "
+            + "AND wm.softDeleted = false "
+            + "AND wm.member.id IN (SELECT pm.memberId FROM ProjectMember pm WHERE pm.projectKey = :projectKey) "
+            + "AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%')) "
+            + "     OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<WorkspaceMember> searchProjectMembers(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("query") String query);
 }
