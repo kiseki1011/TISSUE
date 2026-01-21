@@ -27,7 +27,7 @@ public class WorkspaceEventPublisher {
                 joinedWorkspaceMember.getWorkspace().getId(),
                 joinedWorkspaceMember.getId(),
                 joinedWorkspaceMember.getMemberId(),
-                joinedWorkspaceMember.getEmail(),
+                joinedWorkspaceMember.getMember().getEmail(),
                 joinedWorkspaceMember.getDisplayName(),
                 joinedWorkspaceMember.getRole(),
                 joinMethod,

@@ -20,13 +20,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {
 
     @Id
@@ -51,30 +48,25 @@ public class WorkspaceMember extends BaseEntity {
     private Set<WorkspaceMemberTeam> workspaceMemberTeams = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "workspace_role", nullable = false)
     private WorkspaceRole role;
 
-    @Column(nullable = false)
+    @Column(name = "display_name", nullable = false)
     private String displayName;
-
-    // TODO: 제거하는게 좋을까? 아니면 워크스페이스별 email 두는게 좋을까?
-    @Column(nullable = false)
-    private String email;
 
     // TODO: consider adding a bio field
     // private String bio;
+
+    @SuppressWarnings("NullAway.Init")
+    protected WorkspaceMember() {}
 
     public static WorkspaceMember create(Member member, Workspace workspace, WorkspaceRole role) {
         WorkspaceMember workspaceMember = new WorkspaceMember();
         workspaceMember.workspace = workspace;
         workspaceMember.workspaceKey = workspace.getKey();
         workspaceMember.member = member;
-        // TODO: member의 email이 변경되는 경우 어떻게?
-        workspaceMember.email = member.getEmail();
-        // TODO: after refactoring Member so the "name" field is required, use it for the default?
-        workspaceMember.displayName = member.getUsername();
+        workspaceMember.displayName = member.getName();
         workspaceMember.role = role;
-
         return workspaceMember;
     }
 
@@ -82,18 +74,19 @@ public class WorkspaceMember extends BaseEntity {
         return member.getId();
     }
 
-    public String getUsername() {
-        return member.getUsername();
+    public boolean isOwner() {
+        return this.role == WorkspaceRole.OWNER;
     }
 
-    public String getEmail() {
-        return member.getEmail();
+    public void updateDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public void updateRole(WorkspaceRole newRole) {
         if (role == newRole) {
             return;
         }
+        // TODO: 어차피 서비스 계층에서 authorization service로 검증을 하는데, 굳이 이걸 체크해야하나?
         if (newRole == WorkspaceRole.OWNER) {
             throw new CannotChangeRoleToOwnerException();
         }
@@ -102,14 +95,6 @@ public class WorkspaceMember extends BaseEntity {
 
     protected void changeRoleToOwner() {
         this.role = WorkspaceRole.OWNER;
-    }
-
-    public void updateDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public boolean isOwner() {
-        return this.role == WorkspaceRole.OWNER;
     }
 
     public void addPosition(Position position) {

@@ -8,7 +8,6 @@ public record WorkspaceMemberContext(
         Long memberId,
         Long workspaceId,
         String workspaceKey,
-        // TODO: email을 Member에서 가져올지, WorkspaceMember가 따로 관리하는 필드도 추가할지 고민 중
         String email,
         String displayName,
         WorkspaceRole workspaceRole) {
@@ -19,7 +18,7 @@ public record WorkspaceMemberContext(
                 workspaceMember.getMemberId(),
                 workspaceMember.getWorkspace().getId(),
                 workspaceMember.getWorkspaceKey(),
-                workspaceMember.getEmail(),
+                workspaceMember.getMember().getEmail(),
                 workspaceMember.getDisplayName(),
                 workspaceMember.getRole());
     }
