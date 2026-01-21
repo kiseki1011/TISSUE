@@ -93,4 +93,10 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id IN :memberIds")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("memberIds") Collection<Long> memberIds);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.username IN :usernames")
+    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndUsernames(
+            @Param("workspaceKey") String workspaceKey, @Param("usernames") Set<String> usernames);
 }

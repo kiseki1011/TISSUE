@@ -24,8 +24,10 @@ import com.tissue.workspace.application.port.out.WorkspaceMemberContact;
 import com.tissue.workspace.domain.event.MemberJoinedWorkspaceEvent;
 import com.tissue.workspace.domain.event.WorkspaceRoleChangedEvent;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -373,39 +375,60 @@ public class NotificationEventListener {
     }
 
     /**
-     * Target: Notify issue participants (exclude actor)
+     * Target: Notify issue participants (exclude actor) and mentioned members
      */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleIssueCommentAdded(IssueCommentAddedEvent event) {
-        Collection<WorkspaceMemberContact> targets =
+        List<WorkspaceMemberContact> mentionedMembers =
+                targetService.getMembersByUsernames(event.workspaceKey(), new HashSet<>(event.mentionedUsernames()));
+
+        mentionedMembers.removeIf(m -> m.memberId().equals(event.actorMemberId()));
+
+        Set<WorkspaceMemberContact> participants =
                 targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
 
-        targets.removeIf(t -> t.memberId().equals(event.actorMemberId()));
+        participants.removeIf(m -> m.memberId().equals(event.actorMemberId()));
+        mentionedMembers.forEach(participants::remove);
 
         log.info(
-                "[NOTIFICATION] Handling IssueCommentAddedEvent: issue={}, targets={}",
+                "[NOTIFICATION] Handling IssueCommentAddedEvent: issue={}, mentioned={}, participants={}",
                 event.issueKey(),
-                targets.size());
-
-        if (targets.isEmpty()) {
-            return;
-        }
+                mentionedMembers.size(),
+                participants.size());
 
         EntityReference reference = EntityReference.forIssueComment(
                 event.workspaceKey(), event.projectKey(), event.issueKey(), event.commentId());
 
-        commandService.createAndSend(
-                event.eventId(),
-                NotificationType.ISSUE_COMMENT_ADDED,
-                reference,
-                targets,
-                event.actorMemberId(),
-                event.actorDisplayName(),
-                Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+        if (!mentionedMembers.isEmpty()) {
+            commandService.createAndSend(
+                    event.eventId(),
+                    NotificationType.ISSUE_MENTIONED,
+                    reference,
+                    mentionedMembers,
+                    event.actorMemberId(),
+                    event.actorDisplayName(),
+                    Map.of(
+                            "workspaceKey", event.workspaceKey(),
+                            "issueKey", event.issueKey(),
+                            "actorName", event.actorDisplayName(),
+                            "content", event.content()));
+        }
+
+        if (!participants.isEmpty()) {
+            commandService.createAndSend(
+                    event.eventId(),
+                    NotificationType.ISSUE_COMMENT_ADDED,
+                    reference,
+                    participants,
+                    event.actorMemberId(),
+                    event.actorDisplayName(),
+                    Map.of(
+                            "workspaceKey", event.workspaceKey(),
+                            "issueKey", event.issueKey(),
+                            "actorName", event.actorDisplayName(),
+                            "content", event.content()));
+        }
     }
 
     /**

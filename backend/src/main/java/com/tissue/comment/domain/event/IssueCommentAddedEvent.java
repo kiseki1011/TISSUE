@@ -2,6 +2,7 @@ package com.tissue.comment.domain.event;
 
 import com.tissue.common.event.DomainEvent;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record IssueCommentAddedEvent(
@@ -11,6 +12,8 @@ public record IssueCommentAddedEvent(
         String projectKey,
         String issueKey,
         Long commentId,
+        String content,
+        List<String> mentionedUsernames,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
@@ -20,8 +23,11 @@ public record IssueCommentAddedEvent(
             String projectKey,
             String issueKey,
             Long commentId,
+            String content,
+            List<String> mentionedUsernames,
             Long actorMemberId,
             String actorDisplayName) {
+
         return new IssueCommentAddedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
@@ -29,6 +35,8 @@ public record IssueCommentAddedEvent(
                 projectKey,
                 issueKey,
                 commentId,
+                content,
+                mentionedUsernames != null ? mentionedUsernames : List.of(),
                 actorMemberId,
                 actorDisplayName);
     }
