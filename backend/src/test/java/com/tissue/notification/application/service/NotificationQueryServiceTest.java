@@ -11,6 +11,8 @@ import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.vo.NotificationMessage;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -86,8 +88,10 @@ class NotificationQueryServiceTest {
                             LocaleContextHolder.getLocale()))
                     .willReturn("Check it out");
 
-            CursorPageResponse<NotificationResponse> result =
-                    sut.getNotifications(workspaceKey, memberId, unreadOnly, cursorId, limit);
+            WorkspaceMemberContext actor = new WorkspaceMemberContext(
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Actor", WorkspaceRole.MEMBER);
+
+            CursorPageResponse<NotificationResponse> result = sut.getNotifications(actor, unreadOnly, cursorId, limit);
 
             assertThat(result.content()).hasSize(1);
             assertThat(result.content().get(0).title()).isEqualTo("Issue Created: TESTPROJ-1");
@@ -107,7 +111,10 @@ class NotificationQueryServiceTest {
                             memberId, workspaceKey))
                     .willReturn(true);
 
-            boolean result = sut.checkUnreadStatus(workspaceKey, memberId);
+            WorkspaceMemberContext actor = new WorkspaceMemberContext(
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Actor", WorkspaceRole.MEMBER);
+
+            boolean result = sut.checkUnreadStatus(actor);
 
             assertThat(result).isTrue();
         }

@@ -115,10 +115,11 @@ class NotificationIntegrationTest extends IntegrationTestSupport {
         IssueCreatedEvent event = IssueCreatedEvent.create(
                 workspace.getKey(),
                 project.getKey(),
+                project.getId(),
                 issueKey,
                 issueId,
-                null, // parentKey
-                null, // parentId
+                null,
+                null,
                 actor.getId(),
                 actor.getUsername());
 

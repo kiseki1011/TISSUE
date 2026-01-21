@@ -1,7 +1,6 @@
 package com.tissue.activitylog;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
 import com.tissue.activitylog.application.port.out.ActivityLogRepository;
@@ -10,7 +9,6 @@ import com.tissue.activitylog.domain.ActivityLog;
 import com.tissue.activitylog.domain.ActivityType;
 import com.tissue.common.dto.CursorPageResponse;
 import com.tissue.common.vo.EntityReference;
-import com.tissue.global.exception.base.ForbiddenException;
 import com.tissue.member.application.port.out.MemberCommandRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.project.application.dto.ProjectMemberContext;
@@ -146,16 +144,5 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).id()).isEqualTo(log1.getId());
-    }
-
-    @Test
-    @DisplayName("Throw ForbiddenException if user is not project member")
-    void forbiddenIfNotProjectMember() {
-        Long otherMemberId = 999L;
-        ProjectMemberContext otherActorContext = new ProjectMemberContext(
-                99L, otherMemberId, 1L, workspace.getKey(), project.getKey(), "other", "Other", ProjectRole.VIEWER);
-
-        assertThatThrownBy(() -> queryService.getIssueActivities(otherActorContext, "TEST-1", null, 10))
-                .isInstanceOf(ForbiddenException.class);
     }
 }

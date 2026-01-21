@@ -1,6 +1,7 @@
 package com.tissue.activitylog.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.tissue.activitylog.application.dto.response.ActivityLogResponse;
@@ -12,6 +13,7 @@ import com.tissue.common.vo.EntityReference;
 import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,7 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, projectKey, "member", "name", ProjectRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER, WorkspaceRole.MEMBER);
 
             ActivityLog log1 = ActivityLog.builder()
                     .eventId(UUID.randomUUID())
@@ -86,7 +88,7 @@ class ActivityLogQueryServiceTest {
             Long cursorId = null;
             int limit = 20;
             ProjectMemberContext actor = new ProjectMemberContext(
-                    1L, memberId, 1L, workspaceKey, projectKey, "member", "name", ProjectRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, 1L, projectKey, "name", ProjectRole.MEMBER, WorkspaceRole.MEMBER);
 
             given(queryRepository.findBySprint(actor.workspaceKey(), sprintId, cursorId, limit))
                     .willReturn(Collections.emptyList());

@@ -34,8 +34,19 @@ class ActivityLogEventListenerTest {
         @Test
         @DisplayName("success: creates activity log")
         void success_HandleIssueCreated() {
+            // spotless:off
             IssueCreatedEvent event =
-                    IssueCreatedEvent.create("TESTWS", "TESTPROJ", "TESTPROJ-1", 100L, null, null, 1L, "TestUser");
+                    IssueCreatedEvent.create(
+                        "TESTWS",
+                        "TESTPROJ",
+                        1L,
+                        "TESTPROJ-1",
+                        100L,
+                        null,
+                        null,
+                        1L,
+                        "TestUser");
+            // spotless:on
 
             sut.handleIssueCreated(event);
 

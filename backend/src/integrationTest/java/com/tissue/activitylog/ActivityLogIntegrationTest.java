@@ -88,6 +88,7 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
         IssueCreatedEvent event = IssueCreatedEvent.create(
                 workspace.getKey(),
                 project.getKey(),
+                project.getId(),
                 issueKey,
                 issueId,
                 null,
@@ -138,8 +139,8 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
     void handleIssueTransitioned() {
         Long issueId = 100L;
         String issueKey = "TEST-1";
-        String oldStatus = "To Do";
-        String newStatus = "In Progress";
+        String oldState = "To Do";
+        String newState = "In Progress";
 
         IssueTransitionedEvent event = IssueTransitionedEvent.create(
                 workspace.getKey(),
@@ -151,9 +152,9 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
                 1L,
                 "Start Progress",
                 1L,
-                oldStatus,
+                oldState,
                 2L,
-                newStatus,
+                newState,
                 actor.getId(),
                 actor.getUsername());
 
@@ -163,13 +164,13 @@ class ActivityLogIntegrationTest extends IntegrationTestSupport {
         assertThat(logs).hasSize(1);
 
         ActivityLog log = logs.get(0);
-        assertThat(log.getActivityType()).isEqualTo(ActivityType.ISSUE_STATUS_CHANGED);
+        assertThat(log.getActivityType().name()).isEqualTo("ISSUE_WORKFLOW_TRANSITIONED");
 
-        assertThat(log.getData().get("oldStatus")).isEqualTo(oldStatus);
-        assertThat(log.getData().get("newStatus")).isEqualTo(newStatus);
+        assertThat(log.getData().get("oldState")).isEqualTo(oldState);
+        assertThat(log.getData().get("newState")).isEqualTo(newState);
 
-        assertThat(log.getChanges()).containsKey("status");
-        assertThat(log.getChanges().get("status").from()).isEqualTo(oldStatus);
-        assertThat(log.getChanges().get("status").to()).isEqualTo(newStatus);
+        assertThat(log.getChanges()).containsKey("state");
+        assertThat(log.getChanges().get("state").from()).isEqualTo(oldState);
+        assertThat(log.getChanges().get("state").to()).isEqualTo(newState);
     }
 }
