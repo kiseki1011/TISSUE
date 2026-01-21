@@ -128,14 +128,13 @@ class ActivityLogQueryIntegrationTest extends IntegrationTestSupport {
     @DisplayName("Get sprint activities successfully")
     void getSprintActivities() {
         Long sprintId = 200L;
-        String sprintTitle = "Sprint 1";
 
         ActivityLog log1 = ActivityLog.builder()
                 .eventId(UUID.randomUUID())
                 .activityType(ActivityType.SPRINT_STARTED)
                 .entityReference(EntityReference.forSprint(workspace.getKey(), project.getKey(), sprintId))
                 .actorMemberId(actor.getId())
-                .data(Map.of("test", "sprint1"))
+                .data(Map.of("test", "Sprint 1"))
                 .build();
         activityLogRepository.save(log1);
 
