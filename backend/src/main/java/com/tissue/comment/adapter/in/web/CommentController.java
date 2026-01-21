@@ -8,6 +8,8 @@ import com.tissue.comment.application.dto.out.CommentAddResponse;
 import com.tissue.comment.application.dto.out.CommentDetailResponse;
 import com.tissue.comment.application.port.in.CommentCommandUseCase;
 import com.tissue.comment.application.port.in.CommentQueryUseCase;
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,20 +34,24 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentAddResponse> add(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable String issueKey,
-            @RequestBody @Valid AddCommentRequest request) {
-        var command = request.toCommand(workspaceKey, projectKey, issueKey);
+            @RequestBody @Valid AddCommentRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
+        var command = request.toCommand(issueKey, currentProjectMember);
         CommentAddResponse response = commentCommandUseCase.add(command);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{commentId}")
-    public ResponseEntity<Void> update(@PathVariable Long commentId, @RequestBody @Valid UpdateCommentRequest request) {
-        var command = new UpdateCommentCommand(commentId, request.content());
+    public ResponseEntity<Void> update(
+            @PathVariable Long commentId,
+            @PathVariable String issueKey,
+            @RequestBody @Valid UpdateCommentRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+
+        var command = new UpdateCommentCommand(issueKey, commentId, request.content(), currentProjectMember);
         commentCommandUseCase.update(command);
 
         return ResponseEntity.noContent().build();
@@ -53,8 +59,13 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long commentId, @PathVariable String workspaceKey, @PathVariable String projectKey) {
-        var command = new DeleteCommentCommand(commentId);
+            @PathVariable Long commentId,
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+
+        var command = new DeleteCommentCommand(issueKey, commentId, currentProjectMember);
         commentCommandUseCase.delete(command);
 
         return ResponseEntity.noContent().build();
@@ -62,8 +73,12 @@ public class CommentController {
 
     @GetMapping
     public ResponseEntity<List<CommentDetailResponse>> getComments(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable String issueKey) {
-        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(workspaceKey, projectKey, issueKey);
+            @PathVariable String workspaceKey,
+            @PathVariable String projectKey,
+            @PathVariable String issueKey,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+
+        List<CommentDetailResponse> response = commentQueryUseCase.getIssueComments(issueKey, currentProjectMember);
         return ResponseEntity.ok(response);
     }
 }

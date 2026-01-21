@@ -5,6 +5,7 @@ import com.tissue.member.adapter.in.web.dto.request.LinkOAuthAccountRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.SignupOAuthMemberRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberEmailRequest;
+import com.tissue.member.adapter.in.web.dto.request.UpdateMemberLanguageRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberNameRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberPasswordRequest;
 import com.tissue.member.adapter.in.web.dto.request.UpdateMemberUsernameRequest;
@@ -13,13 +14,13 @@ import com.tissue.member.application.dto.response.MemberSignupResponse;
 import com.tissue.member.application.port.in.MemberCommandUseCase;
 import com.tissue.member.application.port.in.MemberQueryUseCase;
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.security.authentication.presentation.annotation.RequireElevated;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -59,60 +60,66 @@ public class MemberController {
 
     @PostMapping("/link/oauth")
     public ResponseEntity<Void> linkOAuthAccount(
-            @Valid @RequestBody LinkOAuthAccountRequest request, @CurrentMember MemberDetails userDetails) {
+            @Valid @RequestBody LinkOAuthAccountRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.linkOAuthAccount(request.registerToken(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/password")
     public ResponseEntity<Void> addPassword(
-            @Valid @RequestBody AddPasswordRequest request, @CurrentMember MemberDetails userDetails) {
+            @Valid @RequestBody AddPasswordRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.addPassword(request.password(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/name")
     public ResponseEntity<Void> updateMemberName(
-            @RequestBody @Valid UpdateMemberNameRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid UpdateMemberNameRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.updateName(request.newName(), userDetails.getMemberId());
 
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/language")
+    public ResponseEntity<Void> updateMemberLanguage(
+            @RequestBody @Valid UpdateMemberLanguageRequest request,
+            @AuthenticationPrincipal MemberDetails userDetails) {
+        memberCommandUseCase.updateLanguage(request.language(), userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 
     @RequireElevated
     @PatchMapping("/email")
     public ResponseEntity<Void> updateMemberEmail(
-            @RequestBody @Valid UpdateMemberEmailRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid UpdateMemberEmailRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.updateEmail(request.newEmail(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
     @RequireElevated
     @PatchMapping("/username")
     public ResponseEntity<Void> updateMemberUsername(
-            @RequestBody @Valid UpdateMemberUsernameRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid UpdateMemberUsernameRequest request,
+            @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.updateUsername(request.newUsername(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
     @RequireElevated
     @PatchMapping("/password")
     public ResponseEntity<Void> updateMemberPassword(
-            @RequestBody @Valid UpdateMemberPasswordRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid UpdateMemberPasswordRequest request,
+            @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.updatePassword(
                 request.originalPassword(), request.newPassword(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 
     @RequireElevated
     @DeleteMapping
     public ResponseEntity<Void> withdrawMember(
-            @RequestBody WithdrawMemberRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody WithdrawMemberRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
         memberCommandUseCase.withdraw(request.password(), userDetails.getMemberId());
-
         return ResponseEntity.noContent().build();
     }
 

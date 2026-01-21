@@ -5,7 +5,8 @@ import com.tissue.security.authentication.application.port.out.RefreshTokenRepos
 import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.MemberDetails;
 import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
-import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
+import com.tissue.security.authentication.domain.exception.RefreshTokenReusedException;
 import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
@@ -56,13 +57,13 @@ public class AuthenticationService implements AuthenticationUseCase {
 
         String storedToken = refreshTokenRepository
                 .findByEmail(loginEmail)
-                .orElseThrow(() ->
-                        new JwtAuthenticationException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage()));
+                .orElseThrow(
+                        () -> new InvalidTokenException(AuthenticationErrorCode.INVALID_TOKEN.getDefaultMessage()));
 
         if (!storedToken.equals(refreshToken)) {
             refreshTokenRepository.deleteByEmail(loginEmail);
             log.warn("Refresh Token Reuse Detected! Email: {}", loginEmail);
-            throw new JwtAuthenticationException(AuthenticationErrorCode.REFRESH_TOKEN_REUSED.getDefaultMessage());
+            throw new RefreshTokenReusedException(AuthenticationErrorCode.REFRESH_TOKEN_REUSED.getDefaultMessage());
         }
 
         // TODO: 이게 굳이 필요한가? 그냥 토큰의 loginEmail을 사용하면 되는거 아닌가?

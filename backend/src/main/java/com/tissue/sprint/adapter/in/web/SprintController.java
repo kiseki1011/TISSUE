@@ -1,5 +1,7 @@
 package com.tissue.sprint.adapter.in.web;
 
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.sprint.adapter.in.web.dto.request.AddSprintIssuesRequest;
 import com.tissue.sprint.adapter.in.web.dto.request.CreateSprintRequest;
 import com.tissue.sprint.adapter.in.web.dto.request.MigrateIssuesRequest;
@@ -8,7 +10,6 @@ import com.tissue.sprint.adapter.in.web.dto.request.StartSprintRequest;
 import com.tissue.sprint.adapter.in.web.dto.request.UpdateSprintRequest;
 import com.tissue.sprint.application.dto.request.AddSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.CompleteSprintCommand;
-import com.tissue.sprint.application.dto.request.MigrateSprintIssuesCommand;
 import com.tissue.sprint.application.dto.request.RemoveSprintIssuesCommand;
 import com.tissue.sprint.application.dto.response.SprintCommandResult;
 import com.tissue.sprint.application.dto.response.SprintDetail;
@@ -38,100 +39,98 @@ public class SprintController {
 
     @PostMapping
     public ResponseEntity<SprintCommandResult> createSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @RequestBody @Valid CreateSprintRequest request) {
+            @RequestBody @Valid CreateSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response = sprintCommandUseCase.createSprint(request.toCommand(workspaceKey, projectKey));
+        var command = request.toCommand(currentProjectMember);
+        SprintCommandResult response = sprintCommandUseCase.createSprint(command);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{sprintId}")
-    public ResponseEntity<SprintCommandResult> updateSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
+    public ResponseEntity<Void> updateSprint(
             @PathVariable Long sprintId,
-            @RequestBody @Valid UpdateSprintRequest request) {
+            @RequestBody @Valid UpdateSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response =
-                sprintCommandUseCase.updateSprint(request.toCommand(workspaceKey, projectKey, sprintId));
-        return ResponseEntity.ok(response);
+        var command = request.toCommand(sprintId, currentProjectMember);
+        sprintCommandUseCase.updateSprint(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{sprintId}/start")
-    public ResponseEntity<SprintCommandResult> startSprint(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
+    public ResponseEntity<Void> startSprint(
             @PathVariable Long sprintId,
-            @RequestBody @Valid StartSprintRequest request) {
+            @RequestBody @Valid StartSprintRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response =
-                sprintCommandUseCase.start(request.toCommand(workspaceKey, projectKey, sprintId));
-        return ResponseEntity.ok(response);
+        var command = request.toCommand(sprintId, currentProjectMember);
+        sprintCommandUseCase.start(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{sprintId}/complete")
-    public ResponseEntity<SprintCommandResult> completeSprint(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
+    public ResponseEntity<Void> completeSprint(
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response =
-                sprintCommandUseCase.complete(new CompleteSprintCommand(workspaceKey, projectKey, sprintId));
-        return ResponseEntity.ok(response);
+        var command = new CompleteSprintCommand(sprintId, currentProjectMember);
+        sprintCommandUseCase.complete(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{sprintId}/issues")
-    public ResponseEntity<SprintCommandResult> addIssues(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
+    public ResponseEntity<Void> addIssues(
             @PathVariable Long sprintId,
-            @RequestBody @Valid AddSprintIssuesRequest request) {
-        SprintCommandResult response = sprintCommandUseCase.addIssues(
-                new AddSprintIssuesCommand(workspaceKey, projectKey, sprintId, request.issueKeys()));
-        return ResponseEntity.ok(response);
+            @RequestBody @Valid AddSprintIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
+
+        var command = new AddSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
+        sprintCommandUseCase.addIssues(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{sprintId}/issues/migrate")
-    public ResponseEntity<SprintCommandResult> migrateIncompleteIssues(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
+    public ResponseEntity<Void> migrateIncompleteIssues(
             @PathVariable Long sprintId,
-            @RequestBody @Valid MigrateIssuesRequest request) {
+            @RequestBody @Valid MigrateIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response = sprintCommandUseCase.migrateIssues(MigrateSprintIssuesCommand.builder()
-                .workspaceKey(workspaceKey)
-                .projectKey(projectKey)
-                .originalSprintId(sprintId)
-                .newSprintId(request.newSprintId())
-                .issueKeys(request.issueKeys())
-                .build());
-        return ResponseEntity.ok(response);
+        var command = request.toCommand(sprintId, currentProjectMember);
+        sprintCommandUseCase.migrateIssues(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{sprintId}/issues")
-    public ResponseEntity<SprintCommandResult> removeIssues(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
+    public ResponseEntity<Void> removeIssues(
             @PathVariable Long sprintId,
-            @RequestBody @Valid RemoveSprintIssuesRequest request) {
+            @RequestBody @Valid RemoveSprintIssuesRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintCommandResult response = sprintCommandUseCase.removeIssues(
-                new RemoveSprintIssuesCommand(workspaceKey, projectKey, sprintId, request.issueKeys()));
-        return ResponseEntity.ok(response);
+        var command = new RemoveSprintIssuesCommand(sprintId, request.issueKeys(), currentProjectMember);
+        sprintCommandUseCase.removeIssues(command);
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{sprintId}")
     public ResponseEntity<SprintDetail> getSprintDetail(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintDetail response = sprintQueryUseCase.getSprintDetail(workspaceKey, projectKey, sprintId);
+        SprintDetail response = sprintQueryUseCase.getSprintDetail(sprintId, currentProjectMember);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{sprintId}/issues")
     public ResponseEntity<SprintIssueKeys> getSprintIssueKeys(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long sprintId) {
+            @PathVariable Long sprintId, @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(workspaceKey, projectKey, sprintId);
+        SprintIssueKeys response = sprintQueryUseCase.getSprintIssueKeys(sprintId, currentProjectMember);
         return ResponseEntity.ok(response);
     }
 }

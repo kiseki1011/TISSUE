@@ -1,11 +1,12 @@
 package com.tissue.workflow.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.application.dto.NodeIdentifier;
 import com.tissue.workflow.application.dto.StateDefinition;
 import com.tissue.workflow.application.dto.TransitionDefinition;
 import com.tissue.workflow.application.dto.request.ReplaceWorkflowGraphCommand;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.InvalidGraphRequestException;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -34,7 +35,7 @@ public record ReplaceWorkflowGraphRequest(
             if (tempKey != null) {
                 return new NodeIdentifier.TempKey(tempKey);
             }
-            throw WorkflowExceptions.invalidGraphRequest(
+            throw new InvalidGraphRequestException(
                     "Either id or tempKey must be provided for state node identifier",
                     "state_node",
                     "missing_identifier");
@@ -55,7 +56,7 @@ public record ReplaceWorkflowGraphRequest(
                 if (tempKey != null) {
                     return new NodeIdentifier.TempKey(tempKey);
                 }
-                throw WorkflowExceptions.invalidGraphRequest(
+                throw new InvalidGraphRequestException(
                         "Either id or tempKey must be provided for state node identifier",
                         "state_node",
                         "missing_identifier");
@@ -69,17 +70,15 @@ public record ReplaceWorkflowGraphRequest(
             if (tempKey != null) {
                 return new NodeIdentifier.TempKey(tempKey);
             }
-            throw WorkflowExceptions.invalidGraphRequest(
+            throw new InvalidGraphRequestException(
                     "Either id or tempKey must be provided for transition node identifier",
                     "transition_node",
                     "missing_identifier");
         }
     }
 
-    public ReplaceWorkflowGraphCommand toCommand(String workspaceKey, String projectKey, Long workflowId) {
+    public ReplaceWorkflowGraphCommand toCommand(Long workflowId, ProjectMemberContext actorContext) {
         return new ReplaceWorkflowGraphCommand(
-                workspaceKey,
-                projectKey,
                 workflowId,
                 version,
                 replaceStatusRequests.stream()
@@ -94,6 +93,7 @@ public record ReplaceWorkflowGraphRequest(
                                 .sourceIdentifier(t.source.toIdentifier())
                                 .targetIdentifier(t.target.toIdentifier())
                                 .build())
-                        .toList());
+                        .toList(),
+                actorContext);
     }
 }

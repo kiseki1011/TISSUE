@@ -2,19 +2,21 @@ package com.tissue.workspace.application.service;
 
 import com.tissue.position.application.service.finder.PositionFinder;
 import com.tissue.position.domain.Position;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.team.application.service.finder.TeamFinder;
 import com.tissue.team.domain.Team;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.ManagePositionCommand;
 import com.tissue.workspace.application.dto.in.ManageTeamCommand;
 import com.tissue.workspace.application.dto.in.UpdateDisplayNameCommand;
 import com.tissue.workspace.application.dto.in.UpdateRoleCommand;
 import com.tissue.workspace.application.port.in.WorkspaceMemberManageUseCase;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
 import com.tissue.workspace.domain.Workspace;
 import com.tissue.workspace.domain.WorkspaceMember;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,46 +31,44 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
     private final PositionFinder positionFinder;
     private final TeamFinder teamFinder;
     private final WorkspaceAuthorizationService workspaceAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
-
-    // private final ApplicationEventPublisher eventPublisher;
+    private final WorkspaceEventPublisher eventPublisher;
 
     @Override
     public void updateDisplayName(UpdateDisplayNameCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdminOrSelf(cmd.workspaceKey(), cmd.targetMemberId(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdminOrSelf(actorContext, cmd.targetMemberId());
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
         workspaceMember.updateDisplayName(cmd.displayName());
     }
 
     @Override
     public void updateRole(UpdateRoleCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
+        WorkspaceMemberContext actorContext = cmd.actorContext();
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember actor = workspaceMemberFinder.findBy(actorMemberId, cmd.workspaceKey());
-        WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        WorkspaceMember target = workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
-        workspaceAuthService.requireRoleGrantPermission(cmd.workspaceKey(), cmd.role(), target, actor);
+        workspaceAuthService.requireRoleGrantPermission(actorContext, cmd.grantRole(), target.getRole());
 
-        target.changeRoleTo(cmd.role());
+        WorkspaceRole oldRole = target.getRole();
+        target.updateRole(cmd.grantRole());
 
-        // TODO: WorkspaceMemberRoleChangedEvent
+        eventPublisher.publishWorkspaceRoleChanged(
+                target, oldRole, cmd.grantRole(), actorContext.memberId(), actorContext.displayName());
     }
 
     @Override
     public void addPosition(ManagePositionCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdminOrSelf(cmd.workspaceKey(), cmd.targetMemberId(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdminOrSelf(actorContext, cmd.targetMemberId());
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
-        // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addPosition(position);
 
@@ -77,13 +77,13 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
     @Override
     public void removePosition(ManagePositionCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdminOrSelf(cmd.workspaceKey(), cmd.targetMemberId(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdminOrSelf(actorContext, cmd.targetMemberId());
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
         Position position = positionFinder.getBy(cmd.positionId(), workspace);
-        // TODO: pass workspace instead of workspaceKey
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removePosition(position);
 
@@ -92,12 +92,13 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
     @Override
     public void addTeam(ManageTeamCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdminOrSelf(cmd.workspaceKey(), cmd.targetMemberId(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdminOrSelf(actorContext, cmd.targetMemberId());
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Team team = teamFinder.getBy(cmd.teamId(), workspace);
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.addTeam(team);
 
@@ -106,12 +107,13 @@ public class WorkspaceMemberManageService implements WorkspaceMemberManageUseCas
 
     @Override
     public void removeTeam(ManageTeamCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdminOrSelf(cmd.workspaceKey(), cmd.targetMemberId(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdminOrSelf(actorContext, cmd.targetMemberId());
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        Team team = teamFinder.getBy(cmd.teamId(), cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.targetMemberId(), cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        Team team = teamFinder.getBy(cmd.teamId(), workspace);
+        WorkspaceMember workspaceMember =
+                workspaceMemberFinder.getIncludingSoftDeleted(cmd.targetMemberId(), workspace);
 
         workspaceMember.removeTeam(team);
 

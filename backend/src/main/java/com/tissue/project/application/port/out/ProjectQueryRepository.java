@@ -15,6 +15,10 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     Optional<Project> findByKeyAndWorkspaceKey(String projectKey, String workspaceKey);
 
+    @Query("SELECT p FROM Project p JOIN FETCH p.workspace WHERE p.key = :key AND p.workspaceKey = :workspaceKey")
+    Optional<Project> findWithWorkspaceByKeyAndWorkspaceKey(
+            @Param("key") String projectKey, @Param("workspaceKey") String workspaceKey);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Project p WHERE p.key = :key AND p.workspaceKey = :workspaceKey")
     Optional<Project> findByKeyAndWorkspaceKeyWithLock(String key, String workspaceKey);
@@ -23,5 +27,5 @@ public interface ProjectQueryRepository extends Repository<Project, Long> {
 
     @Query("SELECT p.visibility FROM Project p WHERE p.key = :projectKey AND p.workspaceKey =" + " :workspaceKey")
     Optional<ProjectVisibility> findVisibilityByKeys(
-            @Param("projectKey") String projectKey, @Param("workspaceKey") String workspaceKey);
+            @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 }

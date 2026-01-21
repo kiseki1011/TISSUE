@@ -1,8 +1,9 @@
 package com.tissue.workspace.application.service;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.service.finder.MemberFinder;
 import com.tissue.member.domain.Member;
-import com.tissue.project.application.service.ProjectMemberCommandService;
+import com.tissue.project.application.service.ProjectJoinService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.workspace.application.dto.out.query.InvitationDetail;
 import com.tissue.workspace.application.port.in.InvitationUseCase;
@@ -12,7 +13,7 @@ import com.tissue.workspace.domain.Invitation;
 import com.tissue.workspace.domain.ProjectJoinConfig;
 import com.tissue.workspace.domain.WorkspaceMember;
 import com.tissue.workspace.domain.enums.InvitationStatus;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.InvitationAlreadyProcessedException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,51 +28,45 @@ public class InvitationService implements InvitationUseCase {
     private final MemberFinder memberFinder;
     private final ProjectFinder projectFinder;
     private final WorkspaceParticipationService workspaceParticipationService;
-    private final ProjectMemberCommandService projectMemberCommandService;
+    private final ProjectJoinService projectJoinService;
     private final InvitationQueryRepository invitationQueryRepository;
 
     @Override
     public void accept(Long memberId, Long invitationId) {
-        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
-        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
-        //  use CurrentMemberProvider to get userDetails.getMemberId
-
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
+            throw new InvitationAlreadyProcessedException(invitation);
         }
 
         invitation.accept();
 
-        WorkspaceMember workspaceMember = workspaceParticipationService.join(
-                invitation.getWorkspace(), memberFinder.getActiveBy(memberId), invitation.getWorkspaceRole());
+        WorkspaceMember joinedWorkspaceMember = workspaceParticipationService.join(
+                invitation.getWorkspace(),
+                memberFinder.getActiveBy(memberId),
+                invitation.getWorkspaceRole(),
+                memberId,
+                null,
+                JoinMethod.INVITATION);
 
         List<ProjectJoinConfig> projectConfigs = invitation.getProjectConfigs();
 
         if (invitation.projectConfigsNotEmpty()) {
-            joinProjects(projectConfigs, workspaceMember);
+            joinProjects(projectConfigs, joinedWorkspaceMember);
         }
-
-        // TODO: InvitationAcceptedEvent
     }
 
     @Override
     public void reject(Long memberId, Long invitationId) {
-        // TODO: currently the memberId is passed on from the controller using userDetails.getMemberId
-        //  should i add authorizationService which checks memberId == userDetails.getMemberId?
-
         Member member = memberFinder.getActiveBy(memberId);
         Invitation invitation = invitationFinder.getBy(invitationId, member);
 
         if (invitation.isProcessed()) {
-            throw WorkspaceExceptions.invitationAlreadyProcessed(invitation);
+            throw new InvitationAlreadyProcessedException(invitation);
         }
 
         invitation.reject();
-
-        // TODO: InvitationRejectedEvent
     }
 
     @Override
@@ -90,8 +85,8 @@ public class InvitationService implements InvitationUseCase {
 
     private void joinProjects(List<ProjectJoinConfig> configs, WorkspaceMember workspaceMember) {
         for (ProjectJoinConfig config : configs) {
-            projectFinder.findOptionalBy(config.projectId()).ifPresent(project -> {
-                projectMemberCommandService.addMember(project, workspaceMember.getMemberId(), config.role());
+            projectFinder.getOptionalBy(config.projectId()).ifPresent(project -> {
+                projectJoinService.join(project, workspaceMember, config.role(), JoinMethod.INVITATION);
             });
         }
     }

@@ -1,6 +1,7 @@
 package com.tissue.workspace.adapter.in.web.dto.request;
 
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.CreateWorkspaceInviteLinkCommand;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import jakarta.validation.constraints.Future;
@@ -14,7 +15,7 @@ public record CreateWorkspaceInviteLinkRequest(
         @Nullable List<ProjectJoinConfigDto> targetProjects,
         @Nullable @Future Instant expiredAt) {
 
-    public CreateWorkspaceInviteLinkCommand toCommand(String workspaceKey) {
-        return new CreateWorkspaceInviteLinkCommand(workspaceKey, workspaceRole, targetProjects, expiredAt);
+    public CreateWorkspaceInviteLinkCommand toCommand(WorkspaceMemberContext actor) {
+        return new CreateWorkspaceInviteLinkCommand(workspaceRole, targetProjects, expiredAt, actor);
     }
 }

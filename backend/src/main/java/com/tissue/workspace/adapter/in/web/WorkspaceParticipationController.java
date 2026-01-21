@@ -1,11 +1,12 @@
 package com.tissue.workspace.adapter.in.web;
 
-import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToProjectRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.InviteToWorkspaceRequest;
+import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
 import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import jakarta.validation.Valid;
@@ -27,9 +28,10 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToWorkspace(
-            @PathVariable String workspaceKey, @RequestBody @Valid InviteToWorkspaceRequest request) {
+            @RequestBody @Valid InviteToWorkspaceRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext actorContext) {
 
-        var command = request.toCommand(workspaceKey);
+        var command = request.toCommand(actorContext);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToWorkspace(command);
 
         return ResponseEntity.ok(response);
@@ -37,28 +39,27 @@ public class WorkspaceParticipationController {
 
     @PostMapping("/projects/{projectKey}/invitations")
     public ResponseEntity<InviteMembersResponse> inviteToProject(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @RequestBody @Valid InviteToProjectRequest request) {
+            @RequestBody @Valid InviteToProjectRequest request,
+            @CurrentProjectMember ProjectMemberContext currentProjectMember) {
 
-        var command = request.toCommand(workspaceKey, projectKey);
+        var command = request.toCommand(currentProjectMember);
         InviteMembersResponse response = workspaceParticipationUseCase.inviteToProject(command);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> leaveWorkspace(
-            @PathVariable String workspaceKey, @CurrentMember MemberDetails userDetails) {
+    public ResponseEntity<Void> leaveWorkspace(@CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        var command = new LeaveWorkspaceCommand(workspaceKey, userDetails.getMemberId());
-        workspaceParticipationUseCase.leave(command);
+        workspaceParticipationUseCase.leave(currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> kickWorkspaceMember(@PathVariable String workspaceKey, @PathVariable Long memberId) {
-        var command = new KickWorkspaceMemberCommand(workspaceKey, memberId);
+    public ResponseEntity<Void> kickWorkspaceMember(
+            @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = new KickWorkspaceMemberCommand(memberId, currentWorkspaceMember);
         workspaceParticipationUseCase.kick(command);
 
         return ResponseEntity.noContent().build();

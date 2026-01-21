@@ -1,3 +1,5 @@
 package com.tissue.sprint.application.dto.request;
 
-public record CompleteSprintCommand(String workspaceKey, String projectKey, Long sprintId) {}
+import com.tissue.project.application.dto.ProjectMemberContext;
+
+public record CompleteSprintCommand(Long sprintId, ProjectMemberContext actorContext) {}

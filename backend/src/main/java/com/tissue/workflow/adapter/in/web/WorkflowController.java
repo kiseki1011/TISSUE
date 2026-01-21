@@ -1,5 +1,7 @@
 package com.tissue.workflow.adapter.in.web;
 
+import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.workflow.adapter.in.web.dto.request.CreateWorkflowRequest;
 import com.tissue.workflow.adapter.in.web.dto.request.ReplaceWorkflowGraphRequest;
 import com.tissue.workflow.adapter.in.web.dto.request.UpdateStateRequest;
@@ -38,11 +40,11 @@ public class WorkflowController {
 
     @PostMapping
     public ResponseEntity<WorkflowCreateResponse> createWorkflow(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
-            @RequestBody @Valid CreateWorkflowRequest request) {
+            @RequestBody @Valid CreateWorkflowRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        WorkflowCreateResponse response = workflowCommandUseCase.create(request.toCommand(workspaceKey, projectKey));
+        var command = request.toCommand(actorContext);
+        WorkflowCreateResponse response = workflowCommandUseCase.create(command);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{workflowId}")
@@ -54,71 +56,76 @@ public class WorkflowController {
 
     @PatchMapping("/{workflowId}/graph")
     public ResponseEntity<Void> replaceWorkflowGraph(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long workflowId,
-            @RequestBody @Valid ReplaceWorkflowGraphRequest request) {
+            @RequestBody @Valid ReplaceWorkflowGraphRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        workflowGraphReplaceUseCase.replaceWorkflowGraph(request.toCommand(workspaceKey, projectKey, workflowId));
+        var command = request.toCommand(workflowId, actorContext);
+        workflowGraphReplaceUseCase.replaceWorkflowGraph(command);
+
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{workflowId}")
     public ResponseEntity<Void> updateWorkflow(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long workflowId,
-            @RequestBody @Valid UpdateWorkflowRequest request) {
+            @RequestBody @Valid UpdateWorkflowRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        workflowCommandUseCase.update(request.toCommand(workspaceKey, projectKey, workflowId));
+        var command = request.toCommand(workflowId, actorContext);
+        workflowCommandUseCase.update(command);
+
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{workflowId}")
     public ResponseEntity<Void> archiveWorkflow(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long workflowId) {
+            @PathVariable Long workflowId, @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        workflowCommandUseCase.delete(new DeleteWorkflowCommand(workspaceKey, projectKey, workflowId));
+        var command = new DeleteWorkflowCommand(workflowId, actorContext);
+        workflowCommandUseCase.delete(command);
+
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{workflowId}/states/{stateId}")
     public ResponseEntity<WorkflowCreateResponse> updateWorkflowState(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @PathVariable Long stateId,
-            @RequestBody @Valid UpdateStateRequest req) {
+            @RequestBody @Valid UpdateStateRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        workflowCommandUseCase.updateState(req.toCommand(workspaceKey, projectKey, workflowId, stateId));
+        var command = request.toCommand(workflowId, stateId, actorContext);
+        workflowCommandUseCase.updateState(command);
+
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{workflowId}/transitions/{transitionId}")
     public ResponseEntity<WorkflowCreateResponse> updateWorkflowTransition(
-            @PathVariable String workspaceKey,
-            @PathVariable String projectKey,
             @PathVariable Long workflowId,
             @PathVariable Long transitionId,
-            @RequestBody @Valid UpdateTransitionRequest req) {
+            @RequestBody @Valid UpdateTransitionRequest request,
+            @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        workflowCommandUseCase.updateTransition(req.toCommand(workspaceKey, projectKey, workflowId, transitionId));
+        var command = request.toCommand(workflowId, transitionId, actorContext);
+        workflowCommandUseCase.updateTransition(command);
+
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<WorkflowSummary>> getWorkflows(
-            @PathVariable String workspaceKey, @PathVariable String projectKey) {
+    public ResponseEntity<List<WorkflowSummary>> getWorkflows(@CurrentProjectMember ProjectMemberContext actorContext) {
 
-        List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(workspaceKey, projectKey);
+        List<WorkflowSummary> workflows = workflowQueryUseCase.getWorkflows(actorContext);
         return ResponseEntity.ok(workflows);
     }
 
     @GetMapping("/{workflowId}")
     public ResponseEntity<WorkflowDetail> getWorkflowDetail(
-            @PathVariable String workspaceKey, @PathVariable String projectKey, @PathVariable Long workflowId) {
+            @PathVariable Long workflowId, @CurrentProjectMember ProjectMemberContext actorContext) {
 
-        WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(workspaceKey, projectKey, workflowId);
+        WorkflowDetail detail = workflowQueryUseCase.getWorkflowDetail(workflowId, actorContext);
         return ResponseEntity.ok(detail);
     }
 }

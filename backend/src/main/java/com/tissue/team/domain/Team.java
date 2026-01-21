@@ -24,7 +24,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 
@@ -73,13 +72,15 @@ public class Team extends BaseEntity {
     @SuppressWarnings("NullAway.Init")
     protected Team() {}
 
-    @Builder
-    public Team(Workspace workspace, String name, @Nullable String description, ColorType color) {
-        this.workspace = workspace;
-        this.workspaceKey = workspace.getKey();
-        this.name = Name.of(name);
-        this.description = description;
-        this.color = color;
+    public static Team create(Workspace workspace, String name, @Nullable String description, ColorType color) {
+        Team team = new Team();
+        team.workspace = workspace;
+        team.workspaceKey = workspace.getKey();
+        team.name = Name.of(name);
+        team.description = description;
+        team.color = color;
+
+        return team;
     }
 
     public void updateName(String name) {

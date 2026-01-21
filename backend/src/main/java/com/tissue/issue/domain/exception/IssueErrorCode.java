@@ -20,25 +20,23 @@ public enum IssueErrorCode implements ErrorCode {
     CANNOT_DELETE_ISSUE_WITH_CHILDREN("Cannot delete issue that has child issues"),
     DUE_DATE_MUST_BE_FUTURE("Due date must be in the future"),
     INVALID_PERCENTAGE_EXCEPTION("Percentage must be a value of 0 ~ 100"),
-
-    // TODO: I think the next message is more context correct "The actor(requester? submitter?) was
-    // not a reviewer"
     REVIEWER_NOT_FOUND("Reviewer not found in issue participants"),
-
     RELATION_CIRCULAR_DEPENDENCY("Circular dependency detected in the issue relation graph"),
     RELATION_ISSUE_TYPE_MISMATCH("Some relation types require both issues to be of the same issue type"),
     RELATION_ALREADY_EXISTS("A relation already exists between these two issues"),
     RELATION_NOT_FOUND("Relation not found between these two issues"),
     RELATION_WORKSPACE_MISMATCH("Both issues in a relation must belong to the same workspace"),
-
     CUSTOM_FIELD_REQUIRED("Required custom field is missing or empty"),
     CUSTOM_FIELD_TYPE_MISMATCH("Invalid value format for the custom field"),
     UNKNOWN_CUSTOM_FIELD_ID("The provided custom field ID is unknown"),
     UNKNOWN_ENUM_OPTION("Unknown enum option for field"),
-
     DECIMAL_SCALE_EXCEEDED("Field value exceeds maximum allowed fraction digits"),
     INTEGER_DIGITS_EXCEEDED("Field value exceeds maximum allowed integer digits"),
-    MAX_REVIEWERS_EXCEEDED("Maximum number of reviewers reached");
+    MAX_REVIEWERS_EXCEEDED("Maximum number of reviewers reached"),
+    INSUFFICIENT_ISSUE_PERMISSION("Insufficient permission to modify/delete this issue"),
+    ISSUE_PARTICIPANT_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue participants"),
+    ISSUE_REVIEWER_MANAGE_NOT_ALLOWED("Insufficient permission to manage issue reviewers"),
+    REVIEW_INCOMPLETE("Required number of reviews have not been approved");
 
     private final String defaultMessage;
 }

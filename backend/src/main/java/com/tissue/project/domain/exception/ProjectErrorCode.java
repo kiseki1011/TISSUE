@@ -19,7 +19,13 @@ public enum ProjectErrorCode implements ErrorCode {
     PROJECT_MEMBER_NOT_FOUND("Project member not found"),
     PROJECT_MEMBER_ALREADY_EXISTS("Project member already exists"),
     SELF_KICK_NOT_ALLOWED("Cannot kick yourself from project"),
-    SELF_ROLE_MODIFICATION_NOT_ALLOWED("Cannot change your own project role");
+    SELF_ROLE_MODIFICATION_NOT_ALLOWED("Cannot change your own project role"),
+
+    // Authorization
+    INSUFFICIENT_PROJECT_ROLE("Insufficient project role"),
+    RESOURCE_OWNERSHIP_REQUIRED("Resource ownership required"),
+    PROJECT_JOIN_NOT_ALLOWED("Cannot join project directly"),
+    ROLE_GRANT_NOT_ALLOWED("Insufficient permission to grant project role");
 
     private final String defaultMessage;
 }

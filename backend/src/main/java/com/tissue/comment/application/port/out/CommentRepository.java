@@ -8,5 +8,5 @@ public interface CommentRepository extends Repository<Comment, Long> {
 
     Comment save(Comment comment);
 
-    Optional<Comment> findById(Long id);
+    Optional<Comment> findByIdAndIssue_Key(Long id, String issueKey);
 }

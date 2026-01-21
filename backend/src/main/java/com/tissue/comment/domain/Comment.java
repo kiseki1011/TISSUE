@@ -1,6 +1,6 @@
 package com.tissue.comment.domain;
 
-import com.tissue.comment.domain.exception.CommentExceptions;
+import com.tissue.comment.domain.exception.NestedCommentLimitExceededException;
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.Issue;
 import com.tissue.workspace.domain.WorkspaceMember;
@@ -51,10 +51,10 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "parentComment")
     private final List<Comment> childComments = new ArrayList<>();
 
-    public static Comment create(Issue issue, WorkspaceMember author, String content, @Nullable Comment parentComment) {
+    public static Comment create(WorkspaceMember author, Issue issue, String content, @Nullable Comment parentComment) {
         Comment comment = new Comment();
-        comment.issue = issue;
         comment.author = author;
+        comment.issue = issue;
         comment.content = content;
         comment.isEdited = false;
 
@@ -86,7 +86,7 @@ public class Comment extends BaseEntity {
 
     private void validateParentComment(Comment parent) {
         if (parent.getParentComment() != null) {
-            throw CommentExceptions.nestedLimitExceeded(parent.getId());
+            throw new NestedCommentLimitExceededException(parent.getId());
         }
 
         if (!parent.getIssue().equals(this.issue)) {

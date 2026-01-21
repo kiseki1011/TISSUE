@@ -12,10 +12,10 @@ import com.tissue.issuetype.application.port.out.IssueTypeCommandRepository;
 import com.tissue.issuetype.application.service.finder.IssueTypeFinder;
 import com.tissue.issuetype.application.service.validator.IssueTypeValidator;
 import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workflow.application.service.finder.WorkflowFinder;
 import com.tissue.workflow.domain.Workflow;
 import java.util.Objects;
@@ -34,15 +34,14 @@ public class IssueTypeService implements IssueTypeUseCase {
     private final IssueTypeCommandRepository issueTypeCommandRepository;
     private final IssueTypeValidator issueTypeValidator;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public IssueTypeResponse create(CreateIssueTypeCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectMember(cmd.workspaceKey(), cmd.projectKey(), currentUserId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        projectAuthService.requireProjectMember(actorContext);
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        Workflow workflow = workflowFinder.findBy(cmd.workflowId(), project);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        Workflow workflow = workflowFinder.getBy(cmd.workflowId(), project);
 
         issueTypeValidator.ensureUniqueLabel(project, cmd.name());
 
@@ -56,12 +55,12 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void rename(RenameIssueTypeCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireIssueTypeEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+
+        projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
         if (labelUnchanged(issueType, cmd.name())) {
             return;
@@ -73,12 +72,12 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void update(PatchIssueTypeCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireIssueTypeEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+
+        projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
         Patchers.apply(cmd.description(), issueType::updateDescription);
         Patchers.apply(cmd.color(), issueType::updateColor);
@@ -86,12 +85,12 @@ public class IssueTypeService implements IssueTypeUseCase {
 
     @Override
     public void delete(DeleteIssueTypeCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireIssueTypeEditPermission(
-                cmd.workspaceKey(), cmd.projectKey(), cmd.issueTypeId(), currentUserId);
+        ProjectMemberContext actorContext = cmd.actorContext();
 
-        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
-        IssueType issueType = issueTypeFinder.findBy(cmd.issueTypeId(), project);
+        Project project = projectFinder.getModifiableBy(actorContext.projectId());
+        IssueType issueType = issueTypeFinder.getBy(cmd.issueTypeId(), project);
+
+        projectAuthService.requireIssueTypeEditPermission(actorContext, issueType);
 
         // TODO: consider IssueType migration feature(make it in IssueConfigUseCase in issue package)
         //  current policy: cant delete if there is a issue that uses this IssueType

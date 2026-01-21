@@ -19,4 +19,8 @@ public enum ProjectRole {
     public boolean isHigherThan(ProjectRole other) {
         return this.level < other.getLevel();
     }
+
+    public boolean isAdmin() {
+        return this == ADMIN;
+    }
 }

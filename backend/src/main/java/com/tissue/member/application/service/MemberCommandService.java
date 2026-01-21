@@ -1,5 +1,6 @@
 package com.tissue.member.application.service;
 
+import com.tissue.common.enums.SupportedLanguage;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
 import com.tissue.member.application.dto.response.MemberSignupResponse;
@@ -12,11 +13,18 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
-import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.member.domain.exception.DuplicateEmailException;
+import com.tissue.member.domain.exception.DuplicateUsernameException;
+import com.tissue.member.domain.exception.EmailNotVerifiedException;
+import com.tissue.member.domain.exception.MemberNotFoundException;
+import com.tissue.member.domain.exception.MemberSignupConflictException;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
-import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
+import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +50,8 @@ public class MemberCommandService implements MemberCommandUseCase {
     private final MemberEmailVerificationService memberEmailVerificationService;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     @Override
     public MemberSignupResponse signup(SignupMemberCommand cmd) {
@@ -49,7 +59,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueUsername(cmd.username());
 
         if (!memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken())) {
-            throw AuthenticationExceptions.invalidVerificationToken();
+            throw new InvalidTokenException(AuthenticationErrorCode.INVALID_VERIFICATION_TOKEN.getDefaultMessage());
         }
 
         Member member = Member.create(cmd.email(), cmd.username(), cmd.name());
@@ -65,7 +75,7 @@ public class MemberCommandService implements MemberCommandUseCase {
             return MemberSignupResponse.from(savedMember);
 
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.signUpConflict(cmd.email(), cmd.username(), e);
+            throw new MemberSignupConflictException(cmd.email(), cmd.username(), e);
         }
     }
 
@@ -104,7 +114,7 @@ public class MemberCommandService implements MemberCommandUseCase {
                     .build();
 
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.signUpConflict(email, cmd.username(), e);
+            throw new MemberSignupConflictException(email, cmd.username(), e);
         }
     }
 
@@ -121,7 +131,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         if (authIdentityRepository
                 .findByProviderAndIdentifier(provider, identifier)
                 .isPresent()) {
-            throw MemberExceptions.signUpConflict(
+            throw new MemberSignupConflictException(
                     claims.get(TokenProvider.CLAIM_EMAIL, String.class),
                     "OAuth Account already linked",
                     new DataIntegrityViolationException("Duplicate Identity"));
@@ -153,6 +163,12 @@ public class MemberCommandService implements MemberCommandUseCase {
     }
 
     @Override
+    public void updateLanguage(SupportedLanguage language, Long memberId) {
+        Member member = memberFinder.getActiveBy(memberId);
+        member.updateLanguage(language);
+    }
+
+    @Override
     public void updateEmail(String newEmail, Long memberId) {
         Member member = memberFinder.getActiveBy(memberId);
         String oldEmail = member.getEmail();
@@ -160,7 +176,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureUniqueEmail(newEmail);
 
         if (!memberEmailVerificationService.isEmailVerified(newEmail)) {
-            throw MemberExceptions.emailNotVerified(newEmail);
+            throw new EmailNotVerifiedException(newEmail);
         }
 
         try {
@@ -172,7 +188,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
             memberEmailVerificationService.clearVerification(newEmail);
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.duplicateEmail(newEmail, e);
+            throw new DuplicateEmailException(newEmail, e);
         }
     }
 
@@ -185,7 +201,7 @@ public class MemberCommandService implements MemberCommandUseCase {
         try {
             member.updateUsername(newUsername);
         } catch (DataIntegrityViolationException e) {
-            throw MemberExceptions.duplicateUsername(newUsername, e);
+            throw new DuplicateUsernameException(newUsername, e);
         }
     }
 
@@ -198,7 +214,7 @@ public class MemberCommandService implements MemberCommandUseCase {
 
         AuthIdentity authIdentity = authIdentityRepository
                 .findByProviderAndIdentifier(AuthProvider.EMAIL, member.getEmail())
-                .orElseThrow(() -> MemberExceptions.notFound(memberId));
+                .orElseThrow(() -> new MemberNotFoundException(memberId));
 
         authIdentity.updateCredential(passwordEncoder.encode(newPassword));
     }
@@ -212,5 +228,8 @@ public class MemberCommandService implements MemberCommandUseCase {
         memberValidator.ensureWithdrawable(member);
 
         member.withdraw();
+
+        workspaceMemberQueryRepository.softDeleteAllByMemberId(memberId);
+        projectMemberQueryRepository.softDeleteAllByMemberId(memberId);
     }
 }

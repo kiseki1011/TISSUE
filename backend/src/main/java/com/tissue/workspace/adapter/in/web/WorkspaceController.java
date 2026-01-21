@@ -1,10 +1,10 @@
 package com.tissue.workspace.adapter.in.web;
 
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.presentation.annotation.CurrentMember;
 import com.tissue.workspace.adapter.in.web.dto.request.CreateWorkspaceRequest;
 import com.tissue.workspace.adapter.in.web.dto.request.UpdateWorkspaceInfoRequest;
-import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
+import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.out.command.WorkspaceCreateResponse;
 import com.tissue.workspace.application.dto.out.query.WorkspaceDetail;
@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,7 +37,8 @@ public class WorkspaceController {
 
     @PostMapping
     public ResponseEntity<WorkspaceCreateResponse> createWorkspace(
-            @RequestBody @Valid CreateWorkspaceRequest request, @CurrentMember MemberDetails userDetails) {
+            @RequestBody @Valid CreateWorkspaceRequest request, @AuthenticationPrincipal MemberDetails userDetails) {
+
         var command = request.toCommand(userDetails.getMemberId());
         WorkspaceCreateResponse response = workspaceCreateUseCase.create(command);
 
@@ -50,33 +52,35 @@ public class WorkspaceController {
 
     @PatchMapping("/{workspaceKey}")
     public ResponseEntity<Void> updateWorkspaceInfo(
-            @PathVariable String workspaceKey, @RequestBody @Valid UpdateWorkspaceInfoRequest request) {
-        var command = request.toCommand(workspaceKey);
+            @RequestBody @Valid UpdateWorkspaceInfoRequest request,
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = request.toCommand(currentWorkspaceMember);
         workspaceCommandUseCase.updateInfo(command);
 
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{workspaceKey}")
-    public ResponseEntity<Void> delete(@PathVariable String workspaceKey) {
-        var command = new DeleteWorkspaceCommand(workspaceKey);
-        workspaceCommandUseCase.delete(command);
-
+    public ResponseEntity<Void> delete(@CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+        workspaceCommandUseCase.delete(currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{workspaceKey}/members/{memberId}/ownership")
     public ResponseEntity<Void> transferOwnership(
-            @PathVariable String workspaceKey, @PathVariable Long memberId, @CurrentMember MemberDetails userDetails) {
-        var command = new TransferOwnershipCommand(workspaceKey, memberId, userDetails.getMemberId());
+            @PathVariable Long memberId, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+
+        var command = new TransferOwnershipCommand(memberId, currentWorkspaceMember);
         workspaceCommandUseCase.transferOwnership(command);
 
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{workspaceKey}")
-    public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(@PathVariable String workspaceKey) {
-        WorkspaceDetail response = workspaceQueryUseCase.getDetail(workspaceKey);
+    public ResponseEntity<WorkspaceDetail> getWorkspaceDetail(
+            @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
+        WorkspaceDetail response = workspaceQueryUseCase.getDetail(currentWorkspaceMember);
         return ResponseEntity.ok(response);
     }
 }

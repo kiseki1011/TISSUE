@@ -8,31 +8,35 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMember, Long> {
 
+    String WORKSPACE_MEMBER_CONTACT_PATH = "com.tissue.workspace.application.port.out.";
+
+    // TODO: 굳이 Member_Id로 조회할 필요가 있나? 어차피 memberId 필드가 WorkspaceMember 내부에 있을텐데?
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
     Optional<WorkspaceMember> findByMember_IdAndWorkspace(Long memberId, Workspace workspace);
 
     Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);
 
-    /**
-     * Retrieves a workspace member regardless of their delete status (active or soft-deleted).
-     *
-     * <p>Uses a <b>native query</b> to bypass Hibernate {@link
-     * org.hibernate.annotations.SQLRestriction @SqlRestriction}
-     */
-    @Query(value = """
-                    SELECT * FROM workspace_member
-                    WHERE workspace_key = :workspaceKey
-                      AND member_id = :memberId
-                    """, nativeQuery = true)
-    Optional<WorkspaceMember> findAnyByMemberIdAndWorkspaceKey(
-            @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
+    Optional<WorkspaceMember> findByMember_IdAndWorkspaceKeyAndSoftDeletedFalse(Long memberId, String workspaceKey);
+
+    Optional<WorkspaceMember> findByMember_IdAndWorkspaceAndSoftDeletedFalse(Long memberId, Workspace workspace);
+
+    Optional<WorkspaceMember> findByMemberAndWorkspaceAndSoftDeletedFalse(Member member, Workspace workspace);
+
+    Optional<WorkspaceMember> findByIdAndSoftDeletedFalse(Long workspaceMemberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE WorkspaceMember wm SET wm.softDeleted = true, wm.softDeletedAt = CURRENT_TIMESTAMP, "
+            + "wm.archived = true, wm.archivedAt = CURRENT_TIMESTAMP "
+            + "WHERE wm.member.id = :memberId")
+    void softDeleteAllByMemberId(@Param("memberId") Long memberId);
 
     List<WorkspaceMember> findAllByWorkspace_Key(String workspaceKey);
 
@@ -60,4 +64,33 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     long countByMember(Member member);
 
     List<WorkspaceMember> findAllByMember(Member member);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey")
+    List<WorkspaceMemberContact> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id <> :excludedMemberId")
+    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyExcluding(
+            @Param("workspaceKey") String workspaceKey, @Param("excludedMemberId") Long excludedMemberId);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.role IN :roles")
+    Set<WorkspaceMemberContact> findAdminContactsByWorkspace_Key(
+            @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.member.id = :memberId AND wm.workspaceKey = :workspaceKey")
+    Optional<WorkspaceMemberContact> findContactByMemberIdAndWorkspaceKey(
+            @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id IN :memberIds")
+    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndMemberIds(
+            @Param("workspaceKey") String workspaceKey, @Param("memberIds") Collection<Long> memberIds);
 }

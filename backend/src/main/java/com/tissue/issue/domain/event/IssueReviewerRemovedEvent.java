@@ -1,7 +1,5 @@
 package com.tissue.issue.domain.event;
 
-import com.tissue.issue.domain.Issue;
-import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -17,17 +15,26 @@ public record IssueReviewerRemovedEvent(
         Long actorMemberId,
         String actorDisplayName) {
 
-    public static IssueReviewerRemovedEvent create(Issue issue, ProjectMember removedReviewer, ProjectMember actor) {
+    public static IssueReviewerRemovedEvent create(
+            String workspaceKey,
+            String projectKey,
+            String issueKey,
+            Long issueId,
+            Long removedReviewerMemberId,
+            String removedReviewerDisplayName,
+            Long actorMemberId,
+            String actorDisplayName) {
+
         return new IssueReviewerRemovedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                issue.getWorkspaceKey(),
-                issue.getProjectKey(),
-                issue.getKey(),
-                issue.getId(),
-                removedReviewer.getMemberId(),
-                removedReviewer.getDisplayName(),
-                actor.getMemberId(),
-                actor.getDisplayName());
+                workspaceKey,
+                projectKey,
+                issueKey,
+                issueId,
+                removedReviewerMemberId,
+                removedReviewerDisplayName,
+                actorMemberId,
+                actorDisplayName);
     }
 }

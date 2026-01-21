@@ -2,7 +2,8 @@ package com.tissue.issue.application.service.validator;
 
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueFieldValue;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CustomFieldRequiredException;
+import com.tissue.issue.domain.exception.UnknownCustomFieldIdException;
 import com.tissue.issue.domain.service.handler.IssueFieldTypeHandlerRegistry;
 import com.tissue.issuetype.application.port.out.IssueFieldQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
@@ -82,7 +83,7 @@ public class IssueFieldSchemaValidator {
             return;
         }
         if (isEmptyValue(field, raw)) {
-            throw IssueExceptions.customFieldRequired(
+            throw new CustomFieldRequiredException(
                     field.getIssueType().getId(),
                     field.getIssueType().getDisplayName(),
                     field.getId(),
@@ -93,7 +94,7 @@ public class IssueFieldSchemaValidator {
     private IssueField requireKnownField(Map<Long, IssueField> map, Long id) {
         IssueField field = map.get(id);
         if (field == null) {
-            throw IssueExceptions.unknownCustomFieldId(id);
+            throw new UnknownCustomFieldIdException(id);
         }
         return field;
     }

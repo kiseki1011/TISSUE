@@ -2,23 +2,26 @@ package com.tissue.workspace.application.service;
 
 import static com.tissue.member.domain.MemberStatus.ACTIVE;
 
+import com.tissue.common.enums.JoinMethod;
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.policy.MemberPolicy;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.project.application.service.authorization.ProjectAuthorizationService;
 import com.tissue.project.application.service.finder.ProjectFinder;
 import com.tissue.project.domain.Project;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.workspace.application.dto.ProjectJoinConfigDto;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.InviteToProjectCommand;
 import com.tissue.workspace.application.dto.in.InviteToWorkspaceCommand;
 import com.tissue.workspace.application.dto.in.KickWorkspaceMemberCommand;
-import com.tissue.workspace.application.dto.in.LeaveWorkspaceCommand;
 import com.tissue.workspace.application.dto.out.command.InviteMembersResponse;
 import com.tissue.workspace.application.port.in.WorkspaceParticipationUseCase;
 import com.tissue.workspace.application.port.out.InvitationCommandRepository;
 import com.tissue.workspace.application.port.out.WorkspaceMemberCommandRepository;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
+import com.tissue.workspace.application.service.event.WorkspaceEventPublisher;
 import com.tissue.workspace.application.service.finder.InvitationFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.application.service.finder.WorkspaceMemberFinder;
@@ -35,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,61 +54,66 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     private final MemberQueryRepository memberQueryRepository;
     private final InvitationCommandRepository invitationRepository;
     private final WorkspaceMemberCommandRepository workspaceMemberCommandRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final WorkspacePolicy workspacePolicy;
     private final MemberPolicy memberPolicy;
     private final WorkspaceAuthorizationService workspaceAuthService;
     private final ProjectAuthorizationService projectAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
+    private final WorkspaceEventPublisher eventPublisher;
 
-    // private final ApplicationEventPublisher eventPublisher;
-
+    // TODO: inviteToWorkspace, inviteToProject는 따로 WorkspaceInvitationService로 분리할까?
     @Override
     public InviteMembersResponse inviteToWorkspace(InviteToWorkspaceCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
         return processInvitation(workspace, cmd.emails(), cmd.role(), cmd.targetProjects());
     }
 
     @Override
     public InviteMembersResponse inviteToProject(InviteToProjectCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        projectAuthService.requireProjectAdmin(cmd.workspaceKey(), cmd.projectKey(), actorMemberId);
+        ProjectMemberContext actorContext = cmd.actorContext();
+        projectAuthService.requireProjectAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
         List<ProjectJoinConfigDto> singleProjectConfig =
-                List.of(new ProjectJoinConfigDto(cmd.projectKey(), cmd.role()));
+                List.of(new ProjectJoinConfigDto(actorContext.projectKey(), cmd.role()));
 
         return processInvitation(workspace, cmd.emails(), WorkspaceRole.MEMBER, singleProjectConfig);
     }
 
     @Override
-    public void leave(LeaveWorkspaceCommand cmd) {
-        // TODO: should i add authorization for cmd.memberId() == userDetails.getMemberId?
-        //  currently memberId is passed from the controller using userDetails.getMemberId
+    public void leave(WorkspaceMemberContext actorContext) {
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        WorkspaceMember actor = workspaceMemberFinder.getActive(actorContext.memberId(), workspace);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember workspaceMember = workspaceMemberFinder.findBy(cmd.memberId(), workspace);
+        workspacePolicy.ensureCanLeaveWorkspace(actor);
 
-        workspacePolicy.ensureCanLeaveWorkspace(workspaceMember);
-        workspaceMember.softDelete();
+        actor.softDelete();
+
+        // TODO: workspaceId + memberId로 동작하도록 변경할까?
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
+                actorContext.workspaceKey(), actorContext.memberId());
 
         // TODO: WorkspaceMemberLeftEvent
     }
 
     @Override
     public void kick(KickWorkspaceMemberCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember actor = workspaceMemberFinder.findBy(actorMemberId, workspace);
-        WorkspaceMember target = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+        WorkspaceMember target = workspaceMemberFinder.getActive(cmd.targetMemberId(), workspace);
 
         target.softDelete();
+
+        // TODO: workspaceId + memberId로 동작하도록 변경할까?
+        projectMemberQueryRepository.softDeleteAllByWorkspaceKeyAndMemberId(
+                actorContext.workspaceKey(), cmd.targetMemberId());
 
         // TODO: WorkspaceMemberKickedEvent
     }
@@ -113,9 +122,16 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
     //  - this method is not a implementation of a UseCase
     //  - this method is called from other services (a method for internal use)
     //  - controller does not know this method unless it directly depends on this service
-    // TODO: currently considering if i should separate this to a application service of its own
-    protected WorkspaceMember join(Workspace workspace, Member member, WorkspaceRole role) {
-        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.findOptionalBy(member, workspace);
+    // TODO: actorMemberId를 파라미터로 받자(이벤트 컨텍스트로 넘기기 위해서, @Nullable 붙이고)
+    protected WorkspaceMember join(
+            Workspace workspace,
+            Member member,
+            WorkspaceRole role,
+            Long actorMemberId,
+            @Nullable String actorDisplayName,
+            JoinMethod joinMethod) {
+
+        Optional<WorkspaceMember> activeMember = workspaceMemberFinder.getActiveOptionalBy(member, workspace);
         if (activeMember.isPresent()) {
             return activeMember.get();
         }
@@ -123,8 +139,8 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
         checkWorkspaceCapacity(workspace);
         checkMemberJoinCapacity(member);
 
-        return workspaceMemberFinder
-                .findAnyOptionalBy(member.getId(), workspace.getKey())
+        WorkspaceMember joinedMember = workspaceMemberFinder
+                .getOptionalBy(member.getId(), workspace.getKey())
                 .map(returningMember -> {
                     returningMember.restoreSoftDeleted();
                     return returningMember;
@@ -133,6 +149,10 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
                     WorkspaceMember newMember = WorkspaceMember.create(member, workspace, role);
                     return workspaceMemberCommandRepository.save(newMember);
                 });
+
+        eventPublisher.publishMemberJoinedWorkspace(joinedMember, joinMethod, actorMemberId, actorDisplayName);
+
+        return joinedMember;
     }
 
     private InviteMembersResponse processInvitation(
@@ -170,7 +190,7 @@ public class WorkspaceParticipationService implements WorkspaceParticipationUseC
 
         List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
 
-        Set<Long> joinedIds = workspaceMemberFinder.findJoinedMemberIdsBy(workspaceKey, candidateIds);
+        Set<Long> joinedIds = workspaceMemberFinder.getJoinedMemberIdsBy(workspaceKey, candidateIds);
         Set<Long> pendingIds = invitationFinder.findPendingMemberIds(workspaceKey, candidateIds);
 
         Map<Boolean, List<Member>> partitioned = candidates.stream()

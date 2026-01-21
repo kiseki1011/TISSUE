@@ -1,6 +1,7 @@
 package com.tissue.issuetype.application.dto.request;
 
 import com.tissue.common.enums.ColorType;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import lombok.Builder;
 import org.openapitools.jackson.nullable.JsonNullable;
 
@@ -10,4 +11,5 @@ public record PatchIssueTypeCommand(
         String projectKey,
         Long issueTypeId,
         JsonNullable<String> description,
-        JsonNullable<ColorType> color) {}
+        JsonNullable<ColorType> color,
+        ProjectMemberContext actorContext) {}

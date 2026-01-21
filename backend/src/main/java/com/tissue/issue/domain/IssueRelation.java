@@ -2,7 +2,9 @@ package com.tissue.issue.domain;
 
 import com.tissue.common.entity.BaseEntity;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.IssueSelfReferenceException;
+import com.tissue.issue.domain.exception.RelationIssueTypeMismatchException;
+import com.tissue.issue.domain.exception.RelationWorkspaceMismatchException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,13 +65,13 @@ public class IssueRelation extends BaseEntity {
 
     private static void ensureNotSelfReference(Issue sourceIssue, Issue targetIssue) {
         if (sourceIssue.equals(targetIssue)) {
-            throw IssueExceptions.issueSelfReference(sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
+            throw new IssueSelfReferenceException(sourceIssue.getWorkspaceKey(), sourceIssue.getKey());
         }
     }
 
     private static void ensureSameWorkspace(Issue source, Issue target) {
         if (!source.getWorkspaceKey().equals(target.getWorkspaceKey())) {
-            throw IssueExceptions.relationWorkspaceMismatch(
+            throw new RelationWorkspaceMismatchException(
                     source.getWorkspaceKey(), source.getKey(), target.getWorkspaceKey(), target.getKey());
         }
     }
@@ -78,7 +80,7 @@ public class IssueRelation extends BaseEntity {
         if (type == IssueRelationType.DUPLICATES) {
             boolean issueTypeMismatch = !sourceIssue.getIssueType().equals(targetIssue.getIssueType());
             if (issueTypeMismatch) {
-                throw IssueExceptions.relationIssueTypeMismatch(
+                throw new RelationIssueTypeMismatchException(
                         sourceIssue.getWorkspaceKey(),
                         type,
                         sourceIssue.getKey(),

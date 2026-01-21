@@ -9,29 +9,30 @@ import com.tissue.issue.application.dto.response.TransitionDetail;
 import com.tissue.issue.application.dto.response.info.IssueBasicInfo;
 import com.tissue.issue.application.dto.response.info.IssueIdentifierResponse;
 import com.tissue.issue.application.dto.response.info.ParticipantInfo;
+import com.tissue.project.application.dto.ProjectMemberContext;
 import java.util.List;
 
 public interface IssueQueryUseCase {
 
-    IssueBasicInfo getBasic(String workspaceKey, String projectKey, String issueKey);
+    IssueBasicInfo getBasic(String issueKey, ProjectMemberContext actorContext);
 
-    IssueCommonDetail getCommon(String workspaceKey, String projectKey, String issueKey);
+    IssueCommonDetail getCommon(String issueKey, ProjectMemberContext actorContext);
 
-    IssueCustomDetail getCustom(String workspaceKey, String projectKey, String issueKey);
+    IssueCustomDetail getCustom(String issueKey, ProjectMemberContext actorContext);
 
-    IssueIdentifierResponse getParent(String workspaceKey, String projectKey, String issueKey);
+    IssueIdentifierResponse getParent(String issueKey, ProjectMemberContext actorContext);
 
-    List<IssueIdentifierResponse> getChildren(String workspaceKey, String projectKey, String issueKey);
+    List<IssueIdentifierResponse> getChildren(String issueKey, ProjectMemberContext actorContext);
 
-    IssueRelationsDetail getRelations(String workspaceKey, String projectKey, String issueKey);
+    IssueRelationsDetail getRelations(String issueKey, ProjectMemberContext actorContext);
 
-    ParticipantInfo getAuthor(String workspaceKey, String projectKey, String issueKey);
+    ParticipantInfo getAuthor(String issueKey, ProjectMemberContext actorContext);
 
-    IssueReviewersDetail getReviewers(String workspaceKey, String projectKey, String issueKey);
+    IssueReviewersDetail getReviewers(String issueKey, ProjectMemberContext actorContext);
 
-    IssueSubscribersDetail getSubscribers(String workspaceKey, String projectKey, String issueKey);
+    IssueSubscribersDetail getSubscribers(String issueKey, ProjectMemberContext actorContext);
 
-    List<TransitionDetail> getAvailableTransitions(String workspaceKey, String projectKey, String issueKey);
+    List<TransitionDetail> getAvailableTransitions(String issueKey, ProjectMemberContext actorContext);
 
     // TODO: getParticipants
     //   - assignee, reviewers, reporter, author(creator) 모두

@@ -14,9 +14,8 @@ public interface PositionQueryRepository extends Repository<Position, Long> {
 
     Optional<Position> findByIdAndWorkspace(Long id, Workspace workspace);
 
+    // TODO: workspaceKey가 아닌 workspaceId 사용을 고려할까?
     List<Position> findAllByWorkspace_KeyOrderByCreatedAtAsc(String workspaceKey);
-
-    List<Position> findAllByWorkspace_Key(String workspaceKey);
 
     boolean existsByWorkspaceAndName_Normalized(Workspace workspace, String name);
 

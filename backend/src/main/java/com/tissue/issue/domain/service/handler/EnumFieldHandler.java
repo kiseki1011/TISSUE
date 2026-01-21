@@ -1,6 +1,7 @@
 package com.tissue.issue.domain.service.handler;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CustomFieldTypeMismatchException;
+import com.tissue.issue.domain.exception.UnknownEnumOptionException;
 import com.tissue.issuetype.application.port.out.EnumFieldOptionQueryRepository;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
@@ -32,9 +33,9 @@ public class EnumFieldHandler implements FieldTypeHandler {
             Long optionId = cs.convert(raw, Long.class);
             return optionRepo
                     .findByIdAndIssueField(optionId, field)
-                    .orElseThrow(() -> IssueExceptions.unknownEnumOption(field.getId(), optionId));
+                    .orElseThrow(() -> new UnknownEnumOptionException(field.getId(), optionId));
         } catch (ConversionFailedException e) {
-            throw IssueExceptions.customFieldTypeMismatch(
+            throw new CustomFieldTypeMismatchException(
                     field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
         }
     }

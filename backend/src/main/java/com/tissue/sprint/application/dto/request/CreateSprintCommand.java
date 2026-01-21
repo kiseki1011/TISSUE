@@ -1,6 +1,5 @@
 package com.tissue.sprint.application.dto.request;
 
-import lombok.Builder;
+import com.tissue.project.application.dto.ProjectMemberContext;
 
-@Builder
-public record CreateSprintCommand(String workspaceKey, String projectKey, String title, String goal) {}
+public record CreateSprintCommand(String title, String goal, ProjectMemberContext actorContext) {}

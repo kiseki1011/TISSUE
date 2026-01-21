@@ -1,0 +1,42 @@
+package com.tissue.activitylog.application.service;
+
+import com.tissue.activitylog.application.dto.request.CreateLogCommand;
+import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;
+import com.tissue.activitylog.application.port.out.ActivityLogRepository;
+import com.tissue.activitylog.domain.ActivityLog;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class ActivityLogCommandService {
+
+    private final ActivityLogRepository repository;
+
+    public void createLogWithDiff(CreateLogWithDiffCommand cmd) {
+        ActivityLog log = ActivityLog.builder()
+                .eventId(cmd.eventId())
+                .activityType(cmd.activityType())
+                .entityReference(cmd.reference())
+                .actorMemberId(cmd.actorMemberId())
+                .data(cmd.data())
+                .changes(cmd.changes())
+                .build();
+
+        repository.save(log);
+    }
+
+    public void createLog(CreateLogCommand cmd) {
+        ActivityLog log = ActivityLog.builder()
+                .eventId(cmd.eventId())
+                .activityType(cmd.activityType())
+                .entityReference(cmd.reference())
+                .actorMemberId(cmd.actorMemberId())
+                .data(cmd.data())
+                .build();
+
+        repository.save(log);
+    }
+}

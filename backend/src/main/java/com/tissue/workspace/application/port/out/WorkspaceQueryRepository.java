@@ -8,5 +8,7 @@ public interface WorkspaceQueryRepository extends Repository<Workspace, Long> {
 
     Optional<Workspace> findByKey(String key);
 
+    Optional<Workspace> findById(Long id);
+
     boolean existsByKey(String key);
 }

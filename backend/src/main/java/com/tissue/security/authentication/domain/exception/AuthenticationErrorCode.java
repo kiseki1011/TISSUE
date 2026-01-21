@@ -19,7 +19,9 @@ public enum AuthenticationErrorCode implements ErrorCode {
     VERIFICATION_TOKEN_EXPIRED("Verification token is expired"),
     EMAIL_NOT_VERIFIED("Email is not verified"),
     ELEVATED_PERMISSION_REQUIRED("Elevated permission required for this operation"),
-    REFRESH_TOKEN_REUSED("Refresh token reuse detected");
+    REFRESH_TOKEN_REUSED("Refresh token reuse detected"),
+    JWT_CREATION_ERROR("Failed to create JWT token"),
+    JWT_SECRET_ERROR("JWT secret key configuration error");
 
     private final String defaultMessage;
 }

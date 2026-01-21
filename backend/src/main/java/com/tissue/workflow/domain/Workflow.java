@@ -7,7 +7,12 @@ import com.tissue.common.enums.ColorType;
 import com.tissue.common.vo.Name;
 import com.tissue.project.domain.Project;
 import com.tissue.workflow.domain.enums.StateCategory;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.CannotDeleteInitialStateException;
+import com.tissue.workflow.domain.exception.DuplicateStateNameException;
+import com.tissue.workflow.domain.exception.DuplicateTransitionEdgeException;
+import com.tissue.workflow.domain.exception.DuplicateTransitionNameException;
+import com.tissue.workflow.domain.exception.InitialStateBelongMismatchException;
+import com.tissue.workflow.domain.exception.InitialStateCategoryMismatchException;
 import com.tissue.workflow.domain.guard.GuardType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -152,10 +157,10 @@ public class Workflow extends BaseEntity {
 
     public void setInitialState(WorkflowState state) {
         if (!states.contains(state)) {
-            throw WorkflowExceptions.initialStateBelongMismatch();
+            throw new InitialStateBelongMismatchException();
         }
         if (!state.isCategorizedAs(INITIAL)) {
-            throw WorkflowExceptions.initialStateCategoryMismatch();
+            throw new InitialStateCategoryMismatchException();
         }
         this.initialState = state;
     }
@@ -178,8 +183,7 @@ public class Workflow extends BaseEntity {
 
     public void deleteState(WorkflowState state) {
         if (state.getCategory().isInitial()) {
-            throw WorkflowExceptions.cannotDeleteInitialState(
-                    this.getId(), this.getDisplayName(), state.getDisplayName());
+            throw new CannotDeleteInitialStateException(this.getId(), this.getDisplayName(), state.getDisplayName());
         }
         state.softDelete();
         states.remove(state);
@@ -239,7 +243,7 @@ public class Workflow extends BaseEntity {
                 .anyMatch(x ->
                         x.getSourceState().equals(source) && x.getTargetState().equals(target));
         if (dup) {
-            throw WorkflowExceptions.duplicateTransitionEdge(source.getDisplayName(), target.getDisplayName());
+            throw new DuplicateTransitionEdgeException(source.getDisplayName(), target.getDisplayName());
         }
     }
 
@@ -247,7 +251,7 @@ public class Workflow extends BaseEntity {
         boolean dup = states.stream().filter(t -> !t.isArchived()).anyMatch(s -> s.getName()
                 .equals(newName));
         if (dup) {
-            throw WorkflowExceptions.duplicateStateName(newName.getDisplay(), name.getDisplay(), id);
+            throw new DuplicateStateNameException(newName.getDisplay(), name.getDisplay(), id);
         }
     }
 
@@ -257,7 +261,7 @@ public class Workflow extends BaseEntity {
                 .filter(t -> t.getSourceState().equals(source))
                 .anyMatch(t -> t.getName().equals(newName));
         if (dup) {
-            throw WorkflowExceptions.duplicateTransitionName(
+            throw new DuplicateTransitionNameException(
                     newName.getDisplay(), source.getDisplayName(), name.getDisplay(), id);
         }
     }

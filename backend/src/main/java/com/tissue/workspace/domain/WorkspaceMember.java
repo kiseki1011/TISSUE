@@ -5,7 +5,7 @@ import com.tissue.member.domain.Member;
 import com.tissue.position.domain.Position;
 import com.tissue.team.domain.Team;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.CannotChangeRoleToOwnerException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,10 +23,8 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@SQLRestriction("soft_deleted = false")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkspaceMember extends BaseEntity {
@@ -56,10 +54,10 @@ public class WorkspaceMember extends BaseEntity {
     @Column(nullable = false)
     private WorkspaceRole role;
 
-    // TODO: consider using nickname or profileName
     @Column(nullable = false)
     private String displayName;
 
+    // TODO: 제거하는게 좋을까? 아니면 워크스페이스별 email 두는게 좋을까?
     @Column(nullable = false)
     private String email;
 
@@ -71,10 +69,9 @@ public class WorkspaceMember extends BaseEntity {
         workspaceMember.workspace = workspace;
         workspaceMember.workspaceKey = workspace.getKey();
         workspaceMember.member = member;
+        // TODO: member의 email이 변경되는 경우 어떻게?
         workspaceMember.email = member.getEmail();
-        // TODO: after refactoring Member so the "name" field is required, use it for the default
-        // displayName
-        //  member.getUsername() -> member.getName()
+        // TODO: after refactoring Member so the "name" field is required, use it for the default?
         workspaceMember.displayName = member.getUsername();
         workspaceMember.role = role;
 
@@ -93,12 +90,12 @@ public class WorkspaceMember extends BaseEntity {
         return member.getEmail();
     }
 
-    public void changeRoleTo(WorkspaceRole newRole) {
+    public void updateRole(WorkspaceRole newRole) {
         if (role == newRole) {
             return;
         }
         if (newRole == WorkspaceRole.OWNER) {
-            throw WorkspaceExceptions.cannotChangeRoleToOwner();
+            throw new CannotChangeRoleToOwnerException();
         }
         this.role = newRole;
     }
@@ -113,14 +110,6 @@ public class WorkspaceMember extends BaseEntity {
 
     public boolean isOwner() {
         return this.role == WorkspaceRole.OWNER;
-    }
-
-    public boolean roleIsLowerThan(WorkspaceRole role) {
-        return this.role.isLowerThan(role);
-    }
-
-    public boolean roleIsEqualOrHigherThan(WorkspaceRole role) {
-        return this.role.isEqualOrHigherThan(role);
     }
 
     public void addPosition(Position position) {

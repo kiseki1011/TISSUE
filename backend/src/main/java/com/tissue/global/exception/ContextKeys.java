@@ -5,6 +5,8 @@ public interface ContextKeys {
     /** Workspace */
     String WORKSPACE_KEY = "workspaceKey";
 
+    String WORKSPACE_ID = "workspaceId";
+
     String CHILD_WORKSPACE_KEY = "childWorkspaceKey";
     String PARENT_WORKSPACE_KEY = "parentWorkspaceKey";
     String SOURCE_WORKSPACE_KEY = "sourceWorkspaceKey";
@@ -16,7 +18,11 @@ public interface ContextKeys {
     /** Link */
     String TOKEN = "token";
 
-    /** WorkspaceMember */
+    /**
+     * WorkspaceMember
+     */
+    String WORKSPACE_MEMBER_ID = "workspaceMemberId";
+
     String POSITION_ID = "positionId";
 
     String POSITION_NAME = "positionName";
@@ -88,6 +94,8 @@ public interface ContextKeys {
 
     /** Member */
     String MEMBER_ID = "memberId";
+
+    String ACTOR_MEMBER_ID = "actorMemberId";
 
     String EMAIL = "email";
     String USERNAME = "username";

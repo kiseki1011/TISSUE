@@ -11,7 +11,8 @@ import static org.mockito.Mockito.mock;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
 import com.tissue.security.authentication.application.port.out.TokenProvider;
 import com.tissue.security.authentication.domain.MemberDetails;
-import com.tissue.security.authentication.domain.exception.JwtAuthenticationException;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
+import com.tissue.security.authentication.domain.exception.RefreshTokenReusedException;
 import com.tissue.security.authentication.infrastructure.context.MemberDetailsService;
 import com.tissue.security.authentication.presentation.dto.response.ElevatedTokenResponse;
 import com.tissue.security.authentication.presentation.dto.response.LoginResponse;
@@ -124,7 +125,7 @@ class AuthenticationServiceTest {
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> sut.refreshToken(refreshToken))
-                    .isInstanceOf(JwtAuthenticationException.class)
+                    .isInstanceOf(InvalidTokenException.class)
                     .hasMessageContaining("Invalid token");
         }
 
@@ -139,7 +140,7 @@ class AuthenticationServiceTest {
             given(refreshTokenRepository.findByEmail(email)).willReturn(Optional.of(storedToken));
 
             assertThatThrownBy(() -> sut.refreshToken(incomingToken))
-                    .isInstanceOf(JwtAuthenticationException.class)
+                    .isInstanceOf(RefreshTokenReusedException.class)
                     .hasMessageContaining("Refresh token reuse detected");
 
             then(refreshTokenRepository).should().deleteByEmail(email);

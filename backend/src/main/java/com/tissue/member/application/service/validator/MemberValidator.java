@@ -2,7 +2,9 @@ package com.tissue.member.application.service.validator;
 
 import com.tissue.member.application.port.out.MemberQueryRepository;
 import com.tissue.member.domain.Member;
-import com.tissue.member.domain.exception.MemberExceptions;
+import com.tissue.member.domain.exception.DuplicateEmailException;
+import com.tissue.member.domain.exception.DuplicateUsernameException;
+import com.tissue.member.domain.exception.OwnerNotWithdrawableException;
 import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +22,20 @@ public class MemberValidator {
     //  i think Unique check should be done for ACTIVE, DELETED(just in case of restore)
     public void ensureUniqueEmail(String email) {
         if (memberRepository.existsByEmail(email)) {
-            throw MemberExceptions.duplicateEmail(email);
+            throw new DuplicateEmailException(email);
         }
     }
 
     public void ensureUniqueUsername(String username) {
         if (memberRepository.existsByUsername(username)) {
-            throw MemberExceptions.duplicateUsername(username);
+            throw new DuplicateUsernameException(username);
         }
     }
 
     public void ensureWithdrawable(Member member) {
         boolean hasOwnedWorkspaces = workspaceMemberRepository.existsByMemberAndRole(member, WorkspaceRole.OWNER);
         if (hasOwnedWorkspaces) {
-            throw MemberExceptions.ownerNotWithdrawable(member);
+            throw new OwnerNotWithdrawableException(member);
         }
     }
 }

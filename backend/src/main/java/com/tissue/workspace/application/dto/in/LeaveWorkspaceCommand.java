@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-public record LeaveWorkspaceCommand(String workspaceKey, Long memberId) {}
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+
+public record LeaveWorkspaceCommand(WorkspaceMemberContext actorContext) {}

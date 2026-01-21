@@ -1,5 +1,6 @@
 package com.tissue.sprint.application.port.in;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.sprint.application.dto.response.SprintDetail;
 import com.tissue.sprint.application.dto.response.SprintIssueKeys;
 
@@ -16,7 +17,7 @@ public interface SprintQueryUseCase {
     //  - title, goal 검색
     //  - 총 소요 기간
 
-    SprintDetail getSprintDetail(String workspaceKey, String projectKey, Long sprintId);
+    SprintDetail getSprintDetail(Long sprintId, ProjectMemberContext actorContext);
 
-    SprintIssueKeys getSprintIssueKeys(String workspaceKey, String projectKey, Long sprintId);
+    SprintIssueKeys getSprintIssueKeys(Long sprintId, ProjectMemberContext actorContext);
 }

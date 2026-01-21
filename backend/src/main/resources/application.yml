@@ -7,6 +7,7 @@ spring:
     basename: messages
     encoding: UTF-8
     fallback-to-system-locale: false
+
   security:
     oauth2:
       client:
@@ -46,11 +47,22 @@ tissue:
     sender: ${tissue.email.sender:noreply@tissue.com}
     provider: dummy
     verification:
+      # change "strategy" -> "db-type" or "db"
       strategy: redis  # or rdb
       ttl: 1800s       # 30 minutes
       success-url: ${tissue.base-url}/members/verification/success
       failure-url: ${tissue.base-url}/members/verification/fail
       verification-url: ${tissue.base-url}/api/v1/members/verification/verify
+
+  notification:
+    email:
+      concurrency: 20
+      retry-interval-ms: 180000 # 3 minutes
+    executor:
+      core-pool-size: 5
+      max-pool-size: 10
+      queue-capacity: 100
+      thread-name-prefix: Notification-
 
   member:
     policy:

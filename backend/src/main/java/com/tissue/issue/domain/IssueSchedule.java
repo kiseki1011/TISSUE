@@ -1,6 +1,6 @@
 package com.tissue.issue.domain;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.DueDateMustBeFutureException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.time.Instant;
@@ -60,7 +60,7 @@ public class IssueSchedule {
 
         Instant now = Instant.now();
         if (instant.isBefore(now)) {
-            throw IssueExceptions.dueDateMustBeFuture(instant);
+            throw new DueDateMustBeFutureException(instant);
         }
 
         return instant;

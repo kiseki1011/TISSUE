@@ -4,7 +4,8 @@ import com.tissue.common.entity.BaseEntity;
 import com.tissue.issuetype.domain.IssueType;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
-import com.tissue.project.domain.exception.ProjectExceptions;
+import com.tissue.project.domain.exception.InvalidDefaultJoinRoleException;
+import com.tissue.project.domain.exception.ReservedProjectKeyException;
 import com.tissue.project.domain.policy.ProjectKeyPrefixPolicy;
 import com.tissue.workflow.domain.Workflow;
 import com.tissue.workspace.domain.Workspace;
@@ -97,7 +98,7 @@ public class Project extends BaseEntity {
 
         String upperKey = key.toUpperCase();
         if (ProjectKeyPrefixPolicy.isReserved(upperKey)) {
-            throw ProjectExceptions.reservedKey(upperKey);
+            throw new ReservedProjectKeyException(key);
         }
         this.key = upperKey;
     }
@@ -116,7 +117,7 @@ public class Project extends BaseEntity {
 
     public void updateDefaultJoinRole(ProjectRole defaultJoinRole) {
         if (defaultJoinRole.isEqualOrHigherThan(ProjectRole.ADMIN)) {
-            throw ProjectExceptions.invalidDefaultJoinRole(defaultJoinRole);
+            throw new InvalidDefaultJoinRoleException(defaultJoinRole);
         }
         this.defaultJoinRole = defaultJoinRole;
     }
@@ -124,5 +125,9 @@ public class Project extends BaseEntity {
     // TODO: use atomic update("select for update") for issue creation
     public Long generateNextIssueNumber() {
         return this.issueNumber++;
+    }
+
+    public boolean isPublic() {
+        return visibility == ProjectVisibility.PUBLIC;
     }
 }

@@ -1,3 +1,5 @@
 package com.tissue.workspace.application.dto.in;
 
-public record DeleteWorkspaceCommand(String workspaceKey) {}
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+
+public record DeleteWorkspaceCommand(WorkspaceMemberContext actorContext) {}

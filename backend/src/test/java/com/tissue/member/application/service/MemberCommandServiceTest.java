@@ -8,7 +8,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import com.tissue.global.exception.base.BadRequestException;
 import com.tissue.global.exception.base.ResourceConflictException;
 import com.tissue.member.application.dto.request.SignupMemberCommand;
 import com.tissue.member.application.dto.request.SignupOAuthMemberCommand;
@@ -21,9 +20,12 @@ import com.tissue.member.domain.AuthIdentity;
 import com.tissue.member.domain.AuthProvider;
 import com.tissue.member.domain.Member;
 import com.tissue.member.domain.creator.AuthIdentityManager;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
 import com.tissue.security.authentication.application.port.out.RefreshTokenRepository;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import com.tissue.security.authentication.infrastructure.jwt.JwtTokenProvider;
 import com.tissue.security.authentication.presentation.dto.response.OAuthSignupResponse;
+import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
 import io.jsonwebtoken.Claims;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -70,6 +72,12 @@ class MemberCommandServiceTest {
 
     @Mock
     RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    ProjectMemberQueryRepository projectMemberQueryRepository;
+
+    @Mock
+    WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     @InjectMocks
     MemberCommandService sut;
@@ -121,8 +129,7 @@ class MemberCommandServiceTest {
             given(memberEmailVerificationService.isTokenVerified(cmd.email(), cmd.verificationToken()))
                     .willReturn(false);
 
-            assertThatThrownBy(() -> sut.signup(cmd))
-                    .isInstanceOf(BadRequestException.class); // AuthenticationExceptions.invalidVerificationToken
+            assertThatThrownBy(() -> sut.signup(cmd)).isInstanceOf(InvalidTokenException.class);
             then(memberCommandRepository).shouldHaveNoInteractions();
         }
 
@@ -380,6 +387,8 @@ class MemberCommandServiceTest {
             then(authenticationManager).should().authenticate(any());
             then(memberValidator).should().ensureWithdrawable(member);
             then(member).should().withdraw();
+            then(workspaceMemberQueryRepository).should().softDeleteAllByMemberId(memberId);
+            then(projectMemberQueryRepository).should().softDeleteAllByMemberId(memberId);
         }
     }
 }

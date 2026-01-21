@@ -1,4 +1,5 @@
 package com.tissue.issue.application.dto.request;
 
-public record SubmitReviewCommand(
-        String workspaceKey, String projectKey, String issueKey, boolean approved, Long actorMemberId) {}
+import com.tissue.project.application.dto.ProjectMemberContext;
+
+public record SubmitReviewCommand(String issueKey, boolean approved, ProjectMemberContext actorContext) {}

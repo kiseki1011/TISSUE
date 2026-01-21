@@ -1,9 +1,7 @@
 package com.tissue.issue.domain.event;
 
 import com.tissue.common.event.DomainEvent;
-import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
-import com.tissue.project.domain.ProjectMember;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,21 +12,29 @@ public record IssueReviewSubmittedEvent(
         String projectKey,
         String issueKey,
         Long issueId,
-        ReviewStatus status,
+        ReviewStatus reviewStatus,
         Long actorMemberId,
         String actorDisplayName)
         implements DomainEvent {
 
-    public static IssueReviewSubmittedEvent create(Issue issue, ReviewStatus status, ProjectMember actor) {
+    public static IssueReviewSubmittedEvent create(
+            String workspaceKey,
+            String projectKey,
+            String issueKey,
+            Long issueId,
+            ReviewStatus reviewStatus,
+            Long actorMemberId,
+            String actorDisplayName) {
+
         return new IssueReviewSubmittedEvent(
                 UUID.randomUUID(),
                 Instant.now(),
-                issue.getWorkspaceKey(),
-                issue.getProjectKey(),
-                issue.getKey(),
-                issue.getId(),
-                status,
-                actor.getMemberId(),
-                actor.getDisplayName());
+                workspaceKey,
+                projectKey,
+                issueKey,
+                issueId,
+                reviewStatus,
+                actorMemberId,
+                actorDisplayName);
     }
 }

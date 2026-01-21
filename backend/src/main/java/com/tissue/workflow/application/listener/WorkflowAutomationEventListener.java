@@ -10,11 +10,14 @@ import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.enums.ReviewStatus;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.IssueNotFoundException;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.project.application.service.finder.ProjectMemberFinder;
+import com.tissue.project.domain.ProjectMember;
 import com.tissue.workflow.domain.TransitionGuardConfig;
 import com.tissue.workflow.domain.WorkflowState;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workflow.domain.exception.WorkflowExceptions;
+import com.tissue.workflow.domain.exception.AutoTransitionTargetNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,10 +34,11 @@ public class WorkflowAutomationEventListener {
 
     private final IssueTransitionUseCase transitionUseCase;
     private final IssueQueryRepository issueQueryRepository;
+    private final ProjectMemberFinder projectMemberFinder;
 
     @EventListener
     public void handleReviewRejected(IssueReviewSubmittedEvent event) {
-        if (event.status() != ReviewStatus.CHANGES_REQUESTED) {
+        if (event.reviewStatus() != ReviewStatus.CHANGES_REQUESTED) {
             return;
         }
         processAutoRejection(event);
@@ -43,7 +47,7 @@ public class WorkflowAutomationEventListener {
     private void processAutoRejection(IssueReviewSubmittedEvent event) {
         Issue issue = issueQueryRepository
                 .findById(event.issueId())
-                .orElseThrow(() -> IssueExceptions.notFound(event.issueId()));
+                .orElseThrow(() -> new IssueNotFoundException(event.issueId()));
 
         List<WorkflowTransition> outgoingTransitions = getOutgoingTransitions(issue);
 
@@ -56,7 +60,7 @@ public class WorkflowAutomationEventListener {
         }
 
         WorkflowTransition targetTransition = findTransitionByName(outgoingTransitions, targetTransitionName)
-                .orElseThrow(() -> WorkflowExceptions.autoTransitionTargetNotFound(
+                .orElseThrow(() -> new AutoTransitionTargetNotFoundException(
                         issue.getKey(), issue.getCurrentState().getDisplayName(), targetTransitionName));
 
         log.info(
@@ -65,8 +69,12 @@ public class WorkflowAutomationEventListener {
                 issue.getKey(),
                 issue.getWorkspaceKey());
 
+        ProjectMember actor = projectMemberFinder.getActiveWithWorkspaceMember(
+                event.workspaceKey(), event.projectKey(), event.actorMemberId());
+
+        // TODO: useCase를 의존하는게 아니라 그냥 바로 서비스 구현체에 의존할까?
         transitionUseCase.performTransition(new PerformTransitionCommand(
-                issue.getWorkspaceKey(), issue.getProjectKey(), issue.getKey(), targetTransition.getId()));
+                issue.getKey(), targetTransition.getId(), ProjectMemberContext.from(actor)));
     }
 
     private List<WorkflowTransition> getOutgoingTransitions(Issue issue) {

@@ -1,8 +1,9 @@
 package com.tissue.workspace.application.service.finder;
 
-import com.tissue.workspace.application.port.out.WorkspaceCommandRepository;
+import com.tissue.workspace.application.port.out.WorkspaceQueryRepository;
 import com.tissue.workspace.domain.Workspace;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
+import com.tissue.workspace.domain.exception.WorkspaceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class WorkspaceFinder {
 
-    private final WorkspaceCommandRepository workspaceCommandRepository;
+    private final WorkspaceQueryRepository workspaceQueryRepository;
 
     // TODO: add javadoc for the following information
     //  - its only for command API's
@@ -19,7 +20,19 @@ public class WorkspaceFinder {
         Workspace workspace = getBy(workspaceKey);
 
         if (workspace.isArchived()) {
-            throw WorkspaceExceptions.archived(workspace);
+            throw new WorkspaceArchivedException(workspace);
+        }
+
+        return workspace;
+    }
+
+    public Workspace getModifiableBy(Long workspaceId) {
+        Workspace workspace = workspaceQueryRepository
+                .findById(workspaceId)
+                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceId));
+
+        if (workspace.isArchived()) {
+            throw new WorkspaceArchivedException(workspace);
         }
 
         return workspace;
@@ -28,8 +41,8 @@ public class WorkspaceFinder {
     // TODO: add javadoc for the following information
     //  - its only for query API's
     public Workspace getBy(String workspaceKey) {
-        return workspaceCommandRepository
+        return workspaceQueryRepository
                 .findByKey(workspaceKey)
-                .orElseThrow(() -> WorkspaceExceptions.notFound(workspaceKey));
+                .orElseThrow(() -> new WorkspaceNotFoundException(workspaceKey));
     }
 }

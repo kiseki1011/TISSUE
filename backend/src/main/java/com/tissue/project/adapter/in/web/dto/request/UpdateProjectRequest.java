@@ -1,5 +1,6 @@
 package com.tissue.project.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.project.application.dto.request.UpdateProjectCommand;
 import com.tissue.project.domain.enums.ProjectRole;
 import com.tissue.project.domain.enums.ProjectVisibility;
@@ -12,14 +13,14 @@ public record UpdateProjectRequest(
         JsonNullable<@Size(max = 255) String> description,
         JsonNullable<ProjectVisibility> projectVisibility,
         JsonNullable<ProjectRole> defaultJoinRole) {
-    public UpdateProjectCommand toCommand(String workspaceKey, String projectKey) {
+
+    public UpdateProjectCommand toCommand(ProjectMemberContext actor) {
         return UpdateProjectCommand.builder()
-                .workspaceKey(workspaceKey)
-                .projectKey(projectKey)
                 .title(title)
                 .description(description)
                 .projectVisibility(projectVisibility)
                 .defaultJoinRole(defaultJoinRole)
+                .actor(actor)
                 .build();
     }
 }

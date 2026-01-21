@@ -1,8 +1,7 @@
 package com.tissue.workspace.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
-import com.tissue.workspace.application.dto.in.DeleteWorkspaceCommand;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.dto.in.TransferOwnershipCommand;
 import com.tissue.workspace.application.dto.in.UpdateWorkspaceInfoCommand;
 import com.tissue.workspace.application.port.in.WorkspaceCommandUseCase;
@@ -23,25 +22,23 @@ public class WorkspaceCommandService implements WorkspaceCommandUseCase {
     private final WorkspaceFinder workspaceFinder;
     private final WorkspaceMemberFinder workspaceMemberFinder;
     private final WorkspaceAuthorizationService workspaceAuthService;
-    private final CurrentMemberProvider currentMemberProvider;
 
     @Override
     public void updateInfo(UpdateWorkspaceInfoCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), currentUserId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
         Patchers.apply(cmd.name(), workspace::updateName);
         Patchers.apply(cmd.description(), workspace::updateDescription);
     }
 
     @Override
-    public void delete(DeleteWorkspaceCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceOwner(cmd.workspaceKey(), currentUserId);
+    public void delete(WorkspaceMemberContext actorContext) {
+        workspaceAuthService.requireWorkspaceOwner(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
         workspace.softDelete();
 
@@ -50,12 +47,13 @@ public class WorkspaceCommandService implements WorkspaceCommandUseCase {
 
     @Override
     public void transferOwnership(TransferOwnershipCommand cmd) {
-        Long currentUserId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceOwner(cmd.workspaceKey(), currentUserId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceOwner(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
-        WorkspaceMember originalOwner = workspaceMemberFinder.findBy(cmd.actorMemberId(), workspace);
-        WorkspaceMember newOwner = workspaceMemberFinder.findBy(cmd.targetMemberId(), workspace);
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
+
+        WorkspaceMember originalOwner = workspaceMemberFinder.getActive(actorContext.memberId(), workspace);
+        WorkspaceMember newOwner = workspaceMemberFinder.getActive(cmd.targetMemberId(), workspace);
 
         workspace.transferOwnership(originalOwner, newOwner);
 

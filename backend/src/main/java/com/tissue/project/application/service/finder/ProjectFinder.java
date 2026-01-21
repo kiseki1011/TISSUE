@@ -2,8 +2,9 @@ package com.tissue.project.application.service.finder;
 
 import com.tissue.project.application.port.out.ProjectQueryRepository;
 import com.tissue.project.domain.Project;
-import com.tissue.project.domain.exception.ProjectExceptions;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.project.domain.exception.ProjectArchivedException;
+import com.tissue.project.domain.exception.ProjectNotFoundException;
+import com.tissue.workspace.domain.exception.WorkspaceArchivedException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,34 +15,53 @@ public class ProjectFinder {
 
     private final ProjectQueryRepository queryRepository;
 
-    // TODO: add javadoc for the following information
-    //  - its only for read-only API's
-    // TODO: should i change the name to getReadableBy or just use getBy?
-    public Project getBy(String projectKey, String workspaceKey) {
-        // TODO: use JOIN FETCH with Workspace at findByKeyAndWorkspace_Key for optimization
-        // TODO: findByKeyAndWorkspaceKey vs findByKeyAndWorkspace_Key
-        return queryRepository
-                .findByKeyAndWorkspaceKey(projectKey, workspaceKey)
-                .orElseThrow(() -> ProjectExceptions.notFound(workspaceKey, projectKey));
+    /**
+     * Retrieves a Project entity for read-only purposes.
+     *
+     * <p>This method does NOT check if the project or its workspace is archived.
+     * It should only be used for query/read-only APIs where the archived status might not matter
+     * or is handled separately.
+     */
+    public Project getBy(Long projectId) {
+        return queryRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(projectId));
     }
 
-    // TODO: add javadoc for the following information
-    //  - its only for command API's
-    //  - will throw an exception if workspace or project was archived
+    /**
+     * Retrieves a Project entity for command/modification purposes.
+     *
+     * <p>This method validates that the Project and its Workspace are NOT archived.
+     * If either is archived, an exception is thrown to prevent modification.
+     */
     public Project getModifiableBy(String projectKey, String workspaceKey) {
-        Project project = getBy(projectKey, workspaceKey);
+        Project project = queryRepository
+                .findWithWorkspaceByKeyAndWorkspaceKey(projectKey, workspaceKey)
+                .orElseThrow(() -> new ProjectNotFoundException(workspaceKey, projectKey));
 
         if (project.getWorkspace().isArchived()) {
-            throw WorkspaceExceptions.archived(project.getWorkspace());
+            throw new WorkspaceArchivedException(project.getWorkspace());
         }
         if (project.isArchived()) {
-            throw ProjectExceptions.isArchived(project);
+            throw new ProjectArchivedException(project);
         }
 
         return project;
     }
 
-    public Optional<Project> findOptionalBy(Long projectId) {
+    public Project getModifiableBy(Long projectId) {
+        Project project =
+                queryRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        if (project.getWorkspace().isArchived()) {
+            throw new WorkspaceArchivedException(project.getWorkspace());
+        }
+        if (project.isArchived()) {
+            throw new ProjectArchivedException(project);
+        }
+
+        return project;
+    }
+
+    public Optional<Project> getOptionalBy(Long projectId) {
         return queryRepository.findById(projectId);
     }
 }

@@ -3,8 +3,9 @@ package com.tissue.member.adapter.out.persistence;
 import com.tissue.member.application.port.out.EmailVerificationJpaRepository;
 import com.tissue.member.application.port.out.EmailVerificationRepository;
 import com.tissue.member.domain.EmailVerificationToken;
-import com.tissue.member.domain.exception.MemberExceptions;
-import com.tissue.security.authentication.domain.exception.AuthenticationExceptions;
+import com.tissue.member.domain.exception.DuplicateVerificationTokenException;
+import com.tissue.security.authentication.domain.exception.AuthenticationErrorCode;
+import com.tissue.security.authentication.domain.exception.InvalidTokenException;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,16 +36,17 @@ public class RdbEmailVerificationRepository implements EmailVerificationReposito
             tokenRepository.save(verificationToken);
         } catch (DataIntegrityViolationException e) {
             log.warn("Duplicate verification token for email: {}", email, e);
-            throw MemberExceptions.verificationTokenDuplicate(email, e);
+            throw new DuplicateVerificationTokenException(email, e);
         }
     }
 
     @Override
     @Transactional
     public boolean verify(String email, String tokenValue) {
-        EmailVerificationToken token =
-                tokenRepository.findByEmail(email).orElseThrow(AuthenticationExceptions::invalidVerificationToken);
-
+        EmailVerificationToken token = tokenRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new InvalidTokenException(
+                        AuthenticationErrorCode.INVALID_VERIFICATION_TOKEN.getDefaultMessage()));
         if (token.isExpired() || token.tokenValueNotMatch(tokenValue)) {
             return false;
         }

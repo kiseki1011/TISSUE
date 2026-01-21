@@ -1,14 +1,14 @@
 package com.tissue.security.authentication.domain.exception;
 
-import org.springframework.security.core.AuthenticationException;
+import com.tissue.global.exception.base.InternalServerException;
 
-public class JwtSecretException extends AuthenticationException {
+public class JwtSecretException extends InternalServerException {
 
     public JwtSecretException(String message) {
-        super(message);
+        super(AuthenticationErrorCode.JWT_SECRET_ERROR, message);
     }
 
     public JwtSecretException(String message, Throwable cause) {
-        super(message, cause);
+        super(AuthenticationErrorCode.JWT_SECRET_ERROR, cause);
     }
 }

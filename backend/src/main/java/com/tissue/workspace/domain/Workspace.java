@@ -3,7 +3,7 @@ package com.tissue.workspace.domain;
 import static com.tissue.workspace.domain.enums.WorkspaceRole.ADMIN;
 
 import com.tissue.common.entity.BaseEntity;
-import com.tissue.workspace.domain.exception.WorkspaceExceptions;
+import com.tissue.workspace.domain.exception.WorkspaceOwnershipRequiredException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,10 +50,11 @@ public class Workspace extends BaseEntity {
 
     // TODO: should i separate this into a separate domain service?
     public void transferOwnership(WorkspaceMember owner, WorkspaceMember newOwner) {
+        // TODO: 어차피 requireWorkspaceOwner로 서비스 계층에서 검사할텐데 여기서 굳이 검사할 필요 있나?
         if (!owner.isOwner()) {
-            throw WorkspaceExceptions.ownershipRequired(owner);
+            throw new WorkspaceOwnershipRequiredException(owner);
         }
-        owner.changeRoleTo(ADMIN);
+        owner.updateRole(ADMIN);
         newOwner.changeRoleToOwner();
     }
 

@@ -1,6 +1,6 @@
 package com.tissue.issue.domain.service.handler;
 
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.CustomFieldTypeMismatchException;
 import com.tissue.issuetype.domain.IssueField;
 import com.tissue.issuetype.domain.enums.IssueFieldType;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class TextFieldHandler implements FieldTypeHandler {
             return cs.convert(raw, String.class);
             // TODO: Is it the client's fault for ConverterNotFoundException?
         } catch (ConversionFailedException | ConverterNotFoundException ex) {
-            throw IssueExceptions.customFieldTypeMismatch(
+            throw new CustomFieldTypeMismatchException(
                     field.getId(), field.getDisplayName(), field.getIssueFieldType(), raw);
         }
     }

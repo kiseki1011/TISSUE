@@ -3,7 +3,7 @@ package com.tissue.issue.domain.service.relation;
 import com.tissue.issue.domain.Issue;
 import com.tissue.issue.domain.IssueRelation;
 import com.tissue.issue.domain.enums.IssueRelationType;
-import com.tissue.issue.domain.exception.IssueExceptions;
+import com.tissue.issue.domain.exception.RelationCycleDetectedException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +24,7 @@ public class DfsRelationCycleDetector implements RelationCycleDetector {
             cyclePath.add(0, source.getKey());
             cyclePath.add(source.getKey());
 
-            throw IssueExceptions.relationCycleDetected(source.getKey(), target.getKey(), relationType, cyclePath);
+            throw new RelationCycleDetectedException(source.getKey(), target.getKey(), relationType, cyclePath);
         }
     }
 

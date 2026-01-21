@@ -1,7 +1,6 @@
 package com.tissue.team.application.service;
 
 import com.tissue.common.util.Patchers;
-import com.tissue.security.authentication.application.port.out.CurrentMemberProvider;
 import com.tissue.team.application.dto.request.CreateTeamCommand;
 import com.tissue.team.application.dto.request.UpdateTeamCommand;
 import com.tissue.team.application.dto.response.GetTeams;
@@ -13,6 +12,7 @@ import com.tissue.team.application.port.out.TeamQueryRepository;
 import com.tissue.team.application.service.finder.TeamFinder;
 import com.tissue.team.application.service.validator.TeamValidator;
 import com.tissue.team.domain.Team;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import com.tissue.workspace.application.service.finder.WorkspaceFinder;
 import com.tissue.workspace.domain.Workspace;
@@ -31,38 +31,32 @@ public class TeamService implements TeamUseCase {
     private final TeamCommandRepository teamCommandRepository;
     private final TeamQueryRepository teamQueryRepository;
     private final TeamValidator teamValidator;
-    private final CurrentMemberProvider currentMemberProvider;
     private final WorkspaceAuthorizationService workspaceAuthService;
 
     @Override
     public TeamCreateResponse create(CreateTeamCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
 
         teamValidator.ensureUniqueName(workspace, cmd.name());
 
-        Team team = Team.builder()
-                .workspace(workspace)
-                .name(cmd.name())
-                .description(cmd.description())
-                .color(cmd.color())
-                .build();
+        Team team = Team.create(workspace, cmd.name(), cmd.description(), cmd.color());
 
         return TeamCreateResponse.from(teamCommandRepository.save(team));
     }
 
     @Override
     public void update(UpdateTeamCommand cmd) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(cmd.workspaceKey(), actorMemberId);
+        WorkspaceMemberContext actorContext = cmd.actorContext();
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(cmd.workspaceKey());
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
         Team team = teamFinder.getBy(cmd.teamId(), workspace);
 
         Patchers.apply(cmd.name(), newName -> {
-            if ((team.getName().isSameAs(newName))) {
+            if (team.getName().isSameAs(newName)) {
                 return;
             }
             teamValidator.ensureUniqueName(workspace, newName);
@@ -73,11 +67,10 @@ public class TeamService implements TeamUseCase {
     }
 
     @Override
-    public void delete(String workspaceKey, Long teamId) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceAdmin(workspaceKey, actorMemberId);
+    public void delete(Long teamId, WorkspaceMemberContext actorContext) {
+        workspaceAuthService.requireWorkspaceAdmin(actorContext);
 
-        Workspace workspace = workspaceFinder.getModifiableBy(workspaceKey);
+        Workspace workspace = workspaceFinder.getModifiableBy(actorContext.workspaceId());
         Team team = teamFinder.getBy(teamId, workspace);
 
         teamValidator.ensureDeletable(team);
@@ -87,21 +80,17 @@ public class TeamService implements TeamUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public TeamDetail getTeam(String workspaceKey, Long teamId) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
-
-        Team team = teamFinder.getBy(teamId, workspaceKey);
+    public TeamDetail getTeam(Long teamId, WorkspaceMemberContext actorContext) {
+        workspaceAuthService.requireWorkspaceMember(actorContext);
+        Team team = teamFinder.getBy(teamId, actorContext.workspaceKey());
         return TeamDetail.from(team);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public GetTeams getTeams(String workspaceKey) {
-        Long actorMemberId = currentMemberProvider.getCurrentMemberId();
-        workspaceAuthService.requireWorkspaceMember(workspaceKey, actorMemberId);
-
-        List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(workspaceKey);
+    public GetTeams getTeams(WorkspaceMemberContext actorContext) {
+        workspaceAuthService.requireWorkspaceMember(actorContext);
+        List<Team> teams = teamQueryRepository.findAllByWorkspace_KeyOrderByCreatedAtAsc(actorContext.workspaceKey());
         return GetTeams.from(teams);
     }
 }

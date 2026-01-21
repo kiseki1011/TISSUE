@@ -3,7 +3,8 @@ package com.tissue.team.application.service.validator;
 import com.tissue.common.vo.Name;
 import com.tissue.team.application.port.out.TeamQueryRepository;
 import com.tissue.team.domain.Team;
-import com.tissue.team.domain.exception.TeamExceptions;
+import com.tissue.team.domain.exception.DuplicateTeamNameException;
+import com.tissue.team.domain.exception.TeamInUseException;
 import com.tissue.workspace.domain.Workspace;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,13 +19,13 @@ public class TeamValidator {
         String normalizedName = Name.of(name).getNormalized();
 
         if (teamQueryRepository.existsByWorkspaceAndName_Normalized(workspace, normalizedName)) {
-            throw TeamExceptions.duplicateName(name, workspace.getKey());
+            throw new DuplicateTeamNameException(name, workspace.getKey());
         }
     }
 
     public void ensureDeletable(Team team) {
         if (teamQueryRepository.existsByWorkspaceMembers(team)) {
-            throw TeamExceptions.inUse(team);
+            throw new TeamInUseException(team);
         }
     }
 }

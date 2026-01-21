@@ -156,6 +156,11 @@ tasks.register('integrationTest', Test) {
   classpath = sourceSets.integrationTest.runtimeClasspath
   useJUnitPlatform()
   shouldRunAfter test
+
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+    showStandardStreams = true
+  }
 }
 
 check.dependsOn integrationTest

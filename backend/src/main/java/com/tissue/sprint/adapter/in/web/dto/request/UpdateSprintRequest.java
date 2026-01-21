@@ -1,5 +1,6 @@
 package com.tissue.sprint.adapter.in.web.dto.request;
 
+import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.sprint.application.dto.request.UpdateSprintCommand;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -10,15 +11,14 @@ public record UpdateSprintRequest(
         JsonNullable<@Size(max = 255) String> goal,
         JsonNullable<Instant> startedAt,
         JsonNullable<Instant> dueAt) {
-    public UpdateSprintCommand toCommand(String workspaceKey, String projectKey, Long sprintId) {
+    public UpdateSprintCommand toCommand(Long sprintId, ProjectMemberContext actorContext) {
         return UpdateSprintCommand.builder()
-                .workspaceKey(workspaceKey)
-                .projectKey(projectKey)
                 .sprintId(sprintId)
                 .title(title)
                 .goal(goal)
                 .startedAt(startedAt)
                 .dueAt(dueAt)
+                .actorContext(actorContext)
                 .build();
     }
 }
