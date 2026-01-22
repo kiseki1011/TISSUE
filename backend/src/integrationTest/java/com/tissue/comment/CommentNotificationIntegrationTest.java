@@ -78,18 +78,18 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     @MockBean
     EmailClient emailClient;
 
-    private Member actor;
+    private Member actorMember;
     private Member mentionedMember;
     private Member participantMember;
     private Workspace workspace;
     private Project project;
 
-    private WorkspaceMember actorWsMember;
+    private WorkspaceMember actor;
 
     @BeforeEach
     void setupData() {
-        actor = Member.create("actor@test.com", "actor", "Actor");
-        actor = memberCommandRepository.save(actor);
+        actorMember = Member.create("actor@test.com", "actor", "Actor");
+        actorMember = memberCommandRepository.save(actorMember);
 
         mentionedMember = Member.create("mentioned@test.com", "mentionedUser", "Mentioned User");
         mentionedMember = memberCommandRepository.save(mentionedMember);
@@ -100,14 +100,14 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
         workspace = Workspace.create("TEST-WS", "Test Workspace", "Test Description");
         workspace = workspaceCommandRepository.save(workspace);
 
-        actorWsMember = saveWorkspaceMember(actor, WorkspaceRole.OWNER);
+        actor = saveWorkspaceMember(actorMember, WorkspaceRole.OWNER);
         saveWorkspaceMember(mentionedMember, WorkspaceRole.MEMBER);
         saveWorkspaceMember(participantMember, WorkspaceRole.MEMBER);
 
         project = Project.create(workspace, "TEST", "Test Project", "Test Description");
         project = projectCommandRepository.save(project);
 
-        saveProjectMember(actor, ProjectRole.ADMIN);
+        saveProjectMember(actorMember, ProjectRole.ADMIN);
         saveProjectMember(mentionedMember, ProjectRole.MEMBER);
         saveProjectMember(participantMember, ProjectRole.MEMBER);
     }
@@ -124,10 +124,9 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    @DisplayName(
-            "When a comment is added with mentions, mentioned users get ISSUE_MENTIONED and others get ISSUE_COMMENT_ADDED notification")
+    @DisplayName("When a comment is added with mentions, mentioned users get ISSUE_MENTIONED "
+            + "and others get ISSUE_COMMENT_ADDED notification")
     void handleIssueCommentAdded() {
-        Long issueId = 100L;
         String issueKey = "TEST-1";
         Long commentId = 500L;
         String content = "Hello @mentionedUser, this is a test comment.";
@@ -151,8 +150,8 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
                 commentId,
                 content,
                 mentionedUsernames,
-                actor.getId(),
-                actorWsMember.getDisplayName());
+                actorMember.getId(),
+                actor.getDisplayName());
 
         transactionTemplate.executeWithoutResult(status -> {
             publisher.publishEvent(event);
@@ -172,7 +171,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             assertThat(mentionNotification.getMessage().data())
                     .containsEntry(WORKSPACE_KEY, workspace.getKey())
                     .containsEntry(ISSUE_KEY, issueKey)
-                    .containsEntry(ACTOR_NAME, actorWsMember.getDisplayName())
+                    .containsEntry(ACTOR_NAME, actor.getDisplayName())
                     .containsEntry(CONTENT, content);
 
             Notification commentNotification = notifications.stream()
@@ -184,7 +183,7 @@ class CommentNotificationIntegrationTest extends IntegrationTestSupport {
             assertThat(commentNotification.getMessage().data())
                     .containsEntry(WORKSPACE_KEY, workspace.getKey())
                     .containsEntry(ISSUE_KEY, issueKey)
-                    .containsEntry(ACTOR_NAME, actorWsMember.getDisplayName())
+                    .containsEntry(ACTOR_NAME, actor.getDisplayName())
                     .containsEntry(CONTENT, content);
 
             // verify that the mentioned user did not receive ISSUE_COMMENT_ADDED
