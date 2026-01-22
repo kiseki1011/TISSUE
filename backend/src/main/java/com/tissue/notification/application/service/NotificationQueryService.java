@@ -5,6 +5,7 @@ import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.service.NotificationTemplateRenderer;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +25,7 @@ public class NotificationQueryService {
 
     private final NotificationRepository notificationRepository;
     private final MessageSource messageSource;
+    private final NotificationTemplateRenderer templateRenderer;
 
     public CursorPageResponse<NotificationResponse> getNotifications(
             WorkspaceMemberContext actorContext, boolean unreadOnly, @Nullable Long cursorId, int limit) {
@@ -67,8 +69,8 @@ public class NotificationQueryService {
         String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
         String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
 
-        String title = replacePlaceholders(titleTemplate, data);
-        String content = replacePlaceholders(contentTemplate, data);
+        String title = templateRenderer.render(titleTemplate, data);
+        String content = templateRenderer.render(contentTemplate, data);
 
         return NotificationResponse.builder()
                 .id(notification.getId())
@@ -82,14 +84,5 @@ public class NotificationQueryService {
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .build();
-    }
-
-    // TODO: Consider using Apache Commons Text - StringSubstitutor
-    private String replacePlaceholders(String template, Map<String, String> data) {
-        String result = template;
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
-        }
-        return result;
     }
 }
