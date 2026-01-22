@@ -1,5 +1,24 @@
 package com.tissue.notification.application.eventlistener;
 
+import static com.tissue.notification.domain.constant.NotificationDataKeys.ACTOR_NAME;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.CHANGED_FIELDS;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.CONTENT;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.ENDED_AT;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.ISSUE_KEY;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.JOINED_MEMBER_NAME;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.NEW_ROLE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.NEW_STATE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.OLD_ROLE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.OLD_STATE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.PROJECT_KEY;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.REMOVED_REVIEWER_NAME;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.ROLE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.SPRINT_TITLE;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.STARTED_AT;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.STATUS;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.TARGET_NAME;
+import static com.tissue.notification.domain.constant.NotificationDataKeys.WORKSPACE_KEY;
+
 import com.tissue.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.common.vo.EntityReference;
 import com.tissue.issue.domain.event.IssueAssignedEvent;
@@ -69,10 +88,10 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "projectKey", event.projectKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        PROJECT_KEY, event.projectKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -107,9 +126,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -146,9 +165,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -185,10 +204,10 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName(),
-                        "changedFields", changedFields));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        CHANGED_FIELDS, changedFields));
     }
 
     /**
@@ -224,11 +243,11 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName(),
-                        "oldState", event.oldStateName(),
-                        "newState", event.newStateName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        OLD_STATE, event.oldStateName(),
+                        NEW_STATE, event.newStateName()));
     }
 
     /**
@@ -262,9 +281,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -301,9 +320,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     @Async
@@ -335,10 +354,10 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName(),
-                        "status", event.reviewStatus().name()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        STATUS, event.reviewStatus().name()));
     }
 
     /**
@@ -369,9 +388,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -409,10 +428,10 @@ public class NotificationEventListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            "workspaceKey", event.workspaceKey(),
-                            "issueKey", event.issueKey(),
-                            "actorName", event.actorDisplayName(),
-                            "content", event.content()));
+                            WORKSPACE_KEY, event.workspaceKey(),
+                            ISSUE_KEY, event.issueKey(),
+                            ACTOR_NAME, event.actorDisplayName(),
+                            CONTENT, event.content()));
         }
 
         if (!participants.isEmpty()) {
@@ -424,10 +443,10 @@ public class NotificationEventListener {
                     event.actorMemberId(),
                     event.actorDisplayName(),
                     Map.of(
-                            "workspaceKey", event.workspaceKey(),
-                            "issueKey", event.issueKey(),
-                            "actorName", event.actorDisplayName(),
-                            "content", event.content()));
+                            WORKSPACE_KEY, event.workspaceKey(),
+                            ISSUE_KEY, event.issueKey(),
+                            ACTOR_NAME, event.actorDisplayName(),
+                            CONTENT, event.content()));
         }
     }
 
@@ -465,10 +484,10 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName(),
-                        "removedReviewerName", event.removedReviewerDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        REMOVED_REVIEWER_NAME, event.removedReviewerDisplayName()));
     }
 
     /**
@@ -507,9 +526,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "issueKey", event.issueKey(),
-                        "actorName", event.actorDisplayName()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, event.actorDisplayName()));
     }
 
     /**
@@ -543,8 +562,8 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "sprintTitle", event.sprintTitle()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        SPRINT_TITLE, event.sprintTitle()));
     }
 
     /**
@@ -581,14 +600,11 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey",
-                        event.workspaceKey(),
-                        "sprintTitle",
-                        event.sprintTitle(),
-                        "startedAt",
-                        startedAt,
-                        "endedAt",
-                        endedAt));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        SPRINT_TITLE, event.sprintTitle(),
+                        STARTED_AT, startedAt,
+                        ENDED_AT, endedAt)
+        );
     }
 
     /**
@@ -624,9 +640,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "joinedMemberName", event.joinedMemberDisplayName(),
-                        "role", event.role().name()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
+                        ROLE, event.role().name()));
     }
 
     /**
@@ -663,9 +679,9 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "projectKey", event.projectKey(),
-                        "joinedMemberName", event.joinedMemberDisplayName(),
-                        "role", event.role().name()));
+                        PROJECT_KEY, event.projectKey(),
+                        JOINED_MEMBER_NAME, event.joinedMemberDisplayName(),
+                        ROLE, event.role().name()));
     }
 
     /**
@@ -702,11 +718,11 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "workspaceKey", event.workspaceKey(),
-                        "memberName", event.targetDisplayName(),
-                        "actorName", event.actorDisplayName(),
-                        "oldRole", event.oldRole().name(),
-                        "newRole", event.newRole().name()));
+                        WORKSPACE_KEY, event.workspaceKey(),
+                    TARGET_NAME, event.targetDisplayName(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        OLD_ROLE, event.oldRole().name(),
+                        NEW_ROLE, event.newRole().name()));
     }
 
     /**
@@ -744,10 +760,10 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        "projectKey", event.projectKey(),
-                        "memberName", event.targetDisplayName(),
-                        "actorName", event.actorDisplayName(),
-                        "oldRole", event.oldRole().name(),
-                        "newRole", event.newRole().name()));
+                        PROJECT_KEY, event.projectKey(),
+                    TARGET_NAME, event.targetDisplayName(),
+                        ACTOR_NAME, event.actorDisplayName(),
+                        OLD_ROLE, event.oldRole().name(),
+                        NEW_ROLE, event.newRole().name()));
     }
 }
