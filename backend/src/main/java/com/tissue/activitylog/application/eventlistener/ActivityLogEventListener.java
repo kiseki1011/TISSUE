@@ -1,4 +1,4 @@
-package com.tissue.activitylog.application.listener;
+package com.tissue.activitylog.application.eventlistener;
 
 import com.tissue.activitylog.application.dto.request.CreateLogCommand;
 import com.tissue.activitylog.application.dto.request.CreateLogWithDiffCommand;

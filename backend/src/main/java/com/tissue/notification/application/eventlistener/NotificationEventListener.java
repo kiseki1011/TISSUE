@@ -1,4 +1,4 @@
-package com.tissue.notification.application.listener;
+package com.tissue.notification.application.eventlistener;
 
 import com.tissue.comment.domain.event.IssueCommentAddedEvent;
 import com.tissue.common.vo.EntityReference;

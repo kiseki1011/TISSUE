@@ -1,4 +1,4 @@
-package com.tissue.issue.application.service.listener;
+package com.tissue.issue.application.eventlistener;
 
 import com.tissue.issue.application.service.IssueAggregationService;
 import com.tissue.issue.domain.event.IssueCreatedEvent;
