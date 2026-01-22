@@ -600,11 +600,14 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                        SPRINT_TITLE, event.sprintTitle(),
-                        STARTED_AT, startedAt,
-                        ENDED_AT, endedAt)
-        );
+                        WORKSPACE_KEY,
+                        event.workspaceKey(),
+                        SPRINT_TITLE,
+                        event.sprintTitle(),
+                        STARTED_AT,
+                        startedAt,
+                        ENDED_AT,
+                        endedAt));
     }
 
     /**
@@ -718,11 +721,16 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        WORKSPACE_KEY, event.workspaceKey(),
-                    TARGET_NAME, event.targetDisplayName(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        OLD_ROLE, event.oldRole().name(),
-                        NEW_ROLE, event.newRole().name()));
+                        WORKSPACE_KEY,
+                        event.workspaceKey(),
+                        TARGET_NAME,
+                        event.targetDisplayName(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        OLD_ROLE,
+                        event.oldRole().name(),
+                        NEW_ROLE,
+                        event.newRole().name()));
     }
 
     /**
@@ -760,10 +768,15 @@ public class NotificationEventListener {
                 event.actorMemberId(),
                 event.actorDisplayName(),
                 Map.of(
-                        PROJECT_KEY, event.projectKey(),
-                    TARGET_NAME, event.targetDisplayName(),
-                        ACTOR_NAME, event.actorDisplayName(),
-                        OLD_ROLE, event.oldRole().name(),
-                        NEW_ROLE, event.newRole().name()));
+                        PROJECT_KEY,
+                        event.projectKey(),
+                        TARGET_NAME,
+                        event.targetDisplayName(),
+                        ACTOR_NAME,
+                        event.actorDisplayName(),
+                        OLD_ROLE,
+                        event.oldRole().name(),
+                        NEW_ROLE,
+                        event.newRole().name()));
     }
 }
