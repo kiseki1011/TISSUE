@@ -1,4 +1,4 @@
-package com.tissue.workflow.application.listener;
+package com.tissue.workflow.application.eventlistener;
 
 import static com.tissue.workflow.domain.guard.GuardType.REQUIRED_APPROVAL;
 import static com.tissue.workflow.domain.guard.types.ApprovalGuard.KEY_AUTO_REJECT;

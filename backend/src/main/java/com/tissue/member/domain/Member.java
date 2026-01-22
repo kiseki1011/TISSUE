@@ -23,7 +23,6 @@ public class Member extends BaseDateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id")
     private Long id;
 
     @Column(name = "email", unique = true, nullable = false)
@@ -40,7 +39,7 @@ public class Member extends BaseDateEntity {
     private SupportedLanguage language = SupportedLanguage.EN;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "member_status", nullable = false)
     private MemberStatus status;
 
     @Enumerated(EnumType.STRING)
@@ -53,9 +52,6 @@ public class Member extends BaseDateEntity {
     @SuppressWarnings("NullAway.Init")
     protected Member() {}
 
-    /**
-     * 회원을 생성. (비밀번호는 AuthIdentity에서 별도로 관리)
-     */
     public static Member create(String email, String username, String name) {
         Member member = new Member();
         member.email = email;
@@ -63,7 +59,6 @@ public class Member extends BaseDateEntity {
         member.name = name;
         member.status = MemberStatus.ACTIVE;
         member.role = SystemRole.USER;
-
         return member;
     }
 
@@ -92,5 +87,5 @@ public class Member extends BaseDateEntity {
         this.status = MemberStatus.DELETED;
     }
 
-    // TODO: add lock
+    // TODO: add lock?
 }

@@ -66,31 +66,57 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     List<WorkspaceMember> findAllByMember(Member member);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKey(@Param("workspaceKey") String workspaceKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id <> :excludedMemberId")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyExcluding(
             @Param("workspaceKey") String workspaceKey, @Param("excludedMemberId") Long excludedMemberId);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.role IN :roles")
     Set<WorkspaceMemberContact> findAdminContactsByWorkspace_Key(
             @Param("workspaceKey") String workspaceKey, @Param("roles") Set<WorkspaceRole> roles);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.member.id = :memberId AND wm.workspaceKey = :workspaceKey")
     Optional<WorkspaceMemberContact> findContactByMemberIdAndWorkspaceKey(
             @Param("memberId") Long memberId, @Param("workspaceKey") String workspaceKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(wm.member.id, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
             + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.id IN :memberIds")
     List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndMemberIds(
             @Param("workspaceKey") String workspaceKey, @Param("memberIds") Collection<Long> memberIds);
+
+    @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
+            + "WorkspaceMemberContact(wm.member.id, wm.member.email, wm.member.language) "
+            + "FROM WorkspaceMember wm WHERE wm.workspaceKey = :workspaceKey AND wm.member.username IN :usernames")
+    List<WorkspaceMemberContact> findAllContactsByWorkspaceKeyAndUsernames(
+            @Param("workspaceKey") String workspaceKey, @Param("usernames") Set<String> usernames);
+
+    @Query("SELECT wm FROM WorkspaceMember wm "
+            + "JOIN FETCH wm.member m "
+            + "WHERE wm.workspaceKey = :workspaceKey "
+            + "AND wm.softDeleted = false "
+            + "AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%')) "
+            + "     OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<WorkspaceMember> searchMembers(@Param("workspaceKey") String workspaceKey, @Param("query") String query);
+
+    @Query("SELECT wm FROM WorkspaceMember wm "
+            + "JOIN FETCH wm.member m "
+            + "WHERE wm.workspaceKey = :workspaceKey "
+            + "AND wm.softDeleted = false "
+            + "AND wm.member.id IN (SELECT pm.memberId FROM ProjectMember pm WHERE pm.projectKey = :projectKey) "
+            + "AND (LOWER(wm.displayName) LIKE LOWER(CONCAT('%', :query, '%')) "
+            + "     OR LOWER(m.username) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<WorkspaceMember> searchProjectMembers(
+            @Param("workspaceKey") String workspaceKey,
+            @Param("projectKey") String projectKey,
+            @Param("query") String query);
 }

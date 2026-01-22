@@ -14,6 +14,7 @@ import com.tissue.notification.application.port.out.FailedEmailRepository;
 import com.tissue.notification.domain.FailedEmail;
 import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.service.NotificationTemplateRenderer;
 import com.tissue.notification.domain.vo.NotificationMessage;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +40,9 @@ class EmailSenderTest {
     @Mock
     FailedEmailRepository failedEmailRepository;
 
+    @Mock
+    NotificationTemplateRenderer templateRenderer;
+
     @InjectMocks
     EmailSender sut;
 
@@ -61,6 +65,8 @@ class EmailSenderTest {
 
             given(messageSource.getMessage(anyString(), any(), anyString(), any(Locale.class)))
                     .willReturn("Template with {key}");
+
+            given(templateRenderer.render(anyString(), any())).willReturn("Template with value");
 
             sut.send(notification);
 

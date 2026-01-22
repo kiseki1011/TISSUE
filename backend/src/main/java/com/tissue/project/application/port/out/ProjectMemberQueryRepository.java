@@ -34,9 +34,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     // TODO: WorkspaceMember와 같이 조회(JOIN FETCH)
     Optional<ProjectMember> findByProjectIdAndMemberIdAndSoftDeletedFalse(Long projectId, Long memberId);
 
-    Optional<ProjectMember> findByWorkspaceKeyAndProjectKeyAndMemberIdAndSoftDeletedFalse(
-            String workspaceKey, String projectKey, Long memberId);
-
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProjectMember pm SET pm.softDeleted = true, pm.softDeletedAt = CURRENT_TIMESTAMP, "
             + "pm.archived = true, pm.archivedAt = CURRENT_TIMESTAMP "
@@ -50,15 +47,6 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             + "WHERE pm.memberId = :memberId")
     void softDeleteAllByMemberId(@Param("memberId") Long memberId);
 
-    @Query("SELECT pm.role FROM ProjectMember pm "
-            + "WHERE pm.workspaceKey = :workspaceKey "
-            + "AND pm.projectKey = :projectKey "
-            + "AND pm.memberId = :memberId")
-    Optional<ProjectRole> findRoleByKeysAndMemberId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKey") String projectKey,
-            @Param("memberId") Long memberId);
-
     @Query("""
                 SELECT pm.memberId
                 FROM ProjectMember pm
@@ -69,27 +57,10 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
     Set<Long> findMemberIdsByProjectAndMemberIds(
             @Param("project") Project project, @Param("memberIds") Collection<Long> memberIds);
 
-    @Query("""
-                SELECT pm
-                FROM ProjectMember pm
-                WHERE pm.workspaceKey = :workspaceKey
-                  AND pm.memberId = :memberId
-                  AND pm.projectKey IN :projectKeys
-                  AND pm.role = 'ADMIN'
-            """)
-    List<ProjectMember> findAllAdminsByKeysAndMemberId(
-            @Param("workspaceKey") String workspaceKey,
-            @Param("projectKeys") Collection<String> projectKeys,
-            @Param("memberId") Long memberId);
-
-    boolean existsByWorkspaceKeyAndProjectKeyAndMemberId(String workspaceKey, String projectKey, Long memberId);
-
     boolean existsByProjectAndMemberId(Project project, Long memberId);
 
-    List<ProjectMember> findAllByMemberId(Long memberId);
-
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "
@@ -99,7 +70,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("workspaceKey") String workspaceKey, @Param("projectKey") String projectKey);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "
@@ -112,7 +83,7 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             @Param("excludedMemberId") Long excludedMemberId);
 
     @Query("SELECT new " + WORKSPACE_MEMBER_CONTACT_PATH
-            + "WorkspaceMemberContact(pm.memberId, wm.email, wm.member.language) "
+            + "WorkspaceMemberContact(pm.memberId, wm.member.email, wm.member.language) "
             + "FROM ProjectMember pm "
             + "JOIN pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "

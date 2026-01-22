@@ -57,7 +57,7 @@ public class IssueCommentCommandService implements CommentCommandUseCase {
         Comment comment = Comment.create(author, issue, cmd.content(), parent);
         commentRepository.save(comment);
 
-        eventPublisher.publishCommentAdded(issue, comment, actorContext);
+        eventPublisher.publishCommentAdded(issue, comment, cmd.mentionedUsernames(), actorContext);
 
         return new CommentAddResponse(actorContext.workspaceKey(), cmd.issueKey(), comment.getId());
     }

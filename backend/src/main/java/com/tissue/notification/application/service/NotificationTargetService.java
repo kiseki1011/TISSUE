@@ -72,6 +72,13 @@ public class NotificationTargetService {
                 workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndMemberIds(workspaceKey, memberIds));
     }
 
+    public List<WorkspaceMemberContact> getMembersByUsernames(String workspaceKey, Set<String> usernames) {
+        if (usernames == null || usernames.isEmpty()) {
+            return List.of();
+        }
+        return workspaceMemberQueryRepository.findAllContactsByWorkspaceKeyAndUsernames(workspaceKey, usernames);
+    }
+
     public Set<WorkspaceMemberContact> getIssueAssignee(String workspaceKey, String issueKey) {
         Set<WorkspaceMemberContact> target = new HashSet<>();
         issueQueryRepository.findAssigneeContact(workspaceKey, issueKey).ifPresent(target::add);

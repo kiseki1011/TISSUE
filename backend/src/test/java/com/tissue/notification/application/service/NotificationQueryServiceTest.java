@@ -1,6 +1,8 @@
 package com.tissue.notification.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 import com.tissue.common.dto.CursorPageResponse;
@@ -9,7 +11,9 @@ import com.tissue.common.vo.EntityReference;
 import com.tissue.notification.application.dto.response.NotificationResponse;
 import com.tissue.notification.application.port.out.NotificationRepository;
 import com.tissue.notification.domain.Notification;
+import com.tissue.notification.domain.constant.NotificationDataKeys;
 import com.tissue.notification.domain.enums.NotificationType;
+import com.tissue.notification.domain.service.NotificationTemplateRenderer;
 import com.tissue.notification.domain.vo.NotificationMessage;
 import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
@@ -38,6 +42,9 @@ class NotificationQueryServiceTest {
     @Mock
     MessageSource messageSource;
 
+    @Mock
+    NotificationTemplateRenderer templateRenderer;
+
     @InjectMocks
     NotificationQueryService sut;
 
@@ -47,7 +54,7 @@ class NotificationQueryServiceTest {
         @Test
         @DisplayName("success: returns mapped responses")
         void success_GetNotifications() {
-            String workspaceKey = "TESTWS";
+            String workspaceKey = "TEST-WS";
             Long memberId = 1L;
             boolean unreadOnly = false;
             Long cursorId = null;
@@ -62,7 +69,7 @@ class NotificationQueryServiceTest {
                     .receiverMemberId(memberId)
                     .receiverEmail("test@test.com")
                     .receiverLanguage(SupportedLanguage.EN)
-                    .message(new NotificationMessage(Map.of("issueKey", "TESTPROJ-1")))
+                    .message(new NotificationMessage(Map.of(NotificationDataKeys.ISSUE_KEY, "TESTPROJ-1")))
                     .build();
 
             ReflectionTestUtils.setField(notification, "id", 100L);
@@ -81,6 +88,7 @@ class NotificationQueryServiceTest {
                             "event.ISSUE_CREATED.title",
                             LocaleContextHolder.getLocale()))
                     .willReturn("Issue Created: {issueKey}");
+
             given(messageSource.getMessage(
                             "event.ISSUE_CREATED.content",
                             null,
@@ -88,8 +96,10 @@ class NotificationQueryServiceTest {
                             LocaleContextHolder.getLocale()))
                     .willReturn("Check it out");
 
+            given(templateRenderer.render(anyString(), any())).willReturn("Issue Created: TESTPROJ-1");
+
             WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                    1L, memberId, 1L, workspaceKey, "test@test.com", "Actor", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
 
             CursorPageResponse<NotificationResponse> result = sut.getNotifications(actor, unreadOnly, cursorId, limit);
 
@@ -105,14 +115,14 @@ class NotificationQueryServiceTest {
         @Test
         @DisplayName("success: returns true if unread notification exists")
         void success_CheckUnreadStatus() {
-            String workspaceKey = "TESTWS";
+            String workspaceKey = "TEST-WS";
             Long memberId = 1L;
             given(repository.existsByReceiverMemberIdAndEntityReference_WorkspaceKeyAndIsReadFalse(
                             memberId, workspaceKey))
                     .willReturn(true);
 
             WorkspaceMemberContext actor = new WorkspaceMemberContext(
-                    1L, memberId, 1L, workspaceKey, "test@test.com", "Actor", WorkspaceRole.MEMBER);
+                    1L, memberId, 1L, workspaceKey, "test@test.com", "Gildong", WorkspaceRole.MEMBER);
 
             boolean result = sut.checkUnreadStatus(actor);
 

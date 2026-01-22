@@ -7,6 +7,7 @@ import com.tissue.notification.domain.Notification;
 import com.tissue.notification.domain.enums.NotificationChannel;
 import com.tissue.notification.domain.enums.NotificationType;
 import com.tissue.notification.domain.service.NotificationSender;
+import com.tissue.notification.domain.service.NotificationTemplateRenderer;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class EmailSender implements NotificationSender {
     private final EmailClient emailClient;
     private final MessageSource messageSource;
     private final FailedEmailRepository failedEmailRepository;
+    private final NotificationTemplateRenderer templateRenderer;
 
     @Override
     public NotificationChannel getChannel() {
@@ -45,8 +47,8 @@ public class EmailSender implements NotificationSender {
             String titleTemplate = messageSource.getMessage(titleKey, null, titleKey, locale);
             String contentTemplate = messageSource.getMessage(contentKey, null, contentKey, locale);
 
-            subject = replacePlaceholders(titleTemplate, data);
-            body = replacePlaceholders(contentTemplate, data);
+            subject = templateRenderer.render(titleTemplate, data);
+            body = templateRenderer.render(contentTemplate, data);
 
             emailClient.send(to, subject, body);
         } catch (Exception e) {
@@ -68,14 +70,5 @@ public class EmailSender implements NotificationSender {
                 log.error("Failed to save FailedEmail entity", dbEx);
             }
         }
-    }
-
-    // TODO: Consider using Apache Commons Text - StringSubstitutor
-    private String replacePlaceholders(String template, Map<String, String> data) {
-        String result = template;
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
-        }
-        return result;
     }
 }
