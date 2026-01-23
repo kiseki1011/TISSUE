@@ -1,5 +1,6 @@
 package com.tissue.vcs.application.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -199,11 +200,8 @@ class GithubIntegrationServiceTest {
             given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
                     .willReturn(Optional.empty());
 
-            try {
-                sut.handlePullRequest(prDto);
-            } catch (WorkspaceVcsIntegrationNotFoundException e) {
-                // expected
-            }
+            assertThatThrownBy(() -> sut.handlePullRequest(prDto))
+                    .isInstanceOf(WorkspaceVcsIntegrationNotFoundException.class);
         }
 
         @Test
