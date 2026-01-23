@@ -48,7 +48,7 @@ public class GitIntegrationService implements GitProviderUseCase {
                 .findByWorkspaceKey(gitPr.workspaceKey())
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPr.workspaceKey()));
 
-        if (!integration.isSyncEnabled()) {
+        if (!integration.isActive()) {
             log.info("[VCS_PULL_REQUEST] Integration is inactive for workspace={}", gitPr.workspaceKey());
             return;
         }

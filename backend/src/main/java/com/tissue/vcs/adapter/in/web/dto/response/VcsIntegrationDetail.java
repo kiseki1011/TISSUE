@@ -6,6 +6,6 @@ public record VcsIntegrationDetail(Long vcsIntegrationId, String workspaceKey, b
 
     public static VcsIntegrationDetail from(WorkspaceVcsIntegration integration, String webhookUrl) {
         return new VcsIntegrationDetail(
-                integration.getId(), integration.getWorkspaceKey(), integration.isSyncEnabled(), webhookUrl);
+                integration.getId(), integration.getWorkspaceKey(), integration.isActive(), webhookUrl);
     }
 }
