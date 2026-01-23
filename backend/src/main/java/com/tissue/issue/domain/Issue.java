@@ -268,10 +268,10 @@ public class Issue extends BaseEntity {
         WorkflowState previousState = this.currentState;
         this.currentState = newState;
 
-        if (previousState.getCategory().isInitial()) {
+        if (previousState.isCategorizedAs(INITIAL)) {
             this.schedule.markStarted();
         }
-        if (newState.getCategory().isCompleted()) {
+        if (newState.isCategorizedAs(COMPLETED)) {
             this.schedule.markResolved();
         }
         if (previousState.isCategorizedAs(COMPLETED) && !newState.isCategorizedAs(COMPLETED)) {

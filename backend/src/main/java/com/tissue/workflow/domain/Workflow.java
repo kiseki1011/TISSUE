@@ -77,15 +77,18 @@ public class Workflow extends BaseEntity {
     /**
      * This field is technically null during the initial construction/persistence phase.
      * However, a valid, persisted Workflow domain object must have an initial state.
-     * I marked the field @Nullable for NullAway/JPA, but the getter guarantees non-nullity.
+     * The field is marked @Nullable for NullAway/JPA, but the getter guarantees non-nullity.
      */
     @Nullable
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initial_state_id") // mark nullable = false for DB contstraint?
+    @JoinColumn(name = "initial_state_id", nullable = false)
     private WorkflowState initialState;
 
     @Column(name = "system_provided", nullable = false)
     private boolean systemProvided;
+
+    @Embedded
+    private VcsAutomationSettings vcsSettings;
 
     @SuppressWarnings("NullAway.Init")
     protected Workflow() {}

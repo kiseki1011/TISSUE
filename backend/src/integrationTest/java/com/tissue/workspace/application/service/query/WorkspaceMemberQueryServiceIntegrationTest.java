@@ -73,15 +73,13 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
                 member1.getName(),
                 WorkspaceRole.OWNER);
 
-        List<WorkspaceMemberSearchResponse> results =
-                sut.searchMembers(actorContext, "Gil", null);
+        List<WorkspaceMemberSearchResponse> results = sut.searchMembers(actorContext, "Gil", null);
 
         assertThat(results).hasSize(1);
         assertThat(results.get(0).username()).isEqualTo("member1");
         assertThat(results.get(0).displayName()).isEqualTo("Gildong");
 
-        List<WorkspaceMemberSearchResponse> results2 =
-                sut.searchMembers(actorContext, "mber2", null);
+        List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(actorContext, "mber2", null);
         assertThat(results2).hasSize(1);
         assertThat(results2.get(0).username()).isEqualTo("member2");
         assertThat(results2.get(0).displayName()).isEqualTo("Chulsoo");
@@ -131,8 +129,7 @@ class WorkspaceMemberQueryServiceIntegrationTest extends IntegrationTestSupport 
         assertThat(results).extracting("username").containsExactlyInAnyOrder("member1", "member2");
 
         // search with query + project key
-        List<WorkspaceMemberSearchResponse> results2 =
-                sut.searchMembers(context, "Gildong", "PROJ");
+        List<WorkspaceMemberSearchResponse> results2 = sut.searchMembers(context, "Gildong", "PROJ");
         assertThat(results2).hasSize(1);
         assertThat(results2.get(0).username()).isEqualTo("member1");
         assertThat(results2.get(0).displayName()).isEqualTo("Gildong");
