@@ -1,6 +1,7 @@
 package com.tissue.vcs.application.service;
 
 import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.issue.application.service.IssueTransitionService;
 import com.tissue.issue.domain.Issue;
 import com.tissue.vcs.application.port.in.GitProviderUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
@@ -25,23 +26,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GitIntegrationService implements GitProviderUseCase {
 
-    // private final IssueTransitionService issueTransitionService;
+    private final IssueTransitionService issueTransitionService;
     private final WorkspaceVcsIntegrationRepository integrationRepository;
     private final IssueQueryRepository issueQueryRepository;
     private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
 
     // issue key pattern: PROJ-123 (Strict word boundary)
-    // TODO: 테스트 해서 패턴 검증하자
     private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Z][A-Z0-9]+-\\d+\\b");
 
-    // TODO: handlePullRequestEvent -> handlePullRequest
-    //  엄밀히 말하자면 스프링에서 의미하는 이벤트는 아니잖아?
     @Override
     @Transactional
-    public void handlePullRequestEvent(GitPrDto gitPr) {
-        // TODO: 로깅에 grep 친화적인 문구를 표시하는게 좋지 않나?
-        //  ex. [GIT PR RECEIVED] action = {}, ...
-        log.info("Received PR: action={}, workspace={}, title={}", gitPr.action(), gitPr.workspaceKey(), gitPr.title());
+    public void handlePullRequest(GitPrDto gitPr) {
+        log.info("[GIT_PR] action={}, workspace={}, title={}", gitPr.action(), gitPr.workspaceKey(), gitPr.title());
 
         // TODO: IllegalArgumentException vs WorkspaceVcsIntegrationNotFound 어느게 더 알맞지 이 상황에?
         WorkspaceVcsIntegration integration = integrationRepository
@@ -50,7 +46,7 @@ public class GitIntegrationService implements GitProviderUseCase {
                         "Integration not configured for workspace: " + gitPr.workspaceKey()));
 
         if (!integration.isGithubSyncEnabled()) {
-            log.info("GitHub sync is disabled for workspace: {}", gitPr.workspaceKey());
+            log.info("[GIT_PR] GitHub sync is disabled for workspace: {}", gitPr.workspaceKey());
             return;
         }
 
@@ -63,7 +59,7 @@ public class GitIntegrationService implements GitProviderUseCase {
         Issue issue = issueQueryRepository
                 .findByKeyAndWorkspaceKey(issueKey, gitPr.workspaceKey())
                 .orElseGet(() -> {
-                    log.warn("Issue not found: {}", issueKey);
+                    log.warn("[GIT_PR] Issue not found: {}", issueKey);
                     return null;
                 });
 
@@ -73,7 +69,7 @@ public class GitIntegrationService implements GitProviderUseCase {
 
         findActor(gitPr.authorEmail(), gitPr.workspaceKey())
                 .ifPresent(actor -> log.info(
-                        "Identified matching actor username: {}, email: {}",
+                        "[GIT_PR] Identified matching actor username: {}, email: {}",
                         actor.getMember().getUsername(),
                         actor.getMember().getEmail()));
 
@@ -141,7 +137,7 @@ public class GitIntegrationService implements GitProviderUseCase {
         }
 
         log.info(
-                "Transitioning issue {} via VCS automation: {} -> {}",
+                "[GIT_PR] Transitioning issue {} via VCS automation: {} -> {}",
                 issue.getKey(),
                 transition.getSourceState().getName().getDisplay(),
                 transition.getTargetState().getName().getDisplay());

@@ -3,5 +3,5 @@ package com.tissue.vcs.application.port.in;
 import com.tissue.vcs.domain.GitPrDto;
 
 public interface GitProviderUseCase {
-    void handlePullRequestEvent(GitPrDto event);
+    void handlePullRequest(GitPrDto event);
 }

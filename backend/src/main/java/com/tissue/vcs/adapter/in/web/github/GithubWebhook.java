@@ -52,7 +52,7 @@ public class GithubWebhook {
         try {
             GithubPrPayload payload = objectMapper.readValue(rawPayload, GithubPrPayload.class);
             if (payload.getPullRequest() != null) {
-                gitProviderUseCase.handlePullRequestEvent(payload.toDomainDto(workspaceKey));
+                gitProviderUseCase.handlePullRequest(payload.toDomainDto(workspaceKey));
             } else {
                 log.debug("Ignored non-PR event");
             }
