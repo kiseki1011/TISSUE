@@ -1,0 +1,98 @@
+package com.tissue.vcs.application.service;
+
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
+import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
+import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
+import com.tissue.vcs.application.port.in.WorkspaceVcsQueryUseCase;
+import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
+import com.tissue.vcs.domain.WorkspaceVcsIntegration;
+import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
+import com.tissue.workspace.domain.exception.InsufficientWorkspaceRoleException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCase, WorkspaceVcsQueryUseCase {
+
+    private final WorkspaceVcsIntegrationRepository repository;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
+
+    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/integrations/%s/github/webhook";
+
+    @Override
+    @Transactional
+    public VcsSecretResponse regenerateSecret(String workspaceKey, ProjectMemberContext actorContext) {
+        // TODO: use WorkspaceAuthorizationService
+        requireWorkspaceAdmin(actorContext);
+
+        WorkspaceVcsIntegration integration = repository
+                .findByWorkspaceKey(workspaceKey)
+                .orElseGet(() -> WorkspaceVcsIntegration.create(workspaceKey, generateRandomSecret()));
+
+        if (integration.getId() != null) {
+            integration.rotateSecret(generateRandomSecret());
+        } else {
+            integration = repository.save(integration);
+        }
+
+        if (integration.isSoftDeleted()) {
+            integration.restoreSoftDeleted();
+        }
+
+        return new VcsSecretResponse(buildWebhookUrl(workspaceKey), integration.getWebhookSecret());
+    }
+
+    @Override
+    @Transactional
+    public void removeIntegration(String workspaceKey, ProjectMemberContext actorContext) {
+        requireWorkspaceAdmin(actorContext);
+
+        WorkspaceVcsIntegration integration = repository
+                .findByWorkspaceKey(workspaceKey)
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+
+        integration.softDelete();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VcsIntegrationDetail getIntegration(String workspaceKey, ProjectMemberContext actorContext) {
+        // TODO: use WorkspaceAuthorizationService
+        if (!actorContext.isWorkspaceMember()) {
+            throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.MEMBER);
+        }
+
+        WorkspaceVcsIntegration integration = repository
+                .findByWorkspaceKey(workspaceKey)
+                .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
+
+        return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey));
+    }
+
+    // TODO: use WorkspaceAuthorizationService
+    private void requireWorkspaceAdmin(ProjectMemberContext actor) {
+        if (!actor.isWorkspaceAdmin()) {
+            throw new InsufficientWorkspaceRoleException(actor.workspaceKey(), WorkspaceRole.ADMIN);
+        }
+    }
+
+    private String generateRandomSecret() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String buildWebhookUrl(String workspaceKey) {
+        return appBaseUrl + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey);
+    }
+}
