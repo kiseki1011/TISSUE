@@ -15,6 +15,7 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,79 +41,96 @@ class WorkspaceVcsIntegrationServiceTest {
     private final String workspaceKey = "WS-KEY";
     private final String webhookUrlBase = "http://localhost:8080/api/v1/integrations/%s/github/webhook";
 
-    @Test
-    @DisplayName("시크릿을 재생성하면 기존 연동이 있을 경우 시크릿을 교체한다")
-    void regenerateSecret_Existing() {
-        WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
-        WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
+    @Nested
+    @DisplayName("regenerate secret")
+    class RegenerateSecret {
 
-        ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
+        @Test
+        @DisplayName("success: rotates secret if integration exists")
+        void success_Existing() {
+            WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-        given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
-                .willReturn(Optional.of(integration));
-        given(integration.getId()).willReturn(1L);
-        given(integration.getWebhookSecret()).willReturn("new-secret");
+            ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
 
-        VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, context);
+            given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                    .willReturn(Optional.of(integration));
+            given(integration.getId()).willReturn(1L);
+            given(integration.getWebhookSecret()).willReturn("new-secret");
 
-        then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
-        then(integration).should().rotateSecret(any());
-        assertThat(response.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
+            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, context);
+
+            then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
+            then(integration).should().rotateSecret(any());
+            assertThat(response.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
+        }
+
+        @Test
+        @DisplayName("success: creates new integration if not exists")
+        void success_New() {
+            WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
+
+            ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
+
+            given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                    .willReturn(Optional.empty());
+
+            // mock save to return the argument (which is the new integration)
+            given(repository.save(any(WorkspaceVcsIntegration.class)))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, context);
+
+            then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
+            then(repository).should().save(any(WorkspaceVcsIntegration.class));
+            assertThat(response.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
+        }
     }
 
-    @Test
-    @DisplayName("시크릿을 재생성할 때 기존 연동이 없으면 새로 생성한다")
-    void regenerateSecret_New() {
-        WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
+    @Nested
+    @DisplayName("remove integration")
+    class RemoveIntegration {
 
-        ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
+        @Test
+        @DisplayName("success: soft deletes integration")
+        void success() {
+            WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-        given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
-                .willReturn(Optional.empty());
+            given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                    .willReturn(Optional.of(integration));
 
-        given(repository.save(any(WorkspaceVcsIntegration.class))).willAnswer(invocation -> invocation.getArgument(0));
+            sut.removeIntegration(workspaceKey, VcsProvider.GITHUB, context);
 
-        VcsSecretResponse response = sut.regenerateSecret(workspaceKey, VcsProvider.GITHUB, context);
-
-        then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
-        then(repository).should().save(any(WorkspaceVcsIntegration.class));
-        assertThat(response.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
+            then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
+            then(integration).should().softDelete();
+        }
     }
 
-    @Test
-    @DisplayName("연동 정보를 삭제한다 (Soft Delete)")
-    void removeIntegration() {
-        WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
-        WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
+    @Nested
+    @DisplayName("get integration")
+    class GetIntegration {
 
-        given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
-                .willReturn(Optional.of(integration));
+        @Test
+        @DisplayName("success: returns integration detail")
+        void success() {
+            WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
+            WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
 
-        sut.removeIntegration(workspaceKey, VcsProvider.GITHUB, context);
+            ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
 
-        then(workspaceAuthorizationService).should().requireWorkspaceAdmin(context);
-        then(integration).should().softDelete();
-    }
+            given(context.isWorkspaceMember()).willReturn(true);
+            given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                    .willReturn(Optional.of(integration));
+            given(integration.getId()).willReturn(1L);
+            given(integration.isActive()).willReturn(true);
+            given(integration.getWorkspaceKey()).willReturn(workspaceKey);
 
-    @Test
-    @DisplayName("연동 정보를 조회한다")
-    void getIntegration() {
-        WorkspaceMemberContext context = mock(WorkspaceMemberContext.class);
-        WorkspaceVcsIntegration integration = mock(WorkspaceVcsIntegration.class);
+            VcsIntegrationDetail detail = sut.getIntegration(workspaceKey, VcsProvider.GITHUB, context);
 
-        ReflectionTestUtils.setField(sut, "appBaseUrl", "http://localhost:8080");
-
-        given(context.isWorkspaceMember()).willReturn(true);
-        given(repository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
-                .willReturn(Optional.of(integration));
-        given(integration.getId()).willReturn(1L);
-        given(integration.isActive()).willReturn(true);
-        given(integration.getWorkspaceKey()).willReturn(workspaceKey);
-
-        VcsIntegrationDetail detail = sut.getIntegration(workspaceKey, VcsProvider.GITHUB, context);
-
-        then(workspaceAuthorizationService).should().requireWorkspaceMember(context);
-        assertThat(detail.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
-        assertThat(detail.isSyncEnabled()).isTrue();
+            then(workspaceAuthorizationService).should().requireWorkspaceMember(context);
+            assertThat(detail.webhookUrl()).isEqualTo(webhookUrlBase.formatted(workspaceKey));
+            assertThat(detail.isSyncEnabled()).isTrue();
+        }
     }
 }
