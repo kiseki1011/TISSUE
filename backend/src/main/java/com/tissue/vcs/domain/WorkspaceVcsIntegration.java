@@ -34,7 +34,8 @@ public class WorkspaceVcsIntegration extends BaseEntity {
         WorkspaceVcsIntegration integration = new WorkspaceVcsIntegration();
         integration.workspaceKey = workspaceKey;
         integration.webhookSecret = webhookSecret;
-        integration.githubSyncEnabled = true; // Default enabled
+        // TODO: default false로 할까?
+        integration.githubSyncEnabled = true;
         return integration;
     }
 
