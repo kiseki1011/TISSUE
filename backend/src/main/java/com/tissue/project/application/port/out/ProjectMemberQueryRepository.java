@@ -19,6 +19,14 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
 
     @Query("SELECT pm " + "FROM ProjectMember pm "
             + "JOIN FETCH pm.workspaceMember wm "
+            + "WHERE wm.member.email = :email "
+            + "AND pm.projectKey = :projectKey "
+            + "AND pm.softDeleted = false")
+    Optional<ProjectMember> findByEmailAndProjectKey(
+            @Param("email") String email, @Param("projectKey") String projectKey);
+
+    @Query("SELECT pm " + "FROM ProjectMember pm "
+            + "JOIN FETCH pm.workspaceMember wm "
             + "WHERE pm.workspaceKey = :workspaceKey "
             + "AND pm.projectKey = :projectKey "
             + "AND pm.memberId = :memberId "
