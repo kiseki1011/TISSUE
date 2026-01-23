@@ -37,7 +37,7 @@ public class GitIntegrationService implements GitProviderUseCase {
     private final ProjectMemberQueryRepository projectMemberQueryRepository;
     private final IssueEventPublisher eventPublisher;
 
-    private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Za-z][A-Za-z0-9]+-\d+\\b");
+    private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Za-z][A-Za-z0-9]+-\\d+\\b");
 
     @Override
     @Transactional
@@ -70,7 +70,6 @@ public class GitIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        // Publish connection event for activity log
         eventPublisher.publishVcsConnectionEvent(issue, gitPr);
 
         processWorkflowTransition(issue, gitPr);
@@ -84,7 +83,7 @@ public class GitIntegrationService implements GitProviderUseCase {
 
         Matcher matcher = ISSUE_KEY_PATTERN.matcher(title);
         if (matcher.find()) {
-            return matcher.group().toUpperCase(); // Normalize to uppercase
+            return matcher.group().toUpperCase();
         }
         return null;
     }
@@ -106,7 +105,6 @@ public class GitIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        // Try to find matching ProjectMember
         Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
 
         if (matchedMember.isPresent()) {
@@ -128,10 +126,7 @@ public class GitIntegrationService implements GitProviderUseCase {
         if (gitPr.authorEmail() == null) {
             return Optional.empty();
         }
-        // Assuming there is a repository method to find ProjectMember by email within a project
-        // If not, we might need to find WorkspaceMember first and then find ProjectMember
-        // For now, let's assume we use projectMemberQueryRepository.
-        return projectMemberQueryRepository.findByEmailAndProjectKey(gitPr.authorEmail(), projectKey);
+        return projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(gitPr.authorEmail(), projectKey, gitPr.workspaceKey());
     }
 
     private void performTransitionWithMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
