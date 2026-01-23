@@ -1,12 +1,12 @@
 package com.tissue.vcs.adapter.in.web;
 
-import com.tissue.project.adapter.in.web.resolver.CurrentProjectMember;
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
 import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
 import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
 import com.tissue.vcs.application.port.in.WorkspaceVcsQueryUseCase;
 import com.tissue.vcs.domain.enums.VcsProvider;
+import com.tissue.workspace.adapter.in.web.resolver.CurrentWorkspaceMember;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,23 +26,23 @@ public class WorkspaceVcsIntegrationController {
 
     @GetMapping("/github")
     public ResponseEntity<VcsIntegrationDetail> getGithubIntegration(
-            @PathVariable String workspaceKey, @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        return ResponseEntity.ok(queryUseCase.getIntegration(workspaceKey, VcsProvider.GITHUB, actorContext));
+        return ResponseEntity.ok(queryUseCase.getIntegration(workspaceKey, VcsProvider.GITHUB, currentWorkspaceMember));
     }
 
     @PostMapping("/github/secret")
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
-            @PathVariable String workspaceKey, @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        return ResponseEntity.ok(commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, actorContext));
+        return ResponseEntity.ok(commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, currentWorkspaceMember));
     }
 
     @DeleteMapping("/github")
     public ResponseEntity<Void> removeGithubIntegration(
-            @PathVariable String workspaceKey, @CurrentProjectMember ProjectMemberContext actorContext) {
+            @PathVariable String workspaceKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        commandUseCase.removeIntegration(workspaceKey, VcsProvider.GITHUB, actorContext);
+        commandUseCase.removeIntegration(workspaceKey, VcsProvider.GITHUB, currentWorkspaceMember);
         return ResponseEntity.noContent().build();
     }
 }

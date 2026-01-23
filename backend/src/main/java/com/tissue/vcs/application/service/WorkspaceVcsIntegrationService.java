@@ -1,6 +1,5 @@
 package com.tissue.vcs.application.service;
 
-import com.tissue.project.application.dto.ProjectMemberContext;
 import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
 import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
 import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
@@ -9,8 +8,8 @@ import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.VcsProvider;
 import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
-import com.tissue.workspace.domain.enums.WorkspaceRole;
-import com.tissue.workspace.domain.exception.InsufficientWorkspaceRoleException;
+import com.tissue.workspace.application.dto.WorkspaceMemberContext;
+import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import java.security.SecureRandom;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCase, WorkspaceVcsQueryUseCase {
 
     private final WorkspaceVcsIntegrationRepository repository;
+    private final WorkspaceAuthorizationService workspaceAuthorizationService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
@@ -32,9 +32,9 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     @Override
     @Transactional
     public VcsSecretResponse regenerateSecret(
-            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
-        // TODO: use WorkspaceAuthorizationService
-        requireWorkspaceAdmin(actorContext);
+            String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
+
+        workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
@@ -55,8 +55,8 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
 
     @Override
     @Transactional
-    public void removeIntegration(String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
-        requireWorkspaceAdmin(actorContext);
+    public void removeIntegration(String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
+        workspaceAuthorizationService.requireWorkspaceAdmin(actorContext);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
@@ -68,24 +68,15 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     @Override
     @Transactional(readOnly = true)
     public VcsIntegrationDetail getIntegration(
-            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
-        // TODO: use WorkspaceAuthorizationService
-        if (!actorContext.isWorkspaceMember()) {
-            throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.MEMBER);
-        }
+            String workspaceKey, VcsProvider provider, WorkspaceMemberContext actorContext) {
+
+        workspaceAuthorizationService.requireWorkspaceMember(actorContext);
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
 
         return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
-    }
-
-    // TODO: use WorkspaceAuthorizationService
-    private void requireWorkspaceAdmin(ProjectMemberContext actor) {
-        if (!actor.isWorkspaceAdmin()) {
-            throw new InsufficientWorkspaceRoleException(actor.workspaceKey(), WorkspaceRole.ADMIN);
-        }
     }
 
     private String generateRandomSecret() {
