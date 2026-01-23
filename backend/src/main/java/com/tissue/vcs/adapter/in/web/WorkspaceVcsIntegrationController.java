@@ -35,7 +35,8 @@ public class WorkspaceVcsIntegrationController {
     public ResponseEntity<VcsSecretResponse> regenerateGithubSecret(
             @PathVariable String workspaceKey, @CurrentWorkspaceMember WorkspaceMemberContext currentWorkspaceMember) {
 
-        return ResponseEntity.ok(commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, currentWorkspaceMember));
+        return ResponseEntity.ok(
+                commandUseCase.regenerateSecret(workspaceKey, VcsProvider.GITHUB, currentWorkspaceMember));
     }
 
     @DeleteMapping("/github")

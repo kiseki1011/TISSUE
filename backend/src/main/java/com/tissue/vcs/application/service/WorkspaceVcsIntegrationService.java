@@ -12,6 +12,7 @@ import com.tissue.workspace.application.dto.WorkspaceMemberContext;
 import com.tissue.workspace.application.service.authorization.WorkspaceAuthorizationService;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,6 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
         // e.g., /api/v1/integrations/WS-KEY/github/webhook
         return appBaseUrl
-                + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase());
+                + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase(Locale.ROOT));
     }
 }
