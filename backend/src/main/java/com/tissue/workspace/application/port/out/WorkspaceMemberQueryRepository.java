@@ -20,6 +20,8 @@ public interface WorkspaceMemberQueryRepository extends Repository<WorkspaceMemb
     // TODO: 굳이 Member_Id로 조회할 필요가 있나? 어차피 memberId 필드가 WorkspaceMember 내부에 있을텐데?
     Optional<WorkspaceMember> findByMember_IdAndWorkspaceKey(Long memberId, String workspaceKey);
 
+    Optional<WorkspaceMember> findByMember_EmailAndWorkspaceKey(String email, String workspaceKey);
+
     Optional<WorkspaceMember> findByMember_IdAndWorkspace(Long memberId, Workspace workspace);
 
     Optional<WorkspaceMember> findByMemberAndWorkspace(Member member, Workspace workspace);

@@ -4,15 +4,12 @@ import com.tissue.common.util.TextNormalizer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.Objects;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Embeddable
 @Getter
 @EqualsAndHashCode(of = "normalized")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Name {
 
     // TODO: consider changing field name to value
@@ -26,6 +23,9 @@ public class Name {
         this.display = display;
         this.normalized = normalized;
     }
+
+    @SuppressWarnings("NullAway.Init")
+    protected Name() {}
 
     public static Name of(String raw) {
         String checked = Objects.requireNonNull(raw);

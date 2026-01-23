@@ -38,7 +38,6 @@ public record ProjectMemberContext(
         return projectRole.isEqualOrHigherThan(ProjectRole.MEMBER);
     }
 
-    // TODO: 굳이 필요할까? 어차피 ProjectMember로 조회가 가능했다는건 최소한 VIEWER 권한을 가진다는 의미인데?
     public boolean isProjectViewer() {
         return projectRole.isEqualOrHigherThan(ProjectRole.VIEWER);
     }
@@ -51,7 +50,6 @@ public record ProjectMemberContext(
         return workspaceRole.isEqualOrHigherThan(WorkspaceRole.ADMIN);
     }
 
-    // TODO: 굳이 필요할까? 어차피 WorkspaceMember로 조회가 가능했다는건 최소한 MEMBER 권한을 가진다는 의미인데?
     public boolean isWorkspaceMember() {
         return workspaceRole.isEqualOrHigherThan(WorkspaceRole.MEMBER);
     }

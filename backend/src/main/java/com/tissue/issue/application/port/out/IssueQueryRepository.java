@@ -20,6 +20,8 @@ public interface IssueQueryRepository {
 
     Optional<Issue> findByKeyAndProject(String issueKey, Project project);
 
+    Optional<Issue> findByKeyAndWorkspaceKey(String issueKey, String workspaceKey);
+
     List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys, String workspaceKey);
 
     Optional<Issue> findWithBasicInfo(String workspaceKey, String issueKey);

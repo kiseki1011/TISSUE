@@ -46,6 +46,11 @@ public class IssuePersistenceAdapter implements IssueQueryRepository {
     }
 
     @Override
+    public Optional<Issue> findByKeyAndWorkspaceKey(String issueKey, String workspaceKey) {
+        return issueJpaRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey);
+    }
+
+    @Override
     public List<Issue> findByKeyInAndWorkspaceKey(Collection<String> issueKeys, String workspaceKey) {
         return issueJpaRepository.findByKeyInAndWorkspaceKey(issueKeys, workspaceKey);
     }

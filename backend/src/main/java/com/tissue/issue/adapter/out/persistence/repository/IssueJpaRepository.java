@@ -40,10 +40,12 @@ public interface IssueJpaRepository extends Repository<Issue, Long> {
     @Query("SELECT i FROM Issue i WHERE i.workspaceKey = :workspaceKey AND i.key.value = :issueKey")
     Optional<Issue> findWithDetail(@Param("workspaceKey") String workspaceKey, @Param("issueKey") String issueKey);
 
-    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.project = :project")
     Optional<Issue> findByKeyAndProject(@Param("issueKey") String issueKey, @Param("project") Project project);
 
-    @Query("SELECT i FROM Issue i WHERE i.key.value IN :issueKeys AND i.workspaceKey = :workspaceKey")
+    @Query("SELECT i FROM Issue i WHERE i.key.value = :issueKey AND i.workspaceKey = :workspaceKey")
+    Optional<Issue> findByKeyAndWorkspaceKey(
+            @Param("issueKey") String issueKey, @Param("workspaceKey") String workspaceKey);
+
     List<Issue> findByKeyInAndWorkspaceKey(
             @Param("issueKeys") Collection<String> issueKeys, @Param("workspaceKey") String workspaceKey);
 
