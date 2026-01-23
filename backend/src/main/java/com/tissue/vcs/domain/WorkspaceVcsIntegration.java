@@ -6,14 +6,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("soft_deleted = false")
 public class WorkspaceVcsIntegration extends BaseEntity {
 
@@ -27,20 +24,23 @@ public class WorkspaceVcsIntegration extends BaseEntity {
     @Column(name = "webhook_secret", nullable = false)
     private String webhookSecret;
 
-    @Column(name = "github_sync_enabled", nullable = false)
-    private boolean githubSyncEnabled;
+    @Column(name = "sync_enabled", nullable = false)
+    private boolean syncEnabled;
+
+    @SuppressWarnings("NullAway.Init")
+    protected WorkspaceVcsIntegration() {}
 
     public static WorkspaceVcsIntegration create(String workspaceKey, String webhookSecret) {
         WorkspaceVcsIntegration integration = new WorkspaceVcsIntegration();
         integration.workspaceKey = workspaceKey;
         integration.webhookSecret = webhookSecret;
         // TODO: default false로 할까?
-        integration.githubSyncEnabled = true;
+        integration.syncEnabled = true;
         return integration;
     }
 
     public void toggleSync(boolean enabled) {
-        this.githubSyncEnabled = enabled;
+        this.syncEnabled = enabled;
     }
 
     public void rotateSecret(String newSecret) {

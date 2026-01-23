@@ -1,9 +1,14 @@
 package com.tissue.vcs.application.service;
 
 import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
+import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.out.IssueQueryRepository;
 import com.tissue.issue.application.service.IssueTransitionService;
+import com.tissue.issue.application.service.event.IssueEventPublisher;
 import com.tissue.issue.domain.Issue;
+import com.tissue.project.application.dto.ProjectMemberContext;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.project.domain.ProjectMember;
 import com.tissue.vcs.application.port.in.GitProviderUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.GitPrDto;
@@ -11,8 +16,6 @@ import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.PrAction;
 import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.workflow.domain.WorkflowTransition;
-import com.tissue.workspace.application.port.out.WorkspaceMemberQueryRepository;
-import com.tissue.workspace.domain.WorkspaceMember;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -31,10 +34,10 @@ public class GitIntegrationService implements GitProviderUseCase {
     private final IssueTransitionService issueTransitionService;
     private final WorkspaceVcsIntegrationRepository integrationRepository;
     private final IssueQueryRepository issueQueryRepository;
-    private final WorkspaceMemberQueryRepository workspaceMemberQueryRepository;
+    private final ProjectMemberQueryRepository projectMemberQueryRepository;
+    private final IssueEventPublisher eventPublisher;
 
-    // TODO: 개선필요할까? 엣지 케이스를 확실하게 커버하는지 알고 싶음
-    private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Z][A-Z0-9]+-\\d+\\b");
+    private static final Pattern ISSUE_KEY_PATTERN = Pattern.compile("\\b[A-Za-z][A-Za-z0-9]+-\d+\\b");
 
     @Override
     @Transactional
@@ -45,9 +48,8 @@ public class GitIntegrationService implements GitProviderUseCase {
                 .findByWorkspaceKey(gitPr.workspaceKey())
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPr.workspaceKey()));
 
-        // TODO: 이 로직은 왜? 추후에 gitlab도 제공한다면 어떻게?
-        if (!integration.isGithubSyncEnabled()) {
-            log.info("[VCS_PULL_REQUEST] GitHub sync is disabled for workspace={}", gitPr.workspaceKey());
+        if (!integration.isSyncEnabled()) {
+            log.info("[VCS_PULL_REQUEST] Integration is inactive for workspace={}", gitPr.workspaceKey());
             return;
         }
 
@@ -68,13 +70,8 @@ public class GitIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        findActor(gitPr.authorEmail(), gitPr.workspaceKey())
-                .ifPresent(actor -> log.info(
-                        "[VCS_PULL_REQUEST] Identified matching author username={}, email={}",
-                        actor.getMember().getUsername(),
-                        actor.getMember().getEmail()));
-
-        // TODO: Add Activity Log - 이벤트 발행해서 ActivityLogEventListener에서 처리
+        // Publish connection event for activity log
+        eventPublisher.publishVcsConnectionEvent(issue, gitPr);
 
         processWorkflowTransition(issue, gitPr);
     }
@@ -87,28 +84,13 @@ public class GitIntegrationService implements GitProviderUseCase {
 
         Matcher matcher = ISSUE_KEY_PATTERN.matcher(title);
         if (matcher.find()) {
-            return matcher.group();
+            return matcher.group().toUpperCase(); // Normalize to uppercase
         }
         return null;
     }
 
-    private Optional<WorkspaceMember> findActor(@Nullable String email, String workspaceKey) {
-        if (email == null) {
-            return Optional.empty();
-        }
-
-        return workspaceMemberQueryRepository.findByMember_EmailAndWorkspaceKey(email, workspaceKey);
-    }
-
     private void processWorkflowTransition(Issue issue, GitPrDto gitPr) {
-        WorkflowTransition transition = null;
-        switch (gitPr.action()) {
-            case PrAction.OPENED, PrAction.REOPENED ->
-                transition = issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrOpenedTransition();
-            case MERGED ->
-                transition = issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrMergedTransition();
-            default -> log.debug("PR ignored");
-        }
+        WorkflowTransition transition = resolveTransition(issue, gitPr.action());
 
         if (transition == null) {
             return;
@@ -117,19 +99,67 @@ public class GitIntegrationService implements GitProviderUseCase {
         if (currentStateNotMatchTransitionSourceState(issue, transition)) {
             log.info(
                     "[VCS_PULL_REQUEST] Issue {}:{} is in state {}, but VCS transition requires state {}. Skipping automation.",
-                issue.getWorkspaceKey(),
+                    issue.getWorkspaceKey(),
                     issue.getKey(),
                     issue.getCurrentState().getName().getDisplay(),
                     transition.getSourceState().getName().getDisplay());
             return;
         }
 
+        // Try to find matching ProjectMember
+        Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
+
+        if (matchedMember.isPresent()) {
+            performTransitionWithMember(issue, transition, matchedMember.get());
+        } else {
+            performTransitionBySystem(issue, transition, gitPr);
+        }
+    }
+
+    private WorkflowTransition resolveTransition(Issue issue, PrAction action) {
+        return switch (action) {
+            case OPENED, REOPENED -> issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrOpenedTransition();
+            case MERGED -> issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrMergedTransition();
+            default -> null;
+        };
+    }
+
+    private Optional<ProjectMember> findProjectMember(GitPrDto gitPr, String projectKey) {
+        if (gitPr.authorEmail() == null) {
+            return Optional.empty();
+        }
+        // Assuming there is a repository method to find ProjectMember by email within a project
+        // If not, we might need to find WorkspaceMember first and then find ProjectMember
+        // For now, let's assume we use projectMemberQueryRepository.
+        return projectMemberQueryRepository.findByEmailAndProjectKey(gitPr.authorEmail(), projectKey);
+    }
+
+    private void performTransitionWithMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
         log.info(
-                "[VCS_PULL_REQUEST] Transitioning issue {}:{} via VCS automation: {} -> {}",
+                "[VCS_PULL_REQUEST] Transitioning issue {}:{} by matched member {}",
                 issue.getWorkspaceKey(),
                 issue.getKey(),
-                transition.getSourceState().getName().getDisplay(),
-                transition.getTargetState().getName().getDisplay());
+                member.getWorkspaceMember().getDisplayName());
+
+        ProjectMemberContext context = ProjectMemberContext.from(member);
+
+        issueTransitionService.performTransition(new PerformTransitionCommand(
+                issue.getKey(),
+                transition.getId(),
+                context
+        ));
+    }
+
+    private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {
+        log.info(
+                "[VCS_PULL_REQUEST] Transitioning issue {}:{} via System Automation (No matched member)",
+                issue.getWorkspaceKey(),
+                issue.getKey());
+
+        String triggerReason = "GitHub PR #%s %s".formatted(
+                gitPr.htmlUrl() != null ? "Link" : "",
+                gitPr.action().name()
+        );
 
         var cmd = PerformSystemTransitionCommand.builder()
                 .workspaceKey(issue.getWorkspaceKey())
@@ -138,6 +168,7 @@ public class GitIntegrationService implements GitProviderUseCase {
                 .transitionId(transition.getId())
                 .vcsUserEmail(gitPr.authorEmail())
                 .vcsUserName(gitPr.authorUsername())
+                .triggerReason(triggerReason)
                 .build();
 
         issueTransitionService.performTransitionBySystem(cmd);
