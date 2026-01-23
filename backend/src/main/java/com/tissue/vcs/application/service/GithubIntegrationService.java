@@ -26,10 +26,12 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.tissue.vcs.domain.enums.VcsProvider;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GitIntegrationService implements GitProviderUseCase {
+public class GithubIntegrationService implements GitProviderUseCase {
 
     private final IssueTransitionService issueTransitionService;
     private final WorkspaceVcsIntegrationRepository integrationRepository;
@@ -45,7 +47,7 @@ public class GitIntegrationService implements GitProviderUseCase {
         log.info("[VCS_PULL_REQUEST] action={}, workspace={}, title={}", gitPr.action(), gitPr.workspaceKey(), gitPr.title());
 
         WorkspaceVcsIntegration integration = integrationRepository
-                .findByWorkspaceKey(gitPr.workspaceKey())
+                .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), VcsProvider.GITHUB)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(gitPr.workspaceKey()));
 
         if (!integration.isActive()) {

@@ -7,6 +7,7 @@ import com.tissue.vcs.application.port.in.WorkspaceVcsCommandUseCase;
 import com.tissue.vcs.application.port.in.WorkspaceVcsQueryUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
+import com.tissue.vcs.domain.enums.VcsProvider;
 import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.workspace.domain.enums.WorkspaceRole;
 import com.tissue.workspace.domain.exception.InsufficientWorkspaceRoleException;
@@ -26,17 +27,19 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
 
-    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/integrations/%s/github/webhook";
+    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/integrations/%s/%s/webhook";
 
     @Override
     @Transactional
-    public VcsSecretResponse regenerateSecret(String workspaceKey, ProjectMemberContext actorContext) {
+    public VcsSecretResponse regenerateSecret(
+            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
         // TODO: use WorkspaceAuthorizationService
         requireWorkspaceAdmin(actorContext);
 
         WorkspaceVcsIntegration integration = repository
-                .findByWorkspaceKey(workspaceKey)
-                .orElseGet(() -> WorkspaceVcsIntegration.create(workspaceKey, generateRandomSecret()));
+                .findByWorkspaceKeyAndProvider(workspaceKey, provider)
+                .orElseGet(() ->
+                        WorkspaceVcsIntegration.create(provider, workspaceKey, generateRandomSecret()));
 
         if (integration.getId() != null) {
             integration.rotateSecret(generateRandomSecret());
@@ -48,16 +51,17 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
             integration.restoreSoftDeleted();
         }
 
-        return new VcsSecretResponse(buildWebhookUrl(workspaceKey), integration.getWebhookSecret());
+        return new VcsSecretResponse(buildWebhookUrl(workspaceKey, provider), integration.getWebhookSecret());
     }
 
     @Override
     @Transactional
-    public void removeIntegration(String workspaceKey, ProjectMemberContext actorContext) {
+    public void removeIntegration(
+            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
         requireWorkspaceAdmin(actorContext);
 
         WorkspaceVcsIntegration integration = repository
-                .findByWorkspaceKey(workspaceKey)
+                .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
 
         integration.softDelete();
@@ -65,17 +69,18 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
 
     @Override
     @Transactional(readOnly = true)
-    public VcsIntegrationDetail getIntegration(String workspaceKey, ProjectMemberContext actorContext) {
+    public VcsIntegrationDetail getIntegration(
+            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
         // TODO: use WorkspaceAuthorizationService
         if (!actorContext.isWorkspaceMember()) {
             throw new InsufficientWorkspaceRoleException(workspaceKey, WorkspaceRole.MEMBER);
         }
 
         WorkspaceVcsIntegration integration = repository
-                .findByWorkspaceKey(workspaceKey)
+                .findByWorkspaceKeyAndProvider(workspaceKey, provider)
                 .orElseThrow(() -> new WorkspaceVcsIntegrationNotFoundException(workspaceKey));
 
-        return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey));
+        return VcsIntegrationDetail.from(integration, buildWebhookUrl(workspaceKey, provider));
     }
 
     // TODO: use WorkspaceAuthorizationService
@@ -92,7 +97,8 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    private String buildWebhookUrl(String workspaceKey) {
-        return appBaseUrl + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey);
+    private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
+        // e.g., /api/v1/integrations/WS-KEY/github/webhook
+        return appBaseUrl + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase());
     }
 }

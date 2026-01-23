@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tissue.vcs.application.port.in.GitProviderUseCase;
 import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
+import com.tissue.vcs.domain.enums.VcsProvider;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +45,7 @@ public class GithubWebhook {
         log.info("Received GitHub webhook for workspace: {}", workspaceKey);
 
         WorkspaceVcsIntegration integration = vcsIntegrationRepository
-                .findByWorkspaceKey(workspaceKey)
+                .findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Integration not found"));
 
         verifySignature(rawPayload, signature, integration.getWebhookSecret());
