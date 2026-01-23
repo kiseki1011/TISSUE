@@ -18,14 +18,13 @@ public class IssueValidator {
         ensureNoChildren(issue);
     }
 
-    public void ensureValidTransition(
-            Issue issue, Long transitionId, String workspaceKey, WorkflowTransition transition) {
+    public void ensureValidTransition(Issue issue, String workspaceKey, WorkflowTransition transition) {
         boolean sourceStateMisMatch = !issue.getCurrentState().equals(transition.getSourceState());
         if (sourceStateMisMatch) {
             throw new TransitionSourceStateMismatchException(
                     workspaceKey,
                     issue.getKey(),
-                    transitionId,
+                    transition.getId(),
                     issue.getCurrentState().getDisplayName(),
                     transition.getSourceState().getDisplayName());
         }

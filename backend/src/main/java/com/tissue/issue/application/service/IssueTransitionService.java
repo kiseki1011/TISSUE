@@ -1,5 +1,6 @@
 package com.tissue.issue.application.service;
 
+import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
 import com.tissue.issue.application.dto.request.PerformTransitionCommand;
 import com.tissue.issue.application.port.in.IssueTransitionUseCase;
 import com.tissue.issue.application.service.authorization.IssueAuthorizationService;
@@ -21,11 +22,13 @@ import com.tissue.workflow.domain.service.TransitionGuardRegistry;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class IssueTransitionService implements IssueTransitionUseCase {
 
@@ -38,7 +41,6 @@ public class IssueTransitionService implements IssueTransitionUseCase {
     private final IssueAuthorizationService issueAuthService;
 
     @Override
-    @Transactional
     public void performTransition(PerformTransitionCommand cmd) {
         ProjectMemberContext actorContext = cmd.actorContext();
         Project project = projectFinder.getModifiableBy(actorContext.projectId());
@@ -46,20 +48,13 @@ public class IssueTransitionService implements IssueTransitionUseCase {
 
         issueAuthService.requireIssueEditPermission(issue, actorContext);
 
-        Workflow workflow = issue.getIssueType().getWorkflow();
-        WorkflowTransition transition = workflowFinder.getTransitionBy(cmd.transitionId(), workflow);
-
         WorkflowState oldState = issue.getCurrentState();
 
-        issueValidator.ensureValidTransition(issue, cmd.transitionId(), actorContext.workspaceKey(), transition);
-
-        executeGuards(
-                actorContext.workspaceKey(), actorContext.projectKey(), issue, transition, actorContext.memberId());
-
-        issue.transitionTo(transition.getTargetState());
+        WorkflowTransition transition =
+                executeTransition(issue, cmd.transitionId(), actorContext.workspaceKey(), actorContext.memberId());
 
         log.info(
-                "[TRANSITION SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
+                "[TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, actorMemberId: {}",
                 transition.getDisplayName(),
                 issue.getCurrentState().getDisplayName(),
                 transition.getTargetState().getDisplayName(),
@@ -69,8 +64,43 @@ public class IssueTransitionService implements IssueTransitionUseCase {
         eventPublisher.publishTransitioned(issue, transition, oldState, actorContext);
     }
 
-    private void executeGuards(
-            String workspaceKey, String projectKey, Issue issue, WorkflowTransition transition, Long actorMemberId) {
+    @Override
+    public void performTransitionBySystem(PerformSystemTransitionCommand cmd) {
+        Project project = projectFinder.getModifiableBy(cmd.projectKey(), cmd.workspaceKey());
+        Issue issue = issueFinder.getBy(cmd.issueKey(), project);
+
+        WorkflowState oldState = issue.getCurrentState();
+
+        WorkflowTransition transition = executeTransition(issue, cmd.transitionId(), cmd.workspaceKey(), null);
+
+        log.info(
+                "[SYSTEM_TRANSITION_SUCCESS] {}: {} -> {}, issueKey: {}, vcs email: {}, vcs username: {}",
+                transition.getDisplayName(),
+                issue.getCurrentState().getDisplayName(),
+                transition.getTargetState().getDisplayName(),
+                issue.getKey(),
+                cmd.vcsUserEmail(),
+                cmd.vcsUserName());
+
+        // TODO: IssueSystemTransitionedEvent를 새로 만들어서 발행 메서드를 호출
+        //   - ActivityLogEventListener와 NotificationEventListener에 관련 핸들링 추가
+    }
+
+    private WorkflowTransition executeTransition(
+            Issue issue, Long transitionId, String workspaceKey, @Nullable Long actorMemberId) {
+
+        Workflow workflow = issue.getIssueType().getWorkflow();
+        WorkflowTransition transition = workflowFinder.getTransitionBy(transitionId, workflow);
+
+        issueValidator.ensureValidTransition(issue, workspaceKey, transition);
+
+        executeGuards(issue, transition, actorMemberId);
+        issue.transitionTo(transition.getTargetState());
+
+        return transition;
+    }
+
+    private void executeGuards(Issue issue, WorkflowTransition transition, @Nullable Long actorMemberId) {
         // TODO: how should i prevent N+1? get guardConfigs with JOIN FETCH?
         List<TransitionGuardConfig> configs = transition.getGuardConfigs();
 
@@ -86,8 +116,8 @@ public class IssueTransitionService implements IssueTransitionUseCase {
             GuardContext context = GuardContext.builder()
                     .issue(issue)
                     .transition(transition)
-                    .workspaceKey(workspaceKey)
-                    .projectKey(projectKey)
+                    .workspaceKey(issue.getWorkspaceKey())
+                    .projectKey(issue.getProjectKey())
                     .actorMemberId(actorMemberId)
                     .params(config.getGuardParams())
                     .build();
