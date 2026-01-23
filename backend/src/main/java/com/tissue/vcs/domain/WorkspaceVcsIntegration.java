@@ -1,22 +1,30 @@
 package com.tissue.vcs.domain;
 
 import com.tissue.common.entity.BaseEntity;
+import com.tissue.vcs.domain.enums.VcsProvider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
-@SQLRestriction("soft_deleted = false")
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"workspaceKey", "provider"}))
 public class WorkspaceVcsIntegration extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "vcs_provider", nullable = false)
+    private VcsProvider provider;
 
     @Column(name = "workspace_key", nullable = false)
     private String workspaceKey;
@@ -25,22 +33,22 @@ public class WorkspaceVcsIntegration extends BaseEntity {
     private String webhookSecret;
 
     @Column(name = "sync_enabled", nullable = false)
-    private boolean syncEnabled;
+    private boolean active;
 
     @SuppressWarnings("NullAway.Init")
     protected WorkspaceVcsIntegration() {}
 
-    public static WorkspaceVcsIntegration create(String workspaceKey, String webhookSecret) {
+    public static WorkspaceVcsIntegration create(VcsProvider provider, String workspaceKey, String webhookSecret) {
         WorkspaceVcsIntegration integration = new WorkspaceVcsIntegration();
+        integration.provider = provider;
         integration.workspaceKey = workspaceKey;
         integration.webhookSecret = webhookSecret;
-        // TODO: default false로 할까?
-        integration.syncEnabled = true;
+        integration.active = true;
         return integration;
     }
 
     public void toggleSync(boolean enabled) {
-        this.syncEnabled = enabled;
+        this.active = enabled;
     }
 
     public void rotateSecret(String newSecret) {
