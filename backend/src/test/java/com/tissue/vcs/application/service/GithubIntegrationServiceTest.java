@@ -1,0 +1,242 @@
+package com.tissue.vcs.application.service;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
+
+import com.tissue.issue.application.dto.request.PerformSystemTransitionCommand;
+import com.tissue.issue.application.dto.request.PerformTransitionCommand;
+import com.tissue.issue.application.port.out.IssueQueryRepository;
+import com.tissue.issue.application.service.IssueTransitionService;
+import com.tissue.issue.application.service.event.IssueEventPublisher;
+import com.tissue.issue.domain.Issue;
+import com.tissue.issuetype.domain.IssueType;
+import com.tissue.project.application.port.out.ProjectMemberQueryRepository;
+import com.tissue.project.domain.Project;
+import com.tissue.project.domain.ProjectMember;
+import com.tissue.project.domain.enums.ProjectRole;
+import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
+import com.tissue.vcs.domain.GitPrDto;
+import com.tissue.vcs.domain.WorkspaceVcsIntegration;
+import com.tissue.vcs.domain.enums.PrAction;
+import com.tissue.vcs.domain.enums.VcsProvider;
+import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
+import com.tissue.workflow.domain.VcsAutomationSettings;
+import com.tissue.workflow.domain.Workflow;
+import com.tissue.workflow.domain.WorkflowState;
+import com.tissue.workflow.domain.WorkflowTransition;
+import com.tissue.workspace.domain.Workspace;
+import com.tissue.workspace.domain.WorkspaceMember;
+import com.tissue.workspace.domain.enums.WorkspaceRole;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class GithubIntegrationServiceTest {
+
+    @InjectMocks
+    private GithubIntegrationService sut;
+
+    @Mock
+    private IssueTransitionService issueTransitionService;
+
+    @Mock
+    private WorkspaceVcsIntegrationRepository integrationRepository;
+
+    @Mock
+    private IssueQueryRepository issueQueryRepository;
+
+    @Mock
+    private ProjectMemberQueryRepository projectMemberQueryRepository;
+
+    @Mock
+    private IssueEventPublisher eventPublisher;
+
+    @Mock
+    private Issue issue;
+
+    @Mock
+    private IssueType issueType;
+
+    @Mock
+    private Workflow workflow;
+
+    @Mock
+    private VcsAutomationSettings vcsSettings;
+
+    @Mock
+    private WorkflowState currentState;
+
+    @Mock
+    private WorkflowState targetState;
+
+    @Mock
+    private WorkflowState sourceState;
+
+    @Mock
+    private WorkflowTransition transition;
+
+    @Mock
+    private WorkspaceVcsIntegration integration;
+
+    @Mock
+    private ProjectMember projectMember;
+
+    @Mock
+    private WorkspaceMember workspaceMember;
+
+    @Mock
+    private Project project;
+
+    @Mock
+    private Workspace workspace;
+
+    private final String workspaceKey = "WS-KEY";
+    private final String projectKey = "PROJ";
+    private final String issueKey = "PROJ-123";
+    private final String email = "test@example.com";
+
+    @Test
+    @DisplayName("PR이벤트가 발생하면 이슈 상태를 변경한다 (유저 매칭 성공)")
+    void handlePullRequest_UserMatched() {
+        GitPrDto prDto = createPrDto(PrAction.OPENED, "Fix bug for PROJ-123");
+
+        given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                .willReturn(Optional.of(integration));
+        given(integration.isActive()).willReturn(true);
+
+        given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
+                .willReturn(Optional.of(issue));
+
+        given(issue.getKey()).willReturn(issueKey);
+        given(issue.getProjectKey()).willReturn(projectKey);
+        given(issue.getWorkspaceKey()).willReturn(workspaceKey);
+        given(issue.getIssueType()).willReturn(issueType);
+        given(issueType.getWorkflow()).willReturn(workflow);
+        given(workflow.getVcsSettings()).willReturn(vcsSettings);
+        given(vcsSettings.getVcsPrOpenedTransition()).willReturn(transition);
+
+        given(issue.getCurrentState()).willReturn(currentState);
+        given(transition.getSourceState()).willReturn(currentState);
+        given(transition.getId()).willReturn(100L);
+        given(transition.getTargetState()).willReturn(targetState);
+
+        given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
+                .willReturn(Optional.of(projectMember));
+        given(projectMember.getWorkspaceMember()).willReturn(workspaceMember);
+        given(workspaceMember.getWorkspace()).willReturn(workspace);
+        given(workspace.getId()).willReturn(1L);
+        given(projectMember.getProject()).willReturn(project);
+        given(project.getId()).willReturn(2L);
+        given(projectMember.getId()).willReturn(10L);
+        given(projectMember.getMemberId()).willReturn(100L);
+        given(projectMember.getProjectKey()).willReturn(projectKey);
+        given(projectMember.getWorkspaceKey()).willReturn(workspaceKey);
+        given(projectMember.getRole()).willReturn(ProjectRole.MEMBER);
+
+        given(workspaceMember.getDisplayName()).willReturn("Test User");
+        given(workspaceMember.getRole()).willReturn(WorkspaceRole.MEMBER);
+
+        sut.handlePullRequest(prDto);
+
+        then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto);
+        then(issueTransitionService).should().performTransition(any(PerformTransitionCommand.class));
+        then(issueTransitionService).should(never()).performTransitionBySystem(any());
+    }
+
+    @Test
+    @DisplayName("PR이벤트가 발생하면 이슈 상태를 변경한다 (유저 매칭 실패 -> 시스템 처리)")
+    void handlePullRequest_UserNotMatched() {
+        GitPrDto prDto = createPrDto(PrAction.MERGED, "Merge: PROJ-123");
+
+        given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                .willReturn(Optional.of(integration));
+        given(integration.isActive()).willReturn(true);
+        given(issueQueryRepository.findByKeyAndWorkspaceKey(issueKey, workspaceKey))
+                .willReturn(Optional.of(issue));
+
+        given(issue.getKey()).willReturn(issueKey);
+        given(issue.getProjectKey()).willReturn(projectKey);
+        given(issue.getWorkspaceKey()).willReturn(workspaceKey);
+        given(issue.getIssueType()).willReturn(issueType);
+        given(issueType.getWorkflow()).willReturn(workflow);
+        given(workflow.getVcsSettings()).willReturn(vcsSettings);
+        given(vcsSettings.getVcsPrMergedTransition()).willReturn(transition);
+
+        given(issue.getCurrentState()).willReturn(currentState);
+        given(transition.getSourceState()).willReturn(currentState);
+        given(transition.getId()).willReturn(200L);
+        given(transition.getTargetState()).willReturn(targetState);
+
+        given(projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(email, projectKey, workspaceKey))
+                .willReturn(Optional.empty());
+
+        sut.handlePullRequest(prDto);
+
+        then(eventPublisher).should().publishVcsConnectionEvent(issue, prDto);
+        then(issueTransitionService).should(never()).performTransition(any());
+        then(issueTransitionService).should().performTransitionBySystem(any(PerformSystemTransitionCommand.class));
+    }
+
+    @Test
+    @DisplayName("연동 설정이 없으면 예외를 던진다")
+    void handlePullRequest_IntegrationNotFound() {
+        GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
+        given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                .willReturn(Optional.empty());
+
+        try {
+            sut.handlePullRequest(prDto);
+        } catch (WorkspaceVcsIntegrationNotFoundException e) {
+            // expected
+        }
+    }
+
+    @Test
+    @DisplayName("연동이 비활성화 상태면 무시한다")
+    void handlePullRequest_Inactive() {
+        GitPrDto prDto = createPrDto(PrAction.OPENED, "PROJ-123");
+        given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                .willReturn(Optional.of(integration));
+        given(integration.isActive()).willReturn(false);
+
+        sut.handlePullRequest(prDto);
+
+        then(issueQueryRepository).shouldHaveNoInteractions();
+    }
+
+    @Test
+    @DisplayName("PR 제목에서 이슈 키를 찾지 못하면 무시한다")
+    void handlePullRequest_NoIssueKey() {
+        GitPrDto prDto = createPrDto(PrAction.OPENED, "Just a regular update");
+        given(integrationRepository.findByWorkspaceKeyAndProvider(workspaceKey, VcsProvider.GITHUB))
+                .willReturn(Optional.of(integration));
+        given(integration.isActive()).willReturn(true);
+
+        sut.handlePullRequest(prDto);
+
+        then(issueQueryRepository).shouldHaveNoInteractions();
+    }
+
+    private GitPrDto createPrDto(PrAction action, String title) {
+        return GitPrDto.builder()
+                .workspaceKey(workspaceKey)
+                .action(action)
+                .title(title)
+                .authorEmail(email)
+                .authorUsername("user")
+                .occurredAt(LocalDateTime.now())
+                .htmlUrl("http://github.com/pr/1")
+                .build();
+    }
+}
