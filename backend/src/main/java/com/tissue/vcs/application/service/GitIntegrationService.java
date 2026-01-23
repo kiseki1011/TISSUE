@@ -98,6 +98,8 @@ public class GitIntegrationService implements GitProviderUseCase {
     //  여기서 provider가 EMAIL이라면 identifier를 그냥 username으로 하고, AuthIdentity에는 email 필드를 따로
     //  두는게 좋지 않을까? 그럼 email을 통해 actor를 찾더라도 AuthProvider == GITHUB, AuthIdentity.getEmail == {githubPr.email}
     //  같은 식으로 찾으면 되고.
+    //  그리고 Github로 소셜 로그인 및 회원가입을 했거나, 연동을 시켜놨지만, Member의 email은 Github 계정과 동일한 email이 아닌 경우도 있을 수 있잖아?
+    //  이런건 어떻게 처리하는게 좋을까? 액터를 찾는걸 어떻게 설계하면 좋을지 모르겠네.
     private Optional<WorkspaceMember> findActor(@Nullable String email, String workspaceKey) {
         if (email == null) {
             return Optional.empty();
