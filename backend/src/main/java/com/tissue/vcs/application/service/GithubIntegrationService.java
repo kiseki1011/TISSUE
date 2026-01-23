@@ -14,6 +14,7 @@ import com.tissue.vcs.application.port.out.WorkspaceVcsIntegrationRepository;
 import com.tissue.vcs.domain.GitPrDto;
 import com.tissue.vcs.domain.WorkspaceVcsIntegration;
 import com.tissue.vcs.domain.enums.PrAction;
+import com.tissue.vcs.domain.enums.VcsProvider;
 import com.tissue.vcs.domain.exception.WorkspaceVcsIntegrationNotFoundException;
 import com.tissue.workflow.domain.WorkflowTransition;
 import java.util.Objects;
@@ -25,8 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.tissue.vcs.domain.enums.VcsProvider;
 
 @Slf4j
 @Service
@@ -44,7 +43,11 @@ public class GithubIntegrationService implements GitProviderUseCase {
     @Override
     @Transactional
     public void handlePullRequest(GitPrDto gitPr) {
-        log.info("[VCS_PULL_REQUEST] action={}, workspace={}, title={}", gitPr.action(), gitPr.workspaceKey(), gitPr.title());
+        log.info(
+                "[VCS_PULL_REQUEST] action={}, workspace={}, title={}",
+                gitPr.action(),
+                gitPr.workspaceKey(),
+                gitPr.title());
 
         WorkspaceVcsIntegration integration = integrationRepository
                 .findByWorkspaceKeyAndProvider(gitPr.workspaceKey(), VcsProvider.GITHUB)
@@ -99,7 +102,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         if (currentStateNotMatchTransitionSourceState(issue, transition)) {
             log.info(
-                    "[VCS_PULL_REQUEST] Issue {}:{} is in state {}, but VCS transition requires state {}. Skipping automation.",
+                    "[VCS_PULL_REQUEST] Issue {}:{} is in state {}, but VCS transition requires state {}."
+                            + " Skipping automation.",
                     issue.getWorkspaceKey(),
                     issue.getKey(),
                     issue.getCurrentState().getName().getDisplay(),
@@ -116,9 +120,11 @@ public class GithubIntegrationService implements GitProviderUseCase {
         }
     }
 
+    @Nullable
     private WorkflowTransition resolveTransition(Issue issue, PrAction action) {
         return switch (action) {
-            case OPENED, REOPENED -> issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrOpenedTransition();
+            case OPENED, REOPENED ->
+                issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrOpenedTransition();
             case MERGED -> issue.getIssueType().getWorkflow().getVcsSettings().getVcsPrMergedTransition();
             default -> null;
         };
@@ -128,7 +134,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
         if (gitPr.authorEmail() == null) {
             return Optional.empty();
         }
-        return projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(gitPr.authorEmail(), projectKey, gitPr.workspaceKey());
+        return projectMemberQueryRepository.findWithWorkspaceMemberByEmailAndKeys(
+                gitPr.authorEmail(), projectKey, gitPr.workspaceKey());
     }
 
     private void performTransitionWithMember(Issue issue, WorkflowTransition transition, ProjectMember member) {
@@ -140,11 +147,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
 
         ProjectMemberContext context = ProjectMemberContext.from(member);
 
-        issueTransitionService.performTransition(new PerformTransitionCommand(
-                issue.getKey(),
-                transition.getId(),
-                context
-        ));
+        issueTransitionService.performTransition(
+                new PerformTransitionCommand(issue.getKey(), transition.getId(), context));
     }
 
     private void performTransitionBySystem(Issue issue, WorkflowTransition transition, GitPrDto gitPr) {
@@ -153,10 +157,8 @@ public class GithubIntegrationService implements GitProviderUseCase {
                 issue.getWorkspaceKey(),
                 issue.getKey());
 
-        String triggerReason = "GitHub PR #%s %s".formatted(
-                gitPr.htmlUrl() != null ? "Link" : "",
-                gitPr.action().name()
-        );
+        String triggerReason = "GitHub PR #%s %s"
+                .formatted(gitPr.htmlUrl() != null ? "Link" : "", gitPr.action().name());
 
         var cmd = PerformSystemTransitionCommand.builder()
                 .workspaceKey(issue.getWorkspaceKey())

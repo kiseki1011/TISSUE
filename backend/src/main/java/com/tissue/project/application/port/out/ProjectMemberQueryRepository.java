@@ -24,7 +24,9 @@ public interface ProjectMemberQueryRepository extends Repository<ProjectMember, 
             + "AND pm.workspaceKey = :workspaceKey "
             + "AND pm.softDeleted = false")
     Optional<ProjectMember> findWithWorkspaceMemberByEmailAndKeys(
-            @Param("email") String email, @Param("projectKey") String projectKey, @Param("workspaceKey") String workspaceKey);
+            @Param("email") String email,
+            @Param("projectKey") String projectKey,
+            @Param("workspaceKey") String workspaceKey);
 
     @Query("SELECT pm " + "FROM ProjectMember pm "
             + "JOIN FETCH pm.workspaceMember wm "

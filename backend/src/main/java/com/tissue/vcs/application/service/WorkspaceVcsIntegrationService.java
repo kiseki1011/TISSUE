@@ -38,8 +38,7 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
 
         WorkspaceVcsIntegration integration = repository
                 .findByWorkspaceKeyAndProvider(workspaceKey, provider)
-                .orElseGet(() ->
-                        WorkspaceVcsIntegration.create(provider, workspaceKey, generateRandomSecret()));
+                .orElseGet(() -> WorkspaceVcsIntegration.create(provider, workspaceKey, generateRandomSecret()));
 
         if (integration.getId() != null) {
             integration.rotateSecret(generateRandomSecret());
@@ -56,8 +55,7 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
 
     @Override
     @Transactional
-    public void removeIntegration(
-            String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
+    public void removeIntegration(String workspaceKey, VcsProvider provider, ProjectMemberContext actorContext) {
         requireWorkspaceAdmin(actorContext);
 
         WorkspaceVcsIntegration integration = repository
@@ -99,6 +97,7 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
 
     private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
         // e.g., /api/v1/integrations/WS-KEY/github/webhook
-        return appBaseUrl + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase());
+        return appBaseUrl
+                + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase());
     }
 }
