@@ -25,9 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/integrations")
+@RequestMapping("/api/v1/workspaces")
 @RequiredArgsConstructor
-public class GithubWebhook {
+public class GithubWebhookHandleController {
 
     private final GitProviderUseCase gitProviderUseCase;
     private final WorkspaceVcsIntegrationRepository vcsIntegrationRepository;
@@ -36,7 +36,7 @@ public class GithubWebhook {
     private static final String HMAC_SHA_256 = "HmacSHA256";
     private static final String SIGNATURE_HEADER = "X-Hub-Signature-256";
 
-    @PostMapping("/{workspaceKey}/github/webhook")
+    @PostMapping("/{workspaceKey}/integrations/github/webhook")
     public ResponseEntity<Void> handleGithubWebhook(
             @PathVariable String workspaceKey,
             @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,

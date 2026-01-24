@@ -28,7 +28,8 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
 
-    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/integrations/%s/%s/webhook";
+    // TODO: appBaseUrl과 함께 외부 설정값으로 관리
+    private static final String WEBHOOK_PATH_TEMPLATE = "/api/v1/workspaces/%s/integrations/%s/webhook";
 
     @Override
     @Transactional
@@ -88,7 +89,6 @@ public class WorkspaceVcsIntegrationService implements WorkspaceVcsCommandUseCas
     }
 
     private String buildWebhookUrl(String workspaceKey, VcsProvider provider) {
-        // e.g., /api/v1/integrations/WS-KEY/github/webhook
         return appBaseUrl
                 + WEBHOOK_PATH_TEMPLATE.formatted(workspaceKey, provider.name().toLowerCase(Locale.ROOT));
     }

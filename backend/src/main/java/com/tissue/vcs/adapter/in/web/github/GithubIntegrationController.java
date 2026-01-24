@@ -1,4 +1,4 @@
-package com.tissue.vcs.adapter.in.web;
+package com.tissue.vcs.adapter.in.web.github;
 
 import com.tissue.vcs.adapter.in.web.dto.response.VcsIntegrationDetail;
 import com.tissue.vcs.adapter.in.web.dto.response.VcsSecretResponse;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceKey}/integrations")
 @RequiredArgsConstructor
-public class WorkspaceVcsIntegrationController {
+public class GithubIntegrationController {
 
     private final WorkspaceVcsCommandUseCase commandUseCase;
     private final WorkspaceVcsQueryUseCase queryUseCase;
