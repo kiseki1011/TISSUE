@@ -47,3 +47,6 @@ local-docker-compose.yml
 
 ### SSH script ###
 start-tunnel.sh
+
+### MacOS ###
+.DS_Store
