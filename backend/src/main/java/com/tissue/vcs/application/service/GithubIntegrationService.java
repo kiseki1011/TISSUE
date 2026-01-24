@@ -77,9 +77,15 @@ public class GithubIntegrationService implements GitProviderUseCase {
             return;
         }
 
-        eventPublisher.publishVcsConnectionEvent(issue, gitPr);
+        Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
+        Long actorMemberId = matchedMember.map(ProjectMember::getMemberId).orElse(null);
+        String actorDisplayName = matchedMember
+                .map(pm -> pm.getWorkspaceMember().getDisplayName())
+                .orElse(null);
 
-        processWorkflowTransition(issue, gitPr);
+        eventPublisher.publishVcsConnectionEvent(issue, gitPr, actorMemberId, actorDisplayName);
+
+        processWorkflowTransition(issue, gitPr, matchedMember);
     }
 
     @Override
@@ -177,7 +183,7 @@ public class GithubIntegrationService implements GitProviderUseCase {
         return null;
     }
 
-    private void processWorkflowTransition(Issue issue, GitPrDto gitPr) {
+    private void processWorkflowTransition(Issue issue, GitPrDto gitPr, Optional<ProjectMember> matchedMember) {
         WorkflowTransition transition = resolveTransition(issue, gitPr.action());
 
         if (transition == null) {
@@ -194,8 +200,6 @@ public class GithubIntegrationService implements GitProviderUseCase {
                     transition.getSourceState().getName().getDisplay());
             return;
         }
-
-        Optional<ProjectMember> matchedMember = findProjectMember(gitPr, issue.getProjectKey());
 
         if (matchedMember.isPresent()) {
             performTransitionWithMember(issue, transition, matchedMember.get());
@@ -249,6 +253,7 @@ public class GithubIntegrationService implements GitProviderUseCase {
                 .projectKey(issue.getProjectKey())
                 .issueKey(issue.getKey())
                 .transitionId(transition.getId())
+                .vcsProvider(VcsProvider.GITHUB)
                 .vcsUserEmail(gitPr.authorEmail())
                 .vcsUserName(gitPr.authorUsername())
                 .triggerReason(triggerReason)

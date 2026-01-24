@@ -33,7 +33,7 @@ public class NotificationCommandService {
             NotificationType type,
             EntityReference reference,
             Collection<WorkspaceMemberContact> receivers,
-            Long actorMemberId,
+            @Nullable Long actorMemberId,
             @Nullable String actorDisplayName,
             Map<String, String> data) {
 

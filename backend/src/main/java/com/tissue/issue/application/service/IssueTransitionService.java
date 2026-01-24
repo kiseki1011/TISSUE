@@ -82,8 +82,14 @@ public class IssueTransitionService implements IssueTransitionUseCase {
                 cmd.vcsUserEmail(),
                 cmd.vcsUserName());
 
-        // TODO: IssueSystemTransitionedEvent를 새로 만들어서 발행 메서드를 호출
-        //   - ActivityLogEventListener와 NotificationEventListener에 관련 핸들링 추가
+        eventPublisher.publishTransitionedBySystem(
+                issue,
+                transition,
+                oldState,
+                cmd.vcsProvider(),
+                cmd.vcsUserEmail(),
+                cmd.vcsUserName(),
+                cmd.triggerReason() != null ? cmd.triggerReason() : "");
     }
 
     private WorkflowTransition executeTransition(

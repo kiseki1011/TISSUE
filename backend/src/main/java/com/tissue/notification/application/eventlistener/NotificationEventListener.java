@@ -30,6 +30,7 @@ import com.tissue.issue.domain.event.IssueReviewRequestedEvent;
 import com.tissue.issue.domain.event.IssueReviewSubmittedEvent;
 import com.tissue.issue.domain.event.IssueReviewerAddedEvent;
 import com.tissue.issue.domain.event.IssueReviewerRemovedEvent;
+import com.tissue.issue.domain.event.IssueTransitionedBySystemEvent;
 import com.tissue.issue.domain.event.IssueTransitionedEvent;
 import com.tissue.issue.domain.event.IssueUnassignedEvent;
 import com.tissue.notification.application.service.NotificationCommandService;
@@ -246,6 +247,44 @@ public class NotificationEventListener {
                         WORKSPACE_KEY, event.workspaceKey(),
                         ISSUE_KEY, event.issueKey(),
                         ACTOR_NAME, event.actorDisplayName(),
+                        OLD_STATE, event.oldStateName(),
+                        NEW_STATE, event.newStateName()));
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleTransitionedBySystem(IssueTransitionedBySystemEvent event) {
+        Collection<WorkspaceMemberContact> targets =
+                targetService.getIssueParticipantsAndReviewers(event.workspaceKey(), event.issueKey());
+
+        log.info(
+                "[NOTIFICATION] Handling IssueTransitionedBySystemEvent: issue={}, {} -> {}, targets={}",
+                event.issueKey(),
+                event.oldStateName(),
+                event.newStateName(),
+                targets.size());
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        EntityReference reference =
+                EntityReference.forIssue(event.workspaceKey(), event.projectKey(), event.issueKey(), event.issueId());
+
+        String vcsUser = event.vcsUserName() != null ? event.vcsUserName() : "System";
+        String actorName = "System (" + vcsUser + ")";
+
+        commandService.createAndSend(
+                event.eventId(),
+                NotificationType.ISSUE_STATUS_CHANGED,
+                reference,
+                targets,
+                null,
+                actorName,
+                Map.of(
+                        WORKSPACE_KEY, event.workspaceKey(),
+                        ISSUE_KEY, event.issueKey(),
+                        ACTOR_NAME, actorName,
                         OLD_STATE, event.oldStateName(),
                         NEW_STATE, event.newStateName()));
     }
